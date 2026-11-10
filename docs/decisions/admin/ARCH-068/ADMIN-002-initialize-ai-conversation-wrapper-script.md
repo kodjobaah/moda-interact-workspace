@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-11-10T01:15:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ['ARCH-068-ADMIN-001', 'ARCH-068-COMMERCE-001', 'ARCH-068-BACKGROUND-001']
 enables: ["ARCH-068-SYSTEM-TEST-001"]
@@ -35,11 +35,11 @@ All20 existing REVIEW_LANGUAGES locales use precisely the slot-only AST, identic
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
-- [ ] Verify dependencies and current owned source against binding touch points.
-- [ ] Implement every requirement in the owned scope and binding contract.
-- [ ] Add deterministic success/failure/compatibility tests specified above.
-- [ ] Run declared repository validation and record exact evidence.
-- [ ] Publish implementation and parent report on mirrored task branches for review.
+- [x] Verify dependencies and current owned source against binding touch points.
+- [x] Implement every requirement in the owned scope and binding contract.
+- [x] Add deterministic success/failure/compatibility tests specified above.
+- [x] Run declared repository validation and record exact evidence.
+- [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
 ARCH-068-ADMIN-001, ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001
@@ -54,7 +54,72 @@ No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
-Not started. Record changed paths, exact source SHA, isolated worktree/preparation evidence, tests with counts, public package version/integrity where consumed, dependency evidence, and any remaining risks.
+
+Ready for Review — Attempt 1, 2026-11-10. Implementation and required validation are complete. No deployed initializer or production activation was executed; independent architect review is pending.
+
+### Implementation
+
+Admin source `40fc5b67e6a814020668a6d4ae25eaa7c0d5f17a`, committed/pushed and clean on `task/ARCH-068-ADMIN-002`, implements:
+
+- Exact CLI `--environment=test|production --actor-admin-id=<id> --dry-run|--apply --reason=<10..500 chars>`, default dry-run, strict required/unique/known flags and mutually exclusive modes. Output is bounded JSON with no argument echo, credentials, customer data, database error text or stack traces.
+- Trusted environment selection reuses `resolveDeploymentEnvironmentName`; requested environment must match exactly before a transaction. The script never assigns the runtime environment from its requested flag. Actor is read from the database and must already be active/SUPER_ADMIN; no provisioning, elevation or development-actor helper is called.
+- Exact canonical source has empty header/footer/conditionals, only response.body, AI audience and the Shared optional BEFORE_BODY binding. Existing compiler, canonical hash and definitionIdForSubmit helpers produce records/identity using the specified stable submission UUID. No prose, header logo, product facts, model call, translation or Meta job is introduced.
+- Dry-run reads actor/immutable candidate/current AI slot in SERIALIZABLE and returns planned definition/hash/locale-count/current-pointer information without writes. Apply uses one SERIALIZABLE transaction for definition, English source, the remaining canonical REVIEW_LANGUAGES locales, eligibility, pointer CAS, first-publication marker and audits.
+- Same-actor records must match immutable source/prepared bytes and eligibility; conflicting records fail IMMUTABLE_CONFLICT without repair. Any eligible occupied slot with the identical canonical prepared record returns UNCHANGED, including another actor's definition. Other occupied/incomplete slots fail SLOT_OCCUPIED. Empty-slot races permit one winner; the loser fails CONCURRENT_STATE_CHANGE with no orphan definition/locales/audit and no automatic retry.
+- All current20 languages come from REVIEW_LANGUAGES. English is SOURCE_SAVED; other locales are REVIEWED by the explicit operator with a shared database transaction timestamp, identical source/prepared records and null provider language codes. Audit metadata identifies script/version/environment, structural operator approval, canonical locales, source/content hashes and previous slot; the operator's supplied reason is preserved.
+- Existing authoring and activation were extracted into transaction-local helpers, with ordinary services delegating to them. Initializer uses those helpers directly inside its one transaction, retaining compiler/eligibility/CAS/audit semantics without nested transactions or unchecked pointer SQL. Only a fixed transaction_timestamp read uses SQL; pointer updates retain the existing repository.
+- README places the required deployed Commerce/Background versions and successful binding fixture evidence immediately before apply. It explains that local completion does not prove deployed compatibility, and the script reads no deployment API. No startup/deployment hook runs initialization automatically.
+
+The CLI uses existing esbuild to load local Admin TypeScript as native ESM, keeping installed npm dependencies external via their public export resolution and preserving the existing Admin source alias. This avoids a package-wide module-mode or global import-condition change; the temporary local-code artifact is removed on exit. The real CLI is validated against disposable PostgreSQL, not merely through an injected service port.
+
+### Changed files (implementation-repository relative)
+
+- README.md
+- package.json
+- scripts/initialize-conversation-wrapper.mjs
+- scripts/test-arch068-admin-initializer-postgres.mjs
+- src/lib/admin/whatsapp-templates/authoring/repository.ts
+- src/lib/admin/whatsapp-templates/wrappers/initialize.ts
+- src/lib/admin/whatsapp-templates/wrappers/repository.ts
+- src/lib/admin/whatsapp-templates/wrappers/service.ts
+- tests/unit/arch068-conversation-wrapper-initializer.test.ts
+- tests/integration/arch068-conversation-wrapper-initializer.postgres.test.ts
+
+### Validation
+
+- `npm run test:arch068-admin-initializer:unit`: **7 passed, 0 failed/skipped**. Strict/default CLI, exact structural AST/UUID/current language coverage, invalid/environment gate before database access, read-only dry-run and deterministic plan, existing active SUPER_ADMIN requirement, redacted errors and real native CLI module/environment gate.
+- `npm run test:arch068-admin-initializer:postgres`: **11 passed, 0 failed/skipped** in a newly created loopback-only pgvector/PostgreSQL17 Docker fixture with the recorded repository migrations. Validates read-only dry-run via complete before/after snapshots; exact20-locale apply/common review timestamp/audits; same/different actor idempotency; immutable conflicts; occupied different and incomplete records; actor denial; activation of an existing immutable definition without locale rewrites; creation and activation audit failure rollback; forced concurrent empty-slot race with no orphan losing rows/audit; and the actual CLI default/apply/repeat/environment behavior. No Meta registration or translation run is created. The harness removed its container; final matching-container inventory was empty. No external/deployed database is accepted.
+- Existing native ESM authoring/wrapper regression runner against arch047-template-authoring-service, arch047-template-wrappers, arch047-template-wrappers-service, and both accepted arch068-conversation-product-image test files: **29 passed, 0 failed/skipped**. Ordinary save/clone/replay/rollback, activation/CAS/audit and accepted binding/translation/preview behavior remain intact after helper extraction.
+- `npx tsc --noEmit`: passed, final diagnostics empty.
+- Changed-source/helper/CLI/harness `npm run lint -- <six owned paths>`: passed, including final native-loader changes. Full-repository lint was not claimed clean or redundantly rerun; accepted ADMIN001 already records its unchanged media-hook/database-config baseline findings. No such file was edited here.
+- `npm run build`: passed, including existing Prisma generation, optimized Next webpack build, TypeScript checks and route generation. Existing BullMQ expression/optional Valkey module warnings remain nonfatal; package versions and those paths are unchanged.
+- Published dependency integrity, accepted source containment, unchanged package-lock/database gitlink and git diff/staged checks passed. Workspace Node24.19.0/npm11.17.0 were selected through the canonical bootstrap.
+
+Initial real-CLI validation exposed the repository's CommonJS/global import-condition incompatibility with a Shared transitive module; the native ESM loader above and real-CLI regression resolve it. All final initializer checks pass. Production spelling is parsed as supported, but no initializer core/apply was executed against production; test-mode CLI calls occurred only in the guarded disposable fixture.
+
+Evidence retained under /tmp: arch068-admin002-unit-final.log, arch068-admin002-postgres-final.log, arch068-admin002-regressions.log, arch068-admin002-types-final.log, arch068-admin002-changed-lint-final.log and arch068-admin002-build.log.
+
+### Dependency and ownership evidence
+
+Launcher verified ADMIN001, COMMERCE001 and BACKGROUND001 Complete. Prepared Admin baseline `5b85311a51d4c7e81b124059f1348fe550b95e1f` contains accepted ADMIN001 source `31e24c04d532e364e4c4e4bf6eb959e51ec01c07` (Git ancestry verified), so its compiler/hash/binding/eligibility implementation is reused directly.
+
+Installed Shared remains exactly `@modainteract/moda-interact-shared@5.12.0`; unchanged lockfile SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==` was asserted. Binding imports use public `/commerce/presentation`; no sibling-source import, copied compiler/schema or Node media implementation is introduced. No dependency/version/lock change or package publication is part of this task.
+
+### Git / VCS and physical isolation
+
+Both repositories use `task/ARCH-068-ADMIN-002`.
+
+- Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+- Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-068-ADMIN-002, reused; remote task fast-forwarded yes; origin/main incorporated yes; preclaim head1b562301199386e9cf6f2a72fef84d9a3cc2d552.
+- Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-068-ADMIN-002, created at5b85311a51d4c7e81b124059f1348fe550b95e1f; remote task fast-forward not-needed; origin/main already-current.
+- Launcher recursive submodule sync/update passed; ready; database initialized at recorded5329d5390d346042895219663f3a040ea54ae168. Schema/migrations/gitlink unchanged.
+- Durable parent claim849440f475e256c39480b47082c958e8046e7f62, pushed; Attempt1/codex at2026-11-10T01:15:13Z. No duplicate claim or attempt increment.
+- Shared/default workspace and implementation checkout switched/mutated for task execution: no. Another task worktree reused: no.
+- Implementation HEAD and origin/task/ARCH-068-ADMIN-002 match40fc5b67e6a814020668a6d4ae25eaa7c0d5f17a, clean. This task-only parent report is committed/pushed on its matching branch; final report commit is provided in the execution response. No submodule pointer staged, other task/index/architecture edit, main merge/push or force-push.
+
+### Handoff
+
+No unresolved required work, failed final initializer validation or cross-service choice remains. No subagent assistance was used. Implementation/testing did not run an initializer against a deployed test/production environment, change any live AI pointer, send a message, mutate provider/R2 infrastructure or deploy a migration. Operator apply still requires deployed-consumer readiness as documented. SYSTEM-TEST readiness is unchanged pending independent architect review/completion/reconciliation. This is a Review submission, not architect acceptance or self-completion.
 
 ## Architect Review
 Not reviewed.
