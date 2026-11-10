@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-10T01:15:13Z
+attempt: 1
 depends_on: ['ARCH-068-ADMIN-001', 'ARCH-068-COMMERCE-001', 'ARCH-068-BACKGROUND-001']
 enables: ["ARCH-068-SYSTEM-TEST-001"]
 created: 2026-11-09
