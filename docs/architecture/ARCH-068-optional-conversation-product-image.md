@@ -193,37 +193,5 @@ SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,sce
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
 
-## Database accepted/completed frontier — 2026-11-09
-DATABASE001 Complete at independently Accepted Attempt1, implementation75669477; exact nullable JSONB schema/DDL and fresh/upgrade/old-writer TEXT+IMAGE evidence pass. SHARED003 remains Pending; BACKGROUND001 remains Pending on that publication (Database prerequisite satisfied). SYSTEM-TEST001 remains Pending/manual-gated on unfinished consumers. No readiness promotion, task execution, migration deployment, activation or architectureImplemented claim.
-
-## Earlier accepted source frontier reconciliation — 2026-11-09
-
-Historical snapshot before Shared Node acceptance; superseded by the following frontier. This integration preserves the original scope and coherence contract alongside published acceptance history. SHARED-001 Complete at Accepted Attempt1, source0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822; SHARED-002 Ready at Attempt0/unclaimed on that exact source prerequisite. DATABASE-001 Complete at Accepted Attempt1, source75669477b9048104758e8f1e897abecef13bf059. SHARED-003 remains Pending; no new npm version, integrity, deployment, migration application, wrapper activation or actual WhatsApp send is asserted. BACKGROUND-001 remains publication-gated and terminal system validation remains Pending/manual-gated. Main documentation integration does not update any implementation gitlink or start a task.
-
-## Shared Node accepted/completed frontier — 2026-11-09
-SHARED001 and SHARED002 are Complete / independently Accepted Attempt1. Combined accepted Shared source `8f8a298de90803671b789ba0ef2fe03058a8023e` includes pure contract source `0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822`. Node extraction preserves original Background behavior; cancellation plumbing does not change golden encoded outputs. Optional absolute deadlineAt supplements the documented host child-signal contract; it retains the original turn deadline and subtracts the1000ms margin, capped5000ms.
-
-SHARED003 is Ready, agent/automatic, Attempt0 unclaimed, explicitly depending on both accepted implementation tasks and restricted to release mechanics. ADMIN001, COMMERCE001 and BACKGROUND001 remain Pending until publication; DATABASE001 is already Complete. ADMIN002 remains Pending on its consumers/editor; SYSTEM-TEST001 remains Pending and manual-gated. Architecture remains In Progress. Readiness is not a claim, release, main integration, deployment, activation or live operation.
-
-## Current accepted publication and execution frontier — 2026-11-09
-SHARED003 Complete / independently Accepted Attempt1. Exact consumer pin `@modainteract/moda-interact-shared@5.12.0`; registry https://registry.npmjs.org/; SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`; tarball SHA256 `e4416c765079a6c8c8ca04894e87e3822c3af0acf19428a5d3f542effe697393`. Release source12d0b85aaeefba4dfc46bb12637004f19d462b19 contains accepted Shared001/002 unchanged. Public archive matches reviewed upload and installed runtime/declaration/browser-isolation checks. This current frontier supersedes earlier readiness snapshots; historical records remain evidence of prior decisions.
-
-| Task | Owner | Current status | Depends on |
-|---|---|---|---|
-| ARCH-068-SHARED-001 | moda_shared | Complete / Accepted Attempt1 | None |
-| ARCH-068-SHARED-002 | moda_shared | Complete / Accepted Attempt1 | ARCH-068-SHARED-001 |
-| ARCH-068-SHARED-003 | moda_shared | Complete / Accepted Attempt1 | ARCH-068-SHARED-001, ARCH-068-SHARED-002 |
-| ARCH-068-DATABASE-001 | moda_database | Complete / Accepted Attempt1 | None |
-| ARCH-068-ADMIN-001 | moda_admin | Complete / Accepted Attempt1 | ARCH-068-SHARED-003 |
-| ARCH-068-COMMERCE-001 | moda_commerce | Complete / Accepted Attempt1 | ARCH-068-SHARED-003 |
-| ARCH-068-BACKGROUND-001 | moda_background | Complete / Accepted Attempt1 | ARCH-068-SHARED-003, ARCH-068-DATABASE-001 |
-| ARCH-068-ADMIN-002 | moda_admin | Ready / Attempt0 unclaimed | ARCH-068-ADMIN-001, ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001 |
-| ARCH-068-SYSTEM-TEST-001 | moda_system_test | Pending / manual-gated | ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001, ARCH-068-ADMIN-002 |
-
-Consumers pin exact5.12.0 with this integrity; browser contracts and Node media remain separate public subpaths. Readiness starts no implementation. Architecture remains In Progress; deploy migration before Background runtime field use, deploy both compatible consumers before activation, retain initializer/operator deployment check and terminal manual system validation. No main merge/push, gitlink advance, migration deployment, initializer run, activation or real send occurred in this review.
-
-## Admin authoring accepted/completed frontier — 2026-11-10
-ADMIN001 Complete / independently Accepted Attempt1 at source31e24c04d532e364e4c4e4bf6eb959e51ec01c07. Background001 Complete / Accepted Attempt1 at source383efdce24fb60888ff91bc260ff13b4b524b7dd (published acceptance7af4b2852d8e917b3974530988c5ef9c6a499d6c). Commerce001 retains published review Attempt1 at parentee20dc54093e14a37c4509896d804b9dccd87bc9. Exact published task records reconciled without changing that concurrent review. No newly Ready task: Admin002 still requires Commerce001 Complete; SystemTest001 remains Pending/manual-gated. Architecture remains In Progress. Accepted source is not deployed compatibility or authorization to activate; migration/consumer deployment and operator checks remain.
-
 ## Accepted consumers and initializer readiness — 2026-11-10
 ADMIN001 completion9be7c236, COMMERCE001 completion69acccb6 and BACKGROUND001 completion7af4b285 are durable, independently Accepted/Complete at Attempt1. All ADMIN002 explicit dependencies are Complete, so ADMIN002 is Ready at unchanged Attempt0 with no claim. SYSTEM-TEST001 remains Pending/manual-gated on ADMIN002. Current counts: Complete7, Ready1, Pending1. This current frontier supersedes earlier snapshots. Exact Shared5.12.0 version/SRI remains binding; task completion is not deployed compatibility or permission to apply/activate. No implementation, main merge/push, gitlink change, deployment or initializer/live execution occurred during reconciliation. Architecture remains In Progress.
