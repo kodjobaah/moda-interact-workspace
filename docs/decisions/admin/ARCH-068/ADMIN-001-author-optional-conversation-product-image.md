@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-11-10T00:02:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ['ARCH-068-SHARED-003']
 enables: ["ARCH-068-ADMIN-002"]
@@ -33,11 +33,11 @@ The initializer script is owned by ADMIN-002; do not implement or run it in this
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
-- [ ] Verify dependencies and current owned source against binding touch points.
-- [ ] Implement every requirement in the owned scope and binding contract.
-- [ ] Add deterministic success/failure/compatibility tests specified above.
-- [ ] Run declared repository validation and record exact evidence.
-- [ ] Publish implementation and parent report on mirrored task branches for review.
+- [x] Verify dependencies and current owned source against binding touch points.
+- [x] Implement every requirement in the owned scope and binding contract.
+- [x] Add deterministic success/failure/compatibility tests specified above.
+- [x] Run declared repository validation and record exact evidence.
+- [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
 ARCH-068-SHARED-003
@@ -52,7 +52,77 @@ No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
-Not started. Record changed paths, exact source SHA, isolated worktree/preparation evidence, tests with counts, public package version/integrity where consumed, dependency evidence, and any remaining risks.
+
+Ready for Review — Attempt 1, 2026-11-10. Implementation and validation are complete; independent architect acceptance is pending. Existing regression/lint findings are recorded explicitly below.
+
+### Implementation and published dependency
+
+Admin implementation `31e24c04d532e364e4c4e4bf6eb959e51ec01c07` is committed/pushed and clean on `task/ARCH-068-ADMIN-001`, based on prepared source `b57869d14d389e7bd2e80220a29b64562270069d`.
+
+Pinned the exact public `@modainteract/moda-interact-shared@5.12.0` artifact. package-lock records registry tarball https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.12.0.tgz and accepted SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`. The published schema/type/reader is imported through `/commerce/presentation`; no copied schema, sibling-source import or Node media import is used. Lock comparison shows Shared3.0.0→5.12.0 is the only existing package version change, 27 new transitive entries, no removals. No new package was published by this task.
+
+- AI wrappers expose a default-off Optional product image checkbox. It emits the exact shared binding and removes the property when off or when switching to HUMAN/SHARED. Server AST validation uses the public strict schema and rejects non-AI audiences, Meta AST fields, null/undefined/duplicate/nonoptional/inline/URL bindings and image tokens masquerading as text variables.
+- Binding is preserved in source, compiled prepared data, clone and preview DTOs and their existing canonical hashes. Omission retains legacy source/prepared shapes and hashes. The public prepared-wrapper reader accepts the generated projection and digest.
+- Translation sends only existing text segments. Binding remains in immutable English and is protected by its source hash, copied during reconstruction and compared across all reviewed locales. The strict Background translation transport was inspected read-only; no new transport member or worker change is required. Opted-in snapshot preparation also checks compiled binding/content equality; legacy records retain their prior acceptance.
+- Real source extraction emits .text/occurrence keys whereas review previously consumed component keys only. The owned compilation adapter now verifies/restores the actual extractor format (including wrapper body regions around the protected response slot), while retaining historical component-key records. Initial Meta Reply instructions and existing text/URL bindings remain protected; no Meta authoring/send behavior is changed.
+- Authoring, locale review and before/after activation previews show the same local SVG illustration above the complete wrapped response. No merchant image, product, credential, R2 or provider is loaded. UI explains omission and full-text fallback. README records deployed-consumer readiness before activation and the separate ADMIN002 initializer boundary.
+
+### Owned touch-point trace
+
+`compileWrapperLocale` delegates to the enhanced `compileTemplateAst`; `reconstructAndCompile` delegates to the enhanced snapshot verification/restoration and compiler. `CompilationCandidate`, review DTOs, wrapper preview definitions and server actions already carry the enhanced authoring/prepared/preview types without narrowing or rebuilding their properties. `saveEnglishTemplate`/its existing transaction persist the complete record, while wrapper activation service calls the enhanced locale eligibility check. `TemplateContentEditor` delegates to `WrapperStructureEditor`; editor step navigation retains parent-owned draft state. These existing forwarding points were traced and tested without unnecessary edits. Clone remains structuredClone of the complete AST.
+
+### Changed files (implementation-repository relative)
+
+- README.md
+- package.json
+- package-lock.json
+- scripts/test-arch068-admin-authoring.mjs
+- src/lib/admin/whatsapp-templates/authoring/types.ts
+- src/lib/admin/whatsapp-templates/authoring/validation.ts
+- src/lib/admin/whatsapp-templates/authoring/compiler.ts
+- src/lib/admin/whatsapp-templates/authoring/draft-operations.ts
+- src/lib/admin/whatsapp-templates/authoring/preview.ts
+- src/lib/admin/whatsapp-templates/compilation/segments.ts
+- src/lib/admin/whatsapp-templates/compilation/restoration.ts
+- src/lib/admin/whatsapp-templates/translations/source-snapshot.ts
+- src/lib/admin/whatsapp-templates/wrappers/eligibility.ts
+- src/lib/admin/whatsapp-templates/wrappers/preview.ts
+- src/components/admin/whatsapp-templates/authoring/conversation-product-image-example.tsx
+- src/components/admin/whatsapp-templates/authoring/wrapper-structure-editor.tsx
+- src/components/admin/whatsapp-templates/authoring/template-family-purpose-selector.tsx
+- src/components/admin/whatsapp-templates/authoring/template-read-only-preview.tsx
+- src/components/admin/whatsapp-templates/authoring/template-review-summary.tsx
+- src/components/admin/whatsapp-templates/compilation/conversation-wrapper-review-preview.tsx
+- src/components/admin/whatsapp-templates/wrappers/wrapper-before-after-preview.tsx
+- tests/unit/arch068-conversation-product-image.test.ts
+- tests/unit/arch068-conversation-product-image-components.test.tsx
+
+### Validation and limits
+
+- `npm run test:arch068-admin-authoring`: **14 passed, 0 failed/skipped**. Covers default/toggled-off compatibility, strict AI-only schema, public reader/hash interoperability, clone/previews/audience switching, real and historical translation formats, all20 current canonical locales, binding/marker tampering and stale source hashes, immutable locale binding equality even with recomputed hashes, forged server requests, atomic persistence/audit, legacy Meta snapshot compatibility and all three preview surfaces.
+- Native ESM runner against 12 existing authoring, translation, compilation, wrapper service/component and media-compiler test files: **89 passed, 1 inherited failure, 0 skipped (90 tests)**. The failure is unchanged `arch049-admin-media-compiler.test.ts` “each IMAGE header role compiles…”: its expected two body bindings omit the already-existing initial `checkout.itemsSummary`, while baseline produces three. A separate temporary bundle loaded original src/tests directly via `git show b57869d...` and reproduced exactly this same 1-failure/4-pass media result. No expectation was loosened or unrelated source changed. Initial Reply/Meta/protected-marker and wrapper regressions pass. The earlier native ESM Next/link resolution issue was fixed in the task test runner; it is not a remaining failure.
+- `npx tsc --noEmit`: passed (empty diagnostics). Final production `npm run build`: **passed**, including existing Prisma generation, optimized webpack build, Next TypeScript checks and route generation. Known BullMQ expression/optional Valkey module build warnings remain nonfatal; BullMQ version and source are unchanged.
+- Changed-file `npm run lint -- <changed source/helper paths>`: passed. Final delta checks for snapshot verification also passed. Full `npm run lint` reports **1 inherited error/3 warnings**: unchanged `media/use-shop-brand-media-role.ts` react-hooks/set-state-in-effect and two hook warnings, plus unchanged database/eslint.config.mjs default-export warning. The hook is byte-identical to the prepared baseline and no source/helper changed-file diagnostic remains. No matching durable baseline ID was found; this task records the concrete observation without editing unrelated hook/Database work.
+- Browser esbuild graph of the actual authoring validator and wrapper editor: passed; excludes Node builtins, AWS SDK, sharp, Prisma, logging and observability. Published lock SRI equality, dependency-diff audit and git diff/staged checks passed.
+- All commands ran in the canonical implementation worktree with workspace-bootstrap Node24.19.0/npm11.17.0. The task ESM runner leaves npm packages external and bundles only repository-local tests; no source alias to Shared is used. Native Next test imports resolve to their installed files. No local DB query/mutation or provider/network media call was required; Prisma generation changes only installed/generated client artifacts.
+
+Temporary validation evidence: /tmp/arch068-admin001-focused-final.log, /tmp/arch068-admin001-regressions-final.log, /tmp/arch068-admin001-extra-checks.log, /tmp/arch068-admin001-types-final.log, /tmp/arch068-admin001-changed-lint.log, /tmp/arch068-admin001-final-delta-lint.log, /tmp/arch068-admin001-lint.log and /tmp/arch068-admin001-build-final.log. The immutable-baseline and browser probes are temporary validation artifacts, not production code.
+
+### Git / VCS and physical isolation
+
+Both repositories use `task/ARCH-068-ADMIN-001`.
+
+- Canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+- Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-068-ADMIN-001, reused; parent remote task fast-forward not-needed; origin/main incorporated yes, preclaim head2e175c89e5cfd47c12f1e3412aceeb16973fb5c9.
+- Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-068-ADMIN-001, created at b57869d14d389e7bd2e80220a29b64562270069d; remote task fast-forward not-needed; origin/main already-current.
+- Launcher recursive implementation submodule sync/update passed; ready; database initialized at recorded5329d5390d346042895219663f3a040ea54ae168. No gitlink changed.
+- Durable parent claim55de683403f8fe191f5e3c73b20d14869613cf7b, pushed; Attempt1, executor codex, claimed2026-11-10T00:02:31Z. No repeated claim or attempt increment.
+- Shared/default workspace and implementation checkouts switched/mutated for task execution: no. Another task worktree reused: no.
+- Implementation HEAD and origin/task/ARCH-068-ADMIN-001 match31e24c04d532e364e4c4e4bf6eb959e51ec01c07 and are clean. This parent task-only report is committed/pushed on its matching branch; final report commit is provided in the execution response. No submodule pointer staged, other task/index/architecture changed, main merge/push or force-push.
+
+### Handoff and unresolved issues
+
+No unresolved owned-scope decision or task-introduced failure remains. Inherited full-lint and stale media-fixture failures are described above for architect assessment. No subagent assistance was used. ADMIN002 initializer, consumer implementations, activation, deployment, migration and live operations remain outside this task. Existing permissions, atomic save/audit and activation services remain in place; no initializer or actual activation was executed. Downstream readiness is unchanged pending independent architect review. This submission is Review, not architect acceptance or self-completion.
 
 ## Architect Review
 Not reviewed.
