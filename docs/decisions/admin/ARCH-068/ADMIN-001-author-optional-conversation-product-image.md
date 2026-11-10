@@ -9,15 +9,15 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-10T00:02:31Z
+attempt: 1
 depends_on: ['ARCH-068-SHARED-003']
 enables: ["ARCH-068-ADMIN-002"]
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 # Author and preview optional AI wrapper media
 
