@@ -5,7 +5,7 @@
 | Task | Status | Dependencies |
 |---|---|---|
 | [ARCH-068-ADMIN-001](ADMIN-001-author-optional-conversation-product-image.md) | Complete / Accepted Attempt1 / claim cleared | ARCH-068-SHARED-003 |
-| [ARCH-068-ADMIN-002](ADMIN-002-initialize-ai-conversation-wrapper-script.md) | Pending / agent, automatic / Attempt 0 | ARCH-068-ADMIN-001, ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001 |
+| [ARCH-068-ADMIN-002](ADMIN-002-initialize-ai-conversation-wrapper-script.md) | Ready / agent, automatic / Attempt0 unclaimed | ARCH-068-ADMIN-001, ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001 |
 
 Definitions only; no implementation/claim/deployment/initializer execution.
 
@@ -14,3 +14,6 @@ SHARED003 is Complete / independently Accepted Attempt1. Install exactly `@modai
 
 ## Current authoring acceptance — 2026-11-10
 ADMIN001 Complete / independently Accepted Attempt1, source31e24c04d532e364e4c4e4bf6eb959e51ec01c07. Background001 is Complete; Commerce001 remains review, so ADMIN002 remains Pending and terminal system validation remains gated. No activation/deployment/initializer execution.
+
+## Current initializer readiness — 2026-11-10
+ADMIN001, COMMERCE001 and BACKGROUND001 are Complete / Accepted Attempt1. ADMIN002 is Ready, Attempt0 unclaimed; its canonical task records the exact accepted source and public Shared5.12.0 pin. Readiness starts no implementation or initializer execution. Terminal system validation remains Pending/manual-gated.

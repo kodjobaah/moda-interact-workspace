@@ -215,12 +215,15 @@ SHARED003 Complete / independently Accepted Attempt1. Exact consumer pin `@modai
 | ARCH-068-SHARED-003 | moda_shared | Complete / Accepted Attempt1 | ARCH-068-SHARED-001, ARCH-068-SHARED-002 |
 | ARCH-068-DATABASE-001 | moda_database | Complete / Accepted Attempt1 | None |
 | ARCH-068-ADMIN-001 | moda_admin | Complete / Accepted Attempt1 | ARCH-068-SHARED-003 |
-| ARCH-068-COMMERCE-001 | moda_commerce | Review / Attempt1 | ARCH-068-SHARED-003 |
+| ARCH-068-COMMERCE-001 | moda_commerce | Complete / Accepted Attempt1 | ARCH-068-SHARED-003 |
 | ARCH-068-BACKGROUND-001 | moda_background | Complete / Accepted Attempt1 | ARCH-068-SHARED-003, ARCH-068-DATABASE-001 |
-| ARCH-068-ADMIN-002 | moda_admin | Pending / Attempt0 | ARCH-068-ADMIN-001, ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001 |
+| ARCH-068-ADMIN-002 | moda_admin | Ready / Attempt0 unclaimed | ARCH-068-ADMIN-001, ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001 |
 | ARCH-068-SYSTEM-TEST-001 | moda_system_test | Pending / manual-gated | ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001, ARCH-068-ADMIN-002 |
 
 Consumers pin exact5.12.0 with this integrity; browser contracts and Node media remain separate public subpaths. Readiness starts no implementation. Architecture remains In Progress; deploy migration before Background runtime field use, deploy both compatible consumers before activation, retain initializer/operator deployment check and terminal manual system validation. No main merge/push, gitlink advance, migration deployment, initializer run, activation or real send occurred in this review.
 
 ## Admin authoring accepted/completed frontier — 2026-11-10
 ADMIN001 Complete / independently Accepted Attempt1 at source31e24c04d532e364e4c4e4bf6eb959e51ec01c07. Background001 Complete / Accepted Attempt1 at source383efdce24fb60888ff91bc260ff13b4b524b7dd (published acceptance7af4b2852d8e917b3974530988c5ef9c6a499d6c). Commerce001 retains published review Attempt1 at parentee20dc54093e14a37c4509896d804b9dccd87bc9. Exact published task records reconciled without changing that concurrent review. No newly Ready task: Admin002 still requires Commerce001 Complete; SystemTest001 remains Pending/manual-gated. Architecture remains In Progress. Accepted source is not deployed compatibility or authorization to activate; migration/consumer deployment and operator checks remain.
+
+## Accepted consumers and initializer readiness — 2026-11-10
+ADMIN001 completion9be7c236, COMMERCE001 completion69acccb6 and BACKGROUND001 completion7af4b285 are durable, independently Accepted/Complete at Attempt1. All ADMIN002 explicit dependencies are Complete, so ADMIN002 is Ready at unchanged Attempt0 with no claim. SYSTEM-TEST001 remains Pending/manual-gated on ADMIN002. Current counts: Complete7, Ready1, Pending1. This current frontier supersedes earlier snapshots. Exact Shared5.12.0 version/SRI remains binding; task completion is not deployed compatibility or permission to apply/activate. No implementation, main merge/push, gitlink change, deployment or initializer/live execution occurred during reconciliation. Architecture remains In Progress.
