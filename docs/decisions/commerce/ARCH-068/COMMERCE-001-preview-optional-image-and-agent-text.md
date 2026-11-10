@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-11-10T00:03:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ['ARCH-068-SHARED-003']
 enables: ["ARCH-068-ADMIN-002", "ARCH-068-SYSTEM-TEST-001"]
@@ -33,11 +33,11 @@ Use responseStyle AGENT, shared source selector, Node preparer, shared delivery-
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
-- [ ] Verify dependencies and current owned source against binding touch points.
-- [ ] Implement every requirement in the owned scope and binding contract.
-- [ ] Add deterministic success/failure/compatibility tests specified above.
-- [ ] Run declared repository validation and record exact evidence.
-- [ ] Publish implementation and parent report on mirrored task branches for review.
+- [x] Verify dependencies and current owned source against binding touch points.
+- [x] Implement every requirement in the owned scope and binding contract.
+- [x] Add deterministic success/failure/compatibility tests specified above.
+- [x] Run declared repository validation and record exact evidence.
+- [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
 ARCH-068-SHARED-003
@@ -52,7 +52,54 @@ No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
-Not started. Record changed paths, exact source SHA, isolated worktree/preparation evidence, tests with counts, public package version/integrity where consumed, dependency evidence, and any remaining risks.
+
+### Attempt 1 — Ready for Review — 2026-11-10
+
+Implementation commit `ee42e4e4894361138ea13aad4ce5e7213461d47e` is pushed to the implementation repository's `task/ARCH-068-COMMERCE-001`. All owned requirements are implemented; no unresolved architectural choice or placeholder remains. Architect acceptance and completion are not asserted by the implementation agent.
+
+Changed behavior and paths:
+
+- `package.json` / `package-lock.json`: exact public Shared **5.12.0**, registry `https://registry.npmjs.org/`, SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==` matches the Accepted publication handoff. Browser contracts import only `/commerce/presentation`; host media preparation imports the separate `/commerce/presentation/node` export. No sibling Shared source or copied media engine.
+- `preview/presentation.ts`: explicit Shared AGENT response style preserves complete normalized agent text after existing selection/fact/recommendation/shipping verification. Current exact ordered selected pairs are retained without prose matching or legacy deterministic candidate slicing. Final-phase canonical product reads are cached by exact pair, reused by recommendation/image work and charged to the original remote-call/deadline budget. No historical product/image or second-product fallback.
+- New `preview/conversation-product-media.ts`: public Shared source selector, Node preparation and delivery-plan builder, with server-injected configuration, trusted shop/platform, one bounded child signal, original turn deadline and bounded domain diagnostics. No binding, no pair or over-1024-code-point caption skips configuration/preparation. Missing image/configuration and optional preparation failure preserve full text. The image preparer receives one first-pair source and cannot trigger an unbudgeted provider get. A legacy snapshot without platform never invents media provenance.
+- `preview/service.ts` / `preview/types.ts`: media configuration injection, cancellation recheck, optional strict ready `deliveryPlan`, matching plan/body validation and existing 64KiB result bound including media metadata. The existing owner-fenced `store.ts` / `redis-store.ts` completion already persists the whole result with reply/history/context atomically, so their transaction implementations were reused unchanged. Redis tests now explicitly store/replay an IMAGE plan with the context and reject wrong owner/tenant/duplicate completion. A service-level text-plan replay test proves no repeated model or media configuration work.
+- `platform-configuration/{service,runtime}.ts` / `lib/preview/runtime.ts`: typed allowed reads for existing `merchant.knowledge.r2` and `shopBrand.publicMedia`, purpose-sealed credentials using the existing unseal keyring/decrypt/AAD mechanism, existing ARCH-049 public-media defaults-on-read and no implicit writes. Public bucket comes from publicMedia, never the private knowledge bucket. No environment R2 secret fallback, new setting, inline decrypt implementation or browser secret prop.
+- `studio/test-conversations/{client.ts,test-conversation-view-types.ts,test-conversations-screen.tsx,conversation-panel.tsx}`: propagate the optional plan, render IMAGE public URL above the full caption, retain text after image load failure, expose plan metadata only in diagnostics and preserve separate Agent output. Old ready records without a plan render text only.
+- `docs/arch068-conversation-product-image.md`: host behavior, deadlines, configuration and safe rollout boundaries. `test:arch068-preview` registers the reproducible focused suite. Initial-outreach implementation is unchanged.
+
+Agent-executed validation (local/mocked only):
+
+1. `npm install --save-exact @modainteract/moda-interact-shared@5.12.0 --ignore-scripts --prefer-online --fetch-retries=0` — PASS; installed package version and lock integrity match the exact accepted artifact. Existing upstream peer/audit notices were not expanded into unrelated dependency changes.
+2. `npx prisma generate --schema database/prisma/schema.prisma` — PASS, isolated generated client only; no schema edit, migration execution or database target used.
+3. `npx vitest run tests/arch068-conversation-media.test.ts tests/arch068-conversation-media-ui.test.tsx tests/platform-configuration-service.test.ts tests/arch066-preview-presentation.test.ts tests/arch067-stock.test.ts tests/preview-service.test.ts tests/preview-integration.test.ts tests/preview-redis-lua.test.ts tests/preview-routes.test.ts tests/test-conversations-client.test.ts tests/test-conversations-screen.test.tsx tests/arch066-initial-outreach-preview.test.ts tests/arch066-initial-outreach-media.test.ts` — **13 files / 190 tests PASS**. Covers Shared plan equality, both platform provenance including native variant and Woo simple pair, first-only/missing-first image, Unicode1024/1025 and complete4096/4097 body behavior, AGENT prose, configuration and prepare omissions, wrong-tenant prepared URL refusal, malformed binding refusal, deadline/abort, one recommendation final get, no-selection policy answer without R2, image-load fallback, legacy DTO, atomic result/context, cancellation/owner/replay and initial-outreach regressions.
+4. After the final existing-defaults-on-read fixture was added: `npx vitest run tests/platform-configuration-service.test.ts` — **14/14 PASS**, including purpose AAD mismatch, malformed/missing configuration, exact public bucket and defaults without writes.
+5. `npm run typecheck:build` — PASS. After final configuration changes, `npx tsc --noEmit -p tsconfig.build.json` — PASS.
+6. Scoped `npx eslint` over changed host/config/UI/runtime and test TypeScript files — PASS, zero warnings/errors. `git diff --check` — PASS.
+
+The earlier deterministic product-body expectations were deliberately updated for the binding contract's explicit AGENT style; native identity, fresh fact reads, reference ordering and shared verification remain asserted. The independent Shared publication already owns generic safe fetch/transform/R2/probe vectors; host tests inject synthetic preparation results and never contact R2, Shopify/Woo, Meta or a deployed MCP service. No live smoke, actual send, WABA read, template validation, initializer/apply, wrapper activation or rollout gate enablement is required or claimed by this repository scope. Integrated cross-host/full transport parity remains the explicitly separate SYSTEM-TEST-001 responsibility.
+
+Physical worktree isolation (launcher evidence):
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-068-COMMERCE-001
+parent branch: task/ARCH-068-COMMERCE-001
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-068-COMMERCE-001
+implementation branch: task/ARCH-068-COMMERCE-001
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded database submodule: 5329d5390d346042895219663f3a040ea54ae168
+claim: 8dfd7a2ec090ac50410ee565f17386a0716a0154, pushed Attempt 1
+```
+
+No implementation submodule gitlink, parent architecture/frontier/index, another task, deployed configuration or main branch was changed. No mandatory local evidence is pending. Rollout must still deploy compatible consumers before an operator activates a product-image wrapper; this implementation does not assert deployed readiness.
 
 ## Architect Review
 Not reviewed.
