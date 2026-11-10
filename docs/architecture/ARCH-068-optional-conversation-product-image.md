@@ -214,13 +214,13 @@ SHARED003 Complete / independently Accepted Attempt1. Exact consumer pin `@modai
 | ARCH-068-SHARED-002 | moda_shared | Complete / Accepted Attempt1 | ARCH-068-SHARED-001 |
 | ARCH-068-SHARED-003 | moda_shared | Complete / Accepted Attempt1 | ARCH-068-SHARED-001, ARCH-068-SHARED-002 |
 | ARCH-068-DATABASE-001 | moda_database | Complete / Accepted Attempt1 | None |
-| ARCH-068-ADMIN-001 | moda_admin | Ready / Attempt0 unclaimed | ARCH-068-SHARED-003 |
-| ARCH-068-COMMERCE-001 | moda_commerce | Ready / Attempt0 unclaimed | ARCH-068-SHARED-003 |
-| ARCH-068-BACKGROUND-001 | moda_background | Ready / Attempt0 unclaimed | ARCH-068-SHARED-003, ARCH-068-DATABASE-001 |
+| ARCH-068-ADMIN-001 | moda_admin | Review / Attempt1 | ARCH-068-SHARED-003 |
+| ARCH-068-COMMERCE-001 | moda_commerce | Review / Attempt1 | ARCH-068-SHARED-003 |
+| ARCH-068-BACKGROUND-001 | moda_background | Complete / Accepted Attempt1 | ARCH-068-SHARED-003, ARCH-068-DATABASE-001 |
 | ARCH-068-ADMIN-002 | moda_admin | Pending / Attempt0 | ARCH-068-ADMIN-001, ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001 |
 | ARCH-068-SYSTEM-TEST-001 | moda_system_test | Pending / manual-gated | ARCH-068-COMMERCE-001, ARCH-068-BACKGROUND-001, ARCH-068-ADMIN-002 |
 
 Consumers pin exact5.12.0 with this integrity; browser contracts and Node media remain separate public subpaths. Readiness starts no implementation. Architecture remains In Progress; deploy migration before Background runtime field use, deploy both compatible consumers before activation, retain initializer/operator deployment check and terminal manual system validation. No main merge/push, gitlink advance, migration deployment, initializer run, activation or real send occurred in this review.
 
-## Commerce accepted/completed frontier — 2026-11-10
-COMMERCE001 independently Accepted/Complete Attempt1, implementationee42e4e/reportee20dc54. BACKGROUND001 Complete; ADMIN001 Review is not Complete, so ADMIN002 remains Pending. SYSTEMTEST001 remains Pending on ADMIN002/manual-gated. No automatic readiness promotion/claim/execution, wrapper activation, deployment or architectureImplemented assertion. Older consumer frontier entries are historical.
+## Background accepted/completed frontier — 2026-11-10
+BACKGROUND001 independently Accepted and automatically Complete at Attempt1, source383efdce24fb60888ff91bc260ff13b4b524b7dd. Complete-plan persistence, free-form IMAGE admission and one-dispatch replay safety passed local deterministic/PostgreSQL acceptance. Admin001 remains review at published111326fa26fba9d96f6e7410871db0c1b339d839; Commerce001 remains review at publishedee20dc54093e14a37c4509896d804b9dccd87bc9. Their exact published task records are reconciled here without acceptance, claim or attempt changes. No new task becomes Ready: Admin002 still requires both consumers Complete; SystemTest001 still requires Commerce001 and Admin002. Architecture remains In Progress. Migration deployment, compatible-consumer deployment, operator activation checkpoint and developer-launched terminal system validation remain outstanding; no live operation occurred.
