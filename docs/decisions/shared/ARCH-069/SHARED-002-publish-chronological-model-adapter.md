@@ -171,3 +171,7 @@ Conforms to the bounded publication receipt/version/integrity contract. Direct c
 ### Follow-up
 
 ARCH-069-BACKGROUND-001 Ready. It must verify actual public-registry artifact consumption and expected integrity (not only local accepted-tarball/cache reuse), then pass required CI before merge/deployment. Record any persistent registry failure rather than silently treating local installation as public availability. Actual production customer answer verification remains coordinator-owned.
+
+### Subsequent Consumer Availability Evidence
+
+2026-11-12: ARCH-069-BACKGROUND-001 actual public-registry tarballHTTP200, exact SHA1/SHA512 and clean-cache prefer-online installation plus final CI passed. The historical CDN404 limitation recorded at publication review is now cleared; no republish occurred.

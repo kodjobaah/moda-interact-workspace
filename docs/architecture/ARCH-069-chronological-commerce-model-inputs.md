@@ -11,7 +11,7 @@ updated: 2026-11-12
 
 ## Status
 
-In Progress. A bounded production correctness fix; no infrastructure or schema redesign.
+In Progress. All three implementation/publication tasks are architect-accepted Complete. Developer integration, deployment and fresh genuine production customer-answer verification remain pending. No infrastructure or schema redesign.
 
 ## Problem
 
@@ -87,7 +87,7 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared implementation acceptance -> exact packa
 |---|---|---|---|
 | ARCH-069-SHARED-001 | moda_shared | Complete | None |
 | ARCH-069-SHARED-002 | moda_shared | Complete | ARCH-069-SHARED-001 |
-| ARCH-069-BACKGROUND-001 | moda_background | In Progress | ARCH-069-SHARED-002 |
+| ARCH-069-BACKGROUND-001 | moda_background | Complete | ARCH-069-SHARED-002 |
 
 ## System Validation
 
@@ -104,3 +104,5 @@ Does the paired real-model request probe reproduce the indicator, and does chron
 - 2026-11-12 review: Shared001 Accepted/Complete at8fefac2; publication Ready, Background Pending. Paired anonymized probes establish improved current-turn intent, not deterministic marker causality. Production customer answer remains pending.
 
 - 2026-11-12 publication review: Shared002 Accepted/Complete from exact public registry metadata/integrity and publish receipt; Background Ready with mandatory actual public-registry install/CI integrity gate. Transient tarballCDN404 is not represented as verified deployment availability.
+
+- 2026-11-12 consumer review: Background001 Accepted/Complete at6ccad024; actual public-registry artifact install/hash gate and both3,941-test CI runs passed, resolving CDN propagation. Production customer-answer verification remains pending; no Implemented claim.
