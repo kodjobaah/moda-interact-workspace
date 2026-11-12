@@ -66,3 +66,5 @@ Privileged Shopify logo acquisition requires actual current read_brand grant; ro
 - State separation clarification: basic-name refresh owns shopifyNameSync in existing ShopBrand JSON; permission-gated assets retain independent historical shopifySourceSync. Parser and transitions preserve both cadences/leases and media roles. A shared lease key would incorrectly suppress or clobber the other capability; no database schema change is needed.
 
 - Basic-name implementation accepted at `1cb77855ec91806081ab1d0fad7d131f5e804e87`; independent name/asset state and real PostgreSQL isolation tests passed. Header and permission-gated source tasks are Ready, but execution preparation must incorporate the actual developer-merged source main.
+
+- Text header source accepted at `b0216b1e52ce0d2619b84ca2298c31013dbe93a6` after combined asset-main integration, real PostgreSQL identity/race proof and both exact-head CI passed. Developer rollout/drain and genuine delivery proof remain pending. Logo consumer preparation follows actual header source merge and reconciled accepted prerequisites.

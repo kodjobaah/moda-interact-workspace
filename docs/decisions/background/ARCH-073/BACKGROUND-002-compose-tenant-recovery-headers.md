@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: codex
 claimed_at: 2026-11-12T19:19:48Z
@@ -150,24 +150,24 @@ Rollout must drain old messaging workers before generating new HUMAN prepared co
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual source review.
+Reviewed actual final `b0216b1e52ce0d2619b84ca2298c31013dbe93a6`, complete report `654f3ff3c`, final control-range delta and asset-main integration. Verified per-tenant safe-name/domain header, domain-only fallback, typed configured-prefix dedup, receipt-bound local application/HUMAN replay and current Shop-locked permit check. No findings.
 
 ### Reviewed Files
 
-None
+Header helper/application-key/context repository/service, AI adapter, HUMAN preparation/evidence/current validator, processor/admission/delivery receipt forwarding, recovery fence/current identity helper, unit and real PostgreSQL tests.
 
 ### Validation Reviewed
 
-None
+Prior-code red, focused238/additional44/final21, disposable PostgreSQL7 frozen/send identity and rename/domain lock races; types/scoped lint/combined build; both exact final-head CI passed. Prepared canonical mirrored isolation/submodule evidence and clean merged asset main are recorded. No duplicate architect run required.
 
 ### Architecture Conformance
 
-Pending
+Conforms to Background-local text header with no schema/Shared change or extra permission. Old receipt-absent records preserve old key/body bytes. Existing trusted normalized typed-commerce renderer seam is explicitly retained, not claimed cryptographically resistant to arbitrary internal mock metadata stripping; actual service forwards proof and final checks. Security, footer, authored bytes and immutable permit preserved.
 
 ### Follow-up
 
-None
+Developer merges/deploys and drains old messaging workers before new HUMAN receipt preparation. Verify genuine name/site header/footer delivery. BG004 becomes Ready only with all accepted prerequisites; canonical preparation should incorporate actual merged header main. Logo readiness/fallback remain separately owned.
