@@ -144,3 +144,13 @@ Developer merged Background PR203 at `b0924473edfe1143a402ed0756dcd55a15da0240`;
 Genuine inboundVersion7 `cmwdobgjr0003n01642b6lgca` arrived14:59:10.553Z. On the new deployed code, product search succeeded and existing `MISSING_PRODUCT_SELECTION_REPAIR` correctly entered forced finalResponse. The530-token correction failed final schema validation at14:59:32.258Z: `FINAL_SCHEMA_INVALID`, issueCount1, invalid_value path `referralReason`. The exact raw invalid value is not known and is not inferred. Placeholder `cmwdobk3o0005n016dqb7kzxy` is FAILED with no Meta message ID; no Meta send or checkout-footer delivery proof occurred. Job completed attempt1, and read-only durable state confirmed inboundVersion7 equals lastProcessedVersion7 with pending fields null; terminal suppression remains effective. Historical failed placeholder count75 is diagnostic history, not a new success claim.
 
 The existing semantic selection repair was exercised, but customer-facing recommendation/footer success remains unverified because the corrected final envelope was invalid. Root and Shared owner are investigating read-only; no additional task, source mutation or guessed-value coercion is authorized yet. Architecture remains In Progress and PR985 draft.
+
+## Referral Provider Contract Amendment
+
+User authorized fixing referralReason and repeating tested/reviewed deployment. Shared005 makes provider nullable-string schema and common forced-finalization guidance explicit while preserving strict validator and the existing one-correction budget. A wholly synthetic provider conformance probe with anonymous pinned schema is required before publication; no private customer context exported. Shared006 publishes exact accepted5.13.5, Background005 consumes it with actual runner-host regressions. No invalid-value coercion or historical-value assumption. Existing eight tasks remain accepted; production success pending.
+
+| Task | Owner | Status | Dependencies |
+|---|---|---|---|
+| ARCH-070-SHARED-005 | moda_shared | Ready | ARCH-070-SHARED-004 |
+| ARCH-070-SHARED-006 | moda_shared | Pending | ARCH-070-SHARED-005 |
+| ARCH-070-BACKGROUND-005 | moda_background | Pending | ARCH-070-SHARED-006 |
