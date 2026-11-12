@@ -57,6 +57,10 @@ Selection policy is LOGO then SQUARE_LOGO only, never COVER_IMAGE, and current v
 
 Stable tokenless Storefront asset acquisition is accepted separately; current development store is CHANNEL_LOCKED, so controlled text fallback is expected until an authorized supported asset source becomes READY. Do not create credential/scope/channel changes, unlock stores, bootstrap production or claim fallback as logo delivery. Root is awaiting a standalone user-approved logo and owns operational source observation. No extra logo message.
 
+### Caption/read-model compatibility
+
+Developer merged header source at ce39ca00723a98f36751547a9acb33fcab6ee368. Root read-only audits found API/Admin/Shopify inboxes do not strict-parse the stored plan; Commerce preview's legacy parser is a separate path not fed this Background JSON. Do not expand other repositories unless an actual exposed dependency is found. Distinguish physical providerDispatchDeliveryKind IMAGE from ConversationMessage.contentType: preserve existing product-image caption record semantics, because the API maps contentType IMAGE to null text. Regression must prove new brand caption remains visible in the merchant inbox/read contract rather than accidentally blanking it. No fabricated content type or lost authored caption.
+
 ## Work Items
 
 - [ ] Implement only the bounded capability and document compatibility/rollout.
