@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T12:46:04Z
@@ -48,9 +48,9 @@ Allow null recommendation product URL only in PRODUCT_ONLY scope while retaining
 
 ## Work Items
 
-- [ ] Establish exact source/fixture cause and preserve a failing regression.
-- [ ] Implement only the owned correction.
-- [ ] Validate positive and failure/recovery behavior and report evidence.
+- [x] Establish exact source/fixture cause and preserve a failing regression.
+- [x] Implement only the owned correction.
+- [x] Validate positive and failure/recovery behavior and report evidence.
 
 ## Interfaces / Contracts
 
@@ -66,15 +66,15 @@ Developer integration and production verification after architect acceptance of 
 
 ## Acceptance Criteria
 
-- [ ] Requirements demonstrated with deterministic positive and negative regression tests.
-- [ ] Existing tenant, domain, message identity and lifecycle guarantees preserved.
-- [ ] No duplicate delivery, live test send, secret logging or unrelated changes.
-- [ ] Completion Report records canonical launcher packet, physical isolation, synchronization and recursive submodule evidence.
+- [x] Requirements demonstrated with deterministic positive and negative regression tests.
+- [x] Existing tenant, domain, message identity and lifecycle guarantees preserved.
+- [x] No duplicate delivery, live test send, secret logging or unrelated changes.
+- [x] Completion Report records canonical launcher packet, physical isolation, synchronization and recursive submodule evidence.
 
 ## Validation
 
-- [ ] Focused schema/render tests for null PRODUCT_ONLY link omission, mutation null rejection, unsafe/non-HTTPS/auth/port/offdomain rejection; full Shared suite, typecheck/build, packed installed public exports and immutable artifact hashes.
-- [ ] Exact changed-file scope and secret hygiene review.
+- [x] Focused schema/render tests for null PRODUCT_ONLY link omission, mutation null rejection, unsafe/non-HTTPS/auth/port/offdomain rejection; full Shared suite, typecheck/build, packed installed public exports and immutable artifact hashes.
+- [x] Exact changed-file scope and secret hygiene review.
 
 ## Stop Condition
 
@@ -88,35 +88,57 @@ You are not alone in the codebase. Preserve others' changes. Use the prepared de
 
 ### Status
 
-Not Started
+Ready for Review — implementation `bf642ea` pushed on `task/ARCH-070-SHARED-001`; PR https://github.com/kodjobaah/moda-interact-shared/pull/77. No merge or publication performed.
 
 ### Files Changed
 
-None
+- `src/commerce/presentation/schemas.ts`: discriminated recommendation scopes permit nullable URL only for PRODUCT_ONLY. Other scopes keep required safe URL; existing same-origin check skips only null.
+- `src/commerce/presentation/render.ts`: matching discriminated public type; omit only absent product-link line. Existing title, quantity, prices, terms and formatting remain unchanged.
+- `src/commerce/presentation/recommendation-url.test.ts`: source regression, canonical schema-to-preview body, all 20 locales, mixed linked/linkless recommendations, mutation null/undefined rejection, URL security negatives and valid mutation links.
+- `scripts/validate-commerce-outreach.mjs`: existing installed-public-package smoke additionally verifies nullable catalogue JS rendering/schema and strict-null declaration safety for actionable scopes.
+- `package.json`, `package-lock.json`: approved 5.13.3 metadata only; dependencies unchanged.
 
 ### Work Completed
 
-None
+Verified existing strict product URL schema rejected valid linkless catalogue products. Recorded two positive-test failures before implementation; mutation and safety negatives already passed. Implemented only catalogue presentation nullability and link omission. No fabricated URL, new identity source, stock/sale/image relaxation, provider work or customer send.
+
+Physical worktree isolation and prepared launcher evidence:
+
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-SHARED-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-SHARED-001`; both branch `task/ARCH-070-SHARED-001`.
+- Shared/default checkouts switched/mutated: no; another task worktree reused: no.
+- Parent and implementation remote task branch fast-forwards not needed; both origin/main already current.
+- Recursive submodule sync/update passed; no entries.
+- Durable claim `861ccee9c6a1ac0a32c296da190f1cdb4216268d`; implementation base `ea82023e831e77cd4c964df9a697ad17a9c1a1fb`.
 
 ### Validation Results
 
-Pending
+- Before fix: new focused file had 2 positive failures (expected string, received null), 3 passing negative checks.
+- Focused recommendation/presentation/image tests: 26 passed, 0 failed. Existing 60 multilingual golden recommendation outputs unchanged.
+- `npm run typecheck`: passed.
+- `npm test`: 722 total; 719 passed, 0 failed, 3 expected integration skips.
+- `npm run build`: ESM and declarations passed.
+- `node scripts/validate-commerce-outreach.mjs /tmp/modainteract-moda-interact-shared-5.13.3.tgz`: passed against installed exact immutable artifact; all public export targets present, nullable catalogue schema/preview accepted, both null actionable scopes rejected; strict-null declaration fixture rejects null mutation URL.
+- `npm run validate:commerce-presentation`: Node and browser-like public imports passed.
+- `npm run validate:commerce-entrypoints`: passed.
+- Changed-file scope and `git diff --check`: passed; no credentials/private payloads added.
+- Exact candidate `/tmp/modainteract-moda-interact-shared-5.13.3.tgz`; SHA256 `34b17b2fd6fd4ec2dc9043ee8d2e6cd5d77c804b3b9c58b0f91f1d25f3175b5e`; npm SHA1 `5d5de64a07a7a820bfff759153df2b6b7c70c9ee`; integrity `sha512-x2vu8tD4Vs9fzIGNLPc/4McxXsz96xiZjLUzaXUEvK2ShuU6RZcWP8N3nxmdc3rP3Qg/5PH+dyhp/9iw82WBWA==`.
 
 ### Deviations
 
-None
+Initial added installed smoke fixture had a duplicate schema import; corrected only that fixture and reran packed/export checks. No implementation source, build or full suite repetition after artifact packing. Scripts are excluded from packed files (confirmed zero scripts entries), and exact candidate hash remained unchanged.
 
 ### Assumptions
 
-Existing runtime evidence needs corroboration in source and fixtures.
+Background remains verified product evidence/lifecycle owner and must adopt the published nullable presentation contract in its separate dependent task. Mutation/actionable scopes remain nonnullable and same-shop verified.
 
 ### Unresolved Issues
 
-None known beyond investigation.
+Separate accepted-artifact publication and public downloadable-byte integrity verification are required before Background adoption. No production behavior or deployment verification claimed here.
 
 ### Architectural Concerns
 
-Return contract or schema gaps before implementing outside scope.
+None beyond the expressly approved nullable PRODUCT_ONLY contract extension. Other scopes and existing provider/tenant/message/lifecycle boundaries remain unchanged.
 
 ## Architect Review
 
