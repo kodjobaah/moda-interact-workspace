@@ -76,10 +76,12 @@ Historical privileged Admin branding was rejected by stable schema; the accepted
 | Task | State | Evidence |
 |---|---|---|
 | ARCH-073-BACKGROUND-001 | Complete | Accepted basic-name source, merged main and genuine production name capture verified; no manual backfill. |
-| ARCH-073-BACKGROUND-002 | In Progress | Text header final combined source awaiting review/CI. |
+| ARCH-073-BACKGROUND-002 | Complete | Accepted final combined text header, pending developer rollout verification. |
 | ARCH-073-BACKGROUND-003 | Complete | Accepted stable public asset source, merged source; production reports controlled CHANNEL_LOCKED without clearing known media. |
 | ARCH-073-SHARED-001 | Complete | Additive brand plan accepted and merged46834ef32a945606c92feade5924564ce325b326. |
 | ARCH-073-SHARED-002 | Complete | Public5.13.7 exact downloaded bytes match accepted artifact. |
-| ARCH-073-BACKGROUND-004 | Pending | Header acceptance/source merge required before preparation. |
+| ARCH-073-BACKGROUND-004 | Ready | All prerequisites accepted; actual source merge incorporated at preparation. |
 
 No live logo readiness/delivery is claimed. Logo-only role policy excludes cover/banner substitution; root awaits standalone approved asset. Existing JSON evidence and physical IMAGE transport appear sufficient, with current tenant/READY media final-fence verification and legacy exact replay mandatory. Implementation task must return a concrete persistence gap rather than invent schema or weaken provenance. Architecture stays In Progress until genuine text/header/logo-or-explicit-fallback validation and honest operational limitations are recorded.
+
+- Text header final source accepted at `b0216b1e52ce0d2619b84ca2298c31013dbe93a6`, review763ce2ebd. All logo consumer prerequisites are Complete. Prepare only after developer source merge is incorporated; final stored-plan consumer audit remains part of integrated review, not permission to weaken other services.
