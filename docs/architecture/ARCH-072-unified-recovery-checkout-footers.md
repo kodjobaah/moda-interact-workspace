@@ -56,3 +56,5 @@ Prior-code red human/terminal regressions, strict provenance/frozen replay/tampe
 No blocking design question. Specialist inventory must enumerate coverage before completion; routine eligible notice inclusion is authorized. Public records use synthetic examples/coarse outcomes only.
 
 - 2026-11-12: Read-only path review established AI guard, human dual provenance gates and terminal constant override; bounded unified recovery footer task defined.
+
+- Inventory amendment: audio/transcription fallback and oversized-current clarification also bypass wrappers. Include their caller/local admission signatures under the same capability, using only server-owned recovery-only preparation for unfrozen notices before preparation/moderation/fence. Resolve verified context outside transactions; preserve ordinary frozen AI/media/legacy permits and all exclusions. No additional task/Shared wire or schema change is authorized.
