@@ -1,7 +1,7 @@
 ---
 id: ARCH-070
 title: Verified recommendation evidence and terminal turn recovery
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
@@ -11,59 +11,61 @@ updated: 2026-11-12
 
 ## Status
 
-In Progress. Background retry correction is independently executing. Recommendation correction waits for Shared nullable PRODUCT_ONLY URL contract and exact publication. ARCH-069's verified product-details answer remains valid; this initiative addresses a later recommendation failure.
+Implemented. All eleven tasks are architect-accepted Complete. Final Shared and Background changes are merged and deployed. A genuine production recommendation response included a trusted recovery footer, was accepted by Meta, delivered and read. Public evidence is deliberately limited to coarse outcomes and source/release identities; detailed operational correlation remains outside source control.
 
 ## Problem
 
-Production inboundVersion 4 recommendation refreshed three candidates but rejected all as PRODUCT_REFRESH_NOT_VERIFIED, then MISSING_VERIFIED_PRODUCT_SELECTION / INVALID_FINAL with retryable false. Pending-turn repair nevertheless repeated processing every 30 seconds. Candidate verification and terminal repair eligibility are distinct defects and ownership scopes.
+Valid catalogue products without storefront URLs were rejected during recommendation refresh. Nonretryable answer failures were repeatedly resurrected by pending-turn repair, and eligible AI recovery replies lacked a guaranteed checkout footer. Subsequent validation identified semantic selection/provider-schema gaps and a strict referralReason envelope failure.
 
-## Goals
+## Goals and Non-Goals
 
-Accept legitimate provider-shaped refreshed product evidence while preserving tenant/domain checks. Stop repeated processing of a terminal failure for the same inbound version while admitting genuinely newer messages and preserving crash/transient recovery.
+Accept verified linkless PRODUCT_ONLY recommendations, durably finish terminal failures for the same inbound version, guarantee a trusted footer for eligible AI recovery replies, and align semantic selection/shipping evidence and provider guidance within existing bounded execution.
 
-## Non-Goals
+No automatic product selection, inferred identifiers/version fields, invalid-value coercion, additional repair loop, model/provider switching, consent/STOP change, schema migration, infrastructure change or processed-message replay is introduced.
 
-Relaxed verification, arbitrary model changes, schema/contract changes without owning tasks, new telemetry, infrastructure changes, reset/replay of processed messages and unrelated refactors.
+## Architecture and Contracts
 
-## Current Architecture
+Shared owns canonical semantic normalization, shipping-result qualification, finalResponse provider schema, strict validation and existing bounded runner repair. Background imports these published mechanics and retains tenant authorization, observations, fresh verification, budgets, ownership, composition and delivery. Final Background pins `@modainteract/moda-interact-shared@5.13.5` through existing public commerce/model/presentation exports.
 
-Background host refreshes and verifies recommendation products before final composition. Conversation processor classifies failures and pending repair scans durable pending turns. Existing correlated production logs establish the observed failure sequence; task owners must corroborate precise causes in actual code/fixtures before correction.
+Null product URLs are allowed only for PRODUCT_ONLY presentation. Basket actions retain required safe verified URLs. Nonnull domain/URL checks and missing, unavailable, malformed or mismatched product/variant rejection remain enforced. No link is fabricated.
 
-## Proposed Architecture
+The canonical semantic parser preserves valid independent dispositions and legitimate policy selections without changing structural optional-field schemas. Canonical pinned recommendation contracts require a valid version/list pair; custom pinned contracts retain supported-field behavior. Shipping alternatives after product observations require matching authorized current-turn evidence, followed by existing budgeted fresh provider/identity verification. Truthy placeholders or mismatched limitations cannot bypass product-selection requirements. Matched unavailable-policy limitations remain supported.
 
-Retain contracts and existing reusable Shared primitives. Correct evidence consumption in the host once actual MCP shape is established. Enforce a durable, inbound-version-scoped terminal failure condition consistently in processor and repair. If existing durable models cannot represent this correctly, return the dependency for a Database task rather than inventing unsafe process-local state.
+Provider referralReason declares explicit nullable-string type and the unchanged allowed enum. ANSWER requires actual JSON null; REFER_TO_STORE requires an allowed reason. Common guidance covers both existing forced correction paths. Strict validation, mandatory referral and step/deadline/token/correction limits remain unchanged.
 
 ## Request / Event Flow
 
-Inbound -> durable version/turn -> model/tools -> refreshed product evidence -> verified final response or classified failure -> repair only where durable state and retry policy permit.
+Authenticated inbound -> durable conversation version -> current-turn model/tools -> strict semantic/final validation and existing bounded correction -> fresh product/shipping verification -> eligible trusted footer -> media/length/provenance and final moderation/control gates -> Meta delivery -> durable status.
 
 ## Repository Responsibilities
 
-Background001 owns commerce host evidence composition. Background002 owns processor/repair lifecycle. Neither edits the other's modules. MCP, Shared and Database changes require separately defined tasks if investigation proves them necessary. Root/developer owns final merges/deployments and production checks.
+Shared owns and publishes reusable parser/qualifier/schema mechanics. Background's former local parser delegates to the published implementation and retains domain/tenant/evidence policy. The coordinating developer owns final merges, runtime rollout and genuine production verification. No duplicate generic logger or telemetry mechanism was added.
 
-## Data Model / Consistency / Ordering
+## Data Model, Consistency and Ordering
 
-No schema migration currently authorized. Preserve existing transactions, leases, deduplication and concurrency. Terminal eligibility is scoped to the exact inbound version; a newer version remains eligible. Never mark a failed old version as delivered or reset processed input to test.
+No migration, queue payload or uniqueness contract changed. Typed nonretryable failures before provider send complete only the owned inbound version after confirmed reservation cleanup. Existing version/control-revision CAS protects newer input and takeover changes. Unknown/retryable failures, cleanup/commit failures and uncertain provider sends remain recoverable. Repair SQL and crash/transient recovery remain intact.
 
-## Contracts / Security
+## Recovery Footer and Security
 
-Published Shared contracts and MCP evidence remain canonical. Cross-shop/domain/product/variant mismatch and malformed evidence fail closed. No credentials or unnecessary customer payloads in committed evidence.
+Existing recovery context checks tenant/customer, status/lifetime and trusted HTTPS shop domain. Eligible AI replies receive that context's checkout URL before final limits, media planning and delivery hashes. Standalone raw trusted links are canonicalized at the end while authored labels and embedded Markdown/prose are preserved. Plain, details, recommendation, wrapped/unwrapped and image-caption paths are covered; long captions fall back to complete text. Trusted augmentation is bound into provenance. Previously prepared applications replay immutably.
 
-## Failure Handling
+Human/manual and STOP/consent/security/blocked flows are outside this augmentation. No new consent grant or purchase action is inferred. Recovery URLs, recipient details, private prompts, raw payloads and operational/customer/provider identifiers are excluded from committed evidence.
 
-Nonretryable failures must not trigger periodic repeated model/tool work. Retryable failures and worker crash recovery remain bounded and recoverable. No blanket skipping of pending conversations.
+## Failure Handling and Scalability
 
-## Scalability
+Terminal failures no longer amplify model/tool work for the same inbound version. Newer input remains eligible. Selection/envelope correction uses only the existing bounded mechanism; exhaustion fails closed. No additional hot-path database/provider reads or broad serialization were introduced. No increased capacity claim is made.
 
-Remove retry amplification on terminal turns without adding per-message provider calls or broad serialization. No capacity claim is made.
+## Observability and Infrastructure Assessment
 
-## Observability / Infrastructure Assessment
-
-Existing turn, model, tool and repair events suffice; no telemetry implementation or Gateway task is required. No topology/env changes. Record production environment identity and correlation in bounded evidence.
+Existing shared structured logs correlate model, turn, composition and provider outcomes. New selection-shape diagnostics use bounded enums, booleans and capped counts, without arbitrary coercion or model prose. No new logging transport, generic telemetry, Gateway task, environment variable or topology change is required. Production observations remain distinct from local fixtures and synthetic probes.
 
 ## Rollout / Migration
 
-PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer integrates both Background commits, runs CI and deploys. No queue drain or schema migration planned. No automatic replay. Verify new genuine customer request after rollout, provider acceptance and durable delivery; separately verify repair stops on the same terminal version.
+PRODUCTION / COMPATIBLE ROLLOUT: accepted Shared implementation -> exact immutable public release/download verification -> accepted consumer -> developer merge/deploy -> genuine production verification. No queue drain or database migration. Rollback changes code/package revisions without rewriting processed input or delivered messages.
+
+Final Shared merge is `596eaa455f9b6eb72f316c76c1c7a4657faa1f60` (PR79). Final Background merge is `bada81e6a1a74add0c124de6c60eb72114c04e46` (PR204), retaining earlier accepted fixes. Developer updated final parent gitlinks in `a7e7a3c59`; unrelated workspace changes were excluded.
+
+The accepted public 5.13.5 artifact was published once after explicit user permission. Canonical metadata and actual downloaded bytes matched SHA256 `71118ab02b14ffb36659a8cc6ba5caa91055bb8f3da48a23b3c731c7366ba6ed`. Publication reused the validated artifact without rebuilding or repeating implementation checks. Earlier approval rejection caused no publication and was resolved through explicit approval and canonical task resumption.
 
 ## Decisions / Tasks
 
@@ -74,91 +76,35 @@ PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer inte
 | ARCH-070-BACKGROUND-001 | moda_background | Complete | ARCH-070-SHARED-002 |
 | ARCH-070-BACKGROUND-002 | moda_background | Complete | None |
 | ARCH-070-BACKGROUND-003 | moda_background | Complete | None |
-
-## System Validation
-
-No separate terminal system-test task is currently necessary for this bounded correction: deterministic host fixtures, lifecycle/repeated-repair and relevant PostgreSQL tests plus developer-owned production observation cover the affected paths. Reassess if cross-service/schema changes become required. Architecture remains In Progress until production verification is recorded.
-
-## Open Questions
-
-Exact valid refreshed product evidence mismatch and exact existing durable terminal representation must be established by owning investigators.
-
-## Change History
-
-- 2026-11-12: Split recommendation evidence and terminal retry amplification into disjoint independently reviewable Background tasks.
-
-- 2026-11-12 dependency amendment: valid ACTIVE available catalogue products have null onlineStoreUrl; MCP permits this but Shared schema/render and Background refresh reject it. Shared5.13.3 adds nullable URL only PRODUCT_ONLY with link omission; mutations/non-null URL checks unchanged. Shared acceptance -> exact publication -> Background exact-version adoption. Retry task ships independently to stop terminal amplification.
-
-- 2026-11-12 user amendment: BACKGROUND-003 independently owns deterministic trusted recovery checkout footer across eligible AI reply formats before final controls/media/hash. Reuse existing recovery context; do not rely on model or mutable wrapper content. Nonrecovery/STOP/blocked/security paths remain excluded; no host/processor overlap.
-
-## Accepted Releases and Production Retry Verification
-
-Shared001 Accepted/Complete implementation bf642ea, developer merged `72203015aa7daec41ed4aa76d13c11d7309b10a4`. Shared002 Accepted/Complete: canonical public5.13.3 metadata and506885 tarball bytes independently downloaded with SHA256 `34b17b2fd6fd4ec2dc9043ee8d2e6cd5d77c804b3b9c58b0f91f1d25f3175b5e`. Background001 resumed attempt2 on current main after publication. Shared validation719 pass/3 expected skips and focused26, types/build/installed exports passed.
-
-Background002 Accepted/Complete at45170903 with130 focused tests, both fullCI3,951 tests and5 disposable PostgreSQL/Redis repair scenarios. Root/developer merged `1afff14201c3f55a7f6745686e16abf3090499da` and observed production deployment `dep-dbqrj20473hc738ctce0` Live. At13:07:24.906Z, worker logged terminal_failure for conversation `cmwcxdt0o0009kp164raxldna`, inboundVersion5, INVALID_FINAL. Repair passes13:07:43/13:08:13/13:08:43 all scanned0/requeued0; the older instance also observed zero after durable closure. Read-only production state at13:09:29.665Z confirmed inboundVersion5 equals lastProcessedVersion5, pending/processing fields null, AI control revision0. No manual DB/queue writes or input replay were performed. These correlated observations verify terminal retry suppression, not recommendation/footer correctness, which remain pending.
-
-Footer clarification: canonicalize standalone exact raw trusted checkout URLs; preserve embedded Markdown/prose and append the required footer. This is eligible AI recovery composition only, excluding human/manual and STOP/consent/security/blocked paths. Existing prepared delivery replay remains immutable. Architecture remains In Progress pending both remaining task acceptances, final integration and fresh production recommendation/footer proof.
-
-- Background003 Accepted/Complete b3b86c6: eligible AI recovery footer validated75 focused/2 disposable PostgreSQL tests, types/scoped lint and both exact-head full CI. Developer merge, combined recommendation integration and genuine production footer proof remain pending.
-
-- Background001 Accepted/Complete Attempt2 at91f880e, with merged retry/footer ancestors. Exact public5.13.3 artifact, host90/focused57/typecheck/scoped lint and both combined CI pass. All five tasks now Accepted/Complete. Developer final merges/gitlinks and genuine production recommendation/footer verification remain pending; architecture is not yet Implemented.
-
-## Final Runtime Integration and Rollout
-
-Developer merged Shared PR77 at `72203015aa7daec41ed4aa76d13c11d7309b10a4`, Background retry PR200 at `1afff14201c3f55a7f6745686e16abf3090499da`, footer PR201 at `04317ce74b79192d0ce909de5edc0d1265e47b5c`, and combined recommendation PR202 at `244304adea723bcc18854e4f1bffcc25571d3346`. Parent gitlinks were reconciled to final Shared/Background merges in `35f20728f80ad7161b1a849d8e6cebd4ac999bc3`; unrelated primary-workspace changes were excluded.
-
-Root/developer observed final production messaging worker deployment `dep-dbqrunrrjlhs738a5to0` Live on Background244304ad. Current instance started at13:32:24.712Z; prior footer-only instance terminated at13:34:15Z. Current-instance repair passes13:34:24/54 and13:35:24/54 all scanned0/requeued0. These observations establish final code rollout and continued absence of terminal retry amplification. A fresh genuine WhatsApp recommendation question, verified product response, trusted checkout footer and Meta/durable delivery remain pending. Architecture therefore remains In Progress.
-
-## Fresh Production Validation — Incomplete
-
-A genuine new inboundVersion6 at13:38:29Z (`cmwdlfp570001rf16ifuk2wcq`) asked “what other things do you sell”. On final deployed244304ad, two product searches succeeded and the third model step returned ANSWER. At13:38:49.622Z, composition recorded valid selection syntax but no product proposals (`MODEL_SELECTED_NO_RECOMMENDATIONS`, refresh plan0), then refused `MISSING_VERIFIED_PRODUCT_SELECTION`. Typed INVALID_FINAL was durably completed as terminal at13:38:49.710Z; subsequent repair passes remained zero.
-
-This does not validate the null-URL gate or successful recommendation/footer delivery: no products reached refresh because the model omitted structured selections. Existing accepted null-URL, footer and terminal-retry changes remain independently tested. Root is inspecting the actual final response/runner contract read-only before defining another bounded correction; no product selection may be invented or tenant/evidence checks bypassed. Architecture stays In Progress and parent PR985 remains draft. Final customer-facing recommendation/footer success is not claimed.
-
-## Semantic Selection Contract Amendment
-
-Provider-free proofs establish two independently reproducible gaps: schema-valid nonempty productRecommendations without matching version is considered selected by runner but dropped by host; truthy null/null shipping without meaningful disposition similarly bypasses repair and is discarded. Historical exact production version6 final shape remains unconfirmed. Shared003 owns one canonical normalization/eligibility implementation and aligns the existing bounded runner repair, Shared004 publishes accepted5.13.4, Background004 adopts that helper and bounded shape-only diagnostics. No guessed IDs/version, automatic product choice or extra queue/model retry loop is authorized. Existing accepted tasks remain Complete; architecture remains In Progress.
-
-| Task | Owner | Status | Dependencies |
-|---|---|---|---|
 | ARCH-070-SHARED-003 | moda_shared | Complete | ARCH-070-SHARED-002 |
 | ARCH-070-SHARED-004 | moda_shared | Complete | ARCH-070-SHARED-003 |
 | ARCH-070-BACKGROUND-004 | moda_background | Complete | ARCH-070-SHARED-004 |
-
-- Runtime evidence amendment: canonical static shipping selection remains valid with recognized disposition, but runner bypass/forced repair alternatives require matching successful authorized current-turn shipping observation. Host missing-selection guard uses actual verified shipping presentation, not raw truthy model selection. Search-only/failed/mismatched observations do not qualify. Shared003/BG004 positive observed shipping and negative unobserved shipping tests required; existing one-repair limits unchanged.
-
-- Shipping qualifier precision: truthy rendered limitation alone does not establish evidence. Shared003 owns canonical recognized-result/provider/selection identity qualification, reused by runner and Background004 fresh-output gate (expected provider where known). With product observations, disposition-only SHIPPING_INFORMATION_UNVERIFIED also requires that evidence; matched null/null NOT_REQUESTED policy-unavailable limitations and shipping-only/no-product paths remain truthful and compatible. No extra reads or repair loop.
-
-- Shared003 Accepted/Complete8390849;154 focused/736 full pass3skip/types/build/installed immutable exports pass. Exact5.13.4 artifact accepted; publication004 Ready after developer merge. Historical raw cause and production success remain unclaimed.
-
-- Shared004 Accepted/Complete: exact canonical5.13.4 metadata and511919-byte tarball independently verified SHA256fcf2cc8d78c327b85a6de777541ea5ba53b659079234e790aec3d0fd97b47693. Background004 promoted Ready; production success remains pending.
-
-- Developer merged semantic Shared PR78 at6cf830f9e5ba9692acd33032af0e6a2c8b5929d3. Publication004 Accepted/Complete7faba15f3; public exact5.13.4 metadata/download bytes match immutable candidate. Background004 prepared claim e00e9bc749c61b9fcb9d42f965ad524a0c212df6 on current244304ad, now executing. No fresh production recommendation success claimed.
-
-- Background004 Accepted/Complete a80afe5c8ef95a15bfe5e0486eaf79e3ae12aa9c, reviewdd113e412: exact published5.13.4 canonical parser/qualified shipping evidence adoption,106host/62focused/types/scoped lint and both full CI3,985 tests/368files pass. All eight tasks now accepted; final developer semantic merge/gitlinks/deployment and genuine new production recommendation/footer verification remain pending.
-
-## Semantic Rollout and Fresh Version7 Validation — Incomplete
-
-Developer merged Background PR203 at `b0924473edfe1143a402ed0756dcd55a15da0240`; final parent Shared6cf830f9/Backgroundb092447 gitlinks were committed in `3ad8d17f7`. Production Render deploy `dep-dbqt2me7bikc738atjug` went Live in2m8s; instance zq549 started14:49:07.552Z, old tqmkj terminated14:50:57Z. New-instance repair passes14:51:07/37 remained zero.
-
-Genuine inboundVersion7 `cmwdobgjr0003n01642b6lgca` arrived14:59:10.553Z. On the new deployed code, product search succeeded and existing `MISSING_PRODUCT_SELECTION_REPAIR` correctly entered forced finalResponse. The530-token correction failed final schema validation at14:59:32.258Z: `FINAL_SCHEMA_INVALID`, issueCount1, invalid_value path `referralReason`. The exact raw invalid value is not known and is not inferred. Placeholder `cmwdobk3o0005n016dqb7kzxy` is FAILED with no Meta message ID; no Meta send or checkout-footer delivery proof occurred. Job completed attempt1, and read-only durable state confirmed inboundVersion7 equals lastProcessedVersion7 with pending fields null; terminal suppression remains effective. Historical failed placeholder count75 is diagnostic history, not a new success claim.
-
-The existing semantic selection repair was exercised, but customer-facing recommendation/footer success remains unverified because the corrected final envelope was invalid. Root and Shared owner are investigating read-only; no additional task, source mutation or guessed-value coercion is authorized yet. Architecture remains In Progress and PR985 draft.
-
-## Referral Provider Contract Amendment
-
-User authorized fixing referralReason and repeating tested/reviewed deployment. Shared005 makes provider nullable-string schema and common forced-finalization guidance explicit while preserving strict validator and the existing one-correction budget. A wholly synthetic provider conformance probe with anonymous pinned schema is required before publication; no private customer context exported. Shared006 publishes exact accepted5.13.5, Background005 consumes it with actual runner-host regressions. No invalid-value coercion or historical-value assumption. Existing eight tasks remain accepted; production success pending.
-
-| Task | Owner | Status | Dependencies |
-|---|---|---|---|
 | ARCH-070-SHARED-005 | moda_shared | Complete | ARCH-070-SHARED-004 |
 | ARCH-070-SHARED-006 | moda_shared | Complete | ARCH-070-SHARED-005 |
 | ARCH-070-BACKGROUND-005 | moda_background | Complete | ARCH-070-SHARED-006 |
 
-- Shared005 Accepted/Complete7b5c4a6;112focused/743fullpass3skip/types/build/installed exports and coordinator final-built synthetic provider conformance all passed. Exact5.13.5 artifact accepted SHA25671118ab02b14ffb36659a8cc6ba5caa91055bb8f3da48a23b3c731c7366ba6ed; publication006 Ready after merge. Historical raw invalid value and production success remain unclaimed.
+## Validation
 
-- Shared006 Accepted/Complete Attempt2; explicit public approval resolved attempt1 no-execution denial. Exact canonical5.13.5 metadata/513250 downloaded bytes independently match accepted hash71118ab0. Background005 Ready; no new live success claimed.
+Task reports retain exact commands, reviewed heads and launcher isolation/synchronization evidence. Final Shared checks passed 112 focused tests, 743 full tests with three expected integration skips, types, ESM/declarations build and installed immutable public exports. A coordinator-run real-provider probe used wholly synthetic context/products and the final built client/correction nodes; strict JSON-null ANSWER and exact synthetic selections passed without customer context, commerce reads, DB writes or Meta sends.
 
-- Referral release accepted: Shared005 merged596eaa455f9b6eb72f316c76c1c7a4657faa1f60; Shared006 Accepted/Complete Attempt2 after explicit public approval and exact canonical5.13.5 byte verification. Background005 prepared claim6529906718445151787930db4c361bdf6fd2a857 on b0924473, executing actual published runner-host regression/adoption. Architecture remains In Progress; no new production answer proof.
+Final Background passed 113 host and 211 footer/control/dependency tests, types/scoped lint and both exact-head full CI runs (3985 tests across 368 files). Earlier disposable PostgreSQL/Redis proofs covered terminal completion, repeated repair, newer inbound and trusted wrapper context. Four untouched pre-existing full-lint unused declarations remain documented; no unrelated cleanup or full-lint success is claimed.
 
-- Background005 Accepted/Complete f3136566124fe681fbc141b5833a6fabfa42ec46/reviewd654b3e02:113host/211footer-control-dependency tests, types/scoped lint and both final CI3,985 tests/368files pass. All eleven tasks accepted; actual final developer merge/gitlinks/deployment and fresh recommendation/footer/Meta proof remain pending.
+No separate system-test task is applicable to this bounded correction. Deterministic published-package/host/wrapper checks, disposable lifecycle proofs, synthetic provider conformance and genuine production verification cover the affected boundaries; no unrun terminal task is implied.
+
+## Integrated Production Verification
+
+The coordinator confirmed the final source revision Live and the prior worker drained before requesting a genuinely new customer test. The new request exercised one bounded selection correction and completed ANSWER. Three selected products passed fresh verification and composition was ready. The outbound catalogue prose referenced five items; the evidence establishes three freshly verified selected recommendations.
+
+The actual delivered body ended with the exact active trusted recovery URL. Meta returned HTTP200/HTTP_ACCEPTED; durable status progressed to delivered and read. The turn completed on its first job attempt, processed version caught up, pending/processing state cleared, and the historical failure count did not increase. No spoofed input, manual queue/database mutation or processed-version replay was used.
+
+The trusted link was also checked read-only without submitting an order. The development store redirects unauthenticated access to its existing password page. Footer/link identity and delivery are verified; direct unauthenticated checkout access and payment completion were not validated. No store password was disabled or changed.
+
+## Evidence Limits and Open Questions
+
+None blocking. Earlier exact raw model values remain unknown; deterministic semantic gaps were reproduced independently, and later strict referral validation failure was observed without inferring its raw value. Synthetic conformance is not represented as production proof. Successful genuine recommendation/footer delivery and read receipt close this architecture's acceptance gate; the existing development-store password gate remains a transparent access limitation.
+
+## Change History
+
+- 2026-11-12: Defined bounded catalogue evidence, terminal recovery and eligible AI footer tasks.
+- 2026-11-12: Added canonical semantic/shipping qualification and strict referral provider guidance through separately accepted releases/consumers.
+- 2026-11-12: All eleven tasks accepted; final genuine production recommendation/footer delivery and read receipt verified. Architecture marked Implemented with redacted public evidence and password-gate qualification.
