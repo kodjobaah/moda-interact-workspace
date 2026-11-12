@@ -61,6 +61,10 @@ Stable tokenless Storefront asset acquisition is accepted separately; current de
 
 Developer merged header source at ce39ca00723a98f36751547a9acb33fcab6ee368. Root read-only audits found API/Admin/Shopify inboxes do not strict-parse the stored plan; Commerce preview's legacy parser is a separate path not fed this Background JSON. Do not expand other repositories unless an actual exposed dependency is found. Distinguish physical providerDispatchDeliveryKind IMAGE from ConversationMessage.contentType: preserve existing product-image caption record semantics, because the API maps contentType IMAGE to null text. Regression must prove new brand caption remains visible in the merchant inbox/read contract rather than accidentally blanking it. No fabricated content type or lost authored caption.
 
+### Restart receipt envelope clarification
+
+For new BRAND_IMAGE only, existing outboundPresentation JSON may persist a strict Background-local versioned envelope containing validated plan, original control/inbound/tenant/message receipt and canonical planDigest. Capture original ownership receipt before fresh media preparation; restart must rehydrate that same receipt, never recapture current ownership to make stale work eligible. Validate schema/unknown fields/digest/body/tenant/message/version/control consistency; malformed, missing or mutated proof refuses safely. Legacy raw TEXT/product IMAGE JSON and frozen commands remain unchanged byte-for-byte. HUMAN command's existing expected revision/identity remains authoritative; optional persisted plan must bind it. No premature provider-dispatch column writes, new schema or new Shared envelope contract. Root audited API/Admin readers as opaque, so no outside consumer change is needed for this private carrier.
+
 ## Work Items
 
 - [ ] Implement only the bounded capability and document compatibility/rollout.
