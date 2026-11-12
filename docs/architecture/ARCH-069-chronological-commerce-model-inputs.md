@@ -86,8 +86,8 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared implementation acceptance -> exact packa
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-069-SHARED-001 | moda_shared | Complete | None |
-| ARCH-069-SHARED-002 | moda_shared | Ready | ARCH-069-SHARED-001 |
-| ARCH-069-BACKGROUND-001 | moda_background | Pending | ARCH-069-SHARED-002 |
+| ARCH-069-SHARED-002 | moda_shared | Complete | ARCH-069-SHARED-001 |
+| ARCH-069-BACKGROUND-001 | moda_background | Ready | ARCH-069-SHARED-002 |
 
 ## System Validation
 
@@ -102,3 +102,5 @@ Does the paired real-model request probe reproduce the indicator, and does chron
 - 2026-11-12: Defined bounded ordering, exact-artifact publication and consumer tasks from inspected serializer behavior and production trace.
 
 - 2026-11-12 review: Shared001 Accepted/Complete at8fefac2; publication Ready, Background Pending. Paired anonymized probes establish improved current-turn intent, not deterministic marker causality. Production customer answer remains pending.
+
+- 2026-11-12 publication review: Shared002 Accepted/Complete from exact public registry metadata/integrity and publish receipt; Background Ready with mandatory actual public-registry install/CI integrity gate. Transient tarballCDN404 is not represented as verified deployment availability.
