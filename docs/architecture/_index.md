@@ -1058,3 +1058,10 @@ Eight implementation/publication tasks independently Accepted/Complete; terminal
 Implemented. All three tasks are Accepted/Complete. Shared 5.13.2 artifact verification and both full Background CI runs passed. Production deployed Background merge `4ab78673`; a fresh snowboard question invoked the product tool and received verified details, Meta acceptance, delivery and a read receipt at 12:27:47Z on 2026-11-12. The user screenshot confirmed the image and factual caption. Existing contracts, trust boundaries and delivery semantics remain unchanged; no schema or infrastructure changes. Deterministic marker-specific causality is not claimed.
 
 [Architecture](ARCH-069-chronological-commerce-model-inputs.md) · [Shared tasks](../decisions/shared/ARCH-069/_index.md) · [Background task](../decisions/background/ARCH-069/_index.md)
+
+
+## ARCH-070 — Verified recommendation evidence and terminal turn recovery
+
+In Progress. Background001 and002 Ready on disjoint host and processor/repair modules. Preserve domain verification and durable version-scoped terminal eligibility. No schema or infrastructure change authorized.
+
+[Architecture](ARCH-070-verified-recommendation-terminal-turn-recovery.md) · [Tasks](../decisions/background/ARCH-070/_index.md)
