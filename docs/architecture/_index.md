@@ -1078,4 +1078,4 @@ In Progress. Background-owned footer/divider coverage extends to human and eligi
 
 [Architecture](ARCH-072-unified-recovery-checkout-footers.md) · [Background task](../decisions/background/ARCH-072/_index.md)
 
-- [ARCH-073: Tenant-specific recovery shop headers](ARCH-073-tenant-recovery-shop-headers.md) — In Progress.
+- [ARCH-073: Tenant-specific recovery shop headers and optional logos](ARCH-073-tenant-recovery-shop-headers.md) — Implemented; genuine authorized image delivery/read verified.
