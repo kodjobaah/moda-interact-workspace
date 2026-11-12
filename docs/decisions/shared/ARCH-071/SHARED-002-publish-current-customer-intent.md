@@ -14,7 +14,7 @@ priority: 10
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: 
+depends_on:
   - ARCH-071-SHARED-001
 enables: []
 created: 2026-11-12
