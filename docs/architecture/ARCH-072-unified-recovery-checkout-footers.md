@@ -64,3 +64,5 @@ No blocking design question. Specialist inventory must enumerate coverage before
 - Source accepted: Background `490fb8dc4f40103e90d262c76a285a0cae8dff2e`; focused checks, real PostgreSQL identity/race coverage and both clean exact-head CI passed. Developer merge/deployment and genuine production proof remain pending.
 
 - Developer merged Background PR206 to implementation main at `ae43e0b3f1fa660813f762c32602fb268e1e7c4a`. Parent integration now pins that actual merge. Deployment, old-worker drain and genuine production verification remain pending; architecture stays In Progress.
+
+- Production rollout verified by developer: accepted Background merge is Live, replacement messaging worker is healthy, and prior worker termination/drain is confirmed. Genuine new HUMAN reply footer and Meta delivery verification remain pending; architecture stays In Progress. No historical message replay is required.
