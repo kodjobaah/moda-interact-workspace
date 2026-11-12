@@ -52,8 +52,8 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared additive implementation acceptance -> ex
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-071-SHARED-001 | moda_shared | Complete | None |
-| ARCH-071-SHARED-002 | moda_shared | Ready | ARCH-071-SHARED-001 and explicit public-release approval |
-| ARCH-071-BACKGROUND-001 | moda_background | Pending | ARCH-071-SHARED-002 |
+| ARCH-071-SHARED-002 | moda_shared | Complete | ARCH-071-SHARED-001 and explicit public-release approval |
+| ARCH-071-BACKGROUND-001 | moda_background | Ready | ARCH-071-SHARED-002 |
 
 ## Validation and Completion Gate
 
@@ -76,3 +76,5 @@ No blocking design question; root approved exact role/content shape, existing32k
 Root approved separating the explicit current-customer carrier/named-switch correction from a general semantic ambiguity resolver. Deterministic schema/provenance/order/authority tests pass, and frozen-provider exact-name and typo cases select the appropriate new subject through authorized reads. Two underspecified multiple-candidate samples still selected a candidate without clarification; both remain failed empirical samples, with no historical-reasoning claim. A deterministic ambiguity boundary would require a separately designed identity-resolution or explicit-choice contract, including presentation/ordinal/naming semantics. That mechanism and restrictive UX were not requested and are not silently added. Current generic guidance stays without more prompt churn. Acceptance covers carrier/named-switch behavior; final communication must disclose the ambiguity limitation.
 
 - Shared001 Accepted/Complete17fcced under documented carrier/named-switch scope;755pass3skip/types/build/installed exports and exact/typo/harder synthetic switch pass. Both ambiguous samples remain failed/non-guaranteed. User explicitly approved concrete public5.13.6 release; publication002 Ready after developer merge, exact artifact only. Background/prod verification remain pending.
+
+- Publication002 Accepted/Complete: explicit authorization/sole canonical receipt and actual517461-byte public5.13.6 download independently match accepted fbe8e97a hash. Background001 Ready; publication does not establish live improvement or resolve known semantic ambiguity.

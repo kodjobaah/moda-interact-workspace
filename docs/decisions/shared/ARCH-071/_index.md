@@ -7,4 +7,4 @@ Coordinator: moda_architect
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | ARCH-071-SHARED-001 | Explicit current customer intent | Complete | None |
-| ARCH-071-SHARED-002 | Exact approved publication | Ready | ARCH-071-SHARED-001 |
+| ARCH-071-SHARED-002 | Exact approved publication | Complete | ARCH-071-SHARED-001 |
