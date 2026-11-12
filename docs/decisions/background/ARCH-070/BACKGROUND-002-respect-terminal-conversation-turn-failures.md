@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T12:40:04Z
@@ -48,9 +48,9 @@ Persist or derive a durable version-scoped terminal condition using existing sta
 
 ## Work Items
 
-- [ ] Establish exact source/fixture cause and preserve a failing regression.
-- [ ] Implement only the owned correction.
-- [ ] Validate positive and failure/recovery behavior and report evidence.
+- [x] Establish exact source/fixture cause and preserve a failing regression.
+- [x] Implement only the owned correction.
+- [x] Validate positive and failure/recovery behavior and report evidence.
 
 ## Interfaces / Contracts
 
@@ -66,15 +66,15 @@ Developer integration and production verification after architect acceptance of 
 
 ## Acceptance Criteria
 
-- [ ] Requirements demonstrated with deterministic positive and negative regression tests.
-- [ ] Existing tenant, domain, message identity and lifecycle guarantees preserved.
-- [ ] No duplicate delivery, live test send, secret logging or unrelated changes.
-- [ ] Completion Report records canonical launcher packet, physical isolation, synchronization and recursive submodule evidence.
+- [x] Requirements demonstrated with deterministic positive and negative regression tests.
+- [x] Existing tenant, domain, message identity and lifecycle guarantees preserved.
+- [x] No duplicate delivery, live test send, secret logging or unrelated changes.
+- [x] Completion Report records canonical launcher packet, physical isolation, synchronization and recursive submodule evidence.
 
 ## Validation
 
-- [ ] Deterministic repeated repair cycles after nonretryable failure cause no new model/tool/send; newer inbound progresses; retryable failure and crash recovery regressions; relevant PostgreSQL lifecycle tests if durable state is changed, typecheck, lint and required repository CI.
-- [ ] Diff hygiene and exact changed-file scope review.
+- [x] Deterministic repeated repair cycles after nonretryable failure cause no new model/tool/send; newer inbound progresses; retryable failure and crash recovery regressions; relevant PostgreSQL lifecycle tests if durable state is changed, typecheck, lint and required repository CI.
+- [x] Diff hygiene and exact changed-file scope review.
 
 ## Stop Condition
 
@@ -88,35 +88,59 @@ You are not alone in the codebase. Preserve others' changes. Use the prepared de
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/services/conversation-turn-processor.service.ts`
+- `tests/unit/services/conversation-turn-processor.service.test.ts`
+- `tests/unit/services/conversation-turn-processor/terminal-failure.cases.ts`
+- `tests/integration/arch054-pending-turn-repair.integration.test.ts`
 
 ### Work Completed
 
-None
+- Confirmed the catch path always released the lease and threw without consuming a nonretryable Commerce host failure; pending repair therefore reselected the same durable inbound version.
+- Confirmed the production admission helper already calls reservation cleanup before rethrowing agent failures. Added a separate successful-cleanup flag rather than treating an attempted cleanup as success.
+- Only typed `CommerceHostError` failures with `retryable === false`, no provider-send attempt, and confirmed reservation cleanup consume the owned version using existing `completeOwnedTurn()` CAS semantics.
+- Newer inbound versions remain pending and are enqueued; control-revision changes suppress only the old owned turn. Cleanup/completion failures, untyped/unknown errors, transient errors and uncertain provider delivery still release and throw for existing recovery.
+- Reused existing durable conversation fields; no repair SQL, queue, database schema, Shared dependency, provider, credential or customer-send change.
 
 ### Validation Results
 
-Pending
+- Regression proof against original processor: five new terminal/CAS cases failed, 69 passed. Restoring the fix made all cases green.
+- Focused unit command: `npx vitest run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/conversation-ai-delay/pending-turn-repair.test.ts tests/unit/services/conversation.service.test.ts tests/unit/workers/whatsapp.worker.test.ts` — 130 passed.
+- `npx tsc --noEmit` and focused ESLint on all four changed files — passed. `git diff --check` — passed.
+- Disposable PostgreSQL/Redis: `node scripts/test-integration.mjs tests/integration/arch054-pending-turn-repair.integration.test.ts --reporter=verbose` — five passed, 22.98s. The new actual-processor/real-admission-helper proof completed in 1013ms: terminal version 9 clears pending state, two later repair passes scan/requeue zero, no provider send occurs, and a new durable inbound version 10 is processed. Existing 10,000-row/stale-lease, concurrent replica/restart, retained transient failure and enqueue-failure/deadline recovery proofs also passed. Disposable infrastructure was removed by the runner.
+- Full repository CI at `451709030abdc92b32b5c1c40fd17aec2f067972`: 3,951 tests / 367 files passed in both push and PR checks: https://github.com/kodjobaah/moda-interact-background/actions/runs/43222332413/job/131196697503 and https://github.com/kodjobaah/moda-interact-background/actions/runs/43222491125/job/131197242757.
 
 ### Deviations
 
-None
+- The initial combined disposable run including the broader existing `conversation-turn-scheduling.integration.test.ts` stalled in that file's fixtures without reporting a result. Its known Vitest child was terminated, and its wrapper cleaned up the disposable infrastructure. The required repair suite then passed in isolation; no claim is made that the broader scheduling run passed.
+- Initial disposable command lacked Docker on its process PATH. The already-installed `/usr/local/bin/docker` was verified and made available only in the validation process; no software or machine configuration was changed.
 
 ### Assumptions
 
-Existing runtime evidence needs corroboration in source and fixtures.
+The typed Commerce host retryability contract is authoritative only before any provider-send attempt; arbitrary error properties do not terminally consume a turn.
 
 ### Unresolved Issues
 
-None known beyond investigation.
+No runtime issue remains in this task's scope. The broader scheduling run described above has no result; the terminal repair suite and repository CI passed. Production verification and final merge remain developer-owned.
 
 ### Architectural Concerns
 
-Return contract or schema gaps before implementing outside scope.
+No new contract or schema dependency was required. Recommendation verification remains the separately owned BACKGROUND-001 task.
+
+### Git / VCS
+
+- Task branch in both repositories: `task/ARCH-070-BACKGROUND-002`.
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-BACKGROUND-002`.
+- Prepared packet: `/tmp/moda-arch070-bg002-prepare.json`; attempt 1, executor codex, durable parent claim `2eab9a419d8b1969a9c01a3cc80323775cd099af` pushed by the launcher.
+- Parent worktree reused; implementation worktree created. Both remote task fast-forwards were not needed; both origin/main histories were already current. Recursive submodule sync/init/update passed, database at `5329d5390d346042895219663f3a040ea54ae168`.
+- Shared/default workspace and implementation checkouts were not switched or mutated; no other task worktree reused.
+- Implementation commit `451709030abdc92b32b5c1c40fd17aec2f067972` pushed to origin/task/ARCH-070-BACKGROUND-002; PR https://github.com/kodjobaah/moda-interact-background/pull/200.
+- Parent publication: this task file only on the mirrored branch. No submodule gitlink staged. No implementation or workspace main merge performed by this agent.
 
 ## Architect Review
 
