@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 1
+executor: codex
+claimed_at: 2026-11-12T13:11:58Z
+attempt: 2
 depends_on:
   - ARCH-070-SHARED-002
 enables: []
@@ -127,7 +127,7 @@ Pending
 
 ### Review Notes
 
-Architectural dependency discovered before implementation: Shared schema/render requires URL. Claim cleared; task Pending until Shared001 acceptance and Shared002 publication. Preserve attempt1; next prepared claim increments once. Pin published5.13.3 and accept null URL only PRODUCT_ONLY; mutation URL requirements and all nonnull URL/domain checks remain strict.
+Architectural dependency resolved: Shared001 and Shared002 architect-accepted Complete; exact5.13.3 canonical public artifact downloaded and hash verified. Task Ready; preserve attempt1 and next prepared claim increments once. Pin published5.13.3 and accept null URL only PRODUCT_ONLY; mutation URL requirements and all nonnull URL/domain checks remain strict.
 
 ### Reviewed Files
 

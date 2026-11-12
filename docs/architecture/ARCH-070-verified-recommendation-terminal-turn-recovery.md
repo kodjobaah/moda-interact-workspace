@@ -69,11 +69,11 @@ PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer inte
 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-070-SHARED-001 | moda_shared | Ready | None |
-| ARCH-070-SHARED-002 | moda_shared | Pending | ARCH-070-SHARED-001 |
-| ARCH-070-BACKGROUND-001 | moda_background | Pending | ARCH-070-SHARED-002 |
-| ARCH-070-BACKGROUND-002 | moda_background | In Progress | None |
-| ARCH-070-BACKGROUND-003 | moda_background | Ready | None |
+| ARCH-070-SHARED-001 | moda_shared | Complete | None |
+| ARCH-070-SHARED-002 | moda_shared | Complete | ARCH-070-SHARED-001 |
+| ARCH-070-BACKGROUND-001 | moda_background | In Progress | ARCH-070-SHARED-002 |
+| ARCH-070-BACKGROUND-002 | moda_background | Complete | None |
+| ARCH-070-BACKGROUND-003 | moda_background | In Progress | None |
 
 ## System Validation
 
@@ -90,3 +90,11 @@ Exact valid refreshed product evidence mismatch and exact existing durable termi
 - 2026-11-12 dependency amendment: valid ACTIVE available catalogue products have null onlineStoreUrl; MCP permits this but Shared schema/render and Background refresh reject it. Shared5.13.3 adds nullable URL only PRODUCT_ONLY with link omission; mutations/non-null URL checks unchanged. Shared acceptance -> exact publication -> Background exact-version adoption. Retry task ships independently to stop terminal amplification.
 
 - 2026-11-12 user amendment: BACKGROUND-003 independently owns deterministic trusted recovery checkout footer across eligible AI reply formats before final controls/media/hash. Reuse existing recovery context; do not rely on model or mutable wrapper content. Nonrecovery/STOP/blocked/security paths remain excluded; no host/processor overlap.
+
+## Accepted Releases and Production Retry Verification
+
+Shared001 Accepted/Complete implementation bf642ea, developer merged `72203015aa7daec41ed4aa76d13c11d7309b10a4`. Shared002 Accepted/Complete: canonical public5.13.3 metadata and506885 tarball bytes independently downloaded with SHA256 `34b17b2fd6fd4ec2dc9043ee8d2e6cd5d77c804b3b9c58b0f91f1d25f3175b5e`. Background001 resumed attempt2 on current main after publication. Shared validation719 pass/3 expected skips and focused26, types/build/installed exports passed.
+
+Background002 Accepted/Complete at45170903 with130 focused tests, both fullCI3,951 tests and5 disposable PostgreSQL/Redis repair scenarios. Root/developer merged `1afff14201c3f55a7f6745686e16abf3090499da` and observed production deployment `dep-dbqrj20473hc738ctce0` Live. At13:07:24.906Z, worker logged terminal_failure for conversation `cmwcxdt0o0009kp164raxldna`, inboundVersion5, INVALID_FINAL. Repair passes13:07:43/13:08:13/13:08:43 all scanned0/requeued0; the older instance also observed zero after durable closure. Read-only production state at13:09:29.665Z confirmed inboundVersion5 equals lastProcessedVersion5, pending/processing fields null, AI control revision0. No manual DB/queue writes or input replay were performed. These correlated observations verify terminal retry suppression, not recommendation/footer correctness, which remain pending.
+
+Footer clarification: canonicalize standalone exact raw trusted checkout URLs; preserve embedded Markdown/prose and append the required footer. This is eligible AI recovery composition only, excluding human/manual and STOP/consent/security/blocked paths. Existing prepared delivery replay remains immutable. Architecture remains In Progress pending both remaining task acceptances, final integration and fresh production recommendation/footer proof.
