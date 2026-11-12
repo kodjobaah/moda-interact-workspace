@@ -69,6 +69,12 @@ For new BRAND_IMAGE only, existing outboundPresentation JSON may persist a stric
 
 Receipt source discriminator distinguishes MESSAGE from HUMAN_COMMAND. Automated MESSAGE retains existing inbound/version checks. HUMAN_COMMAND binds original durable command identity, lease and expected control revision; a captured inbound snapshot may be immutable evidence but must not add current-inbound equality if existing human admission allows a newer customer message. Preserve existing human policy: fresh inbound alone remains eligible, while takeover/control revision/lease changes refuse. Test both explicitly. Provenance must not silently tighten unrelated human send eligibility.
 
+### Public-origin policy and header restart fences
+
+Capture validated public origin and row version/identity from the same authoritative shopBrand.publicMedia adapter policy snapshot used to build the image. Persist a Background-local policy reference with immutable media receipt; no Shared/schema addition. Final network-free Shop→Brand transaction reads fixed-key public.PlatformConfiguration for the actual trusted runtime deployment environment FOR SHARE and compares captured version/row identity. Missing/changed policy refuses, without decoding or duplicating generic configuration inside the transaction. Compare existing Admin configuration writer lock order and add actual policy-change-between-preflight/final refusal proof. A frozen image's self-declared publicOrigin is not current-policy evidence.
+
+Retain original validated recoveryShopHeader receipt in the new private envelope and rehydrate it on notice restart, so BG002 current name/domain final gate cannot disappear on replay. Never re-render/recapture identity to conceal stale prepared content. Add restart plus shop-name change refusal proof. Legacy receipt-absent raw plans remain unchanged.
+
 ## Work Items
 
 - [ ] Implement only the bounded capability and document compatibility/rollout.
