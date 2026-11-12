@@ -48,6 +48,8 @@ Use optional currentCustomerMessages: readonly {role:user,content:string}[] with
 
 Contract clarification: each current content string must contain at least one character; reject empty strings without trimming, dropping or fallback. Preserve whitespace and all raw text exactly. This adds no lower row/UTF16 cap; existing aggregate Unicode JSON/overall-byte limits remain.
 
+Identity-resolution clarification: freshly reading a known product proves facts, not that it is the intended new subject. If multiple plausible candidates remain, ask a clarifying question rather than choosing by recency. Preserve candidate references for lookup without treating them as automatic current identity. Required exact-name, typo and multiple-candidate ambiguity synthetic provider cases must all conform on the final frozen build; record prior failed samples honestly and distinguish empirical model behavior from deterministic guards.
+
 ## Work Items
 
 - [ ] Establish owned failing regression and exact caller/contract compatibility.
