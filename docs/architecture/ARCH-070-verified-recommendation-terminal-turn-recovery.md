@@ -71,7 +71,7 @@ PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer inte
 |---|---|---|---|
 | ARCH-070-SHARED-001 | moda_shared | Complete | None |
 | ARCH-070-SHARED-002 | moda_shared | Complete | ARCH-070-SHARED-001 |
-| ARCH-070-BACKGROUND-001 | moda_background | In Progress | ARCH-070-SHARED-002 |
+| ARCH-070-BACKGROUND-001 | moda_background | Complete | ARCH-070-SHARED-002 |
 | ARCH-070-BACKGROUND-002 | moda_background | Complete | None |
 | ARCH-070-BACKGROUND-003 | moda_background | Complete | None |
 
@@ -100,3 +100,5 @@ Background002 Accepted/Complete at45170903 with130 focused tests, both fullCI3,9
 Footer clarification: canonicalize standalone exact raw trusted checkout URLs; preserve embedded Markdown/prose and append the required footer. This is eligible AI recovery composition only, excluding human/manual and STOP/consent/security/blocked paths. Existing prepared delivery replay remains immutable. Architecture remains In Progress pending both remaining task acceptances, final integration and fresh production recommendation/footer proof.
 
 - Background003 Accepted/Complete b3b86c6: eligible AI recovery footer validated75 focused/2 disposable PostgreSQL tests, types/scoped lint and both exact-head full CI. Developer merge, combined recommendation integration and genuine production footer proof remain pending.
+
+- Background001 Accepted/Complete Attempt2 at91f880e, with merged retry/footer ancestors. Exact public5.13.3 artifact, host90/focused57/typecheck/scoped lint and both combined CI pass. All five tasks now Accepted/Complete. Developer final merges/gitlinks and genuine production recommendation/footer verification remain pending; architecture is not yet Implemented.

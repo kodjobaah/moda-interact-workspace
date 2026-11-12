@@ -1062,6 +1062,6 @@ Implemented. All three tasks are Accepted/Complete. Shared 5.13.2 artifact verif
 
 ## ARCH-070 — Verified recommendation evidence and terminal turn recovery
 
-In Progress. Shared nullable PRODUCT_ONLY link contract and exact5.13.3 publication are Accepted/Complete; Background recommendation adoption and eligible AI recovery checkout footer execute independently. Terminal retry correction is Accepted/Complete and deployed; read-only production evidence confirms version5 closed and repeated repair passes requeue zero. Preserve strict domain/identity checks, version-scoped recovery and final delivery controls. No schema/infrastructure changes.
+In Progress. Shared nullable PRODUCT_ONLY link contract and exact5.13.3 publication are Accepted/Complete; Background recommendation adoption and eligible AI recovery checkout footer are also Accepted/Complete; all five tasks passed review. Final developer integration and genuine production recommendation/footer proof remain pending. Terminal retry correction is Accepted/Complete and deployed; read-only production evidence confirms version5 closed and repeated repair passes requeue zero. Preserve strict domain/identity checks, version-scoped recovery and final delivery controls. No schema/infrastructure changes.
 
 [Architecture](ARCH-070-verified-recommendation-terminal-turn-recovery.md) · [Tasks](../decisions/background/ARCH-070/_index.md)
