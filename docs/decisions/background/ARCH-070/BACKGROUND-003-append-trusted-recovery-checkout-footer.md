@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T12:48:28Z
@@ -48,9 +48,9 @@ Reuse existing trusted recovery context. For eligible AI recovery replies, appen
 
 ## Work Items
 
-- [ ] Establish exact source/fixture cause and preserve a failing regression.
-- [ ] Implement only the owned correction.
-- [ ] Validate positive and failure/recovery behavior and report evidence.
+- [x] Establish exact source/fixture cause and preserve a failing regression.
+- [x] Implement only the owned correction.
+- [x] Validate positive and failure/recovery behavior and report evidence.
 
 ## Interfaces / Contracts
 
@@ -66,17 +66,17 @@ Developer integration and production verification after architect acceptance of 
 
 ## Acceptance Criteria
 
-- [ ] Requirements demonstrated with deterministic positive and negative regression tests.
-- [ ] Existing tenant, domain, message identity and lifecycle guarantees preserved.
-- [ ] No duplicate delivery, live test send, secret logging or unrelated changes.
-- [ ] Completion Report records canonical launcher packet, physical isolation, synchronization and recursive submodule evidence.
+- [x] Requirements demonstrated with deterministic positive and negative regression tests.
+- [x] Existing tenant, domain, message identity and lifecycle guarantees preserved.
+- [x] No duplicate delivery, live test send, secret logging or unrelated changes.
+- [x] Completion Report records canonical launcher packet, physical isolation, synchronization and recursive submodule evidence.
 
 ## Validation
 
-- [ ] Regression across plain/details/recommendation/wrapped/image caption paths; exactly one trusted URL footer.
-- [ ] Negative nonrecovery, expired/mismatched recovery, unsafe URL, STOP/blocked/control paths.
-- [ ] Provenance, length/media fallback, final control/moderation and deterministic delivery-hash tests.
-- [ ] Relevant existing wrapper/compose tests, typecheck, lint, required repository CI and diff hygiene.
+- [x] Regression across plain/details/recommendation/wrapped/image caption paths; exactly one trusted URL footer.
+- [x] Negative nonrecovery, expired/mismatched recovery, unsafe URL, STOP/blocked/control paths.
+- [x] Provenance, length/media fallback, final control/moderation and deterministic delivery-hash tests.
+- [x] Relevant existing wrapper/compose tests, typecheck, lint, required repository CI and diff hygiene.
 
 ## Stop Condition
 
@@ -90,35 +90,78 @@ You are not alone in the codebase. Preserve others' changes. Use the prepared de
 
 ### Status
 
-Not Started
+Ready for Review. Implementation committed and pushed on `task/ARCH-070-BACKGROUND-003`; no merge or deployment performed by this agent.
 
 ### Files Changed
 
-None
+- `src/services/conversation-wrappers/recovery-checkout-footer.ts`
+- `src/services/conversation-wrappers/service.ts`
+- `src/services/conversation-wrappers/contracts.ts`
+- `src/services/conversation-wrappers/compose-ai-outbound.ts`
+- `tests/unit/services/conversation-wrappers/recovery-checkout-footer.test.ts`
+- `tests/integration/conversation-wrapper-rendering.integration.test.ts`
+
+Implementation head: `b3b86c611633a6dc75a4e912960d8d76997cde9a`.
+PR: https://github.com/kodjobaah/moda-interact-background/pull/201
 
 ### Work Completed
 
-None
+The published response-only wrapper previously returned an AI answer without the recovery link. A failing regression against the original service demonstrated the missing footer. The service now uses the existing tenant/customer/lifetime/status-verified `checkout.url` context to append the checkout footer to eligible AI replies before media planning, application/delivery hashes, and the existing downstream moderation/control/send gates.
+
+Standalone exact raw checkout links are canonicalized once at the end. A selected complete link line retains its authored/localized label; other nonselected link-line words remain in ordinary content. Embedded Markdown/parenthesized links and unrelated URLs remain unchanged rather than being rewritten into dangling markup. A language-neutral raw URL is used when there is no authored link line. This is the root/coordinator-approved clarification of exactly-once raw link semantics.
+
+Plain text, product details, recommendations, configured/unconfigured wrappers and image captions share the same footer assembly. Invalid URL augmentation and final overlength/control content fail closed. Captions exceeding 1024 code points fall back to the complete text plan. New augmentation is bound into application provenance; the adapter retains its exact no-wrapper body comparison except for the explicit verified footer. Original model envelopes and response digests remain unchanged.
+
+A narrow pure second rendering is allowed only for `ALREADY_WRAPPED` with a trusted recovery context: the second call omits the optional checkout conditional while retaining all other authored header/footer guards. This handles a raw AI answer already ending in the checkout link without bypassing genuine wrapper detection. There are no placeholders or additional provider calls.
+
+Previously prepared applications replay exactly as stored, including older applications lacking a footer. Nonrecovery/expired checkout contexts and HUMAN sources receive no new footer; STOP/consent/blocked/security processing paths remain outside normal AI composition. No source change was made to the commerce host, conversation processor, schema, credentials, templates, settings or provider configuration.
 
 ### Validation Results
 
-Pending
+- Regression against a temporary original-service fixture failed as expected: original body lacked the required checkout footer. Temporary baseline files removed afterward.
+- Final focused wrapper suite: **75 passed**, including **29** task-specific footer tests. Coverage includes authored labels/custom footer, multiple-labelled-link idempotence, existing raw link, preserved embedded Markdown, unrelated URLs, unavailable/nonrecovery/HUMAN/tenant mismatch, unsafe URLs, control characters, exact passthrough, plain/details/recommendation plans, immutable replay/tampering, 4096 bounds, image caption and text fallback, unchanged original envelope and genuine `ALREADY_WRAPPED` rejection.
+- Disposable PostgreSQL wrapper integration: **2 passed**. The existing fixture now explicitly seeds its seven-day persisted lifetime and asserts exactly one final checkout link. Schema migrations and disposable infrastructure are owned by the existing integration runner; no production access occurred.
+- `npx tsc --noEmit`: passed.
+- Scoped ESLint on all changed source/tests: passed.
+- `git diff --check`: passed.
+- Exact-head full CI: SUCCESS at https://github.com/kodjobaah/moda-interact-background/actions/runs/43225830011/job/131208628684 and https://github.com/kodjobaah/moda-interact-background/actions/runs/43225767629/job/131208404544 .
+- An earlier accidentally broad unit invocation ran while source tests were in progress and produced seven SDK/startup timeouts and two stale footer assertions. It fully exited; it is diagnostic evidence only and is superseded by final focused and both green exact-head full CI runs. No unrelated process was stopped.
+
+Physical worktree isolation (launcher packet `/tmp/moda-arch070-bg003-prepare.json`):
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-BACKGROUND-003`
+- parent branch: `task/ARCH-070-BACKGROUND-003`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-BACKGROUND-003`
+- implementation branch: `task/ARCH-070-BACKGROUND-003`
+- shared workspace/implementation checkout switched or mutated: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization from the prepared packet:
+
+- parent remote task branch fast-forward: not needed
+- parent origin/main: already current
+- implementation remote task branch fast-forward: not needed
+- implementation origin/main: already current (`4ab78673b0fd479f74ef84acaccf1445c837c34b`)
+- claim: codex attempt 1 at `2026-11-12T12:48:28Z`, parent claim commit `28d105b0ff426e2295d420994bdf64c0a393b944`
+- recursive submodule sync/update: passed; `database` at recorded `5329d5390d346042895219663f3a040ea54ae168`
+- final implementation tree: clean after commit/push
 
 ### Deviations
 
-None
+No functional scope deviation. The root/coordinator explicitly approved preserving embedded Markdown while canonicalizing only exact standalone raw checkout links, and retaining immutable prior-application replay. Initial integration attempt could not resolve Docker from the lean bootstrap PATH; adding the already-installed `/usr/local/bin` runtime tool directory resolved it without installation or configuration changes. Node was recovered only through the canonical bootstrap (`.nvmrc` 24.19.0).
 
 ### Assumptions
 
-Existing runtime evidence needs corroboration in source and fixtures.
+Eligibility is supplied by the existing verified recovery wrapper context. A footer is not a new checkout, purchase action or consent grant. Normal final moderation, ownership, admission and provider sending remain with their existing owners.
 
 ### Unresolved Issues
 
-None known beyond investigation.
+None in the bounded implementation. Root owns accepted merge/deployment and genuine production recommendation/footer verification.
 
 ### Architectural Concerns
 
-Return contract or schema gaps before implementing outside scope.
+No new Shared, schema, wire, infrastructure, logging or credential contract was required. Awaiting architect review.
 
 ## Architect Review
 
