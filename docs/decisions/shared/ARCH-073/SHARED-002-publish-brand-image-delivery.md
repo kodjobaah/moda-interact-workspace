@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 15
 executor: null
 claimed_at: null
@@ -44,6 +44,8 @@ Only exact accepted patch artifact publication to https://registry.npmjs.org/ wi
 Other tasks, source main merges/deployment, live sends, hardcoded merchant assets, fake product IDs, extra unsolicited messages, HTML image markup, database schema/new namespace/credential changes. No production permission mutation inside implementation.
 
 ## Requirements
+
+User explicit authorization recorded by root: Publish version5.13.7 publicly to the existing canonical https://registry.npmjs.org/ destination, latest tag/public access. Accepted exact candidate is /tmp/modainteract-moda-interact-shared-5.13.7.tgz,521753 bytes,SHA256 7d1e115255e2f431d4ad302121edbd34ed81a87fa5b50c466379bb3900d3a623. Root must verify actual source merge before executing publication.
 
 Prerequisite Complete and accepted; source merge verified by root. Explicit public-release user approval must be recorded before preparation/execution. Publish accepted immutable artifact once, no rebuild or source changes; canonical version metadata and exact returned dist.tarball must HTTP200 and match accepted SHA256/SHA1/SHA512. No republish on propagation delay. Consumer gate waits actual downloadable bytes. No implementation tests/lint/typecheck/build.
 

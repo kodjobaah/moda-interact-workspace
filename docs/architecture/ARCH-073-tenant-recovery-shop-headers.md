@@ -56,11 +56,13 @@ Current published product-image plan requires genuine product identity; add a se
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-073-SHARED-001 | moda_shared | Ready | None |
-| ARCH-073-SHARED-002 | moda_shared | Pending | ARCH-073-SHARED-001 |
+| ARCH-073-SHARED-001 | moda_shared | Complete | None |
+| ARCH-073-SHARED-002 | moda_shared | Ready | ARCH-073-SHARED-001 |
 | ARCH-073-BACKGROUND-003 | moda_background | Pending | ARCH-073-BACKGROUND-001 |
 | ARCH-073-BACKGROUND-004 | moda_background | Pending | ARCH-073-BACKGROUND-002, ARCH-073-BACKGROUND-003, ARCH-073-SHARED-002 |
 
 Privileged Shopify logo acquisition requires actual current read_brand grant; root obtains concrete production permission approval separately. Shared publication requires explicit user approval for the concrete tested public patch before execution. These gates do not block basic-name acquisition or text headers. Rollout: additive Shared acceptance/publication then consumer acceptance; schema unchanged, old plans/frozen records preserved, old-worker drain before newly incompatible evidence. Final architecture completion also requires genuine text/logo/fallback production proof where available and documented permission/media readiness. No separate generic logger/telemetry or infrastructure capability is introduced.
 
 - Existing Shopify app source declares read_brand, while the separate production installation does not yet grant it. Logo rollout requires root-reviewed live app-version/Render scope alignment, actual grant verification and credential refresh; no App code task is required solely for an already-declared scope.
+
+- Additive Shared5.13.7 source accepted at `bf155d69e3dcb692a0566e725e8b03441a2530bd`; immutable package/exports checked. User explicitly approved canonical public npm release. Publication remains separate and waits developer source merge.

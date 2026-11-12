@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 15
 executor: codex
 claimed_at: 2026-11-12T19:11:58Z
@@ -136,24 +136,24 @@ Existing Background adapter currently omits rich provenance from its public retu
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual source review.
+Reviewed actual final `bf155d69e3dcb692a0566e725e8b03441a2530bd`, public exports/tests and durable report `1c4013eae`. Additive honest SHOP_BRAND/BRAND_IMAGE provenance preserves legacy product-image schema/digest. Canonical key/origin/media binding and host-current snapshot comparison reject mismatch without inventing authority. Product IMAGE priority and full TEXT fallback preserve complete content. No findings.
 
 ### Reviewed Files
 
-None
+brand-image source/tests, presentation exports, package metadata, installed-public-export and browser-isolation scripts, README.
 
 ### Validation Reviewed
 
-None
+Final764 total/761 passed/3 expected skips, types, ESM/DTS build, exact packed installed JS/types, browser isolation and entrypoints. Immutable5.13.7 artifact521753 bytes, SHA256 `7d1e115255e2f431d4ad302121edbd34ed81a87fa5b50c466379bb3900d3a623`. Prepared packet isolation/synchronization/recursive evidence matches report. No duplicate checks required.
 
 ### Architecture Conformance
 
-Pending
+Conforms to Shared pure reusable contract boundary, no provider/DB/runtime authority or change to old consumers. Background remains responsible for current READY tenant/domain/source evidence and single-message lifecycle. Stable Shopify asset acquisition gap is independent of this valid media contract.
 
 ### Follow-up
 
-None
+Developer merges PR81. Separate publication task uses exact accepted artifact after merge; user explicitly approved public version5.13.7 at canonical npm registry/latest. No rebuild/tests in publication. BG004 stays gated by its other prerequisites and actual downloadable published bytes.
