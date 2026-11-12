@@ -35,10 +35,12 @@ PRODUCTION / COMPATIBLE ROLLOUT. Single Background source acceptance -> develope
 
 | Task | Owner | State | Dependencies |
 |---|---|---|---|
-| ARCH-074-BACKGROUND-001 | moda_background | Ready | None |
+| ARCH-074-BACKGROUND-001 | moda_background | Complete | None |
 
 ## Completion Gate / Open Questions
 
 Meaningful original-behavior red, normal/free contract recovery branded AI send, generic/unbound refusal, conditional cleanup and duplicate/uncertain-provider protection, relevant PostgreSQL and exact-head checks required. Architecture remains In Progress until fresh production delivery is verified. No blocking design question remains; no private customer/provider operational data belongs in public docs.
 
 - Review clarification: newly added early-refusal cleanup uses a private optional exact shop/conversation untouched-reservation identity on the existing provider-failure service. Same-transaction UPDATE predicates require the shared local pending-placeholder constant, SQL-null presentation and all existing no-permit/no-provider evidence; no destructive foreign/frozen-row side effects. Existing callers retain prior semantics. Failed preparation CAS/actual duplicates are not blanket-cleaned. Repository owner authors/reviews code and tests; developer mechanically applies patches/runs validation in the same launcher-prepared isolated worktree when the owner runtime cannot write there. This is recorded execution assistance, not a shared-checkout exception.
+
+- Source accepted at `d2060966cccdcd12e27cb8959e6c771d0de06a84` after meaningful original-code red, real normal-contract branded-send/cleanup PostgreSQL and both exact-head CI passed. Developer source merge/gitlink/deployment and fresh production proof remain; initiative stays In Progress. No historical turn replay is authorized.
