@@ -1066,4 +1066,4 @@ In Progress. Shared nullable PRODUCT_ONLY link contract and exact5.13.3 publicat
 
 [Architecture](ARCH-070-verified-recommendation-terminal-turn-recovery.md) · [Tasks](../decisions/background/ARCH-070/_index.md)
 
-ARCH-070 amendment: fresh production omitted structured selections before refresh; two provider-free semantic gaps reproduced. Shared003 canonical selection helper/one bounded repair alignment is In Progress; publication004 and Background004 adoption/shape diagnostics Pending. Existing five accepted fixes remain Complete; genuine recommendation/footer success remains unverified.
+ARCH-070 amendment: fresh production omitted structured selections before refresh; two provider-free semantic gaps reproduced. Shared003 canonical selection helper/one bounded repair alignment, publication004 and Background004 adoption/shape diagnostics are now Accepted/Complete. Existing five accepted fixes remain Complete; genuine recommendation/footer success remains unverified.

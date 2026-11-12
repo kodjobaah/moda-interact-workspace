@@ -123,7 +123,7 @@ Provider-free proofs establish two independently reproducible gaps: schema-valid
 |---|---|---|---|
 | ARCH-070-SHARED-003 | moda_shared | Complete | ARCH-070-SHARED-002 |
 | ARCH-070-SHARED-004 | moda_shared | Complete | ARCH-070-SHARED-003 |
-| ARCH-070-BACKGROUND-004 | moda_background | In Progress | ARCH-070-SHARED-004 |
+| ARCH-070-BACKGROUND-004 | moda_background | Complete | ARCH-070-SHARED-004 |
 
 - Runtime evidence amendment: canonical static shipping selection remains valid with recognized disposition, but runner bypass/forced repair alternatives require matching successful authorized current-turn shipping observation. Host missing-selection guard uses actual verified shipping presentation, not raw truthy model selection. Search-only/failed/mismatched observations do not qualify. Shared003/BG004 positive observed shipping and negative unobserved shipping tests required; existing one-repair limits unchanged.
 
@@ -134,3 +134,5 @@ Provider-free proofs establish two independently reproducible gaps: schema-valid
 - Shared004 Accepted/Complete: exact canonical5.13.4 metadata and511919-byte tarball independently verified SHA256fcf2cc8d78c327b85a6de777541ea5ba53b659079234e790aec3d0fd97b47693. Background004 promoted Ready; production success remains pending.
 
 - Developer merged semantic Shared PR78 at6cf830f9e5ba9692acd33032af0e6a2c8b5929d3. Publication004 Accepted/Complete7faba15f3; public exact5.13.4 metadata/download bytes match immutable candidate. Background004 prepared claim e00e9bc749c61b9fcb9d42f965ad524a0c212df6 on current244304ad, now executing. No fresh production recommendation success claimed.
+
+- Background004 Accepted/Complete a80afe5c8ef95a15bfe5e0486eaf79e3ae12aa9c, reviewdd113e412: exact published5.13.4 canonical parser/qualified shipping evidence adoption,106host/62focused/types/scoped lint and both full CI3,985 tests/368files pass. All eight tasks now accepted; final developer semantic merge/gitlinks/deployment and genuine new production recommendation/footer verification remain pending.
