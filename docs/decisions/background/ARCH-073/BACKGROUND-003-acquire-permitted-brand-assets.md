@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 15
 executor: codex
 claimed_at: 2026-11-12T19:19:31Z
@@ -53,9 +53,9 @@ Current development store public API is CHANNEL_LOCKED; generic code may be vali
 
 ## Work Items
 
-- [ ] Implement only the bounded capability and document compatibility/rollout.
-- [ ] Add meaningful prior-behavior red and regression/concurrency/security coverage.
-- [ ] Complete required validation and mirrored task report/push.
+- [x] Implement only the bounded capability and document compatibility/rollout.
+- [x] Add meaningful prior-behavior red and regression/concurrency/security coverage.
+- [x] Complete required validation and mirrored task report/push.
 
 ## Interfaces / Contracts
 
@@ -71,17 +71,17 @@ Dependent tasks only after architect acceptance.
 
 ## Acceptance Criteria
 
-- [ ] Required bounded behavior works without hardcoded identity or broader permissions.
-- [ ] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
-- [ ] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
-- [ ] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
+- [x] Required bounded behavior works without hardcoded identity or broader permissions.
+- [x] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
+- [x] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
+- [x] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Basic-name coexistence; stable tokenless request carries no credentials/cookies, successful asset mapping, CHANNEL_LOCKED/error preservation, explicit absent assets and bounds.
-- [ ] Real PostgreSQL duplicate/stale/domain/platform/installation races and media/source JSON preservation.
-- [ ] Existing media pipeline unit/integration, types/scoped lint/declared build and exact-head full CI.
-- [ ] Diff/secret hygiene and canonical isolated mirrored execution/report evidence.
+- [x] Basic-name coexistence; stable tokenless request carries no credentials/cookies, successful asset mapping, CHANNEL_LOCKED/error preservation, explicit absent assets and bounds.
+- [x] Real PostgreSQL duplicate/stale/domain/platform/installation races and media/source JSON preservation.
+- [x] Existing media pipeline unit/integration, types/scoped lint/declared build and exact-head full CI.
+- [x] Diff/secret hygiene and canonical isolated mirrored execution/report evidence.
 
 ## Stop Condition
 
@@ -95,38 +95,45 @@ You are not alone. Preserve others' changes. Use prepared canonical packet. Root
 
 ### Status
 
-Affected implementation paused pending supported API contract reconciliation; not ready for review.
+Ready for Review. Implementation and final required checks committed/pushed; awaiting moda_architect review.
 
 ### Files Changed
 
-Uncommitted isolated prototype only: asset reader/contracts/mapping/repository/service/runner and recovery entrypoint lifecycle. No published implementation PR, main update or production execution. Do not merge the historical Admin query.
+Implementation cb7c0ce57feb69ca839342ea4d7ddd57a599ed1e ([PR208](https://github.com/kodjobaah/moda-interact-background/pull/208)): Background-local public brand reader/contracts/mapping/repository/service/runner, recovery-worker start/stop, provider/scheduler/lifecycle units and PostgreSQL source/identity/preservation integration tests; docs/shopify-public-brand-assets.md. No schema, dependency, Shared, credential or permission change. Basic-name/header source untouched.
 
 ### Work Completed
 
-Prepared canonical worktree/branch and selected recovery patterns. Designed selected-Shop-ID/session/domain/installation/read_brand checks and independent shopifySourceSync state while preserving shopifyNameSync. Official query validation revealed the historical provider contract is unsupported at the configured stable Admin API; stopped affected source work before any live privileged request or permission change.
+- Implemented architect-approved amendment79da45abb: stable tokenless Storefront2026-07 only, exact leased installed Shopify domain, credentials omit, Content-Type-only headers, redirects refuse, pinned response version, bounded deadline/body/parser and originating-error redaction through existing shared logger. Provenance is honestly shopify-storefront plus hash of actual returned MediaImage ID.
+- Independent shopifySourceSync asset lease/cadence/backoff preserves shopifyNameSync, authenticated brandName and concurrent media updates. Bounded keyset scans handle absent rows; Shop→ShopBrand locked tenant/platform/domain/installed/uninstalled/reinstall identity revalidation at claim and commit. No provider work in transactions.
+- Complete validated present/absent observations reuse existing source generation/fingerprint and safe-fetch/transform/R2/verified-READY pipeline. No direct READY fabrication, new processor or logo dispatch. Newer observations overtake stale network snapshots safely, including square-logo fallback.
+- CHANNEL_LOCKED/unavailability retains known valid media and authenticated names; only successful fully validated null observations mark source MISSING. Five-minute sweeps inspect500/claim20, concurrency2, two-minute durable lease, daily refresh; transient1m/5m/30m/2h/24h and bounded Retry-After. No repeated permission requests or credential/channel changes.
 
 ### Validation Results
 
-- Prepared packet `/tmp/moda-arch073-bg003-prepare.json`, base00e143fc1ccf7af11f2fe1eadcb0b236dd422ab0, durable claimdd3e85e5570a7dd99e88487cde5a6d73c12b0380, matching dedicated task/ARCH-073-BACKGROUND-003 branches; recursive database5329d539 initialized and gates passed.
-- Shopify skill instrumentation disabled. Official Admin2026-07 validator rejects historical Shop.brand; QueryRoot.branding also invalid. Diagnostic next-stable2026-10 Shop.brand also invalid. Local evidence: /tmp/moda-arch073-assets-validation.log, /tmp/moda-arch073-root-branding-validation.log, /tmp/moda-arch073-brand-stable-validation.log.
-- [Admin BrandingBrand](https://shopify.dev/docs/api/admin-graphql/unstable/objects/BrandingBrand) with read_brand exists in unstable documentation; no unstable/version switch is implemented or authorized.
-- [Stable Storefront Brand](https://shopify.dev/docs/api/storefront/2026-07/objects/Brand) is a different valid schema: logo/squareLogo/coverImage use MediaImage{id,image{url,width,height}}. Official Storefront2026-07 validation PASS (/tmp/moda-arch073-storefront-validation.log).
-- Root-authorized single public no-token/no-cookie/no-customer-field Storefront2026-07 read returned HTTP400 BAD_REQUEST, exact provider message `Online Store channel is locked.` This is not evidence of denied tokenless access or absent assets. Only coarse public metadata reported; full proof is chmod600 /tmp/moda-arch073-public-brand-proof.json. No Admin/Storefront token was sent, created or changed.
-- Root-approved single reference-store read: [official Hydrogen documentation](https://shopify.dev/docs/api/hydrogen/2026-04) identifies hydrogen-preview.myshopify.com. Tokenless/cookie-free Storefront2026-07 request returnedHTTP200, version2026-07, no GraphQL errors and all three asset roles present. Protected proof chmod600 /tmp/moda-arch073-reference-brand-proof.json. This proves the generic stable tokenless route; it does not make Eugene's locked channel accessible.
-- Locked-store alternative evidence: [Shopify staff](https://community.shopify.dev/t/store-locked-error-when-fetching-storefront-api-on-the-server/23265) documents valid Storefront-token authentication for dev stores; [official Headless setup](https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/getting-started) describes token creation/permissions. No token/channel/grant change was requested or performed during this investigation.
-- No database-backed tests, provider writes, Meta sends or permission mutation performed. Full implementation validation is deferred until the stable tokenless route is explicitly approved/amended.
+- Prepared packet /tmp/moda-arch073-bg003-prepare.json: canonical workspace and dedicated parent/implementation task/ARCH-073-BACKGROUND-003 branches; no other task checkout reused. Parent/implementation main current at preparation, durable claimdd3e85e5570a7dd99e88487cde5a6d73c12b0380; implementation base00e143fc1ccf7af11f2fe1eadcb0b236dd422ab0; recursive submodule sync/update passed, database5329d5390d346042895219663f3a040ea54ae168. Current main remains accepted base per root; parallel header task will incorporate merged main later.
+- Meaningful historical-contract red: official pinned Admin2026-07 schema rejects Shop.brand and QueryRoot.branding; diagnostic next-stable2026-10 also rejects Shop.brand. This prevented publishing the invalid preserved reader. Exact final public-source query validates successfully against stable Storefront2026-07. Skill instrumentation disabled throughout.
+- [Stable Storefront Brand](https://shopify.dev/docs/api/storefront/2026-07/objects/Brand) and [official Hydrogen reference](https://shopify.dev/docs/api/hydrogen/2026-04) support the route. Root-approved single credential-free reference read returned200/version2026-07/noerrors with all three asset roles. Private full proofchmod600 /tmp/moda-arch073-reference-brand-proof.json; committed evidence coarse/public only.
+- Selected development shop single tokenless probe returned400/BAD_REQUEST, exact `Online Store channel is locked.` No data/credentials/cookies/customer fields sent or returned. Private proofchmod600 /tmp/moda-arch073-public-brand-proof.json. This is an operational limitation, not absent-logo proof; no unlock/Storefront token/read_brand mutation performed.
+- Focused media/pipeline run101 assertions passed, one copied lifecycle assertion used wrong stop-handle identifier; corrected final new19/19 passed. Final reader16/16 after added raw-URL-control case; all existing media processing/READY tests passed in the broader run. Task-owned ESLint and source typecheck exit0.
+- Actual disposable PostgreSQL final10/10 public asset cases: unique first acquisition, competing/stale/expired claims, successful cadence, CHANNEL_LOCKED/currentREADY/name preservation, retry/explicit null, six installation changes, newer-source/square fallback, concurrent independent name/media/source metadata. Existing basic-name9/9 and media3/3 also passed. One fixture expected first-attempt delay after earlier failure; corrected to actual second-attempt5-minute backoff and rerun green.
+- Declared npm run build exit0 after PostgreSQL. Tests use disposable endpoints/synthetic fixtures and mocked providers; no production DB writes, Meta sends or READY bootstrap.
+- Exact-head full CI PASS: [push](https://github.com/kodjobaah/moda-interact-background/actions/runs/43293198435)2m37s and [PR](https://github.com/kodjobaah/moda-interact-background/actions/runs/43293296085)1m36s, headcb7c0ce57feb69ca839342ea4d7ddd57a599ed1e. Both include clean dependency install, generated Prisma client, source typecheck and complete unit suite. Diff/secret hygiene clean.
 
 ### Deviations
 
-Historical Admin query cannot safely be restored. Basic-name/header and independent Shared provenance tasks remain unaffected.
+Required provider route amendment was approved before source changes: unsupported historical Admin/read_brand assumptions replaced by stable tokenless public Storefront. No new permissions/credentials or unstable API introduced.
 
 ### Assumptions
 
-None about unsupported API availability. Stable tokenless brand capability is proven on the officially documented Hydrogen reference shop; selected Eugene remains channel-locked. Implementation still requires explicit route amendment.
+Only current exact installed tenant-domain public observations enter the existing pipeline. Public asset availability does not authenticate or override basic-name metadata, authorize messages, or prove selected-store logo delivery.
+
+### Unresolved Issues
+
+No unresolved implementation issue. Selected development store remains CHANNEL_LOCKED; root owns separately authorized supported source bootstrap and actual logo/readiness/delivery proof. Text fallback alone does not satisfy that production gate.
 
 ### Architectural Concerns
 
-Required route decision: stable supported Storefront/tokenless source with exact proof; explicit stable Storefront credential/scopes if needed; or existing merchant-provided asset flow. Do not infer a grant, scrape themes/files under extra scopes, or switch to unstable Admin. Root and moda_architect have the concrete validation evidence. Current prototype remains uncommitted so unsupported provider code cannot deploy.
+No unresolved implementation contract gap after amendment. Historical Admin prototype was replaced before any commit/provider use. Preserve independent state and old frozen content; do not add unstable/Admin/Storefront credentials, channel unlock, theme scraping or production bootstrap under this task.
 
 ## Architect Review
 
