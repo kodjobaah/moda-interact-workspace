@@ -1065,3 +1065,9 @@ Implemented. All three tasks are Accepted/Complete. Shared 5.13.2 artifact verif
 Implemented. All eleven tasks are Accepted/Complete. Final Shared5.13.5 and Background PR204 are merged/deployed. A genuine production request completed bounded correction, three freshly verified selected recommendations and a trusted recovery footer; Meta acceptance, delivery and read receipt were confirmed. Terminal retry amplification stopped. Direct unauthenticated checkout access remains behind the development store's existing password gate; payment completion was not tested. Strict validation/control policies remain; no schema or infrastructure change.
 
 [Architecture](ARCH-070-verified-recommendation-terminal-turn-recovery.md) · [Shared tasks](../decisions/shared/ARCH-070/_index.md) · [Background tasks](../decisions/background/ARCH-070/_index.md)
+
+## ARCH-071 — Explicit current customer conversation intent
+
+Implemented within the carrier/named-switch scope. All three tasks are Accepted/Complete; Shared5.13.6 and Background PR205 are merged/deployed. Two successive genuine named-product changes returned the requested products with the trusted footer and delivered/read confirmation. Current content establishes objective without tenant/tool/policy authority. Both synthetic underspecified multi-candidate ambiguity samples remain failed; no general semantic resolver guarantee is claimed. ARCH-070 remains complete and unchanged.
+
+[Architecture](ARCH-071-explicit-current-customer-intent.md) · [Shared tasks](../decisions/shared/ARCH-071/_index.md) · [Background task](../decisions/background/ARCH-071/_index.md)
