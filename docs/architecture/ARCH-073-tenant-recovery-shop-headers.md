@@ -11,7 +11,7 @@ updated: 2026-11-12
 
 ## Status / Problem
 
-In Progress. Recovery messages need clear tenant shop-name/website branding and an optional actual shop logo where WhatsApp supports one. Current baseline text functionality is deployed; final logo consumer review/integration is underway. A standalone approved logo and genuine production logo delivery remain operational gates, not assumed success.
+In Progress. Recovery messages need clear tenant shop-name/website branding and an optional actual shop logo where WhatsApp supports one. Current baseline text functionality is deployed; all source/release tasks are accepted; final integration and operational logo proof remain. A standalone approved logo and genuine production logo delivery remain operational gates, not assumed success.
 
 ## Goals / Non-Goals
 
@@ -54,7 +54,7 @@ Bounded keyset scans/leases/backoff and current-token service are reused; no per
 | ARCH-073-BACKGROUND-003 | moda_background | Complete |
 | ARCH-073-SHARED-001 | moda_shared | Complete |
 | ARCH-073-SHARED-002 | moda_shared | Complete |
-| ARCH-073-BACKGROUND-004 | moda_background | In Progress |
+| ARCH-073-BACKGROUND-004 | moda_background | Complete |
 
 Dependency graph: basic-name acceptance -> text-header and public-source tasks; additive Shared acceptance -> explicit authorized publication; logo consumer depends on accepted header, public source and publication. Repository tasks are authoritative for execution state.
 
@@ -73,3 +73,5 @@ Focused/unit, real PostgreSQL identity/receipt/source/control/policy races, type
 - Additive Shared5.13.7 source/release accepted with explicit public publication authorization.
 - Review added original restart/header receipts, same-row policy revision/identity fences and preserved HUMAN admission policy; no schema or cross-service envelope expansion.
 - Remaining operational question: approved standalone logo/source readiness and genuine Meta delivery. No production logo success is yet claimed.
+
+- Final logo consumer accepted at `3982f109c1d593cbdc6d2ca9125ccbef496f09a7` (runtime4500bf7), with prior findings corrected and final exact-head CI/real PostgreSQL evidence green. All six tasks are Complete. Actual developer source merge/gitlink, rollout/drain and standalone-asset/live-image proof remain; architecture stays In Progress.
