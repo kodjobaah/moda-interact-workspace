@@ -11,7 +11,7 @@ updated: 2026-11-12
 
 ## Status / Problem
 
-In Progress. Eligible recovery messages need a clear shop-name and website header across AI, HUMAN and service notices. Current trusted wrapper context reads shop.name only from ShopBrand; Shopify source acquisition exists on an unmerged historical task branch, so a newly installed shop may have no brand row. Current production installation lacks read_brand. No logo or new permission is authorized by this baseline.
+In Progress. Eligible recovery messages need a clear shop-name and website header across AI, HUMAN and service notices. Current trusted wrapper context reads shop.name only from ShopBrand; Shopify source acquisition exists on an unmerged historical task branch, so a newly installed shop may have no brand row. Current production installation lacks read_brand. The name/text baseline requires no additional permission. User subsequently requested logos; additional permission-gated tasks are defined separately below.
 
 ## Goals / Non-Goals
 
@@ -47,3 +47,18 @@ PRODUCTION / COMPATIBLE ROLLOUT. Accept name acquisition first, then header comp
 Logo is excluded pending an explicit later request and permission. Basic name plus verified website is the approved baseline. No further code/design is authorized beyond these bounded tasks. Public documentation uses coarse proof only.
 
 - Text-header clarification: name/verified HTTPS website/neutral divider/blank line precede body and existing footer. Background-local identity receipt binds immutable/application/final-permit validation; old absent evidence preserves old bytes. Deduplication is limited to proven pure-identity configured header tokens, never authored body heuristics. User subsequently requested a logo where supported; this requires separate read-only capability/permission assessment and does not expand the first two tasks.
+
+## Optional requested logo extension
+
+User requests shop name, website and logo where WhatsApp supports it. Official Meta ImageMediaObject carries image link/id plus optional caption (https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/types/ImageMediaObject/); text is not HTML. Preserve product image priority. A verified logo may occupy the single image position only for otherwise-plain eligible responses within caption bounds; full text fallback and no extra send are mandatory.
+
+Current published product-image plan requires genuine product identity; add a separate canonical brand-image provenance/plan export in Shared rather than fabricate product IDs or relax legacy schema. Background consumes exact public package, validates current same-tenant/domain/generation READY output using existing adapter, and binds it through HUMAN/AI frozen preparation and provider permit. Existing HUMAN path is text-only, so media evidence/dispatch is an explicit bounded consumer capability. No new schema is currently authorized; return a demonstrated persistence gap.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-073-SHARED-001 | moda_shared | Ready | None |
+| ARCH-073-SHARED-002 | moda_shared | Pending | ARCH-073-SHARED-001 |
+| ARCH-073-BACKGROUND-003 | moda_background | Pending | ARCH-073-BACKGROUND-001 |
+| ARCH-073-BACKGROUND-004 | moda_background | Pending | ARCH-073-BACKGROUND-002, ARCH-073-BACKGROUND-003, ARCH-073-SHARED-002 |
+
+Privileged Shopify logo acquisition requires actual current read_brand grant; root obtains concrete production permission approval separately. Shared publication requires explicit user approval for the concrete tested public patch before execution. These gates do not block basic-name acquisition or text headers. Rollout: additive Shared acceptance/publication then consumer acceptance; schema unchanged, old plans/frozen records preserved, old-worker drain before newly incompatible evidence. Final architecture completion also requires genuine text/logo/fallback production proof where available and documented permission/media readiness. No separate generic logger/telemetry or infrastructure capability is introduced.
