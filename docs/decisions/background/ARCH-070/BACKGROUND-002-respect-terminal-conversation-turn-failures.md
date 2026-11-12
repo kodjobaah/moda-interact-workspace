@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-11-12T12:40:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -146,24 +146,24 @@ No new contract or schema dependency was required. Recommendation verification r
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Pending actual implementation review.
+Reviewed actual implementation451709030abdc92b32b5c1c40fd17aec2f067972, all four changed files and durable report9879bb4bb. Only typed CommerceHostError nonretryable failures before provider attempt can consume the observed turn, and only after confirmed admission cleanup. Existing completeOwnedTurn version/control-revision CAS preserves newer input; uncertain provider, cleanup, completion, unknown and retryable errors remain repairable. No repair SQL or schema change. Prepared mirrored physical isolation/synchronization/recursive database evidence verified.
 
 ### Reviewed Files
 
-None
+conversation-turn-processor.service.ts; terminal-failure.cases.ts and facade registration; arch054-pending-turn-repair.integration.test.ts.
 
 ### Validation Reviewed
 
-None
+Original-code five-case regression failure, 130 focused unit passes, typecheck/lint/diff hygiene, both full CI3,951 tests/367 files. Disposable PostgreSQL/Redis suite5 passed, including actual processor/admission helper terminal completion, two zero-requeue repair passes and fresh inbound progression. Broader scheduling fixture run produced no result and is not claimed passed; focused durable proof plus unchanged relevant existing repair scenarios satisfy this bounded contract.
 
 ### Architecture Conformance
 
-Pending
+Conforms to durable inbound-version scoped terminal policy without weakening tenant, delivery, controls or crash/transient recovery. Existing shared structured logger used for bounded semantic terminal outcome. Independently shippable before recommendation and footer tasks. Production remains developer-verification owned.
 
 ### Follow-up
 
-None
+Developer may merge PR200 and deploy this independent correction to stop terminal retry amplification. Observe subsequent repair passes in production without resetting/replaying processed inbound versions. Recommendation and footer remain separately gated.
