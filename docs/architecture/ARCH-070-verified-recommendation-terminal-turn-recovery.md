@@ -123,7 +123,7 @@ Provider-free proofs establish two independently reproducible gaps: schema-valid
 |---|---|---|---|
 | ARCH-070-SHARED-003 | moda_shared | Complete | ARCH-070-SHARED-002 |
 | ARCH-070-SHARED-004 | moda_shared | Complete | ARCH-070-SHARED-003 |
-| ARCH-070-BACKGROUND-004 | moda_background | Ready | ARCH-070-SHARED-004 |
+| ARCH-070-BACKGROUND-004 | moda_background | Complete | ARCH-070-SHARED-004 |
 
 - Runtime evidence amendment: canonical static shipping selection remains valid with recognized disposition, but runner bypass/forced repair alternatives require matching successful authorized current-turn shipping observation. Host missing-selection guard uses actual verified shipping presentation, not raw truthy model selection. Search-only/failed/mismatched observations do not qualify. Shared003/BG004 positive observed shipping and negative unobserved shipping tests required; existing one-repair limits unchanged.
 
@@ -132,3 +132,5 @@ Provider-free proofs establish two independently reproducible gaps: schema-valid
 - Shared003 Accepted/Complete8390849;154 focused/736 full pass3skip/types/build/installed immutable exports pass. Exact5.13.4 artifact accepted; publication004 Ready after developer merge. Historical raw cause and production success remain unclaimed.
 
 - Shared004 Accepted/Complete: exact canonical5.13.4 metadata and511919-byte tarball independently verified SHA256fcf2cc8d78c327b85a6de777541ea5ba53b659079234e790aec3d0fd97b47693. Background004 promoted Ready; production success remains pending.
+
+- Background004 Accepted/Complete a80afe5;106host/62focused/types/scoped lint and both full CI3,985 tests/368files pass. Exact published5.13.4 parser/qualifier shared, no extra loop or inference. All eight tasks accepted; final merge/deployment and genuine production recommendations/footer proof still pending.
