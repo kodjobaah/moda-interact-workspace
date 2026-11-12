@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T15:28:47Z
@@ -50,8 +50,8 @@ After accepted prerequisite and developer merge, sole-publish exact accepted5.13
 ## Work Items
 
 - [x] Establish owned source/release behavior and preserve relevant regression evidence.
-- [ ] Complete only the bounded owned correction or exact artifact release.
-- [ ] Record required validation, exact hashes/heads and return review.
+- [x] Complete only the bounded owned correction or exact artifact release.
+- [x] Record required validation, exact hashes/heads and return review.
 
 ## Interfaces / Contracts
 
@@ -67,15 +67,15 @@ Next ARCH-070 publication/consumer gate, then root/developer fresh production ve
 
 ## Acceptance Criteria
 
-- [ ] Requirements and required validation pass without weakening strict validation or bounded execution.
-- [ ] No private prompts/prose, raw invalid values, customer data or secrets in diagnostics/probes.
-- [ ] No unrelated files or implementation-owner boundary violation.
-- [ ] Launcher mirrored physical isolation, synchronization and recursive submodule evidence recorded.
+- [x] Requirements and required validation pass without weakening strict validation or bounded execution.
+- [x] No private prompts/prose, raw invalid values, customer data or secrets in diagnostics/probes.
+- [x] No unrelated files or implementation-owner boundary violation.
+- [x] Launcher mirrored physical isolation, synchronization and recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Prerequisite accepted/version/merge, exact artifact hashes, successful sole canonical npm receipt and matching metadata plus actual public downloaded bytes; unchanged source. No tests/lint/types/build repetitions.
-- [ ] Diff scope/hygiene and secret validation.
+- [x] Prerequisite accepted/version/merge, exact artifact hashes, successful sole canonical npm receipt and matching metadata plus actual public downloaded bytes; unchanged source. No tests/lint/types/build repetitions.
+- [x] Diff scope/hygiene and secret validation.
 
 ## Stop Condition
 
@@ -89,54 +89,55 @@ You are not alone; preserve others' changes. Use canonical prepared packet paths
 
 ### Status
 
-Blocked — automatic approval review requires explicit user authorization for publishing this immutable public npm release. No npm command executed, package published, receipt produced or application changed.
+Ready for Review — attempt2 published the exact accepted Shared 5.13.5 artifact once under explicit user approval. Canonical metadata and actual downloaded bytes match all accepted hashes. Prior attempt1 denial executed no npm command.
 
 ### Files Changed
 
-Only this task report. Implementation publication branch `task/ARCH-070-SHARED-006` pushed clean at accepted developer merge `596eaa455f9b6eb72f316c76c1c7a4657faa1f60`; no implementation changes/additional commit.
+Only this task report. Source-unchanged mirrored implementation branch `task/ARCH-070-SHARED-006` pushed/up-to-date at accepted developer merge `596eaa455f9b6eb72f316c76c1c7a4657faa1f60`; no implementation changes/additional commit.
 
 ### Work Completed
 
-- Prepared dependency gate verified Shared005 Accepted/Complete; developer implementation merge `596eaa455f9b6eb72f316c76c1c7a4657faa1f60` preceded this release task.
-- Verified exact accepted package manifest/version and immutable SHA256/SHA1.
-- Read-only GitHub metadata confirmed `kodjobaah/moda-interact-shared` PUBLIC.
-- Artifact publishConfig explicitly access public; files whitelist only dist and previously public fixtures.
-- Read-only canonical npm metadata verified existing same public package version 5.13.4/destination.
-- Requested the same direct canonical release action with this evidence; automatic review rejected before process creation. No alternate execution channel or retry attempted.
-- Completed unaffected source-unchanged mirrored implementation branch publication; root/coordinator notified of the precise approval requirement.
+- Shared005 Accepted/Complete and developer merge remained verified through the prepared dependency gate.
+- User explicitly approved “Publish version 5.13.5 publicly” in response to the exact canonical public npm/latest release question; coordinator reconciliation `83ff051c1` recorded that approval and confirmed no publication occurred in attempt1.
+- Read the complete resumed task/review/reconciliation and reused the launcher-prepared canonical worktrees under attempt2.
+- Verified exact accepted manifest, SHA256/SHA1; executed the same direct canonical release action once, without alternative channels.
+- Publication command: `npm publish /tmp/modainteract-moda-interact-shared-5.13.5.tgz --ignore-scripts --access public --registry https://registry.npmjs.org/`.
+- Receipt confirmed canonical npm registry, tag latest, public access; processing notice then `+ @modainteract/moda-interact-shared@5.13.5`.
+- Bounded 45-second read-only propagation checks reached canonical metadata and actual downloadable-byte success. No republish.
 
-Prepared launcher/isolation evidence:
+Latest attempt2 launcher/isolation evidence:
 
 - Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-SHARED-006`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-SHARED-006`; both branch `task/ARCH-070-SHARED-006`.
-- Shared/default checkouts switched/mutated: no; another task worktree reused: no.
-- Parent/implementation remote task branch fast-forwards not needed; both origin/main already current at preparation.
+- Both correct canonical worktrees reused; no shared/default checkout switched or mutated, no different task worktree reused.
+- Parent/implementation remote task branch fast-forwards not needed; both origin/main already current at attempt2 preparation.
 - Recursive submodule sync/update passed; no entries.
-- Claim `25cfbfe91a53b4ab45a9e01fd7eb3f6e0c68df13`; implementation base `596eaa455f9b6eb72f316c76c1c7a4657faa1f60`.
+- Attempt2 claim `6dd0db0ee5b30d90a1f2e382587a67c6ef4de1e9`; implementation base `596eaa455f9b6eb72f316c76c1c7a4657faa1f60`; prepared parent authorization head `83ff051c1e8f61426d3431c04bec21b8e615d537`.
 
 ### Validation Results
 
-- Accepted artifact `/tmp/modainteract-moda-interact-shared-5.13.5.tgz`; exact manifest `@modainteract/moda-interact-shared@5.13.5`.
-- SHA256 `71118ab02b14ffb36659a8cc6ba5caa91055bb8f3da48a23b3c731c7366ba6ed`; SHA1 `9fa4b1d97da4a68e801d4c5cc7abfa43bd57e862`; accepted integrity `sha512-ZMkZwnNBWAL+gX8FAV2fcj51KsTqyKJstsyaFDJVYic5T/BR5LsiGArYvZmYAV18APh5Av6mM+eUeLlivQ3LrA==`.
-- Intended destination `https://registry.npmjs.org/`, existing public package `@modainteract/moda-interact-shared`, version 5.13.5, tag latest, public access. No publication or registry/download success claimed.
-- Clean implementation source; no tests/lint/types/build rerun, code changes or alternative artifact.
-- Only public package/source identity and integrity evidence printed; no credentials/private prompts/customer payloads.
+- Exact package `@modainteract/moda-interact-shared@5.13.5`, artifact `/tmp/modainteract-moda-interact-shared-5.13.5.tgz` unchanged.
+- Accepted/local SHA256 `71118ab02b14ffb36659a8cc6ba5caa91055bb8f3da48a23b3c731c7366ba6ed`; SHA1 `9fa4b1d97da4a68e801d4c5cc7abfa43bd57e862` verified before publication.
+- Canonical version metadata `https://registry.npmjs.org/@modainteract/moda-interact-shared/5.13.5` returned HTTP200 with exact version, matching dist.shasum and dist.integrity.
+- Exact metadata-provided tarball `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.13.5.tgz` returned HTTP200; downloaded 513250 bytes at `2026-11-12T15:33:04.000173+00:00`.
+- Actual downloaded SHA256/SHA1 match above; actual SHA512 `sha512-ZMkZwnNBWAL+gX8FAV2fcj51KsTqyKJstsyaFDJVYic5T/BR5LsiGArYvZmYAV18APh5Av6mM+eUeLlivQ3LrA==` matches accepted artifact and registry metadata.
+- No tests/lint/types/build rerun, rebuild, source changes or alternative artifact. Only public identity/release hashes printed; no secrets/private prose/customer payloads.
 
 ### Deviations
 
-Automatic approval review rejected the exact npm publication action despite public-source, artifact whitelist and existing public-destination evidence. Reason: publication is externally visible and costly to reverse, and the trusted user's fix/test/commit/push/merge/production-verification request did not clearly authorize public npm publication. The tool process never started; therefore no publication occurred.
+Attempt1 automatic approval review rejected public publication before execution because user authorization was not explicit enough, despite public-repository/artifact-whitelist/existing-destination evidence. This was recorded durably in `1c65a4362` with task Blocked. User then explicitly authorized the exact public 5.13.5 release; coordinator reconciled to Ready and launcher created attempt2. The same direct action was approved and executed once. Prior denial was respected, never bypassed through another channel. Transient registry404 processing delay resolved through bounded reads.
 
 ### Assumptions
 
-The accepted artifact remains immutable and ready for publication after explicit approval. No rebuild or implementation revalidation is needed for that publication-only continuation.
+Background consumes this exact published dependency only after architect acceptance and retains host/evidence/delivery policy. Package publication does not deploy applications or replay a customer turn.
 
 ### Unresolved Issues
 
-Root must obtain explicit user authorization to publish `@modainteract/moda-interact-shared@5.13.5` to the existing public canonical npm registry (latest/public). Then the sole publisher can execute once, verify canonical metadata plus actual downloadable hashes, and submit review. Do not bypass rejection through another execution channel or advance consumer adoption before the public-byte gate.
+None within publication scope. Background adoption, deployment and fresh production verification remain separate owner gates. Historical invalid referralReason remains unknown; no production-success claim made here.
 
 ### Architectural Concerns
 
-No source/contract issue; only explicit public release authorization is unresolved. Historical invalid referralReason remains unknown, and production verification remains a separate owner gate.
+None; immutable accepted artifact was published unchanged with explicit user permission and canonical downloadable-byte integrity.
 
 ## Architect Review
 
