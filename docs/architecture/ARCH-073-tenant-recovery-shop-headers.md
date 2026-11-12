@@ -1,93 +1,75 @@
 ---
 id: ARCH-073
-title: Tenant-specific recovery shop headers
+title: Tenant-specific recovery shop headers and optional logos
 status: in_progress
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
 ---
 
-# ARCH-073: Tenant-specific recovery shop headers
+# ARCH-073: Tenant-specific recovery shop headers and optional logos
 
 ## Status / Problem
 
-In Progress. Eligible recovery messages need a clear shop-name and website header across AI, HUMAN and service notices. Current trusted wrapper context reads shop.name only from ShopBrand; Shopify source acquisition exists on an unmerged historical task branch, so a newly installed shop may have no brand row. Current production installation lacks read_brand. The name/text baseline requires no additional permission. User subsequently requested logos; additional permission-gated tasks are defined separately below.
+In Progress. Recovery messages need clear tenant shop-name/website branding and an optional actual shop logo where WhatsApp supports one. Current baseline text functionality is deployed; final logo consumer review/integration is underway. A standalone approved logo and genuine production logo delivery remain operational gates, not assumed success.
 
 ## Goals / Non-Goals
 
-Acquire authenticated basic shop.name without read_brand, then compose a deterministic per-tenant text header using that persisted name and verified stored domain. Preserve footer, authorship, immutable replay, moderation and final permit identity. No hardcoded merchant identity, logo/media activation, privileged Brand query, permission changes, new schema, namespace, package release or historical task reopen.
+Use stored authenticated shop name and verified tenant website in eligible AI/HUMAN/service replies, retaining the trusted checkout footer. Use only current verified LOGO/SQUARE_LOGO media when a single image caption is appropriate. Never invent merchant identity, use a cover/banner as logo, overwrite an existing verified product image, send an extra logo message or truncate full text/checkout URL. Preserve consent/security/control/ordering/admission and human-authored bytes. No new database schema, credential/channel/scope grant or infrastructure is required by the accepted route.
 
-## Inspected Architecture / Design
+## Inspected Architecture / Repository Responsibilities
 
-Preserved Background branch task/ARCH-049-BACKGROUND-003 at bcac6ed contains bounded Shopify source reader/scheduler and durable sync state. It never entered canonical main. Selectively recover its coherent lifecycle/lease/backoff patterns rather than merge unrelated old changes. Its historical domain-based getShopifyAccessToken call is incompatible with the current selected-Shop-ID API; use current authenticated shop-bound token service. Request only basic shop.name. Revalidate active Shopify platform/domain under row locks at claim and completion; a shop changed during network I/O cannot receive stale metadata. Preserve all existing media/source JSON and concurrent updates.
+Background owns basic Shopify shop-name acquisition, public brand-source acquisition, recovery composition and frozen delivery. Preserved historical ARCH049 source was not in main; selective reuse corrected stale token/domain-lock assumptions. Basic name uses current selected-Shop-ID authenticated Admin shop.name and independent durable shopifyNameSync. Media source owns independent shopifySourceSync, preserving name and media metadata under Shop/Brand locks.
 
-Second task consumes persisted name and current verified stored domain. Existing wrapper text headers support shop.name but service notices bypass wrappers and domain is not a current wrapper variable. Prefer existing contracts where sufficient; use Background-local verified provenance for mandatory header if no new cross-service contract is necessary. Preserve configured headers/idempotence and authored text; no post-permit append or silent global validation relaxation. Return genuine Shared/schema gaps before expansion.
+Stable Admin2026-07/2026-10 reject historical Shop.brand/QueryRoot.branding. The validated supported source is stable tokenless Storefront2026-07 public brand metadata from the exact installed shop domain, with no cookies/credentials/read_brand request. Public source provenance is labelled honestly. CHANNEL_LOCKED, partial response and provider errors preserve known media; only complete validated successful observations mark explicit absence. Existing guarded source/generation/fingerprint/fetch/transform/R2/READY pipeline remains canonical.
 
-## Flow / Ownership / State
+Shared owns additive browser-safe SHOP_BRAND/BRAND_IMAGE provenance, schema and digest exports under @modainteract/moda-interact-shared/commerce/presentation. Existing TEXT/product IMAGE contracts and digests remain unchanged. Accepted source merge46834ef32a945606c92feade5924564ce325b326 is published as5.13.7; canonical downloaded521753-byte artifact SHA2567d1e115255e2f431d4ad302121edbd34ed81a87fa5b50c466379bb3900d3a623 matches accepted bytes. Background consumes the published package, never sibling source.
 
-Recovery-worker bounded shop scan -> durable claim -> authenticated bounded basic-name read outside transaction -> locked current-shop revalidation -> existing ShopBrand metadata persistence -> eligible recovery composition -> name/domain header + existing divider/checkout footer -> freeze/hash/media/moderation/final permit -> identical provider body. Background owns both tasks. PostgreSQL remains durable authority; no new queue or table. Provider calls are not in transactions. No per-message Shopify fetch or broad conversation serialization.
+## Flow / State / Contracts
 
-## Security / Failure / Observability / Infrastructure
+Bounded recovery-worker scan -> durable per-Shop source claim -> bounded provider read outside transactions -> locked active Shopify tenant/domain/installation check -> existing ShopBrand metadata -> eligible reply name/site header -> complete body and divider/checkout footer -> optional verified media -> immutable preparation/moderation -> final permit -> identical provider body/plan.
 
-No additional Shopify scope is required. Current token selection, tenant/platform/domain checks, cancellation, bounded provider responses and safe error handling remain. Missing name cannot fabricate branding or cross-bind another shop; define controlled fallback using verified domain only. Existing shared structured logging suffices with bounded semantic counts/reason codes and no customer/provider secrets. No Gateway, generic telemetry or infrastructure task is required. Preserve consent, STOP/security exclusions and approved Meta templates unchanged.
+Name/site/divider header derives only from verified local context. Missing/unsafe name falls back to verified website without guessing/suppressing a legitimate reply. Configured pure-identity header tokens may deduplicate; custom prose and staff-authored content remain intact. Old receipt-absent applications/commands replay original bytes, never automatically gaining branding.
 
-## Rollout / Compatibility / Validation
+Optional image policy: verified product IMAGE always wins; otherwise choose LOGO then SQUARE_LOGO only. Complete caption must fit1024 Unicode codepoints; missing/unready/unsafe/config-unavailable/overlong media uses complete TEXT before freeze, never extra send or late downgrade. Official Meta image object accepts one image link/id plus caption: https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/types/ImageMediaObject/ . No HTML inline logo is claimed.
 
-PRODUCTION / COMPATIBLE ROLLOUT. Accept name acquisition first, then header composition; developer merges/deploys and verifies genuine new replies after old-worker drain where evidence formats differ. Old frozen applications/commands replay unchanged. No schema migration, Shared publication or queue-data drain is intended. Full relevant PostgreSQL state/concurrency tests, source types/scoped lint/build and exact-head CI required. Same-repository mechanism does not require separate system-test task; developer genuine integrated proof gates Implemented.
+New BRAND_IMAGE uses strict Background-local versioned envelope in existing outboundPresentation/preparedWrapperEvidence JSON with plan/digest, original ownership receipt, header receipt and policy reference. Legacy raw TEXT/product IMAGE stays unchanged. MESSAGE ownership is captured before media preparation and rehydrated on restart, never recaptured after takeover. HUMAN_COMMAND binds durable command/lease/control revision; a new customer inbound alone does not add a new human rejection gate. Physical IMAGE transport retains caption TEXT record semantics so merchant inbox text is not lost.
+
+## Consistency / Security / Failure
+
+Final Shop/Brand-ordered permit checks same tenant/domain/current READY source generation/fingerprint/key/content and stored header identity. The authoritative public-origin policy rowId/version/value comes from the same canonically validated local configuration snapshot; logo requires rowId, while existing default/legacy config consumers remain compatible. Final network-free transaction checks actual runtime environment/fixed shopBrand.publicMedia row identity/version FOR SHARE; delete/recreate/reset-version or changed policy refuses. No generic decoder is duplicated in transactions. Configuration writer lock ordering is compatible.
+
+Immutable body/media, moderation hash, original receipt and final provider permit remain identical. Stale/malformed/tampered proof refuses without re-rendering or changing image/text after freeze. Approved Meta templates retain approved payload and checkout binding. Unbound routing cannot infer basket/shop identity; STOP/blocked/consent/security prohibitions remain. No new authorization comes from self-declared media schema/URL.
+
+## Scale / Observability / Infrastructure
+
+Bounded keyset scans/leases/backoff and current-token service are reused; no per-message Shopify read or broad conversation serialization. Existing shared structured logger emits bounded semantic reason codes; no competing generic logger/metric. No Gateway/topology/env or new observability task is needed. Public evidence contains coarse outcomes, not customer/provider operational identifiers.
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-073-BACKGROUND-001 | moda_background | Complete | None |
-| ARCH-073-BACKGROUND-002 | moda_background | Ready | ARCH-073-BACKGROUND-001 |
-
-## Open Questions / Change History
-
-Logo is excluded pending an explicit later request and permission. Basic name plus verified website is the approved baseline. No further code/design is authorized beyond these bounded tasks. Public documentation uses coarse proof only.
-
-- Text-header clarification: name/verified HTTPS website/neutral divider/blank line precede body and existing footer. Background-local identity receipt binds immutable/application/final-permit validation; old absent evidence preserves old bytes. Deduplication is limited to proven pure-identity configured header tokens, never authored body heuristics. User subsequently requested a logo where supported; this requires separate read-only capability/permission assessment and does not expand the first two tasks.
-
-## Optional requested logo extension
-
-User requests shop name, website and logo where WhatsApp supports it. Official Meta ImageMediaObject carries image link/id plus optional caption (https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/types/ImageMediaObject/); text is not HTML. Preserve product image priority. A verified logo may occupy the single image position only for otherwise-plain eligible responses within caption bounds; full text fallback and no extra send are mandatory.
-
-Current published product-image plan requires genuine product identity; add a separate canonical brand-image provenance/plan export in Shared rather than fabricate product IDs or relax legacy schema. Background consumes exact public package, validates current same-tenant/domain/generation READY output using existing adapter, and binds it through HUMAN/AI frozen preparation and provider permit. Existing HUMAN path is text-only, so media evidence/dispatch is an explicit bounded consumer capability. No new schema is currently authorized; return a demonstrated persistence gap.
-
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-073-SHARED-001 | moda_shared | Ready | None |
-| ARCH-073-SHARED-002 | moda_shared | Pending | ARCH-073-SHARED-001 |
-| ARCH-073-BACKGROUND-003 | moda_background | Complete | ARCH-073-BACKGROUND-001 |
-| ARCH-073-BACKGROUND-004 | moda_background | Pending | ARCH-073-BACKGROUND-002, ARCH-073-BACKGROUND-003, ARCH-073-SHARED-002 |
-
-Historical privileged Admin branding was rejected by stable schema; the accepted supported source route is tokenless stable Storefront with no new grant. Shared publication requires explicit user approval for the concrete tested public patch before execution. These gates do not block basic-name acquisition or text headers. Rollout: additive Shared acceptance/publication then consumer acceptance; schema unchanged, old plans/frozen records preserved, old-worker drain before newly incompatible evidence. Final architecture completion also requires genuine text/logo/fallback production proof where available and documented permission/media readiness. No separate generic logger/telemetry or infrastructure capability is introduced.
-
-- State separation clarification: basic-name refresh owns shopifyNameSync in existing ShopBrand JSON; permission-gated assets retain independent historical shopifySourceSync. Parser and transitions preserve both cadences/leases and media roles. A shared lease key would incorrectly suppress or clobber the other capability; no database schema change is needed.
-
-- Basic-name implementation accepted at `1cb77855ec91806081ab1d0fad7d131f5e804e87`; independent name/asset state and real PostgreSQL isolation tests passed. Header and permission-gated source tasks are Ready, but execution preparation must incorporate the actual developer-merged source main.
-
-- Asset route correction: stable Admin2026-07 and2026-10 reject historical Shop.brand/QueryRoot.branding. Stable Storefront2026-07 brand schema and tokenless public reference-store read are verified. BG003 uses that supported public route, with no read_brand/new credential. Current development store reports CHANNEL_LOCKED; retain known media and treat as operational unavailable, never absence or a reason to unlock/create credentials. Current installed tenant/domain/installation locks remain authority; public source is labelled honestly. One-time administrator-verified Shopify UI source bootstrap is under separate root assessment, not task permission for production writes.
-
-- Stable public asset acquisition accepted at `cb7c0ce57feb69ca839342ea4d7ddd57a599ed1e`; provider contract, current-domain persistence/race tests and both clean CI passed. Selected development shop remains CHANNEL_LOCKED; no production logo readiness/delivery is claimed.
-
-## Reconciled execution frontier
-
-| Task | State | Evidence |
+| Task | Owner | State |
 |---|---|---|
-| ARCH-073-BACKGROUND-001 | Complete | Accepted basic-name source, merged main and genuine production name capture verified; no manual backfill. |
-| ARCH-073-BACKGROUND-002 | Complete | Accepted final combined text header, pending developer rollout verification. |
-| ARCH-073-BACKGROUND-003 | Complete | Accepted stable public asset source, merged source; production reports controlled CHANNEL_LOCKED without clearing known media. |
-| ARCH-073-SHARED-001 | Complete | Additive brand plan accepted and merged46834ef32a945606c92feade5924564ce325b326. |
-| ARCH-073-SHARED-002 | Complete | Public5.13.7 exact downloaded bytes match accepted artifact. |
-| ARCH-073-BACKGROUND-004 | Ready | All prerequisites accepted; actual source merge incorporated at preparation. |
+| ARCH-073-BACKGROUND-001 | moda_background | Complete |
+| ARCH-073-BACKGROUND-002 | moda_background | Complete |
+| ARCH-073-BACKGROUND-003 | moda_background | Complete |
+| ARCH-073-SHARED-001 | moda_shared | Complete |
+| ARCH-073-SHARED-002 | moda_shared | Complete |
+| ARCH-073-BACKGROUND-004 | moda_background | In Progress |
 
-No live logo readiness/delivery is claimed. Logo-only role policy excludes cover/banner substitution; root awaits standalone approved asset. Existing JSON evidence and physical IMAGE transport appear sufficient, with current tenant/READY media final-fence verification and legacy exact replay mandatory. Implementation task must return a concrete persistence gap rather than invent schema or weaken provenance. Architecture stays In Progress until genuine text/header/logo-or-explicit-fallback validation and honest operational limitations are recorded.
+Dependency graph: basic-name acceptance -> text-header and public-source tasks; additive Shared acceptance -> explicit authorized publication; logo consumer depends on accepted header, public source and publication. Repository tasks are authoritative for execution state.
 
-- Text header final source accepted at `b0216b1e52ce0d2619b84ca2298c31013dbe93a6`, review763ce2ebd. All logo consumer prerequisites are Complete. Prepare only after developer source merge is incorporated; final stored-plan consumer audit remains part of integrated review, not permission to weaken other services.
+## Rollout / Validation / Completion Gate
 
-- Logo restart clarification: new BRAND_IMAGE may use strict versioned Background-local {plan,original receipt,planDigest} within existing outboundPresentation JSON. Capture ownership before media preparation and rehydrate on replay; no later control/version recapture. Legacy raw plans unchanged. Malformed/missing/tampered proof refuses; no schema/Shared expansion or premature dispatch reservation. This is required immutable provenance, not an additional business capability.
+PRODUCTION / COMPATIBLE ROLLOUT. Basic-name source, supported public asset source and text header are merged/deployed. Genuine automatic name capture was verified without manual backfill. Public asset runtime reports controlled CHANNEL_LOCKED; that is not proof of logo readiness. Text-header replacement worker/drain and production read-only preparation preview passed, but preview is not a Meta delivery claim.
 
-- Final review fences: authoritative validated public-origin policy snapshot carries fixed-key actual-environment row identity/version into local frozen evidence; final DB-only permit locks/checks that revision, rejecting changed/missing policy without duplicating config parsing. Original header receipt also persists across notice restart so current name/domain validation remains enforced. Existing configuration writer lock order must be checked; no schema/Shared expansion.
+After final consumer acceptance developer merges source, pins actual Shared/Background main commits and deploys. Drain old messaging workers before creating incompatible new HUMAN/media evidence; do not rewrite historical records or queue payloads. Old readers may refuse new BRAND_IMAGE, while new readers retain old plans. Rollback requires stopping new-format preparation and draining incompatible work; no silent downgrade of frozen media.
 
-- Same-row configuration correction: Background local configuration snapshot gains optional rowId from the original canonically validated database row. Logo preparation requires it and no second query may bind a replacement identity. Existing default/legacy snapshot callers remain compatible; final id/version fence rejects delete/recreate with reset version. No Shared/schema/decoder duplication.
+Focused/unit, real PostgreSQL identity/receipt/source/control/policy races, types/scoped lint/declared build and exact-head CI are required. A same-repository bounded mechanism uses developer genuine integrated verification rather than a separate system-test task. Final architecture remains In Progress until operationally approved asset readiness and real logo delivery/fallback behavior are honestly verified. User is providing a standalone asset; a marketing banner is not implicitly approved. Any one-time administrator-observed source bootstrap must use existing canonical observation/processing, never fabricated READY/provenance or an undocumented customer asset bypass.
+
+## Change History / Open Questions
+
+- Basic shop-name and text headers proceeded independently of logo permission assumptions.
+- Unsupported historical Admin contract replaced after schema evidence with stable public Storefront route.
+- Additive Shared5.13.7 source/release accepted with explicit public publication authorization.
+- Review added original restart/header receipts, same-row policy revision/identity fences and preserved HUMAN admission policy; no schema or cross-service envelope expansion.
+- Remaining operational question: approved standalone logo/source readiness and genuine Meta delivery. No production logo success is yet claimed.
