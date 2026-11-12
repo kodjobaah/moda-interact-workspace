@@ -1055,6 +1055,6 @@ Eight implementation/publication tasks independently Accepted/Complete; terminal
 
 ## ARCH-069 — Chronological Commerce model conversation inputs (2026-11-12)
 
-Bounded compatible production correction. All three Shared implementation/publication and Background adoption tasks are Accepted/Complete. Actual public-registry installation/integrity and both full consumer CI runs passed; developer integration, deployment and fresh production customer-answer verification remain pending. The serializer must place current context after prior history without changing contracts, trust boundaries, retries or delivery. The exact production indicator cause remains subject to paired no-send diagnostics; actual production answer verification is coordinator-owned. No schema or infrastructure changes.
+Implemented. All three tasks are Accepted/Complete. Shared 5.13.2 artifact verification and both full Background CI runs passed. Production deployed Background merge `4ab78673`; a fresh snowboard question invoked the product tool and received verified details, Meta acceptance, delivery and a read receipt at 12:27:47Z on 2026-11-12. The user screenshot confirmed the image and factual caption. Existing contracts, trust boundaries and delivery semantics remain unchanged; no schema or infrastructure changes. Deterministic marker-specific causality is not claimed.
 
 [Architecture](ARCH-069-chronological-commerce-model-inputs.md) · [Shared tasks](../decisions/shared/ARCH-069/_index.md) · [Background task](../decisions/background/ARCH-069/_index.md)

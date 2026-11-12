@@ -1,7 +1,7 @@
 ---
 id: ARCH-069
 title: Chronological Commerce model conversation inputs
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
@@ -11,7 +11,7 @@ updated: 2026-11-12
 
 ## Status
 
-In Progress. All three implementation/publication tasks are architect-accepted Complete. Developer integration, deployment and fresh genuine production customer-answer verification remain pending. No infrastructure or schema redesign.
+Implemented. All three tasks are architect-accepted Complete. Production deployed the accepted Background merge and a fresh genuine question received a grounded snowboard answer, confirmed read and visible in the customer screenshot. No infrastructure or schema redesign.
 
 ## Problem
 
@@ -27,7 +27,7 @@ Sentinel blocklists, changing moderation or STOP policy, provider/model switchin
 
 ## Current Architecture
 
-Shared owns `OpenRouterModelClient` and model request serialization. Background supplies tenant-scoped current context, prior history, the pinned release and tools, then owns admission and delivery. The current serializer orders System -> current-context Human -> older history -> tool results.
+Shared owns `OpenRouterModelClient` and model request serialization. Background supplies tenant-scoped current context, prior history, the pinned release and tools, then owns admission and delivery. The pre-fix serializer ordered System -> current-context Human -> older history -> tool results; the accepted serializer places current context after older history.
 
 ## Proposed Architecture
 
@@ -91,11 +91,11 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared implementation acceptance -> exact packa
 
 ## System Validation
 
-No separate system-test implementation task is introduced for this bounded serialization/dependency correction: deterministic adapter regression, Background integration checks and coordinator-owned no-send paired probe plus developer-authorized production conversation verification cover the change. Actual production correctness remains unverified until recorded by the coordinator; this architecture must not be marked Implemented prematurely.
+No separate system-test implementation task is introduced for this bounded serialization/dependency correction: deterministic adapter regression, Background integration checks and coordinator-owned no-send paired probe plus developer-authorized production conversation verification cover the change. The coordinator verified the fresh production conversation below after deployment; the integrated verification gate is complete.
 
 ## Open Questions
 
-Does the paired real-model request probe reproduce the indicator, and does chronological ordering restore a grounded tool-using answer? If not, preserve the independently valid fix and return remaining causal investigation without overstating resolution.
+None blocking. Paired anonymized probes demonstrated incorrect intent with the old order and correct product-tool selection with chronological inputs. The exact indicator is stochastic model output; deterministic marker-specific causality is not claimed.
 
 ## Change History
 
@@ -106,3 +106,14 @@ Does the paired real-model request probe reproduce the indicator, and does chron
 - 2026-11-12 publication review: Shared002 Accepted/Complete from exact public registry metadata/integrity and publish receipt; Background Ready with mandatory actual public-registry install/CI integrity gate. Transient tarballCDN404 is not represented as verified deployment availability.
 
 - 2026-11-12 consumer review: Background001 Accepted/Complete at6ccad024; actual public-registry artifact install/hash gate and both3,941-test CI runs passed, resolving CDN propagation. Production customer-answer verification remains pending; no Implemented claim.
+
+
+## Integrated Production Verification — 2026-11-12
+
+Shared PR76 merged at `ea82023e831e77cd4c964df9a697ad17a9c1a1fb`; Background PR199 merged at `4ab78673b0fd479f74ef84acaccf1445c837c34b`. Developer-owned parent gitlinks were reconciled in `135a4965144668293033f9880e98ce71e79615bc`. Production messaging worker `srv-dbpojjmc6qcc73e56on0` was Live on that Background merge in Render deploy `dep-dbqqc52jnfac73bsnv0g`.
+
+The coordinating developer correlated genuine fresh inbound `cmwdivna20041qu15ck1dwcvt` at 12:26:54.708Z, conversation `cmwcxdt0o0009kp164raxldna`, inboundVersion 3, asking “Can you tell me about this snowboard?”. `commerce_get_product` started 12:27:03.751Z and completed successfully 12:27:04.941Z. The two-step model turn made one remote call and returned ANSWER with verified PRODUCT_DETAILS, detailCount 1. Outbound `cmwdivqsg0043qu15e2dzh00l` correctly described The Multi-managed Snowboard, USD 629.95, stock 100 and Multi-managed Vendor.
+
+Existing `whatsapp.meta.send.response` at 12:27:16.736Z recorded HTTP 200 / HTTP_ACCEPTED, request ID `AkZTKrSgqdUEMzyOPsPIMC_`, and an untruncated response with contacts redacted. The turn job completed 12:27:17.019Z on attempt 1. Durable status advanced to DELIVERED at 12:27:19Z and READ at 12:27:47Z with no failure code. The user's 12:28:36 screenshot independently confirmed the snowboard image and factual caption visible at 12:27. No processed inbound was reset or replayed. Evidence was supplied by the coordinating developer from production logs/state and the user's screenshot; no credentials, recipient numbers or private full prompts are committed.
+
+- 2026-11-12 final review: production deployment, grounded tool-using answer, Meta acceptance, delivery, read receipt and customer-visible screenshot verified. Architecture marked Implemented. No further implementation or infrastructure changes required.
