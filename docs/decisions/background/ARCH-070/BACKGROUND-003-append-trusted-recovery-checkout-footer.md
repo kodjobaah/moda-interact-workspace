@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-11-12T12:48:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -167,24 +167,24 @@ No new Shared, schema, wire, infrastructure, logging or credential contract was 
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Pending actual implementation review.
+Reviewed final six-file implementation b3b86c611633a6dc75a4e912960d8d76997cde9a and durable reportfb297ff54 directly. Existing tenant/customer/status/lifetime-verified recovery context supplies the URL. Eligible AI bodies gain a deterministic final footer before media/limits/application and delivery hashes. Provenance is narrowly extended rather than disabling passthrough checks; immutable prior applications replay unchanged. Standalone raw trusted URL canonicalization preserves authored labels; embedded Markdown/prose remains intact per clarified scope. Bounded checkout-only ALREADY_WRAPPED fallback retains original body and unrelated guards. No host/processor overlap or security-policy change.
 
 ### Reviewed Files
 
-None
+conversation-wrappers/service.ts, recovery-checkout-footer.ts, compose-ai-outbound.ts, local contracts.ts, footer unit tests and wrapper PostgreSQL integration fixture.
 
 ### Validation Reviewed
 
-None
+Original-service missing-footer regression;75 focused tests including29 new cases; disposable PostgreSQL2/2; typecheck/scoped lint/diff hygiene; both exact-head full CI runs successful. Earlier broad invocation while source was changing is diagnostic only and superseded by final green checks. Prepared mirrored isolation/sync/recursive database evidence verified.
 
 ### Architecture Conformance
 
-Pending
+Conforms to eligible AI recovery replies only. Human/manual and STOP/consent/security/blocked flows are not claimed augmented. Trusted URLs never originate from model output; existing final control/moderation/send gates remain. Footer and image/text length fallback are validated before delivery. No Shared/schema/infrastructure/credential changes.
 
 ### Follow-up
 
-None
+Developer may merge PR201. Recommendation adoption must integrate this merged footer and retry correction with final combined CI before production verification. Architecture remains In Progress until genuine recommendation/footer behavior is verified after rollout.

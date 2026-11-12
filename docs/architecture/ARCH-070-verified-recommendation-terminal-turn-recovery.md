@@ -73,7 +73,7 @@ PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer inte
 | ARCH-070-SHARED-002 | moda_shared | Complete | ARCH-070-SHARED-001 |
 | ARCH-070-BACKGROUND-001 | moda_background | In Progress | ARCH-070-SHARED-002 |
 | ARCH-070-BACKGROUND-002 | moda_background | Complete | None |
-| ARCH-070-BACKGROUND-003 | moda_background | In Progress | None |
+| ARCH-070-BACKGROUND-003 | moda_background | Complete | None |
 
 ## System Validation
 
@@ -98,3 +98,5 @@ Shared001 Accepted/Complete implementation bf642ea, developer merged `72203015aa
 Background002 Accepted/Complete at45170903 with130 focused tests, both fullCI3,951 tests and5 disposable PostgreSQL/Redis repair scenarios. Root/developer merged `1afff14201c3f55a7f6745686e16abf3090499da` and observed production deployment `dep-dbqrj20473hc738ctce0` Live. At13:07:24.906Z, worker logged terminal_failure for conversation `cmwcxdt0o0009kp164raxldna`, inboundVersion5, INVALID_FINAL. Repair passes13:07:43/13:08:13/13:08:43 all scanned0/requeued0; the older instance also observed zero after durable closure. Read-only production state at13:09:29.665Z confirmed inboundVersion5 equals lastProcessedVersion5, pending/processing fields null, AI control revision0. No manual DB/queue writes or input replay were performed. These correlated observations verify terminal retry suppression, not recommendation/footer correctness, which remain pending.
 
 Footer clarification: canonicalize standalone exact raw trusted checkout URLs; preserve embedded Markdown/prose and append the required footer. This is eligible AI recovery composition only, excluding human/manual and STOP/consent/security/blocked paths. Existing prepared delivery replay remains immutable. Architecture remains In Progress pending both remaining task acceptances, final integration and fresh production recommendation/footer proof.
+
+- Background003 Accepted/Complete b3b86c6: eligible AI recovery footer validated75 focused/2 disposable PostgreSQL tests, types/scoped lint and both exact-head full CI. Developer merge, combined recommendation integration and genuine production footer proof remain pending.
