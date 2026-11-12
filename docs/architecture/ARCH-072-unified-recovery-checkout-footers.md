@@ -1,7 +1,7 @@
 ---
 id: ARCH-072
 title: Unified trusted recovery checkout footers
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
@@ -11,7 +11,7 @@ updated: 2026-11-12
 
 ## Status and Problem
 
-In Progress. User requests a checkout link on every recovery conversational outbound, including human takeover, with a visual divider. Existing domain helper/wrapper path is AI-only; human passthrough/frozen-command validation requires original text, and terminal notice text paths can replace prepared content with a fixed constant. ARCH070/071 remain completed.
+Implemented. User requested a checkout link on every recovery conversational outbound, including human takeover, with a visual divider. Existing domain helper/wrapper path is AI-only; human passthrough/frozen-command validation requires original text, and terminal notice text paths can replace prepared content with a fixed constant. ARCH070/071 remain completed.
 
 ## Goals / Non-Goals
 
@@ -66,3 +66,5 @@ No blocking design question. Specialist inventory must enumerate coverage before
 - Developer merged Background PR206 to implementation main at `ae43e0b3f1fa660813f762c32602fb268e1e7c4a`. Parent integration now pins that actual merge. Deployment, old-worker drain and genuine production verification remain pending; architecture stays In Progress.
 
 - Production rollout verified by developer: accepted Background merge is Live, replacement messaging worker is healthy, and prior worker termination/drain is confirmed. Genuine new HUMAN reply footer and Meta delivery verification remain pending; architecture stays In Progress. No historical message replay is required.
+
+- Final integrated verification: a genuine new HUMAN takeover reply contained the divider and exact trusted recovery checkout footer. Durable provider status confirmed successful delivery and read, independently corroborated by the user screenshot, without a provider failure. Production rollout/drain and relevant regression evidence satisfy the completion gate. ARCH-072 is Implemented; no schema migration or Shared publication was required. Private operational proof remains outside public documentation.
