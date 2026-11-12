@@ -45,3 +45,5 @@ PRODUCTION / COMPATIBLE ROLLOUT. Accept name acquisition first, then header comp
 ## Open Questions / Change History
 
 Logo is excluded pending an explicit later request and permission. Basic name plus verified website is the approved baseline. No further code/design is authorized beyond these bounded tasks. Public documentation uses coarse proof only.
+
+- Text-header clarification: name/verified HTTPS website/neutral divider/blank line precede body and existing footer. Background-local identity receipt binds immutable/application/final-permit validation; old absent evidence preserves old bytes. Deduplication is limited to proven pure-identity configured header tokens, never authored body heuristics. User subsequently requested a logo where supported; this requires separate read-only capability/permission assessment and does not expand the first two tasks.

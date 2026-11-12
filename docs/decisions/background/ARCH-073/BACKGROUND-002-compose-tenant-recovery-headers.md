@@ -47,6 +47,12 @@ Logo/media enablement, read_brand/other permission changes, privileged Brand que
 
 Header uses exact authorized shop persisted name and verified stored domain, never model text or hardcoded alias. Use verified-domain-only fallback for missing name; do not suppress an otherwise legitimate reply or guess a display name. No logo or extra media sends. Cover eligible AI/HUMAN configured/passthrough and service/limit/audio/oversize notices; approved templates, unbound routing and forbidden sends stay excluded. Preserve configured header content and human-authored bytes; avoid duplicate mandatory header blocks. Compose header and existing divider/checkout footer before freeze/hash/media/moderation/permit, provider body identical. Strict provenance checks both preparation and persisted replay; old frozen bodies byte-identical. Length/caption fallback keeps full safe body or refuses before admission. Preserve tenant/control/inbound/version/lease fences. Document rolling old-reader drain if new evidence cannot old-decode.
 
+### Header contract clarification
+
+Approved text layout is shop name, then verified HTTPS website, then neutral divider and blank line before the existing body/footer. Missing name uses only verified website without guessing or suppressing an otherwise legitimate reply. Safe single-line display names cannot inject controls/markup into identity; retain stored identity without inventing aliases. Validate/canonicalize website from exact authorized stored Shop.domain, never customer/model text. Background-local context/receipt extension is sufficient; no Shared variable enum/release.
+
+Shared presentation brandName currently validates projection identity but does not add a header. Deduplicate only a proven pure-identity configured-wrapper header derived from its typed tokens; never heuristically remove words/URLs from HUMAN authored bytes or body text. Retain custom merchant header prose. Bind optional header identity/receipt digest through fresh application keys, no-wrapper exact transform, HUMAN preparation, persisted evidence and final-permit validation. Evidence-absent old records retain old hashes/bytes. A receipt is not tenant authority; its source is the verified local context. No new logo/media behavior belongs to this task.
+
 ## Work Items
 
 - [ ] Implement only the bounded capability and document compatibility/rollout.
