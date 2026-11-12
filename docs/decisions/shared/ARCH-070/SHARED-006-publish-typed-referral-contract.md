@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-12T15:21:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-070-SHARED-005
@@ -163,3 +163,7 @@ Pending
 ### Follow-up
 
 None
+
+### Authorization Reconciliation — Coordinator
+
+User explicitly approved “Publish version 5.13.5 publicly” in response to the exact canonical public npm/latest release question. Automatic-review authorization blocker is resolved; no publication occurred in attempt1. Return task to Ready, clear old claim and preserve attempt1; next canonical prepared claim increments exactly once. Accepted immutable artifact and prerequisite merge remain unchanged. No implementation validation rerun or alternative execution channel authorized. Publication remains sole owner/exact artifact once, followed by actual public byte verification.
