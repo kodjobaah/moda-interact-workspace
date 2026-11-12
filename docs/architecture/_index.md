@@ -1071,3 +1071,9 @@ Implemented. All eleven tasks are Accepted/Complete. Final Shared5.13.5 and Back
 Implemented within the carrier/named-switch scope. All three tasks are Accepted/Complete; Shared5.13.6 and Background PR205 are merged/deployed. Two successive genuine named-product changes returned the requested products with the trusted footer and delivered/read confirmation. Current content establishes objective without tenant/tool/policy authority. Both synthetic underspecified multi-candidate ambiguity samples remain failed; no general semantic resolver guarantee is claimed. ARCH-070 remains complete and unchanged.
 
 [Architecture](ARCH-071-explicit-current-customer-intent.md) · [Shared tasks](../decisions/shared/ARCH-071/_index.md) · [Background task](../decisions/background/ARCH-071/_index.md)
+
+## ARCH-072 — Unified trusted recovery checkout footers
+
+In Progress. Background-owned footer/divider coverage extends to human and eligible freeform recovery notices before immutable preparation, preserving both human provenance gates, old frozen replay and exact provider/permit identity. Approved templates and prohibited/unbound paths retain explicit constraints. No schema/infrastructure/package release planned.
+
+[Architecture](ARCH-072-unified-recovery-checkout-footers.md) · [Background task](../decisions/background/ARCH-072/_index.md)
