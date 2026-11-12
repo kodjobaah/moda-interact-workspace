@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T14:30:17Z
@@ -53,9 +53,9 @@ Shipping evidence precision: selectShippingPresentation may return a truthy limi
 
 ## Work Items
 
-- [ ] Reproduce both semantic gaps deterministically against prior implementation.
-- [ ] Implement only owned canonical semantic correction/adoption.
-- [ ] Prove compatibility and bounded failure behavior; report exact validation.
+- [x] Reproduce both semantic gaps deterministically against prior implementation.
+- [x] Implement only owned canonical semantic correction/adoption.
+- [x] Prove compatibility and bounded failure behavior; report exact validation.
 
 ## Interfaces / Contracts
 
@@ -71,15 +71,15 @@ Next publication/consumer task in ARCH-070, then developer production verificati
 
 ## Acceptance Criteria
 
-- [ ] Requirements hold, including unchanged security and bounded failure behavior.
-- [ ] Canonical reusable mechanics are not duplicated across Shared/Background.
-- [ ] No private prose, prompts or secret payloads added to diagnostics.
-- [ ] Prepared mirrored worktree, start-sync and recursive submodule evidence recorded.
+- [x] Requirements hold, including unchanged security and bounded failure behavior.
+- [x] Canonical reusable mechanics are not duplicated across Shared/Background.
+- [x] No private prose, prompts or secret payloads added to diagnostics.
+- [x] Prepared mirrored worktree, start-sync and recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Clean public exact artifact install/hash, semantic compatibility vectors and actual local host/runner tests, no provider/Meta sends, changed-file lint/types and final combined full CI. Existing untouched main lint baseline remains documented; no unrelated cleanup.
-- [ ] Exact changed-file scope and diff/secret hygiene.
+- [x] Clean public exact artifact install/hash, semantic compatibility vectors and actual local host/runner tests, no provider/Meta sends, changed-file lint/types and final combined full CI. Existing untouched main lint baseline remains documented; no unrelated cleanup.
+- [x] Exact changed-file scope and diff/secret hygiene.
 
 ## Stop Condition
 
@@ -93,35 +93,49 @@ You are not alone in the codebase. Preserve others' changes. Use the prepared de
 
 ### Status
 
-Not Started
+Ready for Review. Implementation and validation evidence committed/pushed; awaiting moda_architect review.
 
 ### Files Changed
 
-None
+- `package.json` / `package-lock.json`: exact public Shared 5.13.4 adoption, canonical registry integrity.
+- `src/commerce/recommendations/disposition.ts`: re-export exact canonical Shared parser; derive local compatibility type from its return instead of duplicating normalization.
+- `src/commerce/host.ts`: original/fresh shipping observation qualification with expected provider and exact selected identity; bounded selection shape diagnostics; actual verified shipping guard and evidence-backed generic policy intent.
+- `tests/integration/commerce/host-suites/selection-semantics.ts`, host composition entry point: actual published runner/host tests, forced single correction and exhaustion, shipping compatibility/security and diagnostic privacy.
+- Canonical adapter unit vectors and three existing package-version consumer assertions.
 
 ### Work Completed
 
-None
+Prior provider-free 5.13.3 proof reproduced schema-valid missing recommendation version/list pair accepted by runner but discarded by host, and unobserved shipping placeholders bypassing repair. Historical raw production version6 response remains unavailable; its exact shape is not claimed.
+
+Consumed exact published 5.13.4 canonical semantics and existing one-correction runner. Background has no new correction/retry loop and does not infer versions, product identifiers or recommendations. Host qualifies both original authorized current-turn and fresh shipping DTO using Shared helper plus known platform, before treating presentation as evidence. Provider/product/variant mismatch cannot qualify a truthy limitation. Disposition-only generic policy intent is derived only from recognized SHIPPING_INFORMATION_UNVERIFIED plus a qualified current-turn generic null/null observation, followed by existing budgeted fresh verification. Matched NOT_REQUESTED null/null unavailable-policy limitations and no-product shipping flow remain compatible. A fallback product cannot authorize unverified shipping disposition.
+
+Diagnostics use the existing Shared structured logger and existing commerce.response.composition event. Emitted structural states are bounded enums/counts/booleans; arbitrary key names, reply prose, prompts, identifiers and full payloads are excluded from shape diagnostics. Strict scalar type checks prevent array/string-coercion leakage. No custom generic telemetry, provider writes, Meta sends, queue changes or production replay.
 
 ### Validation Results
 
-Pending
+- Fresh public npm cache `/tmp/moda-arch070-bg004-public-cache`: exact canonical5.13.4 tarball GET HTTP200/cache miss; installation succeeded. Public artifact dependency gate independently verified511919 bytes/SHA256fcf2cc8d78c327b85a6de777541ea5ba53b659079234e790aec3d0fd97b47693. Lock preserves npm canonical registry URL/integrity sha512-EXNoSmbmB3E+hK1bNArMr5dsfZSQ2gHTV4/EoSj8coSCdHepdLfPD9aN2YTEOgYZ9Rwi6mNa9OT/ZBlqCDdJjg==.
+- Prior-host red shipping regression: 4 failed /1 passed, proving old truthy shipping bypass and fallback-present gap. Source restored unconditionally; no other files reverted.
+- Actual published runner→host: final immutable-head full host suite106/106 passed. Missing-version and unobserved shipping correction forced exactly one finalResponse-only retry; corrected exact observed products accepted; exhaustion refused with no repeated provider reads.
+- 62 focused tests across15 files passed serially: canonical parser identity/vectors, recommendations, installed model boundary, observability package/version and recovery notice consumers.
+- Final `tsc6 --noEmit`: passed. First concurrent typecheck raced initial Prisma generation; rerun after generation passed. No source workaround for generated artifacts.
+- Changed-file ESLint passed; existing untouched main four-unused-declaration lint baseline remains unchanged and excluded from task cleanup.
+- `git diff --check` passed; scoped diff and secret/prose hygiene checked.
+- Unit/host commands explicitly use loopback port1 DATABASE_URL/REDIS_URL and test deployment environment; host uses local MCP/model fixture and fake DB. No live services used.
+- Implementation a80afe5c8ef95a15bfe5e0486eaf79e3ae12aa9c, PR https://github.com/kodjobaah/moda-interact-background/pull/203. Both required final-head full CI runs passed3,985 tests/368 files, including clean dependency install/Prisma generation/typecheck: https://github.com/kodjobaah/moda-interact-background/actions/runs/43239779043 and https://github.com/kodjobaah/moda-interact-background/actions/runs/43239799745. No further source changes.
 
-### Deviations
+### Physical Isolation / Preparation Evidence
 
-None
+Authoritative packet `/tmp/moda-arch070-bg004-prepare.json`, ARCH-070-BACKGROUND-004, attempt1 codex; claim e00e9bc749c61b9fcb9d42f965ad524a0c212df6 committed/pushed by launcher. Workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-BACKGROUND-004`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-BACKGROUND-004`; both branches `task/ARCH-070-BACKGROUND-004`. Shared/default workspace or implementation checkouts switched/mutated: no. Another task worktree reused: no.
 
-### Assumptions
+Start synchronization: parent and implementation remote-task fast-forward not needed; both origin/main already current. Implementation base244304adea723bcc18854e4f1bffcc25571d3346 includes all accepted recommendation/footer/terminal fixes. Recursive sync/update passed; database submodule5329d5390d346042895219663f3a040ea54ae168 initialized at recorded commit. Parent submodule gitlink not staged.
 
-Historical exact raw final shape remains unconfirmed; deterministic contract gaps are reproduced.
+### Deviations / Assumptions / Unresolved Issues
 
-### Unresolved Issues
-
-None beyond owned correction.
+No scope deviation. No schema migration, provider/model change, new calls/loops or inferred selection. Actual host integration verifies unchanged database interaction shape using fixture; no PostgreSQL contract changed. Production genuine-question verification and merge/deployment remain root/developer-owned after architect review. Historical exact raw production failure cause remains unconfirmed.
 
 ### Architectural Concerns
 
-Return cross-owner gaps before modifying outside scope.
+None newly discovered; implementation stops at review and does not claim architect acceptance or production success.
 
 ## Architect Review
 
