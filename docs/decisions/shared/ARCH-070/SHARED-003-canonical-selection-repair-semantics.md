@@ -47,6 +47,8 @@ Unrelated refactors, provider/model changes, fabricated selections or automatic 
 
 Own reusable normalized selection parsing once in Shared and use it in runner repair eligibility. Missing recommendation version/list pair, malformed selections or null shipping placeholder without a meaningful disposition must not bypass existing selection repair. Preserve valid paired product IDs and disposition/shipping semantics; preserve bounded existing retry, step/token/tool budgets, cancellation and empty-search behavior. Do not infer version/IDs, auto-select products or create a second repair/queue loop. Preserve Background existing valid-disposition recovery and refusal semantics; export normalization/eligibility helpers so consumer uses identical mechanics. Test provider-free malformed-pair and null-shipping reproductions, corrected model turn with valid fields, bounded exhaustion, valid selections, empty search, ordinary factual answer and publication type/export compatibility.
 
+Compatibility clarification: structural schemas intentionally permit independent optional version/list fields and .extend consumers; do not globally refine that Zod contract. Preserve canonical host semantics for null/null shipping WITH a recognized disposition and partial valid-disposition recovery. In generic runner pinned contracts that do not expose the canonical version/list pair, preserve existing strictly pinned field behavior; never invent unsupported version requirements. Production canonical pair must use normalized semantic validity.
+
 ## Work Items
 
 - [ ] Reproduce both semantic gaps deterministically against prior implementation.
