@@ -7,4 +7,5 @@ Assigned Agent: moda_background; Coordinator: moda_architect.
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | ARCH-070-BACKGROUND-001 | Verified recommendation refresh evidence | Pending | ARCH-070-SHARED-002 |
-| ARCH-070-BACKGROUND-002 | Durable version-scoped terminal retry policy | Ready | None |
+| ARCH-070-BACKGROUND-002 | Durable version-scoped terminal retry policy | In Progress | None |
+| ARCH-070-BACKGROUND-003 | Trusted recovery checkout footer | Ready | None |

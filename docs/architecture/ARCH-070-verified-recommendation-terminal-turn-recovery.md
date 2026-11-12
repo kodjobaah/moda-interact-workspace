@@ -72,7 +72,8 @@ PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer inte
 | ARCH-070-SHARED-001 | moda_shared | Ready | None |
 | ARCH-070-SHARED-002 | moda_shared | Pending | ARCH-070-SHARED-001 |
 | ARCH-070-BACKGROUND-001 | moda_background | Pending | ARCH-070-SHARED-002 |
-| ARCH-070-BACKGROUND-002 | moda_background | Ready | None |
+| ARCH-070-BACKGROUND-002 | moda_background | In Progress | None |
+| ARCH-070-BACKGROUND-003 | moda_background | Ready | None |
 
 ## System Validation
 
@@ -87,3 +88,5 @@ Exact valid refreshed product evidence mismatch and exact existing durable termi
 - 2026-11-12: Split recommendation evidence and terminal retry amplification into disjoint independently reviewable Background tasks.
 
 - 2026-11-12 dependency amendment: valid ACTIVE available catalogue products have null onlineStoreUrl; MCP permits this but Shared schema/render and Background refresh reject it. Shared5.13.3 adds nullable URL only PRODUCT_ONLY with link omission; mutations/non-null URL checks unchanged. Shared acceptance -> exact publication -> Background exact-version adoption. Retry task ships independently to stop terminal amplification.
+
+- 2026-11-12 user amendment: BACKGROUND-003 independently owns deterministic trusted recovery checkout footer across eligible AI reply formats before final controls/media/hash. Reuse existing recovery context; do not rely on model or mutable wrapper content. Nonrecovery/STOP/blocked/security paths remain excluded; no host/processor overlap.
