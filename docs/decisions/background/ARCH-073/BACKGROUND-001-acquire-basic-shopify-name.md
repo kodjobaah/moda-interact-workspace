@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T18:57:35Z
@@ -137,24 +137,24 @@ No cross-owner gap. Existing workers can read unchanged media JSON schema; new n
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual source review.
+Actual final source `1cb77855ec91806081ab1d0fad7d131f5e804e87` and durable report `f0a975076` reviewed. Basic name query requires no read_brand; current selected-Shop session identity and locked Shop platform/domain/install checks protect claims/completions. Bounded durable shopifyNameSync remains independent of privileged shopifySourceSync and media JSON. No actionable findings.
 
 ### Reviewed Files
 
-None
+Reader, repository, service/runner, recovery lifecycle, media metadata-preserving transitions, provider/unit/PostgreSQL tests and cadence document.
 
 ### Validation Reviewed
 
-None
+Meaningful prior-behavior red, focused46, disposable PostgreSQL9 plus existing media3, types/scoped lint/build and both exact-head clean CI4028 tests/373 files. Canonical prepared mirrored isolation/base/recursive submodule evidence matches packet. No duplicate architect run needed.
 
 ### Architecture Conformance
 
-Pending
+Conforms to permission-free basic-name capability. No privileged media read, schema/dependency/permission change or per-message provider request. Independent source-state correction is required by approved logo task separation and covered by real persistence tests.
 
 ### Follow-up
 
-None
+Developer owns implementation merge/deployment and genuine production read verification. Text header and permission-gated asset tasks become Ready; neither is implemented by this task. Full architecture remains In Progress.

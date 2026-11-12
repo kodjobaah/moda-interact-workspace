@@ -39,8 +39,8 @@ PRODUCTION / COMPATIBLE ROLLOUT. Accept name acquisition first, then header comp
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-073-BACKGROUND-001 | moda_background | Ready | None |
-| ARCH-073-BACKGROUND-002 | moda_background | Pending | ARCH-073-BACKGROUND-001 |
+| ARCH-073-BACKGROUND-001 | moda_background | Complete | None |
+| ARCH-073-BACKGROUND-002 | moda_background | Ready | ARCH-073-BACKGROUND-001 |
 
 ## Open Questions / Change History
 
@@ -58,9 +58,11 @@ Current published product-image plan requires genuine product identity; add a se
 |---|---|---|---|
 | ARCH-073-SHARED-001 | moda_shared | Ready | None |
 | ARCH-073-SHARED-002 | moda_shared | Pending | ARCH-073-SHARED-001 |
-| ARCH-073-BACKGROUND-003 | moda_background | Pending | ARCH-073-BACKGROUND-001 |
+| ARCH-073-BACKGROUND-003 | moda_background | Ready | ARCH-073-BACKGROUND-001 |
 | ARCH-073-BACKGROUND-004 | moda_background | Pending | ARCH-073-BACKGROUND-002, ARCH-073-BACKGROUND-003, ARCH-073-SHARED-002 |
 
 Privileged Shopify logo acquisition requires actual current read_brand grant; root obtains concrete production permission approval separately. Shared publication requires explicit user approval for the concrete tested public patch before execution. These gates do not block basic-name acquisition or text headers. Rollout: additive Shared acceptance/publication then consumer acceptance; schema unchanged, old plans/frozen records preserved, old-worker drain before newly incompatible evidence. Final architecture completion also requires genuine text/logo/fallback production proof where available and documented permission/media readiness. No separate generic logger/telemetry or infrastructure capability is introduced.
 
 - State separation clarification: basic-name refresh owns shopifyNameSync in existing ShopBrand JSON; permission-gated assets retain independent historical shopifySourceSync. Parser and transitions preserve both cadences/leases and media roles. A shared lease key would incorrectly suppress or clobber the other capability; no database schema change is needed.
+
+- Basic-name implementation accepted at `1cb77855ec91806081ab1d0fad7d131f5e804e87`; independent name/asset state and real PostgreSQL isolation tests passed. Header and permission-gated source tasks are Ready, but execution preparation must incorporate the actual developer-merged source main.
