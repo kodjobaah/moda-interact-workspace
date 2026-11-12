@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -50,12 +50,16 @@ Moderation/STOP changes, sentinel blocklists, provider/model switching, schema o
 
 ## Requirements
 
+- Verify actual public-registry download/install of5.13.2 and matching SHA512 lock integrity before merge/deployment; local accepted-tarball or cache-only installation does not prove registry availability.
+
 - Pin the approved published Shared 5.13.2 package and matching lockfile integrity.
 - Add or adjust a focused consumer regression proving older history precedes the current snowboard question at the actual model boundary.
 - Preserve admission, STOP/consent, tenant ownership, existing message/usage idempotency and delivery behavior.
 - Support coordinator-owned read-only/no-send reproduction and record how production verification will be performed; do not send or replay production messages as an implementation test.
 
 ## Work Items
+
+- [ ] Verify actual public-registry download/install of5.13.2 and matching SHA512 lock integrity before merge/deployment; local accepted-tarball or cache-only installation does not prove registry availability.
 
 - [ ] Pin the approved published Shared 5.13.2 package and matching lockfile integrity.
 - [ ] Add or adjust a focused consumer regression proving older history precedes the current snowboard question at the actual model boundary.
@@ -76,12 +80,16 @@ None
 
 ## Acceptance Criteria
 
+- [ ] Verify actual public-registry download/install of5.13.2 and matching SHA512 lock integrity before merge/deployment; local accepted-tarball or cache-only installation does not prove registry availability.
+
 - [ ] Pin the approved published Shared 5.13.2 package and matching lockfile integrity.
 - [ ] Add or adjust a focused consumer regression proving older history precedes the current snowboard question at the actual model boundary.
 - [ ] Preserve admission, STOP/consent, tenant ownership, existing message/usage idempotency and delivery behavior.
 - [ ] Support coordinator-owned read-only/no-send reproduction and record how production verification will be performed; do not send or replay production messages as an implementation test.
 
 ## Validation
+
+- [ ] Verify actual public-registry download/install of5.13.2 and matching SHA512 lock integrity before merge/deployment; local accepted-tarball or cache-only installation does not prove registry availability.
 
 - [ ] Inspect package scripts and run the relevant model/host/turn integration unit checks.
 - [ ] Run Background typecheck, changed-file lint and required full CI suite.

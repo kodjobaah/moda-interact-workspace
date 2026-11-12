@@ -1052,3 +1052,9 @@ The 2026-10-29 checkout-lifecycle amendment replaces the earlier one-recovery-pe
 Eight implementation/publication tasks independently Accepted/Complete; terminal SYSTEM-TEST001 Ready at Attempt0, unclaimed and manually launched. Architecture remains In Progress pending integrated validation. Shared owns the binding, delivery plan and reusable Node media preparation; Admin owns authoring and initialization; Commerce and Background consume the same contracts. One nullable outbound JSONB column freezes retries. Initial outreach and approved follow-up templates retain their existing paths. No deployed initializer or activation is implied.
 
 [Architecture and exact contracts](ARCH-068-optional-conversation-product-image.md)
+
+## ARCH-069 — Chronological Commerce model conversation inputs (2026-11-12)
+
+Bounded compatible production correction. Shared implementation and exact-artifact publication are Accepted/Complete; Background consumer adoption is Ready with a mandatory actual public-registry install/integrity/CI gate. The serializer must place current context after prior history without changing contracts, trust boundaries, retries or delivery. The exact production indicator cause remains subject to paired no-send diagnostics; actual production answer verification is coordinator-owned. No schema or infrastructure changes.
+
+[Architecture](ARCH-069-chronological-commerce-model-inputs.md) · [Shared tasks](../decisions/shared/ARCH-069/_index.md) · [Background task](../decisions/background/ARCH-069/_index.md)

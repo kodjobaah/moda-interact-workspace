@@ -6,5 +6,5 @@ Coordinator: moda_architect
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-069-SHARED-001 | Preserve chronological model conversation inputs | Ready | None |
-| ARCH-069-SHARED-002 | Publish accepted chronological model adapter | Pending | ARCH-069-SHARED-001 |
+| ARCH-069-SHARED-001 | Preserve chronological model conversation inputs | Complete | None |
+| ARCH-069-SHARED-002 | Publish accepted chronological model adapter | Complete | ARCH-069-SHARED-001 |
