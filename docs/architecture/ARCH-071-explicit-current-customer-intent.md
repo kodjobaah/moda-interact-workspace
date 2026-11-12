@@ -1,7 +1,7 @@
 ---
 id: ARCH-071
 title: Explicit current customer conversation intent
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
@@ -11,74 +11,86 @@ updated: 2026-11-12
 
 ## Status
 
-In Progress. Root approved additive typed current-customer contract after read-only owner/source investigation. Shared implementation/publication Accepted/Complete; Background adoption is executing. ARCH070 remains completed and unchanged.
+Implemented within the documented current-input carrier and named-switch scope. All three tasks are architect-accepted Complete. Final source is merged/deployed, and two successive genuine production named-product changes returned the requested products with the trusted recovery footer and confirmed delivery/read status. General underspecified multi-candidate ambiguity remains a transparent model limitation.
 
-## Problem and Current Architecture
+## Problem and Inspected Architecture
 
-A genuine newer named-product question received a new answer about prior focus. Transport/delivery succeeded; no sticky host override or replay was established. Exact historical complete model input/reasoning is unavailable. Independently inspected source places current customer text only inside context.currentMessages, serialized as data-only JSON; runtime-data authority instructions forbid that context from establishing objective. Older customer history is serialized as ordinary Human content. This is a structural current-intent contract mismatch.
+A newer named-product question received an answer about prior product focus. No transport replay or automatic sticky host override was established. Independently inspected source placed current customer text only in data-only context whose authority rules forbid establishing customer objective, while older customer history had ordinary Human roles. This was a structural request-contract mismatch; exact historical model reasoning was not captured or inferred.
 
-Background authoritative history loader already selects same-conversation INBOUND/CUSTOMER current-window rows, transcription-ready and moderation-allowed, in chronological order. Existing host checks shop/recovery/domain, AI control, inbound/processing version and lease before model/tools. Current entries use role/content shape and existing32,000 Unicode-code-point JSON budget; older history trims separately. The adapter's16,000 legacy history cap is not the current-message contract.
+The existing Background loader already selects same-conversation current-window INBOUND/CUSTOMER rows, checks transcription readiness and moderation, and orders them deterministically. Existing host fences verify shop/recovery/domain, control, inbound/processing version and lease before model/tool work. Those ownership boundaries remain unchanged.
 
-## Goals / Non-Goals
+## Goals and Non-Goals
 
-Explicit server-owned current customer utterances establish present objective through dedicated Human messages, while history remains reference and context/tools remain data. Preserve permission/tenant/system policy, exact chronology, old optional-absent compatibility and all prior accepted selection/referral/footer/retry behavior. No hardcoded product aliases, fuzzy identifier selection, automatic product choice, extra retry loop, provider switch, schema/infra/credential change or production replay.
+Present explicit authoritative-source current customer utterances as conversation content, preserving older history and context/tool data separation. Current content establishes the customer objective subject to system policy; it grants no tenant, tool, consent or policy authority.
 
-## Proposed Architecture and Contracts
+No hardcoded product aliases, implemented fuzzy identifier mapping, automatic product selection, clearing all references, new retry loop, alternate provider/model, database migration, infrastructure change or processed-input replay is introduced. A deterministic semantic ambiguity resolver or restrictive explicit-choice UX is outside this bounded fix.
 
-Shared defines optional currentCustomerMessages: readonly {role:user,content:string}[], strict and nonempty when present, role/content only. Current JSON-encoded array fits32,000 Unicode code points with no arbitrary lower row/pertext limit; existing overall payload byte cap still applies. Invalid role/shape/budget fails closed without provider work, truncation, dropping or coercion. Runner preflight validates/copies, every step/repair forwards, and direct adapter validates independently. Optional absence leaves legacy behavior unchanged; opted-in custom invokers must honor the new field.
+## Contract and Serialization
 
-Serialization order is System -> older history -> data-only context -> dedicated current Human utterances -> current-turn tool data. Explicit current utterances can establish request/objective, never permissions or tenant authority. Latest explicitly named subject takes precedence over prior focus; named/typo switch uses authorized fresh lookup or clarification without implemented aliases or fuzzy ID mapping. Generic ambiguity guidance remains, but does not constitute a deterministic semantic resolver. Arbitrary JSON, tool text and merchant/history rows are never promoted into current input.
+Shared owns optional `currentCustomerMessages`, a readonly array of exact `{role: "user", content: string}` rows. When present, the array and content strings are nonempty, unknown fields/other roles are rejected, and raw whitespace/text is preserved. JSON-encoded current rows fit the existing 32000 Unicode-code-point budget without a new lower row/UTF16 cap. Context/history/current share the existing 131072-byte payload limit. Invalid input fails closed without dropping, truncation, coercion or provider work.
 
-Background maps only its authoritative current customer source under existing turn fences and removes duplicate context.currentMessages only for the new typed caller. Other context facts, history and product references stay intact. Empty/malformed current batches must safely avoid model work under existing failure/referral/suppression policy, never synthesize intent or revive older focus.
+Runner preflight validates and freezes a copy. Every model step and forced correction forwards that snapshot. The direct adapter independently validates, suppresses private validation causes and serializes System -> older history -> data-only context -> dedicated current Human utterances -> current tool-result data. Optional absence retains legacy serialization/instructions; custom invokers opting in must preserve the new semantics, not merely compile against the type.
 
-## Request / Event Flow
+Opt-in instructions prioritize an explicitly named current subject over prior focus and retain bounded lookup/clarification guidance. Historical references remain candidate labels, not current facts or automatic identity. Context/tool/history JSON is never extracted or promoted into current customer input.
 
-Authoritative current-window loader -> existing tenant/version/control/lease fences -> optional typed current field -> Shared validation/copy -> model history/context/current/tools ordering -> bounded authorized search/clarification or verified answer -> existing final controls/footer/delivery.
+## Producer, Provenance and Event Flow
 
-## Repository / Data / Failure Boundaries
+Background passes only its server-loaded current customer window through the published helper after existing owned-turn checks. It preserves roles rather than converting merchant/assistant history and removes the duplicate raw current-message context field only for the new typed caller. Other recovery facts, history, references and tools remain intact. Empty/malformed current input produces a bounded nonretryable host failure before model/MCP work; existing terminal cleanup prevents retry amplification. There is no invented fallback from older dialogue.
 
-Shared owns canonical contract/validation/serialization/instruction mechanics and exact release. Background owns source provenance, domain data and existing authorization/control/freshness. No database migration, queue contract or durable lifecycle change. Keep existing cancellation, budgets, strict final validation, retries and idempotency. New input validation must not cause repeat-processing amplification.
+Authoritative loader -> tenant/version/control/lease fences -> strict current snapshot -> Shared model/correction propagation -> dedicated current Human content -> authorized lookup or answer -> existing fresh evidence, final controls, footer and delivery.
 
-## Security and Observability
+## Repository and Durable-State Boundaries
 
-Current text remains untrusted for policy/tool/tenant authority even though it supplies customer objective. Prompt injection, fake current fields in context/tool/history and cross-tenant/stale inputs require negative regressions. Existing shared logging suffices; diagnostics, if needed, use counts/lengths/booleans only. Public records use synthetic examples/coarse outcomes; no private customer text or operational identifiers. No new telemetry/Gateway task required: topology/env unchanged.
+Shared owns canonical validation/types, propagation, serialization and opt-in instruction mechanics, published through existing commerce/model entrypoints. Background owns source provenance and service policy and consumes the exact published package rather than sibling source. No database schema, queue contract, transaction, ordering, lease or idempotency mechanism changed. Existing cancellation/budgets, strict final response, shipping evidence, recovery footer and delivery behavior from ARCH-069/070 remain intact.
 
-## Rollout / Migration
+## Security, Observability and Infrastructure
 
-PRODUCTION / COMPATIBLE ROLLOUT. Shared additive implementation acceptance -> explicit user approval for concrete tested public5.13.6 artifact -> exact publication/download integrity -> Background adoption/wiring acceptance -> developer merge/deploy -> genuine new-subject production validation. No queue drain or migration. Optional absence preserves old callers; new Background uses published field, never sibling source. Rollback is prior code/package without rewriting processed messages.
+Current text supplies objective only; existing grants and tenant/control fences continue to deny unauthorized actions. Tests cover malformed roles/keys, fake current input in context/history, unauthorized tools, private error causes, moderation and current-window provenance. Diagnostics use bounded fixed states without customer prose or arbitrary validation keys.
+
+Existing shared logging and operational signals suffice. No new generic logger/telemetry, Gateway task, service topology, environment variable or infrastructure configuration is required. Public evidence contains coarse outcomes and public source/release identities only; no operational/customer/provider identifiers, private prompt, recipient details or recovery URL is committed.
+
+## Scope Decision and Known Limitation
+
+Frozen synthetic provider cases passed exact-name, typo and harder-misspelling switches after a different prior focus. Both original and revised underspecified multiple-candidate samples still selected a candidate without clarification. They are failed samples and are not relabeled as successes.
+
+Root explicitly approved separating the proven carrier/named-switch correction from a deterministic semantic resolver before acceptance. Fresh fact verification alone cannot prove intended identity. A reliable broader ambiguity boundary would require a separately designed resolution/choice contract, including presentation/ordinal/naming semantics. No additional prompt iteration or unrequested restrictive UX was silently added. Generic clarification guidance remains empirical model guidance; ambiguous requests can still be misinterpreted.
+
+## Rollout and Compatibility
+
+PRODUCTION / COMPATIBLE ROLLOUT: accepted Shared source -> explicit approval of the tested public artifact -> exact publication/download verification -> accepted Background wiring -> developer merge/deploy -> genuine production validation. No migration or queue drain was required. Optional absence preserves old callers. Rollback changes code/package revisions without rewriting processed messages.
+
+Final Shared merge: `11c47feac3a823a586e5f597583c7eb0359b99ca` (PR80). Final Background merge: `60b8d0b2f2f80922e8194020e65dd74c16327cf7` (PR205). Developer reconciled final parent gitlinks in `63f4107a8`, excluding unrelated workspace changes.
+
+Exact public package `@modainteract/moda-interact-shared@5.13.6` was published once after explicit user approval. Canonical metadata and actual downloaded 517461-byte artifact independently matched SHA256 `fbe8e97a3018ddcfbd29f85c4acc4fdab5447681bf94d4bc41695e6f6c44e049`. Release reused the accepted artifact without rebuilding or repeating implementation validation.
 
 ## Decisions / Tasks
 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-071-SHARED-001 | moda_shared | Complete | None |
-| ARCH-071-SHARED-002 | moda_shared | Complete | ARCH-071-SHARED-001 and explicit public-release approval |
+| ARCH-071-SHARED-002 | moda_shared | Complete | ARCH-071-SHARED-001; explicit public-release approval obtained |
 | ARCH-071-BACKGROUND-001 | moda_background | Complete | ARCH-071-SHARED-002 |
 
-## Validation and Completion Gate
+## Validation
 
-Deterministic schema/order/all-step propagation and security tests, actual published runner/host source-provenance regressions, synthetic multi-turn real-provider exact/typo named-switch conformance and final genuine production new-subject response are required. Unsupported old-subject carryover is not accepted. Multiple-candidate ambiguity is recorded as a known semantic limitation, not a passed resolver test. No separate system-test task currently applicable to this bounded request contract; reevaluate if implementation discovers wider boundaries. Architecture remains In Progress until genuine integrated proof and documentation reconciliation.
+Task reports retain exact commands, reviewed heads and prepared mirrored isolation/synchronization evidence. Shared passed 755 full tests with three expected integration skips, types, ESM/DTS build, immutable installed JS/DTS/public exports and carrier/security regressions. Exact/typo/harder synthetic provider successes and both ambiguity failures are recorded separately; no private customer data or real commerce mutation was used.
 
-## Open Questions
+Background passed 125 host,33 loader/proxy/installed-SDK,200 compatibility and75 processor checks, types/scoped lint and both exact-head full CI runs (3990 tests across369 files). Ten prior-host red cases established the original missing carrier/guard. Existing untouched full-lint unused declarations remain documented; no unrelated cleanup or full-lint success is claimed. Loader/database behavior is unchanged, so fixture/current-query tests were appropriate without a broad unrelated PostgreSQL suite.
 
-No blocking design question; root approved exact role/content shape, existing32k budget, optional absence and trust distinction. Exact historical reasoning is not inferred.
+No separate system-test task is applicable to this bounded request contract. Published-package/host/source-provenance/SDK tests, synthetic provider conformance and genuine production observation below cover the affected boundaries; no unrun terminal task is implied.
 
-## Change History
+## Genuine Production Verification
 
-- 2026-11-12: Read-only source findings established current-input/data-authority mismatch; root approved additive explicit current-customer conversation contract and gated release/adoption.
+The coordinator confirmed final source Live and the previous worker drained before requesting a fresh named-product change after a different prior focus. The misspelled named request reached the expected newly requested product, with fresh verified details and the correct product image/caption. The body ended with the exact active trusted recovery footer. Meta returned HTTP200/HTTP_ACCEPTED and durable status progressed to delivered and read. The first verified job completed on its first attempt.
 
-- Routine contract clarification: present current batches and each content string are nonempty; raw whitespace/text is preserved without trimming. Empty strings fail closed, with no synthesized fallback or silent dropping. Existing32k Unicode JSON and overall-byte limits unchanged.
+A subsequent genuinely different named-product request also switched correctly and included the trusted footer, with delivered/read confirmation. Current turns closed, pending/processing state cleared and no new failed rows were observed. No spoofed request, manual database/queue mutation or processed-version replay was used. Detailed operational correlation remains protected outside source control.
 
-- Synthetic provider validation finding before acceptance: exact new-name and typo cases used appropriate fresh identity/read or authorized search, but a multiple-candidate ambiguous case selected a known candidate without clarification. No private customer context or real commerce calls were used. Acceptance/publication remains gated; generic identity-resolution guidance is refined and final checks/provider cases must rerun on the frozen candidate. Fresh facts alone do not establish intended subject; recency does not resolve multiple plausible candidates. These model samples are empirical conformance evidence, not a deterministic semantic resolver or historical-reasoning proof.
+These observations verify the reported named/typo switch in production; they do not establish a general ambiguity-resolution guarantee. The development store's previously documented password gate and lack of payment-completion testing are unchanged.
 
-## Evidence-Based Scope Decision
+## Open Questions and Change History
 
-Root approved separating the explicit current-customer carrier/named-switch correction from a general semantic ambiguity resolver. Deterministic schema/provenance/order/authority tests pass, and frozen-provider exact-name and typo cases select the appropriate new subject through authorized reads. Two underspecified multiple-candidate samples still selected a candidate without clarification; both remain failed empirical samples, with no historical-reasoning claim. A deterministic ambiguity boundary would require a separately designed identity-resolution or explicit-choice contract, including presentation/ordinal/naming semantics. That mechanism and restrictive UX were not requested and are not silently added. Current generic guidance stays without more prompt churn. Acceptance covers carrier/named-switch behavior; final communication must disclose the ambiguity limitation.
+None blocking for this scoped correction. Historical exact reasoning remains unconfirmed and general multi-candidate ambiguity remains disclosed.
 
-- Shared001 Accepted/Complete17fcced under documented carrier/named-switch scope;755pass3skip/types/build/installed exports and exact/typo/harder synthetic switch pass. Both ambiguous samples remain failed/non-guaranteed. User explicitly approved concrete public5.13.6 release; publication002 Ready after developer merge, exact artifact only. Background/prod verification remain pending.
-
-- Publication002 Accepted/Complete: explicit authorization/sole canonical receipt and actual517461-byte public5.13.6 download independently match accepted fbe8e97a hash. Background001 Ready; publication does not establish live improvement or resolve known semantic ambiguity.
-
-- Background001 prepared on current accepted runtime base after exact public5.13.6 byte acceptance; authoritative current-input wiring is executing. No live named-switch proof claimed.
-
-- Background001 Accepted/Complete at a570a6b: 125 host,33 boundary,200 compatibility,75 processor tests plus types/scoped lint and both exact-head CI3990/369 passed. All three tasks accepted. Developer merge/deployment and genuine named-switch proof remain pending; generic ambiguity remains a disclosed limitation.
+- 2026-11-12: Source findings established the current-input/data-authority mismatch; additive contract and existing budgets approved.
+- 2026-11-12: Synthetic ambiguity failures preserved and semantic resolver scope explicitly separated before acceptance.
+- 2026-11-12: All three tasks accepted, exact approved release adopted, and successive genuine named switches verified through delivery/read. Architecture marked Implemented within stated limits.
