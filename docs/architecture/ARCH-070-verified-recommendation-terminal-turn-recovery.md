@@ -151,6 +151,8 @@ User authorized fixing referralReason and repeating tested/reviewed deployment. 
 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-070-SHARED-005 | moda_shared | Ready | ARCH-070-SHARED-004 |
-| ARCH-070-SHARED-006 | moda_shared | Pending | ARCH-070-SHARED-005 |
+| ARCH-070-SHARED-005 | moda_shared | Complete | ARCH-070-SHARED-004 |
+| ARCH-070-SHARED-006 | moda_shared | Ready | ARCH-070-SHARED-005 |
 | ARCH-070-BACKGROUND-005 | moda_background | Pending | ARCH-070-SHARED-006 |
+
+- Shared005 Accepted/Complete7b5c4a6;112focused/743fullpass3skip/types/build/installed exports and coordinator final-built synthetic provider conformance all passed. Exact5.13.5 artifact accepted SHA25671118ab02b14ffb36659a8cc6ba5caa91055bb8f3da48a23b3c731c7366ba6ed; publication006 Ready after merge. Historical raw invalid value and production success remain unclaimed.
