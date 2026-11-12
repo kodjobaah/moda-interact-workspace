@@ -71,7 +71,7 @@ PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer inte
 |---|---|---|---|
 | ARCH-070-SHARED-001 | moda_shared | Complete | None |
 | ARCH-070-SHARED-002 | moda_shared | Complete | ARCH-070-SHARED-001 |
-| ARCH-070-BACKGROUND-001 | moda_background | Ready | ARCH-070-SHARED-002 |
+| ARCH-070-BACKGROUND-001 | moda_background | Complete | ARCH-070-SHARED-002 |
 | ARCH-070-BACKGROUND-002 | moda_background | Ready | None |
 
 ## System Validation
@@ -91,3 +91,5 @@ Exact valid refreshed product evidence mismatch and exact existing durable termi
 - Shared001 Accepted/Complete at bf642ea:719 pass/3 expected skips, focused26, typecheck/build/installed public artifact checks passed. Shared002 Ready after developer merge, exact5.13.3 tarball only.
 
 - Shared002 Accepted/Complete: canonical npm5.13.3 metadata and506885 downloaded artifact bytes independently verified against accepted hash. Background001 promoted Ready; publication alone makes no live deployment claim.
+
+- Background001 Accepted/Complete Attempt2 at91f880e; exact5.13.3 public artifact, host90/focused57/typecheck/scoped lint and both final combined CI passed, with merged retry/footer ancestors. Four untouched main full-lint unused declarations documented; no unrelated cleanup. Developer deployment/genuine recommendation-footer verification still pending.
