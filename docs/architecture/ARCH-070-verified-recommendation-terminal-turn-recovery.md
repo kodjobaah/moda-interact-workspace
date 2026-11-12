@@ -114,3 +114,13 @@ Root/developer observed final production messaging worker deployment `dep-dbqrun
 A genuine new inboundVersion6 at13:38:29Z (`cmwdlfp570001rf16ifuk2wcq`) asked “what other things do you sell”. On final deployed244304ad, two product searches succeeded and the third model step returned ANSWER. At13:38:49.622Z, composition recorded valid selection syntax but no product proposals (`MODEL_SELECTED_NO_RECOMMENDATIONS`, refresh plan0), then refused `MISSING_VERIFIED_PRODUCT_SELECTION`. Typed INVALID_FINAL was durably completed as terminal at13:38:49.710Z; subsequent repair passes remained zero.
 
 This does not validate the null-URL gate or successful recommendation/footer delivery: no products reached refresh because the model omitted structured selections. Existing accepted null-URL, footer and terminal-retry changes remain independently tested. Root is inspecting the actual final response/runner contract read-only before defining another bounded correction; no product selection may be invented or tenant/evidence checks bypassed. Architecture stays In Progress and parent PR985 remains draft. Final customer-facing recommendation/footer success is not claimed.
+
+## Semantic Selection Contract Amendment
+
+Provider-free proofs establish two independently reproducible gaps: schema-valid nonempty productRecommendations without matching version is considered selected by runner but dropped by host; truthy null/null shipping without meaningful disposition similarly bypasses repair and is discarded. Historical exact production version6 final shape remains unconfirmed. Shared003 owns one canonical normalization/eligibility implementation and aligns the existing bounded runner repair, Shared004 publishes accepted5.13.4, Background004 adopts that helper and bounded shape-only diagnostics. No guessed IDs/version, automatic product choice or extra queue/model retry loop is authorized. Existing accepted tasks remain Complete; architecture remains In Progress.
+
+| Task | Owner | Status | Dependencies |
+|---|---|---|---|
+| ARCH-070-SHARED-003 | moda_shared | Ready | ARCH-070-SHARED-002 |
+| ARCH-070-SHARED-004 | moda_shared | Pending | ARCH-070-SHARED-003 |
+| ARCH-070-BACKGROUND-004 | moda_background | Pending | ARCH-070-SHARED-004 |
