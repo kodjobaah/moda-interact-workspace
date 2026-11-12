@@ -9,12 +9,13 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: pending
 priority: 10
-executor: codex
-claimed_at: 2026-11-12T12:39:23Z
+executor: null
+claimed_at: null
 attempt: 1
-depends_on: []
+depends_on:
+  - ARCH-070-SHARED-002
 enables: []
 created: 2026-11-12
 updated: 2026-11-12
@@ -58,7 +59,7 @@ Consume published Shared contracts and existing MCP product evidence / durable c
 
 ## Dependencies
 
-None. The two ARCH-070 tasks are independently executable on disjoint modules; final developer integration must preserve both changes.
+ARCH-070-SHARED-002. Retry-policy task BACKGROUND-002 remains independently executable; recommendation adoption waits for the accepted published nullable PRODUCT_ONLY URL contract.
 
 ## Enables
 
@@ -126,7 +127,7 @@ Pending
 
 ### Review Notes
 
-Pending actual implementation review.
+Architectural dependency discovered before implementation: Shared schema/render requires URL. Claim cleared; task Pending until Shared001 acceptance and Shared002 publication. Preserve attempt1; next prepared claim increments once. Pin published5.13.3 and accept null URL only PRODUCT_ONLY; mutation URL requirements and all nonnull URL/domain checks remain strict.
 
 ### Reviewed Files
 
