@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-11-12T13:47:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-070-SHARED-002
@@ -158,24 +158,24 @@ None within this approved correction. Canonical parser/qualifier are ready for B
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Pending actual implementation review.
+Reviewed actual implementation8390849 and durable reportc7bf4fafd. Canonical normalized parser preserves existing host semantics and structural optional-field schemas; generic custom pinned contracts retain supported-field behavior. Runner and forced schema use the same accepted canonical version/list pair and qualified current-turn shipping identities. Missing pairs, unobserved/disposition-only shipping escapes and mismatched provider/product/variant cannot bypass the existing bounded correction. Matched null/null policy-unavailable limitations remain valid. Generic-policy schema constrains any optional shipping identity to null/null. No guessed IDs/version, product auto-selection, new reads or additional repair/queue loop. Current-turn provenance remains existing tool boundary responsibility.
 
 ### Reviewed Files
 
-None
+recommendation-selection.ts and tests; runner/product-selection.ts and selection-semantics.test.ts; invoke-model/validate-final-response nodes; public commerce export, installed validators and package metadata.
 
 ### Validation Reviewed
 
-None
+Two original-code red regressions; final154 focused and736 full passes/3 expected skips; typecheck, ESM+DTS build, immutable installed JS/public declarations and browser/Node exports. Physical mirrored preparation/sync/submodule evidence and diff scope verified. Independently hashed accepted candidate SHA256fcf2cc8d78c327b85a6de777541ea5ba53b659079234e790aec3d0fd97b47693. Synthetic real-provider conformance is supplementary only, not historical production proof.
 
 ### Architecture Conformance
 
-Pending
+Conforms to Shared-first canonical parsing/qualification and bounded repair, preserving tenant/host authorization boundaries and existing contracts. No private prose/secret diagnostics or cross-owner source edits. Historical version6 exact raw shape remains unconfirmed and production success unverified.
 
 ### Follow-up
 
-None
+Developer may merge PR78. Shared004 Ready for sole publication of exact accepted5.13.4 artifact after merge, with actual public downloaded hashes required before Background004. Do not rebuild or repeat implementation validation in publication.

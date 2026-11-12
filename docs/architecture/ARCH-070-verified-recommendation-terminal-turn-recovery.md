@@ -121,10 +121,12 @@ Provider-free proofs establish two independently reproducible gaps: schema-valid
 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-070-SHARED-003 | moda_shared | Ready | ARCH-070-SHARED-002 |
-| ARCH-070-SHARED-004 | moda_shared | Pending | ARCH-070-SHARED-003 |
+| ARCH-070-SHARED-003 | moda_shared | Complete | ARCH-070-SHARED-002 |
+| ARCH-070-SHARED-004 | moda_shared | Ready | ARCH-070-SHARED-003 |
 | ARCH-070-BACKGROUND-004 | moda_background | Pending | ARCH-070-SHARED-004 |
 
 - Runtime evidence amendment: canonical static shipping selection remains valid with recognized disposition, but runner bypass/forced repair alternatives require matching successful authorized current-turn shipping observation. Host missing-selection guard uses actual verified shipping presentation, not raw truthy model selection. Search-only/failed/mismatched observations do not qualify. Shared003/BG004 positive observed shipping and negative unobserved shipping tests required; existing one-repair limits unchanged.
 
 - Shipping qualifier precision: truthy rendered limitation alone does not establish evidence. Shared003 owns canonical recognized-result/provider/selection identity qualification, reused by runner and Background004 fresh-output gate (expected provider where known). With product observations, disposition-only SHIPPING_INFORMATION_UNVERIFIED also requires that evidence; matched null/null NOT_REQUESTED policy-unavailable limitations and shipping-only/no-product paths remain truthful and compatible. No extra reads or repair loop.
+
+- Shared003 Accepted/Complete8390849;154 focused/736 full pass3skip/types/build/installed immutable exports pass. Exact5.13.4 artifact accepted; publication004 Ready after developer merge. Historical raw cause and production success remain unclaimed.

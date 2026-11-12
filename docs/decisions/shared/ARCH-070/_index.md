@@ -7,5 +7,5 @@ Architecture: docs/architecture/ARCH-070-verified-recommendation-terminal-turn-r
 | ARCH-070-SHARED-001 | Complete | None |
 | ARCH-070-SHARED-002 | Complete | ARCH-070-SHARED-001 |
 
-| ARCH-070-SHARED-003 | Ready | ARCH-070-SHARED-002 |
-| ARCH-070-SHARED-004 | Pending | ARCH-070-SHARED-003 |
+| ARCH-070-SHARED-003 | Complete | ARCH-070-SHARED-002 |
+| ARCH-070-SHARED-004 | Ready | ARCH-070-SHARED-003 |
