@@ -11,7 +11,7 @@ updated: 2026-11-12
 
 ## Status
 
-In Progress. Root approved additive typed current-customer contract after read-only owner/source investigation. Shared source task Ready; publication and consumer Pending. ARCH070 remains completed and unchanged.
+In Progress. Root approved additive typed current-customer contract after read-only owner/source investigation. Shared implementation/publication Accepted/Complete; Background adoption is executing. ARCH070 remains completed and unchanged.
 
 ## Problem and Current Architecture
 
@@ -53,7 +53,7 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared additive implementation acceptance -> ex
 |---|---|---|---|
 | ARCH-071-SHARED-001 | moda_shared | Complete | None |
 | ARCH-071-SHARED-002 | moda_shared | Complete | ARCH-071-SHARED-001 and explicit public-release approval |
-| ARCH-071-BACKGROUND-001 | moda_background | Ready | ARCH-071-SHARED-002 |
+| ARCH-071-BACKGROUND-001 | moda_background | In Progress | ARCH-071-SHARED-002 |
 
 ## Validation and Completion Gate
 
@@ -78,3 +78,5 @@ Root approved separating the explicit current-customer carrier/named-switch corr
 - Shared001 Accepted/Complete17fcced under documented carrier/named-switch scope;755pass3skip/types/build/installed exports and exact/typo/harder synthetic switch pass. Both ambiguous samples remain failed/non-guaranteed. User explicitly approved concrete public5.13.6 release; publication002 Ready after developer merge, exact artifact only. Background/prod verification remain pending.
 
 - Publication002 Accepted/Complete: explicit authorization/sole canonical receipt and actual517461-byte public5.13.6 download independently match accepted fbe8e97a hash. Background001 Ready; publication does not establish live improvement or resolve known semantic ambiguity.
+
+- Background001 prepared on current accepted runtime base after exact public5.13.6 byte acceptance; authoritative current-input wiring is executing. No live named-switch proof claimed.
