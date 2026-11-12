@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 15
 executor: codex
 claimed_at: 2026-11-12T19:19:31Z
@@ -139,24 +139,24 @@ No unresolved implementation contract gap after amendment. Historical Admin prot
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual source review.
+Reviewed actual `cb7c0ce57feb69ca839342ea4d7ddd57a599ed1e`, provider schema/reference evidence and report `6faef837a`. Supported stable tokenless Storefront replaces invalid historical Admin assumptions. Exact current installed domain, pinned API response, bounded credential-free request and locked install/tenant revalidation protect observations. Public provenance is explicit; unavailable/locked never means absent. No findings.
 
 ### Reviewed Files
 
-None
+Public reader/mapping/contracts, repository/service/runner and recovery lifecycle, new unit/PostgreSQL tests and public-source document.
 
 ### Validation Reviewed
 
-None
+Stable Storefront validation/reference proof, rejected unsupported Admin historical contract; reader16/new19 plus relevant pipeline, real PostgreSQL asset10/name9/media3, types/scoped lint/build, both exact-head CI4048 tests/376 files. Dedicated prepared mirrored isolation and recursive synchronization evidence matches packet. No duplicate tests required.
 
 ### Architecture Conformance
 
-Pending
+Conforms to amended public source route, no permissions/credential/channel changes, no brandName overwrite or direct READY. Independent name/asset/media JSON and stale-observation ordering preserved. No logo delivery claim: current development shop remains CHANNEL_LOCKED and needs separately authorized supported source readiness.
 
 ### Follow-up
 
-None
+Developer merges source and parallel header owner incorporates actual main before final combined CI. BG004 remains gated by accepted header and published Shared gate. Production asset bootstrap/readiness and genuine logo/fallback proof are root-owned; text fallback does not prove a logo was sent.

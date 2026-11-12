@@ -58,7 +58,7 @@ Current published product-image plan requires genuine product identity; add a se
 |---|---|---|---|
 | ARCH-073-SHARED-001 | moda_shared | Ready | None |
 | ARCH-073-SHARED-002 | moda_shared | Pending | ARCH-073-SHARED-001 |
-| ARCH-073-BACKGROUND-003 | moda_background | Ready | ARCH-073-BACKGROUND-001 |
+| ARCH-073-BACKGROUND-003 | moda_background | Complete | ARCH-073-BACKGROUND-001 |
 | ARCH-073-BACKGROUND-004 | moda_background | Pending | ARCH-073-BACKGROUND-002, ARCH-073-BACKGROUND-003, ARCH-073-SHARED-002 |
 
 Privileged Shopify logo acquisition requires actual current read_brand grant; root obtains concrete production permission approval separately. Shared publication requires explicit user approval for the concrete tested public patch before execution. These gates do not block basic-name acquisition or text headers. Rollout: additive Shared acceptance/publication then consumer acceptance; schema unchanged, old plans/frozen records preserved, old-worker drain before newly incompatible evidence. Final architecture completion also requires genuine text/logo/fallback production proof where available and documented permission/media readiness. No separate generic logger/telemetry or infrastructure capability is introduced.
@@ -68,3 +68,5 @@ Privileged Shopify logo acquisition requires actual current read_brand grant; ro
 - Basic-name implementation accepted at `1cb77855ec91806081ab1d0fad7d131f5e804e87`; independent name/asset state and real PostgreSQL isolation tests passed. Header and permission-gated source tasks are Ready, but execution preparation must incorporate the actual developer-merged source main.
 
 - Asset route correction: stable Admin2026-07 and2026-10 reject historical Shop.brand/QueryRoot.branding. Stable Storefront2026-07 brand schema and tokenless public reference-store read are verified. BG003 uses that supported public route, with no read_brand/new credential. Current development store reports CHANNEL_LOCKED; retain known media and treat as operational unavailable, never absence or a reason to unlock/create credentials. Current installed tenant/domain/installation locks remain authority; public source is labelled honestly. One-time administrator-verified Shopify UI source bootstrap is under separate root assessment, not task permission for production writes.
+
+- Stable public asset acquisition accepted at `cb7c0ce57feb69ca839342ea4d7ddd57a599ed1e`; provider contract, current-domain persistence/race tests and both clean CI passed. Selected development shop remains CHANNEL_LOCKED; no production logo readiness/delivery is claimed.

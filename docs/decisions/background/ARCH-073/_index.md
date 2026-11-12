@@ -6,5 +6,5 @@ Architecture: docs/architecture/ARCH-073-tenant-recovery-shop-headers.md
 |---|---|
 | ARCH-073-BACKGROUND-001 | complete |
 | ARCH-073-BACKGROUND-002 | ready |
-| ARCH-073-BACKGROUND-003 | ready |
+| ARCH-073-BACKGROUND-003 | complete |
 | ARCH-073-BACKGROUND-004 | pending |
