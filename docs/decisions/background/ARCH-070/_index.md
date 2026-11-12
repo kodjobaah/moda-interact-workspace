@@ -12,4 +12,4 @@ Assigned Agent: moda_background; Coordinator: moda_architect.
 
 | ARCH-070-BACKGROUND-004 | Canonical selection semantics adoption | Complete | ARCH-070-SHARED-004 |
 
-| ARCH-070-BACKGROUND-005 | Typed referral contract adoption | Pending | ARCH-070-SHARED-006 |
+| ARCH-070-BACKGROUND-005 | Typed referral contract adoption | Ready | ARCH-070-SHARED-006 |
