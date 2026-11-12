@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 15
 executor: codex
 claimed_at: 2026-11-12T20:00:49Z
@@ -81,9 +81,9 @@ Background-owned platform-configuration repository/contracts/service may expose 
 
 ## Work Items
 
-- [ ] Implement only the bounded capability and document compatibility/rollout.
-- [ ] Add meaningful prior-behavior red and regression/concurrency/security coverage.
-- [ ] Complete required validation and mirrored task report/push.
+- [x] Implement only the bounded capability and document compatibility/rollout.
+- [x] Add meaningful prior-behavior red and regression/concurrency/security coverage.
+- [x] Complete required validation and mirrored task report/push.
 
 ## Interfaces / Contracts
 
@@ -101,17 +101,17 @@ Dependent tasks only after architect acceptance.
 
 ## Acceptance Criteria
 
-- [ ] Required bounded behavior works without hardcoded identity or broader permissions.
-- [ ] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
-- [ ] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
-- [ ] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
+- [x] Required bounded behavior works without hardcoded identity or broader permissions.
+- [x] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
+- [x] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
+- [x] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Product-priority, logo/plain text, HUMAN configured/passthrough/notices, missing/stale/foreign/tampered logo, caption/Unicode/full text fallback.
-- [ ] Actual PostgreSQL HUMAN frozen media/replay/moderation/final permit/provider identity and competing asset/control/domain changes; legacy text/product evidence.
-- [ ] Fresh public-registry package install/integrity, focused + full CI, types/scoped lint/declared build; no live sends.
-- [ ] Diff/secret hygiene and canonical isolated mirrored execution/report evidence.
+- [x] Product-priority, logo/plain text, HUMAN configured/passthrough/notices, missing/stale/foreign/tampered logo, caption/Unicode/full text fallback.
+- [x] Actual PostgreSQL HUMAN frozen media/replay/moderation/final permit/provider identity and competing asset/control/domain changes; legacy text/product evidence.
+- [x] Fresh public-registry package install/integrity, focused + full CI, types/scoped lint/declared build; no live sends.
+- [x] Diff/secret hygiene and canonical isolated mirrored execution/report evidence.
 
 ## Stop Condition
 
@@ -125,27 +125,53 @@ You are not alone. Preserve others' changes. Use prepared canonical packet. Root
 
 ### Status
 
-Not Started
+Ready for Review. Implementation and validation complete; awaiting moda_architect review.
 
 ### Files Changed
 
-None
+- Background dependency/lock and exact-version consumer assertions adopt public Shared 5.13.7.
+- `conversation-brand-media.ts`, `conversation-delivery-plan.ts` and the existing READY resolver implement current LOGO→SQUARE selection, canonical published plans, full-caption fallback and strict local immutable envelope.
+- Wrapper/AI/HUMAN preparation, dispatcher and outbound delivery/fence carry the same complete body, original authority/header, plan and media-policy snapshot through moderation, persistence and one physical IMAGE send.
+- Background platform-configuration repository/contracts/service add optional same-validated-row `rowId`; ordinary/default snapshots remain compatible.
+- Focused unit and disposable PostgreSQL logo tests cover composition, policy/source/domain/control/lease changes, original pending work and caption records. The old fresh arch047 passthrough expectation now includes the already accepted domain header; previously frozen content expectations remain exact. Existing real-row configuration integration assertions include the actual inserted rowId alongside the original exact key/version/value fields.
 
 ### Work Completed
 
-None
+- Product imagery retains priority. Only a current same-shop/domain READY LOGO or SQUARE_LOGO can produce BRAND_IMAGE; cover art, original URLs and fake product identities are excluded.
+- Complete header/authored reply/checkout footer remains unchanged; caption over 1024 Unicode codepoints, missing/unready/config-unavailable media retains complete text before preparation. No extra logo message or post-freeze downgrade.
+- New private envelope freezes original MESSAGE or HUMAN_COMMAND authority, published plan/digest, original verified header and same validated configuration row identity/version. Restart reuses it without ownership/header/media recapture. Legacy raw TEXT/product IMAGE and old HUMAN evidence remain supported unchanged.
+- HUMAN newer inbound remains eligible under existing lease/control policy. Automated MESSAGE retains original version checks. Final DB-only admission revalidates stored header, active shop/domain/current READY source and actual runtime-environment fixed-key policy row under existing lock boundaries.
+- Provider transport uses IMAGE while persisted caption contentType remains TEXT, preserving the merchant read-model contract. HUMAN provider caption/plan is taken from committed admission; notices/AI use the identical persisted/moderated expected body.
+- Read-only Admin writer inspection: `src/lib/admin/platform-configuration/repository.ts:writeConfiguration` performs configuration CAS plus audit in one serializable transaction, without acquiring Shop/ShopBrand locks; no inverted Shop lock cycle was introduced. No Admin edits.
 
 ### Validation Results
 
-Pending
+- Prepared packet `/tmp/moda-arch073-bg004-prepare.json`: canonical isolated mirrored task branches, base ce39ca00723a98f36751547a9acb33fcab6ee368, recursive submodules and claim 91248b201cd14c58703068d59417a642f0de1188 supplied by launcher; no repeated claim/startup changes.
+- Fresh cache `npm ci --ignore-scripts` and Prisma generation succeeded. Independent actual public tarball download HTTP200: 521753 bytes, SHA256 `7d1e115255e2f431d4ad302121edbd34ed81a87fa5b50c466379bb3900d3a623`; public SHA512 equals lock integrity; installed version 5.13.7. No local artifact dependency.
+- Prior-behavior proof: the actual published legacy ConversationDeliveryPlanSchema rejects the valid BRAND_IMAGE accepted by the new canonical union/current Background boundary.
+- Existing wrapper/HUMAN/outbound group: 345/345 passed. Final focused package/config/READY/composition group: 47/47 passed, including configured/unconfigured AI, configured HUMAN, product priority, Unicode/full-body fallback, role preference and immutable replay.
+- Disposable PostgreSQL combined batch: 20/20 passed (new logo tests + existing header/HUMAN send tests). One local readiness timeout recovered via existing bounded startup retry. Initial fixture mutations were rejected by existing DB invariants; tests now use legal control transitions, an actually stale lease token and explicit immutable-write refusal.
+- Final logo PostgreSQL file: 15/15 passed, including both terminal text/template routes sending exactly one image with complete moderated/persisted caption; HUMAN newer inbound; stale asset/domain/name/control/lease; policy revision and delete/recreate same-origin/reset-version refusal; original-header/ownership restart; pending legacy TEXT/product IMAGE preservation; Shop-lock asset race.
+- Typecheck and scoped ESLint passed; diff whitespace passed. Declared `npm run build` passed after the final PostgreSQL run (no overlapping Prisma generation).
+- Implementation source commit 4500bf7 plus final test-only commit 3982f109c1d593cbdc6d2ca9125ccbef496f09a7; PR https://github.com/kodjobaah/moda-interact-background/pull/210. Source-head CI runs 43303901738 (3m13s) and 43303941613 (3m21s) passed on 4500bf7eb3153a128f85f7d2f111d37b1435aff7: 4090 tests / 378 files. Final test-only commit 3982f109c1d593cbdc6d2ca9125ccbef496f09a7 preserves exact configuration snapshot assertions including actual inserted rowId; affected disposable PostgreSQL file passed 3/3 and scoped lint passed. Both final-head required checks passed: [43305033811](https://github.com/kodjobaah/moda-interact-background/actions/runs/43305033811) (1m57s) and [43305046165](https://github.com/kodjobaah/moda-interact-background/actions/runs/43305046165) (1m30s). Runtime source is unchanged from the fully validated source head. No production database, provider, credential, permission or send mutation.
 
 ### Deviations
 
-None
+Necessary bounded amendments were coordinated in the assigned task: a private existing-JSON envelope retains original ownership/header/policy proof; same-row optional configuration identity metadata prevents delete/recreate substitution. No schema, Shared contract/release, generic decoder or other implementation repository changed.
 
 ### Assumptions
 
-None beyond explicit prerequisite gates.
+Queue contracts, usage accounting and send idempotency keys are unchanged; the optional media work is outbound action-path preparation and one provider call. Persisted authority and existing final dispatch CAS preserve retry safety.
+
+Logo authority requires an explicit persisted, validated public-media policy row with identity; default row-absent policy cannot authorize a logo. Full text remains available. Provider IMAGE caption limit is enforced before freeze; after freeze stale proof refuses rather than substituting content.
+
+### Unresolved Issues
+
+The selected development store remains CHANNEL_LOCKED and the standalone user-approved logo/operational READY observation is root-owned. This task did not bootstrap a production asset or send live messages; text fallback is not claimed as logo delivery. Root must perform deployment and genuine provider/image proof.
+
+### Architectural Concerns
+
+Rolling overlap requires draining old messaging/recovery readers before generating new augmented HUMAN commands or new BRAND_IMAGE envelopes. Old readers do not understand the additive private evidence/plan; new readers preserve old frozen bytes. No post-permit media lookup or extra message is used to work around this compatibility boundary.
 
 ## Architect Review
 
