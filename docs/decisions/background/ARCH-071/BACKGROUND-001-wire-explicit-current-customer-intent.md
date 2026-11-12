@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T16:48:45Z
@@ -51,9 +51,9 @@ Approved scope clarification: this task wires the explicit current-input carrier
 
 ## Work Items
 
-- [ ] Establish owned failing regression and exact caller/contract compatibility.
-- [ ] Implement only the defined owned outcome or approved exact release.
-- [ ] Validate required positive/negative boundaries and record exact artifact/heads.
+- [x] Establish owned failing regression and exact caller/contract compatibility.
+- [x] Implement only the defined owned outcome or approved exact release.
+- [x] Validate required positive/negative boundaries and record exact artifact/heads.
 
 ## Interfaces / Contracts
 
@@ -69,15 +69,15 @@ Next ARCH071 publication/consumer gate, followed by developer genuine production
 
 ## Acceptance Criteria
 
-- [ ] Requirements hold, including current-intent objective boundary and unchanged security/budgets.
-- [ ] No silent truncation/drop/coercion, inferred input or tenant/permission promotion.
-- [ ] No private customer prose/operational identifiers in committed evidence or diagnostics.
-- [ ] Canonical mirrored physical isolation, synchronization and recursive submodule evidence recorded.
+- [x] Requirements hold, including current-intent objective boundary and unchanged security/budgets.
+- [x] No silent truncation/drop/coercion, inferred input or tenant/permission promotion.
+- [x] No private customer prose/operational identifiers in committed evidence or diagnostics.
+- [x] Canonical mirrored physical isolation, synchronization and recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Clean public exact artifact install/hash, actual authoritative loader/current-window/moderation/tenant/version/empty input tests, actual published runner/adapter history-context-current-tool ordering and no raw-context duplication; synthetic multi-turn named/typo search-or-clarify positive and injection/tenant/merchant-history negatives. Relevant controls/footer/regressions/types/scoped lint and final exact-head full CI; no real customer sends or processed input replay.
-- [ ] Scope/diff/secret hygiene.
+- [x] Clean public exact artifact install/hash, actual authoritative loader/current-window/moderation/tenant/version/empty input tests, actual published runner/adapter history-context-current-tool ordering and no raw-context duplication; synthetic multi-turn named/typo search-or-clarify positive and injection/tenant/merchant-history negatives. Relevant controls/footer/regressions/types/scoped lint and final exact-head full CI; no real customer sends or processed input replay.
+- [x] Scope/diff/secret hygiene.
 
 ## Stop Condition
 
@@ -91,35 +91,49 @@ You are not alone; preserve others. Use prepared packet paths/branch and actual 
 
 ### Status
 
-Not Started
+Ready for Review. Implementation and required exact-head validation committed/pushed; awaiting moda_architect review.
 
 ### Files Changed
 
-None
+- Exact Shared5.13.6 package/lock and three existing version-consumer assertions.
+- `src/commerce/host.ts`: validate/copy authoritative current CUSTOMER/INBOUND batch using published helper after existing Shop/recovery/domain/AI/version/lease checks; forward typed field to runner and remove duplicate raw JSON field.
+- `src/commerce/host-diagnostics.ts`: fixed safe typed invalid-current diagnostic, no raw validation cause.
+- Actual host current-input/security and named-subject acceptance suites; loader provenance, production proxy and installed SDK serialization tests; terminal INVALID_INPUT processor regression.
 
 ### Work Completed
 
-None
+Only server-owned `context.conversation.messages` supplies the new currentCustomerMessages field. Roles/content are validated exactly, never coerced, trimmed, truncated or synthesized from history, merchant text, tools or arbitrary JSON. Shared prepares an immutable copy; host fails empty/malformed/invalid-role/over-budget batches with bounded typed nonretryable INVALID_INPUT before MCP/model work. No Zod cause or private current content is retained in the failure diagnostic. Existing terminal failure policy completes that exact inbound version after cleanup without sending or requeuing; no lifecycle source behavior changed.
+
+Existing authoritative loader is preserved: same conversation and current pending-window, INBOUND/CUSTOMER, transcription-ready, moderation-approved, ascending createdAt/id. Tests assert query boundaries and actual filter invocation/order. Existing host tenant/version/control/lease/model/tool/final fences remain unchanged. Existing32k Unicode JSON budget is reused, including21 current fragments and a >16k UTF16 content example; no new lower row/text cap.
+
+Audited all Background production model paths: host forwards the runner ModelRequest to production-model invoker; production-model.ts forwards the complete request to the published client unchanged. A production-proxy regression verifies exact typed-field identity. Actual installed public OpenRouter adapter regression intercepts only SDK construction, forbids provider network, and proves System→history→data context→dedicated current Human text→tool data, exact body once and no duplicate JSON body. Legacy optional-absent serializer tests remain green.
+
+Synthetic named and misspelled new-subject host scenarios retain old-focus presentation and both candidate labels, carry latest text across all model steps, perform an authorized target search/fresh read and verify the new selected product rather than prior focus. These deterministic tests establish plumbing and evidence behavior, not language-model intelligence. Prior Shared frozen-provider exact/typo/harder named samples passed; two underspecified multi-candidate samples failed and remain an explicit known ambiguity limitation. No alias map, fuzzy identifier selection, automatic product choice or deterministic general ambiguity resolver was added or claimed. Existing footer, strict referral/selection, shipping, controls, retries and initial-outreach optional-absent consumers remain compatible.
 
 ### Validation Results
 
-Pending
+- Exact public5.13.6 fresh-cache installation `/tmp/moda-arch071-bg001-public-cache` succeeded609 packages; canonical tarball actual GET HTTP200/cache miss. Accepted517461-byte artifact hashfbe8e97a verified at publication gate; canonical lock integrity sha512-bcc7jKLRQU/c7uzLJxXtQbbILsYfCsBXwpdX4fwtejsPvV0fN98eWr49dqmoC7M+4BucF2CJ84n193qbIAJuew==.
+- Prior host red proof: all10 new authoritative-current scenarios failed, demonstrating missing typed carrier/guard. Source restored unconditionally; no unrelated edits reverted.
+- Full published runner/host suite125/125 passed, including named/typo new-focus lookup, empty/role/type/shape/Unicode budget, all-step propagation, trust and no-input-fallback negatives.
+- Loader/current-window/moderation, production proxy and actual installed SDK serialization33 tests/5 files passed serially; no provider network.
+- Recovery footer/control/legacy initial-outreach compatibility200 tests/11 files passed serially; final processor suite75/75 passed including new INVALID_INPUT terminal-cleanup/no-send vector.
+- Final TypeScript and task-owned lint passed after added terminal vector. Existing untouched main four-unused-declaration lint baseline excluded from unrelated cleanup.
+- All tests explicitly use loopback port1 DATABASE_URL/REDIS_URL and test deployment environment. No live provider, Meta send, production mutation, processed-input replay or private prompt export.
+- PR https://github.com/kodjobaah/moda-interact-background/pull/205, final immutable implementationa570a6b33797044c04e0be76ac39244e5a9123fb. Both required exact-head full CI runs passed3,990 tests/369 files, including clean dependency install/Prisma generation/typecheck: https://github.com/kodjobaah/moda-interact-background/actions/runs/43264477203 and https://github.com/kodjobaah/moda-interact-background/actions/runs/43264461715.
 
-### Deviations
+### Physical Isolation / Launcher Evidence
 
-None
+Authoritative `/tmp/moda-arch071-bg001-prepare.json`; ARCH-071-BACKGROUND-001 attempt1 codex; claimed8fe40fe9872f0bb80c8de642b94c7d162499da committed/pushed by launcher. Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-071-BACKGROUND-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-071-BACKGROUND-001`; both branches `task/ARCH-071-BACKGROUND-001`. Shared/default checkouts switched/mutated: no. Another task worktree reused: no.
 
-### Assumptions
+Parent and implementation remote task fast-forward not needed; origin/main already current. Implementation basebada81e6a1a74add0c124de6c60eb72114c04e46. Recursive sync/update passed; database5329d5390d346042895219663f3a040ea54ae168 initialized at recorded commit. No parent implementation gitlink staged. Coordinator-owned architecture/index edits are excluded from this agent's staging.
 
-Host source fences establish provenance; customer content supplies objective only, never authority.
+### Deviations / Assumptions / Unresolved Issues
 
-### Unresolved Issues
-
-Historical exact model reasoning is unconfirmed; structural input-contract defect is verified.
+No scope deviation. No database/queue contract change or additional calls/repair loop. Host/loader use fixture database; database behavior unchanged and no broad unrelated PostgreSQL suite required. Historical exact model reasoning remains unknown. Generic underspecified ambiguity remains explicitly unresolved and is not claimed corrected. Root/developer owns merge/deploy and genuine named-subject production/Meta/footer verification after review; no production success claimed here.
 
 ### Architectural Concerns
 
-Return cross-owner gaps before broadening edits.
+None newly discovered beyond documented semantic ambiguity limitation. Implementation authority stops at review.
 
 ## Architect Review
 
