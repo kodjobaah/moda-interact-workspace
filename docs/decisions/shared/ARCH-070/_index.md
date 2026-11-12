@@ -4,5 +4,5 @@ Architecture: docs/architecture/ARCH-070-verified-recommendation-terminal-turn-r
 
 | Task | Status | Dependencies |
 |---|---|---|
-| ARCH-070-SHARED-001 | Ready | None |
-| ARCH-070-SHARED-002 | Pending | ARCH-070-SHARED-001 |
+| ARCH-070-SHARED-001 | Complete | None |
+| ARCH-070-SHARED-002 | Ready | ARCH-070-SHARED-001 |
