@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T13:47:59Z
@@ -55,9 +55,9 @@ Shipping evidence precision: expose one canonical pure recognized shipping-resul
 
 ## Work Items
 
-- [ ] Reproduce both semantic gaps deterministically against prior implementation.
-- [ ] Implement only owned canonical semantic correction/adoption.
-- [ ] Prove compatibility and bounded failure behavior; report exact validation.
+- [x] Reproduce both semantic gaps deterministically against prior implementation.
+- [x] Implement only owned canonical semantic correction/adoption.
+- [x] Prove compatibility and bounded failure behavior; report exact validation.
 
 ## Interfaces / Contracts
 
@@ -73,15 +73,15 @@ Next publication/consumer task in ARCH-070, then developer production verificati
 
 ## Acceptance Criteria
 
-- [ ] Requirements hold, including unchanged security and bounded failure behavior.
-- [ ] Canonical reusable mechanics are not duplicated across Shared/Background.
-- [ ] No private prose, prompts or secret payloads added to diagnostics.
-- [ ] Prepared mirrored worktree, start-sync and recursive submodule evidence recorded.
+- [x] Requirements hold, including unchanged security and bounded failure behavior.
+- [x] Canonical reusable mechanics are not duplicated across Shared/Background.
+- [x] No private prose, prompts or secret payloads added to diagnostics.
+- [x] Prepared mirrored worktree, start-sync and recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Focused parser/runner red-green regressions and bounded-budget cases, full Shared suite, types/build and installed immutable package JS+DTS/public exports; record exact candidate hashes.
-- [ ] Exact changed-file scope and diff/secret hygiene.
+- [x] Focused parser/runner red-green regressions and bounded-budget cases, full Shared suite, types/build and installed immutable package JS+DTS/public exports; record exact candidate hashes.
+- [x] Exact changed-file scope and diff/secret hygiene.
 
 ## Stop Condition
 
@@ -95,35 +95,64 @@ You are not alone in the codebase. Preserve others' changes. Use the prepared de
 
 ### Status
 
-Not Started
+Ready for Review — implementation `8390849` pushed on `task/ARCH-070-SHARED-003`; PR https://github.com/kodjobaah/moda-interact-shared/pull/78. No merge or package publication performed.
 
 ### Files Changed
 
-None
+- `src/commerce/recommendation-selection.ts`: canonical normalized host selection parser and exported semantic eligibility, canonical-contract detection, matching shipping DTO/provider/identity qualifier and authorized current-turn shipping selection extraction.
+- `src/commerce/index.ts`: public commerce helper/type exports.
+- `src/commerce/runner/graph/nodes/validate-final-response.ts`: use accepted semantic selections for the existing single bounded correction.
+- `src/commerce/runner/product-selection.ts`: require supported canonical version/list pairs; shipping alternatives constrained to observed identities, including optional null/null selection on a generic-policy disposition branch. Custom pinned contracts retain existing behavior.
+- `src/commerce/runner/graph/nodes/invoke-model.ts`: pass current authorized observations/provider to constraint construction and align initial/correction guidance. Same forced finalResponse, tools, budgets and existing repair flag.
+- `src/commerce/recommendation-selection.test.ts`, `src/commerce/runner/selection-semantics.test.ts`: deterministic semantic, parser, current-turn identity/provider, forced-schema, normalization, compatibility, corrected model turn, empty search, cancellation and bounded-budget regressions.
+- `scripts/validate-commerce-entrypoints.mjs`, `scripts/validate-commerce-outreach.mjs`: installed public JS/DTS helper coverage.
+- `package.json`, `package-lock.json`: approved 5.13.4 metadata only; dependencies unchanged.
 
 ### Work Completed
 
-None
+Provider-free read-only reproduction proved both semantic gaps against the prior implementation: nonempty recommendations without version and shipping null/null without disposition were accepted without correction while Background discarded the unusable selection. Two new runner regressions failed before the correction.
+
+Own canonical mechanics now preserve valid partial disposition recovery, normalized empty optional lists, paired recommendations and static recognized-disposition null/null shipping. Runtime shipping alternatives only qualify against matching successful authorized current-turn canonical shipping results, including expected provider when known. Product-search results, failed/malformed/mismatched shipping and historical prose cannot qualify. Matching NOT_REQUESTED null/null policy with unavailable policy remains a truthful limitation. Disposition-only SHIPPING_INFORMATION_UNVERIFIED requires matching generic policy evidence when observed products require a selection.
+
+Existing structural optional-field schemas and .extend consumers are unchanged. Generic/custom contracts without both canonical version/list properties keep existing pinned behavior and are never assigned an unsupported version field. No inferred version/IDs, automatic product choice, extra provider calls, second repair or queue loop. Background adoption/delegation remains its separate repository task.
+
+Prepared launcher/isolation evidence:
+
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-SHARED-003`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-SHARED-003`; both branch `task/ARCH-070-SHARED-003`.
+- Shared/default checkouts switched/mutated: no; another task worktree reused: no.
+- Parent and implementation remote task branch fast-forwards not needed; both origin/main already current.
+- Recursive submodule sync/update passed; no entries.
+- Claim `992f57acf8151f0cb46d99197326a473e2c63fe4`; implementation base `72203015aa7daec41ed4aa76d13c11d7309b10a4`; prepared dependency gate Shared002 Complete.
 
 ### Validation Results
 
-Pending
+- Red regressions: 2 failures before guard correction, both accepted-before/repair-required cases.
+- Final focused parser/runner/structural-contract suite: 154 passed, 0 failed.
+- `npm run typecheck`: passed.
+- Final `npm test`: 739 total; 736 passed, 0 failed, 3 expected integration skips.
+- Final `npm run build`: ESM and declarations passed.
+- Installed immutable tarball JS and strict-null public declaration/import smoke: passed using `node scripts/validate-commerce-outreach.mjs /tmp/modainteract-moda-interact-shared-5.13.4.tgz`.
+- `npm run validate:commerce-entrypoints` and `npm run validate:commerce-presentation`: passed, including browser-like presentation import.
+- `git diff --check`, changed-file scope and secret hygiene: passed. Synthetic identities only; no private prompts/prose, customer payloads or new diagnostics.
+- Final candidate `/tmp/modainteract-moda-interact-shared-5.13.4.tgz`; SHA256 `fcf2cc8d78c327b85a6de777541ea5ba53b659079234e790aec3d0fd97b47693`; SHA1 `32453dd53debf4024899b607632a38046a292c08`; integrity `sha512-EXNoSmbmB3E+hK1bNArMr5dsfZSQ2gHTV4/EoSj8coSCdHepdLfPD9aN2YTEOgYZ9Rwi6mNa9OT/ZBlqCDdJjg==`.
+- Coordinator supplied separate provider-conformance evidence using entirely synthetic context/products: one 327-token forced finalResponse with version 1 and two observed product recommendations, no shipping placeholder. This is not asserted as exact historical production reproduction or a full source-wiring test; actual source wiring is covered by deterministic runner tests.
 
 ### Deviations
 
-None
+Architect-approved runtime evidence clarification added during this attempt and read in full. A final reviewed generic-policy optional-shipping identity constraint required rerunning affected final checks. Test-only tuple/union narrowing annotations were corrected; final checks and artifact all use the same frozen runtime source. Existing validated dependencies reused through an ignored node_modules symlink; dependency resolution unchanged.
 
 ### Assumptions
 
-Historical exact raw final shape remains unconfirmed; deterministic contract gaps are reproduced.
+Authorized current-turn observation provenance is maintained by the existing runner tool-execution boundary. The pure qualifier does not replace host tenant, ownership, deadline, fresh-read or provider authorization fences and does not invent a new timestamp TTL. Background must reuse it for fresh-result identity/provider verification after publication.
 
 ### Unresolved Issues
 
-None beyond owned correction.
+Exact historical production version6 final raw shape remains unavailable; deterministic semantic gaps are proven but historical exact causality is not claimed. Separate accepted artifact publication, downloadable registry integrity and Background adoption/deployment verification remain pending owner tasks.
 
 ### Architectural Concerns
 
-Return cross-owner gaps before modifying outside scope.
+None within this approved correction. Canonical parser/qualifier are ready for Background delegation after published dependency adoption; no cross-repository edits performed here.
 
 ## Architect Review
 
