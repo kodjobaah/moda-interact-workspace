@@ -14,7 +14,7 @@ priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: 
+depends_on:
   - ARCH-073-BACKGROUND-001
 enables: []
 created: 2026-11-12
@@ -45,7 +45,7 @@ Logo/media enablement, read_brand/other permission changes, privileged Brand que
 
 ## Requirements
 
-Header uses exact authorized shop persisted name and verified stored domain, never model text or hardcoded alias. Define controlled verified-domain-only fallback for missing name. Cover eligible AI/HUMAN configured/passthrough and service/limit/audio/oversize notices; approved templates, unbound routing and forbidden sends stay excluded. Preserve configured header content and human-authored bytes; avoid duplicate mandatory header blocks. Compose header and existing divider/checkout footer before freeze/hash/media/moderation/permit, provider body identical. Strict provenance checks both preparation and persisted replay; old frozen bodies byte-identical. Length/caption fallback keeps full safe body or refuses before admission. Preserve tenant/control/inbound/version/lease fences. Document rolling old-reader drain if new evidence cannot old-decode.
+Header uses exact authorized shop persisted name and verified stored domain, never model text or hardcoded alias. Use verified-domain-only fallback for missing name; do not suppress an otherwise legitimate reply or guess a display name. No logo or extra media sends. Cover eligible AI/HUMAN configured/passthrough and service/limit/audio/oversize notices; approved templates, unbound routing and forbidden sends stay excluded. Preserve configured header content and human-authored bytes; avoid duplicate mandatory header blocks. Compose header and existing divider/checkout footer before freeze/hash/media/moderation/permit, provider body identical. Strict provenance checks both preparation and persisted replay; old frozen bodies byte-identical. Length/caption fallback keeps full safe body or refuses before admission. Preserve tenant/control/inbound/version/lease fences. Document rolling old-reader drain if new evidence cannot old-decode.
 
 ## Work Items
 
