@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 15
 executor: codex
 claimed_at: 2026-11-12T19:11:58Z
@@ -48,9 +48,9 @@ Explicit BRAND_IMAGE or equivalent distinct discriminant with genuine brand prov
 
 ## Work Items
 
-- [ ] Implement only the bounded capability and document compatibility/rollout.
-- [ ] Add meaningful prior-behavior red and regression/concurrency/security coverage.
-- [ ] Complete required validation and mirrored task report/push.
+- [x] Implement only the bounded capability and document compatibility/rollout.
+- [x] Add meaningful prior-behavior red and regression/concurrency/security coverage.
+- [x] Complete required validation and mirrored task report/push.
 
 ## Interfaces / Contracts
 
@@ -66,16 +66,16 @@ Dependent tasks only after architect acceptance.
 
 ## Acceptance Criteria
 
-- [ ] Required bounded behavior works without hardcoded identity or broader permissions.
-- [ ] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
-- [ ] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
-- [ ] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
+- [x] Required bounded behavior works without hardcoded identity or broader permissions.
+- [x] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
+- [x] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
+- [x] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Contract tests reject fake product provenance, unsafe/tampered/cross-shape data, bounds and overlong captions; legacy schemas/digests unchanged.
-- [ ] Full package tests/types/build/declarations, immutable packed installed JS/types/public export smoke and exact artifact hashes.
-- [ ] Diff/secret hygiene and canonical isolated mirrored execution/report evidence.
+- [x] Contract tests reject fake product provenance, unsafe/tampered/cross-shape data, bounds and overlong captions; legacy schemas/digests unchanged.
+- [x] Full package tests/types/build/declarations, immutable packed installed JS/types/public export smoke and exact artifact hashes.
+- [x] Diff/secret hygiene and canonical isolated mirrored execution/report evidence.
 
 ## Stop Condition
 
@@ -89,27 +89,48 @@ You are not alone. Preserve others' changes. Use prepared canonical packet. Root
 
 ### Status
 
-Not Started
+Ready for Review — ARCH-073-SHARED-001, attempt1, executor codex.
 
 ### Files Changed
 
-None
+Shared `src/commerce/presentation/brand-image.ts` and tests; presentation barrel; README; package/package-lock5.13.7; installed-export and browser-isolation validation scripts. Implementation commits b96c946 and bf155d69e3dcb692a0566e725e8b03441a2530bd pushed on task/ARCH-073-SHARED-001. PR https://github.com/kodjobaah/moda-interact-shared/pull/81.
 
 ### Work Completed
 
-None
+Added strict `ConversationBrandImageOriginSchema` with SHOP_BRAND identity (shop/domain/role/current generation and sha256-prefixed source fingerprint), `ConversationPreparedBrandImageSchema` with READY derivative media facts, distinct BRAND_IMAGE plan and additive `ConversationMediaDeliveryPlanSchema`/digest. Product identifiers are never invented; legacy TEXT/IMAGE/product schemas and digest implementation are untouched. Reused canonical hash/date/stable-JSON primitives and existing brand R2 namespace. Exact key/public-origin/content/mime consistency, HTTPS/auth/port/control/raw-normalization checks, bounded timestamp/dimensions/bytes and caption validation are enforced.
+
+Pure builder accepts an existing legacy plan plus explicit host-current provenance/origin. It preserves product IMAGE priority; stale/foreign/malformed/missing media or >1024 Unicode-codepoint captions retain the complete original TEXT body, including checkout URL. It never fetches/transforms media, sends an extra message, authorizes an arbitrary URL or claims durable READY state from self-declared fields. Background must supply and revalidate authoritative current tenant/domain/source/READY evidence before freeze/dispatch. API shape was coordinated with Background and architect; existing adapter can expose already-present source/ready facts in its separate task.
 
 ### Validation Results
 
-Pending
+- Owned regressions demonstrate legacy product schema cannot represent branding, while separate brand plan works without fake product identity. Initial focused run exposed an accepted raw-URL normalization edge case; the new contract now checks raw strings directly. Corrected focused legacy/new tests12/12 passed, with additional all-role/digest tests included in final full suite.
+- Final `npm run typecheck`, `npm test`:764 total,761 passed,3 skipped,0 failures. Coverage includes role/domain/shop/generation/fingerprint mismatches, unsafe URL/auth/port/control/query/hash, missing/unknown/cross-shape fields, key/content/digest tampering, bounded media/timestamp, all3 existing roles and JPEG/PNG, complete Unicode caption fallback, product priority and legacy hash equivalence.
+- `npm run build` ESM+DTS passed. Exact immutable tarball installed via `node scripts/validate-commerce-outreach.mjs /tmp/modainteract-moda-interact-shared-5.13.7.tgz`: JS/schema/helper/type/public-export targets passed. `npm run validate:conversation-product-image-node`: browser bundle/VM and absence of Node/sharp/AWS/host-runtime imports passed without provider I/O. `npm run validate:commerce-entrypoints` passed.
+- Diff/secret hygiene and clean implementation tree passed. No customer/private operational proof, credential, source URL or hardcoded merchant asset committed. No network/provider/DB mutation by source contract.
+
+Exact final artifact: `/tmp/modainteract-moda-interact-shared-5.13.7.tgz`,521753 bytes.
+SHA256 `7d1e115255e2f431d4ad302121edbd34ed81a87fa5b50c466379bb3900d3a623`.
+SHA1 `96aee05484aa47941e99ced02d99856dbc76a2fd`.
+Integrity `sha512-h4qRwx18E58kCzTxdtlmtmMuYfCdofEWDh27dBa2z8E8FqdpU6CY6r6adaYfO96mx2QeV8gxQp0LIGoxiVX+JA==`.
+No publication performed; candidate awaits accepted source, developer merge and explicit user public-release approval in separate task.
+
+Physical worktree isolation (prepared packet): canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-073-SHARED-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-073-SHARED-001`; both task/ARCH-073-SHARED-001. No shared/default checkout switched/mutated or other task worktree reused. Launcher parent and implementation remote-task FF not-needed, origin/main already-current; recursive submodule sync/update passed, entries none. Prepared claim3279dbcdf7cb7283efa21ab34e4f4ae7649ff04f; implementation base11c47feac3a823a586e5f597583c7eb0359b99ca. No duplicate preparation.
 
 ### Deviations
 
-None
+None. Timestamp bound was added before final packaging to ensure every new transport field is bounded; legacy date schemas remain unchanged.
 
 ### Assumptions
 
-None beyond explicit prerequisite gates.
+Host-selected normalized stored domain, current generation/fingerprint and READY media evidence remain authoritative. Shape and digest alone do not grant authorization, attest current network safety or prove current READY state.
+
+### Unresolved Issues
+
+No Shared source blocker. Publication, Background rich READY projection/AI/HUMAN freeze/dispatch adoption and genuine production logo/fallback proof are separate tasks. No application behavior/deployment claim is made here.
+
+### Architectural Concerns
+
+Existing Background adapter currently omits rich provenance from its public return; all required values exist in its durable source/ready slots. Narrow adapter projection/freshness validation belongs to Background004, not Shared. No new schema, namespace, permission or infrastructure introduced.
 
 ## Architect Review
 
