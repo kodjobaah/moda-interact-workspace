@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -144,3 +144,7 @@ Pending
 ### Follow-up
 
 None
+
+### Explicit Public Release Authorization — Coordinator
+
+User explicitly answered “Publish version 5.13.6 publicly” to the concrete canonical public npm/latest package release question after tested artifact qualification. Exact accepted artifact is517461 bytes, SHA256fbe8e97a3018ddcfbd29f85c4acc4fdab5447681bf94d4bc41695e6f6c44e049. This resolves the publication-permission readiness gate; actual prerequisite developer merge and canonical prepared claim still precede sole publication. No publication has occurred.

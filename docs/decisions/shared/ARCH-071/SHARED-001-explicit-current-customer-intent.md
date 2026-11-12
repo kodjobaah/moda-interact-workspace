@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-11-12T16:15:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -138,28 +138,24 @@ No further source change requested. Background producer/adoption and publication
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1, under the recorded evidence-based carrier/named-switch scope decision.
 
 ### Review Notes
 
-Pending actual implementation review.
+Reviewed actual17fcced339c2c9490f064027e3365cf86fa397f4 and durable report56563bcee. Strict nonempty role:user/content-only current array, exact32k JSON Unicode budget, existing overall-byte cap and frozen preflight snapshot are implemented without lower row/UTF16 caps. All model/correction steps forward the explicit field; direct adapter defensively validates and orders history/context/current/tools. Optional absence keeps legacy serialization/instructions unchanged. Opt-in current text establishes objective, never tenant/tool/consent/policy authority. Private validation causes are bounded and the meaningful denial test proves safe referral/no unauthorized execution.
 
 ### Reviewed Files
 
-None
+current-customer-messages module/tests; public types/export, preflight and invoke propagation; OpenRouter adapter/tests; runner regressions, README compatibility, installed validator and package metadata.
 
 ### Validation Reviewed
 
-None
+Initial118 focused and final755 full passes/3 skips; types, ESM+DTS build and immutable installed JS/DTS/public exports. Exact/typo and harder synthetic named-switch actual-provider cases passed on frozen source; no customer data or real commerce calls were used. Both unnamed multiple-candidate ambiguity samples failed and remain explicitly NOT passed. Root approved separating a deterministic semantic resolver/choice UX from this structural carrier fix before acceptance; this is a real bounded scope correction, not a waived claimed pass. Independently hashed517461-byte candidate SHA256fbe8e97a3018ddcfbd29f85c4acc4fdab5447681bf94d4bc41695e6f6c44e049. Prepared physical isolation/sync/submodule evidence and diff scope verified.
 
 ### Architecture Conformance
 
-Pending
+Conforms to additive explicit current-input contract and existing authority/control/budget fences. No arbitrary JSON promotion, alias/ID mapping implementation or extra retry loop. General semantic ambiguity remains a transparent model limitation; historical reasoning and production improvement are not inferred from synthetic checks.
 
 ### Follow-up
 
-None
-
-### Architect Scope Decision — Current-Intent Carrier Versus Semantic Ambiguity
-
-Root approved the evidence-based split before acceptance. The structural defect and user-reported named/typo switch are covered by explicit current Human content, strict provenance/authority boundaries and successful exact/typo provider cases. The separate underspecified multi-candidate sample still selected a candidate without clarification on two builds. Fresh fact verification alone does not prove customer intent. A deterministic ambiguity gate would require a new identity-resolution/explicit-choice contract with ordinal/presentation/naming semantics, rather than another prompt edit. This task does not add that unrequested mechanism and does not claim those samples passed. Generic guidance remains; broad semantic ambiguity remains a transparent model limitation. No further source churn required.
+Developer may merge PR80 exact17fcced. User explicitly approved public5.13.6 release in response to the canonical public npm/latest question; publication002 may be Ready but must wait actual merge and sole exact-artifact execution. Background adoption and genuine production named-switch proof remain separate gates. No further prompt churn or repeated implementation validation required.
