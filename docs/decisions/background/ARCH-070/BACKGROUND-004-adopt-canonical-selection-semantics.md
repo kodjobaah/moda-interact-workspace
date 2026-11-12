@@ -49,6 +49,8 @@ Replace duplicate local semantic parser mechanics with published Shared helper, 
 
 Runtime evidence clarification: missing-product-selection guard must test actual verified shipping presentation/evidence, not a truthy model shippingInformationSelection object. Valid static STANDARD plus null/null selection alone cannot authorize unsupported prose after product searches. Preserve genuinely verified shipping-only answers and strict domain/identity checks. Test unobserved, failed/mismatched shipping versus positive authorized observation; no additional retry loop.
 
+Shipping evidence precision: selectShippingPresentation may return a truthy limitation for provider/identity mismatch, so object presence alone is insufficient. Use the published canonical shipping-result/selection qualifier on fresh output with known expected platform before allowing shipping evidence to satisfy the missing-product-selection guard. Preserve matched null/null policy-unavailable truthful limitations and no-product-observation shipping-only flow. Reject provider/product/variant mismatch and malformed/unrelated result. Share qualifier mechanics; do not duplicate local parsing or add calls/loops.
+
 ## Work Items
 
 - [ ] Reproduce both semantic gaps deterministically against prior implementation.

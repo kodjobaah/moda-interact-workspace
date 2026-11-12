@@ -51,6 +51,8 @@ Compatibility clarification: structural schemas intentionally permit independent
 
 Runtime evidence clarification: static valid STANDARD plus null/null shipping remains a normalized valid selection, but is not by itself sufficient to bypass product selection repair. Qualify shipping bypass and provider forced-schema shipping alternatives with matching successful authorized current-turn shipping observations; product search alone never qualifies. Preserve legitimately observed shipping-only policy answers and exact product/variant matching. Add positive observed-shipping and negative unobserved/mismatched/failed/stale shipping regressions. Keep generic pinned-contract compatibility and existing one-repair/budget limits.
 
+Shipping evidence precision: expose one canonical pure recognized shipping-result/selection-identity qualifier for runner and Background fresh-result reuse, with expected provider where known. A truthy limitation is not proof: reject provider/identity mismatch, invalid or unrelated result. For null/null policy selection, preserve a matching NOT_REQUESTED identity and truthful policy-unavailable limitation. When product observations require selection, disposition-only SHIPPING_INFORMATION_UNVERIFIED bypass and forced-schema alternative also require matching qualified shipping evidence. Shipping-only paths with no product observation retain existing normal behavior. No new provider reads or loops.
+
 ## Work Items
 
 - [ ] Reproduce both semantic gaps deterministically against prior implementation.
