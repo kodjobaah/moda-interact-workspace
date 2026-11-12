@@ -70,8 +70,8 @@ PRODUCTION / COMPATIBLE ROLLOUT. Independently accept both tasks, developer inte
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-070-SHARED-001 | moda_shared | Complete | None |
-| ARCH-070-SHARED-002 | moda_shared | Ready | ARCH-070-SHARED-001 |
-| ARCH-070-BACKGROUND-001 | moda_background | Pending | ARCH-070-SHARED-002 |
+| ARCH-070-SHARED-002 | moda_shared | Complete | ARCH-070-SHARED-001 |
+| ARCH-070-BACKGROUND-001 | moda_background | Ready | ARCH-070-SHARED-002 |
 | ARCH-070-BACKGROUND-002 | moda_background | Ready | None |
 
 ## System Validation
@@ -89,3 +89,5 @@ Exact valid refreshed product evidence mismatch and exact existing durable termi
 - 2026-11-12 dependency amendment: valid ACTIVE available catalogue products have null onlineStoreUrl; MCP permits this but Shared schema/render and Background refresh reject it. Shared5.13.3 adds nullable URL only PRODUCT_ONLY with link omission; mutations/non-null URL checks unchanged. Shared acceptance -> exact publication -> Background exact-version adoption. Retry task ships independently to stop terminal amplification.
 
 - Shared001 Accepted/Complete at bf642ea:719 pass/3 expected skips, focused26, typecheck/build/installed public artifact checks passed. Shared002 Ready after developer merge, exact5.13.3 tarball only.
+
+- Shared002 Accepted/Complete: canonical npm5.13.3 metadata and506885 downloaded artifact bytes independently verified against accepted hash. Background001 promoted Ready; publication alone makes no live deployment claim.
