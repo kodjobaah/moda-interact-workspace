@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T16:15:57Z
@@ -52,9 +52,9 @@ Identity-resolution clarification: freshly reading a known product proves facts,
 
 ## Work Items
 
-- [ ] Establish owned failing regression and exact caller/contract compatibility.
-- [ ] Implement only the defined owned outcome or approved exact release.
-- [ ] Validate required positive/negative boundaries and record exact artifact/heads.
+- [x] Establish owned failing regression and exact caller/contract compatibility.
+- [x] Implement only the defined owned outcome or approved exact release.
+- [x] Validate required positive/negative boundaries and record exact artifact/heads.
 
 ## Interfaces / Contracts
 
@@ -70,15 +70,15 @@ Next ARCH071 publication/consumer gate, followed by developer genuine production
 
 ## Acceptance Criteria
 
-- [ ] Requirements hold, including current-intent objective boundary and unchanged security/budgets.
-- [ ] No silent truncation/drop/coercion, inferred input or tenant/permission promotion.
-- [ ] No private customer prose/operational identifiers in committed evidence or diagnostics.
-- [ ] Canonical mirrored physical isolation, synchronization and recursive submodule evidence recorded.
+- [x] Requirements hold, including current-intent objective boundary and unchanged security/budgets.
+- [x] No silent truncation/drop/coercion, inferred input or tenant/permission promotion.
+- [x] No private customer prose/operational identifiers in committed evidence or diagnostics.
+- [x] Canonical mirrored physical isolation, synchronization and recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Deterministic role/order/strictshape/Unicode aggregate/overall-byte budget and no-provider-invalid-input tests; all model/repair propagation; old-absence compatibility; synthetic multi-turn named/typo switch and prompt-injection/tenant authority negatives; record ambiguous-case limitations without claiming a general resolver. Full Shared suite/types/build/installed immutable JS+DTS/public exports. Before publication require wholly synthetic real-provider current-versus-prior-subject probe with frozen built public client/actual runner wiring; no customer/private context, live commerce/DB/Meta mutation. Root may supply proof.
-- [ ] Scope/diff/secret hygiene.
+- [x] Deterministic role/order/strictshape/Unicode aggregate/overall-byte budget and no-provider-invalid-input tests; all model/repair propagation; old-absence compatibility; synthetic multi-turn named/typo switch and prompt-injection/tenant authority negatives; record ambiguous-case limitations without claiming a general resolver. Full Shared suite/types/build/installed immutable JS+DTS/public exports. Before publication require wholly synthetic real-provider current-versus-prior-subject probe with frozen built public client/actual runner wiring; no customer/private context, live commerce/DB/Meta mutation. Root may supply proof.
+- [x] Scope/diff/secret hygiene.
 
 ## Stop Condition
 
@@ -92,35 +92,47 @@ You are not alone; preserve others. Use prepared packet paths/branch and actual 
 
 ### Status
 
-Not Started
+Ready for Review — ARCH-071-SHARED-001, attempt1, executor codex.
 
 ### Files Changed
 
-None
+Shared: current-customer-messages schema/helper/tests; runner types/preflight/invoke-model/tests; OpenRouter adapter/tests; commerce exports; README; package metadata5.13.6; installed-export validation script. Implementation commits1fe6e9f and17fcced339c2c9490f064027e3365cf86fa397f4 pushed on task/ARCH-071-SHARED-001. PR: https://github.com/kodjobaah/moda-interact-shared/pull/80.
 
 ### Work Completed
 
-None
+Added strict role:user/content-only, nonempty array/content validation with32,000 JSON Unicode codepoint aggregate bound, preserving raw content and the existing131,072-byte combined payload cap. No lower row/UTF16 cap. Preflight copies/freezes current rows and forwards the same snapshot on every model step/correction. Direct adapter separately validates before provider invocation; order is System, older history, data-only context, dedicated current Human messages, then tool data. New current-boundary errors discard private raw validation causes. Optional absence retains legacy instructions/serialization. Opt-in guidance gives new named subjects priority without granting tenant/tool/consent authority. Documented custom-invoker responsibilities and host source provenance.
 
 ### Validation Results
 
-Pending
+- Initial focused adapter/runner regression run:118/118 passed. Final full `npm test`:758 total,755 passed,3 skipped,0 failed. Includes strictshape/empty/unknown-role rejection, exact Unicode bound, >20 rows, >16k text, aggregate byte rejection, frozen snapshot/correction propagation, absence compatibility, private cause chains and safe unauthorized-tool referral with zero tool execution.
+- `npm run typecheck`, `npm run build` (ESM+DTS), immutable-tarball `node scripts/validate-commerce-outreach.mjs /tmp/modainteract-moda-interact-shared-5.13.6.tgz`, and `npm run validate:commerce-entrypoints`: passed. Installed smoke proves JS/helper/schema/public exports and strict declaration role typing.
+- Coordinator/root supplied wholly synthetic actual-provider proof using final frozen public client and instructions: exact new subject and typo after older product dialogue select the correct known new identity; an additional harder synthetic misspelling also passed. Provider-generated tool calls were not executed. Scripts are local `/tmp/moda-recovery-setup/probe-synthetic-product-switch.mjs` and `probe-synthetic-product-switch-hard-typo.mjs`; no customer payload/private prompt, real commerce API, DB writes or WhatsApp send. Provider-free runner tests prove actual current-field/correction propagation.
+- Both original and revised ambiguous unnamed multi-candidate samples selected a candidate without clarification. These are failed samples, not conformance passes. Root/architect explicitly separated generic semantic resolution/explicit-choice UX from this carrier/named-switch task before acceptance; retained generic guidance is empirical model guidance, not a deterministic ambiguity gate.
+- Scope/`git diff --check`/committed evidence hygiene passed. No credential or customer-text artifacts committed.
+
+Exact immutable candidate: `/tmp/modainteract-moda-interact-shared-5.13.6.tgz`,517461 bytes.
+SHA256 `fbe8e97a3018ddcfbd29f85c4acc4fdab5447681bf94d4bc41695e6f6c44e049`.
+SHA1 `606bed12a2d2869f414919d1538202cfd1fab9dc`.
+Integrity `sha512-bcc7jKLRQU/c7uzLJxXtQbbILsYfCsBXwpdX4fwtejsPvV0fN98eWr49dqmoC7M+4BucF2CJ84n193qbIAJuew==`.
+No public publication performed.
+
+Physical worktree isolation (prepared packet): primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-071-SHARED-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-071-SHARED-001`; both branches task/ARCH-071-SHARED-001. No shared/default checkout switched or mutated; no other task worktree reused. Launcher parent/implementation remote-task fast-forward not-needed, origin/main already-current; recursive submodule sync/update passed, entries none. Prepared claim141451498f175a70c21066acec8f64d18001a041; implementation base596eaa455f9b6eb72f316c76c1c7a4657faa1f60. No duplicate preparation.
 
 ### Deviations
 
-None
+Root/architect narrowed acceptance after two transparent synthetic ambiguity failures: typed carrier/named-typo switch remains this task, deterministic general ambiguity resolution is separate unrequested scope. No additional prompt iteration, guessed aliases/IDs, new tool loops or restrictive choice UX added.
 
 ### Assumptions
 
-Host source fences establish provenance; customer content supplies objective only, never authority.
+Host source/turn fences attest current inbound provenance. Shape itself authenticates nobody; current customer content supplies objective only. Custom invokers must honor the opt-in field semantics.
 
 ### Unresolved Issues
 
-Historical exact model reasoning is unconfirmed; structural input-contract defect is verified.
+General unnamed multi-candidate ambiguity is not solved, as documented above. Exact historical model reasoning remains unavailable. This artifact has not been publicly released, adopted by Background or verified in a genuine production conversation. Separate publication requires explicit user approval and accepted exact artifact.
 
 ### Architectural Concerns
 
-Return cross-owner gaps before broadening edits.
+No further source change requested. Background producer/adoption and publication remain separate owner/task gates.
 
 ## Architect Review
 
