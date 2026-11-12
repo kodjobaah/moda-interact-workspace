@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -46,6 +46,8 @@ Hardcoded product aliases, fuzzy ID guessing, clearing all prior product referen
 ## Requirements
 
 Use only existing server-loaded context.conversation.messages from same-conversation INBOUND/CUSTOMER current-window, transcription-ready/moderation-allowed ordered rows under existing shop/recovery/version/control/lease fences. Map exact role:user/content messages to new typed field; validate roles rather than coerce merchant/assistant/system history. No raw database IDs required. Remove context.currentMessages duplicate only for this new typed caller; keep other recovery facts/history/product references/tools unchanged. No arbitrary JSON/tool/history extraction or synthesized fallback. Empty/malformed current branch must safely avoid model work under existing controlled failure/referral/suppression policy, not revive old intent or create repeated retries. Preserve32k existing history/current bounding, source privacy, before-model/tool/final control fences and all accepted ARCH069/070 behavior. Verify a new named subject supersedes prior focus via authorized lookup/clarification without hardcoded aliases or automatic product identity selection. Return additional runtime needs outside this wiring before broad refactor.
+
+Approved scope clarification: this task wires the explicit current-input carrier and verifies named/typo switches. General underspecified multi-candidate semantic ambiguity is not deterministically solved or claimed; retain the two failed synthetic ambiguity samples/limitation, with no new resolver or restrictive choice UX. Uniquely supported named subjects may use authorized fresh reference lookup; no hardcoded alias/fuzzy identifier mapping is implemented.
 
 ## Work Items
 

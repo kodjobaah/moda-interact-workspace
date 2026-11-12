@@ -27,7 +27,7 @@ Explicit server-owned current customer utterances establish present objective th
 
 Shared defines optional currentCustomerMessages: readonly {role:user,content:string}[], strict and nonempty when present, role/content only. Current JSON-encoded array fits32,000 Unicode code points with no arbitrary lower row/pertext limit; existing overall payload byte cap still applies. Invalid role/shape/budget fails closed without provider work, truncation, dropping or coercion. Runner preflight validates/copies, every step/repair forwards, and direct adapter validates independently. Optional absence leaves legacy behavior unchanged; opted-in custom invokers must honor the new field.
 
-Serialization order is System -> older history -> data-only context -> dedicated current Human utterances -> current-turn tool data. Explicit current utterances can establish request/objective, never permissions or tenant authority. Latest named subject takes precedence over prior focus; typo/ambiguity uses bounded authorized lookup or clarification, not aliases or guessed IDs. Arbitrary JSON, tool text and merchant/history rows are never promoted into current input.
+Serialization order is System -> older history -> data-only context -> dedicated current Human utterances -> current-turn tool data. Explicit current utterances can establish request/objective, never permissions or tenant authority. Latest explicitly named subject takes precedence over prior focus; named/typo switch uses authorized fresh lookup or clarification without implemented aliases or fuzzy ID mapping. Generic ambiguity guidance remains, but does not constitute a deterministic semantic resolver. Arbitrary JSON, tool text and merchant/history rows are never promoted into current input.
 
 Background maps only its authoritative current customer source under existing turn fences and removes duplicate context.currentMessages only for the new typed caller. Other context facts, history and product references stay intact. Empty/malformed current batches must safely avoid model work under existing failure/referral/suppression policy, never synthesize intent or revive older focus.
 
@@ -51,13 +51,13 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared additive implementation acceptance -> ex
 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-071-SHARED-001 | moda_shared | Ready | None |
-| ARCH-071-SHARED-002 | moda_shared | Pending | ARCH-071-SHARED-001 and explicit public-release approval |
-| ARCH-071-BACKGROUND-001 | moda_background | Pending | ARCH-071-SHARED-002 |
+| ARCH-071-SHARED-001 | moda_shared | Complete | None |
+| ARCH-071-SHARED-002 | moda_shared | Complete | ARCH-071-SHARED-001 and explicit public-release approval |
+| ARCH-071-BACKGROUND-001 | moda_background | Ready | ARCH-071-SHARED-002 |
 
 ## Validation and Completion Gate
 
-Deterministic schema/order/all-step propagation and security tests, actual published runner/host source-provenance regressions, synthetic multi-turn real-provider named/typo switch conformance and final genuine production new-subject response are required. Old-subject automatic answering is not accepted; valid new lookup or clear ambiguity clarification is. No separate system-test task currently applicable to this bounded request contract; reevaluate if implementation discovers wider boundaries. Architecture remains In Progress until genuine integrated proof and documentation reconciliation.
+Deterministic schema/order/all-step propagation and security tests, actual published runner/host source-provenance regressions, synthetic multi-turn real-provider exact/typo named-switch conformance and final genuine production new-subject response are required. Unsupported old-subject carryover is not accepted. Multiple-candidate ambiguity is recorded as a known semantic limitation, not a passed resolver test. No separate system-test task currently applicable to this bounded request contract; reevaluate if implementation discovers wider boundaries. Architecture remains In Progress until genuine integrated proof and documentation reconciliation.
 
 ## Open Questions
 
@@ -66,3 +66,15 @@ No blocking design question; root approved exact role/content shape, existing32k
 ## Change History
 
 - 2026-11-12: Read-only source findings established current-input/data-authority mismatch; root approved additive explicit current-customer conversation contract and gated release/adoption.
+
+- Routine contract clarification: present current batches and each content string are nonempty; raw whitespace/text is preserved without trimming. Empty strings fail closed, with no synthesized fallback or silent dropping. Existing32k Unicode JSON and overall-byte limits unchanged.
+
+- Synthetic provider validation finding before acceptance: exact new-name and typo cases used appropriate fresh identity/read or authorized search, but a multiple-candidate ambiguous case selected a known candidate without clarification. No private customer context or real commerce calls were used. Acceptance/publication remains gated; generic identity-resolution guidance is refined and final checks/provider cases must rerun on the frozen candidate. Fresh facts alone do not establish intended subject; recency does not resolve multiple plausible candidates. These model samples are empirical conformance evidence, not a deterministic semantic resolver or historical-reasoning proof.
+
+## Evidence-Based Scope Decision
+
+Root approved separating the explicit current-customer carrier/named-switch correction from a general semantic ambiguity resolver. Deterministic schema/provenance/order/authority tests pass, and frozen-provider exact-name and typo cases select the appropriate new subject through authorized reads. Two underspecified multiple-candidate samples still selected a candidate without clarification; both remain failed empirical samples, with no historical-reasoning claim. A deterministic ambiguity boundary would require a separately designed identity-resolution or explicit-choice contract, including presentation/ordinal/naming semantics. That mechanism and restrictive UX were not requested and are not silently added. Current generic guidance stays without more prompt churn. Acceptance covers carrier/named-switch behavior; final communication must disclose the ambiguity limitation.
+
+- Shared001 Accepted/Complete17fcced under documented carrier/named-switch scope;755pass3skip/types/build/installed exports and exact/typo/harder synthetic switch pass. Both ambiguous samples remain failed/non-guaranteed. User explicitly approved concrete public5.13.6 release; publication002 Ready after developer merge, exact artifact only. Background/prod verification remain pending.
+
+- Publication002 Accepted/Complete: explicit authorization/sole canonical receipt and actual517461-byte public5.13.6 download independently match accepted fbe8e97a hash. Background001 Ready; publication does not establish live improvement or resolve known semantic ambiguity.
