@@ -124,3 +124,5 @@ Provider-free proofs establish two independently reproducible gaps: schema-valid
 | ARCH-070-SHARED-003 | moda_shared | Ready | ARCH-070-SHARED-002 |
 | ARCH-070-SHARED-004 | moda_shared | Pending | ARCH-070-SHARED-003 |
 | ARCH-070-BACKGROUND-004 | moda_background | Pending | ARCH-070-SHARED-004 |
+
+- Runtime evidence amendment: canonical static shipping selection remains valid with recognized disposition, but runner bypass/forced repair alternatives require matching successful authorized current-turn shipping observation. Host missing-selection guard uses actual verified shipping presentation, not raw truthy model selection. Search-only/failed/mismatched observations do not qualify. Shared003/BG004 positive observed shipping and negative unobserved shipping tests required; existing one-repair limits unchanged.

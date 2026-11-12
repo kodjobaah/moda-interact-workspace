@@ -47,6 +47,8 @@ Unrelated refactors, provider/model changes, fabricated selections or automatic 
 
 Replace duplicate local semantic parser mechanics with published Shared helper, preserving host domain policy and exact normalized behavior. Add bounded shape-only diagnostics needed to distinguish pair presence/count/type/disposition/shipping eligibility, never reply prose/private prompts, tokens/credentials or full payload. Use existing shared structured logger, no generic logger or duplicate framework telemetry. Keep host fail-closed verified selection/evidence checks; no inferred version/IDs, product auto-selection, new retries, schema or credentials. Exercise malformed pair and null-shipping prior bypass through actual published bounded runner repair, valid corrected selection and refusal on exhaustion. Preserve all accepted nullURL/footer/terminal fixes on final current main.
 
+Runtime evidence clarification: missing-product-selection guard must test actual verified shipping presentation/evidence, not a truthy model shippingInformationSelection object. Valid static STANDARD plus null/null selection alone cannot authorize unsupported prose after product searches. Preserve genuinely verified shipping-only answers and strict domain/identity checks. Test unobserved, failed/mismatched shipping versus positive authorized observation; no additional retry loop.
+
 ## Work Items
 
 - [ ] Reproduce both semantic gaps deterministically against prior implementation.

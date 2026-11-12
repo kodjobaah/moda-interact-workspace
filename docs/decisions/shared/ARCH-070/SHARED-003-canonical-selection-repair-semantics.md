@@ -49,6 +49,8 @@ Own reusable normalized selection parsing once in Shared and use it in runner re
 
 Compatibility clarification: structural schemas intentionally permit independent optional version/list fields and .extend consumers; do not globally refine that Zod contract. Preserve canonical host semantics for null/null shipping WITH a recognized disposition and partial valid-disposition recovery. In generic runner pinned contracts that do not expose the canonical version/list pair, preserve existing strictly pinned field behavior; never invent unsupported version requirements. Production canonical pair must use normalized semantic validity.
 
+Runtime evidence clarification: static valid STANDARD plus null/null shipping remains a normalized valid selection, but is not by itself sufficient to bypass product selection repair. Qualify shipping bypass and provider forced-schema shipping alternatives with matching successful authorized current-turn shipping observations; product search alone never qualifies. Preserve legitimately observed shipping-only policy answers and exact product/variant matching. Add positive observed-shipping and negative unobserved/mismatched/failed/stale shipping regressions. Keep generic pinned-contract compatibility and existing one-repair/budget limits.
+
 ## Work Items
 
 - [ ] Reproduce both semantic gaps deterministically against prior implementation.
