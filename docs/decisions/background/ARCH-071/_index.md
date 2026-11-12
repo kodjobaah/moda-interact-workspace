@@ -6,4 +6,4 @@ Coordinator: moda_architect
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| ARCH-071-BACKGROUND-001 | Authoritative current input adoption | In Progress | ARCH-071-SHARED-002 |
+| ARCH-071-BACKGROUND-001 | Authoritative current input adoption | Complete | ARCH-071-SHARED-002 |

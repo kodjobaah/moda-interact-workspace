@@ -53,7 +53,7 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared additive implementation acceptance -> ex
 |---|---|---|---|
 | ARCH-071-SHARED-001 | moda_shared | Complete | None |
 | ARCH-071-SHARED-002 | moda_shared | Complete | ARCH-071-SHARED-001 and explicit public-release approval |
-| ARCH-071-BACKGROUND-001 | moda_background | In Progress | ARCH-071-SHARED-002 |
+| ARCH-071-BACKGROUND-001 | moda_background | Complete | ARCH-071-SHARED-002 |
 
 ## Validation and Completion Gate
 
@@ -80,3 +80,5 @@ Root approved separating the explicit current-customer carrier/named-switch corr
 - Publication002 Accepted/Complete: explicit authorization/sole canonical receipt and actual517461-byte public5.13.6 download independently match accepted fbe8e97a hash. Background001 Ready; publication does not establish live improvement or resolve known semantic ambiguity.
 
 - Background001 prepared on current accepted runtime base after exact public5.13.6 byte acceptance; authoritative current-input wiring is executing. No live named-switch proof claimed.
+
+- Background001 Accepted/Complete at a570a6b: 125 host,33 boundary,200 compatibility,75 processor tests plus types/scoped lint and both exact-head CI3990/369 passed. All three tasks accepted. Developer merge/deployment and genuine named-switch proof remain pending; generic ambiguity remains a disclosed limitation.

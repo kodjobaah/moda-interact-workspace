@@ -1068,6 +1068,6 @@ Implemented. All eleven tasks are Accepted/Complete. Final Shared5.13.5 and Back
 
 ## ARCH-071 — Explicit current customer conversation intent
 
-In Progress. Source inspection established current customer text was data-only context while older customer history had Human roles. Additive typed current utterances preserve objective versus authority boundaries; Shared source and exact approved public5.13.6 release are Accepted/Complete; authoritative Background wiring is executing. Named/typo synthetic switch passed; underspecified multiple-candidate ambiguity remains a documented model limitation. No reopening ARCH070 or hardcoded product aliases.
+In Progress. Source inspection established current customer text was data-only context while older customer history had Human roles. Additive typed current utterances preserve objective versus authority boundaries; Shared source and exact approved public5.13.6 release are Accepted/Complete; authoritative Background wiring is also Accepted/Complete; final developer integration and genuine named-switch verification remain pending. Named/typo synthetic switch passed; underspecified multiple-candidate ambiguity remains a documented model limitation. No reopening ARCH070 or hardcoded product aliases.
 
 [Architecture](ARCH-071-explicit-current-customer-intent.md) · [Shared tasks](../decisions/shared/ARCH-071/_index.md) · [Background task](../decisions/background/ARCH-071/_index.md)
