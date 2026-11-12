@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-11-12T19:19:48Z
@@ -55,9 +55,9 @@ Shared presentation brandName currently validates projection identity but does n
 
 ## Work Items
 
-- [ ] Implement only the bounded capability and document compatibility/rollout.
-- [ ] Add meaningful prior-behavior red and regression/concurrency/security coverage.
-- [ ] Complete required validation and mirrored task report/push.
+- [x] Implement only the bounded capability and document compatibility/rollout.
+- [x] Add meaningful prior-behavior red and regression/concurrency/security coverage.
+- [x] Complete required validation and mirrored task report/push.
 
 ## Interfaces / Contracts
 
@@ -73,18 +73,18 @@ Developer integration and genuine production verification.
 
 ## Acceptance Criteria
 
-- [ ] Required bounded behavior works without hardcoded identity or broader permissions.
-- [ ] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
-- [ ] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
-- [ ] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
+- [x] Required bounded behavior works without hardcoded identity or broader permissions.
+- [x] Tenant/domain, immutable state, authorization and concurrent-update boundaries remain enforced.
+- [x] Existing unrelated media/frozen content is preserved; no secret/private proof committed.
+- [x] Canonical dedicated mirrored worktree/synchronization/recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Prior behavior red plus AI/HUMAN configured/unconfigured and all eligible notice header coverage; name/domain freshness/tenant mismatch/missing-name fallback.
-- [ ] Configured-header preservation/idempotence, human authored exact transform, old frozen replay/tamper and footer coexistence.
-- [ ] Real PostgreSQL freeze/moderation/final permit/provider body identity and race refusal; limits/caption fallback and security/template exclusions.
-- [ ] Types, task-owned lint, declared build and exact-head full CI; inspect package scripts first.
-- [ ] Diff/secret hygiene; synthetic fixtures and mocked providers, no real Meta send or production write.
+- [x] Prior behavior red plus AI/HUMAN configured/unconfigured and all eligible notice header coverage; name/domain freshness/tenant mismatch/missing-name fallback.
+- [x] Configured-header preservation/idempotence, human authored exact transform, old frozen replay/tamper and footer coexistence.
+- [x] Real PostgreSQL freeze/moderation/final permit/provider body identity and race refusal; limits/caption fallback and security/template exclusions.
+- [x] Types, task-owned lint, declared build and exact-head full CI; inspect package scripts first.
+- [x] Diff/secret hygiene; synthetic fixtures and mocked providers, no real Meta send or production write.
 
 ## Stop Condition
 
@@ -98,35 +98,53 @@ You are not alone. Preserve others' changes. Use prepared canonical packet. Root
 
 ### Status
 
-Not Started
+Ready for Review. Implementation task branch and mirrored parent report branch pushed; awaiting moda_architect review. No merge or deployment performed by this agent.
 
 ### Files Changed
 
-None
+- Background-local recovery shop header helper, application-key helper and SQL current-identity verifier.
+- Wrapper contracts/context repository/service and AI adapter; HUMAN preparation, persisted evidence and final send fence.
+- Outbound admission/delivery and turn-processor receipt forwarding.
+- Focused wrapper, HUMAN, notice, turn and image-caption tests; real PostgreSQL header identity/race tests and existing footer exact-body expectation.
+- Implementation PR: https://github.com/kodjobaah/moda-interact-background/pull/209
+- Final implementation head: `b0216b1e52ce0d2619b84ca2298c31013dbe93a6` on `task/ARCH-073-BACKGROUND-002`.
 
 ### Work Completed
 
-None
+Deterministic eligible recovery text begins with the exact safe persisted name, verified HTTPS Shop.domain, neutral divider and blank line before the existing body/footer. Missing/unsafe/over-512 names fall back to verified-domain-only. Unsafe domains omit branding with bounded shared-logger diagnostic; no guessed alias, external lookup or broader permission.
+
+The local receipt is projected only from verified recovery tenant context. It is bound into application keys, retained on replay and HUMAN JSON evidence, passed through known notice/AI admission, and compared to current Shop/ShopBrand under SQL locks before final permit. Header composition precedes media choice, freeze, whole-body moderation and provider dispatch. Pure-identity typed configured headers deduplicate; custom configured prose and original staff bytes remain intact. No schema or Shared contract change.
 
 ### Validation Results
 
-Pending
+- Prior-behavior RED: new header test failed on the original missing prefix; first GREEN then passed.
+- Focused wrapper/HUMAN/delivery/turn suite: 11 files / 238 tests passed. Added configured/custom header, immutable replay/receipt loss, second tenant, image caption and long-caption TEXT fallback tests: 44 tests passed. Final C1/RTL/name/domain boundary follow-up: 21 tests passed.
+- Real disposable PostgreSQL/Redis: `node scripts/test-integration.mjs tests/integration/arch073-recovery-header.integration.test.ts tests/integration/arch072-recovery-footer.integration.test.ts` passed 7 tests. Covers frozen/persisted/provider body equality and committed name/domain races while waiting for Shop locks, cross-tenant refusal and existing footer/admission identity.
+- `npx tsc --noEmit` passed; scoped ESLint passed; declared `npm run build` on combined asset/header tree completed with `BUILD_EXIT=0` (Prisma, worker/provision TypeScript and packaging).
+- Exact final-head full CI Type-check + unit tests both SUCCESS: https://github.com/kodjobaah/moda-interact-background/actions/runs/43294814356 and https://github.com/kodjobaah/moda-interact-background/actions/runs/43294804692 at `b0216b1e52ce0d2619b84ca2298c31013dbe93a6`.
+- Diff/check and synthetic fixture review clean; providers mocked; no live Meta send, production setting write, secret or provider credential committed.
+
+Physical worktree isolation (launcher packet `/tmp/moda-arch073-bg002-prepare.json`): canonical primary root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-073-BACKGROUND-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-073-BACKGROUND-002`; both branch `task/ARCH-073-BACKGROUND-002`. No shared checkout switched, no other task worktree reused. Prepared claim `d4822ca49a7813952d456664f3cb429eb770812d`, codex attempt 1.
+
+Start-of-attempt parent/implementation remote-task fast-forwards not needed; both origin/main already current. Recursive implementation submodule sync/update passed; database initialized at recorded `5329d5390d346042895219663f3a040ea54ae168`. Before final CI, fetched and merged current implementation main `22e39d34e44c2ced066bb35cc242338c2b289dd6` cleanly into the task branch; parent origin/main rechecked already current. No gitlink staged.
 
 ### Deviations
 
-None
+Root/architect clarified safe name length to existing Shared 512 bound and preservation of ordinary punctuation; controls/bidi/newlines and actual markup delimiters fall back without truncation. Final narrow control-range regression added after the first combined-head build; exact final-head CI typecheck/full unit pass confirms it.
+
+One extra-shell Node bootstrap attempt failed to resolve the canonical root because that shell omitted the workspace-root environment; no dependency/toolchain mutation occurred. All successful validation used the existing officially bootstrapped Node session. No doctor or unrelated baseline reinvestigation.
 
 ### Assumptions
 
-No broader provider grant is available or needed.
+The existing typed-commerce no-wrapper adapter trusts its internal renderer for normalized presentation text. Receipt-loss is strictly detected for actual rendered application keys, plain exact transforms and HUMAN frozen evidence; arbitrary mutation of that trusted internal normalized mock seam is not claimed cryptographically distinguishable from historical output. Actual service emits and forwards the receipt and SQL current-identity checks it. This preserves the approved local boundary without a cross-service/schema redesign.
 
 ### Unresolved Issues
 
-None currently; report new contract gaps.
+None within assigned text-header scope. Root owns final merge/deployment and genuine production verification. Logos remain separate tasks.
 
 ### Architectural Concerns
 
-No source expansion beyond explicit scope without architect reconciliation.
+Rollout must drain old messaging workers before generating new HUMAN prepared commands. Old readers cannot validate the new optional receipt/application-key additions and will refuse those preparations. Receipt-absent historical frozen records keep old algorithms and bytes; they are never rebranded or rewritten. New identity mismatch refuses a prepared send rather than rewriting content after moderation. Existing tenant/control/inbound/lease/consent fences remain authoritative.
 
 ## Architect Review
 
