@@ -75,6 +75,10 @@ Capture validated public origin and row version/identity from the same authorita
 
 Retain original validated recoveryShopHeader receipt in the new private envelope and rehydrate it on notice restart, so BG002 current name/domain final gate cannot disappear on replay. Never re-render/recapture identity to conceal stale prepared content. Add restart plus shop-name change refusal proof. Legacy receipt-absent raw plans remain unchanged.
 
+### Same-row policy snapshot clarification
+
+Background-owned platform-configuration repository/contracts/service may expose optional rowId from the SAME row already read and canonically validated. Prisma selects id; parseRow returns that identity with version/value. Existing legacy fake/default snapshots remain compatible through optional metadata, but logo authority requires rowId. Eliminate separate follow-up row-id binding: delete/recreate with same origin/reset version must not substitute another row for the validated one. Test that race and ordinary legacy/default configuration consumers. This narrowly owned metadata projection requires no Shared/schema or duplicate generic decoder.
+
 ## Work Items
 
 - [ ] Implement only the bounded capability and document compatibility/rollout.
