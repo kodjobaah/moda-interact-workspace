@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-12T17:55:49Z
@@ -60,10 +60,10 @@ Final-permit identity clarification: always forward the existing optional expect
 
 ## Work Items
 
-- [ ] Inventory actual outbound classes and implement one reusable domain footer/divider transform.
-- [ ] Wire HUMAN/AI and eligible known-recovery notices before final freeze/moderation; preserve provider/committed-body identity.
-- [ ] Preserve narrowly proven human passthrough and both new/legacy immutable replay validation.
-- [ ] Validate coverage, security, bounds, retries and final provider text; return report.
+- [x] Inventory actual outbound classes and implement one reusable domain footer/divider transform.
+- [x] Wire HUMAN/AI and eligible known-recovery notices before final freeze/moderation; preserve provider/committed-body identity.
+- [x] Preserve narrowly proven human passthrough and both new/legacy immutable replay validation.
+- [x] Validate coverage, security, bounds, retries and final provider text; return report.
 
 ## Interfaces / Contracts
 
@@ -79,22 +79,22 @@ Developer merge/deploy and authorized genuine human recovery-message plus AI/not
 
 ## Acceptance Criteria
 
-- [ ] Every eligible known-recovery freeform send class has one trusted footer and divider, including ordinary human no-slot and both terminal text paths; inventory makes exceptions explicit.
-- [ ] Strict authored-content provenance, moderation/admission/permit identity and all existing controls are preserved.
-- [ ] Old frozen applications/commands remain byte-identical/replayable; new preparation is idempotent and tampering is rejected.
-- [ ] Templates/unbound routing/STOP/consent/security paths are unchanged as required, with no fabricated URL or unauthorized sends.
-- [ ] No unrelated source/schema/release changes or private payloads in committed evidence.
-- [ ] Canonical launcher worktree isolation, synchronization and recursive submodule evidence recorded.
+- [x] Every eligible known-recovery freeform send class has one trusted footer and divider, including ordinary human no-slot and both terminal text paths; inventory makes exceptions explicit.
+- [x] Strict authored-content provenance, moderation/admission/permit identity and all existing controls are preserved.
+- [x] Old frozen applications/commands remain byte-identical/replayable; new preparation is idempotent and tampering is rejected.
+- [x] Templates/unbound routing/STOP/consent/security paths are unchanged as required, with no fabricated URL or unauthorized sends.
+- [x] No unrelated source/schema/release changes or private payloads in committed evidence.
+- [x] Canonical launcher worktree isolation, synchronization and recursive submodule evidence recorded.
 
 ## Validation
 
-- [ ] Meaningful prior-code red regression for human missing footer and terminal override.
-- [ ] HUMAN/AI configured/unconfigured, labels/duplicate/divider/idempotence, legacy replay and tamper tests.
-- [ ] Actual human preparation/freeze/moderation/fence/provider identical-body tests, author-text protection and takeover/cancellation races.
-- [ ] Both terminal freeform paths and eligible notices, template nonmutation and forbidden/unbound/expired/mismatched context negatives.
-- [ ] Final text/caption/Unicode limits, full fallback and exact URL preservation; no post-permit append.
-- [ ] Relevant existing integration/disposable PostgreSQL tests where prepared persistence is affected, task-owned lint/typecheck and exact-head full CI.
-- [ ] Diff/secret hygiene; public evidence synthetic/coarse only. No real Meta send or production write during implementation tests.
+- [x] Meaningful prior-code red regression for human missing footer and terminal override.
+- [x] HUMAN/AI configured/unconfigured, labels/duplicate/divider/idempotence, legacy replay and tamper tests.
+- [x] Actual human preparation/freeze/moderation/fence/provider identical-body tests, author-text protection and takeover/cancellation races.
+- [x] Both terminal freeform paths and eligible notices, template nonmutation and forbidden/unbound/expired/mismatched context negatives.
+- [x] Final text/caption/Unicode limits, full fallback and exact URL preservation; no post-permit append.
+- [x] Relevant existing integration/disposable PostgreSQL tests where prepared persistence is affected, task-owned lint/typecheck and exact-head full CI.
+- [x] Diff/secret hygiene; public evidence synthetic/coarse only. No real Meta send or production write during implementation tests.
 
 ## Stop Condition
 
@@ -108,35 +108,45 @@ You are not alone. Preserve others' changes and use the complete prepared packet
 
 ### Status
 
-Not Started
+Ready for Review. Implementation and required validation committed/pushed; awaiting moda_architect review.
 
 ### Files Changed
 
-None
+Background commit `490fb8d` ([PR 206](https://github.com/kodjobaah/moda-interact-background/pull/206)) changes the footer helper, wrapper service/AI replay adapter, HUMAN preparation/persistence validation, local notice admission/oversize caller, delivery service and optional expected-content SQL fence. Tests cover footer/HUMAN/delivery units, disposable persistence/fence integration and a bounded fixture lifetime-reader option. `docs/recovery-outbound-footer-coverage.md` records all send classes and rollout limits. No schema, dependency or cross-service wire changes.
 
 ### Work Completed
 
-None
+- New AI/HUMAN eligible preparation adds a neutral divider and trusted checkout URL before immutable freeze, moderation, hashes, media planning and final admission. HUMAN author content is append-only and retained verbatim; URL evidence is validated at preparation, persisted replay and final permit checks.
+- Legacy frozen HUMAN commands and AI applications retain their exact bytes, including old no-divider forms and absent footer evidence/application-key digest.
+- Both terminal text overrides now use the prepared complete body. Explicit server-owned unfrozen-notice flags cover audio/transcription fallback through sendText and oversized-current clarification. Ordinary frozen/media replies are not recomposed.
+- Automated recovery permits compare existing optional expectedContent in the final SQL UPDATE; changed persisted body refuses admission. Shop-before-Conversation ordering and network-free transactions remain intact.
+- Coverage inventory: ordinary AI/HUMAN configured/passthrough, known-recovery terminal/final notices, audio and oversized clarifications receive preparation. Approved templates retain their existing checkout parameter and immutable payload. Unbound/general routing does not infer a basket. STOP/blocked/consent/security prohibitions remain authoritative. Missing/expired checkout retains existing no-URL policy; mismatched/unsafe eligible context refuses preparation.
 
 ### Validation Results
 
-Pending
+- Launcher packet `/tmp/moda-arch072-bg001-prepare.json`: prepared execution, canonical mirrored task branches/worktrees, dependency/recursive submodule checks and durable claim already verified; implementation base `60b8d0b`.
+- Prior-behavior red: HUMAN/divider regression 5 failures/7 cases; both terminal exact-body cases fail against original delivery source because divider/link are absent. Temporary prior-behavior copies restored/removed before publication.
+- Initial focused regression 75/75; added unified HUMAN/delivery cases 50/50; task-owned ESLint and final source typecheck passed.
+- Disposable PostgreSQL: new 4/4 tests prove HUMAN freeze/replay/moderation/persisted/provider byte equality and matching, mismatching and concurrent-changed automated body admission. Existing prepared HUMAN send/reclaim suites 7/7 passed. Tests use synthetic fixture recipients and mocked provider; no Meta sends or production writes.
+- Initial new SQL fixture violated audited control transition trigger; corrected fixture uses Shop/Conversation locks, revision/time and durable control event. Corrected PostgreSQL run is green.
+- Full local units: 4,001 assertions passed across 369 files; one suite raced concurrent Prisma regeneration and failed import of generated client. Affected suite and final footer/delivery rerun passed 88/88 across four files. Declared `npm run build` completed with exit 0 after Prisma generation, both TypeScript targets and sample packaging.
+- Exact-head CI: [push](https://github.com/kodjobaah/moda-interact-background/actions/runs/43279592551), [pull request](https://github.com/kodjobaah/moda-interact-background/actions/runs/43279613422), head `490fb8dc4f40103e90d262c76a285a0cae8dff2e`: both PASS (2m34s and 1m37s), including clean install, generated Prisma client, source typecheck and complete unit suite.
 
 ### Deviations
 
-None
+None in source scope. Existing optional content equality was strengthened under recorded scope amendment; real PostgreSQL identity/race tests included.
 
 ### Assumptions
 
-Existing trusted recovery context supplies eligible URLs; a footer does not grant new consent or checkout authority.
+Footer receipt originates at the existing trusted database relationship/status/lifetime/domain boundary; it does not grant new consent or checkout authority. An authored URL may remain above the single canonical HUMAN footer because staff text must remain verbatim.
 
 ### Unresolved Issues
 
-Send-class inventory must be completed before claiming every eligible path covered.
+No unresolved implementation issue. Production verification belongs to root after review and merge.
 
 ### Architectural Concerns
 
-Return cross-owner/provenance/persistence gaps instead of weakening protected boundaries.
+Rolling overlap requires draining/replacing old messaging workers before generating newly augmented HUMAN commands: old readers reject augmented passthrough equality/new rendered digest. New readers accept old frozen commands unchanged. No retroactive mutation of old/delivered bodies.
 
 ## Architect Review
 
