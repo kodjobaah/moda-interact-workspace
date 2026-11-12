@@ -1,7 +1,7 @@
 ---
 id: ARCH-073
 title: Tenant-specific recovery shop headers and optional logos
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
@@ -11,11 +11,11 @@ updated: 2026-11-12
 
 ## Status / Problem
 
-In Progress. Recovery messages need clear tenant shop-name/website branding and an optional actual shop logo where WhatsApp supports one. Current baseline text functionality is deployed; all source/release tasks are accepted; final integration and operational logo proof remain. A standalone approved logo and genuine production logo delivery remain operational gates, not assumed success.
+Implemented. Tenant-specific name/website headers, trusted checkout footer and optional verified logo delivery are deployed and integrated. All six source/release tasks are accepted. Genuine production image delivery and read status passed using the complete banner explicitly approved by the user as a temporary shop-logo test asset. That authorization supersedes the earlier standalone-only operational gate; it does not authorize automatic cover/banner substitution for other shops.
 
 ## Goals / Non-Goals
 
-Use stored authenticated shop name and verified tenant website in eligible AI/HUMAN/service replies, retaining the trusted checkout footer. Use only current verified LOGO/SQUARE_LOGO media when a single image caption is appropriate. Never invent merchant identity, use a cover/banner as logo, overwrite an existing verified product image, send an extra logo message or truncate full text/checkout URL. Preserve consent/security/control/ordering/admission and human-authored bytes. No new database schema, credential/channel/scope grant or infrastructure is required by the accepted route.
+Use stored authenticated shop name and verified tenant website in eligible AI/HUMAN/service replies, retaining the trusted checkout footer. Use only current verified LOGO/SQUARE_LOGO media when a single image caption is appropriate. Never invent merchant identity, automatically substitute cover art or an unapproved banner as logo, overwrite an existing verified product image, send an extra logo message or truncate full text/checkout URL. Preserve consent/security/control/ordering/admission and human-authored bytes. No new database schema, credential/channel/scope grant or infrastructure is required by the accepted route.
 
 ## Inspected Architecture / Repository Responsibilities
 
@@ -58,24 +58,29 @@ Bounded keyset scans/leases/backoff and current-token service are reused; no per
 
 Dependency graph: basic-name acceptance -> text-header and public-source tasks; additive Shared acceptance -> explicit authorized publication; logo consumer depends on accepted header, public source and publication. Repository tasks are authoritative for execution state.
 
-## Rollout / Validation / Completion Gate
+## Rollout / Integrated Validation
 
-PRODUCTION / COMPATIBLE ROLLOUT. Basic-name source, supported public asset source and text header are merged/deployed. Genuine automatic name capture was verified without manual backfill. Public asset runtime reports controlled CHANNEL_LOCKED; that is not proof of logo readiness. Text-header replacement worker/drain and production read-only preparation preview passed, but preview is not a Meta delivery claim.
+PRODUCTION / COMPATIBLE ROLLOUT. All six source/release tasks are accepted and merged. Background main `51043bfe8ba62ac11f10acdf9f7f28c7d7bd60cf` and Shared main `46834ef32a945606c92feade5924564ce325b326` are pinned by merged parent integration PR989. Production rollout is Live; predecessor messaging worker stopped and surviving worker repair cycles are healthy. Old frozen records remain unchanged. Rollback requires stopping new-format preparation and draining incompatible readers/work; no silent downgrade of frozen media.
 
-After final consumer acceptance developer merges source, pins actual Shared/Background main commits and deploys. Drain old messaging workers before creating incompatible new HUMAN/media evidence; do not rewrite historical records or queue payloads. Old readers may refuse new BRAND_IMAGE, while new readers retain old plans. Rollback requires stopping new-format preparation and draining incompatible work; no silent downgrade of frozen media.
+Repository proof includes focused compatibility and media tests, real PostgreSQL source/control/lease/header/policy identity races, types/scoped lint/build and final exact-head CI. This bounded same-repository mechanism uses genuine developer integrated validation rather than a separate system-test task. No database migration, new infrastructure, scope grant or credential/channel change was needed.
 
-Focused/unit, real PostgreSQL identity/receipt/source/control/policy races, types/scoped lint/declared build and exact-head CI are required. A same-repository bounded mechanism uses developer genuine integrated verification rather than a separate system-test task. Final architecture remains In Progress until operationally approved asset readiness and real logo delivery/fallback behavior are honestly verified. User is providing a standalone asset; a marketing banner is not implicitly approved. Any one-time administrator-observed source bootstrap must use existing canonical observation/processing, never fabricated READY/provenance or an undocumented customer asset bypass.
+Production automatic shop-name acquisition passed without manual name backfill. Stable public asset acquisition remains subject to CHANNEL_LOCKED on the development store, with known media preserved. This limitation was resolved for the authorized test through an administrator-observed source path: the user approved the complete banner temporarily and personally saved it as Shopify default logo. Root verified the actual shop's default asset and public provider media identity, then registered it through the canonical guarded source-observation ingress. The existing production safe-fetch/transform/R2/verification worker produced current READY LOGO media. No READY state or provider identity was fabricated, and no unsupported Admin API, new permission, Storefront credential or password unlock was used.
 
-## Change History / Open Questions
+Read-only production preparation selected BRAND_IMAGE/LOGO with the saved shop name, verified website, both dividers, preserved authored text and exact stored checkout footer. The complete caption fit the image limit. An authenticated Shopify merchant queued one authorized test reply to the dedicated test recipient. Actual frozen RECOVERY_BRAND_MEDIA evidence contained BRAND_IMAGE/LOGO with the exact verified R2 origin/key and matching source generation/content identity. Provider caption matched the saved body, header and checkout footer. Meta delivery and read status succeeded without provider failure, independently corroborated by the merchant UI. Exactly one image reply was sent; a preview or text fallback was not counted as image success.
 
-- Basic shop-name and text headers proceeded independently of logo permission assumptions.
-- Unsupported historical Admin contract replaced after schema evidence with stable public Storefront route.
-- Additive Shared5.13.7 source/release accepted with explicit public publication authorization.
-- Review added original restart/header receipts, same-row policy revision/identity fences and preserved HUMAN admission policy; no schema or cross-service envelope expansion.
-- Remaining operational question: approved standalone logo/source readiness and genuine Meta delivery. No production logo success is yet claimed.
+Detailed customer/provider identifiers, exact private timestamps, recipient information and checkout/media URLs remain protected outside public documentation. Public acceptance records coarse outcomes only.
 
-- Final logo consumer accepted at `3982f109c1d593cbdc6d2ca9125ccbef496f09a7` (runtime4500bf7), with prior findings corrected and final exact-head CI/real PostgreSQL evidence green. All six tasks are Complete. Actual developer source merge/gitlink, rollout/drain and standalone-asset/live-image proof remain; architecture stays In Progress.
+## Decisions / Remaining Non-blocking Follow-up
 
-- Developer merged final Background PR210 at `51043bfe8ba62ac11f10acdf9f7f28c7d7bd60cf`; parent integration pins it and accepted Shared main `46834ef32a945606c92feade5924564ce325b326`. All six source/release tasks are merged/Complete. Runtime rollout/drain and explicit no-logo fallback remain to be verified; selected-store CHANNEL_LOCKED and approved standalone asset/real Meta image proof remain operational gates. Code integration may merge while architecture truthfully remains In Progress.
+The complete banner is an explicitly authorized temporary test asset, not a newly invented standalone logo or permission to repurpose other imagery. A future standalone asset can replace it through the same verified source/READY pipeline. Product image priority, missing-media full-text fallback and LOGO/SQUARE_LOGO role restrictions remain the generic policy. The public Storefront CHANNEL_LOCKED limitation remains transparent; this test proves the authorized observed-source pipeline and actual delivery, not that every locked storefront exposes public branding.
 
-- Final production code rollout verified: merged Background source is Live, predecessor messaging worker stopped and surviving worker repair cycles are healthy without failures. Actual read-only production HUMAN preparation preserved saved shop name, verified website, both dividers, authored body and exact stored checkout footer, using the existing R2/READY pipeline with safe no-logo text fallback. No message was sent or saved by this preview. Standalone approved logo/authoritative READY media and genuine Meta image delivery remain unverified; architecture stays In Progress.
+No blocking architecture question remains. ARCH-073 is Implemented.
+
+## Change History
+
+- Basic shop-name and text headers proceeded independently of logo acquisition assumptions.
+- Unsupported historical Admin contract was rejected after schema evidence; stable tokenless Storefront became the supported public source.
+- Additive Shared5.13.7 source/release was accepted and explicitly authorized for public publication.
+- Review added original ownership/header restart evidence, same-row policy identity/version fences and preserved HUMAN admission policy; no schema or cross-service envelope expansion.
+- Final consumer `3982f109c1d593cbdc6d2ca9125ccbef496f09a7` was accepted after exact-head CI and affected PostgreSQL snapshot assertions passed; developer merged PR210 and parent PR989.
+- User-authorized temporary complete-banner source passed canonical production READY processing and genuine single-image merchant send, Delivered/Read and exact frozen-caption/header/footer checks. The earlier standalone-only gate is superseded by that explicit test authorization.
