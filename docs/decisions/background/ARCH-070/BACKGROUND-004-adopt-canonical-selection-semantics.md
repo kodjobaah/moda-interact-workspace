@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-12T14:30:17Z
+attempt: 1
 depends_on:
   - ARCH-070-SHARED-004
 enables: []
@@ -46,6 +46,10 @@ Unrelated refactors, provider/model changes, fabricated selections or automatic 
 ## Requirements
 
 Replace duplicate local semantic parser mechanics with published Shared helper, preserving host domain policy and exact normalized behavior. Add bounded shape-only diagnostics needed to distinguish pair presence/count/type/disposition/shipping eligibility, never reply prose/private prompts, tokens/credentials or full payload. Use existing shared structured logger, no generic logger or duplicate framework telemetry. Keep host fail-closed verified selection/evidence checks; no inferred version/IDs, product auto-selection, new retries, schema or credentials. Exercise malformed pair and null-shipping prior bypass through actual published bounded runner repair, valid corrected selection and refusal on exhaustion. Preserve all accepted nullURL/footer/terminal fixes on final current main.
+
+Runtime evidence clarification: missing-product-selection guard must test actual verified shipping presentation/evidence, not a truthy model shippingInformationSelection object. Valid static STANDARD plus null/null selection alone cannot authorize unsupported prose after product searches. Preserve genuinely verified shipping-only answers and strict domain/identity checks. Test unobserved, failed/mismatched shipping versus positive authorized observation; no additional retry loop.
+
+Shipping evidence precision: selectShippingPresentation may return a truthy limitation for provider/identity mismatch, so object presence alone is insufficient. Use the published canonical shipping-result/selection qualifier on fresh output with known expected platform before allowing shipping evidence to satisfy the missing-product-selection guard. Preserve matched null/null policy-unavailable truthful limitations and no-product-observation shipping-only flow. Reject provider/product/variant mismatch and malformed/unrelated result. Share qualifier mechanics; do not duplicate local parsing or add calls/loops.
 
 ## Work Items
 
