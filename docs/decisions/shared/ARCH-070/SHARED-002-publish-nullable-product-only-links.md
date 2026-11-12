@@ -37,7 +37,7 @@ MCP valid catalogue products can have onlineStoreUrl null, but existing Shared r
 
 ## Scope
 
-Shared recommendation presentation schema/render and directly related tests/types; approved5.13.3 package metadata. Publication task scope is only accepted-artifact release mechanics.
+Release only the immutable accepted5.13.3 artifact. Record exact version, hashes, npm publication receipt and canonical registry availability. No source/test changes or rebuild.
 
 ## Out of Scope
 
@@ -55,7 +55,7 @@ Publish only the exact accepted5.13.3 tarball to the canonical public npm regist
 
 ## Interfaces / Contracts
 
-Consume published Shared contracts and existing MCP product evidence / durable conversation lifecycle. No new wire or schema contract is authorized. Cross-repository gaps return to architect.
+Release the unchanged accepted public Shared presentation contract; Background pins this exact published version after acceptance.
 
 ## Dependencies
 
@@ -63,12 +63,12 @@ ARCH-070-SHARED-001; architect acceptance and developer merge must precede publi
 
 ## Enables
 
-Developer integration and production verification after architect acceptance of both tasks.
+ARCH-070-BACKGROUND-001 after actual public artifact availability and architect acceptance.
 
 ## Acceptance Criteria
 
-- [ ] Requirements demonstrated with deterministic positive and negative regression tests.
-- [ ] Existing tenant, domain, message identity and lifecycle guarantees preserved.
+- [ ] Exact accepted artifact published once to canonical npm registry; metadata and downloadable bytes match its approved hashes.
+- [ ] No implementation source or test changes, rebuild or repeated implementation validation.
 - [ ] No duplicate delivery, live test send, secret logging or unrelated changes.
 - [ ] Completion Report records canonical launcher packet, physical isolation, synchronization and recursive submodule evidence.
 
