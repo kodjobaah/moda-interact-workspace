@@ -65,6 +65,10 @@ Developer merged header source at ce39ca00723a98f36751547a9acb33fcab6ee368. Root
 
 For new BRAND_IMAGE only, existing outboundPresentation JSON may persist a strict Background-local versioned envelope containing validated plan, original control/inbound/tenant/message receipt and canonical planDigest. Capture original ownership receipt before fresh media preparation; restart must rehydrate that same receipt, never recapture current ownership to make stale work eligible. Validate schema/unknown fields/digest/body/tenant/message/version/control consistency; malformed, missing or mutated proof refuses safely. Legacy raw TEXT/product IMAGE JSON and frozen commands remain unchanged byte-for-byte. HUMAN command's existing expected revision/identity remains authoritative; optional persisted plan must bind it. No premature provider-dispatch column writes, new schema or new Shared envelope contract. Root audited API/Admin readers as opaque, so no outside consumer change is needed for this private carrier.
 
+### HUMAN versus automated receipt eligibility
+
+Receipt source discriminator distinguishes MESSAGE from HUMAN_COMMAND. Automated MESSAGE retains existing inbound/version checks. HUMAN_COMMAND binds original durable command identity, lease and expected control revision; a captured inbound snapshot may be immutable evidence but must not add current-inbound equality if existing human admission allows a newer customer message. Preserve existing human policy: fresh inbound alone remains eligible, while takeover/control revision/lease changes refuse. Test both explicitly. Provenance must not silently tighten unrelated human send eligibility.
+
 ## Work Items
 
 - [ ] Implement only the bounded capability and document compatibility/rollout.
