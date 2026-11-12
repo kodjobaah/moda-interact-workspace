@@ -1055,6 +1055,6 @@ Eight implementation/publication tasks independently Accepted/Complete; terminal
 
 ## ARCH-069 — Chronological Commerce model conversation inputs (2026-11-12)
 
-Bounded compatible production correction. Shared implementation and exact-artifact publication are Accepted/Complete; Background consumer adoption is Ready with a mandatory actual public-registry install/integrity/CI gate. The serializer must place current context after prior history without changing contracts, trust boundaries, retries or delivery. The exact production indicator cause remains subject to paired no-send diagnostics; actual production answer verification is coordinator-owned. No schema or infrastructure changes.
+Bounded compatible production correction. Shared implementation and exact-artifact publication are Accepted/Complete; Background consumer adoption is In Progress with a mandatory actual public-registry install/integrity/CI gate. The serializer must place current context after prior history without changing contracts, trust boundaries, retries or delivery. The exact production indicator cause remains subject to paired no-send diagnostics; actual production answer verification is coordinator-owned. No schema or infrastructure changes.
 
 [Architecture](ARCH-069-chronological-commerce-model-inputs.md) · [Shared tasks](../decisions/shared/ARCH-069/_index.md) · [Background task](../decisions/background/ARCH-069/_index.md)
