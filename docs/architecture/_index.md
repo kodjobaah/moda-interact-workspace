@@ -1077,3 +1077,5 @@ Implemented within the carrier/named-switch scope. All three tasks are Accepted/
 In Progress. Background-owned footer/divider coverage extends to human and eligible freeform recovery notices before immutable preparation, preserving both human provenance gates, old frozen replay and exact provider/permit identity. Approved templates and prohibited/unbound paths retain explicit constraints. No schema/infrastructure/package release planned.
 
 [Architecture](ARCH-072-unified-recovery-checkout-footers.md) · [Background task](../decisions/background/ARCH-072/_index.md)
+
+- [ARCH-073: Tenant-specific recovery shop headers](ARCH-073-tenant-recovery-shop-headers.md) — In Progress.
