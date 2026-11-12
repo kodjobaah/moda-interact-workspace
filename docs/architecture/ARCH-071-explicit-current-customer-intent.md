@@ -66,3 +66,5 @@ No blocking design question; root approved exact role/content shape, existing32k
 ## Change History
 
 - 2026-11-12: Read-only source findings established current-input/data-authority mismatch; root approved additive explicit current-customer conversation contract and gated release/adoption.
+
+- Routine contract clarification: present current batches and each content string are nonempty; raw whitespace/text is preserved without trimming. Empty strings fail closed, with no synthesized fallback or silent dropping. Existing32k Unicode JSON and overall-byte limits unchanged.
