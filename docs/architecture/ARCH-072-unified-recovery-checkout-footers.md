@@ -39,13 +39,13 @@ Existing shared structured semantic logs suffice; no generic logger/metric dupli
 
 ## Rollout / Migration
 
-PRODUCTION / COMPATIBLE ROLLOUT. One Background-owned implementation -> architect acceptance -> developer merge/deploy -> authorized genuine human and AI/notice validation. No schema migration, queue drain or Shared publication. Preserve old frozen records and exact provider/permit equality; rollback code without rewriting durable messages.
+PRODUCTION / COMPATIBLE ROLLOUT. One Background-owned implementation -> architect acceptance -> developer merge/deploy -> authorized genuine human and AI/notice validation. No schema migration, queue-data drain or Shared publication. Drain and replace old messaging workers before new augmented HUMAN commands: old readers reject the new passthrough/key evidence; new readers preserve old records. Preserve old frozen records and exact provider/permit equality; rollback code without rewriting durable messages.
 
 ## Decisions / Tasks
 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-072-BACKGROUND-001 | moda_background | Ready | None |
+| ARCH-072-BACKGROUND-001 | moda_background | Complete | None |
 
 ## Validation / Completion Gate
 
@@ -60,3 +60,5 @@ No blocking design question. Specialist inventory must enumerate coverage before
 - Inventory amendment: audio/transcription fallback and oversized-current clarification also bypass wrappers. Include their caller/local admission signatures under the same capability, using only server-owned recovery-only preparation for unfrozen notices before preparation/moderation/fence. Resolve verified context outside transactions; preserve ordinary frozen AI/media/legacy permits and all exclusions. No additional task/Shared wire or schema change is authorized.
 
 - Final-permit identity amendment: delivery forwards existing optional expectedContent for recovery text, and automated permit SQL compares stored content only when supplied. Legacy absence/initial path and Shop lock ordering stay unchanged. Relevant disposable PostgreSQL match/mismatch/race proof is required; this closes the task existing exact prepared/moderated/provider-body criterion without schema or new wire.
+
+- Source accepted: Background `490fb8dc4f40103e90d262c76a285a0cae8dff2e`; focused checks, real PostgreSQL identity/race coverage and both clean exact-head CI passed. Developer merge/deployment and genuine production proof remain pending.
