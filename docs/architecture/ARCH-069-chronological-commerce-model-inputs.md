@@ -85,7 +85,7 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared implementation acceptance -> exact packa
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-069-SHARED-001 | moda_shared | Ready | None |
+| ARCH-069-SHARED-001 | moda_shared | In Progress | None |
 | ARCH-069-SHARED-002 | moda_shared | Pending | ARCH-069-SHARED-001 |
 | ARCH-069-BACKGROUND-001 | moda_background | Pending | ARCH-069-SHARED-002 |
 
