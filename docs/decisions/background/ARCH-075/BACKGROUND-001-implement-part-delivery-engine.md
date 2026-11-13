@@ -76,8 +76,8 @@ Only server-proven boundaries derive physical payloads: HEADER=header+footer; fi
 ## Work Items
 
 - [x] Implement only assigned capability and document compatibility.
-- [ ] Complete meaningful required checks and regression/negative evidence.
-- [ ] Publish mirrored branch/report and return review, then stop.
+- [x] Complete meaningful required checks and regression/negative evidence.
+- [x] Publish mirrored branch/report and return review, then stop.
 
 ## Interfaces / Contracts
 
@@ -94,17 +94,17 @@ Only dependent tasks after architect acceptance; never begin them implicitly.
 
 ## Acceptance Criteria
 
-- [ ] Assigned bounded capability and frozen contract behavior satisfied.
-- [ ] Legacy reads/records remain compatible; no unauthorized cross-owner/billing/security change.
-- [ ] Durable/contract identity and fault cases satisfy required checks without silent fallback.
-- [ ] Canonical dedicated mirrored worktree, synchronization and recursive evidence recorded; no private proof committed.
+- [x] Assigned bounded capability and frozen contract behavior satisfied.
+- [x] Legacy reads/records remain compatible; no unauthorized cross-owner/billing/security change.
+- [x] Durable/contract identity and fault cases satisfy required checks without silent fallback.
+- [x] Canonical dedicated mirrored worktree, synchronization and recursive evidence recorded; no private proof committed.
 
 ## Validation
 
-- [ ] Real PostgreSQL concurrent root/part creation, perpart CAS, crash-before/after permit/ACK, unknown halting, tail resume/control/STOP cancellation, prefix preservation and logical usage tests.
-- [ ] Status-beforeACK, duplicate/out-of-order/read-before-delivered, root aggregation and quoted anypart tenant tests.
-- [ ] Legacy single-send/reconciliation, package integrity/install, types/scoped lint/build and exact-head full CI.
-- [ ] Diff/privacy hygiene and report actual results, no production sends or secrets.
+- [x] Real PostgreSQL concurrent root/part creation, perpart CAS, crash-before/after permit/ACK, unknown halting, tail resume/control/STOP cancellation, prefix preservation and logical usage tests.
+- [x] Status-beforeACK, duplicate/out-of-order/read-before-delivered, root aggregation and quoted anypart tenant tests.
+- [x] Legacy single-send/reconciliation, package integrity/install, types/scoped lint/build and exact-head full CI.
+- [x] Diff/privacy hygiene and report actual results, no production sends or secrets.
 
 ## Stop Condition
 
