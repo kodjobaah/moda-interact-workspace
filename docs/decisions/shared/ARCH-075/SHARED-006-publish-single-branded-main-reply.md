@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T20:14:19Z
@@ -151,25 +151,24 @@ Physical isolation (launcher packet):
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Prepublication candidate review passed (publication remains incomplete): exact source `44356b4ce651b6b9bc3efc06f89e1d1484139f65` changes only three version values in package metadata. Independently verified candidate530497bytes/157members/SHA256 `b667857723818e2232d3fcd3aa40195c71140249d77d7d06e1cec6f0c865dd37`, exact accepted tested archiveSHA35fb4130... and all156 nonmetadata members byte-identical. Parsed package metadata differs only version5.13.10. Root may merge release metadata; public publication still requires explicit exact archive/version/destination/latest approval and actual registry receipt. Task stays in_progress, ReviewStatusPending; no publication completion or BG010 readiness.
+Actual publication independently verified after root's explicit user approval: public registry version and latest5.13.10, downloaded530497byte tarball SHA256 `b667857723818e2232d3fcd3aa40195c71140249d77d7d06e1cec6f0c865dd37` and integrity exactly match approved archive. Final mirrored receipt `4b6f7a2ed8d39d47306964501a9e3694cd8ef6c4`; source release PR85 merged `232bcb3a3e5a8385aa76fc50f1c59da34f323fb1`. No findings.
 
 ### Reviewed Files
 
-None
+Release package.json/lock three version values only; exact archive comparison already independently reviewed. Normal sibling worktree preparation/claim and immutable accepted implementation prerequisite verified.
 
 ### Validation Reviewed
 
-None
+Release mechanics only: exact user-approved version/public registry/latest, successful actual publication, direct registry/latest lookup and downloaded archive hash/integrity. All156 nonmetadata files match previously accepted tested archive. No repeated implementation tests/build/lint/type checks or consumer adoption.
 
 ### Architecture Conformance
 
-Pending
+Separate authorized release gate after accepted Shared005, no runtime change or new contract fields. Root source/main integration verified; package consumable from approved registry. Old-reader drain/new-writer gate remains required in BG010.
 
 ### Follow-up
 
-No implicit publication or architecture completion.
-
+Root integrates accepted parent/gitlink. BG010 may become Ready using exact published5.13.10 after BG009 integration. No runtime/live or architecture completion implied.
