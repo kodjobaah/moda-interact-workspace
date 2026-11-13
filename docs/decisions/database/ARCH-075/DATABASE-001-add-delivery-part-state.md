@@ -46,6 +46,10 @@ Other repositories/tasks, source main merges/deployment, production sends/replay
 
 Implement ConversationDeliveryPart and minimal ConversationDeliveryStatusReceipt per canonical architecture. Max3 via ordinal0..2 CHECK + unique(root,ordinal). Root FK/cascade, unique perpart dispatch/provider IDs, immutable frozen payload/digest/ordinal/root identity. Persist immutable delivery deadlineAt and a state/deadline scan index for bounded asynchronous tail cancellation. Persist PREPARED/ADMITTED/ACKNOWLEDGED/DELIVERED/READ/FAILED/UNKNOWN/CANCELLED child states, ACK/status/failure timestamps and bounded codes. Do not invent provider state transitions in source service. Status receipts dedupe providerID/status/provider timestamp, attach optional part, indexed unmatched receivedAt for7day bounded cleanup; no raw webhook/customer JSON. Existing root/command provider columns remain compatible and untouched. Protect known provider evidence and immutable preparation against updates; migration safe for populated tables. No application/provider logic or network in migration. Coordinate exact generated field/enum names to architect before consumers.
 
+### Sender identity columns
+
+Part and status receipt require nonempty bounded providerAccountId and providerPhoneNumberId, frozen from server-owned sender authority. Receipt dedupe/correlation includes both plus providerMessageId/status/providerTimestamp; linking may not rely on MetaID alone. Index sender-bound correlation and unmatched retention. Exact role names HEADER/PRODUCT/ANSWER; payloadDigest64 lowercase hex. Immutable sourceIdentity is a bounded object JSON decoded only by Background, not a duplicate DB wire validator. Preserve valid read-before-ACK persistence; do not impose invalid cross-provider timestamp ordering.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.

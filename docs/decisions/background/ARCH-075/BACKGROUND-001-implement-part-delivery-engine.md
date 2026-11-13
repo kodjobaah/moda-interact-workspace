@@ -48,6 +48,10 @@ Other repositories/tasks, source main merges/deployment, production sends/replay
 
 Implement canonical root logical/perpart physical lifecycle. Atomic immutable manifest/part creation, unique stable identities, perpart same-tenant original control/consent/media/policy checks and no HTTP TX. Admit later part only after durable predecessor DELIVERED/READ; HTTP ACK waits for callback, never synchronously holds a worker/transaction. Immutable deadlineAt from bounded validated policy cancels unadmitted tail via asynchronous queue/repair continuation without resend; one automatic HTTP attempt after ADMITTED, UNKNOWN halts tail and never resends accepted prefix. Recover only PREPARED unattempted tail under original still-valid authority. Persist each MetaID, reconcile status-beforeACK receipt, monotonic duplicate/read-before-delivered aggregation, bounded7day receipt cleanup. Any quoted part resolves exact logical root/recovery safely. RootSENT onlyallACK, DELIVERED onlyall appropriate, READ onlyallREAD; definitive tail fail rootFAILED/partial reason, unknown conservativePENDING. HUMAN command notSENT afterheader. One logical usage/cap admission; retain original usage if prefixaccepted/unknown, no blanket compensation. Preserve old single-plan paths and current sender rate fence. Return any actual App/API projection gap rather than silently changing readers.
 
+### Sender-bound provider correlation
+
+Freeze actual server-selected providerAccountId/providerPhoneNumberId on every physical part. Normalized callback and quote must match both before attaching status/provider IDs or mapping root/recovery. Unknown sender events are not authority to claim a part with the same MetaID. Unmatched receipt dedupe/retention uses these IDs; existing single-message compatibility is preserved.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
