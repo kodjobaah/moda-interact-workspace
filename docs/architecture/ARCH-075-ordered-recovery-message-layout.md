@@ -77,3 +77,12 @@ Genuine binding gap: canonical Shared keys lack shop.websiteUrl. Shared003 adds 
 Background001 remains unchanged/content-agnostic on5.13.8. Background002 and Admin consumer definitions will depend on Shared004 and reference this same common projection; terminal system validation includes Meta and dynamic parity. No source implementation is authorized by this amendment outside canonical assigned tasks.
 
 Common reference contract owner Shared003: exact schemaVersion1/definitionId/sourceHash/localeId/languageTag/contentHash/prepared (existing PreparedWrapper), strict browser-safe parser reusing existing injected-digest projection verification. Admin freezes this ref in new Meta source JSON; Background verifies active SHARED definition/source/locale hash against it. Snapshot validation alone is not authority. New Meta compiler projects common header into BODY prefix, original authored body and preserved native opt-out footer text next, then common checkout conditional as BODY suffix; native FOOTER empty. Existing initial authored Reply-tail semantics stay unchanged; final compiled limits are checked after frame insertion. Duplicate inline checkout needs explicit review, not regex deletion.
+
+## Common-layout consumer tasks
+
+| Task | Owner | State | Dependencies |
+|---|---|---|---|
+| ARCH-075-ADMIN-001 | moda_admin | Pending | ARCH-075-SHARED-004 |
+| ARCH-075-ADMIN-002 | moda_admin | Pending | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
+
+Background002 additionally depends on Shared004 and Admin001. It replaces fixed-prefix decoration for new replies with additive local receiptv2 binding the actual rendered common reference/header/footer and trusted split boundaries; v1 frozen replay remains unchanged. Admin002 coordinates approved global SHARED revision with per-shop Meta assignment safely; actual transaction gap must be returned before unsafe mixed-version activation. All required replacements approved before activation, and consumer deployed first. Terminal system-test additionally depends on Admin001/Admin002/Shared003/Shared004; no implementation depends on system-test.
