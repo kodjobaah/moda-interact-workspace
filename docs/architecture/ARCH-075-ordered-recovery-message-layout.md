@@ -48,7 +48,7 @@ No new service or Gateway topology. Reuse existing Background queue/worker and s
 
 | Task | Owner | State | Dependencies |
 |---|---|---|---|
-| ARCH-075-DATABASE-001 | moda_database | Ready | None |
+| ARCH-075-DATABASE-001 | moda_database | Complete | None |
 | ARCH-075-SHARED-001 | moda_shared | Complete | None |
 | ARCH-075-SHARED-002 | moda_shared | Complete | ARCH-075-SHARED-001 |
 | ARCH-075-BACKGROUND-001 | moda_background | Pending | ARCH-075-DATABASE-001, ARCH-075-SHARED-002 |
