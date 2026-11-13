@@ -60,6 +60,12 @@ Architect accepted proposed V1 geometry: width1125, branded header height300, co
 
 Private operator QA inputs exist under primary local-backups/arch075-live-20261113/composite-qa/{logo.jpg,product.jpg}; original hashes supplied securely by root. Use offline only, never commit those assets or URLs. Canonical full header includes authored translated labels; do not repeat header/divider in caption or invent translations. Unsupported glyph/fit returns safe omission.
 
+### Read-only runtime/font preflight
+
+Actual isolated node22-alpine (Node22.23.5, Sharp0.35.4, libvips8.18.6, Pango1.58.2) has no installed fonts but supports explicit fontfile. Small official candidate: Google/fonts commit7dc16b7de42db624b902f2292b68ed9e489e5053/ofl/poppins/Poppins-Regular.ttf,160316 bytes, SHA2567e65201e9b79159e2300267cc885e16c8dcef2424cdfa09a29bfb0980a94a7ba; OFL.txt4385 bytes, SHA2566be04893d770899a015649c7aa3b582f871b272f8747a92b78b17c3e5c8b2573, copyright2020PoppinsProjectAuthors/SIL OFL1.1. Retain license/provenance.
+
+Use explicit generated glyph coverage from pinned font (candidate471scalars), bounded supported repertoire and no normalization. Missing/unsupported glyphs can silently produce PNG, so PNG success is not coverage evidence. English Eugene/Latin accents/common punctuation supported; unsupported CJK/Arabic/emoji/decomposed marks require fullTEXT fallback. Fixed fontfile/family/size/DPI, escaped Pango markup, measured height with no autofit/shrink. Current packagefiles omit fontassets and tsupclean erasesdist: package font/license/coverage explicitly and verify actual packed Node path after bundling. No new font manager/dependency needed for this bounded supported set. Renderer must still prove actual readable pixels and root visual artifact; preflight only establishes runtime availability.
+
 ## Work Items
 
 - [ ] Implement safe deterministic compositor/preparation with font/license provenance.
