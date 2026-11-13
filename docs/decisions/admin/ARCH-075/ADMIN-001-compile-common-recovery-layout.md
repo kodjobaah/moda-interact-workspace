@@ -85,13 +85,13 @@ Only explicitly promoted dependent tasks after acceptance.
 
 - [x] One common content source is used without duplicated formatting or unauthorized semantic widening.
 - [x] Old stored projections/registrations remain readable and immutable; new fields do not grant tenant/provider authority.
-- [ ] Assigned validation and isolated mirrored synchronization evidence are complete.
+- [x] Assigned validation and isolated mirrored synchronization evidence are complete.
 
 ## Validation
 
 - [x] Golden custom-header/footer projections and Meta/dynamic parity with real public parser/renderer; legacy records unaffected.
 - [x] Clone/translation/source-hash/tamper/stale-ref/locale mismatch and final composed-limit/opt-out preservation regressions.
-- [ ] Existing declared relevant tests/types/lint/build plus real PostgreSQL immutable-source fixture where applicable; exact-head CI and privacy checks.
+- [x] Existing declared relevant tests/types/lint/build plus real PostgreSQL immutable-source fixture where applicable; exact-head CI and privacy checks.
 
 ## Stop Condition
 
@@ -105,7 +105,7 @@ You are not alone; preserve other changes. Canonical prepared packet is startup/
 
 ### Status
 
-Ready for architect review. Implementation committed and pushed; exact-head remote CI remains pending review of PR checks. No live registration, assignment, activation or deployment was performed by this task.
+Ready for architect review. Implementation committed and pushed. No GitHub Actions workflow is configured; root verified exact-head Vercel and preview-comment checks passed as supplementary validation. No live registration, assignment, activation or deployment was performed by this task.
 
 ### Files Changed
 
