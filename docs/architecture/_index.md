@@ -1083,3 +1083,9 @@ In Progress. Background-owned footer/divider coverage extends to human and eligi
 - [ARCH-074: Recovery branding independent of billing scope](ARCH-074-recovery-branding-billing-scope.md) — In Progress.
 
 - [ARCH-075: Ordered recovery logo and product message layout](ARCH-075-ordered-recovery-message-layout.md) — In Progress.
+
+## ARCH-076 — WhatsApp sender pool and checkout reply routing (Proposed)
+
+Preserved from local commit `59705bb589342f31054e6c1fd011dacf9d495ae6`, resolving its collision with existing Implemented ARCH-069 without changing accepted history. Seven portable tasks remain Pending/unclaimed behind current-source compatibility review; no implementation launch is authorized.
+
+[Proposed architecture and task definitions](ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md)
