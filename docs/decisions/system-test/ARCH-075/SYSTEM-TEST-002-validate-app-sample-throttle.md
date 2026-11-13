@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-075-ADMIN-006
   - ARCH-075-DATABASE-002
   - ARCH-075-BACKGROUND-007
   - ARCH-075-SYSTEM-TEST-001
@@ -46,6 +47,8 @@ Terminal independent disposable PostgreSQL/worker/provider-simulator validation 
 Other repositories except explicit accepted submodule adoption, provider credentials/grants, live sends/repair/deployment, Shared publication, blind create retry, unsupported caching, generic refactors or implementation-source merges.
 
 ## Requirements
+
+Also reconcile accepted Admin006 repeated-retry audit proof using actual domain fixtures where appropriate; preserve original SystemTest001 acceptance and do not duplicate unrelated full delivery validation.
 
 Exercise actual accepted sample/provider/submit path and dedicated durable app state across two independent workers/processes: one evidenced code4 produces persistent backoff, stops remaining same-app uploads across cycle/restart/replica and leaves template creation unclaimed; current auth403 remains nonretryable; other app/environment cannot inherit authority. Verify exact operator-evidenced recovery refuses ambiguous/intent-bearing historical blocks and cannot bypass cooldown. Reuse source/image provenance strategy only with explicit accepted-source manifests and Linux runtime Prisma generation for the new model; no host native clients copied. No production build-parity/live/fleet/provider approval claim. No implementation task depends on this terminal task; execute only after accepted prerequisites and root manual checkpoint.
 
