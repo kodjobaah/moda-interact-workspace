@@ -53,7 +53,7 @@ No new service or Gateway topology. Reuse existing Background queue/worker and s
 | ARCH-075-SHARED-002 | moda_shared | Complete | ARCH-075-SHARED-001 |
 | ARCH-075-BACKGROUND-001 | moda_background | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002, ARCH-075-SHARED-004 |
 | ARCH-075-BACKGROUND-002 | moda_background | Complete | ARCH-075-BACKGROUND-001, ARCH-075-SHARED-004, ARCH-075-ADMIN-001 |
-| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Ready | All implementation/publication tasks |
+| ARCH-075-SYSTEM-TEST-001 | moda_system_test | In Progress | All implementation/publication tasks |
 
 PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Shared public release, Background engine then producer integration; developer deploys/drains old readers before emitting new manifests. No production replay/reset/extra test send without authorization. New format cannot roll back to old readers blindly; stop generation/drain new pending work first, preserve all outcome records. Source tasks never depend on system test. Developer manual checkpoint precedes Ready terminal system-test invocation. Architecture Implemented only after accepted terminal validation and genuine ordered WhatsApp proof with explicit partial/unknown behavior evidence. Public documentation excludes customer/provider identifiers and URLs.
 
@@ -104,3 +104,9 @@ Actual common-source translation revealed Admin protected-segment validation omi
 
 | ARCH-075-ADMIN-003 | moda_admin | Complete | ARCH-075-ADMIN-002, ARCH-075-SHARED-004 |
 | ARCH-075-BACKGROUND-003 | moda_background | Complete | ARCH-075-BACKGROUND-002, ARCH-075-SHARED-004 |
+
+### Reviewed common editor lifecycle parity
+
+Admin004 corrects new editable empty static footer production and selector/eligibility staging status parity, preserving all immutable saved AST/compiler/hash bytes and strict 20-locale proof. A genuine cloned source is required for existing noncanonical empty-token footer. No Shared release, database status rewrite or Background runtime change. Terminal system acceptance additionally requires Admin004; independent unaffected fixtures may continue, but no architecture completion claim is made.
+
+| ARCH-075-ADMIN-004 | moda_admin | Complete | ARCH-075-ADMIN-003, ARCH-075-SHARED-004 |
