@@ -236,6 +236,17 @@ DATABASE-002 is preserved as a **superseded** historical task definition: no imp
 
 ### Preserved local functionality reconciliation — 2026-11-13
 
-ARCH-038-ADMIN-004 (pending) owns the bounded outcome: Edit the initial outreach tool-call policy. Read-only comparison shows12 production files plus9 budget tests missing from current main. Background already resolves/enforces this field. Two other local template-impact edits are already incorporated in current main and must not be reapplied or used to overwrite newer tests. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
+ARCH-038-ADMIN-004 (Ready) owns the bounded outcome: Edit the initial outreach tool-call policy. Read-only comparison shows12 production files plus9 budget tests missing from current main. Background already resolves/enforces this field. Two other local template-impact edits are already incorporated in current main and must not be reapplied or used to overwrite newer tests. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
 
-| ARCH-038-ADMIN-004 | moda_admin | pending | ARCH-038-DATABASE-003, ARCH-038-ADMIN-003 |
+| ARCH-038-ADMIN-004 | moda_admin | Ready | ARCH-038-DATABASE-003, ARCH-038-ADMIN-003 |
+ARCH-038-DATABASE-003 (Complete) owns the bounded outcome: Persist the initial outreach tool-call policy. Background main already consumes initialOutreachToolCalls with default16 and max64, but canonical Database still rejects that key and Admin has unpublished editing support. Backed-up local SQL adds the existing JSON budget field and LIVE Platform default; no new schema model or Shared contract is needed. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
+
+| ARCH-038-DATABASE-003 | moda_database | Complete | ARCH-038-DATABASE-001, ARCH-017-DATABASE-002 |
+
+Historical ledger canonicalization ARCH017DATABASE002 must be accepted/integrated first. New budget SQL is absent both live ledgers; explicit transaction and actual out-of-timestamp-order upgrade proof are required. Root verifies hosted migration rollout before Admin004 writes deploy.
+
+2026-11-13 dependency promotion: historical retirement source `86db55833c804327f32a9208977cf54ae93cf4a1` and accepted parent `adba9b8efbf85f6c47b26cffeb68670465c8469b` are integrated. DATABASE-003 is Ready, Attempt0/unclaimed; ADMIN-004 remains Pending until accepted budget source and root-owned TEST then PROD hosted migration verification, before Admin main merge enables writes.
+
+2026-11-13 DATABASE003 accepted exact source `85c051ac03f251422b677958ee5e8514b27b3568`: fresh80 and actual upgrade79-then-earlier-target-last passed, including transaction rollback and concurrent CAS/audit. Source integration and root-owned TEST then PROD hosted migration verification remain required before Admin004 main merge enables writers; no deployed capability is claimed.
+
+2026-11-13 Admin promotion: accepted budget source PR77 merged `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`, parent PR1016 `5bb98c073fd6c167a89da56f7a899c9dd457af18`. Root hosted rollout verified TEST16:03:51Z and PROD16:04:20Z:80 finished, zero unfinished/checksum mismatches;10 policy rows with five missing LIVE keys defaulted16 only, other fields preserved and guard enabled O. Admin004 is Ready; source review/tests/integration remain required, with no architecture completion claim.

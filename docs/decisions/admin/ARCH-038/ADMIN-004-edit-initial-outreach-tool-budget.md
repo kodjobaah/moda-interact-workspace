@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -33,6 +33,8 @@ ARCH-038; docs/architecture/ARCH-038-commerce-agent-execution-budget-policies.md
 Edit the initial outreach tool-call policy without losing current main behavior or the verified local backup.
 
 ## Context
+
+Dependency integration verified: Database source PR77 main `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`, accepted parent PR1016 `5bb98c073fd6c167a89da56f7a899c9dd457af18`. Root verified TEST then PROD hosted rollout on2026-11-13 (16:03:51Z/16:04:20Z):80 finished migrations, zero unfinished/checksum mismatches,10 policy rows/five missing LIVE defaults16, other fields preserved, guard enabled O. The hosted pre-merge schema gate is satisfied; owning Admin validation/review remains mandatory.
 
 Read-only comparison shows12 production files plus9 budget tests missing from current main. Background already resolves/enforces this field. Two other local template-impact edits are already incorporated in current main and must not be reapplied or used to overwrite newer tests.
 
