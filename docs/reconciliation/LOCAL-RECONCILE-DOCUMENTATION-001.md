@@ -54,6 +54,7 @@ not generated recordings. All original local files remain preserved.
 - `automation/src/video/merchant-onboarding.ts`
 - `automation/src/video/video-quality.ts`
 - `automation/tests/video-quality.test.ts`
+- Narrow `automation/src/capture/runner.ts` optional-timeout call-site correction and directly related unit test, as authorized below.
 - `videos/merchant-demo/storyboard.en.json`
 - `videos/merchant-demo/voiceover.en.json`
 - `videos/merchant-onboarding/storyboard.en.json`
@@ -128,3 +129,8 @@ source whitelist, meaningful offline video proof, privacy/mutation controls,
 source/report publication and independent final review. No new launcher route,
 agent or architecture framework is authorized. Final implementation review is
 pending.
+
+
+## Architect scope refinement — 2026-11-13
+
+The required full validation exposed four pre-existing exactOptionalPropertyTypes failures in the capture runner passing timeout:undefined to the locked Playwright API. The user's explicit test/fix instruction and this coordinator authorize a bounded correction at those four existing calls: omit the timeout option when undefined while preserving every explicit numeric value (including zero) and the established default behavior. Prove unchanged-main baseline first and add direct meaningful option forwarding tests; no scene selection, credential, privacy, capture mutation or time-limit redesign. This is part of restoring the existing documentation pipeline validation, not permission for unrelated capture refactoring.
