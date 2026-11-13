@@ -144,3 +144,9 @@ Rollout: additive migration test/prod, accepted Background schema/client adoptio
 ### Independent system validation accepted
 
 The terminal system task is Accepted after actual disposable PostgreSQL/Redis/worker delivery and fault scenarios, canonical Admin activation, localized consent, Meta preclaim readiness and strict translation provider deltas. Exact source/image provenance and approved host-build limitations are recorded in its report. Architecture remains In Progress: synthetic fixtures do not replace live provider approvals, coherent environment copy, coordinated activation or genuine ordered recipient delivery.
+
+### Repeated translation retry audit identity
+
+Admin006 corrects a confirmed second-retry collision with the existing unique audit operation identity. Each nonempty serialized retry decision needs its own server identity; empty/concurrent repeats stay no-ops. Existing audit history/index, completed locales and provider policy remain unchanged. This independent task may run beside throttle work; terminal SystemTest002 includes its accepted reconciliation.
+
+| ARCH-075-ADMIN-006 | moda_admin | Ready | ARCH-075-ADMIN-005 |
