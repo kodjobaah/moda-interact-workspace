@@ -53,6 +53,12 @@ Eager moderation or AI invocation during HUMAN control, new queues/events/schema
 - Both eligible sides of the merchant/customer exchange appear once after normal resume, retaining merchant untrusted-history label and customer role. Preserve existing deduplication/order/current-turn separation. Changes to immutable evidence or cross-service boundaries require return to architect before widening.
 - No new telemetry is required unless a concrete diagnostic gap is found. Any changed structured logs use Shared logging and contain bounded identifiers, never full customer content or credentials. Root alone performs deployment/live verification.
 
+### Bounded historical moderation time (architect amendment)
+
+New historical work cannot consume the full 120-second logical processing lease. Pass the actual existing processing-lease deadline from the turn processor's claim timestamp into the moderation gate; do not reconstruct a fresh lease at gate entry or increase lease duration. Historical assessment has an additional elapsed ceiling of twice the existing MODERATION_TIMEOUT_MS (currently16 seconds). Before starting each historical assessment, require a full existing timeout plus a1-second safety margin within both deadlines; otherwise return existing retry/release. Stop historical work on its first RETRY. Current-turn decision remains first and unchanged, and historical BLOCK/review cannot change it.
+
+Reuse immutable cached assessments and existing attempt/backoff caps: subsequent claims traverse cached rows quickly and progress through remaining prior candidates. No new queue/cursor or caller-supplied allowance. Inject a clock for deterministic deadline/progress tests, including slow successful assessments, insufficient actual remaining lease, no assessment after deadline and cached replay progress. Direct helper tests without a processing lease must still enforce the historical elapsed bound; production invocation must supply the real claim deadline. Final source validation follows this amendment; do not repeat superseded expensive checks before code settles.
+
 ## Work Items
 
 - [ ] Prove absent human-mode customer assessment/history exclusion with a focused RED.
