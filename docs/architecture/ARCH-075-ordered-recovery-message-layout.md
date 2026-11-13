@@ -38,7 +38,7 @@ Root SENT only after all required physical ACKs, DELIVERED only all delivered/re
 
 Original AI revision/inbound or HUMAN command/lease/control identity remains authoritative. HUMAN new customer inbound alone does not invent a new gate. Every part checks STOP/consent/current control/tenant/source/policy; takeover cancels unsent tail, never recaptures newer ownership. No HTTP in transactions. Moderation binds frozen complete visible text/plan manifest and each admitted part derivation; no unmoderated authored text. Each image preserves existing verified provenance and caption limits.
 
-Legacy raw TEXT/product IMAGE/BRAND_IMAGE and frozen commands remain exact single sends. Approved initial/follow-up Meta templates unchanged. AI/HUMAN recovery replies and eligible notices use the new composition path; unbound/security exclusions unchanged. No new permission/credential, billing policy or provider-image source.
+Legacy raw TEXT/product IMAGE/BRAND_IMAGE and frozen commands remain exact single sends. Existing approved initial/follow-up Meta snapshots remain immutable; reviewed common-layout replacements are cloned/approved under the common-content amendment. AI/HUMAN recovery replies and eligible notices use the new composition path; unbound/security exclusions unchanged. No new permission/credential, billing policy or provider-image source.
 
 ## Infrastructure / Observability / Scale
 
@@ -51,8 +51,8 @@ No new service or Gateway topology. Reuse existing Background queue/worker and s
 | ARCH-075-DATABASE-001 | moda_database | Complete | None |
 | ARCH-075-SHARED-001 | moda_shared | Complete | None |
 | ARCH-075-SHARED-002 | moda_shared | Complete | ARCH-075-SHARED-001 |
-| ARCH-075-BACKGROUND-001 | moda_background | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002 |
-| ARCH-075-BACKGROUND-002 | moda_background | Pending | ARCH-075-BACKGROUND-001 |
+| ARCH-075-BACKGROUND-001 | moda_background | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002, ARCH-075-SHARED-004 |
+| ARCH-075-BACKGROUND-002 | moda_background | Complete | ARCH-075-BACKGROUND-001, ARCH-075-SHARED-004, ARCH-075-ADMIN-001 |
 | ARCH-075-SYSTEM-TEST-001 | moda_system_test | Pending | All implementation/publication tasks |
 
 PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Shared public release, Background engine then producer integration; developer deploys/drains old readers before emitting new manifests. No production replay/reset/extra test send without authorization. New format cannot roll back to old readers blindly; stop generation/drain new pending work first, preserve all outcome records. Source tasks never depend on system test. Developer manual checkpoint precedes Ready terminal system-test invocation. Architecture Implemented only after accepted terminal validation and genuine ordered WhatsApp proof with explicit partial/unknown behavior evidence. Public documentation excludes customer/provider identifiers and URLs.
@@ -83,7 +83,13 @@ Common reference contract owner Shared003: exact schemaVersion1/definitionId/sou
 | Task | Owner | State | Dependencies |
 |---|---|---|---|
 | ARCH-075-ADMIN-001 | moda_admin | Complete | ARCH-075-SHARED-004 |
-| ARCH-075-ADMIN-002 | moda_admin | Pending | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
+| ARCH-075-ADMIN-002 | moda_admin | Ready | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
 
 Background002 additionally depends on Shared004 and Admin001. It replaces fixed-prefix decoration for new replies with additive local receiptv2 binding the actual rendered common reference/header/footer and trusted split boundaries; v1 frozen replay remains unchanged. Admin002 coordinates approved global SHARED revision with per-shop Meta assignment safely; actual transaction gap must be returned before unsafe mixed-version activation. All required replacements approved before activation, and consumer deployed first. Terminal system-test additionally depends on Admin001/Admin002/Shared003/Shared004; no implementation depends on system-test.
 Reader-first staging correction: Background001 must understand local receiptv2/commonRef and custom rendered header/footer boundaries BEFORE new producers emit them. It now consumes published Shared0045.13.9 for final reader support; Background002 remains producer composition only. Existing engine work on5.13.8 stays preserved, but no unpublished consumer artifact or new-format activation is allowed. Final exact-head engine validation/rollout follows the published dependency. This prevents an older v1-only reader from aborting new-format tails during producer overlap.
+
+Single-send notice staging exception: Background002 adds privatev2 common singleTEXT/BRAND_MEDIA readers with producers while preserving AUTOMATION and existing final fences. This is safe only under root-verified absence of SHARED active slot in both environments; reverify immediately before producer merge. Keep SHARED unactivated until Background002 Live plus predecessor reader drain in BOTH environments, then root-owned Admin002 coordination. No new format emits without eligible SHARED common mode. If absence changes, stop and stage compatible readers separately. No new setting/schema/actor permission is introduced.
+
+## Compatible reader rollout evidence
+
+Root verified accepted compatible-engine source02e62447 Live with healthy runtime in both environments using supplied deployment/runtime evidence. Predecessor termination is a documented-platform inference rather than a claimed observed stopped line: Render applies the sequence to background workers and force-terminates predecessors after its bounded shutdown interval; the conservative interval had elapsed with successful current deployments. No rollback/custom support override was evidenced, and no Redis or restricted Render-origin workaround was used. Source: [Render deployment lifecycle](https://render.com/docs/deploys). This satisfies the reader-stage rollout gate; root must still reverify no active SHARED slot before producer merge and wait for producer Live/drain before common activation. Actual Meta approval, catalogue copy and genuine ordered messages remain pending.
