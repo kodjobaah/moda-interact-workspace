@@ -1,0 +1,165 @@
+---
+task_id: LOCAL-RECONCILE-WORKSPACE-001
+repository: moda-interact-workspace
+assigned_agent: developer
+coordinator: moda_architect
+execution_mode: developer
+completion_mode: developer
+status: review
+updated: 2026-11-13
+---
+
+# Preserve and reconcile remaining local functionality
+
+## Authority and boundary
+
+The user explicitly requested review of all remaining local changes, incorporation of needed functionality without loss, appropriate tests and commit/push/merge to main. Root owns final source and parent integrations. This parent-only coordination record does not invent a new architecture or launcher route. Existing architecture tasks own actual bounded product changes; the Documentation-only route exception is separately recorded. No source task depends on terminal system validation.
+
+Root verified all15 Git bundles, staged/unstaged binary patches, nonignored untracked archives and unchanged initial statuses at external backup `moda-local-reconciliation-backup-20261113T145749Z` before any reconciliation writes. The backup remains private and outside source. Architect audited actual local diffs/current-main overlap and owner reports. No credentials, provider exports, private customer data or raw operational evidence may be committed merely because they are untracked.
+
+## Repository disposition manifest
+
+| Repository | Audited local state | Required disposition |
+|---|---|---|
+| Parent workspace | Old gitlinks; accidental Claude skill truncation; generated caches; local backups/operator/experimental/private files | Root updates final gitlinks only after accepted implementation merges; restore accidental skill typo from correct main after preservation. Keep generated/private/operator scratch material out of source. |
+| moda-interact | No local source delta; current main ancestry only | Verify/synchronize accepted main; no duplicate feature commit. |
+| moda-interact-api | No local source delta; accepted replay/migration fix already main | Verify/synchronize accepted main; no duplicate feature commit. |
+| moda-interact-admin | Missing12 production budget files plus9 related tests; greeting-impact behavior already main, local old test lacks newer main tests | ARCH038ADMIN004 selectively ports only missing initial-outreach budget controls after Database003; preserve newer publication tests. Operator installer script stays local/backup. |
+| moda-interact-background | No primary local source delta; old checkout behind accepted main | Synchronize accepted main; preserve ongoing ARCH075 operational state. No speculative source change or extra release. |
+| moda-interact-commerce | No local source delta; old checkout behind main | Synchronize accepted main; existing runtime initial-outreach budget capability is already present. |
+| moda-interact-database | Missing historical retirement migration/seed parity and new initial-outreach JSON budget migration/test delta | ARCH017DATABASE002 exact historical checksum/seed validation first, then ARCH038DATABASE003 with actual fresh/out-of-order upgrade proof. No task-agent live DDL. Scratch queries/transcripts remain local. |
+| moda-interact-documentation | Missing4K capture/render profile plus four required English storyboard/voiceover JSON inputs | LOCAL-RECONCILE-DOCUMENTATION-001 bounded dedicated-worktree exception; offline actual output verification, no live recording or publishing. Raw generated media/transcripts/ad-hoc editing scripts stay local. |
+| moda-interact-gateway | No local source delta; old checkout behind main | Synchronize accepted main/Blueprint; no new infrastructure or credential change. |
+| moda-interact-mcp | Only untracked ad-hoc operator/scripts/session/shop exports | Preserve originals/private backup; never publish credential/PII-bearing session export. No missing product implementation established. |
+| moda-interact-messaging | Only support notes/editor locks/transcript, behind main | Preserve local artifacts; synchronize accepted main. No product source task. |
+| moda-interact-shared | No local source delta; older published revision | Synchronize accepted main; existing published5.13.9 remains current for this work. No extra npm release. |
+| moda-interact-site | Accidental absolute local asset path pasted visibly into HTML;22 unreferenced media files including five exact duplicate drafts | Root restores correct main HTML after preservation. User-approved local artwork/assets remain local/private backup; no missing website reference warrants publishing the entire asset collection. |
+| moda-interact-system-test | Missing three source-compensation scenarios/support coverage among27 tracked/30 untracked candidates; main has newer catalogue/encryption/Meta-ingress/ARCH075 capabilities | ARCH028SYSTEM002 selectively ports only genuine missing behavior, updates fixtures to current strict contracts and runs meaningful disposable integrated tests. Do not overwrite newer main or claim full ARCH028 certification. Historical transcript stays backup-only. |
+| moda-interact-woocommerce | All12 dirty implementation files exactly match current main; feature already accepted/merged | Fresh owner verification and relevant tests, then root synchronizes main after preservation; no duplicate implementation task/commit. |
+
+Root additionally verified all14 implementation HEADs have zero unpublished unique commits against freshly fetched main. Behind-only checkout positions are not missing functionality. Additional nested/old worktree audit remains root-owned; no old worktree is discarded or reused as a new task base.
+
+## Bounded implementation sequence
+
+1. `ARCH-017-DATABASE-002`: canonicalize applied `20261106023000_remove_order_support` with exact SHA256 `6afd411b773669387f6289243537ea999df07a1f8c553163862a1f21de06cde2`; fresh seed stops recreating the retired feature. Preserve historical FK/refusal/rollback and all unrelated prices/subscriptions/features.
+2. `ARCH-038-DATABASE-003`: add initialOutreachToolCalls1–64 validation/default16 to existing schemaVersion1 policy, after historical history is canonical. Read-only root/Database evidence confirms this new migration absent both live ledgers. Explicit migration transaction and actual earlier-pending-name applied after newer migrations upgrade proof are required.
+3. `ARCH-038-ADMIN-004`: bounded editors/wizard/inheritance/audit support after accepted Database003. Cached old forms must not reset a persisted new value to16; missing writer input refuses or preserves trusted current state under CAS. Root verifies hosted migration rollout before new writes deploy.
+4. `ARCH-028-SYSTEM-TEST-002`: independent existing implementation prerequisites already Complete; root supplied current manual launch checkpoint. Three credit-source compensation scenarios and modified Free/status/settlement coverage run against disposable actual PostgreSQL/Redis/accepted workers/emulators. This is incremental validation, not full original SYSTEM001 certification.
+5. `LOCAL-RECONCILE-DOCUMENTATION-001`: parallel independent offline video tooling/input reconciliation under the separately reviewed one-off route exception. No launcher/framework/new-agent change.
+
+All normal architecture tasks use launcher-resolved dedicated matching parent/implementation worktrees and published mirrored task branches; source main merges remain root-owned. No blind application of old whole-tree patches. Source/readiness authority remains the individual task YAML and actual accepted code, not this navigation manifest.
+
+## Validation and integration gates
+
+- [x] Full backup completed and verified by root before writes.
+- [x] Actual diff/current-main overlap audit distinguishes missing, already-incorporated and local-only artifacts.
+- [x] Owning bounded task definitions and Documentation exception prepared; no broad replacement architecture.
+- [x] Each genuinely missing source capability passes required owning validation and independent review.
+- [ ] Source commits/PRs pushed and merged by root; parent gitlinks select final accepted main SHAs.
+- [x] Root reconciled all14 implementation primary checkouts using explicit preservation/stash/fast-forward operations after needed functionality was represented in main. No reset/force/clean or loss of local-only assets/tools.
+- [x] Final manifest identifies integrated SHAs/test results and remaining private/local artifacts; no statement that every unrelated file was committed.
+
+## Operational separation
+
+ARCH075 common-layout rollout remains In Progress: all120 reviewed registrations failed template_create with HTTP400/code100/subcode2388299; the prior cooldown has cleared. Coordinated activation and genuine ordered recipient delivery remain unverified. This local reconciliation does not reset that lifecycle, replay customer turns, change credentials/settings or establish live acceptance. Source tests and Git integration are not provider or production proof.
+
+## Completion Report
+
+Ready for root final integration. All bounded implementations are independently accepted and merged; all14 implementation primaries are current with accepted main. Final14 parent gitlink selection and aggregate parent merge remain root-owned. This review status is not live certification. Historical progress entries below are retained chronologically; the final readback supersedes earlier pending-work statements.
+
+## Architect Review
+
+Manifest classification accepted as a plan based on direct diffs and owner audits. Each implementation retains its independent final review. Root retains explicit final integration authority; architecture statuses and accepted history remain unchanged except owning task-specific amendments.
+
+
+## Additional preserved branch audit
+
+Root verified older nested encryption validation worktrees: unique API42ab84c, Background644c2b2, Messaging8aa2b97 and Commerce870c156/7381d2b commits contain temporary validation workflows only; Commerce292890c publication-proof files already match fresh main byte-for-byte. No missing application functionality or cherry-pick is required. All those worktrees/refs remain preserved and their refs are in verified bundles; never copy their stale trees over current layout work.
+
+Built-baseline Woo verification additionally identified a possible test hook registry mismatch; canonical ARCH053WOOCOMMERCE009 is prepared for bounded test-only correction after post-build confirmation. The already merged follow-up UI remains unchanged. Documentation actual offline pixel verification caught padding in the original local4K patch; the reviewed exception permits correcting the capture profile and directly related pixel regression, with no unsupported native-rendering claim.
+
+## Accepted integrations confirmed by root
+
+- Documentation source `0ef56f9dce03ef0a3b5bd673138d1efb18a00658` accepted at parent `1f60985c0`; source PR1 merged `11d90341b2b64077a55756f9e1efbf25de48b17b`, parent PR1013 merged `addafc459899936f82e3b4efac0ce793ddf6e920`. Typecheck/57 tests plus actual offline full-frame recording/trim/both renderer proof passed; no live-page quality certification implied.
+- Woo fixture-only source `afb321fe164aefa026061d560cc307db984da976` accepted at parent `625f5fb1b`; source PR47 merged `ec05826a0746fe139217c0edf6d99d3a19157d51`, parent PR1014 merged `4b66ca328402cfb6543be0f5e7ccc247882ca568`. PHP343/2590, Vitest482, Node128, PHP lint/build passed; preexisting 309 whole-JS lint findings remain explicitly outside this bounded reconciliation.
+- Historical Database source `0e5073410aed98ce8364fe343e9eff42cd823cb8` accepted at parent `c0dd91b93`; 48 disposable PostgreSQL assertions plus Prisma/static/lint passed. Source/main integration remains pending root confirmation; DB003 cannot start yet. Historical hosted migration bytes already match; no replay is authorized.
+
+System coverage is still executing. The default accepted-source Docker build failed V8 memory before business assertions. The bounded existing correctness-image fallback may establish business runtime evidence with exact pinned sources and audited outputs, but Node24 host compilation versus unchanged Linux Node22 runtime does not establish production Docker-build parity. Retain that limitation and original failure evidence. Aggregate acceptance and primary preservation readback remain pending.
+
+## Primary preservation progress — root verification
+
+Root verified original tracked patches against external-backup SHA before synchronizing eleven primary repositories. All eleven now have HEAD equal to origin/main; local-only untracked files remain in place. Original tracked changes additionally survive selective stashes: Documentation `d99153f4ffdf8ad3724ec10f03c6d45a6116d958`, WooCommerce `f9617576b85fad529535547de4451bdeda89757d`, Site accidental HTML `ae7716c58a2943e0a039fe5d54883aef57b4c2c5`. The other eight synchronized repositories had no tracked edits. The protected external backup contains root's `verification/primary-synchronized.json` readback. Database, Admin and System Test primaries remain untouched pending their owning reconciliation; aggregate remains In Progress.
+
+Historical Database integration is now confirmed: source PR76 merged `86db55833c804327f32a9208977cf54ae93cf4a1`; accepted parent PR1015 merged `adba9b8efbf85f6c47b26cffeb68670465c8469b`. DB003 was promoted Ready at parent `018d6fb28` and handed to its owner through normal preparation. Admin remains gated on accepted budget source and separately verified TEST/PROD hosted migration before its main merge.
+
+## Budget integration and preserved Database primary
+
+Budget source PR77 merged `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`; accepted parent PR1016 merged `5bb98c073fd6c167a89da56f7a899c9dd457af18`. Root verified TEST16:03:51Z then PROD16:04:20Z hosted rollout:80 finished migrations, zero unfinished/checksum mismatches;10 policy rows, only five missing LIVE keys defaulted16, all other policy fields preserved, guard enabled O. Admin004 promoted Ready at `4c9b98cd9` and normally resumed; its source validation/review remains pending.
+
+Database primary is now fast-forwarded to accepted main `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`. Selective stash `7867fdc1348b6a947fe62d0c2fce949612ed7bac` preserves original dirty seed/static validator plus untracked historical/budget migration and PG test files. Local scratch `shop.mjs` and transcript remain untouched. External synchronization verification now covers twelve repositories; Admin/System primaries are still untouched. Root rechecked all105 protected backup artifacts across15 repositories against the original SHA-256 manifest after synchronization: all match. No aggregate completion is claimed.
+
+## Admin accepted integration and preserved primary
+
+Admin004 exact source `6547c2d996e719626ccb6c43c0f10c99f712295b` accepted at parent `d80a71786`; source PR95 merged `48269c3507ed0196240f10f1aa626a2fa41330b8`, parent PR1017 merged `6b9ef362417937927f5f0e20134dfd22808c0fac`. Focused113/fullunit812/security331 plus all3 postbuild production-bootstrap tests, typecheck/lint0errors/build and exact-head Vercel/Preview checks passed. Required Platform writer field prevents old-form32-to16 reset; third-only CAS/atomic audit, sparse inheritance and wizard behavior are covered. Hosted migration prerequisite was verified before integration.
+
+Root verified primary Admin original diff SHA against backup, preserved it in stash `386aad9e04213f0f98f50f182d2518a5da801032`, then switched/fast-forwarded main to `48269c3507ed0196240f10f1aa626a2fa41330b8`. Local installer remains preserved. Protected synchronization readback now covers13 repositories. System Test is the only remaining implementation/primary reconciliation gate; its actual disposable runtime verification and final independent review are still pending. This manifest remains In Progress.
+
+## Unique parent commit preserved without architecture collision
+
+Read-only review found primary parent commit `59705bb589342f31054e6c1fd011dacf9d495ae6` contains genuine unmerged sender-pool design plus seven portable task packets. Its original ARCH-069 identifiers collide with the already Implemented chronological model-input architecture and Background001. It must not be cherry-picked as executable work or silently dropped. Root authorized preservation under unused ARCH-076: current main, known local/remote ref names and all-ref path history contained no ARCH076 usage at review. All eight documents are retained with corrected IDs/links, Proposed architecture, seven Pending/unclaimed tasks and explicit current-source compatibility gate; append-only architecture index and four domain navigation indices avoid replacing current content. No runtime implementation or launch is authorized. Original commit remains recoverable in the verified Git bundle and root-owned named preservation ref; root preserves its original history when creating clean tracking main, with no reset/force or discarded commit.
+
+Validation passed: all eight preserved files present; seven unique fully qualified task IDs; required portable metadata, Pending/null executor/null claim/Attempt0; all relative document links resolve; no accepted ARCH069 file changed; diff whitespace hygiene clean. Original design intent is retained apart from explicit identifier/status/provenance/gate reconciliation. Fresh compatibility review is required before agreement or task promotion.
+
+Root independent normalized original-versus-ARCH076 review passed: all eight documents retain intent; only IDs/relative links, Proposed/Pending launch gate and provenance differ. Existing ARCH069 is unchanged. Original commit is now additionally anchored by actual named ref `preserved/local-main-before-reconciliation-20261113` at `59705bb589342f31054e6c1fd011dacf9d495ae6`, alongside the verified full bundle. Preservation reconciliation is accepted; ARCH076 execution remains unauthorized/Pending.
+
+## Parent primary preservation progress
+
+Root restored a clean tracking parent main at `6b9ef362417937927f5f0e20134dfd22808c0fac` through reversible preservation only. Stash `92f29fa8be686cd10296990905174a4be80b2e78` retains accidental tracked Claude skill truncation and generated Python cache. Original primary main commit `59705bb589342f31054e6c1fd011dacf9d495ae6` remains at both `preserved/original-primary-main-20261113` and `preserved/local-main-before-reconciliation-20261113`; no reset/force or recursive child switching occurred. Local untracked files remain. Parent gitlinks intentionally await the final accepted source-main reconciliation after System Test integration; do not interpret older current pointers as discarded child functionality. Root will update all14 implementation gitlinks only after final System review/merge. Actual System journeys remain pending, so aggregate stays In Progress.
+
+## Separate live Meta rollout limitation — 2026-11-13T16:47:27Z
+
+Root's read-only live check found all120 reviewed registrations (six scenarios ×20languages) in FAILED/META_HTTP_400, zero approved and zero provider template IDs. Throttle count is zero and the prior cooldown has expired. Common layout is not activated and no genuine live delivery proof exists. This is a provider registration failure requiring separate diagnosis, not merely awaiting approval; local Git reconciliation and its remaining System gate do not establish resolution or authorize new runtime/ARCH076 work.
+
+Root's additional read-only Render evidence identifies the failed operation as `template_create`: HTTP400, provider code100/subcode2388299, message “Invalid parameter”, on the production worker. Private DOM/screenshot receipts are preserved as `meta-http400-visible-log.*`. No retry/mutation was performed and the underlying invalid parameter has not yet been established; do not infer a cause from this code alone.
+
+
+## Final source and parent integration readback
+
+| Bounded outcome | Merged implementation main | Merged accepted parent |
+| --- | --- | --- |
+| Documentation quality/input reconciliation | `11d90341b2b64077a55756f9e1efbf25de48b17b` | `addafc459899936f82e3b4efac0ce793ddf6e920` |
+| Woo coupon fixture dispatch | `ec05826a0746fe139217c0edf6d99d3a19157d51` | `4b66ca328402cfb6543be0f5e7ccc247882ca568` |
+| Historical Database retirement | `86db55833c804327f32a9208977cf54ae93cf4a1` | `adba9b8efbf85f6c47b26cffeb68670465c8469b` |
+| Database initial outreach budget | `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7` | `5bb98c073fd6c167a89da56f7a899c9dd457af18` |
+| Admin budget editors | `48269c3507ed0196240f10f1aa626a2fa41330b8` | `6b9ef362417937927f5f0e20134dfd22808c0fac` |
+| System source compensation coverage | `791441248bc277de32324b69ca71ac2a0b3de891` | `a804664d5a20a3bd00a7a0d59d3f423a727b62b2` |
+
+System exact final source `e29324911185fe27543bd50480c44d6509fecbad` accepted at parent `a8da87a92`: all six actual isolated cases passed (PAID741f099b, PROMO03400ce0, PURCHASED84941c32, Free3b242e09, provider failure8db286e5, terminal status/merchantUI96ce4473). Final serial583 tests yielded581 pass/two intentional infrastructure opt-in skips/zero failures; actual cases exercised PostgreSQL/Redis. Lint331files/structure, catalogue184/81implemented/103planned and privacy/diff checks passed. Durable image provenance remains nonpromotable; production-build parity after default OOM remains unverified. Original broad ARCH028 certification and live acceptance remain open.
+
+Root verified original System staged/unstaged hashes against backup and preserved them in selective stash `901f197008ab4be448033c7fb07a48ff9f523acb` before fast-forwarding primary System main to `791441248bc277de32324b69ca71ac2a0b3de891`. All14 implementation primaries now match accepted main; private `verification/primary-synchronized.json` records the readback. Prior fresh remote readback found no unexpected unreviewed commits; source-specific preservation refs/stashes and all105 backup artifacts remain recoverable. Local-only tools/assets/credential exports/transcripts remain private and retained rather than published.
+
+This aggregate branch incorporates fresh parent main `a804664d5a20a3bd00a7a0d59d3f423a727b62b2` by normal merge, preserving current accepted task/index updates and proposed/unclaimed ARCH076. No implementation gitlink was manually edited by the architect. Root must now select all14 freshly verified implementation-main SHAs, review/push that concrete pin update and merge this aggregate parent branch. Only then may this local Git reconciliation be marked Complete. It still cannot imply live Meta resolution:120template registrations failed HTTP400/code100/subcode2388299; layout inactive, cause not yet established.
+
+
+## Final root pin and preservation verification
+
+Root rechecked all14 implementation branches against freshly fetched origin/main: every primary is on main at the exact remote commit, with no tracked source edits. Two clean nested database working copies were additionally backed up as verified all-ref bundles, then fast-forwarded to their declared dependency pins: Admin2e14f866 and Background6f42b711. No application commit or dependency declaration changed. All105 original protected artifacts across15 repositories still match their original hashes. Untracked tools/assets/private exports remain local.
+
+| Repository | Verified main selected by final parent gitlink |
+| --- | --- |
+| moda-interact | `653677f434dd832c01e189411844912496be6448` |
+| moda-interact-admin | `48269c3507ed0196240f10f1aa626a2fa41330b8` |
+| moda-interact-api | `fc9483bfdd34ad62f0ccc9bffc3fbf140cd76b19` |
+| moda-interact-background | `8add92e4633fa8c74a819f8fa3dab6e493442028` |
+| moda-interact-commerce | `4485f16d19c01afc09496aef280ad109af068825` |
+| moda-interact-database | `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7` |
+| moda-interact-documentation | `11d90341b2b64077a55756f9e1efbf25de48b17b` |
+| moda-interact-gateway | `1e27ec51fea7709ad9cd8700bce10b5d5d720cd6` |
+| moda-interact-mcp | `ebbdc07ff2ede2f78364227c9eda6b9a7fbd0182` |
+| moda-interact-messaging | `3b3d6b52e144bd6fb729112044b6b105c06d15aa` |
+| moda-interact-shared | `1ca3c5ca4df6620ba3118bb5c5051c4773784e80` |
+| moda-interact-site | `7aaa2e16af1545ed3c8877f90173c8777a27d56e` |
+| moda-interact-system-test | `791441248bc277de32324b69ca71ac2a0b3de891` |
+| moda-interact-woocommerce | `ec05826a0746fe139217c0edf6d99d3a19157d51` |
+
+This concrete pin update and the preserved ARCH076 proposal are ready for final parent publication. The aggregate remains Review until root merges it and verifies the primary parent readback; no provider or production-build certification is implied.
