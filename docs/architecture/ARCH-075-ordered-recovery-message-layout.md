@@ -189,3 +189,5 @@ User observed empty branded header/footer followed by separate answer/footer. Ad
 SHARED005 accepted exactsource `8276eadb1f2467367e7b1ecb4a1d4e3573048fb6`: onlyHEADERorder addition, focused12/full787pass+3skip/type/build/packedbrowserchecks passed. Release006 andconsumer010 remain gated; oldworkerdrain/liveverification required.
 
 BG010 Ready after integratedBG009 and acceptedpublicShared5.13.10receipt/sourceparent3896421ac. Newconsumer mustdeploy writerOFF (stricttrueenable, safe booleanstartup), preserveoldfrozenplans, then root verifiesoldreadersdrained beforePhaseB. Gateway002 retainsPending untilconsumeraccepted; no holdcycle.
+
+BG010 accepted source `56148f8e4ba1bd4578162a2564720c5de80aa995`: complete brandedmain/separateproduct, strictwriterOFFreaderfirst and exactold/newfrozenreceipt guards.4315full/72actualPG/build/scopedlintgreen,4unchangedbaselinelint disclosed. RootCI/merge/Gatewaygate/PhaseAoldreaderdrain→PhaseB/liveproof required.
