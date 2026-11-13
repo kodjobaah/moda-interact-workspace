@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T04:17:42Z
@@ -78,9 +78,9 @@ User authorizes recovery template registration in PRODUCTION Meta account only. 
 
 ## Work Items
 
-- [ ] Complete assigned bounded capability only.
-- [ ] Prove compatibility and meaningful negative/failure behavior.
-- [ ] Submit mirrored branch/report and stop.
+- [x] Complete assigned bounded capability only.
+- [x] Prove compatibility and meaningful negative/failure behavior.
+- [x] Submit mirrored branch/report and stop.
 
 ## Interfaces / Contracts
 
@@ -96,14 +96,14 @@ Only explicitly promoted dependent tasks after acceptance.
 
 ## Acceptance Criteria
 
-- [ ] One common content source is used without duplicated formatting or unauthorized semantic widening.
-- [ ] Old stored projections/registrations remain readable and immutable; new fields do not grant tenant/provider authority.
-- [ ] Assigned validation and isolated mirrored synchronization evidence are complete.
+- [x] One common content source is used without duplicated formatting or unauthorized semantic widening.
+- [x] Old stored projections/registrations remain readable and immutable; new fields do not grant tenant/provider authority.
+- [x] Assigned validation and isolated mirrored synchronization evidence are complete.
 
 ## Validation
 
-- [ ] Actual PostgreSQL coordinated activation, stale source/slot/approval/locale and concurrent conflict/replay tests.
-- [ ] Declared relevant tests/types/lint/build and exact-head CI; no live registration mutation.
+- [x] Actual PostgreSQL coordinated activation, stale source/slot/approval/locale and concurrent conflict/replay tests.
+- [x] Declared relevant tests/types/lint/build and exact-head CI; no live registration mutation.
 
 ## Stop Condition
 
@@ -117,35 +117,84 @@ You are not alone; preserve other changes. Canonical prepared packet is startup/
 
 ### Status
 
-Not Started
+Ready for architect review. Implementation committed and pushed; local validation and exact-head supplementary checks complete. Source capability only. No live registration, activation, template copying, deployment, provider request or browser-origin workaround was performed.
 
 ### Files Changed
 
-None
+- `common-activation/{contracts,preview,gates,service}.ts`: versioned coordinator contract, bounded complete-cohort preview, source/workflow gates and one transaction.
+- Protected common-activation page, server actions and review panel; wrapper navigation and dynamic coverage precedence.
+- Existing publication assignment/confirmation, Meta submission/technical retry and wrapper activation adopt the common advisory fence and source gates.
+- Publication binding validator admits canonical `shop.websiteUrl` without widening unknown keys.
+- Focused unit and disposable PostgreSQL activation fixtures, native ESM test runner entry and package scripts. Existing wrapper/Meta mocks gain explicit advisory-lock collaborators while retaining every existing authorization, collision and audit assertion.
+
+Exact owned-path inventory: `/tmp/admin002-owned-files.json` (22 files).
 
 ### Work Completed
 
-None
+One global SHARED pointer cannot be safely changed through existing independently committed per-shop publication pages. Returned that concrete gap before implementation. Architect approved a bounded coordinator using existing PublicationOperation JSON (`schemaVersion:2`, `kind:COMMON_RECOVERY_ACTIVATION`), with per-definition child operations and ordinary locale targets committed COMPLETE in the same transaction. No new database table, enum, setting or per-shop pointer was introduced. V1 publication readers refuse v2 records; the specialized coordinator verifies exact request/actor/fingerprint on replay.
+
+Bounds are six replacement definitions, 50 shops, 1,000 replacement locale targets, 1,000 existing enabled+APPROVED variants, and 1 MiB snapshot. These are refusal bounds, not measured capacity guarantees. The transaction uses Serializable, maxWait10s/timeout30s, without provider I/O, page commits or blind retry. Row-lock reads are bounded, including at most 1,000 old plus 1,000 replacement registrations. Global advisory lock precedes ordinary assignment/SHARED publication reads. Exact row/version checks remain authoritative for external status and privacy changes.
+
+The preview conservatively includes enabled+APPROVED assignments across ALL shop statuses and WABAs, including unlinked ambiguity blockers. Excluding inactive shops or previous senders would let later reactivation/rotation expose mixed frames. Foreign/unlinked/unsupported or incomplete cohorts refuse; no arbitrary subset, silent disable, new offer eligibility or invented assignment. Target and personalized-greeting semantics must match exactly. Old and proposed media roles are explicitly reviewed. All 20 canonical common references, source/locale hashes, approved content-equivalent registrations, recent provider reconciliation, pending observations, current assignment facts and SHARED version are re-read before any changes.
+
+Empty exact Meta cohorts are supported: the reviewed SHARED pointer can change for recovery AI/HUMAN without creating Meta assignments or offers. Existing AI/HUMAN audience pointers remain historical; the accepted Background common-recovery path takes precedence. Admin coverage now reflects that precedence.
+
+Architect-approved English Meta lifecycle correction is explicit: confirmation reviews the exact English content/hash and APPROVED provider registration; the same transaction CASes only META_RECOVERY English SOURCE_SAVED to REVIEWED, adds authenticated reviewer/time and the existing review audit. JSON, source/content hashes and registration snapshots remain unchanged. Already REVIEWED is retained; unexpected statuses refuse. Common WRAPPER English SOURCE_SAVED remains unchanged. Ordinary common-mode assignment also requires every Meta locale REVIEWED; it cannot silently normalize English. Submission/preapproval staging remains allowed with SOURCE_SAVED English.
+
+Unstamped saved/queued definitions refuse new submission/publication in common mode with clone-with-common-layout guidance. Generic SHARED activation cannot introduce or replace a common revision outside coordinated activation, including a retired current common source. Historical definitions/registrations remain readable and cloneable; no send-time retrofit or provider approval fabrication.
 
 ### Validation Results
 
-Pending
+- Native ESM full unit suite: 788/788 PASS.
+- Focused activation + existing wrapper/Meta suites: 14/14 PASS.
+- Final TypeScript: PASS (`npx tsc --noEmit`).
+- Disposable PostgreSQL: 2/2 PASS. Real transactions cover late-audit rollback (including English review), concurrent confirmation, stale source/locale/approval/assignment refusal, provider pending observations, inactive/foreign cohorts, replay/collision, generic workflow gates and empty-cohort pointer-only activation.
+- Scoped new-file lint: PASS. Declared full lint: PASS (zero errors; one existing nested Database default-export warning).
+- Security/observability: `npm test` passed 331 with three initially skipped build-dependent observability tests; after successful build, those three passed 3/3 with zero skips. All 334 distinct checks passed.
+- Production build (`npm run build`): PASS.
+- `git diff --check`: PASS.
+- No GitHub Actions workflow is configured. Exact-head Preview Comments and supplementary Vercel checks: PASS (root verified on source `98c86f334cbc04edbad5f27895e2722c8d86b9d8`).
+- Browser visual verification: not performed; no screenshot or visual-pass claim. Live Admin origin remained explicitly denied and was not accessed by another origin/API/CLI workaround.
+
+All checks run with sanitized environments and localhost dummy URLs or a uniquely named disposable PostgreSQL database. A synthetic AUTH_SECRET supplies test-only policy signing; no live database or credentials used.
 
 ### Deviations
 
-None
+The initial focused suites exposed new mandatory advisory-lock collaborators missing from old fake transactions. Added explicit lock SQL assertions and absent SHARED state; no production bypass or weakened existing assertion.
+
+The initial PostgreSQL fixture reused a synthetic provider ID between original and replacement definitions, correctly violating `(wabaId,providerTemplateId)` uniqueness. Changed synthetic identity to derive from definition and locale. The dependent empty-cohort version assertion remained unchanged. Final rerun results are reported separately above.
+
+Child runtime could not write the canonical sibling worktree. Authored exact file payloads in `/tmp/admin002-files`; root mechanically applied them only in the canonical worktree and executed validation. No alternate checkout, source-main mutation or escalation workaround was used.
 
 ### Assumptions
 
-None beyond approved contracts.
+Live activation requires root to verify accepted compatible Background producer is Live and predecessor instances drained in both environments. The explicit Admin confirmation records that operational assertion; source code cannot independently prove fleet state. Provider approval and copied metadata alone cannot prove correct webhook environment routing.
 
 ### Unresolved Issues
 
-None currently; return concrete gaps.
+Live production registration, coherent test catalogue copying, callback routing, compatible-producer rollout/drain, reviewed activation and genuine ordered-message proof remain root-owned operational work. This task performs none of them. Provider template eligibility, including final dynamic parameter constraints, remains subject to real Meta approval; local compile success is not approval.
 
 ### Architectural Concerns
 
-Preserve one common content authority and immutable prior registrations.
+Outside-writer audit found no runtime Variant/ActiveSlot writer outside Admin. Shopify privacy Shop deletion cascades variants; lock/recheck affected Shop rows. Background updates registration readiness, so row locks/current reconciliation and pending observations are included. No external application advisory-lock change was required. Broader-than-bounded cohorts refuse rather than claim cross-shop atomicity from old per-shop operations.
+
+### Physical Worktree Isolation
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-ADMIN-002`, branch `task/ARCH-075-ADMIN-002`.
+- Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-ADMIN-002`, same task branch.
+- Prepared packet `/tmp/moda-arch075-admin002-prepare.json`: prepared_execution true, claim attempt1 codex, commit `1bcb1b09770c67255e53742deccc86568cb5a6f6`.
+- Parent remote-task fast-forward not-needed; origin/main incorporated yes; recorded prepared head `4ddc361f33a52a4c8876d78fcdf392190862b6a3`.
+- Implementation remote-task fast-forward not-needed; origin/main already-current; base `73831bb661731bc6d7dd478475ea7acad1ffc4dd`.
+- Recursive submodule sync/update passed; Database `5329d5390d346042895219663f3a040ea54ae168`.
+- Shared/default checkout switched or mutated: no. Other task worktree reused: no. Startup/claim repeated: no.
+
+### Source Checkpoint
+
+- Source commit: `98c86f334cbc04edbad5f27895e2722c8d86b9d8` (pushed; implementation worktree clean).
+- Draft source PR: https://github.com/kodjobaah/moda-interact-admin/pull/90.
+- Parent completion report commit: recorded by final submission.
+- Root owns merges; no main merge or force-push by this agent.
 
 ## Architect Review
 
