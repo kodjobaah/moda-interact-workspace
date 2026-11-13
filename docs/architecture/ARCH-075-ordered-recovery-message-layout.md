@@ -97,3 +97,10 @@ Root verified accepted compatible-engine source02e62447 Live with healthy runtim
 ### Coordinated activation transaction refinement
 
 Admin inspection established that existing per-definition/per-shop publication cannot atomically switch a global common pointer. Admin002 therefore uses an existing-JSON versioned coordinator and a single bounded serializable activation transaction covering the entire affected selectable cohort, assignments and SHARED CAS/audit. Bounds are six scenario definitions, 50 shops, 1,000 replacement targets and 1,000 existing affected variants, and a 1 MiB snapshot. Overflow refuses; this is not a measured scalability claim. Ordinary assignment/common-pointer writers participate in the shared fence or equivalent verified conflicts. Historical audience slots remain intact because accepted Background common-mode precedence is explicit. No new schema, external provider action or partial activation is introduced.
+
+### Translation website parity correction
+
+Actual common-source translation revealed Admin protected-segment validation omitted the canonical shop.websiteUrl binding. Admin003 owns the narrow producer correction; Background003 verifies actual existing generic marker codec roundtrip without speculative runtime changes. Both are Ready on accepted dependencies. No schema or Shared release is required. System validation additionally depends on both accepted corrections; architecture remains In Progress.
+
+| ARCH-075-ADMIN-003 | moda_admin | Ready | ARCH-075-ADMIN-002, ARCH-075-SHARED-004 |
+| ARCH-075-BACKGROUND-003 | moda_background | Ready | ARCH-075-BACKGROUND-002, ARCH-075-SHARED-004 |
