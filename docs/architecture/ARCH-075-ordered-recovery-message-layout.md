@@ -103,4 +103,4 @@ Admin inspection established that existing per-definition/per-shop publication c
 Actual common-source translation revealed Admin protected-segment validation omitted the canonical shop.websiteUrl binding. Admin003 owns the narrow producer correction; Background003 verifies actual existing generic marker codec roundtrip without speculative runtime changes. Both are Ready on accepted dependencies. No schema or Shared release is required. System validation additionally depends on both accepted corrections; architecture remains In Progress.
 
 | ARCH-075-ADMIN-003 | moda_admin | Ready | ARCH-075-ADMIN-002, ARCH-075-SHARED-004 |
-| ARCH-075-BACKGROUND-003 | moda_background | Ready | ARCH-075-BACKGROUND-002, ARCH-075-SHARED-004 |
+| ARCH-075-BACKGROUND-003 | moda_background | Complete | ARCH-075-BACKGROUND-002, ARCH-075-SHARED-004 |
