@@ -52,6 +52,8 @@ Implement canonical root logical/perpart physical lifecycle. Atomic immutable ma
 
 Freeze actual server-selected providerAccountId/providerPhoneNumberId on every physical part. Normalized callback and quote must match both before attaching status/provider IDs or mapping root/recovery. Unknown sender events are not authority to claim a part with the same MetaID. Unmatched receipt dedupe/retention uses these IDs; existing single-message compatibility is preserved.
 
+Runtime policy: server-owned default 120-second deadline from freeze, validated bounds 30–300 seconds; indexed repair batches at most 100 on 5-second cadence, plus immediate status/ACK continuation where supported. No new external configuration. Sender validation must use the same credential snapshot as the HTTP endpoint/token; optional server-only expected sender input leaves legacy callers unchanged. Frozen-sender child quote lookup occurs before current-global checks; old-sender root resolution cannot silently authorize a reply through a rotated sender. Continuation checks original AI inbound/control against current state without retaining the original processing lease; HUMAN admission remains original command/control based. Multipart commands must not fall into legacy single-send expired-permit reconciliation.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
