@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T20:14:19Z
@@ -56,8 +56,8 @@ Implementation changes or repeated unit/integration/lint/type/build checks; cons
 ## Work Items
 
 - [x] Verify accepted prerequisite/integrated source and prepare exact release metadata/archive for root approval.
-- [ ] Publish only approved archive/version and verify registry identity.
-- [ ] Record exact source/version/integrity/publication evidence and stop.
+- [x] Publish only approved archive/version and verify registry identity.
+- [x] Record exact source/version/integrity/publication evidence and stop.
 
 ## Interfaces / Contracts
 
@@ -73,13 +73,13 @@ ARCH-075-BACKGROUND-010 only after publication is accepted.
 
 ## Acceptance Criteria
 
-- [ ] Exact prerequisite/source and approved release identity verified.
-- [ ] Approved archive published and exact registry version/integrity verified.
+- [x] Exact prerequisite/source and approved release identity verified.
+- [x] Approved archive published and exact registry version/integrity verified.
 - [x] No unauthorized implementation edit or consumer execution.
 
 ## Validation
 
-- [ ] Publication mechanics only: approved prerequisite/version/archive, successful publish, registry identity/integrity.
+- [x] Publication mechanics only: approved prerequisite/version/archive, successful publish, registry identity/integrity.
 - [x] Release-only diff/privacy and normal launcher isolated matching branch evidence. No repeated tests/lint/type/build revalidation.
 
 ## Stop Condition
@@ -94,7 +94,7 @@ Normal launcher dedicated mirrored worktrees, preserve others. Root owns final p
 
 ### Status
 
-Prepared — Awaiting Explicit Root/User Publication Approval. Task remains in_progress; publication criteria are not yet satisfied.
+Ready for Review — exact approved archive published and public registry receipt verified.
 
 ### Files Changed
 
@@ -106,7 +106,9 @@ Implementation: `package.json`, `package-lock.json`, only three root package ver
 - Public registry inspection: latest 5.13.9; requested 5.13.10 absent (E404). Prepared next patch 5.13.10.
 - Reused generated dist from the exact accepted tested archive after verifying SHA-256 `35fb4130c1bc8a20f4580bf70f82e1f25d7e61a05eff5d1bc84f85aaefccb20f`; no build required. Packed using `npm pack --ignore-scripts --json --pack-destination /tmp/ARCH-075-SHARED-006`.
 - Candidate `/tmp/ARCH-075-SHARED-006/modainteract-moda-interact-shared-5.13.10.tgz`: 530,497 bytes, 157 public file members. Every member compared against the accepted tested archive: only package/package.json differs, and parsed metadata differs only by version; all other 156 members byte-identical. No new public file or secret introduced.
-- Proposed destination `https://registry.npmjs.org`, existing public package `@modainteract/moda-interact-shared`, version `5.13.10`, access `public`, dist-tag `latest`. NOT published; exact-archive explicit approval required.
+- Root conveyed explicit user YES approval of the exact archive/version/public destination/latest tag after independent candidate review. Root merged release PR85 at `232bcb3a3e5a8385aa76fc50f1c59da34f323fb1`.
+- Reverified approved SHA-256 and SHA-512 integrity immediately before publication. Published the existing exact tarball, without repacking or rebuilding, with `npm publish /tmp/ARCH-075-SHARED-006/modainteract-moda-interact-shared-5.13.10.tgz --ignore-scripts --access public --tag latest --registry=https://registry.npmjs.org`. Successful receipt: `+ @modainteract/moda-interact-shared@5.13.10`.
+- At `2026-11-13T20:23:31Z`, public version and latest endpoints both returned 5.13.10. Registry integrity and shasum matched the approved artifact. Downloaded actual public registry tarball (530,497 bytes), verified exact approved SHA-256 and SHA-512 integrity. Public tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.13.10.tgz .
 
 ### Validation Results
 
@@ -119,15 +121,15 @@ Candidate integrity: `sha512-PjuTCfTQxb0JIA7LfWIJJjOmmFsjxhB+C+tNdSawUu+uun9VWPE
 
 ### Deviations
 
-Publication remains pending rather than claiming review-ready completion. Root requested preparation-only until exact publication approval.
+None. Preparation-only gate was preserved until root conveyed explicit user approval of the exact archive/version/destination/latest. Initial registry 404 responses were publication propagation; availability and exact download identity were verified before submission.
 
 ### Assumptions
 
-Root owns merge and exact public archive/version/latest approval. The approved tarball must be published without repacking; recheck its hash before publishing.
+Root owns merges and consumer rollout. Exact public archive/version/latest approval was received and the approved tarball was published without repacking.
 
 ### Unresolved Issues
 
-Exact root/user approval, actual publication and registry version/integrity verification pending. Background010 remains dependent on accepted publication; no consumer execution.
+No release issue remains. Background010 promotion requires architect acceptance of this actual publication receipt; no consumer execution performed.
 
 ### Architectural Concerns
 
@@ -135,7 +137,7 @@ Old readers reject HEADER-only; root must stage compatible readers and drain/qui
 
 ### Git / VCS
 
-Task branch `task/ARCH-075-SHARED-006` in both repositories. Implementation release metadata commit `44356b4ce651b6b9bc3efc06f89e1d1484139f65` pushed to origin task branch. Parent report committed/pushed by its containing commit; durable launcher claim `d3cd5a9b1ab8cd8836b857363a4ec7274fc55e36` already pushed. No main merges and no parent submodule gitlink staged.
+Task branch `task/ARCH-075-SHARED-006` in both repositories. Implementation release metadata commit `44356b4ce651b6b9bc3efc06f89e1d1484139f65` pushed to origin task branch. Parent report committed/pushed by its containing commit; durable launcher claim `d3cd5a9b1ab8cd8836b857363a4ec7274fc55e36` already pushed. Root merged release metadata PR85 as recorded above; this agent performed no main merges. No parent submodule gitlink staged.
 
 Physical isolation (launcher packet):
 - Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
