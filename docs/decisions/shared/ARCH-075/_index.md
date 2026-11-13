@@ -12,3 +12,6 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 | ARCH-075-SHARED-006 | Release accepted single branded reply contract | Complete | ARCH-075-SHARED-005 |
 | ARCH-075-SHARED-005 | One complete branded HEADER reply order | Complete | ARCH-075-SHARED-004 |
+
+
+SHARED-010 Pending on009: deterministic Node composite renderer/preparer, bundled licensed font and real Alpine/privateQA proof. No public release or hostpolicy.
