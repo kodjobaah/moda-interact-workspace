@@ -209,3 +209,12 @@ Pending because API-004 and other explicit dependencies are still outstanding.
 - 2026-10-29: Initial standalone ARCH-053 checkout URL architecture; ARCH-052 dynamic discount discovery remains separate.
 - 2026-10-29: Added dedicated capture and restoration of original customer-applied coupons.
 - 2026-10-30: Reconciled against the 07:59 workspace: ARCH-048 follow-up tasks are defined but not yet accepted, and resolver v1 is not implemented. Integrated confirmed ARCH-052 outreach offers into the single v1 contract; eliminated premature resolver v2/SHARED-003, corrected dependencies and included separate sent-receipt, API enrichment, native coupon, customer-choice and system-test tasks. No ARCH-052 implementation or `_index.md` changes.
+
+
+### Test hook fixture parity — 2026-11-13
+
+WOOCOMMERCE009 is Ready for a bounded test-only correction: canonical bootstrap hook dispatch/removal must be exercised by cart/coupon test doubles, preserving unrelated notices and cleanup semantics. Post-build baseline confirmation is required; missing ignored assets are not a product defect. Accepted production006/008 remain unchanged. No duplicate local follow-up feature, new contract or live mutation is authorized.
+
+| ARCH-053-WOOCOMMERCE-009 | moda_woocommerce | Complete | ARCH-053-WOOCOMMERCE-006, ARCH-053-WOOCOMMERCE-008 |
+
+WOOCOMMERCE009 Accepted/Complete at source afb321f/report c4be555: canonical test hook dispatch/selective normal+exception cleanup, one test file only. Full PHP343/2590, JS482+128, lint/build checks pass except explicitly retained unchanged309 whole-JS style findings. No product behavior, new contract, live store action or duplicate feature port. Root owns main integration.
