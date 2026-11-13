@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T05:35:26Z
@@ -77,6 +77,12 @@ Admin005, Background005 and Gateway001 are Accepted. Preserve the same claim and
 
 A bounded temporary runtime overlay may add only freshly compiler-emitted preclaim-recovery.js/map from exact accepted source to the previous alias correctness image, after proving other runtime modules/dependencies/ENV/CMD unchanged. Record base/derived identities, source/compiler/module hashes and this non-production image limit. Admin fixture bundles exact accepted Admin source. No broader rebuild/rerun solely to duplicate unchanged prior scenarios. Return any additional source divergence before widening scope. Architecture remains In Progress pending root-owned live provider approval, coordinated activation and genuine delivery proof.
 
+### Final strict keyed provider delta
+
+Background006 is Accepted and merged at 8599f505c8da84a49db89f52637ebf387c317cea. Preserve the same claim and all earlier integrated, localized-command and Meta-readiness proof. Add only bounded independent actual Node22 builder/codec evidence against this exact source: keyed Batch JSONL has SDK-derived strict schemaVersion1/segments/key/text, required fields, additionalProperties:false and existing bounds; ordinary translation has no added format; actual strict restoration rejects input-only protectedTokens/context/unknown fields and retains valid marker identity. No live OpenAI/Meta request or broad rerun is required.
+
+A temporary derivative may replace only compiler-emitted translation.provider.js, segment-codec.js and their source maps from the exact accepted source under the approved locked compiler/options. Verify all other runtime outputs/dependencies/ENV/CMD unchanged, retain prior base/new image/module manifest identities and no production-build parity/promotion claim. Return unexpected divergence before expanding. Root separately owns normal UI translation retry and semantic review after deploy.
+
 ## Work Items
 
 - [x] Implement only assigned capability and document compatibility.
@@ -134,7 +140,7 @@ Record source/database commits, compiler and host/runtime versions, exact base d
 
 ### Status
 
-Ready for Review — accepted localized-command followup passed; earlier proof retained.
+Ready for Review — strict keyed provider delta passed; all earlier proofs retained.
 Independent disposable integrated proof only; no production
 activation or live provider-delivery claim. Implementation draft PR:
 https://github.com/kodjobaah/moda-interact-system-test/pull/6
@@ -329,28 +335,128 @@ R2 / Meta behavior, full entrypoint readiness, live activation or delivery.
 No cross-owner implementation defect remains; no live request, send, replay,
 production counter/credential update or merge into main was performed.
 
+### Accepted Meta-readiness prerequisite reconciliation
+
+Implementation `bcf1a0f8d84c3d6ae0430b224389d867b4ce66e9` pushed on the same branch.
+Same attempt/claim; parent synchronized to accepted unified main
+`37af6a8b992f4cac17a73087e9b16ba13a511a4c`. Admin
+`e52ecdb373a526f07710ecabfb7b3cefabab5018`, Background
+`2ae1eeec611cefb6dc68a3c733133d5201820525`, Gateway
+`1e27ec51fea7709ad9cd8700bce10b5d5d720cd6`; Database remains `a9b6ab8`.
+
+Bounded disposable real-PostgreSQL proof passed
+2026-11-13T10:01:13.141Z–10:02:13.732Z. Actual Admin confirmation reused
+20 identical immutable registrations, explicitly recorded English REVIEWED,
+and replayed without another review audit/timestamp or changed hashes.
+Actual Background submission service/Graph adapter produced 20 missing-app
+preclaim BLOCKED records before any provider request/CREATE_INTENT. With
+synthetic trusted configuration repair, actual operator recovery dry run changed
+no rows; a historical intent negative refused atomically. Apply recovered all 20,
+replay reported all 20 already applied, and exactly 20 recovery audits remained.
+Unchanged ordinary repository claims wrote 20 durable CREATE_INTENT, refused
+repeated claims, and recovery refused uncertain submitting/intent-bearing rows.
+Zero provider requests/POST_INTENT; frozen snapshots unchanged. All 77 migrations
+finished with matching checksums; the disposable database was cleaned.
+
+The first fixture attempt hit the actual INITIAL-language semantics guard with
+synthetic English text marked Chinese. The final test uses the existing
+FOLLOW_UP fixture pattern; no guard/source validator was changed, and no
+translation-quality claim is made. Gateway accepted Blueprint/ten focused
+negative checks are reused, not rerun. Messaging workers own the actual Meta
+poller; the operator reference is synthetic and is NOT live fleet verification.
+
+Approved overlay adds ONLY newly compiler-emitted preclaim-recovery.js/map.
+All 1,130 previous runtime outputs, whole package/lock/tsconfigs, Linux dependency
+layers and ENV/CMD/entrypoint are unchanged. Exact TS6.0.2/host24.19 build,
+actual Node22.23.5 runtime, NODE_OPTIONS absent. Final immutable image used for
+all Docker validation operations:
+`sha256:a247ea1ac436bee9b09a3b1779eee70e3fcbcc2ddbf8572bc6249168b8aa235b`.
+Detailed hashes and evidence are in
+`docs/validation/meta-readiness-evidence.md`; private local manifest
+`/tmp/moda-readiness-image.json` and run log `/tmp/moda-readiness-run.log`.
+This is source-derived runtime/domain correctness, NOT production-image/build
+parity, CLI/fleet validation, provider approval, activation or live delivery.
+
+New capability scripts `validate:meta:readiness` / `build:meta:readiness-image`,
+bounded fixtures, output-allowlist test and documentation are task-owned only.
+Combined neighboring Node regression selection: **20 passed**, zero failures/
+skips (one new overlay test); earlier narrower selection 8 passed. Domain all 20
+assertions are not counted as twenty Node test cases. Syntax 276 files, structure,
+catalogue and diff checks pass. Original 13 proof and 4 alias / 8 negative proof remain
+unchanged and were not broadly rerun. No owning source edit, live action, main
+merge, credential/config/counter change or production-verification claim.
+
+### Accepted strict keyed provider final delta
+
+Implementation `62f746b2c4e585b3675229ebc139479af22800ca` on the same
+mirrored task branch. Same claim/attempt; parent accepted main
+`2e4712748161d4965051531838452b16d12a1a6f` merged normally, requirements
+amendment7722b03d2 preserved, exact Background source
+`8599f505c8da84a49db89f52637ebf387c317cea` freshly compiled. No owning
+application source was edited.
+
+**Actual Node22 bounded builder/codec proof passed**
+2026-11-13T10:33:25.279Z–10:33:27.319Z, Docker networking disabled. Actual
+keyed Batch JSONL contains the SDK-derived strict schemaVersion1/segments/key/
+text shape, required fields, additionalProperties:false and existing bounds.
+Ordinary translation has no added format and retains configured model/custom ID
+and output bound. Valid marker identity restores; six root/segment extra
+protectedTokens/context/unknown-field cases and a missing marker strictly refuse.
+Zero provider API requests, no worker/database/poller. These are runtime
+assertions, not additional Node test cases. No real translation-quality or
+live provider/fleet/activation claim.
+
+Approved derivative changes exactly four compiler-emitted translation.provider.js,
+segment-codec.js/maps; every other **1,128 runtime output** stays identical.
+Whole package/lock/tsconfigs, Linux dependencies/layers and ENV/CMD/entrypoint
+match; TS6.0.2/host24.19 declared compile, actual Node22.23.5, NODE_OPTIONS absent.
+Base readiness image `sha256:a247ea1ac436bee9b09a3b1779eee70e3fcbcc2ddbf8572bc6249168b8aa235b`;
+final immutable validation image
+`sha256:dd73ff316ac7eb7b6c335291163a27e673968b94392784c2afbbb50fe75fd319`.
+Full source/old-new module hashes and Dockerfile identity are in
+`docs/validation/keyed-translation-evidence.md`; local manifest
+`/tmp/moda-keyed-image.json`, runtime log `/tmp/moda-keyed-runtime.log`.
+No host native/dependency/config/credential/CLI copies or production artifact
+promotion; source-derived correctness only, no production-build parity claim.
+
+Preparation refused absent output before compilation completed and an unsupported
+bare-local-SHA Docker FROM reference. Final build uses a local base tag verified
+to its exact immutable ID, audits inherited layers/output hashes afterward, and
+all runtime proof commands pin the derived immutable ID. No partial output was
+accepted. Final bounded actual build/proof passes.
+
+Neighboring regression tests: **21 passed**, zero failures/skips; new output guard
+also passed alone. Syntax281 JS files, structure/catalogue/diff checks pass;
+final base-tag identity check additionally passes node --check and actual build.
+Capability scripts `validate:translation:keyed` / `build:translation:keyed-image`
+and small task-owned helpers/docs added. Prior 13 integrated checks, 4 aliases /
+8 negatives and all20 Meta-readiness assertions remain preserved with their
+recorded source/image; no broad integrated rerun, live call, main merge or
+production setting/counter change was performed. No implementation defect remains
+within this bounded validation task; root owns remaining genuine rollout proof.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual implementation review.
+Accepted exact implementation `62f746b2c4e585b3675229ebc139479af22800ca` and mirrored final report `0153642d3240a6c5b25bb11c7a84c9abea171bae`. Independently inspected actual harness, provider simulator, worker factory, assertions, image provenance and all same-claim deltas. Every explicit implementation/publication/configuration dependency is Complete. This accepts independent disposable runtime correctness; it does not complete the live architecture.
 
 ### Reviewed Files
 
-None
+Ordered recovery session/driver/modules, AI/HUMAN producer adapters, real BullMQ worker/repair, happy/fault/legacy scenarios, provider/telemetry checks, Admin fixture and migration ledger proof; localized consent runtime/image overlay; Meta readiness Admin/Background fixture and image audit; final keyed provider/codec runtime and image audit; focused harness tests and measured evidence guides.
 
 ### Validation Reviewed
 
-None
+Thirteen integrated delivery/fault/telemetry checks, four actual localized-command worker cases and eight negatives, actual Admin/common projection/atomic activation fixture, twenty-registration English-review/block/recovery/replay/claim readiness proof, and all77 owning migration checksums passed. Final exact Node22 networking-disabled strict provider/codec proof passed; 21 neighboring Node regressions plus syntax281, structure, catalogue and diff checks passed. Same original claim, canonical matching worktrees, start synchronization/recursive evidence and accepted source identities reviewed. No broad rerun is claimed for bounded later deltas.
 
 ### Architecture Conformance
 
-Pending
+Real accepted database/Redis/BullMQ/preparation/final-fence modules establish ordered2/3 parts, per-part footer and sender identity, one logical usage/context update, ACK-vs-delivery gating, callback-before-ACK/restart/uncertainty/takeover/STOP/window behavior and legacy compatibility. Exact immutable source manifests bind compiler-derived Node22 overlays and unchanged dependency/runtime outputs. Original Docker builds exhausted resources; approved host-compiled correctness images explicitly do not prove production build reproducibility or Node24-to-22 build parity and cannot be promoted. Synthetic model facts/media/approvals and worker references are not live provider, ingress, R2, fleet or semantic translation evidence. No production calls, owner-source changes or weakened guards.
 
 ### Follow-up
 
-None
+Root owns source merge and final parent gitlink integration. Architecture remains In Progress until live reviewed catalogue/provider approvals, correct environment copy/callback routing, coordinated common activation and genuine ordered WhatsApp delivery are verified. Preserve all protected operational evidence outside public docs. Test-only images must never be deployed. No further system task or speculative rerun is required absent a new concrete source/runtime issue.
