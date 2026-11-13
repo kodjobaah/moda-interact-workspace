@@ -116,3 +116,11 @@ Admin004 corrects new editable empty static footer production and selector/eligi
 Actual translated customer instructions use exact STOPP, DUR, PARAR and STOPPA. Background004 owns matching those whole commands through the unchanged durable consent path; no substring/NLP or new provider policy. Hold affected live approvals until corrected runtime is deployed. This is a terminal acceptance prerequisite without resetting existing independent system-test work. Architecture remains In Progress.
 
 | ARCH-075-BACKGROUND-004 | moda_background | Complete | ARCH-075-BACKGROUND-003, ARCH-075-SHARED-004 |
+
+### Confirmed Meta submission readiness corrections
+
+Admin005 moves explicit English Meta review to the existing all20 submission confirmation, before provider intent, preserving snapshots and wrapper lifecycle. Background005 provides audited bounded operator recovery only for proven missing-app preclaim BLOCKED rows; no uncertain/provider-created state may reset. Gateway001 declares server-owned META_APP_ID sync:false on the actual test/production merchant-communications workers; no app ID/secret is committed. Tasks are independent; live recovery requires repaired configuration, reviewed source and accepted recovery method. No Shared/schema change. System completion additionally requires these accepted corrections, preserving prior independent proof and claim. Architecture remains In Progress.
+
+| ARCH-075-ADMIN-005 | moda_admin | Ready | ARCH-075-ADMIN-004 |
+| ARCH-075-BACKGROUND-005 | moda_background | Ready | ARCH-075-BACKGROUND-004 |
+| ARCH-075-GATEWAY-001 | moda_gateway | Ready | None |
