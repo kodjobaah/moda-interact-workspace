@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T19:49:35Z
@@ -54,10 +54,10 @@ Shared/DB/Admin contracts or releases; new engine/framework; live commands/setti
 
 ## Work Items
 
-- [ ] Confirm root's narrow default-wiring gap and capture failing default-runtime regression.
-- [ ] Delegate existing freeze capability without bypassing lifecycle/dispatch guards.
-- [ ] Prove PG first-freeze/continuation/replay and relevant negative behavior; run required checks.
-- [ ] Publish exact source and mirrored report with launcher/source/evidence provenance, then return review.
+- [x] Confirm root's narrow default-wiring gap and capture failing default-runtime regression.
+- [x] Delegate existing freeze capability without bypassing lifecycle/dispatch guards.
+- [x] Prove PG first-freeze/continuation/replay and relevant negative behavior; run required checks.
+- [x] Publish exact source and mirrored report with launcher/source/evidence provenance, then return review.
 
 ## Interfaces / Contracts
 
@@ -73,17 +73,17 @@ Root-owned deployment and genuine new human common-layout live test, followed by
 
 ## Acceptance Criteria
 
-- [ ] Default production wiring can prepare an eligible absent root and continue using existing engine; failing regression becomes green.
-- [ ] Real PG tests prove exact one root/part lineage and immutable ordering, no duplicate provider send on replay/concurrency.
-- [ ] Human/control/moderation/common evidence/lease/dispatch negatives remain enforced.
-- [ ] Relevant tests/build/scoped lint/diff/privacy and physical worktree preparation evidence pass; no live mutations.
+- [x] Default production wiring can prepare an eligible absent root and continue using existing engine; failing regression becomes green.
+- [x] Real PG tests prove exact one root/part lineage and immutable ordering, no duplicate provider send on replay/concurrency.
+- [x] Human/control/moderation/common evidence/lease/dispatch negatives remain enforced.
+- [x] Relevant tests/build/scoped lint/diff/privacy and physical worktree preparation evidence pass; no live mutations.
 
 ## Validation
 
-- [ ] Focused default-runtime RED/GREEN plus existing human/multipart/control/dispatch regression suites.
-- [ ] Disposable PostgreSQL human/common-root first-freeze, continuation, replay/concurrency and negative guard tests; no hosted DB fallback.
-- [ ] Relevant declared full tests, production build/typecheck, lint with exact existing baseline disposition if untouched errors persist; do not suppress new failures or broaden unrelated cleanup.
-- [ ] Exact source diff/privacy, matching branch publication, normal launcher isolation/synchronization/recursive evidence and exact-head remote checks before root merge.
+- [x] Focused default-runtime RED/GREEN plus existing human/multipart/control/dispatch regression suites.
+- [x] Disposable PostgreSQL human/common-root first-freeze, continuation, replay/concurrency and negative guard tests; no hosted DB fallback.
+- [x] Relevant declared full tests, production build/typecheck, lint with exact existing baseline disposition if untouched errors persist; no suppressed new failures or unrelated cleanup.
+- [x] Exact source diff/privacy, matching branch publication, normal launcher isolation/synchronization/recursive evidence. Exact-head remote checks pending as root merge gate.
 
 ## Stop Condition
 
@@ -97,27 +97,53 @@ Use normal launcher-prepared dedicated parent/implementation task worktrees. You
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `tests/unit/services/recovery-conversation/human-default-multipart-runtime.test.ts`
+- `tests/integration/arch075-common-layout.integration.test.ts`
+- This task file only in the parent repository.
 
 ### Work Completed
 
-None
+- Implementation `0f7e4d4f8c293d4413bb1f0dc3df30fe66ae622d` committed/pushed to `origin/task/ARCH-075-BACKGROUND-009`; draft implementation PR requested. Remote exact-head checks remain root's merge gate.
+- Confirmed the actual production factory returned `multipart.continue` without `freeze`. RED default-factory test failed because `freeze` was undefined; GREEN delegates the existing canonical singleton's freeze and continue with unchanged input identities.
+- Production change is only the missing lazy freeze delegation beside continuation. No command/lease/control/moderation/source/media/consent/permit/claim/part/usage code changed; no Shared, schema, provider or logging changes.
+- Real PostgreSQL regression constructs `createHumanDispatcherDependencies().multipart` and uses the actual canonical runtime singleton, not an injected full engine. Shared's standard runner supplies disposable PostgreSQL/Redis; the existing local WhatsApp emulator supplies actual loopback HTTP and test sender configuration; local moderation model results are durably persisted. A bounded in-memory queue fixture records continuation scheduling; the test explicitly drives delivery status/continuation rather than claiming full worker-fleet coverage.
+- Two real PostgreSQL command claim replicas yield one winner. First default-runtime dispatch freezes exactly one deterministic root with ordered HEADER/ANSWER, sends only the header, and waits for DELIVERED before the answer. Concurrent stale command replay/continuation produces no extra send. Root content and part IDs/payloads/digests/source identities remain immutable; each actual HTTP message ends with the exact checkout footer; HUMAN usage remains outside automated usage.
+- Six actual default-runtime guard scenarios preserve human-inactive, stale revision, naturally expired five-second SQL lease, controlled moderation BLOCK, tampered prepared plan and stale common source refusal. No provider HTTP occurs for any; stale-common prepared parts are cancelled without a dispatch permit. The tampered input is supplied only by a negative test, never persisted as a workaround.
+- Existing common test fixture now includes a legitimate synthetic shop-owned Shopify customer identity and explicitly verifies actual stored-consent preflight ALLOWED. Previous tests used an injected consent reader; canonical runtime correctly refused that incomplete old fixture, so the fixture was repaired without bypassing the consent policy.
+
+### Physical isolation / preparation
+
+- Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-009`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-009`; both branch `task/ARCH-075-BACKGROUND-009`.
+- Deterministic launcher reused the correct parent and created the correct implementation worktree. Parent remote task fast-forward not-needed and origin/main already-current; implementation remote task fast-forward not-needed and origin/main already-current at `8add92e4633fa8c74a819f8fa3dab6e493442028`.
+- Recursive database submodule sync/update ready at recorded `6f42b71112efe7ac63654d55f41cd74ca569b1ae`; no remote submodule update.
+- Attempt1/executor codex claim committed/pushed `937e31d23f5293831b22d44af995a2b4a827547a`, `2026-11-13T19:49:35Z`.
+- No shared/default checkout switched or modified for implementation; no other task worktree reused; no parent gitlink/index/architecture/policy changes. No live DB/provider/settings actions by this task.
 
 ### Validation Results
 
-Not run
+- RED actual default production factory regression:1 failed as expected (`freeze` undefined); no injected complete engine masked the failure.
+- Focused unit suites `tests/unit/services/recovery-conversation` and `tests/unit/services/recovery-multipart`:18 files /169 tests PASS.
+- Actual disposable PostgreSQL/Redis integration runner across common layout, multipart delivery and human dispatcher:3 files /69 tests PASS, zero skips,97.90s. Includes seven new default-runtime scenarios and existing unknown/replay/partial/control/dispatch coverage. No hosted database fallback.
+- Full local test suite:391 files passed,1 skipped;4,295 tests passed,10 existing configured skips;261.94s. Integration files are separately run by the actual PG runner above, not counted as executed in the default unit suite.
+- Production `npm run build` PASS: Prisma6.19.3 generation, primary TypeScript compiler, provisioning TypeScript compiler and packaged sample asset. Source remained unchanged after this build.
+- Final scoped ESLint across all three owned TypeScript files PASS; `git diff --check` PASS.
+- Full `eslint .` FAILED with the same four pre-existing `@typescript-eslint/no-unused-vars` errors in untouched `candidate-index.store.ts` (`readRecoveryExecutionPolicy`) and `recovery-offer-resolver.service.ts` (`MAX_CANDIDATES`, `VERIFICATION_TIMEOUT_MS`, `AI_TIMEOUT_MS`). Exact baseline `8add92e4` file contents piped through ESLint reproduce the same1+3 findings; working-file diff against that baseline is empty. No full-lint-green claim; no unrelated source cleanup.
+- Initial PG fixture attempts correctly exposed active-lease mutation refusal and incomplete Shopify identity; replaced them with legal five-second lease expiry and real linked identity. A duplicate same-lease moderation race was replaced with actual concurrent SQL claim winners followed by concurrent replay; no application guard was weakened.
+- Protected root-owned evidence logs `local-backups/arch075-live-20261113/bg009-{red,focused,postgres-final,full-tests,build,targeted-lint-final,full-lint,baseline-lint-candidate,baseline-lint-offer}.log`. No production payload/credential/recipient data committed.
 
 ### Deviations
 
-None
+Full lint remains limited by the four verified unchanged unrelated baseline findings. Exact-head hosted CI is pending at report publication; root must verify before merge. No extra migration or Shared publication was required.
 
 ### Assumptions
 
-Root owns private live evidence and operational rollout; no live test by owner.
+Root owns private live evidence and operational rollout; no live test by owner. Local default runtime/real PG/loopback provider verification is not a claim of deployed production delivery.
 
 ### Unresolved Issues
 
