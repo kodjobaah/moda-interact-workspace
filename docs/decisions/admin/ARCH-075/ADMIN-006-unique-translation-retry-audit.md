@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T11:41:06Z
@@ -50,9 +50,9 @@ Under the existing definition/run advisory transaction lock, each genuinely none
 
 ## Work Items
 
-- [ ] Reproduce fail/retry/fail/retry unique-audit rollback against existing code.
-- [ ] Correct only server-owned retry-decision audit identity.
-- [ ] Prove repeated/concurrent/no-op/rollback and completed-locale preservation, report and stop.
+- [x] Reproduce fail/retry/fail/retry unique-audit rollback against existing code.
+- [x] Correct only server-owned retry-decision audit identity.
+- [x] Prove repeated/concurrent/no-op/rollback and completed-locale preservation, report and stop.
 
 ## Interfaces / Contracts
 
@@ -68,15 +68,15 @@ ARCH-075-SYSTEM-TEST-002
 
 ## Acceptance Criteria
 
-- [ ] Two legitimate nonempty retries of the same failed run/locale both commit distinct truthful audits.
-- [ ] Concurrent/empty duplicate retry remains no-op, immutable completed results and all prior audits/unique constraint preserved.
-- [ ] Canonical isolation and required passing checks reported, no live mutation.
+- [x] Two legitimate nonempty retries of the same failed run/locale both commit distinct truthful audits.
+- [x] Concurrent/empty duplicate retry remains no-op, immutable completed results and all prior audits/unique constraint preserved.
+- [x] Canonical isolation and required passing checks reported, no live mutation.
 
 ## Validation
 
-- [ ] Meaningful red/green actual PostgreSQL fail→retry→fail→retry, concurrent same cohort, empty replay, audit-failure rollback and completed locales unchanged.
-- [ ] Relevant translation units/native ESM tests, types/lint/build/security and exact-head repository check evidence.
-- [ ] Diff/privacy hygiene; no provider/database production writes.
+- [x] Meaningful red/green actual PostgreSQL fail→retry→fail→retry, concurrent same cohort, empty replay, audit-failure rollback and completed locales unchanged.
+- [x] Relevant translation units/native ESM tests, types/lint/build/security and exact-head repository check evidence.
+- [x] Diff/privacy hygiene; no provider/database production writes.
 
 ## Stop Condition
 
@@ -90,35 +90,57 @@ You are not alone; preserve others. Canonical launcher packet owns startup/claim
 
 ### Status
 
-Not Started
+Ready for Review; source branch `task/ARCH-075-ADMIN-006`. Source commit `6c7ad51e27765d989d7b80caa071ee333344cc3b`; draft PR https://github.com/kodjobaah/moda-interact-admin/pull/94. No merge, deploy, live retry, provider call or live database mutation performed.
 
 ### Files Changed
 
-None
+- `src/lib/admin/whatsapp-templates/translations/repository.ts`: existing server UUID facility gives each nonempty locked retry decision its own bounded audit operation identity.
+- `tests/integration/arch047-template-translations.postgres.test.ts`: actual repeated failure/retry, three concurrent requests, empty replay, historical audit and completed/reviewed/in-flight row preservation, original English preservation, real audit foreign-key rollback and unique index proof.
+- `tests/unit/arch047-template-translations.test.ts`: maximum-length run identifier and distinct bounded retry audits with unchanged metadata/no-op behavior.
 
 ### Work Completed
 
-None
+Reproduced the actual PostgreSQL `operationId` unique-constraint failure on the second genuine retry before changing production source. Audit IDs now use at most 80 run-prefix characters plus `:retry:` and a server-generated UUID (maximum 123 characters within varchar128). UUID creation remains inside the existing transaction/advisory lock after the nonempty decision and actor guard. The full run ID remains in metadata. Historical audits, global unique index, retry eligibility/counters, source/model/credential selection and completed results are unchanged. No schema, Shared, UI or provider changes.
 
 ### Validation Results
 
-Pending
+- `npm run test:arch047-admin-translations:postgres`: red reproduced `P2002`/unique `operationId` failure on second genuine retry, green2/2 passed, zero skips (~9.8s test execution; full disposable schema setup also completed).
+- `npm run test:arch047-admin-translations:unit`:17/17 passed, zero skips (~4.4s).
+- `npm run test:unit`:800/800 passed, zero skips (~185.6s).
+- `npx tsc --noEmit`: passed.
+- `npm run lint`: passed, zero errors; one existing nested database default-export warning.
+- `npm run build`: passed including generated routes; existing BullMQ dynamic/optional Valkey dependency warnings only.
+- `npm test`:334/334 passed, zero skips, run after build (~53.0s).
+- `git diff --check`: passed; final source worktree clean after commit/push. Temporary validation helper exited0.
+- Exact source head contains no `.github/workflows` files; no GitHub Actions configured. Exact-head Vercel and Preview Comments both passed. These remote checks supplement the actual local declared checks.
+
+Evidence logs `/tmp/moda-admin006-{pg-red,pg-green,focused,unit,types,lint,build,security}.log`. The disposable test exercises the actual existing migrations and Prisma transaction; the audit-failure fixture uses a missing actor FK, causing rollback after item/run/definition updates.
 
 ### Deviations
 
-None
+No scope deviations. Initial validation needed `/usr/local/bin` added to temporary helper PATH because the restarted tool environment did not resolve the installed Docker binary. One missing brace in the new REVIEWED fixture was corrected before the meaningful red run. No repository launcher or environment configuration was changed. Next bundled server-function guidance was read (same installed repository version); all test environments scrub inherited credentials and use synthetic local URLs. No browser verification is required for this server-only identity change.
 
 ### Assumptions
 
-Existing eligible failed-item policy unchanged.
+The existing eligible-item policy and advisory transaction lock remain authoritative. UUID identifiers are server-owned; callers supply no retry-attempt authority.
 
 ### Unresolved Issues
 
-None currently.
+None. All required checks and supplementary exact-head Vercel/Preview Comments passed.
 
 ### Architectural Concerns
 
-Return concrete gaps before widening scope.
+None introduced. No live operations or data repair performed; root retains integration/deployment and the authorized UI retry.
+
+### Canonical Execution Evidence
+
+- Prepared packet `/tmp/moda-arch075-admin006-prepare.json`, prepared execution true; claim `5ff67a497bfa9b6a9e21113980c17cd487c5be9c`, attempt1, executor codex. No repeated claim/startup.
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-ADMIN-006`, branch `task/ARCH-075-ADMIN-006`.
+- Implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-ADMIN-006`, same task branch; source base `e52ecdb373a526f07710ecabfb7b3cefabab5018`.
+- Parent/implementation remote task fast-forward both not-needed; origin/main both already-current according to the authoritative preparation packet.
+- Recursive submodule sync/update passed; database `5329d5390d346042895219663f3a040ea54ae168` initialized. No gitlink change staged.
+- No shared/default checkout mutation, no other task worktree reused, no force push or main merge.
 
 ## Architect Review
 
