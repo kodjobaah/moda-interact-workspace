@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T05:35:26Z
@@ -140,7 +140,7 @@ Record source/database commits, compiler and host/runtime versions, exact base d
 
 ### Status
 
-In Progress — bounded strict keyed provider delta; earlier proofs retained.
+Ready for Review — strict keyed provider delta passed; all earlier proofs retained.
 Independent disposable integrated proof only; no production
 activation or live provider-delivery claim. Implementation draft PR:
 https://github.com/kodjobaah/moda-interact-system-test/pull/6
@@ -385,6 +385,55 @@ assertions are not counted as twenty Node test cases. Syntax 276 files, structur
 catalogue and diff checks pass. Original 13 proof and 4 alias / 8 negative proof remain
 unchanged and were not broadly rerun. No owning source edit, live action, main
 merge, credential/config/counter change or production-verification claim.
+
+### Accepted strict keyed provider final delta
+
+Implementation `62f746b2c4e585b3675229ebc139479af22800ca` on the same
+mirrored task branch. Same claim/attempt; parent accepted main
+`2e4712748161d4965051531838452b16d12a1a6f` merged normally, requirements
+amendment7722b03d2 preserved, exact Background source
+`8599f505c8da84a49db89f52637ebf387c317cea` freshly compiled. No owning
+application source was edited.
+
+**Actual Node22 bounded builder/codec proof passed**
+2026-11-13T10:33:25.279Z–10:33:27.319Z, Docker networking disabled. Actual
+keyed Batch JSONL contains the SDK-derived strict schemaVersion1/segments/key/
+text shape, required fields, additionalProperties:false and existing bounds.
+Ordinary translation has no added format and retains configured model/custom ID
+and output bound. Valid marker identity restores; six root/segment extra
+protectedTokens/context/unknown-field cases and a missing marker strictly refuse.
+Zero provider API requests, no worker/database/poller. These are runtime
+assertions, not additional Node test cases. No real translation-quality or
+live provider/fleet/activation claim.
+
+Approved derivative changes exactly four compiler-emitted translation.provider.js,
+segment-codec.js/maps; every other **1,128 runtime output** stays identical.
+Whole package/lock/tsconfigs, Linux dependencies/layers and ENV/CMD/entrypoint
+match; TS6.0.2/host24.19 declared compile, actual Node22.23.5, NODE_OPTIONS absent.
+Base readiness image `sha256:a247ea1ac436bee9b09a3b1779eee70e3fcbcc2ddbf8572bc6249168b8aa235b`;
+final immutable validation image
+`sha256:dd73ff316ac7eb7b6c335291163a27e673968b94392784c2afbbb50fe75fd319`.
+Full source/old-new module hashes and Dockerfile identity are in
+`docs/validation/keyed-translation-evidence.md`; local manifest
+`/tmp/moda-keyed-image.json`, runtime log `/tmp/moda-keyed-runtime.log`.
+No host native/dependency/config/credential/CLI copies or production artifact
+promotion; source-derived correctness only, no production-build parity claim.
+
+Preparation refused absent output before compilation completed and an unsupported
+bare-local-SHA Docker FROM reference. Final build uses a local base tag verified
+to its exact immutable ID, audits inherited layers/output hashes afterward, and
+all runtime proof commands pin the derived immutable ID. No partial output was
+accepted. Final bounded actual build/proof passes.
+
+Neighboring regression tests: **21 passed**, zero failures/skips; new output guard
+also passed alone. Syntax281 JS files, structure/catalogue/diff checks pass;
+final base-tag identity check additionally passes node --check and actual build.
+Capability scripts `validate:translation:keyed` / `build:translation:keyed-image`
+and small task-owned helpers/docs added. Prior 13 integrated checks, 4 aliases /
+8 negatives and all20 Meta-readiness assertions remain preserved with their
+recorded source/image; no broad integrated rerun, live call, main merge or
+production setting/counter change was performed. No implementation defect remains
+within this bounded validation task; root owns remaining genuine rollout proof.
 
 ## Architect Review
 
