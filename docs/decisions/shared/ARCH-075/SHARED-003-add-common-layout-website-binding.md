@@ -47,6 +47,12 @@ Other repositories, new database tables/settings, provider permissions, live reg
 
 Optional outreach carrier is a host-supplied verified single-line HTTPS origin: no credentials, explicit port, query, fragment or non-root path. Absent carrier remains compatible; a requested unavailable website fails through existing resolution semantics. Do not accept the key without making its existing resolver surface functional. The website is a separate semantic value, never overload shop.name or insert multi-line arbitrary text into one Meta parameter. Host supplies verified saved shop origin; Shared does not read environment/database or derive authorization. Existing old projections, unknown-key rejection and checkout conditional restrictions stay intact. New website token may appear wherever the corresponding shop.name text token is valid, subject to existing family-specific Admin rules. No new template-part transport contract. Build exact immutable5.13.9 only if available; no publication in this task.
 
+### Frozen common reference contract
+
+Also own the actual Admin→Background reference contract in this same candidate: exact `{schemaVersion:1,definitionId,sourceHash,localeId,languageTag,contentHash,prepared:PreparedWrapper}`. Export its type and strict browser-safe parser. Reuse existing `readPreparedWrapper` with injected `PresentationDigest`; contentHash remains SHA256(stableJson(prepared)), never a new convention or Node dependency. Bound IDs, validate lower-hex SHA256 hashes and supported canonical language, reject unknown fields/tampering.
+
+Common prepared projection: MODA_CONVERSATION_WRAPPER, body exactly the response.body slot, no productImage, common header identifies shop.name and shop.websiteUrl once, static footer empty, one checkout.available conditional carrying trusted checkout.url once at the end. No new content/frame builder. Return actual existing parser incompatibility instead of weakening legacy rules. Host re-reads exact immutable SHARED definition+locale/status/hash and verifies selected/current identity; client-supplied reference alone is not authority. Admin embeds it in new immutable Meta authoring JSON; Background consumes the same reference. Preserve existing old wrapper/Meta contracts without this optional new reference.
+
 ## Work Items
 
 - [ ] Complete assigned bounded capability only.
