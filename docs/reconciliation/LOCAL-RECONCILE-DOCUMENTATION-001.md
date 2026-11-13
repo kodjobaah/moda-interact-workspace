@@ -3,7 +3,7 @@ task_id: LOCAL-RECONCILE-DOCUMENTATION-001
 repository: moda-interact-documentation
 assigned_agent: default
 coordinator: moda_architect
-status: in_progress
+status: review
 execution_mode: agent
 completion_mode: agent
 executor: default
@@ -92,7 +92,7 @@ locale bounds, output overwrite controls or deterministic scene ordering.
 
 ## Completion report
 
-### Attempt 1 — In Progress
+### Attempt 1 — Ready for independent review
 
 Physical worktree isolation:
 
@@ -114,9 +114,53 @@ Start-of-attempt synchronization:
 - Recursive source submodule sync/update/status: passed, no nested submodules.
 - Mechanical claim delegated by root under the explicit route exception.
 
-Implementation, validation, publication and final review are pending. No
-implementation gitlink is staged. Main integration and external publication are
-root-owned and have not occurred under this task.
+Implementation is committed and pushed at `0ef56f9dce03ef0a3b5bd673138d1efb18a00658`.
+Draft source PR: https://github.com/kodjobaah/moda-interact-documentation/pull/1
+Source worktree is clean; no generated media or private inputs are committed.
+No implementation gitlink is staged. Root retains main integration authority.
+
+Implementation restores the six tracked video-pipeline improvements, common
+quality module and four required English configuration inputs. An actual pixel
+regression exposed gray padding despite nominal 4K container dimensions. Matching
+Chromium compositor scale (`--force-device-scale-factor=2.4`) with the existing
+1600×900 CSS viewport and DPR 2.4 resolves that padding. Both production capture
+paths use this same launch setting. Existing privacy, authentication, mutation,
+source-integrity and overwrite guards remain unchanged.
+
+Baseline typecheck failed at four untouched main capture-runner calls (TS2379).
+The unchanged baseline runner SHA-256 was
+`21f2b4095917f8adedf9131b3aebf00b528a859ed32a570bd1560cd3e6c326d0`.
+The authorized correction omits only undefined timeout options, preserving explicit
+zero, positive values, frame scoping and browser defaults; 13 direct cases cover it.
+
+Validation (Node 24.19.0, existing installed Chromium, FFmpeg/ffprobe):
+
+- `npm ci`: passed; dependency manifests/lock unchanged.
+- `npm run validate`: passed typecheck, 57 tests and capture plan; one explicitly
+  opt-in video integration test skips in the normal suite.
+- `VIDEO_QUALITY_SMOKE=1 VIDEO_QUALITY_PROOF_PATH=artifacts/local-reconcile/video-quality-proof.json npx vitest run automation/tests/video-quality.integration.test.ts`: passed.
+- Actual offline Playwright recording: 3840×2160 VP8 at 25fps, bottom-right
+  fixture pixel [255,1,2]; the former padded profile yielded gray [128,128,128].
+- Actual production trim helper: 3840×2160 VP9, full-frame fixture retained.
+- Both actual narrated renderers: 3840×2160 H264 High level 5.2 at 25fps,
+  encoder-verified CRF 12, BT709, AAC audio and mov_text subtitles; red-edge
+  pixel checks pass. Silent generated audio and synthetic captions avoid model
+  downloads and external calls.
+- `git diff --check`: passed. Exactly 15 owned source/config/test files staged.
+
+Ignored local proof receipt:
+`artifacts/local-reconcile/video-quality-proof.json`, SHA-256
+`d335319cc4043d2e27d2d4393fb0f2ea28f53510425927a05f356617684f3b86`.
+Baseline/final validation and integration logs are beside it. Evidence is synthetic
+and is retained locally, not published as repository assets.
+
+Limits: capture planner still identifies 11 pre-existing unconfigured legacy
+targets (28 configured of 39). No live store capture, customer data, onboarding
+mutation or model download was exercised. The actual pixel test proves the browser
+fills the recording surface without padding; it is not a visual-quality assessment
+of every live merchant page. Existing npm audit findings remain outside this scope.
+Primary local files and excluded tools/media/session dumps remain preserved by the
+external backup. Independent architect review and root merge remain pending.
 
 ## Architect review
 
