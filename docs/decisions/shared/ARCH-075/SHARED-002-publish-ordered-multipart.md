@@ -49,9 +49,9 @@ Prerequisite Complete+accepted and root source merge verified. Explicit user pub
 
 ## Work Items
 
-- [ ] Implement only assigned capability and document compatibility.
-- [ ] Complete meaningful required checks and regression/negative evidence.
-- [ ] Publish mirrored branch/report and return review, then stop.
+- [ ] Verify accepted prerequisite, source merge and explicit public-release authorization.
+- [ ] Publish the exact accepted immutable artifact once to the canonical public registry.
+- [ ] Verify version/latest metadata and actual downloaded artifact hashes, record the release-only report and stop.
 
 ## Interfaces / Contracts
 
@@ -67,9 +67,9 @@ Only dependent tasks after architect acceptance; never begin them implicitly.
 
 ## Acceptance Criteria
 
-- [ ] Assigned bounded capability and frozen contract behavior satisfied.
-- [ ] Legacy reads/records remain compatible; no unauthorized cross-owner/billing/security change.
-- [ ] Durable/contract identity and fault cases satisfy required checks without silent fallback.
+- [ ] Exact accepted artifact is published at the explicitly approved version/destination.
+- [ ] Actual downloaded bytes match the accepted SHA256/SHA1/SHA512 and latest metadata.
+- [ ] No implementation changes, repeated source validation, repack or consumer work occurred.
 - [ ] Canonical dedicated mirrored worktree, synchronization and recursive evidence recorded; no private proof committed.
 
 ## Validation
