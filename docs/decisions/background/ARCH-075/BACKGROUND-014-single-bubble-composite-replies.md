@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-075-BACKGROUND-012
-  - ARCH-075-SHARED-011
+  - ARCH-075-SHARED-009
+  - ARCH-075-SHARED-010
 enables: []
 created: 2026-11-13
 updated: 2026-11-13
@@ -46,7 +47,7 @@ Native AST/registration changes, extra outside-window freeform parts, image rend
 
 ## Requirements
 
-- Consume exact accepted published SHARED011 composite Node/browser exports, not sibling imports/local duplicate codecs. Root permits labeled exact-packed artifact preparatory compatibility evidence before release; it is not production dependency readiness or final acceptance. If release unavailable return that gate rather than publish or forge registry lock integrity.
+- Consume exact accepted published SHARED011 composite Node/browser exports, not sibling imports/local duplicate codecs. Root explicitly authorizes preparatory source implementation and full local tests against the exact accepted packed artifact after009+010 acceptance, before public release; it is not production dependency readiness or final acceptance. If release unavailable return that gate rather than publish or forge registry lock integrity.
 - Compose complete canonical logical header+answer+footer as today for root/history/moderation. Physical single COMPOSITE_IMAGE caption is exact canonical answer+footer, bitmap has exact canonical header/shopdetails/divider+optional verified product. New immutable receipt/digest explicitly binds caption, header render, full logical body/common source, both sources/output/font/layout/policy/tenant and control; do not disguise as existing logo/product image.
 - Product selection is only existing first-presented verified product pair. Logo must be exact active current same-tenant R2 derivative/generation/fingerprint and publicMedia policy. Final fence independently reattests brand AND product source/facts/current policy, source/common/control/moderation, and output identity. No unknown-kind fallthrough acceptance.
 - Support no-product AI/HUMAN via logo/header-only composite. Missing asset/font/network, malformed source or caption>1024-codepoints yields ONE complete canonical TEXT reply with single appended footer; no second bubble, no lost/truncated answer, no untrustedimage fallback. Authored text may contain URL independently; do not strip/count occurrences.
@@ -54,6 +55,12 @@ Native AST/registration changes, extra outside-window freeform parts, image rend
 - Preserve exact existing frozen plans/digests and default human preparation, one-root engine, delivery/UNKNOWN no-resend/idempotency/replay, consent/billing once, role/history/control/moderation and handback corrections. No new schema/table required unless concrete gap returned before widening.
 - Distinct RECOVERY_COMPOSITE_REPLY_ENABLED exact literal true, absent/invalid/false OFF. Do not repurpose live RECOVERY_BRANDED_MAIN_REPLY_ENABLED. OFF writer retains current accepted behavior; new readers validate legacy and composite. Root keeps compositeOFF until every old reader drains and actual per-process safe startup evidence confirms compatibility. Add only safe boolean to existing worker-start event if needed, using Shared logging.
 - Source commits/push/PR and offline actual image+loopback transport tests only; no automatic main merge/liveprovider send. Any Blueprint declaration needed for eventual activation is a separate Gateway ownership task, not an undeclared manual dependency. No native template image relabel or freeform outside session.
+
+### Preparatory source and final release gate
+
+After009+010 acceptance, claim normally and create the actual defaultOFF Background implementation/draftPR, installing only the exact hash-verified accepted package archive for local integrated tests. Record its full archive hash/manifest and local dependency method separately; do not commit developer-specific paths or pretend registry resolution exists. Complete the relevant local tests and return concrete reviewable source/results to root BEFORE root asks user for public publication approval. Keep task In Progress if release is pending; do not mark final Review/Complete while registry dependency is unavailable.
+
+After root-relayed explicit011 publication and exact registry receipt, reconcile normal registry dependency/lock and run the newly enabled clean npm-ci/remote checks against that exact archive without unrelated repeated source validation. Final report must distinguish prepublication local proof from final published readiness. No automatic publication, main merge or live send by this task. This bounded source-preparation exception preserves accepted Shared ownership, no duplicated implementation and publication-before-consumer deployment.
 
 ## Work Items
 
@@ -68,7 +75,7 @@ Shared009 composite schema/digest and010 Node renderer/preparer, published by011
 
 ## Dependencies
 
-BACKGROUND012 Complete/integrated; SHARED011 accepted actual public release before normal consumer execution/final validation. Preparatory read-only seam inspection and exact packed archive compatibility proof may be separately authorized by root; no sibling source code or final-unpublished readiness claim.
+BACKGROUND012 Complete/integrated and SHARED009+010 Complete/Accepted/integrated before normal preparation. Explicit root delivery-order exception permits this same isolated task to implement/push draft source and full local validation using the exact accepted packed artifact before SHARED011 publication, so the public-release approval covers concrete reviewed integrated work. No sibling source imports or fabricated registry lock. SHARED011 actual public release remains a required final-validation/acceptance gate, not a claim that an unpublished consumer is ready.
 
 ## Enables
 

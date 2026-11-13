@@ -46,3 +46,6 @@ ARCH-075-BACKGROUND-012 Complete/Accepted at sourcecbe926522d318953217480932c972
 
 
 BACKGROUND014 Pending: published trusted composite consumer, defaultOFF new gate, one bubble or fullTEXT fallback; depends BG012+Shared011. Supersedes unexecuted013; no native change/live sends.
+
+
+BG014 dependency amendment: normal preparation follows accepted009+010 plusBG012; root explicitly permits exact-packed preparatory source/draftPR/localfulltests BEFORE public approval. Final acceptance/registrylock/npmci still requires actual011 publication. No unpublished deployment or siblingcode.
