@@ -15,3 +15,6 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 
 ARCH-075-SHARED-008 Pending on SHARED-007: next public release preparation/approval/registry receipt only, no repeated implementation validation. Enables BACKGROUND-013 after accepted actual publication.
+
+
+ARCH-075-SHARED-008 Superseded unexecuted by explicit single-bubble composite choice; no publication or implementation occurred.
