@@ -232,3 +232,10 @@ DATABASE-002 is preserved as a **superseded** historical task definition: no imp
 - 2026-10-14: Superseded LIVE retry-wide snapshot requirement by explicit agreement: each Background execution (including retry) resolves the current policy once; an in-flight execution keeps those values. No new Redis or PostgreSQL budget-snapshot persistence. PREVIEW Test Conversation snapshot remains mandatory. Required local AI Mock HTTP orchestration via actual Shared/OpenRouter SDK, zero paid calls, and disposable `TEST` environment isolation.
 
 - 2026-10-17: COMMERCE-002 Attempt 1 returned to Ready after architect review; resolve authoritative UI policy projection, compare full-suite failures with the documented baseline, and complete build/VCS preparation evidence before resubmission. COMMERCE-003 remains gated.
+
+
+### Preserved local functionality reconciliation — 2026-11-13
+
+ARCH-038-DATABASE-003 (ready) owns the bounded outcome: Persist the initial outreach tool-call policy. Background main already consumes initialOutreachToolCalls with default16 and max64, but canonical Database still rejects that key and Admin has unpublished editing support. Backed-up local SQL adds the existing JSON budget field and LIVE Platform default; no new schema model or Shared contract is needed. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
+
+| ARCH-038-DATABASE-003 | moda_database | ready | ARCH-038-DATABASE-001 |
