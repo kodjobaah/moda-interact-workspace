@@ -15,4 +15,4 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 | ARCH-075-ADMIN-006 | complete | ARCH-075-ADMIN-005 |
 
-| ARCH-075-ADMIN-007 | Provider-valid final BODY boundaries and localized opt-out projection | Ready | ARCH-075-ADMIN-001, ARCH-075-ADMIN-005 |
+| ARCH-075-ADMIN-007 | Provider-valid final BODY boundaries and localized opt-out projection | Complete | ARCH-075-ADMIN-001, ARCH-075-ADMIN-005 |
