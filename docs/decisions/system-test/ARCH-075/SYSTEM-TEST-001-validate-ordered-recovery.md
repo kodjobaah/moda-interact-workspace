@@ -123,7 +123,7 @@ https://github.com/kodjobaah/moda-interact-system-test/pull/6
 
 ### Files Changed
 
-Implementation `9f4045f2aa96d4b782574757cd3c94ea9360c9f5` on mirrored branch
+Implementation `f11bf99d2c082ac407dc533db81f4b378f76bd3f` on mirrored branch
 `task/ARCH-075-SYSTEM-TEST-001` (earlier partial checkpoint `806f251`).
 
 - `src/harness/ordered-recovery/`: independent actual Admin compiler/activation,
@@ -141,7 +141,10 @@ Implementation `9f4045f2aa96d4b782574757cd3c94ea9360c9f5` on mirrored branch
 
 Prepared canonical isolated implementation/parent worktrees and original claim
 were reused. Start packet claim `9d1b0c346a17b9cbdc9175623f180b4cd5a99272`,
-attempt 1, executor codex; no reprepare/reclaim or branch rewriting. The parent
+attempt 1, executor codex; no reprepare/reclaim or branch rewriting.
+Final self-review preserved the existing image helper's original default result
+shape; only opt-in heap builds add overlay metadata (final compatibility commit
+`f11bf99`, integrated implementation `9f4045f`). The parent
 branch was subsequently fast-forwarded to accepted `origin/main` at
 `ff66c06e2d990047eb2ed3c482691356026b4d52`; implementation main was unchanged.
 
@@ -195,7 +198,10 @@ Agent-owned checks passed:
 
 - `npm run validate:recovery:ordered -- --image-manifest <local-manifest> --admin-root <accepted-admin-worktree>`.
 - `node --test test/harness/ordered-*.test.js test/harness/background-production-image.test.js`: **10 passed**, zero failures/skips.
-- `npm run typecheck`: 265 JavaScript files parsed.
+- Neighboring image/runtime/container plus ordered harness regression command:
+  `node --test test/harness/background-*.test.js test/harness/ordered-*.test.js`: **18 passed**, zero failures/skips (includes the ten focused tests).
+- `npm run typecheck`: 265 JavaScript files parsed; syntax rechecked after the
+  default image-metadata compatibility refinement.
 - `npm run lint`: syntax and source/test 300-line/module structure passed.
 - `npm run validate:catalogue` and `git diff --check`: passed.
 - Actual Node22 container parsed harness JS. Disposable PG/Redis/worker containers
