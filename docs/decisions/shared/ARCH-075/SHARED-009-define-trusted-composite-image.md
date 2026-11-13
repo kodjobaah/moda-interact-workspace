@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T23:07:13Z
@@ -55,9 +55,9 @@ Renderer/fonts/network/R2 execution, package version/publication, service consum
 
 ## Work Items
 
-- [ ] Define minimal distinct provenance and plan schema/digest.
-- [ ] Prove optional-product, same-tenant and exact source/output identities.
-- [ ] Preserve legacy contract/digest and browser safety; publish source/report.
+- [x] Define minimal distinct provenance and plan schema/digest.
+- [x] Prove optional-product, same-tenant and exact source/output identities.
+- [x] Preserve legacy contract/digest and browser safety; publish source/report.
 
 ## Interfaces / Contracts
 
@@ -73,15 +73,15 @@ ARCH-075-SHARED-010 only after source acceptance/integration.
 
 ## Acceptance Criteria
 
-- [ ] Distinct composite with trusted same-tenant dual/optional-product provenance and exact public output identity.
-- [ ] Caption/logical-body separation explicit; no unsafe URL/string inference or source relabel.
-- [ ] Legacy vectors/digests unchanged; browser-safe packed exports and negative guards pass.
+- [x] Distinct composite with trusted same-tenant dual/optional-product provenance and exact public output identity.
+- [x] Caption/logical-body separation explicit; no unsafe URL/string inference or source relabel.
+- [x] Legacy vectors/digests unchanged; browser-safe packed exports and negative guards pass.
 
 ## Validation
 
-- [ ] Focused schema/digest RED/GREEN optional-product, forgery/control/Unicode/caption/tenant/output cases.
-- [ ] Declared relevant/full tests/type/build/available scoped lint and packed/browser safety checks.
-- [ ] Diff/privacy, exact isolated source/report and compatibility evidence.
+- [x] Focused schema/digest RED/GREEN optional-product, forgery/control/Unicode/caption/tenant/output cases.
+- [x] Declared relevant/full tests/type/build/available scoped lint and packed/browser safety checks.
+- [x] Diff/privacy, exact isolated source/report and compatibility evidence.
 
 ## Stop Condition
 
@@ -95,35 +95,64 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others 
 
 ### Status
 
-Not Started
+Ready for Review; independent architect review required.
 
 ### Files Changed
 
-None
+- `src/commerce/presentation/composite-image.ts`: distinct pure provenance/prepared image/plan/reader schemas, trusted canonical boundary builder/parser, tenant/render/boundary/plan SHA bindings and fixed geometry.
+- `src/commerce/presentation/index.ts`: additive browser-safe exports only.
+- `src/commerce/presentation/composite-image.test.ts`: optional product, tenant/input/output forgery, Unicode/control/bounds, exact canonical whitespace and footer line, distinct-kind and digest compatibility vectors.
+- `scripts/validate-recovery-composite.mjs`, `package.json`: packed installed ESM/types/browser validator, including actual published 5.13.10 old-reader rejection and exact old media/multipart digest comparisons.
+- `README.md`: unreleased contract/geometry/trust responsibilities and rollout limits.
 
 ### Work Completed
 
-None
+Added opt-in `COMPOSITE_IMAGE` schemaVersion1 without changing any old TEXT/IMAGE/BRAND_IMAGE/multipart schema, role or digest. Product is explicit null or a verified shop/platform/product/variant identity and input byte hash. Logo uses the existing strict trusted brand origin/generation/fingerprint (LOGO/SQUARE_LOGO only) plus actual input byte hash; all inputs share one tenant. Provenance also binds exact canonical header/common-reference hash and immutable layout/renderer/font manifest identities.
+
+Output is JPEG below 5 MiB, 1125×900 with product or1125×300 without, using the new tenant/render/output content-hash namespace and exact trusted origin/key URL. Contextual parser recomputes tenant/render identity, compares independent current provenance/public origin, and requires an independently verified output SHA/size receipt. Schemas and digests alone do not attest bytes or confer authorization.
+
+Canonical caption is answerText+footerText and original logical body is headerText+answerText+footerText, with no inserted separators, trim or normalization. Parser compares exact independently supplied canonical boundaries and original logical body; boundary digest binds every component, and plan digest binds image/provenance/output and both text forms. Actual caption final trusted URL line is validated through the existing checkout parser. Caption1024codepoints and original 4096 UTF-16-unit text limits remain distinct; no global URL count or truncation.
+
+Geometry coordinated with architect before freeze: modest contained 180×180 logo at (48,48) alongside full header 813×180 at (264,48) in a 300px header; optional contained 1125×600 product below at (0,300). Initial extra graphic-divider proposal was removed following inspection of actual canonical boundaries: render full authored header (including its divider) literally exactly once; no heuristic partition/stripping and no added ornament. Renderer must fall back if exact header/font glyphs cannot fit, without modifying canonical text. No renderer/font/network/R2 implementation, service consumer, native template/database change, version bump or publication.
 
 ### Validation Results
 
-Not run
+- RED: focused new-contract test failed before barrel export with missing `ConversationCompositeMediaDeliveryPlanSchema`; no false claim of old reader support.
+- Final focused: 22/22 passed, including own-whitespace canonical boundaries and own-final-line footer cases.
+- Final `npm test`: 800 tests, 797 passed, 0 failed, 3 declared skips.
+- Final `npm run typecheck` and `npm run build`: passed (ESM and DTS).
+- `npm pack --ignore-scripts --json --pack-destination /tmp/ARCH-075-SHARED-009`, then `npm run validate:recovery-composite -- /tmp/ARCH-075-SHARED-009/modainteract-moda-interact-shared-5.13.10.tgz`: passed installed ESM, installed exported declarations, isolated browser execution, actual published 5.13.10 rejection of composite, and exact existing TEXT/BRAND_IMAGE/IMAGE plus all five valid multipart-order bytes/digest vectors.
+- Final unpublished candidate archive SHA-256 `9890ae028f3653b78e9491ce2248772977ce4a7bd578e5547029ad1cf1ace9e7`; package version remains 5.13.10. This is validation packaging only, not publication.
+- No lint script/config is declared; no substitute lint contract invented.
+- Diff/privacy: synthetic-only tests; private shop assets were not read, copied or committed; no Node/Sharp/Prisma/config import added to browser entrypoint.
 
 ### Deviations
 
-None
+No scope deviation. Exact authored concatenation and literal single authored divider clarified against actual Background boundaries before freezing. Renderer 010 remains separate; no font choice frozen here.
 
 ### Assumptions
 
-Root owns final integration and live authorization.
+Background is the intended production producer/consumer. Node renderer010 will consume the same exports directly. Host independently verifies common reference/provenance/current authorization and renderer/public-probe bytes; never derive trusted context from the stored plan/model. `commonReferenceHash` hashes stableJson of the complete verified common reference; `fontAssetSha256` hashes a canonical ordered font manifest including shaping settings. Old workers must drain after compatible reader deployment before new kind emits.
 
 ### Unresolved Issues
 
-Publication and consumer/live proof remain gated.
+Renderer 010, combined publication 011, Background consumer and live/visual acceptance remain separate gated work. No release 009 alone.
 
 ### Architectural Concerns
 
-Return gaps before widening.
+No new cross-repository dependency beyond the explicitly sequenced renderer/release/consumer. The pure contract preserves old frozen plans; old 5.13.10 readers reject new composite kind by design.
+
+### Git / VCS
+
+Mirrored branch `task/ARCH-075-SHARED-009`. Durable parent claim `db1d0fca1518d98be73a950bb664a416a2652cb4` pushed. Implementation source `2c91eb9c72b68dcdeba0c8bf007e2eb7f1d25944` pushed to origin/task/ARCH-075-SHARED-009, source PR https://github.com/kodjobaah/moda-interact-shared/pull/86 . Parent review report is committed/pushed by its containing commit on the same mirrored task branch (no self-referential hash claim). No agent main merges or parent implementation gitlink staged.
+
+Launcher physical isolation/synchronization evidence:
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-SHARED-009` reused on task/ARCH-075-SHARED-009, initial head 8a241ca99dc2f308a6e4e416271f28a1ec353310.
+- Implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-SHARED-009` created on task/ARCH-075-SHARED-009, initial head 232bcb3a3e5a8385aa76fc50f1c59da34f323fb1.
+- Shared workspace/implementation checkouts switched/mutated for task work: no; another task worktree reused: no.
+- Both remote task fast-forwards: not-needed; both origin/main incorporated: already-current.
+- Recursive submodule sync/update-init passed; status ready; entries none. Dependency gate passed SHARED006 Complete.
 
 ## Architect Review
 
