@@ -113,22 +113,22 @@ Output is JPEG below 5 MiB, 1125×900 with product or1125×300 without, using th
 
 Canonical caption is answerText+footerText and original logical body is headerText+answerText+footerText, with no inserted separators, trim or normalization. Parser compares exact independently supplied canonical boundaries and original logical body; boundary digest binds every component, and plan digest binds image/provenance/output and both text forms. Actual caption final trusted URL line is validated through the existing checkout parser. Caption1024codepoints and original 4096 UTF-16-unit text limits remain distinct; no global URL count or truncation.
 
-Geometry coordinated with architect before freeze: modest contained 180×180 logo at (48,48) alongside full header 813×180 at (264,48) in a 300px header; optional contained 1125×600 product below at (0,300). Initial extra graphic-divider proposal was removed following inspection of actual canonical boundaries: render full authored header (including its divider) literally exactly once; no heuristic partition/stripping and no added ornament. Renderer must fall back if exact header/font glyphs cannot fit, without modifying canonical text. No renderer/font/network/R2 implementation, service consumer, native template/database change, version bump or publication.
+Geometry coordinated with architect before freeze: modest contained 180×180 logo at (48,60) alongside full header 813×252 at (264,24) in a 300px header; optional contained 1125×600 product below at (0,300). Initial extra graphic-divider proposal was removed following inspection of actual canonical boundaries: render full authored header (including its divider) literally exactly once; no heuristic partition/stripping and no added ornament. Renderer must fall back if exact header/font glyphs cannot fit, without modifying canonical text. No renderer/font/network/R2 implementation, service consumer, native template/database change, version bump or publication.
 
 ### Validation Results
 
 - RED: focused new-contract test failed before barrel export with missing `ConversationCompositeMediaDeliveryPlanSchema`; no false claim of old reader support.
-- Final focused: 22/22 passed, including own-whitespace canonical boundaries and own-final-line footer cases.
-- Final `npm test`: 800 tests, 797 passed, 0 failed, 3 declared skips.
+- Final production geometry: 23/23 focused composite/multipart tests passed, including exact owned whitespace, caption final-line checks and readable header geometry. Architect-requested same-checkout-URL authored-answer test-only addition: 11/11 affected composite tests passed; exact answer plus canonical footer and trusted parse remain valid, without any global URL-count heuristic.
+- `npm test`: 800 tests, 797 passed, 0 failed, 3 declared skips before the subsequent coordinate-only readability adjustment. Final affected focused/type/build/packed checks passed after that adjustment; no unrelated broad repeat was added for the final test-only request.
 - Final `npm run typecheck` and `npm run build`: passed (ESM and DTS).
 - `npm pack --ignore-scripts --json --pack-destination /tmp/ARCH-075-SHARED-009`, then `npm run validate:recovery-composite -- /tmp/ARCH-075-SHARED-009/modainteract-moda-interact-shared-5.13.10.tgz`: passed installed ESM, installed exported declarations, isolated browser execution, actual published 5.13.10 rejection of composite, and exact existing TEXT/BRAND_IMAGE/IMAGE plus all five valid multipart-order bytes/digest vectors.
-- Final unpublished candidate archive SHA-256 `9890ae028f3653b78e9491ce2248772977ce4a7bd578e5547029ad1cf1ace9e7`; package version remains 5.13.10. This is validation packaging only, not publication.
+- Final unpublished candidate archive SHA-256 `a026569f6f1e676a29417e14cf87455cca9dbf3cdeb1199c2724b4069f264aad`; package version remains 5.13.10. This is validation packaging only, not publication.
 - No lint script/config is declared; no substitute lint contract invented.
 - Diff/privacy: synthetic-only tests; private shop assets were not read, copied or committed; no Node/Sharp/Prisma/config import added to browser entrypoint.
 
 ### Deviations
 
-No scope deviation. Exact authored concatenation and literal single authored divider clarified against actual Background boundaries before freezing. Renderer 010 remains separate; no font choice frozen here.
+No scope deviation. Exact authored concatenation and literal single authored divider clarified against actual Background boundaries before freezing. Renderer 010 remains separate; no font choice frozen here. Root readability correction implemented in fixed geometry and explicit vectors; architect same-checkout-URL coverage request implemented in the focused test, with 11 affected tests passing. Production bytes did not change for that test-only addition.
 
 ### Assumptions
 
@@ -144,7 +144,7 @@ No new cross-repository dependency beyond the explicitly sequenced renderer/rele
 
 ### Git / VCS
 
-Mirrored branch `task/ARCH-075-SHARED-009`. Durable parent claim `db1d0fca1518d98be73a950bb664a416a2652cb4` pushed. Implementation source `2c91eb9c72b68dcdeba0c8bf007e2eb7f1d25944` pushed to origin/task/ARCH-075-SHARED-009, source PR https://github.com/kodjobaah/moda-interact-shared/pull/86 . Parent review report is committed/pushed by its containing commit on the same mirrored task branch (no self-referential hash claim). No agent main merges or parent implementation gitlink staged.
+Mirrored branch `task/ARCH-075-SHARED-009`. Durable parent claim `db1d0fca1518d98be73a950bb664a416a2652cb4` pushed. Implementation source `09a195c92f7500597944e26707c5c0a3954b00aa` pushed to origin/task/ARCH-075-SHARED-009, source PR https://github.com/kodjobaah/moda-interact-shared/pull/86 . Parent review report is committed/pushed by its containing commit on the same mirrored task branch (no self-referential hash claim). No agent main merges or parent implementation gitlink staged.
 
 Launcher physical isolation/synchronization evidence:
 - Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
