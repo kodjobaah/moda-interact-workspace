@@ -174,3 +174,7 @@ Conforms to bounded Background ownership and existing immutable moderation/secur
 ### Follow-up
 
 BG012 remains Pending until actual source/parent integration, then may be promoted for bounded CUSTOMER handback moderation. Root owns merges, rollout and genuine both-sides context proof. ARCH-075 remains In Progress; unrelated product-referral cause is unproven and unchanged.
+
+## Developer Integration
+
+Root verified both GitHub unit-test checks passed for exact reviewed source `01702b7ccf86c195f16ba6eee6a21248e1524c30` and merged Background PR222. Actual main merge is `ac2ef244a36a63f13cb794bef41a4d7a27207cb2`; the workspace pin records that merge. Accepted validation includes 4,328 unit tests, 47 PostgreSQL tests, build and scoped lint. The customer-during-human-mode moderation mechanism remains separate BG012 follow-through. Live deployment and model-history readback remain root-owned; no completion claim for the entire handover exchange is made by this integration.
