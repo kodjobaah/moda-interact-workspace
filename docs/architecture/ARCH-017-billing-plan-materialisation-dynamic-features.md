@@ -412,3 +412,10 @@ SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-003 owns current
 
 - **2026-10-05 — AI Conversations made a core plan-managed feature.** `ai_conversations` now follows the same required/always-enabled merchant behaviour as `checkout_recovery`: every merchant catalogue plan and operational BillingPlan receives the capability, merchants cannot toggle it off, and obsolete `ShopFeaturePreference` rows are removed during convergence. Product Search, Order Support, Merchant Knowledge, and other `MERCHANT_OPT_IN` features remain optional.
 - **2026-09-30 — ARCH-017-SHOPIFY-001 Attempt 4 accepted.** Reconciled the onboarding invariant to require provider confirmation of the requested current/pending managed-pricing selection before the monotonic onboarding write. This supersedes the earlier SHOPIFY-002 callback-entry subrule while preserving SHOPIFY-002/003 historical completion. The accepted lazy BillingPlan materialiser and persistent merchant feature-preference behaviour are the implementation baseline to integrate before ARCH-023 Shopify configuration work resumes.
+
+
+### Preserved local functionality reconciliation — 2026-11-13
+
+ARCH-017-DATABASE-002 (ready) owns the bounded outcome: Canonicalize the retired Order Support feature. The untracked 20261106023000_remove_order_support migration SHA2566afd411b773669387f6289243537ea999df07a1f8c553163862a1f21de06cde2 matches the previously verified finished test/production ledger exception. Current canonical history lacks that file, while local seed removes four order_support rows. Root requests preservation and incorporation of genuine functionality, not ledger rewriting. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
+
+| ARCH-017-DATABASE-002 | moda_database | ready | ARCH-017-DATABASE-001 |
