@@ -215,4 +215,6 @@ Pending because API-004 and other explicit dependencies are still outstanding.
 
 WOOCOMMERCE009 is Ready for a bounded test-only correction: canonical bootstrap hook dispatch/removal must be exercised by cart/coupon test doubles, preserving unrelated notices and cleanup semantics. Post-build baseline confirmation is required; missing ignored assets are not a product defect. Accepted production006/008 remain unchanged. No duplicate local follow-up feature, new contract or live mutation is authorized.
 
-| ARCH-053-WOOCOMMERCE-009 | moda_woocommerce | Ready | ARCH-053-WOOCOMMERCE-006, ARCH-053-WOOCOMMERCE-008 |
+| ARCH-053-WOOCOMMERCE-009 | moda_woocommerce | Complete | ARCH-053-WOOCOMMERCE-006, ARCH-053-WOOCOMMERCE-008 |
+
+WOOCOMMERCE009 Accepted/Complete at source afb321f/report c4be555: canonical test hook dispatch/selective normal+exception cleanup, one test file only. Full PHP343/2590, JS482+128, lint/build checks pass except explicitly retained unchanged309 whole-JS style findings. No product behavior, new contract, live store action or duplicate feature port. Root owns main integration.

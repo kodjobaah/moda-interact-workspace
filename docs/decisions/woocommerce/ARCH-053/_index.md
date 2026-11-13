@@ -19,4 +19,4 @@ Assigned agent: `moda_woocommerce`. Coordinator: `moda_architect`.
 
 ARCH-052 is exclusively dynamic-discount discovery. ARCH-053 only restores previously applied original Woo coupons and core basket data; no dynamic incentive work is authorized.
 
-| ARCH-053-WOOCOMMERCE-009 | Ready | ARCH-053-WOOCOMMERCE-006, ARCH-053-WOOCOMMERCE-008 |
+| ARCH-053-WOOCOMMERCE-009 | Complete | ARCH-053-WOOCOMMERCE-006, ARCH-053-WOOCOMMERCE-008 |
