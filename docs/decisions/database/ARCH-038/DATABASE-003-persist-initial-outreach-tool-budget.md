@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T15:48:57Z
@@ -60,9 +60,9 @@ Order Support retirement/history, application UI/runtime edits, provider/credent
 
 ## Work Items
 
-- [ ] Verify task-owned backup provenance and fresh-main overlap classification.
-- [ ] Incorporate only the missing bounded behavior and necessary regression tests.
-- [ ] Complete required validation, mirrored publication and truthful report; return review and stop.
+- [x] Verify task-owned backup provenance and fresh-main overlap classification.
+- [x] Incorporate only the missing bounded behavior and necessary regression tests.
+- [x] Complete required validation, mirrored publication and truthful report; return review and stop.
 
 ## Interfaces / Contracts
 
@@ -78,14 +78,14 @@ ARCH-038-ADMIN-004
 
 ## Acceptance Criteria
 
-- [ ] Scoped missing functionality is incorporated with newer main behavior preserved.
-- [ ] Relevant trust/lifecycle/audit/immutability boundaries and explicit negative behavior remain enforced.
-- [ ] Required checks and exact source/backup/worktree/synchronization evidence recorded; no live mutation or unrelated publication.
+- [x] Scoped missing functionality is incorporated with newer main behavior preserved.
+- [x] Relevant trust/lifecycle/audit/immutability boundaries and explicit negative behavior remain enforced.
+- [x] Required checks and exact source/backup/worktree/synchronization evidence recorded; no live mutation or unrelated publication.
 
 ## Validation
 
-- [ ] Actual disposable PostgreSQL fresh+upgrade complete migration chain,1/64 acceptance and0/65/fraction/unknown rejection, legacy/default/override preservation and relevant concurrency/CAS/audit checks; canonical checksum/static validation, Prisma validate/generate and relevant declared lint/tests. No live DDL.
-- [ ] Diff/privacy hygiene and task-owned file whitelist; original backup/primary changes remain intact.
+- [x] Actual disposable PostgreSQL fresh+upgrade complete migration chain,1/64 acceptance and0/65/fraction/unknown rejection, legacy/default/override preservation and relevant concurrency/CAS/audit checks; canonical checksum/static validation, Prisma validate/generate and relevant declared lint/tests. No live DDL.
+- [x] Diff/privacy hygiene and task-owned file whitelist; original backup/primary changes remain intact.
 
 ## Stop Condition
 
@@ -99,35 +99,52 @@ You are not alone; do not revert or absorb others' edits. Use normal launcher pr
 
 ### Status
 
-Not Started
+Ready for Review — ARCH-038-DATABASE-003, attempt 1, executor codex.
 
 ### Files Changed
 
-None
+Implementation commit `85c051a` on mirrored `task/ARCH-038-DATABASE-003`:
+- `prisma/migrations/20261111090000_arch038_initial_outreach_tool_call_budget/migration.sql`.
+- `scripts/test-arch038-model-policy-postgres.mjs`.
+- `scripts/validate-arch038-model-policy-schema.mjs`.
 
 ### Work Completed
 
-None
+- Selectively incorporated the budget SQL and directly related PostgreSQL harness delta from the verified external `moda-local-reconciliation-backup-20261113T145749Z/moda-interact-database` archive/unstaged patch. Original archived SQL checksum was `3be33e9e482addfe38683a7407394faf5059e726ec56f77e625b06fcd987d539`. Primary originals, backup, scratch scripts/transcripts and other repositories were preserved.
+- Root-authorized read-only ledger evidence initially confirmed this new migration absent from BOTH test and production. Root repeated the check during this attempt: each hosted ledger has 79 finished migrations, zero unfinished/pending/checksum mismatches against accepted `86db55833c804327f32a9208977cf54ae93cf4a1`; new budget migration remains absent. No hosted DDL, seed, ledger repair or other write was performed by this task.
+- Because SQL is not deployed, removed its redundant identical second function definition and wrapped function replacement plus bounded trigger disable/backfill/enable in explicit BEGIN/COMMIT. New SHA-256: `f903e539b7db712b98202f72bd5fc3240c98d7e23ba7e2fed38e074736417b2f`.
+- Preserved schemaVersion1, positive safe integers, required Platform deadline/token keys, legacy two-field compatibility, nonempty sparse overrides, unknown-key rejection and approved initialOutreachToolCalls range1–64. Only missing LIVE Platform keys backfill16 with version/timestamp increment; Preview, overrides, existing explicit values and attribution remain intact. No Shared release or Prisma model/ERD change.
+- All 79 previously canonical migration.sql files are byte-for-byte unchanged against accepted source baseline above, including historical retirement SHA `6afd411b773669387f6289243537ea999df07a1f8c553163862a1f21de06cde2`. SHA-256 over sorted `path + " " + file_sha256 + "\n"` for those 79: `2db76d8613b20afb65f3b24794b8cc14d48d01251b0357fcd3974c2c1907daa1`. Complete chain now80 migrations.
+- Replaced the obsolete target-last assumption with complete-chain membership plus newer-source retention. Upgrade applies all79 existing sources, including later ARCH075, before applying pending earlier-named target LAST.
+- Prepared launcher evidence: exact primary `moda-interact-workspace`; parent `moda-interact-workspace-task-ARCH-038-DATABASE-003` reused; implementation `moda-interact-workspace.worktrees/ARCH-038-DATABASE-003` created. Both mirrored task branches synchronized their own remote task state (not-needed), current main already incorporated. Parent baseline `018d6fb28190c2734ee0769f3a489c642103f9e0`; implementation baseline above; recursive submodule sync/update ready (no nested entries). Durable attempt1 claim `8a1f046a92ffc2d3426a951bad45bd9ef6a2e291` pushed. No shared/default checkout or main changes.
 
 ### Validation Results
 
-Not run
+Passed using workspace bootstrap Node24.19.0 / npm11.17.0:
+- `npm ci`; `node --check scripts/test-arch038-model-policy-postgres.mjs`.
+- `npm run test:arch038-model-policy-schema`: historical schema/ownership/audit invariants and new SQL transaction, exactly one function definition, bound/default/missing-only selector, trigger restoration ordering/checksum.
+- `npm run lint` (zero warnings); `npm run prisma:validate`; `npm run prisma:generate` (client6.19.3); `git diff --check` and task-owned whitelist/checksum comparison.
+- `npm run test:arch038-model-policy:postgres:fresh`: PASS with full80 sorted migration chain; later ARCH075 tables retained, five LIVE defaults/independent Preview defaults, legacy and sparse validation, bounds1/64 accepted and0/65/negative/fraction/string/null/unsafe values rejected; unknown keys/schema versions/owner/FK/admin/uniqueness restrictions retained. Explicit value7 and every policy field/version survive repeated missing-only backfill unchanged.
+- `npm run test:arch038-model-policy:postgres:upgrade`: PASS with all79 prior migrations first, valid populated Shop/Plan/Billing/Subscription plus sparse legacy policy fixtures, then target LAST. Custom LIVE deadline71000/token913 preserved and default16 added; Preview42000/512/version2 and all other row fields/ownership/overrides remain exact. All protected business rows survive.
+- Upgrade injects a deliberate failing backfill trigger: transaction rolls back full validator function text and all policy rows, restores guard enabled state, and rejects a subsequent unauthorised/unversioned write. Fixture-only trigger is then removed; normal migration succeeds. No production guard is weakened.
+- Both modes prove per-field inheritance, stale CAS refusal, atomic policy/audit rollback and two actual simultaneous PostgreSQL sessions competing for version2: exactly one wins, one observes zero updates, final version3 and exactly one additional audit row. Deleting override preserves both immutable audit rows.
+- Every PostgreSQL write used a uniquely named invocation-owned pgvector/PostgreSQL17 container with network disabled; both containers cleaned up. No paid/provider calls or hosted writes.
 
 ### Deviations
 
-None
+Only authorized prepublication SQL normalization (duplicate function removal and explicit transaction) plus required harness correction for newer migration chronology. A static lint check initially found unnecessary quote escapes in newly added assertions; corrected before the successful lint/Prisma/PostgreSQL validation sequence. No functional PostgreSQL failures occurred.
 
 ### Assumptions
 
-Local backup is preserved; root owns live-state evidence and integration.
+Existing Background consumer already supports range1–64/default16. Legacy Platform writers may still save two fields; missing-field consumer fallback remains16. Admin004 is separately gated and must not deploy before root verifies actual hosted schema rollout.
 
 ### Unresolved Issues
 
-None beyond explicit task requirements.
+Root must integrate accepted source and perform/verify TEST then PROD migrate-deploy before enabling new Admin writers. This task performs no hosted migration and claims no deployed capability.
 
 ### Architectural Concerns
 
-Return any newly discovered gap to moda_architect.
+The explicit transaction retains a bounded migration-only trigger bypass under PostgreSQL table lock; failure restores data, validator and original enabled guard. No enduring broad unaudited writer path is introduced. No new contract or schema dependency discovered.
 
 ## Architect Review
 
