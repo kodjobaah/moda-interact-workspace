@@ -172,3 +172,7 @@ Separate authorized release gate after accepted Shared005, no runtime change or 
 ### Follow-up
 
 Root integrates accepted parent/gitlink. BG010 may become Ready using exact published5.13.10 after BG009 integration. No runtime/live or architecture completion implied.
+
+## Developer Integration
+
+Root merged release metadata PR [#85](https://github.com/kodjobaah/moda-interact-shared/pull/85) at exact source `44356b4ce651b6b9bc3efc06f89e1d1484139f65` to `232bcb3a3e5a8385aa76fc50f1c59da34f323fb1`, pinned here. The user explicitly approved public version5.13.10/latest; exact published archive and registry receipt were independently accepted above. Consumer adoption and writer activation remain separate gates.
