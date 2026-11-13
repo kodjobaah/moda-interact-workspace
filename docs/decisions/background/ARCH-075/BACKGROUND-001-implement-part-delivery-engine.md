@@ -17,6 +17,7 @@ attempt: 1
 depends_on:
   - ARCH-075-DATABASE-001
   - ARCH-075-SHARED-002
+  - ARCH-075-SHARED-004
 enables: []
 created: 2026-11-13
 updated: 2026-11-13
@@ -53,6 +54,12 @@ Implement canonical root logical/perpart physical lifecycle. Atomic immutable ma
 Freeze actual server-selected providerAccountId/providerPhoneNumberId on every physical part. Normalized callback and quote must match both before attaching status/provider IDs or mapping root/recovery. Unknown sender events are not authority to claim a part with the same MetaID. Unmatched receipt dedupe/retention uses these IDs; existing single-message compatibility is preserved.
 
 Runtime policy: server-owned default 120-second deadline from freeze, validated bounds 30–300 seconds; indexed repair batches at most 100 on 5-second cadence, plus immediate status/ACK continuation where supported. No new external configuration. Sender validation must use the same credential snapshot as the HTTP endpoint/token; optional server-only expected sender input leaves legacy callers unchanged. Frozen-sender child quote lookup occurs before current-global checks; old-sender root resolution cannot silently authorize a reply through a rotated sender. Continuation checks original AI inbound/control against current state without retaining the original processing lease; HUMAN admission remains original command/control based. Multipart commands must not fall into legacy single-send expired-permit reconciliation.
+
+### Reader-first common layout compatibility
+
+Scope now includes additive receiptv2/commonRef/custom-boundary READER and final verification support before engine rollout. Producers remain disabled here. Existing v1 frozen parser uses fixed header/footer helpers and cannot interpret future v2, so accepting a v1-only engine would permit producer-rollout overlap to cancel/drop legitimate new tails. Consume actual published Shared0045.13.9 parser, never sibling source or unpublished tarball. Until that dependency completes preserve ongoing legacy engine work/tests and design v2 read-only; do not claim final checks/rollout readiness.
+
+Readerv2 binds canonical commonRef, actual rendered header/footer/trusted boundaries and original tenant/control/source/policy evidence; re-read active immutable SHARED source/locale hashes and existing current saved identity facts. No hardcoded prefix added over custom common content. Legacyv1 exact bytes remain readable. Status/ACK outcome persistence must retain real provider evidence even if full source becomes unavailable; invalid/unknown preparation never grants a fresh send or cancels arbitrary foreign work. HUMAN original admission/new-inbound policy unchanged. Final engine exact-head tests include mixedv1/v2 readers, custom boundaries, stale/tampered reference, callbacks/ACK race and no producer activation.
 
 ## Work Items
 
@@ -93,7 +100,7 @@ After required work and validation, set review, submit Completion Report and STO
 
 ## Implementation Notes
 
-Accepted Database source merged at `a9b6ab852a8245dfd14447808aac288a23b113d0`; update the task-owned nested database gitlink to that exact source and generate Prisma. Consume published Shared5.13.8 from canonical public registry, verifying installed integrity. This task must wire active queue/repair/status/quote readers and continuation lifecycle in deployed entrypoints, not leave an unused engine. It must not enable new producer manifests; Background002 does that only after engine rollout and old-reader drain proof. Root requires engine Live/healthy evidence in both environments before producer merge.
+Accepted Database source merged at `a9b6ab852a8245dfd14447808aac288a23b113d0`; update the task-owned nested database gitlink to that exact source and generate Prisma. Preserve current5.13.8 engine work; final reader integration consumes published Shared5.13.9 from canonical public registry after Shared004 acceptance, verifying installed integrity. This task must wire active queue/repair/status/quote readers and continuation lifecycle in deployed entrypoints, not leave an unused engine. It must not enable new producer manifests; Background002 does that only after engine rollout and old-reader drain proof. Root requires engine Live/healthy evidence in both environments before producer merge.
 
 You are not alone. Preserve others' edits and canonical prepared isolation. Root owns final merges/deployment. Architecture constants resolve inter-agent assumptions; report genuine gaps before expanding scope.
 
