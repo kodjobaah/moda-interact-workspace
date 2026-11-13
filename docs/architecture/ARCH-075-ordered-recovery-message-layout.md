@@ -166,3 +166,9 @@ All120 reviewed registrations failed template_create HTTP400/code100/subcode2388
 | ARCH-075-ADMIN-007 | moda_admin | Complete | ARCH-075-ADMIN-001, ARCH-075-ADMIN-005 |
 
 2026-11-13 ADMIN007 accepted exact source `69fa0a258fc426c6007d02193d7c86659824daf7`: localized opt-out follows common checkout conditional, meaningful fixed BODY boundaries enforced before new submissions/retries, exact historical snapshots preserved server-only.120locale/scenario and actualreviewedpreflight,826broad+20finalaffected unit,15disposablePG,security/build/type/lint/remote checks passed. Root source integration/deployment and canary-first provider approval/activation/live proof remain separate; architecture stays In Progress.
+
+## Canary status-domain correction — 2026-11-13
+
+Root canary created20/20 after boundary correction. UI false provider-drift compares normalized component observation to prepared+binding content hash. ADMIN008 reuses existing observedMetaContentHash server-side and carries only safe expected fingerprint to browser predicate; real content/category/timestamp/malformed drift remains fail closed. No Shared/BG/DB change or provider mutation. Root verifies deployed UI before expansion/activation; architecture remains In Progress.
+
+| ARCH-075-ADMIN-008 | moda_admin | Ready | ARCH-075-ADMIN-007 |
