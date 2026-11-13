@@ -124,3 +124,9 @@ Admin005 moves explicit English Meta review to the existing all20 submission con
 | ARCH-075-ADMIN-005 | moda_admin | Complete | ARCH-075-ADMIN-004 |
 | ARCH-075-BACKGROUND-005 | moda_background | Complete | ARCH-075-BACKGROUND-004 |
 | ARCH-075-GATEWAY-001 | moda_gateway | Complete | None |
+
+### Keyed provider result shape correction
+
+Actual Responses translation echoed input-only protectedTokens fields, correctly rejected by strict ingestion. Background006 constrains keyed Responses Batch generation to the exact existing result JSON schema while preserving all local strict marker/key/hash validation and generic translation behavior. No field stripping, manual candidates, new model or Shared/schema release. Architecture remains In Progress; terminal accepted-current-source reconciliation includes this correction.
+
+| ARCH-075-BACKGROUND-006 | moda_background | Ready | ARCH-075-BACKGROUND-005, ARCH-075-SHARED-004 |
