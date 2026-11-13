@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 5
 executor: null
 claimed_at: null
@@ -33,6 +33,8 @@ ARCH075; docs/architecture/ARCH-075-ordered-recovery-message-layout.md; coordina
 Release only the independently accepted additive HEADER-only contract to the existing public Shared package.
 
 ## Context
+
+Root verified Shared005 implementation PR84 merged `3f1ffccb60c6cc88cc29361cefa9d7d1bfcd14a5`; accepted parent PR1023 merged `07d1675d923543a422a15e50a91fc70d25752353`. Release preparation is Ready; public publication still requires explicit approved exact archive/version.
 
 Background010 requires a published accepted package; no sibling source consumption. Root has not yet authorized an exact public version/archive. Inspect current package/registry and prepare concrete version/package archive/diff before final root/user publication approval.
 
