@@ -51,11 +51,14 @@ Product search/referral redesign, modelprompt/roles broadchange, Shared/API/DB s
 - Real default human dispatch→moderation→delivered root→loadCommerceHistory→AIresume regression must show the actual message appears once under merchantuntrustedlabel. Include rawtext/body mismatch from commonheader/footer, restart/replay and relevant wrongcontent/tenant/assessment negatives. No fabricatedALLOW forwrongcontent to forcepass.
 - Existing sharedlogging only if diagnosis changes necessary; no fullcustomertext/credentials inlogs. Rootalone deploys/livehandbacktest; ownerusesdisposablePG/Redis/loopbackprovider only.
 
+- Inspect the existing CUSTOMER ingress/control-HUMAN moderation capture path before claiming complete handback awareness. A real customer message received during HUMAN mode currently has no ALLOW and remains correctly excluded. Do not admit unmoderated content, fabricate evidence, or alter model roles. Report the precise owning capture-path gap and a bounded follow-up contract if fixing it introduces a separate mechanism; this task does not claim both sides of the exchange are restored solely by the merchant hash correction.
+
 ## Work Items
 
 - [ ] Capture raw-vs-prepared history mismatch RED using authoritative actualdefaulthumanpreparation.
 - [ ] Correct bounded content-specific eligibility withfailclosedidentitychecks and existinglegacycompatibility.
 - [ ] Prove unit+realPG dispatch/history/resume andnegativeguards; runrelevantchecks.
+- [ ] Inspect CUSTOMER-during-HUMAN capture and report whether existing safe moderation is retained; document a separate bounded follow-up if required.
 - [ ] Publish exactsource/mirroredreport thenreturnreview.
 
 ## Interfaces / Contracts
@@ -75,6 +78,7 @@ Root genuine human→AIhandback history verification. No implicitfurtherimplemen
 - [ ] Deliveredpreparedhuman commonreply included once afterresume with exactALLOWidentity anduntrustedmerchantrolelabel.
 - [ ] Tamper/foreign/missing/blocked/stalemodelpolicy/unsent invalidcasesremainexcluded/failclosed.
 - [ ] Legacyvalidhistory/chronology/bounds/dedup preserved andnofullpayloadlogging.
+- [ ] Customer-during-HUMAN capture gap is traced to actual source and explicitly dispositioned; unmoderated rows remain excluded and no unsupported both-sides awareness claim is made.
 - [ ] Unit+actualPG/defaultdispatch andrequiredbuild/scopedlint/fullrelevantchecks pass, isolatedsource/reportpublished.
 
 ## Validation
