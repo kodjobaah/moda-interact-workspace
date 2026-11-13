@@ -15,6 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-075-SHARED-003
+  - ARCH-075-SHARED-004
+  - ARCH-075-ADMIN-001
+  - ARCH-075-ADMIN-002
   - ARCH-075-DATABASE-001
   - ARCH-075-SHARED-001
   - ARCH-075-SHARED-002
@@ -48,6 +52,8 @@ Terminal independent integrated fixtures/validation only after all dependencies 
 Other repositories/tasks, source main merges/deployment, production sends/replays/resets, billing/usage/cap changes, provider credentials/permissions, unsupported exactly-once assumptions, unbounded fanout/retries, unrelated refactors. Return actual cross-owner gaps.
 
 ## Requirements
+
+Also prove common editable Admin revision custom header/footer parity across compiled approved Meta projection and actual AI/HUMAN runtime receipts, checkout-last/opt-out preservation, stale common reference/activation refusal and legacy frozen compatibility. Never send freeform product tail outside the valid customer window.
 
 Exercise real accepted contracts/migration/worker producer+status queue+part engine, ordered2/3 sends, quoted eachpart, exactfooter, one logical usage, callbackbeforeACK/readbefore-delivered, process death/restart, unknown/no prefix resend and takeovercancel. Validate legacy compatibility and absence of customer/secret telemetry. No source implementation, paid service or unauthorized live send. This terminal test never gates unfinished implementation tasks.
 
