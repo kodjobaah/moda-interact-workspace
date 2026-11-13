@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T15:09:56Z
@@ -53,9 +53,9 @@ Initial-outreach budget change, application feature behavior, deleting historica
 
 ## Work Items
 
-- [ ] Verify task-owned backup provenance and fresh-main overlap classification.
-- [ ] Incorporate only the missing bounded behavior and necessary regression tests.
-- [ ] Complete required validation, mirrored publication and truthful report; return review and stop.
+- [x] Verify task-owned backup provenance and fresh-main overlap classification.
+- [x] Incorporate only the missing bounded behavior and necessary regression tests.
+- [x] Complete required validation, mirrored publication and truthful report; return review and stop.
 
 ## Interfaces / Contracts
 
@@ -71,14 +71,14 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Scoped missing functionality is incorporated with newer main behavior preserved.
-- [ ] Relevant trust/lifecycle/audit/immutability boundaries and explicit negative behavior remain enforced.
-- [ ] Required checks and exact source/backup/worktree/synchronization evidence recorded; no live mutation or unrelated publication.
+- [x] Scoped missing functionality is incorporated with newer main behavior preserved.
+- [x] Relevant trust/lifecycle/audit/immutability boundaries and explicit negative behavior remain enforced.
+- [x] Required checks and exact source/backup/worktree/synchronization evidence recorded; no live mutation or unrelated publication.
 
 ## Validation
 
-- [ ] Canonical migration SHA256/history validation, disposable PostgreSQL fresh+upgrade retirement/rollback checks, current seed/static validators and relevant declared schema/Prisma/lint/tests. No live DDL or seed.
-- [ ] Diff/privacy hygiene and task-owned file whitelist; original backup/primary changes remain intact.
+- [x] Canonical migration SHA256/history validation, disposable PostgreSQL fresh+upgrade retirement/rollback checks, current seed/static validators and relevant declared schema/Prisma/lint/tests. No live DDL or seed.
+- [x] Diff/privacy hygiene and task-owned file whitelist; original backup/primary changes remain intact.
 
 ## Stop Condition
 
@@ -92,35 +92,53 @@ You are not alone; do not revert or absorb others' edits. Use normal launcher pr
 
 ### Status
 
-Not Started
+Ready for Review — ARCH-017-DATABASE-002, attempt 1, executor codex.
 
 ### Files Changed
 
-None
+Implementation commit `0e50734` on mirrored `task/ARCH-017-DATABASE-002`:
+- `prisma/migrations/20261106023000_remove_order_support/migration.sql`: exact already-applied historical SQL.
+- `prisma/seed.mjs`: remove four current seed references to the retired feature.
+- `scripts/validate-arch017-billing-materialisation-schema.mjs`: current-seed parity, historical checksum guard, whitespace-independent relation assertion.
+- `scripts/test-arch017-order-support-retirement-postgres.mjs`: disposable complete-chain fresh, upgrade and refusal/rollback integration checks.
+- `package.json`: three declared retirement PostgreSQL validation modes.
 
 ### Work Completed
 
-None
+- Used the verified external backup `moda-local-reconciliation-backup-20261113T145749Z` (database unstaged patch and untracked archive). Preserved the primary checkout, independent budget changes, operator scratch script/transcript and full backup. No unrelated source was imported.
+- Root-authorized read-only test and production `_prisma_migrations` checks both confirmed the historical migration finished, not rolled back, with SHA-256 `6afd411b773669387f6289243537ea999df07a1f8c553163862a1f21de06cde2`. Credentials were read only into process memory/environment and never printed. No hosted writes, ledger repairs, migrate resolve, DDL or seed commands were executed.
+- Canonicalized exactly those historical bytes. All 78 prior canonical migration SQL files remain byte-for-byte equal to source baseline `6f42b71112efe7ac63654d55f41cd74ca569b1ae`; total is now 79. SHA-256 over sorted `path + " " + file_sha256 + "\n"` entries for the 78 unchanged files: `2be5360262d82eb09082d595fe5db99ffaa07b0d44c685f4f82f3e40cf3edfaa`.
+- Historical feature creation assertions remain; only current seed stops recreating Order Support. Prices, subscriptions, other features, releases/audits and existing immutable-configuration guards are preserved. No model/schema or ERD change is required.
+- Prepared launcher evidence: canonical primary workspace `moda-interact-workspace`; dedicated parent `moda-interact-workspace-task-ARCH-017-DATABASE-002` and implementation `moda-interact-workspace.worktrees/ARCH-017-DATABASE-002`; matching task branch. Parent baseline `d799a5fa3a939aeb3e6fcfa0bb4f7707ef72ce27`, implementation baseline above; parent reused/implementation created, each own remote task synchronization not needed and main already current; recursive submodule initialization ready (none in implementation). Durable claim `1124c959a3f93d0fbed2dcfa2e9651301ca87923` was pushed. No shared/default checkout switching or main integration.
 
 ### Validation Results
 
-Not run
+Passed with workspace bootstrap Node 24.19.0 / npm 11.17.0:
+- `npm ci`; `npm run prisma:validate`; `npm run prisma:generate` (Prisma client 6.19.3).
+- `npm run test:arch017-billing-materialisation`; `npm run test:arch017-ai-conversations-required`.
+- `npm run test:arch017-order-support-retirement:postgres:fresh`: **79 migrations, 18 assertions**; actual development seed executed twice, retired rows absent and unrelated fixtures preserved.
+- `npm run test:arch017-order-support-retirement:postgres:upgrade`: **all 78 existing migrations first, then historical retirement; 20 assertions**; unused retired feature and three link types removed, unrelated plans/prices/subscription/config/history preserved, actual seed twice does not resurrect feature.
+- `npm run test:arch017-order-support-retirement:postgres:rollback`: **78 migrations, 10 assertions**; historical audit FK `23503` and current immutable configuration guard `23514` both refuse deletion and roll back every preceding delete, preserving feature/link/config/release/audit and unrelated rows. Later ARCH075 tables remain present in all modes.
+- All PostgreSQL writes used unique invocation-owned disposable pgvector/PostgreSQL 17 containers, loopback-only seed URLs and explicit database-name checks; containers removed on completion.
+- `npm run lint` (zero warnings); `git diff --check`; task-owned file whitelist and exact migration history/checksum comparison.
 
 ### Deviations
 
-None
+The first positive-upgrade fixture incorrectly included an active feature configuration: the unchanged ARCH021 no-delete guard correctly refused it. Corrected the positive fixture to the task's unused feature and added explicit negative configuration coverage. The first negative assertion assumed generic `P0001`; actual canonical guard explicitly reports check-violation `23514`, so only the expectation was corrected. Both corrected checks pass; applied SQL and guard were never altered.
+
+The existing static validator assumed a precise Prisma alignment spacing for the merchant-plan feature relation and failed against current main formatting. Replaced only that spacing assumption with a whitespace-independent relation regex, retaining the semantic relation assertion.
 
 ### Assumptions
 
-Local backup is preserved; root owns live-state evidence and integration.
+Root owns accepted branch integration and operational rollout. This task canonicalizes already-applied history; it does not independently prove live application behavior or authorize new hosted changes.
 
 ### Unresolved Issues
 
-None beyond explicit task requirements.
+None within scope. Initial-outreach budget migration and test remain preserved for the separately sequenced ARCH-038-DATABASE-003 task.
 
 ### Architectural Concerns
 
-Return any newly discovered gap to moda_architect.
+Historical retirement intentionally refuses referenced/currently configured features. Preserve that behavior; do not disable guards or purge history to force retirement.
 
 ## Architect Review
 
