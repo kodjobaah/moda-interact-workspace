@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T07:31:55Z
@@ -53,9 +53,9 @@ The finite reviewed 91-footer cohort establishes exactly these four additional c
 
 ## Work Items
 
-- [ ] Reproduce exact localized command omission before correction.
-- [ ] Extend only explicit matcher and meaningful consent priority/scope/fence regressions.
-- [ ] Complete declared validation, mirrored report and stop.
+- [x] Reproduce exact localized command omission before correction.
+- [x] Extend only explicit matcher and meaningful consent priority/scope/fence regressions.
+- [x] Complete declared validation, mirrored report and stop.
 
 ## Interfaces / Contracts
 
@@ -71,15 +71,15 @@ ARCH-075-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
-- [ ] Exact STOPP/DUR/PARAR/STOPPA variants follow existing recognized-command behavior; sentences/substrings/malformed variants/nontext refuse.
-- [ ] Existing durable consent priority, merchant scope, duplicate and final-send/continuation suppression remain proven.
-- [ ] Canonical physical isolation/sync and exact validation evidence reported; no live mutation.
+- [x] Exact STOPP/DUR/PARAR/STOPPA variants follow existing recognized-command behavior; sentences/substrings/malformed variants/nontext refuse.
+- [x] Existing durable consent priority, merchant scope, duplicate and final-send/continuation suppression remain proven.
+- [x] Canonical physical isolation/sync and exact validation evidence reported; no live mutation.
 
 ## Validation
 
-- [ ] Red/green exact matcher cases and negative boundaries; existing opt-out routing/priority and relevant send-fence/continuation regressions.
-- [ ] Declared relevant focused tests, scoped lint/typecheck and exact-head full CI; additional persistence tests only where actual changed path needs them.
-- [ ] Diff/privacy hygiene, no dependency/runtime-policy expansion or live requests.
+- [x] Red/green exact matcher cases and negative boundaries; existing opt-out routing/priority and relevant send-fence/continuation regressions.
+- [x] Declared relevant focused tests, scoped lint/typecheck and exact-head full CI; additional persistence tests only where actual changed path needs them.
+- [x] Diff/privacy hygiene, no dependency/runtime-policy expansion or live requests.
 
 ## Stop Condition
 
@@ -92,35 +92,62 @@ You are not alone; preserve all other work. Canonical packet owns startup/isolat
 
 ### Status
 
-Not Started
+Ready for Review. Implementation and validation complete; awaiting moda_architect review.
 
 ### Files Changed
 
-None
+Implementation commit `6ba473bdd84d9f4b4e1f47e4bf0dfbf32bff583b` on `task/ARCH-075-BACKGROUND-004`:
+
+- `src/services/whatsapp-contact-opt-out/phone.ts`: extend only exact command alternatives with STOPP, DUR, PARAR, STOPPA.
+- `tests/unit/services/whatsapp-contact-opt-out.service.test.ts`: all-six-command boundary matrix and existing quoted scope, standalone duplicate and persistence-before-notice repair regressions.
+- `tests/unit/workers/whatsapp.worker.test.ts`: parameterize consent priority ahead of abuse/routing/conversation work.
+- `tests/integration/whatsapp-contact-opt-out.integration.test.ts`: all-six-command durable PostgreSQL consent, duplicate, later Shopify grant and merchant re-enable regression.
+
+Draft implementation PR: https://github.com/kodjobaah/moda-interact-background/pull/215
 
 ### Work Completed
 
-None
+Added the finite reviewed four aliases exactly as amended by the architect in parent commit `27dc6c28c`. Existing trim/case/single optional punctuation, text-only boundaries, durable tenant resolution, consent priority and final fences are unchanged. No queue, database, Shared contract, dependencies, logging or runtime policy changed. Hot-path change is only four bounded regex alternatives; action-path database/provider costs remain unchanged. No live requests, provider mutations or developer/live database changes occurred; integration used the existing disposable infrastructure runner and synthetic fixtures.
+
+Self-review: four implementation files only; exact regex anchors preserved; sentence/prefix/suffix/extra punctuation/nontext negatives covered; no customer content added. Latest Architect Review is Pending; there are no Changes Requested items to disposition. No architect decision is asserted.
 
 ### Validation Results
 
-Pending
+- Red: `npx vitest run tests/unit/services/whatsapp-contact-opt-out.service.test.ts` against unchanged source with complete six-command test matrix: 16 expected alias failures, 15 passes. Each missing alias failed matcher, quoted scope, standalone scope and persistence-before-notice scenarios.
+- Green: `npx vitest run tests/unit/services/whatsapp-contact-opt-out.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/recovery-conversation tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts`: 18 files, 294 tests passed.
+- `npx eslint src/services/whatsapp-contact-opt-out/phone.ts tests/unit/services/whatsapp-contact-opt-out.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/integration/whatsapp-contact-opt-out.integration.test.ts`: passed.
+- `npm run prisma:generate` and `npx tsc --noEmit`: passed.
+- `node scripts/test-integration.mjs tests/integration/whatsapp-contact-opt-out.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts tests/integration/woo-initial-send-fence-races.integration.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts`: 4 files, 25 tests passed using disposable PostgreSQL/Redis. Includes durable no-contact, duplicate consent, final initial-send fence/races and continuation scheduling.
+- `git diff --check`: passed. Dependency manifests/lockfile and database submodule unchanged.
+- Exact-head full CI: passed (Prisma generation, TypeScript and full unit suite), run https://github.com/kodjobaah/moda-interact-background/actions/runs/43388148830 at `6ba473bdd84d9f4b4e1f47e4bf0dfbf32bff583b`.
+
+### Physical Worktree Isolation and Launcher Evidence
+
+Prepared packet `/tmp/moda-arch075-background004-prepare.json` supplied the following evidence; preparation/claim was not repeated:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-004`; branch `task/ARCH-075-BACKGROUND-004`, reused.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-004`; same task branch, created by launcher.
+- Shared workspace/implementation checkouts switched or mutated for task work: no. Another task worktree reused: no.
+- Parent/implementation remote task fast-forward: not-needed; both origin/main incorporations: already-current.
+- Recursive implementation submodule sync/update: passed. Database initialized at recorded commit `a9b6ab852a8245dfd14447808aac288a23b113d0`.
+- Dependency gate passed; durable claim commit `0eb48f3a1dc5ba575efddf89a54d5d6146077e5e`, attempt 1, executor codex.
 
 ### Deviations
 
-None
+None. Additional reviewed aliases PARAR and STOPPA were implemented only after the authoritative task amendment.
 
 ### Assumptions
 
-Existing explicit-command policy otherwise unchanged.
+Future unexpected translated commands remain unapproved pending explicit review; no speculative aliases were introduced.
 
 ### Unresolved Issues
 
-None currently.
+None. Exact-head remote CI passed.
 
 ### Architectural Concerns
 
-Return actual cross-owner gaps.
+None identified. Deployment and continued live locale verification remain outside this implementation task.
 
 ## Architect Review
 
