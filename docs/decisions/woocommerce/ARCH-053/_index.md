@@ -18,3 +18,5 @@ Assigned agent: `moda_woocommerce`. Coordinator: `moda_architect`.
 | [ARCH-053-WOOCOMMERCE-008](WOOCOMMERCE-008-notice-and-conflict-choice-for-outreach-coupons.md) | Handle outreach coupon outcomes privately and offer a safe stacking choice | Complete | ARCH-053-WOOCOMMERCE-007, ARCH-053-WOOCOMMERCE-006 |
 
 ARCH-052 is exclusively dynamic-discount discovery. ARCH-053 only restores previously applied original Woo coupons and core basket data; no dynamic incentive work is authorized.
+
+| ARCH-053-WOOCOMMERCE-009 | Complete | ARCH-053-WOOCOMMERCE-006, ARCH-053-WOOCOMMERCE-008 |
