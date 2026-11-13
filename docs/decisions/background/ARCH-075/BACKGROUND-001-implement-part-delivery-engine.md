@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -92,6 +92,8 @@ Only dependent tasks after architect acceptance; never begin them implicitly.
 After required work and validation, set review, submit Completion Report and STOP. No main merge/deploy or enabled task execution.
 
 ## Implementation Notes
+
+Accepted Database source merged at `a9b6ab852a8245dfd14447808aac288a23b113d0`; update the task-owned nested database gitlink to that exact source and generate Prisma. Consume published Shared5.13.8 from canonical public registry, verifying installed integrity. This task must wire active queue/repair/status/quote readers and continuation lifecycle in deployed entrypoints, not leave an unused engine. It must not enable new producer manifests; Background002 does that only after engine rollout and old-reader drain proof. Root requires engine Live/healthy evidence in both environments before producer merge.
 
 You are not alone. Preserve others' edits and canonical prepared isolation. Root owns final merges/deployment. Architecture constants resolve inter-agent assumptions; report genuine gaps before expanding scope.
 
