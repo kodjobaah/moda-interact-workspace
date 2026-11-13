@@ -193,3 +193,5 @@ BG010 Ready after integratedBG009 and acceptedpublicShared5.13.10receipt/sourcep
 BG010 accepted source `56148f8e4ba1bd4578162a2564720c5de80aa995`: complete brandedmain/separateproduct, strictwriterOFFreaderfirst and exactold/newfrozenreceipt guards.4315full/72actualPG/build/scopedlintgreen,4unchangedbaselinelint disclosed. RootCI/merge/Gatewaygate/PhaseAoldreaderdrain→PhaseB/liveproof required.
 
 Gateway002 Ready after BG010 mergedsource1b71a7d3582f6f946939ac669a9308f1a0c66b01/acceptedparentffa37c3f3697c038208d20f4054afc2918042141. Ownercodifies operatorpersistedtest/prod gate/PhaseA/B/drain/rollback; root retains all live actions and writer staysOFF until drainproof.
+
+Gateway002 accepted exactsource `4c05b55b54aae8e713d67e463b94321dd4f5093d`: operatorownedtest/prodgate, readerfirst/drain/jobpreservation/rollback checks. Positive/completeNegative+96nestedfixtures/syntax passed. Root merge/sync/PhaseB/liveproof remain; architectureInProgress.
