@@ -226,3 +226,8 @@ ARCH-075-BACKGROUND-012 Complete/Accepted at sourcecbe926522d318953217480932c972
 ## User-approved single-bubble composite
 
 User selected deterministic composite bitmap: original logo/product remain separate; logo beside shopdetails, divider, optional verified product below. Actual answer and one canonical footer remain text caption. Shared009 contract →010 Node renderer →011 approval-gated publication →BG014 consumer; no live sends by agents. Unexecuted Shared007/008/BG013 two-bubble plan is superseded. Product-free branding supported; overlong captions/missing media/font/network use one full canonical TEXT reply, no loss/truncation. Native approved template format remains unchanged pending separate decision. Distinct defaultOFF composite writer protects current live flag semantics. Architecture remains In Progress.
+
+
+### Shared009 accepted
+
+ARCH-075-SHARED-009 Complete/Accepted at source09a195c92f7500597944e26707c5c0a3954b00aa/report4ab6143bf5c5d9efb7037bf63982a57964e240d0. Additive composite contract preserves old bytes/readers and exact authored boundaries. Renderer010 Pending until actual integration; release011 combines accepted009+010 only. No activation or architectural completion.
