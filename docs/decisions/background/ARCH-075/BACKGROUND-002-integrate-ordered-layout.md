@@ -71,6 +71,10 @@ Confirmed local gap: single BRAND_MEDIA header decoder/final fence is v1-only, a
 
 This combined reader/producer rollout is authorized ONLY because actual SHARED slot is absent in BOTH test and production. Root must reverify that absence immediately before merge and keep SHARED unactivated until BG002 is Live and predecessor readers drained in BOTH environments. No new common/v2 single-send or multipart format may emit without selected eligible SHARED common mode. Admin002 activation stays root-owned after those gates. If a SHARED slot exists/changes before rollout, STOP merge and return for separately staged compatible readers; never assume an unrecorded absence or add an unsafe flag. Record coarse runtime proof privately/publicly appropriately, no sensitive identifiers in public docs.
 
+### Existing product follow-up context preservation
+
+Ordered AI delivery must not silently lose the already-supported server-owned productContextUpdate. Optional private frozen carrier uses the existing canonical Shared context schema; source/part digest binds it. Reuse existing current-control/inbound/version/hash final-fence logic at ordinal0 only, atomically with the first irreversible permit; suppression/duplicate/failed admission must not commit a context mutation. Later parts never reapply or overwrite newer context. No new Shared release/schema/policy. Add actual successful and suppressed/duplicate first-part regressions. New optional private format remains covered by the explicit SHARED-absence/drain operational gate above.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
