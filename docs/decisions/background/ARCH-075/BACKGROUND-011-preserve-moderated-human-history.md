@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T21:33:11Z
@@ -146,24 +146,31 @@ BG012 customer moderation backfill remains separate and Pending. Product referra
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Independently inspected exact implementation 01702b7ccf86c195f16ba6eee6a21248e1524c30 and mirrored report a43d7eb4c7518f50a49ff1d82ce0bf5f6b0cee20. No findings. Canonical prepared-body validation is reused rather than accepting raw text or arbitrary assessment evidence. Historical HUMAN eligibility requires exact linked SENT command/root, tenant/conversation, authorized body and current ALLOW. Explicit malformed preparation cannot fall back. The legacy rendered application-key check matches established final-permit semantics. Candidate role, bounds and chronology are unchanged.
+
+The PG assertion correction was reviewed against actual dispatcher/canonical moderation source: assessment already receives persisted preparedTextBody; the test still requires BLOCK and zero outbound/provider/billing admission. This corrects expected transport input without weakening policy.
 
 ### Reviewed Files
 
-None
+- src/services/conversation-moderation/moderation-history.ts
+- src/services/recovery-conversation/human-prepared-command.service.ts
+- tests/unit/services/conversation-moderation/moderation-history.test.ts
+- tests/integration/arch075-common-layout.integration.test.ts
+- tests/integration/conversation-moderation.integration.test.ts
+- Existing human dispatcher, moderation canonical source and Commerce history/control path.
 
 ### Validation Reviewed
 
-None
+Actual default-dispatch PG baseline RED and final two disposable suites 47 PASS/0 skips; focused17; full4328 PASS with10 existing configured skips; build/both TypeScript compilers, changed-file lint and diff checks. Four unchanged unrelated full-lint baseline findings are disclosed, not represented as green. Prepared launcher isolation/synchronization/recursive database evidence and clean mirrored publication reviewed. No unnecessary heavy rerun.
 
 ### Architecture Conformance
 
-Pending
+Conforms to bounded Background ownership and existing immutable moderation/security contracts. No Shared/schema/infrastructure/telemetry changes, provider mutations or live data rewrites. Task completion is source acceptance, not live architectural completion.
 
 ### Follow-up
 
-No live acceptance or architecture completion claim.
+BG012 remains Pending until actual source/parent integration, then may be promoted for bounded CUSTOMER handback moderation. Root owns merges, rollout and genuine both-sides context proof. ARCH-075 remains In Progress; unrelated product-referral cause is unproven and unchanged.

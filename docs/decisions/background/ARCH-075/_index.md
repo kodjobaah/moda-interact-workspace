@@ -23,3 +23,8 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 | ARCH-075-BACKGROUND-009 | Default human common-root freeze wiring | Complete | ARCH-075-BACKGROUND-002 |
 
 | ARCH-075-BACKGROUND-011 | Delivered human prepared-body moderation history | Ready | ARCH-075-BACKGROUND-010 |
+
+
+### BG011 accepted source correction
+
+ARCH-075-BACKGROUND-011 is Complete/Accepted at source01702b7ccf86c195f16ba6eee6a21248e1524c30, reporta43d7eb4c7518f50a49ff1d82ce0bf5f6b0cee20. Delivered HUMAN prepared moderation identity is preserved in history with exact tenant/content/lifecycle guards. Actual47 PG and4328 unit tests passed, build/scoped lint passed; unchanged baseline full-lint findings disclosed. BG012 customer-side capture remains Pending on actual integration. Architecture remains In Progress pending live handback proof.
