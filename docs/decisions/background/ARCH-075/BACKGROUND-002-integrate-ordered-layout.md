@@ -61,6 +61,10 @@ Reuse the accepted engine reader/frozen source/part helpers and published valida
 
 Production generation remains off until root verifies accepted compatible-engine Live and old-reader drain in BOTH test/production. Source can be implemented once dependencies are accepted, but producer merge/deployment activation is root-gated on that runtime evidence. Preserve actual AGENT/HUMAN sender semantics; do not retag AUTOMATION marketing/notices to bypass their existing final policy. If any eligible notice truly uses an unsupported actor, return the concrete gap rather than widen transport authorization.
 
+### Confirmed AUTOMATION notice boundary
+
+Eligible terminal/template-fallback notices may use actual AUTOMATION, which the accepted ordered engine intentionally does not authorize. Apply the SAME saved common textual header/checkout footer while preserving that actor and existing single-send/current-policy fences; no product pair requires no multipart transport. Never retag as AGENT or create a new actor permit. Preserve verified logo through an existing safely supported single BRAND_IMAGE path where available. If that actual actor path is only TEXT with no safe logo option, return the concrete gap before final acceptance and do not claim full logo parity. Persist/currently validate common-source provenance without rewriting legacy frozen notices or inventing an unreadable envelope; return any real staged-reader contract gap.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.

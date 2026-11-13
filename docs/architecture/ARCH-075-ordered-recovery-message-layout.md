@@ -38,7 +38,7 @@ Root SENT only after all required physical ACKs, DELIVERED only all delivered/re
 
 Original AI revision/inbound or HUMAN command/lease/control identity remains authoritative. HUMAN new customer inbound alone does not invent a new gate. Every part checks STOP/consent/current control/tenant/source/policy; takeover cancels unsent tail, never recaptures newer ownership. No HTTP in transactions. Moderation binds frozen complete visible text/plan manifest and each admitted part derivation; no unmoderated authored text. Each image preserves existing verified provenance and caption limits.
 
-Legacy raw TEXT/product IMAGE/BRAND_IMAGE and frozen commands remain exact single sends. Approved initial/follow-up Meta templates unchanged. AI/HUMAN recovery replies and eligible notices use the new composition path; unbound/security exclusions unchanged. No new permission/credential, billing policy or provider-image source.
+Legacy raw TEXT/product IMAGE/BRAND_IMAGE and frozen commands remain exact single sends. Existing approved initial/follow-up Meta snapshots remain immutable; reviewed common-layout replacements are cloned/approved under the common-content amendment. AI/HUMAN recovery replies and eligible notices use the new composition path; unbound/security exclusions unchanged. No new permission/credential, billing policy or provider-image source.
 
 ## Infrastructure / Observability / Scale
 
