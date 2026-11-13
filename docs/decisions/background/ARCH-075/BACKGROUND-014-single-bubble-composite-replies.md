@@ -62,6 +62,10 @@ After009+010 acceptance, claim normally and create the actual defaultOFF Backgro
 
 After root-relayed explicit011 publication and exact registry receipt, reconcile normal registry dependency/lock and run the newly enabled clean npm-ci/remote checks against that exact archive without unrelated repeated source validation. Final report must distinguish prepublication local proof from final published readiness. No automatic publication, main merge or live send by this task. This bounded source-preparation exception preserves accepted Shared ownership, no duplicated implementation and publication-before-consumer deployment.
 
+### Actual HUMAN deadline plumbing
+
+Existing RenderConversationResponseInput stores deadline under commercePresentation, absent for HUMAN. Do not use undefined deadline or Date.now() as an already-expired HUMAN deadline, nor grant a fresh deadline on replay/resume. New HUMAN media preparation must derive one bounded5-second child budget from actual claimed command lease and original host authority, supplying it through the preparation/composition seam for product and no-product cases. AI retains original turn deadline. Replay of an already prepared immutable composite performs no new rendering/network attempt. Include actual default HUMAN no-product success, lease-expired refusal and frozen replay tests.
+
 ## Work Items
 
 - [ ] Adopt accepted dependency and exact dual-provenance receipt/readers/fences.
