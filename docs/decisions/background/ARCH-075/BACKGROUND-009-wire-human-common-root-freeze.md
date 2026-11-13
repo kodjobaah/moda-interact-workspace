@@ -178,3 +178,7 @@ Minimal Background wiring only; existing root/part/lease/control/moderation/comm
 ### Follow-up
 
 Root verifies CI then merges source/parent, deploys and checks genuine new human delivery. BG010 remains separately gated on accepted publication and reader-first writer gate. Source acceptance is not live human proof or ARCH075 completion.
+
+## Developer Integration
+
+Root verified both remote unit-test checks succeeded for `0f7e4d4f8c293d4413bb1f0dc3df30fe66ae622d` and merged source PR [#220](https://github.com/kodjobaah/moda-interact-background/pull/220) to `cb98d6b75da189a6408f7ccfec96a4368ba9baad`. Parent gitlink pins the actual merge. Live deployment and genuine human-send verification remain separate operational checks.
