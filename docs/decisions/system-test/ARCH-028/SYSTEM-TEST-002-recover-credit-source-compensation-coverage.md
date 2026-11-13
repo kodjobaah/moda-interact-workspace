@@ -62,6 +62,10 @@ Application source fixes, full18-scenario ARCH028 certification, non131026/uncer
 
 The exact accepted-source default Docker build exhausted V8 memory (exit134) before business assertions. Existing documented validation already records the default failure and a failed 3072MiB resource override. Reuse the approved correctness-image approach through a task-owned exact-current-source manifest/parameter; do not weaken historical pin guards or present a stale image as current proof. Pin accepted Background and nested Database full commits, source/lock and original/derived Dockerfile hashes. Retain audited JavaScript/maps/JPEG outputs only, unchanged Linux dependencies/Prisma/runtime, image digest and nonpromotable host-compiled-js labels. Validate wrong-pin refusal. Host Node24 compilation versus Linux Node22 runtime must be explicit in evidence. No application-source changes or unnecessary repeated known-failing builds. This fallback can establish business runtime behavior only; production Docker-build parity remains unverified and must be reported separately. Original broad ARCH028 certification and live acceptance are not implied.
 
+### Bounded queue-probe timing amendment — 2026-11-13
+
+An actual signed-checkout run hit the 12-second queue-idle deadline under host load while immediate diagnostic readback showed checkout queue empty, no failed jobs, and the intended waiting candidate/index. Permit a bounded 30-second deadline or existing configurable equivalent in System-only polling, with a slow-probe regression. Preserve exact queue-empty, business settlement and failure assertions; retain bounded timeout diagnostics and measured probe costs. Four Docker Redis calls per probe must not turn a successful drain into a premature deadline failure. Candidate waiting before recovery-worker startup is intentional, not proof of recovery completion. Actual rerun success is still required; no product implementation change is authorized by this timing amendment.
+
 ## Work Items
 
 - [ ] Reconcile backup/current-main overlap and port missing behavior only.
