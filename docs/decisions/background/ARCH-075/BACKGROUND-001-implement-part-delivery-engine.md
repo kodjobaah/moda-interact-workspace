@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T01:07:59Z
@@ -120,7 +120,7 @@ You are not alone. Preserve others' edits and canonical prepared isolation. Root
 
 ### Status
 
-Implementation and local validation passed. Exact-head CI is pending; task remains in progress until that gate passes. This report does not claim architect acceptance or production rollout.
+Ready for Review. Implementation, required validation and both corrected exact-head CI runs passed. Awaiting moda_architect review; this report does not claim architect acceptance or production rollout.
 
 ### Files Changed
 
@@ -143,6 +143,7 @@ Implementation and local validation passed. Exact-head CI is pending; task remai
 - Quotes from any accepted physical part resolve their logical root without inventing root sentAt. Frozen sender IDs and real ACK timestamps are required. Foreign/current-rotation identities cannot cause guidance or a new reply through a different sender.
 - Published5.13.9 commonRef validation supports additive v2 receipt with exact renderer-derived boundaries/trusted variables and fresh locked SHARED definition/source/locale/facts checks. Legacy v1 and old single TEXT/product IMAGE/BRAND_IMAGE records remain readable without rewriting.
 - HUMAN v2 uses true RENDERED/SHARED evidence, explicitly versioned application identity and byte-exact original authored body. No fake NOT_CONFIGURED or legacy flattening; absent-root crash gaps use existing prepermit claim defer/backoff and preserve frozen evidence for the owning producer to resume.
+- HUMAN v2 resume runs the existing exact-body moderation assessment/retry/block flow before delegating to ordered transport; a producer crash before assessment cannot leave the reader waiting without creating the required assessment. Frozen evidence and original authority remain unchanged.
 - A copied envelope from another logical root is refused at the actual selected root before any source-derived cleanup; only that root can be cancelled.
 - Producer generation remains disabled. No Meta source compilation, template activation, production send/replay/reset or merge was performed by this agent.
 
@@ -152,7 +153,7 @@ Implementation and local validation passed. Exact-head CI is pending; task remai
 - Focused units: 91/91 passed across five files, then final root-binding guard focused units 30/30 passed (root-executed canonical validation).
 - PostgreSQL: **35/35 passed across both owned integration files (174 seconds)**. Includes actual normal Free billing admission, current SQL fence, concurrency/unknown/partial outcomes, sender correlation, v1/v2, custom common source and HUMAN crash-gap cases. Earlier fixture-only failures were corrected with valid synthetic phone/native consent observations, proper source confirmation, valid recovery closure instead of prohibited unlink, and locale-before-definition cleanup; no production policy guard or assertion was relaxed.
 - Typecheck: passed; declared `npm run build` passed (exit 0), including Prisma generation and both TypeScript builds.
-- Full unit suite: **4,142/4,142 passed across 381 files (229.84 seconds)** before the final one-line root-binding guard. After that guard: **28/28 engine PostgreSQL cases, 30/30 focused units, typecheck and changed-file lint passed**. The earlier combined 35 PostgreSQL cases include the unchanged common-layout cases. Declared build and changed-file lint passed. Exact-head full CI remains pending.
+- Full unit suite: **4,142/4,142 passed across 381 files (229.84 seconds)** before the final one-line root-binding guard. After that guard: **28/28 engine PostgreSQL cases, 30/30 focused units, typecheck and changed-file lint passed**. The earlier combined 35 PostgreSQL cases include the unchanged common-layout cases. Declared build and changed-file lint passed. Both exact-head `18ede9eca6b599974c55ca0143818df142499b8b` CI runs passed (push 2m5s, PR 2m29s). Final bounded HUMAN moderation-resume correction: **9/9 common-layout PostgreSQL cases, 160/160 affected HUMAN units, typecheck and changed-file lint passed**. Corrected source head is `d41f1764dd274b343f4c56013a7531cf46fd4662`; both exact-head CI runs passed: [push43357237420](https://github.com/kodjobaah/moda-interact-background/actions/runs/43357237420) (2m12s) and [PR43357241653](https://github.com/kodjobaah/moda-interact-background/actions/runs/43357241653) (1m41s).
 - No live database/Redis/provider was used for tests. PostgreSQL tests are guarded disposable integration runs with synthetic recipients and mock transports.
 
 Physical worktree isolation (launcher evidence):
@@ -174,7 +175,7 @@ Provider acceptance is not exactly-once delivery. A committed ambiguous transpor
 
 ### Unresolved Issues
 
-Exact-head CI remains pending. Source commit `18ede9eca6b599974c55ca0143818df142499b8b` is pushed on `task/ARCH-075-BACKGROUND-001`; draft implementation PR: https://github.com/kodjobaah/moda-interact-background/pull/212. Canonical implementation worktree is clean. Parent progress-report publication is handled on the same task branch; final review submission follows CI. Production rollout/genuine ordered-message verification belongs to root after review and dependent producer/common-source tasks; it is not asserted by this engine-only report.
+No implementation or required-validation issues remain. Source commit `d41f1764dd274b343f4c56013a7531cf46fd4662` is pushed on `task/ARCH-075-BACKGROUND-001`; draft implementation PR: https://github.com/kodjobaah/moda-interact-background/pull/212. Canonical implementation worktree is clean. Parent review-report publication is on the same mirrored task branch. Production rollout/genuine ordered-message verification belongs to root after review and dependent producer/common-source tasks; it is not asserted by this engine-only report.
 
 ### Architectural Concerns
 
