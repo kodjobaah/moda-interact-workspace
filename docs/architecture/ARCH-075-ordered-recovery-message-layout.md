@@ -139,7 +139,7 @@ Rollout: additive migration test/prod, accepted Background schema/client adoptio
 
 | ARCH-075-DATABASE-002 | moda_database | Complete | ARCH-075-DATABASE-001 |
 | ARCH-075-BACKGROUND-007 | moda_background | Complete | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-006 |
-| ARCH-075-SYSTEM-TEST-002 | moda_system_test | Ready | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001, ARCH-075-ADMIN-006 |
+| ARCH-075-SYSTEM-TEST-002 | moda_system_test | Complete | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001, ARCH-075-ADMIN-006 |
 
 ### Independent system validation accepted
 
