@@ -61,7 +61,7 @@ All normal architecture tasks use launcher-resolved dedicated matching parent/im
 
 ## Operational separation
 
-ARCH075 common-layout rollout remains In Progress with provider cooldown/approval/coordinated activation and genuine ordered recipient delivery pending. This local reconciliation does not reset that lifecycle, replay customer turns, change credentials/settings or establish live acceptance. Source tests and Git integration are not provider or production proof.
+ARCH075 common-layout rollout remains In Progress: all120 reviewed registrations failed template_create with HTTP400/code100/subcode2388299; the prior cooldown has cleared. Coordinated activation and genuine ordered recipient delivery remain unverified. This local reconciliation does not reset that lifecycle, replay customer turns, change credentials/settings or establish live acceptance. Source tests and Git integration are not provider or production proof.
 
 ## Completion Report
 
@@ -139,3 +139,27 @@ System exact final source `e29324911185fe27543bd50480c44d6509fecbad` accepted at
 Root verified original System staged/unstaged hashes against backup and preserved them in selective stash `901f197008ab4be448033c7fb07a48ff9f523acb` before fast-forwarding primary System main to `791441248bc277de32324b69ca71ac2a0b3de891`. All14 implementation primaries now match accepted main; private `verification/primary-synchronized.json` records the readback. Prior fresh remote readback found no unexpected unreviewed commits; source-specific preservation refs/stashes and all105 backup artifacts remain recoverable. Local-only tools/assets/credential exports/transcripts remain private and retained rather than published.
 
 This aggregate branch incorporates fresh parent main `a804664d5a20a3bd00a7a0d59d3f423a727b62b2` by normal merge, preserving current accepted task/index updates and proposed/unclaimed ARCH076. No implementation gitlink was manually edited by the architect. Root must now select all14 freshly verified implementation-main SHAs, review/push that concrete pin update and merge this aggregate parent branch. Only then may this local Git reconciliation be marked Complete. It still cannot imply live Meta resolution:120template registrations failed HTTP400/code100/subcode2388299; layout inactive, cause not yet established.
+
+
+## Final root pin and preservation verification
+
+Root rechecked all14 implementation branches against freshly fetched origin/main: every primary is on main at the exact remote commit, with no tracked source edits. Two clean nested database working copies were additionally backed up as verified all-ref bundles, then fast-forwarded to their declared dependency pins: Admin2e14f866 and Background6f42b711. No application commit or dependency declaration changed. All105 original protected artifacts across15 repositories still match their original hashes. Untracked tools/assets/private exports remain local.
+
+| Repository | Verified main selected by final parent gitlink |
+| --- | --- |
+| moda-interact | `653677f434dd832c01e189411844912496be6448` |
+| moda-interact-admin | `48269c3507ed0196240f10f1aa626a2fa41330b8` |
+| moda-interact-api | `fc9483bfdd34ad62f0ccc9bffc3fbf140cd76b19` |
+| moda-interact-background | `8add92e4633fa8c74a819f8fa3dab6e493442028` |
+| moda-interact-commerce | `4485f16d19c01afc09496aef280ad109af068825` |
+| moda-interact-database | `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7` |
+| moda-interact-documentation | `11d90341b2b64077a55756f9e1efbf25de48b17b` |
+| moda-interact-gateway | `1e27ec51fea7709ad9cd8700bce10b5d5d720cd6` |
+| moda-interact-mcp | `ebbdc07ff2ede2f78364227c9eda6b9a7fbd0182` |
+| moda-interact-messaging | `3b3d6b52e144bd6fb729112044b6b105c06d15aa` |
+| moda-interact-shared | `1ca3c5ca4df6620ba3118bb5c5051c4773784e80` |
+| moda-interact-site | `7aaa2e16af1545ed3c8877f90173c8777a27d56e` |
+| moda-interact-system-test | `791441248bc277de32324b69ca71ac2a0b3de891` |
+| moda-interact-woocommerce | `ec05826a0746fe139217c0edf6d99d3a19157d51` |
+
+This concrete pin update and the preserved ARCH076 proposal are ready for final parent publication. The aggregate remains Review until root merges it and verifies the primary parent readback; no provider or production-build certification is implied.
