@@ -174,3 +174,9 @@ Root canary created20/20 after boundary correction. UI false provider-drift comp
 | ARCH-075-ADMIN-008 | moda_admin | Complete | ARCH-075-ADMIN-007 |
 
 2026-11-13 ADMIN008 accepted exactsource `049a7534f657494c4ad38e8fe755fc1c854004b6`: correct provider-observation hash domain in read-only UI, canonicalservercodec reused, immutablepreparedhash/true drift/lifecycleguards preserved.837unit/48focused/security331+3/type/lint/build/remotegreen,0client2servercodecproof. Root deployedUI/canaryreadback and actualactivation/delivery remain required; architecture stays In Progress.
+
+## Default human root wiring correction — 2026-11-13
+
+Root successfully activated production common frame revision1 and approved NoOffer assignments, but genuine human command failed multipart_root_not_prepared with HUMAN revision7 and prepared evidence, no root/parts/provider send. Default dispatcher adapter supplies continue but omits freeze, unlike complete injected test engines. BACKGROUND009 owns minimal delegation plus default-runtime and real PG guarded root regression; no contract/schema release or live mutation. Earlier human-inactive cancellations are separate timing evidence. Root verifies deployed new human and AI messages; architecture stays In Progress.
+
+| ARCH-075-BACKGROUND-009 | moda_background | Ready | ARCH-075-BACKGROUND-002 |
