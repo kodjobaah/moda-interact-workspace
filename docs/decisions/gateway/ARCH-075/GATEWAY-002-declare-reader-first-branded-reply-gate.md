@@ -9,11 +9,11 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 5
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-13T20:50:32Z
+attempt: 1
 depends_on:
   - ARCH-075-BACKGROUND-010
 enables: []
