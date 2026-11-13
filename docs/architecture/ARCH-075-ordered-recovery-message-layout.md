@@ -82,7 +82,7 @@ Common reference contract owner Shared003: exact schemaVersion1/definitionId/sou
 
 | Task | Owner | State | Dependencies |
 |---|---|---|---|
-| ARCH-075-ADMIN-001 | moda_admin | Ready | ARCH-075-SHARED-004 |
+| ARCH-075-ADMIN-001 | moda_admin | Complete | ARCH-075-SHARED-004 |
 | ARCH-075-ADMIN-002 | moda_admin | Pending | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
 
 Background002 additionally depends on Shared004 and Admin001. It replaces fixed-prefix decoration for new replies with additive local receiptv2 binding the actual rendered common reference/header/footer and trusted split boundaries; v1 frozen replay remains unchanged. Admin002 coordinates approved global SHARED revision with per-shop Meta assignment safely; actual transaction gap must be returned before unsafe mixed-version activation. All required replacements approved before activation, and consumer deployed first. Terminal system-test additionally depends on Admin001/Admin002/Shared003/Shared004; no implementation depends on system-test.
