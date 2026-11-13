@@ -71,11 +71,9 @@ Use canonical ARCH075 frozen decisions. Shared owns ordered schema/digest and ex
 
 ## Dependencies
 
-ARCH-075-DATABASE-001
-ARCH-075-SHARED-001
-ARCH-075-SHARED-002
-ARCH-075-BACKGROUND-001
-ARCH-075-BACKGROUND-002
+ARCH-075-DATABASE-001; ARCH-075-SHARED-001; ARCH-075-SHARED-002; ARCH-075-SHARED-003; ARCH-075-SHARED-004; ARCH-075-ADMIN-001; ARCH-075-ADMIN-002; ARCH-075-ADMIN-003; ARCH-075-BACKGROUND-001; ARCH-075-BACKGROUND-002; ARCH-075-BACKGROUND-003.
+
+The developer manual checkpoint is satisfied. Independent disposable integrated fixtures may run while live translation review/provider approval is pending; simulator validation does not claim live activation or delivery.
 
 ## Enables
 
