@@ -171,4 +171,6 @@ All120 reviewed registrations failed template_create HTTP400/code100/subcode2388
 
 Root canary created20/20 after boundary correction. UI false provider-drift compares normalized component observation to prepared+binding content hash. ADMIN008 reuses existing observedMetaContentHash server-side and carries only safe expected fingerprint to browser predicate; real content/category/timestamp/malformed drift remains fail closed. No Shared/BG/DB change or provider mutation. Root verifies deployed UI before expansion/activation; architecture remains In Progress.
 
-| ARCH-075-ADMIN-008 | moda_admin | Ready | ARCH-075-ADMIN-007 |
+| ARCH-075-ADMIN-008 | moda_admin | Complete | ARCH-075-ADMIN-007 |
+
+2026-11-13 ADMIN008 accepted exactsource `049a7534f657494c4ad38e8fe755fc1c854004b6`: correct provider-observation hash domain in read-only UI, canonicalservercodec reused, immutablepreparedhash/true drift/lifecycleguards preserved.837unit/48focused/security331+3/type/lint/build/remotegreen,0client2servercodecproof. Root deployedUI/canaryreadback and actualactivation/delivery remain required; architecture stays In Progress.
