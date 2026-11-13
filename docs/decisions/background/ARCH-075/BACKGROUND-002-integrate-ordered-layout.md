@@ -55,6 +55,12 @@ Consume published5.13.9 commonRef/website binding and Admin001 immutable common 
 
 Background website resolvers derive canonical saved tenant domain with existing HTTPS/origin policy. Meta registration preparation validates frozen commonRef against selected common revision; no mutation/recompile of provider snapshots at send. New Meta outreach still uses approved native template transport outside window, never freeform product tail. Product photos remain separate only under valid transport/window and frozen part provenance. Runtime consumer deployment precedes Admin002 activation; return any global-slot/per-shop assignment race gap.
 
+### Logical admission and staged producer rules
+
+Reuse the accepted engine reader/frozen source/part helpers and published validator; do not invent a second lifecycle, content renderer or receipt decoder. Use deterministic HUMAN root identity from commandId. Existing HUMAN Redis anti-spam/rate admission remains ONCE per logical command, not once per part; preserve original billing/usage/cap policy. No separate Meta HTTP rate limiter exists to reuse, so do not claim or invent one; transport is bounded by max3 parts and existing provider behavior. Initial HUMAN claim duration must cover its immutable logical delivery deadline using the existing bounded claim API (up to300seconds); do not extend/reacquire admitted authority after freeze. Existing default60seconds is shorter than default120second group deadline and is insufficient for initial prepermit waiting.
+
+Production generation remains off until root verifies accepted compatible-engine Live and old-reader drain in BOTH test/production. Source can be implemented once dependencies are accepted, but producer merge/deployment activation is root-gated on that runtime evidence. Preserve actual AGENT/HUMAN sender semantics; do not retag AUTOMATION marketing/notices to bypass their existing final policy. If any eligible notice truly uses an unsupported actor, return the concrete gap rather than widen transport authorization.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
