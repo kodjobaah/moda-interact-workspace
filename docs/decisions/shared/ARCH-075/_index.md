@@ -10,4 +10,4 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 | ARCH-075-SHARED-003 | complete |
 | ARCH-075-SHARED-004 | complete |
 
-| ARCH-075-SHARED-005 | One complete branded HEADER reply order | Ready | ARCH-075-SHARED-004 |
+| ARCH-075-SHARED-005 | One complete branded HEADER reply order | Complete | ARCH-075-SHARED-004 |
