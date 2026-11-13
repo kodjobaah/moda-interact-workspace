@@ -62,3 +62,16 @@ PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Sha
 - Sender isolation amendment: physical parts and normalized status receipts freeze providerAccountId and providerPhoneNumberId as bounded server-resolved scalar identity. Dedupe/correlation includes both plus MetaID/status/provider timestamp. Status or quote from foreign sender cannot attach merely by providerMessageId. Background compares inbound verified account/phone to part before logical-root tenant resolution; old single-message paths remain unchanged.
 
 - Runtime identity amendment: use the same credential snapshot for expected sender validation and actual endpoint/token selection; rotation mismatches refuse before HTTP. Frozen-sender child quote lookup precedes the current-global sender check. Known old-sender quotes may resolve their existing root, but new replies require a currently legitimate matching sender, never silent rotation. Continuation validates original AI inbound/control against current durable state without requiring the released processing lease; HUMAN retains original command/control semantics. Route multipart commands outside legacy single-send expired-permit reconciliation.
+
+## Common Content Scope Amendment
+
+User explicitly extends scope to all Meta templates, AI and HUMAN messages. ONE Admin-owned immutable SHARED wrapper definition/slot/locale projection is content authority, not a new table/setting or parallel hardcoded frame. Name/verified website/divider header and divider/trusted checkout footer surround family-specific body. Logo remains verified separate media; never cover-as-logo. Audience-specific body text and native opt-out content are preserved without adding a second frame. Admin freezes selected common revision into replacement Meta locale authoring JSON; existing registration snapshots remain unchanged. Coordinated activation waits for all required replacement locales to be approved. Freeform product tails remain prohibited outside the valid customer-service window; no unreviewed provider-template multipart contract is introduced.
+
+Genuine binding gap: canonical Shared keys lack shop.websiteUrl. Shared003 adds that semantic key to existing template/wrapper validators and public types only; Shared004 publishes the tested artifact after explicit approval. Existing renderer/token contracts are reused. No new reusable frame builder is needed because the saved common projection is authority.
+
+| Task | Owner | State | Dependencies |
+|---|---|---|---|
+| ARCH-075-SHARED-003 | moda_shared | Ready | ARCH-075-SHARED-002 |
+| ARCH-075-SHARED-004 | moda_shared | Pending | ARCH-075-SHARED-003 |
+
+Background001 remains unchanged/content-agnostic on5.13.8. Background002 and Admin consumer definitions will depend on Shared004 and reference this same common projection; terminal system validation includes Meta and dynamic parity. No source implementation is authorized by this amendment outside canonical assigned tasks.
