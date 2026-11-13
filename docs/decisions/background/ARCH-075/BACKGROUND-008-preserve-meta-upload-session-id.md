@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T13:39:17Z
@@ -151,24 +151,26 @@ None currently. Return any cross-repository/schema/lifecycle gap before expandin
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Independently reviewed exact implementation `36acc5f7b88276b404dcb024275451cd7dcf56d4` and report `127c84b7967a12ad4b73079d37a6bbc9330e956f`. No findings. Primary Meta opaque reuse contract and protected actual structural receipt establish the optional signed suffix; the code does not infer a grammar from HTTP200 alone. This accepts the bounded source correction and local validation, not live registration/approval or ordered recipient delivery. Root explicitly retains exact-head hosted CI success as an additional pre-merge integration gate.
 
 ### Reviewed Files
 
-None
+- `src/services/meta-template-management/image-header-sample.ts`: exact session URL construction and provider/transport diagnostic redaction.
+- `tests/unit/services/meta-template-management/image-header-sample.test.ts`: sanitized actual signed form, malformed/foreign/path/query/normalization refusals, byte request/fence and privacy assertions.
+- `docs/operations/meta-upload-session-identity.md`, final Completion Report, canonical prepared packet and protected structural/validation receipts.
 
 ### Validation Reviewed
 
-None
+Observed RED regression and GREEN152 focused tests, final full suite390 passing files/4,294 passing tests with one file/ten existing conditional skips, successful production build/TypeScript/Prisma packaging and scoped lint/diff checks. Exact unchanged accepted-main file lint reproduced all four unrelated full-lint findings; no suppression or out-of-scope cleanup was introduced. Full lint remains explicitly nongreen. Prepared packet proves matching isolated parent/implementation worktrees, main synchronization, recursive accepted Database submodule and pushed Attempt1 claim. Implementation/report publication verified. Hosted exact-head run43436906240 succeeded; run43436977039 was still in progress at review and root must verify its success before merging.
 
 ### Architecture Conformance
 
-Pending implementation review
+Conforms to bounded Background provider-adapter ownership. Opaque signed identity is retained byte-for-byte under explicit bounds and same trusted Graph origin/version/path/href equality; unexpected normalization, credentials, fragments, repeated/foreign query and unsupported encodings fail closed before bytes. Existing source verification, app/config/lease fences, deadlines, provider-intent uncertainty and historical recovery semantics remain unchanged. Signed identity/path/signature are redacted from byte-operation diagnostics and retained Error cause. No Shared/schema/release change, caching, blanket repair or task-executor live mutation. Root-delegated preclaim diagnostic predates this task claim and is recorded separately.
 
 ### Follow-up
 
-Root retains live registration, coordinated common activation and ordered WhatsApp acceptance; architecture remains In Progress.
+Root may integrate the exact accepted source only after both exact-head CI runs pass, then verify actual compatible worker rollout before normal preclaim retries. Old403/code4 blocks still require accepted BG007 exact-evidence recovery. Common activation, remaining provider approvals/environment copy and genuine Meta/AI/HUMAN ordered WhatsApp acceptance remain outstanding; ARCH-075 stays In Progress. No new Shared release or task dependency on terminal system validation is introduced.
