@@ -67,6 +67,12 @@ Keep old receiptv1 exact. New Background-local recoveryShopHeader union member i
 
 Freeze variables from existing owning verified identity helper: valid sanitized saved name, else exact verified saved-domain hostname (explicit domain fallback, no invented brand name); normalized saved-domain website and existing trusted checkout resolver. Recompute identically on final validation. Unsafe/missing website cannot authorize v2. Strict bounds and original moderation/source identity remain; HUMAN new inbound alone does not invent a refusal gate. Final tests prove custom common header/footer, source/ref/fact tampering and v1 replay compatibility.
 
+### HUMAN v2 evidence and physical derivation
+
+Extend the existing genuine RENDERED/audienceSHARED prepared-evidence branch with local recoveryShopHeader v1|v2, not PASSTHROUGH/NOT_CONFIGURED when the common slot is configured. Definition/locale/contentHash must match commonRef and actual selected slotEditVersion. Explicitly version the v2 application-key inputs binding original command, full commonRef/variables/boundaries; preserve old v1 key algorithm exactly. Parse/fromRow/currentHumanWrapperMatches read and verify v2 before rollout. Frozen root source must exactly match command v2 evidence; no caller metadata omission bypass. For this body-only common layout HUMAN boundaries.body equals original command.textBody exactly. Preserve current HUMAN admission policy on newer inbound.
+
+Only server-proven boundaries derive physical payloads: HEADER=header+footer; final PRODUCT/ANSWER=body+footer; optional middle PRODUCT=footer; single ANSWER=full root. Keep renderer separators byte-exact, never regex-strip authored text. Validate actual provider outcome persistence independently of current source parse, without granting another send.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
