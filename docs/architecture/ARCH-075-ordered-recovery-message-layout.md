@@ -200,3 +200,19 @@ Gateway002 accepted exactsource `4c05b55b54aae8e713d67e463b94321dd4f5093d`: oper
 ## Customer context on handback (BG012)
 
 ARCH-075-BACKGROUND-012 is Pending on accepted/integrated ARCH-075-BACKGROUND-011. It assesses only the existing bounded prior-history window at a genuine AI-owned turn, using canonical customer moderation and existing retry/control guards. HUMAN ingress does not invoke AI or send; unmoderated/blocked context remains excluded. This complements the merchant prepared-body identity correction, with no new infrastructure, queue, schema, Shared release or generic telemetry. Architecture remains In Progress pending actual exchange verification.
+
+## Human handback history correction — 2026-11-13
+
+Actualdelivered21:11 humancommonreply has preparedbodyALLOW while rawcommandtext differs; historyfilter hashesrawtext anddrops it. BG011 corrects exactpreparedmoderationidentity withtenant/content/lifecycle/modelpolicyfailclosed guards andactualdefaultdispatch→history→resumeproof. No reset orunrelatedproductreferralcausalclaim. Root liveoperations; architectureInProgress.
+
+| ARCH-075-BACKGROUND-011 | moda_background | Ready | ARCH-075-BACKGROUND-010 |
+
+
+### BG011 accepted source correction
+
+ARCH-075-BACKGROUND-011 is Complete/Accepted at source01702b7ccf86c195f16ba6eee6a21248e1524c30, reporta43d7eb4c7518f50a49ff1d82ce0bf5f6b0cee20. Delivered HUMAN prepared moderation identity is preserved in history with exact tenant/content/lifecycle guards. Actual47 PG and4328 unit tests passed, build/scoped lint passed; unchanged baseline full-lint findings disclosed. BG012 customer-side capture remains Pending on actual integration. Architecture remains In Progress pending live handback proof.
+
+
+### BG012 execution promotion
+
+ARCH-075-BACKGROUND-012 is Ready after actual BG011 source mainac2ef244a36a63f13cb794bef41a4d7a27207cb2 and accepted parent1309896672d0b80122e99fae30efe8782d995bb9 integration. Earlier Pending notes are historical. Owner must use normal preparation and preserve current-turn moderation/control semantics. No live proof or architecture completion is claimed.

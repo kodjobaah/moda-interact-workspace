@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 5
 executor: null
 claimed_at: null
@@ -66,7 +66,7 @@ Existing Background ModerationTurnGate, PostgresModerationAssessmentService, Com
 
 ## Dependencies
 
-ARCH-075-BACKGROUND-011 must be architect-accepted Complete and integrated before execution. Definition is materialised only; no implementation worktree or claim is authorized yet.
+ARCH-075-BACKGROUND-011 is Complete/Accepted and integrated: Background main ac2ef244a36a63f13cb794bef41a4d7a27207cb2; parent main1309896672d0b80122e99fae30efe8782d995bb9. Normal launcher preparation may now create the implementation worktree and claim this Ready task.
 
 ## Enables
 
