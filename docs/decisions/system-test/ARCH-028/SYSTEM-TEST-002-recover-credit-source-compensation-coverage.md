@@ -99,19 +99,21 @@ You are not alone; preserve others' edits. Normal launcher owns dedicated matchi
 
 ### Status
 
-Not Started
+In Progress — selective source recovery and local checks complete; disposable integration pending resource slot.
 
 ### Files Changed
 
-None
+System Test catalogue, recovery/status fixtures and scenarios, bounded diagnostics, unit tests and recovery documentation. Primary source checkout remains untouched.
 
 ### Work Completed
 
-None
+Recovered the three missing source-specific scenarios from the verified backup while retaining all 181 current-main scenarios. Added strict schemaVersion 1 template bindings and modern encryption configuration; retained newer coupon, follow-up, ordered-message and readiness coverage. Fixed worktree-aware Gateway fixture lookup through MODA_WORKSPACE_ROOT.
 
 ### Validation Results
 
-Not run
+Node v24.19.0. Catalogue regeneration validates 184 scenarios (81 implemented, 103 planned); syntax validates 317 JavaScript files; source structure passes. Full serial suite executed 562 tests: 558 passed, two skipped and two stale catalogue assertions failed. Corrected those metadata assertions and scenario implementation provenance; focused rerun passed all 23 tests. Final full rerun and actual disposable PostgreSQL/Redis/worker compensation runs remain pending; no integration success is claimed.
+
+External backup: moda-local-reconciliation-backup-20261113T145749Z, verified by coordinator before recovery. Prepared claim 82be96ffb523780ab52bb09be1c459942724c5fd; implementation baseline f3914582f31c3dc261852ed10cd98537809776ad. Both canonical task branches were synchronized by the launcher. No primary checkout, live provider or customer mutation.
 
 ### Deviations
 
@@ -123,7 +125,7 @@ Verified external backup remains intact.
 
 ### Unresolved Issues
 
-None beyond task requirements.
+Host load exceeded 250 during concurrent validation. Coordinator has paused new service-image builds until existing database work completes. Isolated accepted App/Messaging tracked-source snapshots are prepared; current dependency installation and local test work are being sequenced. Required integrated proof is outstanding.
 
 ### Architectural Concerns
 
