@@ -61,6 +61,12 @@ Scope now includes additive receiptv2/commonRef/custom-boundary READER and final
 
 Readerv2 binds canonical commonRef, actual rendered header/footer/trusted boundaries and original tenant/control/source/policy evidence; re-read active immutable SHARED source/locale hashes and existing current saved identity facts. No hardcoded prefix added over custom common content. Legacyv1 exact bytes remain readable. Status/ACK outcome persistence must retain real provider evidence even if full source becomes unavailable; invalid/unknown preparation never grants a fresh send or cancels arbitrary foreign work. HUMAN original admission/new-inbound policy unchanged. Final engine exact-head tests include mixedv1/v2 readers, custom boundaries, stale/tampered reference, callbacks/ACK race and no producer activation.
 
+### Private v2 boundary receipt
+
+Keep old receiptv1 exact. New Background-local recoveryShopHeader union member is strict `{schemaVersion:2,kind:RECOVERY_COMMON_LAYOUT,shopId,commonRef,variables:{shop.name,shop.websiteUrl,checkout.url},boundaries:{header,body,footer}}`; public commonRef remains Shared schemaVersion1. Original actor/control/source/policy receipt remains separate. Complete root equals header+body+footer and exact existing renderPreparedWrapper(commonRef.prepared, trusted variables, body). Derive canonical header/footer by a collision-checked internal response marker through the same existing renderer; marker never sent, exactly one split required, no arbitrary authored substring stripping or parallel formatter. Re-read current immutable SHARED definition/source/locale hashes and saved identity/checkout facts before admission.
+
+Freeze variables from existing owning verified identity helper: valid sanitized saved name, else exact verified saved-domain hostname (explicit domain fallback, no invented brand name); normalized saved-domain website and existing trusted checkout resolver. Recompute identically on final validation. Unsafe/missing website cannot authorize v2. Strict bounds and original moderation/source identity remain; HUMAN new inbound alone does not invent a refusal gate. Final tests prove custom common header/footer, source/ref/fact tampering and v1 replay compatibility.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
