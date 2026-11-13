@@ -416,6 +416,8 @@ SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-003 owns current
 
 ### Preserved local functionality reconciliation — 2026-11-13
 
-ARCH-017-DATABASE-002 (ready) owns the bounded outcome: Canonicalize the retired Order Support feature. The untracked 20261106023000_remove_order_support migration SHA2566afd411b773669387f6289243537ea999df07a1f8c553163862a1f21de06cde2 matches the previously verified finished test/production ledger exception. Current canonical history lacks that file, while local seed removes four order_support rows. Root requests preservation and incorporation of genuine functionality, not ledger rewriting. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
+ARCH-017-DATABASE-002 (Complete) owns the bounded outcome: Canonicalize the retired Order Support feature. The untracked 20261106023000_remove_order_support migration SHA2566afd411b773669387f6289243537ea999df07a1f8c553163862a1f21de06cde2 matches the previously verified finished test/production ledger exception. Current canonical history lacks that file, while local seed removes four order_support rows. Root requests preservation and incorporation of genuine functionality, not ledger rewriting. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
 
-| ARCH-017-DATABASE-002 | moda_database | ready | ARCH-017-DATABASE-001 |
+| ARCH-017-DATABASE-002 | moda_database | Complete | ARCH-017-DATABASE-001 |
+
+Architect acceptance: exact historical retirement source `0e5073410aed98ce8364fe343e9eff42cd823cb8` preserves deployed migration bytes and all prior canonical migrations. Disposable fresh/upgrade/protective rollback validation passed 48 assertions; current seed cannot resurrect the retired feature. Root owns source/gitlink integration; no hosted replay or architecture completion is implied.
