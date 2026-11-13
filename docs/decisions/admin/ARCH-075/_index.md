@@ -11,4 +11,4 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 | ARCH-075-ADMIN-004 | complete | ARCH-075-ADMIN-003, ARCH-075-SHARED-004 |
 
-| ARCH-075-ADMIN-005 | ready | ARCH-075-ADMIN-004 |
+| ARCH-075-ADMIN-005 | complete | ARCH-075-ADMIN-004 |

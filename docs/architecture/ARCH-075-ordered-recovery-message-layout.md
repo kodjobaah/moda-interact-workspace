@@ -121,6 +121,6 @@ Actual translated customer instructions use exact STOPP, DUR, PARAR and STOPPA. 
 
 Admin005 moves explicit English Meta review to the existing all20 submission confirmation, before provider intent, preserving snapshots and wrapper lifecycle. Background005 provides audited bounded operator recovery only for proven missing-app preclaim BLOCKED rows; no uncertain/provider-created state may reset. Gateway001 declares server-owned META_APP_ID sync:false on the actual test/production merchant-communications workers; no app ID/secret is committed. Tasks are independent; live recovery requires repaired configuration, reviewed source and accepted recovery method. No Shared/schema change. System completion additionally requires these accepted corrections, preserving prior independent proof and claim. Architecture remains In Progress.
 
-| ARCH-075-ADMIN-005 | moda_admin | Ready | ARCH-075-ADMIN-004 |
+| ARCH-075-ADMIN-005 | moda_admin | Complete | ARCH-075-ADMIN-004 |
 | ARCH-075-BACKGROUND-005 | moda_background | Ready | ARCH-075-BACKGROUND-004 |
 | ARCH-075-GATEWAY-001 | moda_gateway | Ready | None |
