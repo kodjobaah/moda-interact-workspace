@@ -15,6 +15,7 @@ executor: codex
 claimed_at: 2026-11-13T05:35:26Z
 attempt: 1
 depends_on:
+  - ARCH-075-BACKGROUND-004
   - ARCH-075-ADMIN-004
   - ARCH-075-ADMIN-003
   - ARCH-075-BACKGROUND-003
@@ -59,6 +60,12 @@ Other repositories/tasks, source main merges/deployment, production sends/replay
 Also prove common editable Admin revision custom header/footer parity across compiled approved Meta projection and actual AI/HUMAN runtime receipts, checkout-last/opt-out preservation, stale common reference/activation refusal and legacy frozen compatibility. Never send freeform product tail outside the valid customer window.
 
 Exercise real accepted contracts/migration/worker producer+status queue+part engine, ordered2/3 sends, quoted eachpart, exactfooter, one logical usage, callbackbeforeACK/readbefore-delivered, process death/restart, unknown/no prefix resend and takeovercancel. Validate legacy compatibility and absence of customer/secret telemetry. No source implementation, paid service or unauthorized live send. This terminal test never gates unfinished implementation tasks.
+
+### Bounded accepted localized-command followup
+
+Retain the completed thirteen integrated checks and same original claim. Before final acceptance, independently validate accepted Background merge c5dad158175733849fb6f9ab6ff2e89841d195cf: exact STOPP, DUR, PARAR and STOPPA must reach the real opt-out priority/durable CUSTOMER_STOP path and suppress an unadmitted ordered tail; demonstrate no ordinary model/provider response, plus sentence/substrings/nontext negatives. Existing full proof remains valid for unchanged code; record the delta rather than claiming its earlier image contained new aliases.
+
+A separate temporary derivative of the approved correctness image may replace only compiler-emitted changed phone.js/source-map (and matching source provenance) from the exact accepted source with the locked TypeScript/options. Record base/derived image IDs, source commit and old/new module hashes, and verify other runtime modules/dependencies/ENV/CMD remain unchanged. No handwritten JavaScript regex substitution, dependency rebuild, production artifact promotion or broader resource change. If additional emitted runtime modules differ unexpectedly, return the evidence before broadening the overlay. Same-attempt continuation is authorized; no claim reset/reprepare. Owner updates in-progress/report fields while preserving earlier proof.
 
 ## Work Items
 
