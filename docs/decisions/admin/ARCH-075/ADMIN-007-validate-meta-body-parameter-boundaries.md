@@ -54,6 +54,10 @@ Shared/BG/Database/runtime edits or releases; rewriting existing immutable sourc
 - All20 supported locales and all six scenario variants must be exercised with actual reviewed localized static opt-out fixtures and a provider-safe new common header. Preserve trusted common reference/website/name/checkout, media role, example and immutable hash checks. Legacy no-common valid output should remain unchanged.
 - Root owns operational canary-first rollout: after source acceptance/deployment, clone/review one corrected English source and common header; inspect exact projected BODY, then submit one canary. Only successful provider response/real approval permits expansion; preserve failed120 history, do not reset it. Activation and actual Eugene Meta/AI/human ordered logo/details/product/footer proof remain later operational gates.
 
+### Narrow historical verification clarification
+
+Saved reads and approved publication currently recompile authoring to establish immutable hash identity. Permit one server-only verifier for exact stored source/prepared hashes against only the known old/current deterministic projection, returning stored bytes unchanged. This is historical verification only: never expose a caller-controlled bypass, accept arbitrary prepared content, rewrite frozen hashes or use legacy mode for saving/new compilation. Existing approved read/publication/display/clone may retain exact old snapshot. New compilation/reconstruction, new submission and every technical retry/re-registration admission must strictly validate final stored BODY. Invalid old translation/recompile requires clone/corrected source, not silent regeneration. Add tamper/wronghash/old-invalid-newsubmit-and-retry negatives plus old-approved-read preservation. Report any genuinely cross-owner retry gap before extending implementation.
+
 ## Work Items
 
 - [ ] Inspect final projection and immutable read/preview/submission paths; capture current boundary failure regression.
