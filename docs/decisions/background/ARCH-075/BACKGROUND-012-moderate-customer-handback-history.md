@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T21:51:41Z
@@ -65,10 +65,10 @@ The existing arch047-meta-messaging-startup unit intentionally mocks runtime lif
 
 ## Work Items
 
-- [ ] Prove absent human-mode customer assessment/history exclusion with a focused RED.
-- [ ] Implement bounded resume-time moderation using existing canonical assessment and retry/control guards.
-- [ ] Prove current-turn outcome isolation, audio/content/tenant/policy/model/replay guards and bounded selection.
-- [ ] Run actual disposable ingress HUMAN→resume→moderation→history proof with BG011 merchant context, then publish exact source and report.
+- [x] Prove absent human-mode customer assessment/history exclusion with a focused RED.
+- [x] Implement bounded resume-time moderation using existing canonical assessment and retry/control guards.
+- [x] Prove current-turn outcome isolation, audio/content/tenant/policy/model/replay guards and bounded selection.
+- [x] Run actual disposable ingress HUMAN→resume→moderation→history proof with BG011 merchant context, then publish exact source and report.
 
 ## Interfaces / Contracts
 
@@ -84,17 +84,17 @@ Root genuine merchant/customer exchange→AI handback verification. No implicit 
 
 ## Acceptance Criteria
 
-- [ ] A customer message persisted during HUMAN has no AI send then receives exact valid assessment before inclusion on a genuine resumed AI turn.
-- [ ] Eligible merchant and customer context appears once with existing roles, bounds and chronological ordering.
-- [ ] BLOCK/review/tampered/foreign/stale-model-or-policy/unsupported/incomplete audio remain excluded; historical outcomes cannot authorize or incorrectly suppress current-turn decisions.
-- [ ] Control changes during assessment prevent AI send; duplicate/concurrent/retry handling uses existing leases and bounded scheduling.
-- [ ] Focused tests, meaningful actual PG flow and required repository checks pass with exact isolation/report evidence.
+- [x] A customer message persisted during HUMAN has no AI send then receives exact valid assessment before inclusion on a genuine resumed AI turn.
+- [x] Eligible merchant and customer context appears once with existing roles, bounds and chronological ordering.
+- [x] BLOCK/review/tampered/foreign/stale-model-or-policy/unsupported/incomplete audio remain excluded; historical outcomes cannot authorize or incorrectly suppress current-turn decisions.
+- [x] Control changes during assessment prevent AI send; duplicate/concurrent/retry handling uses existing leases and bounded scheduling.
+- [x] Focused tests, meaningful actual PG flow and required repository checks pass with exact isolation/report evidence.
 
 ## Validation
 
-- [ ] RED/GREEN unit vectors covering bounded mixed-history window, deduplication, current-turn outcome isolation, cached/retry evidence and control races.
-- [ ] Actual disposable PostgreSQL/Redis ingress→HUMAN persistence→normal resume→existing moderation→history, both exchange sides and completed-audio/negative cases; no hosted DB fallback or fabricated provider permission.
-- [ ] Relevant declared full tests, build/type and changed-file lint; disclose only exact unchanged known baseline failures, with diff/privacy checks.
+- [x] RED/GREEN unit vectors covering bounded mixed-history window, deduplication, current-turn outcome isolation, cached/retry evidence and control races.
+- [x] Actual disposable PostgreSQL/Redis ingress→HUMAN persistence→normal resume→existing moderation→history, both exchange sides and completed-audio/negative cases; no hosted DB fallback or fabricated provider permission.
+- [x] Relevant declared full tests, build/type and changed-file lint; disclose only exact unchanged known baseline failures, with diff/privacy checks.
 
 ## Stop Condition
 
@@ -108,35 +108,47 @@ Use normal launcher dedicated sibling worktrees. You are not alone: preserve pri
 
 ### Status
 
-Not Started
+Ready for Review. Exact pushed implementation `cbe926522d318953217480932c97233eafd61752` (runtime31ce5e6 plus approved startup-fixture follow-up), draft https://github.com/kodjobaah/moda-interact-background/pull/223. No main merge or live operation by executor.
 
 ### Files Changed
 
-None
+- `src/commerce/history-selection.ts` and `history.ts`: one repository-local authoritative prior20 mixed visible selection; existing chronology/audio boundaries and32000 history bound unchanged.
+- `src/services/conversation-moderation/moderation-turn-gate.ts`: current decisions first; only allowed current turn backfills persisted prior CUSTOMER TEXT/completed AUDIO, deduplicated. Historical BLOCK/review cannot suppress it; historical ALLOW cannot authorize blocked current. Canonical assessment service, model/policy, content/tenant evidence and cached leases remain authoritative.
+- `src/services/conversation-turn-processor.service.ts`: passes original claim timestamp plus existing PROCESSING_LEASE_MS, never recapturing/increasing the lease.
+- Unit handback/gate/processor tests; real `arch075-common-layout` and `conversation-moderation` PG regressions; narrowly amended `arch047-meta-messaging-startup` fixture.
 
 ### Work Completed
 
-None
+New historical work has a16-second elapsed ceiling beginning before its query, and each assessment requires a complete existing8-second timeout plus1-second margin within both that deadline and the actual original processing lease. First historical RETRY stops the batch and uses existing turn release/requeue. Cached immutable assessments permit progress on subsequent claims; no queue/cursor/schema/Shared mechanism added. Existing45-second assessment leases,10/30-second backoffs and three-attempt terminal review cap remain unchanged.
+
+This is a bound on newly added historical assessment starts, not a guarantee that the whole existing current-turn moderation/model stage fits120 seconds. Existing current-turn moderation cost/decision and control-revision checks remain unchanged. Direct helper calls still have the historical ceiling; production invocation supplies the real original claim deadline.
+
+Actual disposable ingress persists a customer question during HUMAN control with no AI enqueue, classifier assessment or outbound send; default HUMAN dispatcher then sends a genuinely prepared/moderated reply. A subsequent genuine AI inbound is claimed, moderated using its original lease deadline, and actual loadCommerceHistory includes both eligible sides exactly once with existing customer and untrusted merchant user roles. Duplicate reads/claims reuse assessments and do not duplicate provider sends/usage.
 
 ### Validation Results
 
-Not run
+- Final declared `vitest run`, alone after all generators/PG runs ended:393files PASS/1 existing configured skipped;4344tests PASS/10 existing configured skipped,202.35s. Final source/fixture frozen before this run.
+- Final focused98tests/4files PASS, including mixed-window/dedup, current outcome isolation, completed/incomplete audio, historical retry, slow successful assessment/cached replay progress, insufficient/invalid original lease, query consuming deadline, and HUMAN takeover during moderation preventing model/admission/send. Processor test asserts original claim deadline propagation.
+- Amended real disposable PostgreSQL/Redis:2suites48tests PASS/0skip,176.75s. Actual ingress/default HUMAN preparation/moderation/delivery/AI claim/history path, completed historical transcript, blocked history/current isolation, canonical tamper/foreign refusal, cached concurrent replay and existing policy/model/provider fences. Only loopback providers; no hosted DB fallback.
+- Build PASS after runtime timing amendment: Prisma6.19.3, both TypeScript compilers, sample packaging. The only later change was the approved test-local startup lifecycle fixture. Final scoped ESLint all9changed files and diff check PASS.
+- Exact unchanged ac2ef244 gate RED:3unit failures/5passes; actual ingress handback PG RED1failure/36name-filter skips because historical customer assessment remained null. GREEN corrected both.
+- Known full-lint baseline remains the four unchanged unused-variable errors previously proven/documented in BG010: candidate-index.store.ts:9 readRecoveryExecutionPolicy; recovery-offer-resolver.service.ts:23–25 MAX_CANDIDATES/VERIFICATION_TIMEOUT_MS/AI_TIMEOUT_MS. Both files unchanged; no full-lint-green claim.
 
-### Deviations
+### Validation Corrections / Evidence
 
-None
+Superseded traces are retained and not substituted for final checks. An initial full run overlapped Prisma generation and saw invalid generated client package.json; final artifact JSON/import validated and isolated billing22tests passed. Subsequent checks were serialized around generators.
 
-### Assumptions
+Two amended full attempts observed the unchanged startup case exceeding its5-second limit (including once with no other test runner); original isolated case passed in1.77s. Inspection found its fake-timer entrypoint lifecycle test omitted the multipart runtime mock and imported the real DB/engine graph. Architect amendment2781e59ee explicitly permitted only a test-local lifecycle stub plus exactly-once start/close assertions, retaining due/pending-repair checks and the same timeout. Controlled isolated stubbed case passed in54ms; final complete full run passed. No production startup changes or timeout inflation.
 
-Root owns integration and live operational verification.
+Evidence under `local-backups/arch075-live-20261113/`: bg012-unit-red, postgres-red, final-focused, budget-postgres, budget-build, final-full, final-lint, generated-artifact-check, billing-isolated, startup-isolated and startup-stubbed-isolated logs; stopped/superseded traces retained separately. No real customer/provider payload committed.
 
-### Unresolved Issues
+### Isolation / Publication Evidence
 
-Actual post-deployment exchange awareness remains to be verified.
+Normal launcher packet bg012-prepared.json: canonical primary workspace; dedicated parent and implementation on mirrored task/ARCH-075-BACKGROUND-012; BG011 dependency Complete; parent348744f565760d6e462bcd98787f3a8fcaf48a25 and implementationac2ef244a36a63f13cb794bef41a4d7a27207cb2 synchronized; recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae exact ready. Attempt1codex claimed2026-11-13T21:51:41Z, pushed claim297c4d79c069552f9e8ba2272de566327cf32579. Read and applied coordinator timing amendment768525f7d and startup fixture amendment2781e59ee. Implementation clean after push. No primary/sibling edits or parent gitlink/index staged.
 
-### Architectural Concerns
+### Deviations / Assumptions / Unresolved Issues
 
-Return any lifecycle/contract gap before widening.
+Only the two explicit architect amendments expanded validation/timing detail. No eager HUMAN-mode classification, new model/provider send, new queue/schema/Shared release, broader history scan or product-referral change. Root owns independent review, merge, deployment and genuine live exchange verification. No whole-conversation awareness beyond the existing bounded window, live verification or architect acceptance is claimed here.
 
 ## Architect Review
 
