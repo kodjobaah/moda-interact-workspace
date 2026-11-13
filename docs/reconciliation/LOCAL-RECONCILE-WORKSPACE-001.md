@@ -119,3 +119,5 @@ Root restored a clean tracking parent main at `6b9ef362417937927f5f0e20134dfd228
 ## Separate live Meta rollout limitation — 2026-11-13T16:47:27Z
 
 Root's read-only live check found all120 reviewed registrations (six scenarios ×20languages) in FAILED/META_HTTP_400, zero approved and zero provider template IDs. Throttle count is zero and the prior cooldown has expired. Common layout is not activated and no genuine live delivery proof exists. This is a provider registration failure requiring separate diagnosis, not merely awaiting approval; local Git reconciliation and its remaining System gate do not establish resolution or authorize new runtime/ARCH076 work.
+
+Root's additional read-only Render evidence identifies the failed operation as `template_create`: HTTP400, provider code100/subcode2388299, message “Invalid parameter”, on the production worker. Private DOM/screenshot receipts are preserved as `meta-http400-visible-log.*`. No retry/mutation was performed and the underlying invalid parameter has not yet been established; do not infer a cause from this code alone.
