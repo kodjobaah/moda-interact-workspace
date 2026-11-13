@@ -123,4 +123,4 @@ Admin005 moves explicit English Meta review to the existing all20 submission con
 
 | ARCH-075-ADMIN-005 | moda_admin | Ready | ARCH-075-ADMIN-004 |
 | ARCH-075-BACKGROUND-005 | moda_background | Ready | ARCH-075-BACKGROUND-004 |
-| ARCH-075-GATEWAY-001 | moda_gateway | Ready | None |
+| ARCH-075-GATEWAY-001 | moda_gateway | Complete | None |
