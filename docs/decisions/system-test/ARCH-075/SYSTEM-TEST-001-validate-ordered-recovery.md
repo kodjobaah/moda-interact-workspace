@@ -99,7 +99,7 @@ After required work and validation, set review, submit Completion Report and STO
 
 ## Implementation Notes
 
-Admin004 is a newly discovered terminal acceptance prerequisite. Preserve the existing active claim and independently useful fixture work; do not accept this task or claim final common editor workflow coverage until that correction is Complete. No re-claim or reset is authorized.
+Admin004 is now Accepted; preserve this same active claim and independent fixture progress. Root merged corrected Admin source c765be827cd6086157d38060ab5a200745b25052; validate that accepted revision before final completion. No reset or re-claim is authorized.
 
 You are not alone. Preserve others' edits and canonical prepared isolation. Root owns final merges/deployment. Architecture constants resolve inter-agent assumptions; report genuine gaps before expanding scope.
 
@@ -107,39 +107,75 @@ You are not alone. Preserve others' edits and canonical prepared isolation. Root
 
 The exact pinned Background Docker build encountered a V8 heap exhaustion (exit 134) during TypeScript compilation. A reversible test-only Dockerfile overlay is authorized: derive from the exact pinned Dockerfile and change only `RUN npm run build` to `RUN NODE_OPTIONS=--max-old-space-size=3072 npm run build`. Keep Node base, lockfiles, source/submodule bytes, runtime ENV and CMD unchanged; do not persist NODE_OPTIONS or change Docker host resource settings. Record the initial failure, exact one-line overlay diff/hash and resulting image identity. Verify the resulting runtime environment has no heap override. This supports integrated correctness under adjusted build resources, not byte-identical production-image or production build-memory parity. If the bounded increase fails, return evidence before further changes; do not invent a source correction.
 
+### Host-compiled correctness-image fallback
+
+The bounded 3072 MiB compiler override also exhausted Docker build resources. Further memory/VM changes are not authorized. For integrated correctness only, compile exact pinned source and lockfile with its declared TypeScript 6.0.2 ES2022/NodeNext commands under observed host Node24.19, then copy only audited dist/dist-cli JavaScript, source maps and declared fixed JPEG assets into a test image. Retain exact pinned Node22.23.5 base and its own Linux npm dependencies, Prisma generation/binary, sharp, observability/scripts/assets/database, runtime ENV and CMD. Never copy host node_modules, generated Prisma clients/native binaries, credentials, environment files, symlinks or arbitrary config. Runtime NODE_OPTIONS must be absent.
+
+Record source/database commits, compiler and host/runtime versions, exact base digest, overlay diff and output allowlist hashes/sizes, published Shared integrity and both failed Docker build diagnostics. Execute tests inside the actual Node22 runtime. This validates source-derived runtime behavior under adjusted test build mechanics; it does not prove production Docker build reproducibility or host/runtime build parity and must not produce/promote a production artifact. Any actual incompatible output returns as evidence, not normalization or source changes.
+
 ## Completion Report
 
 ### Status
 
-Not Started
+In Progress — partial checkpoint only; acceptance criteria are not satisfied.
 
 ### Files Changed
 
-None
+Implementation checkpoint `806f251` on `task/ARCH-075-SYSTEM-TEST-001`:
+image builder and focused tests; work-in-progress independent Admin/provider/worker
+fixture modules; `docs/validation/ordered-recovery-progress.md` with measured limits.
+No implementation submodule gitlink or other task files changed.
 
 ### Work Completed
 
-None
+Preserved prepared canonical mirrored worktrees and claim. Added the explicitly
+authorized reversible build-stage-only 3072 MiB heap option, exact Dockerfile hash
+and separate image tag; focused coverage refuses a larger heap. Began independent
+Admin common-source activation and actual worker producer fixture adapters.
+These fixture modules are unfinished and have no executable integration entry point.
 
 ### Validation Results
 
-Pending
+- 6/6 focused image-builder tests passed.
+- `npm run typecheck` and `npm run lint` passed; `git diff --check` passed.
+- Disposable PostgreSQL owning migration deployment succeeded during Admin-only
+  setup; the Admin fixture itself did not execute due to harness ESM/Prisma
+  packaging. Adapter correction is not yet rerun.
+- Exact Background `d7a9bd1b0d1cceb908dd8ee23942dc93a9cf0417` production build
+  failed at TypeScript compilation with V8 heap exhaustion, exit 134.
+- Authorized 3072 MiB temporary Dockerfile attempt failed with Docker exit 102,
+  ResourceExhausted / cannot allocate memory after 61.73 s. No resulting runtime
+  image exists; runtime heap-environment inspection and integrated tests remain
+  pending. No resource escalation attempted.
+- Disposable PostgreSQL containers were cleaned. No deployed-environment or
+  live provider requests, sends, replays or counters were used.
 
 ### Deviations
 
-None
+Only the architect-authorized one-line test build-resource accommodation was
+attempted. It also failed; no successful production-image parity claim is made.
+Original/derived Dockerfile hashes and exact measured evidence are recorded in
+implementation progress documentation. Raw diagnostic logs are local `/tmp`
+artifacts, not committed private proof.
 
 ### Assumptions
 
-None beyond canonical contracts.
+Synthetic media metadata and APPROVED fixtures are local integration inputs only;
+they do not prove Meta approval, R2 media delivery or production activation.
 
 ### Unresolved Issues
 
-None currently; report concrete gaps.
+Docker compilation resources block the real worker image and all required
+PG/Redis/worker fault scenarios. Root reported a new Admin staging/footer source
+correction prerequisite; independent integrated execution is held pending its
+acceptance and architect task amendment. Await architecture decision on any
+host-compiled-output alternative; read-only build mapping was supplied to root.
 
 ### Architectural Concerns
 
-No weakening of tenant, immutable outcome or uncertain-provider safety.
+No cross-owner implementation, weakened validators, synthetic production claim,
+source/main merge or billing/security change. Task stays in progress; this is not
+Ready for Review and must not be accepted as completed system validation.
 
 ## Architect Review
 
