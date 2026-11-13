@@ -87,6 +87,8 @@ After scoped work and required validation, publish matching task branches, set r
 
 ## Implementation Notes
 
+Root verified the current Admin Blueprint build/start has no migration hook. Updating the nested Database gitlink or building Admin does NOT apply the SQL guard. Root must apply only the accepted tested new migration to TEST then PROD, verify complete ledger/checksum/no-other-pending evidence, and only then merge Admin004 to main (which can auto-deploy new writers). Historical6afd migration is already finished in both environments and must not be replayed. Task executor performs no hosted DDL; record this concrete pre-merge gate in the Completion Report.
+
 You are not alone; do not revert or absorb others' edits. Use normal launcher preparation and dedicated matching parent/implementation task worktrees. No old task worktree reuse or shared checkout mutation. Root owns final integration and operational rollout. Return genuine new cross-repository/schema/contract gaps before widening scope.
 
 ## Completion Report
