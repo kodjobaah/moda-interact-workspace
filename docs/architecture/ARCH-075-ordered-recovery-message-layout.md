@@ -195,3 +195,8 @@ BG010 accepted source `56148f8e4ba1bd4578162a2564720c5de80aa995`: complete brand
 Gateway002 Ready after BG010 mergedsource1b71a7d3582f6f946939ac669a9308f1a0c66b01/acceptedparentffa37c3f3697c038208d20f4054afc2918042141. Ownercodifies operatorpersistedtest/prod gate/PhaseA/B/drain/rollback; root retains all live actions and writer staysOFF until drainproof.
 
 Gateway002 accepted exactsource `4c05b55b54aae8e713d67e463b94321dd4f5093d`: operatorownedtest/prodgate, readerfirst/drain/jobpreservation/rollback checks. Positive/completeNegative+96nestedfixtures/syntax passed. Root merge/sync/PhaseB/liveproof remain; architectureInProgress.
+
+
+## Customer context on handback (BG012)
+
+ARCH-075-BACKGROUND-012 is Pending on accepted/integrated ARCH-075-BACKGROUND-011. It assesses only the existing bounded prior-history window at a genuine AI-owned turn, using canonical customer moderation and existing retry/control guards. HUMAN ingress does not invoke AI or send; unmoderated/blocked context remains excluded. This complements the merchant prepared-body identity correction, with no new infrastructure, queue, schema, Shared release or generic telemetry. Architecture remains In Progress pending actual exchange verification.
