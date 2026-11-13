@@ -1999,3 +1999,13 @@ ADMIN001 Accepted/Complete at9be7c236; COMMERCE001 Accepted/Complete at69acccb6;
 
 ## ARCH-068 initializer accepted / terminal validation ready — 2026-11-10
 ADMIN002 independently Accepted/Complete unchanged Attempt1, source40fc5b67e6a814020668a6d4ae25eaa7c0d5f17a; independent7-unit/11-disposable-PostgreSQL tests and typecheck pass. All eight implementation/publication tasks are Complete. SYSTEM-TEST001 Ready at Attempt0, executor/claimed_at null, manually launched after developer validation; canonical handoff includes the completed prerequisite records and exact Shared5.12.0 pin. Architecture remains In Progress; no system execution, live initialization/activation, deployment, gitlink change or main merge/push. This current frontier supersedes the preceding initializer-readiness snapshot.
+
+
+## ARCH-075 upload-session follow-up — 2026-11-13
+
+BACKGROUND008 newly Ready/Attempt0/unclaimed on accepted BG007. Actual production HTTP200 sample-session response is rejected by local session-ID validation before byte upload/template intent. Owning task is limited to primary-contract/evidenced opaque-ID handling and safe Graph URL construction; no Shared release, schema, blanket repair or common activation. SystemTest002 acceptance/source integration remains a separate current parent task record; existing synthetic proof is not live provider approval. Architecture In Progress with provider approval/coordinated activation/ordered recipient proof pending.
+
+
+## ARCH-075 upload-session correction accepted — 2026-11-13
+
+BACKGROUND008 Accepted/Complete unchanged Attempt1, exact source36acc5f/report127c84b inspected. Evidence-based signed-ID preservation, strict same Graph origin/version/path construction and sensitive identity error redaction pass152focused/4,294fulltests, build/scopedlint. Full lint retains four verified unrelated unchanged findings; no source suppressions. Prepared isolated worktrees/sync/claim/publication verified. Root retains exact-head hosted CI success before main integration, actual rollout/preclaim retry and old403attested repair. No Shared release/schema change or live/common activation claim; ARCH075 remains In Progress with provider approvals/ordered recipient proof pending.
