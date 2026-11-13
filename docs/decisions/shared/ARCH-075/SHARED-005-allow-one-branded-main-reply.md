@@ -176,3 +176,7 @@ Minimal additive existingv1 parser order; no new fields/roles/codec. Browser-saf
 ### Follow-up
 
 Root integrates source/parent first, then SHARED006 release gate may be promoted. Existing5.13.9 candidate is unpublished test artifact only; exact version/archive/public registry authorization required before publication. BG010 remains gated. No runtime/live or architecture completion claim.
+
+## Developer Integration
+
+Root merged source PR [#84](https://github.com/kodjobaah/moda-interact-shared/pull/84) at expected source `8276eadb1f2467367e7b1ecb4a1d4e3573048fb6`; merge commit `3f1ffccb60c6cc88cc29361cefa9d7d1bfcd14a5`. Parent gitlink pins that merge. Local validation and independent acceptance are recorded above. No package published and no consolidated writer enabled by this integration.
