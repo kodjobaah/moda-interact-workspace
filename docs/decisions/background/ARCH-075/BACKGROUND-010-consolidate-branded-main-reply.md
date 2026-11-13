@@ -97,89 +97,61 @@ Normal launcher dedicated mirrored worktrees; you are not alone, preserve others
 
 ## Completion Report
 
-#
-
-## Status
+### Status
 
 Not Started
 
-#
-
-## Files Changed
+### Files Changed
 
 None
 
-#
-
-## Work Completed
+### Work Completed
 
 None
 
-#
-
-## Validation Results
+### Validation Results
 
 Not run
 
-#
-
-## Deviations
+### Deviations
 
 None
 
-#
-
-## Assumptions
+### Assumptions
 
 Root controls rollout and publication authorization.
 
-#
-
-## Unresolved Issues
+### Unresolved Issues
 
 Publication/consumer/live proof separate.
 
-#
-
-## Architectural Concerns
+### Architectural Concerns
 
 Production old readers reject HEADER-only; root drain gate and legacy frozen read compatibility are mandatory.
 
 ## Architect Review
 
-#
-
-## Review Status
+### Review Status
 
 Pending
 
-#
-
-## Review Notes
+### Review Notes
 
 None
 
-#
-
-## Reviewed Files
+### Reviewed Files
 
 None
 
-#
-
-## Validation Reviewed
+### Validation Reviewed
 
 None
 
-#
-
-## Architecture Conformance
+### Architecture Conformance
 
 Pending
 
-#
-
-## Follow-up
+### Follow-up
 
 No implicit publication or architecture completion.
 
