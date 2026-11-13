@@ -168,3 +168,7 @@ Canonical GatewayIaC owns test/prod declarations; no hardcodedvalue/groupcopy/se
 ### Follow-up
 
 Root merges source/parent and verifies Blueprint sync preserves operatorvalues. Root PhaseA OFFstartup+oldSIGTERM evidence already supplied; verifycompleteinventory before PhaseB and actualshortfullbranded/product/human/AI delivery. Source acceptance is not live rollout or ARCH075 completion.
+
+## Developer Integration
+
+Root merged reviewed Gateway PR17 at exact source `4c05b55b54aae8e713d67e463b94321dd4f5093d`. Actual main merge is `ad8d15237516c9c5f2923e7937c8f3ce4212ade1`, recorded by the workspace pin. No GitHub checks are declared on this repository; the accepted positive, negative, 96 nested validation fixtures, shell syntax and diff checks passed. Live PhaseA evidence confirms Background `1b71a7d` starts with the writer off in both environments; old messaging workers terminated at 20:52:14 UTC (test) and 20:52:41 UTC (production). The live service inventory contains only the twelve dedicated workers, with no combined legacy worker. PhaseB activation and real delivery remain root-owned and are not claimed here.
