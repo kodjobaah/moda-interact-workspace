@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T02:01:15Z
@@ -161,26 +161,24 @@ Common-reference variables must remain intentionally narrower than generic wrapp
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Actual source3e1a06fa review found one missing common-reference invariant: required name/site presence does not exclude other valid wrapper variables. Header/conditional can therefore contain values outside the approved common Meta-projectable frame. Correct within this same source task, preserving generic legacy wrapper behavior.
+Attempt2 correction accepted at exact source `b576c5ef33df88da1e010f9ceeb76999a3285bee`. Actual parser diff now restricts common header to literal/name/site and conditional to literal/checkout while retaining required occurrence, standalone final URL, body-only response slot, empty static footer and existing projection hash checks. Generic wrappers remain unchanged. Prior Changes Requested history and superseded artifact remain in Completion Report; initial candidate must not publish.
 
 ### Reviewed Files
 
-common-recovery-layout.ts and existing wrapper parser; website binding/resolver source and focused tests; immutable artifact/report evidence.
+Canonical recovery/outreach semantic bindings and optional website resolver; wrapper variable parser; common-recovery-layout.ts; valid-hash injection and generic compatibility tests; installed artifact validator/package metadata; attempt2 report and canonical packet.
 
 ### Validation Reviewed
 
-Initial exact head783 passed/3 skips, types/build/installed proof recorded but not accepted as final because the following correction changes runtime. Existing work/isolation evidence remains valid; next claim increments preserved attempt once.
+Corrected exact-head784 passed/3 expected skips/0 failed, types, ESM/DTS build, installed Node/types/browser negative/positive proof and legacy presentation/outreach checks. Artifact SHA256 `79731a5e54a1a9f5d1a0fdeb84cc4db1d2968c416cfa9543de52a813088e4043`; SHA1/SHA512 match corrected receipt. Source clean, dedicated canonical attempt2 claim/isolation recorded. No publication occurred.
 
 ### Architecture Conformance
 
-Correction required: common reference HEADER permits only text and shop.name/shop.websiteUrl, each exactly once; checkout conditional permits only text and checkout.url exactly once on its own final line. Body exactly response slot, static footer empty, no productImage and hash checks remain unchanged. Generic prepared wrappers may still support their existing broader variable set.
+Conforms to one Admin-owned common revision, genuine shared website/ref boundary, no duplicate frame renderer, strict reusable validation and compatible legacy projections. Host re-read/current tenant/slot verification remains mandatory; parsed ref is not authority.
 
 ### Follow-up
 
-1. Add explicit token allowlists to the new common-reference parser.
-2. Add valid-hash negative fixtures inserting customer.firstName and logo/other variables in header/conditional; existing common custom-text positives and generic wrapper compatibility remain green.
-3. Run required corrected exact-head source checks/build/installed artifact, submit revised report and immutable5.13.9 hashes. No publication or follow-on work. Reclaim via canonical launcher, no alternate checkout.
+Shared004 becomes Ready. Root merges this exact source, obtains explicit approval for the corrected tested5.13.9 artifact, then sole publication verifies actual registry bytes. Oldc848 candidate superseded, never publish. Final Background reader/producer and Admin work depend on actual public release.

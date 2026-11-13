@@ -7,5 +7,5 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 | ARCH-075-SHARED-001 | complete |
 | ARCH-075-SHARED-002 | complete |
 
-| ARCH-075-SHARED-003 | ready |
-| ARCH-075-SHARED-004 | pending |
+| ARCH-075-SHARED-003 | complete |
+| ARCH-075-SHARED-004 | ready |
