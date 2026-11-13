@@ -169,4 +169,4 @@ Conforms to bounded Admin-only retry correction and compatible rollout. No Share
 
 ### Follow-up
 
-Root may merge exact reviewed source and exercise the existing authorized UI retry after deployment. SYSTEM-TEST002 remains Pending until all implementation dependencies are accepted and the manual checkpoint is satisfied. ARCH-075 remains In Progress pending live operational acceptance.
+Root merged PR94 at `e0699c99e82f12fd8c2a778f38a0a44cebb8a2cf`; parent gitlink pins that merged implementation. Deployment verification and the existing authorized UI retry remain root-owned. SYSTEM-TEST002 remains Pending until all implementation dependencies are accepted and the manual checkpoint is satisfied. ARCH-075 remains In Progress pending live operational acceptance.
