@@ -35,11 +35,11 @@ Recognize explicit published localized opt-out commands.
 
 ## Context
 
-Actual reviewed translated opt-out copy instructs STOPP (Norwegian/Swedish) and DUR (Turkish), while existing exact command matcher accepts only STOP/UNSUBSCRIBE. No live locale approval or send should promise an unrecognized opt-out command. This is a bounded consent correction, not language inference.
+Actual reviewed translated opt-out copy instructs STOPP, DUR, PARAR and STOPPA, while existing exact command matcher accepts only STOP/UNSUBSCRIBE. No live locale approval or send should promise an unrecognized opt-out command. This is a bounded consent correction, not language inference.
 
 ## Scope
 
-Existing whatsapp-contact-opt-out/phone.ts explicit command matcher and directly related opt-out routing/priority/fence regression tests. Add only exact STOPP and DUR to existing STOP/UNSUBSCRIBE semantics, preserving case-insensitive matching, existing trim and optional single dot/exclamation punctuation.
+Existing whatsapp-contact-opt-out/phone.ts explicit command matcher and directly related opt-out routing/priority/fence regression tests. Add only exact STOPP, DUR, PARAR and STOPPA to existing STOP/UNSUBSCRIBE semantics, preserving case-insensitive matching, existing trim and optional single dot/exclamation punctuation.
 
 ## Out of Scope
 
@@ -47,7 +47,9 @@ Substring or NLP matching, additional unreviewed aliases, changing consent prior
 
 ## Requirements
 
-Text-only whole-command recognition: STOP, UNSUBSCRIBE, STOPP, DUR, existing trim/case and optional single . or !. No sentences/prefix/suffix/substrings/extra punctuation or nontext intent. Route recognized localized commands through the exact existing durable opt-out/tenant resolution and priority path before ordinary conversation/AI handling. Existing quoted/standalone merchant scope, STOP persistence-before-notice, duplicate behavior, no-contact and final send/continuation fences remain unchanged. Use synthetic data; do not change provider/customer state.
+Text-only whole-command recognition: STOP, UNSUBSCRIBE, STOPP, DUR, PARAR, STOPPA, existing trim/case and optional single . or !. No sentences/prefix/suffix/substrings/extra punctuation or nontext intent. Route recognized localized commands through the exact existing durable opt-out/tenant resolution and priority path before ordinary conversation/AI handling. Existing quoted/standalone merchant scope, STOP persistence-before-notice, duplicate behavior, no-contact and final send/continuation fences remain unchanged. Use synthetic data; do not change provider/customer state.
+
+The finite reviewed 91-footer cohort establishes exactly these four additional commands. Any future unexpected translated command must remain unapproved until explicitly reviewed; do not broaden the matcher speculatively.
 
 ## Work Items
 
@@ -69,7 +71,7 @@ ARCH-075-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
-- [ ] Exact STOPP/DUR variants follow existing recognized-command behavior; sentences/substrings/malformed variants/nontext refuse.
+- [ ] Exact STOPP/DUR/PARAR/STOPPA variants follow existing recognized-command behavior; sentences/substrings/malformed variants/nontext refuse.
 - [ ] Existing durable consent priority, merchant scope, duplicate and final-send/continuation suppression remain proven.
 - [ ] Canonical physical isolation/sync and exact validation evidence reported; no live mutation.
 
