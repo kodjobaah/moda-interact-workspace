@@ -175,6 +175,13 @@ Root canary created20/20 after boundary correction. UI false provider-drift comp
 
 2026-11-13 ADMIN008 accepted exactsource `049a7534f657494c4ad38e8fe755fc1c854004b6`: correct provider-observation hash domain in read-only UI, canonicalservercodec reused, immutablepreparedhash/true drift/lifecycleguards preserved.837unit/48focused/security331+3/type/lint/build/remotegreen,0client2servercodecproof. Root deployedUI/canaryreadback and actualactivation/delivery remain required; architecture stays In Progress.
 
+## Default human root wiring correction — 2026-11-13
+
+Root successfully activated production common frame revision1 and approved NoOffer assignments, but genuine human command failed multipart_root_not_prepared with HUMAN revision7 and prepared evidence, no root/parts/provider send. Default dispatcher adapter supplies continue but omits freeze, unlike complete injected test engines. BACKGROUND009 owns minimal delegation plus default-runtime and real PG guarded root regression; no contract/schema release or live mutation. Earlier human-inactive cancellations are separate timing evidence. Root verifies deployed new human and AI messages; architecture stays In Progress.
+
+| ARCH-075-BACKGROUND-009 | moda_background | Complete | ARCH-075-BACKGROUND-002 |
+
+BG009 accepted exactsource `0f7e4d4f8c293d4413bb1f0dc3df30fe66ae622d`: canonicaldefaultfreeze delegation, defaultfactory/PG69/focused169/full4295/build/scopedlintgreen;4unchangedbaselinelint findings disclosed. RootCI/merge/deployment/newhumandelivery required; no architecture completion.
 ## Branded main reply consolidation — 2026-11-13
 
 User observed empty branded header/footer followed by separate answer/footer. Add only Shared HEADER-only order (SHARED005), separately publish after acceptance (SHARED006), then Background010 composes one main logo+header+answer+footer when fullcaption<=1024, followed by separate verified PRODUCT footer-only when present. Existing HEADER+PRODUCT is valid. Above caption limit, complete main TEXT retains shop details/answer/onefooter; logo is omitted due physical caption constraint, never truncation or invented literal. With product, main TEXT uses HEADER then PRODUCT; without product, existing ANSWER-only fulltext. Every physical part keeps trusted checkoutURL; no empty adjacent divider header. Exact new decomposition and legacy frozen-plan guards required. BG010 depends on BG009 and published Shared; old workers must drain before new HEADER-only production. No schema/version fields or authored-common mutation.
