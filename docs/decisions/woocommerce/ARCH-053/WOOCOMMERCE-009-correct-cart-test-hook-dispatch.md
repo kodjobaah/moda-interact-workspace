@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T15:17:25Z
@@ -55,9 +55,9 @@ Already merged follow-up UI/contracts, product coupon behavior changes, new hook
 
 ## Work Items
 
-- [ ] Confirm built exact-main remaining failure and canonical hook semantics.
-- [ ] Correct only the fixture/cleanup behavior and regression assertions.
-- [ ] Run required checks, publish source/report and return review.
+- [x] Confirm built exact-main remaining failure and canonical hook semantics.
+- [x] Correct only the fixture/cleanup behavior and regression assertions.
+- [x] Run required checks, publish source/report and return review.
 
 ## Interfaces / Contracts
 
@@ -73,15 +73,15 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Canonical hook dispatch and selective cleanup execute actual production callback behavior.
-- [ ] Normal/exception cleanup and unrelated notices/callbacks remain covered without product changes.
-- [ ] Required full verification passes with actual built asset prerequisites; exact isolation/sync/source/report evidence is recorded and primary/backup preserved.
+- [x] Canonical hook dispatch and selective cleanup execute actual production callback behavior.
+- [x] Normal/exception cleanup and unrelated notices/callbacks remain covered without product changes.
+- [x] Required full verification passes with actual built asset prerequisites; exact isolation/sync/source/report evidence is recorded and primary/backup preserved.
 
 ## Validation
 
-- [ ] Focused red/green cart/coupon fixture and cleanup tests, full declared PHP suite and PHP lint.
-- [ ] Existing JS/full build checks relevant to the accepted Woo baseline; no ignored artifact commit. Any remaining failure is explained/fixed only within scope or returned to owner.
-- [ ] Diff/privacy and changed-file whitelist checks.
+- [x] Focused red/green cart/coupon fixture and cleanup tests, full declared PHP suite and PHP lint.
+- [x] Existing JS/full build checks relevant to the accepted Woo baseline; no ignored artifact commit. Any remaining failure is explained/fixed only within scope or returned to owner.
+- [x] Diff/privacy and changed-file whitelist checks.
 
 ## Stop Condition
 
@@ -95,35 +95,51 @@ You are not alone; preserve others' work. Normal launcher owns canonical matchin
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- Implementation: tests/CheckoutCartRestorerTest.php only.
+- Parent: this task file only.
 
 ### Work Completed
 
-None
+The fake cart dispatches the existing bootstrap's canonical moda_interact_test_filters registry; its remove_filter selectively removes only the requested callback from that same registry. Removed the inactive duplicate add_filter fallback. Test setup snapshots/restores the registry. Added actual production-restorer regressions proving normal and exceptional cleanup, unrelated callback preservation and later ordinary coupon errors remaining visible. Production PHP/JS, dependencies and bootstrap remain unchanged.
+
+All 12 original primary local Woo follow-up edits were byte-identical to accepted origin/main 95cffb4e9f95427d02073f7bb04841ca3c2a5776 (feature merged through PR45/ad1085a383cc3254ddbf81798547b5732f4bf184). No duplicate feature port was made. Root's external backup and primary originals were preserved.
 
 ### Validation Results
 
-Not run
+- Built exact-main baseline: PHP341 tests/2581 assertions, one coupon fixture failure. The two earlier asset failures disappeared after the declared production build; no product patch for ignored asset absence.
+- New focused regressions RED before fixture correction:9 tests/44 assertions/3 failures. GREEN after correction:9 tests/49 assertions.
+- composer test:343 tests/2590 assertions PASS.
+- composer lint and changed-file php -l:PASS.
+- npm run test:js:unit:65 files/482 tests PASS; npm run test:js:node:128 PASS.
+- npm run build:PASS; three existing webpack size warnings.
+- Whole JS lint has309 unchanged accepted-main errors (258 Prettier,48 curly,3 other existing rules). No JS source/config/dependency changes; root/architect explicitly excluded mass formatting from this functional reconciliation. Full JS lint is not claimed green.
+- git diff --check PASS. Source whitelist is one test file. Production includes/src, package manifests/locks and Vitest config compare unchanged to origin/main. No credentials, customer data or generated output added.
+
+Validation used copied vendor dependencies and an existing identical-lock node_modules symlink in the isolated worktree; declared build regenerated ignored assets. Detailed logs are in the root-owned external backup's verification/woo009-logs directory. No live calls or Docker integration tests were needed for this test-only correction.
+
+### Isolation and Publication
+
+Normal launcher prepared canonical dedicated parent moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-009 and implementation moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-009, both task/ARCH-053-WOOCOMMERCE-009. Dependency gate passed, repositories synchronized with origin/main and recursive submodules verified. Durable claim:973003c79b18def4e84d121a4a5d9fade60e78b9, attempt1/executor codex. Implementation source afb321fe164aefa026061d560cc307db984da976 is committed and pushed on the matching task branch. Parent report is published on the matching task branch. Neither main branch was merged or pushed by this agent.
 
 ### Deviations
 
-None
+No product changes. Existing whole-JS lint baseline remains disclosed rather than widening scope.
 
 ### Assumptions
 
-Post-build baseline confirmation precedes source implementation.
+Canonical bootstrap retains its existing callback-array ordering contract; no new hook abstraction or priority model is introduced.
 
 ### Unresolved Issues
 
-None beyond the explicit baseline confirmation gate.
+Existing whole-JS lint baseline remains outside this fixture task. Root owns final integration and primary-checkout reconciliation.
 
 ### Architectural Concerns
 
-Return genuine product defects before broadening source ownership.
+None. No cross-repository contract, package publication or deployment required.
 
 ## Architect Review
 
