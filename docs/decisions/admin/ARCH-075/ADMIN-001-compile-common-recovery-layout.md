@@ -51,6 +51,10 @@ The ONE existing compiler projects saved common header tokens into Meta BODY pre
 
 Immutable approved snapshots remain readable/unchanged. Clone revisions rather than mutate published definitions; reconstructed target locales preserve matching localized commonRef and variable bindings. Body translations remain family-specific, common header/footer translations are authored/reviewed once in common revision. Preview should say Common shop header and Common checkout footer, not implementation jargon, and demonstrate custom common text changes across Meta/AI/HUMAN without copy-paste. Default name/site/divider/check-out content is not a second hardcoded builder. Return actual provider/API/schema/activation gaps; no unreviewed template-part transport or outside-window freeform send.
 
+### Scenario catalogue coverage
+
+Inventory the actually supported stage/offer/promotion-target matrix from existing code and durable definitions. Present clear scenario labels distinguishing approved business-initiated initial/follow-up recovery templates (including any supported outside-window HUMAN path) from dynamic AI product answers and HUMAN freeform messages. Prepare reviewable replacement/default seed drafts only for supported scenarios, with the one common layout and family-specific copy. Preserve existing offer eligibility/promises; no invented discount, policy, template family or transport. Missing supported scenario coverage must be explicit, not masked by duplicate queued versions. Preserve historical/queued definitions as immutable/cloneable records; no automatic deletion, retirement, registration or activation. Root reviews concrete copy/coverage before external registration. Golden previews and tests verify labels/coverage and common frame parity.
+
 ## Work Items
 
 - [ ] Complete assigned bounded capability only.

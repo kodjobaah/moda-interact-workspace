@@ -50,6 +50,10 @@ Use existing publication operation/target snapshots, SHARED slot version CAS and
 
 Source/approval workflows must keep existing Meta snapshots immutable, clone/register/review replacements; live provider submission/activation remains root-owned after concrete review. Background consumer must be deployed before selecting new projections. Existing approved outreach outside customer window remains a template send only, no new product freeform tail. Runtime mismatches fail closed before provider. Preserve compatible legacy frozen messages. Test concurrent Admin/slot/provider drift, all-or-no-switch per intended transaction boundary, idempotent replay and audit. Stop with explicit architectural gap if broader schema/contract change is necessary.
 
+### Existing source catalogue gate
+
+When common-layout mode is activated, new publication/submission of unstamped legacy saved/queued definitions must refuse with a clone-with-common-layout action. Do not retrofit current common content during an HTTP send, mutate old snapshots or silently publish duplicate versions. Active replacement cohort is reviewed from real supported scenario inventory, not merely two existing NO_OFFER definitions. Root reviews copy and coverage before external registration. Existing legacy records stay readable/cloneable and historical sends unchanged.
+
 ## Work Items
 
 - [ ] Complete assigned bounded capability only.
