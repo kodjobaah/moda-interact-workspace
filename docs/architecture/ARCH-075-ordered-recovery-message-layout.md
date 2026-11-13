@@ -131,6 +131,16 @@ Actual Responses translation echoed input-only protectedTokens fields, correctly
 
 | ARCH-075-BACKGROUND-006 | moda_background | Complete | ARCH-075-BACKGROUND-005, ARCH-075-SHARED-004 |
 
+### Durable app sample-throttle correction
+
+Actual sample HTTP403/numeric Meta code4 was misclassified as permanent. Existing registration retry dates, fixed scheduler leases and event/config JSON cannot safely represent app-scoped backoff/fencing. Database002 adds dedicated environment/app state; Background007 enforces one120second bounded sample lease,15minute exponential cooldown capped6hours and conservative preclaim deferral across replicas. Timing is internal safety policy, not a provider reset guarantee. No cache/reuse or new Shared release. Generic old REJECTED records require exact root operator external-evidence attestation and strict preclaim/source/CAS/audit guards; never blanket recovery.
+
+Rollout: additive migration test/prod, accepted Background schema/client adoption, messaging worker rollout and old-reader drain, then exact root-only historical recovery respecting cooldown. Existing creates/POST uncertainty remain unreplayable. Terminal SystemTest002 independently validates the new capability after accepted dependencies/manual checkpoint. Preserve accepted SystemTest001 without reopening or discarding its proof. Architecture remains In Progress.
+
+| ARCH-075-DATABASE-002 | moda_database | Complete | ARCH-075-DATABASE-001 |
+| ARCH-075-BACKGROUND-007 | moda_background | Ready | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-006 |
+| ARCH-075-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001 |
+
 ### Independent system validation accepted
 
 The terminal system task is Accepted after actual disposable PostgreSQL/Redis/worker delivery and fault scenarios, canonical Admin activation, localized consent, Meta preclaim readiness and strict translation provider deltas. Exact source/image provenance and approved host-build limitations are recorded in its report. Architecture remains In Progress: synthetic fixtures do not replace live provider approvals, coherent environment copy, coordinated activation or genuine ordered recipient delivery.
