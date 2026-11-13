@@ -15,6 +15,7 @@ executor: codex
 claimed_at: 2026-11-13T05:35:26Z
 attempt: 1
 depends_on:
+  - ARCH-075-BACKGROUND-006
   - ARCH-075-ADMIN-005
   - ARCH-075-BACKGROUND-005
   - ARCH-075-GATEWAY-001
