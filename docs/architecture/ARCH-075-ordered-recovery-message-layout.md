@@ -53,7 +53,7 @@ No new service or Gateway topology. Reuse existing Background queue/worker and s
 | ARCH-075-SHARED-002 | moda_shared | Complete | ARCH-075-SHARED-001 |
 | ARCH-075-BACKGROUND-001 | moda_background | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002, ARCH-075-SHARED-004 |
 | ARCH-075-BACKGROUND-002 | moda_background | Complete | ARCH-075-BACKGROUND-001, ARCH-075-SHARED-004, ARCH-075-ADMIN-001 |
-| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Pending | All implementation/publication tasks |
+| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Ready | All implementation/publication tasks |
 
 PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Shared public release, Background engine then producer integration; developer deploys/drains old readers before emitting new manifests. No production replay/reset/extra test send without authorization. New format cannot roll back to old readers blindly; stop generation/drain new pending work first, preserve all outcome records. Source tasks never depend on system test. Developer manual checkpoint precedes Ready terminal system-test invocation. Architecture Implemented only after accepted terminal validation and genuine ordered WhatsApp proof with explicit partial/unknown behavior evidence. Public documentation excludes customer/provider identifiers and URLs.
 
@@ -102,5 +102,5 @@ Admin inspection established that existing per-definition/per-shop publication c
 
 Actual common-source translation revealed Admin protected-segment validation omitted the canonical shop.websiteUrl binding. Admin003 owns the narrow producer correction; Background003 verifies actual existing generic marker codec roundtrip without speculative runtime changes. Both are Ready on accepted dependencies. No schema or Shared release is required. System validation additionally depends on both accepted corrections; architecture remains In Progress.
 
-| ARCH-075-ADMIN-003 | moda_admin | Ready | ARCH-075-ADMIN-002, ARCH-075-SHARED-004 |
+| ARCH-075-ADMIN-003 | moda_admin | Complete | ARCH-075-ADMIN-002, ARCH-075-SHARED-004 |
 | ARCH-075-BACKGROUND-003 | moda_background | Complete | ARCH-075-BACKGROUND-002, ARCH-075-SHARED-004 |

@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T05:22:11Z
@@ -160,24 +160,24 @@ The owner gap was an Admin-local whitelist lag, not a new Shared capability. Bac
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual source and report review.
+Accepted exact source `12c86b8ecb4549946ce910bd2d9072832844e0e2` and mirrored report `364d8ea5e12e008ba85a4a97507b56293660c008`. The actual producer defect was one missing canonical shop.websiteUrl alternative in the existing strict protected-variable allowlist. Independent source/test inspection confirms no unrelated runtime widening or contract/version change.
 
 ### Reviewed Files
 
-None
+`translations/source-snapshot.ts`; `tests/unit/arch075-common-website-translation.test.ts`; actual extraction, snapshot and reconstruction boundaries exercised by those tests.
 
 ### Validation Reviewed
 
-None
+Meaningful red proof: five failures and one legacy pass before the correction. Final six regressions, 16 translation tests, 15 compilation tests, 794 full units, types, lint, build and 334 security/observability checks passed. Exact-head Vercel and Preview Comments passed; no Actions workflow exists. Reviewed canonical matching worktrees, prepared claim/synchronization and recursive submodule evidence. Pure parser correction requires no new database validation. No live request or browser visual claim.
 
 ### Architecture Conformance
 
-Pending
+Canonical name/website/checkout protected marker bytes survive actual immutable snapshot and reconstruction. Unknown semantic names, missing/duplicate/unregistered markers and source/prepared/output digest drift remain refused; legacy marker bytes unchanged. No Shared release, schema, frame authority or accepted-task rewrite. Background003 consumer verification is separately Accepted. Architecture remains In Progress.
 
 ### Follow-up
 
-None
+Root owns source merge and parent integration. Retry the existing translation workflow only after deployment through the authorized Admin UI; no direct mutation or forged run status. System validation is dependency-eligible again but remains unprepared until the developer manual checkpoint. Live common activation and genuine ordered delivery proof are outstanding.
