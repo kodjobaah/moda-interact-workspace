@@ -64,7 +64,7 @@ Database002 owns durable Prisma/SQL state. Background007 consumes exact accepted
 
 ## Dependencies
 
-ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001
+ARCH-075-ADMIN-006, ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001
 
 ## Enables
 
@@ -86,6 +86,8 @@ None
 When scope/checks complete, submit Completion Report/status review and STOP. No enabled task, source merge, hosted migration or live recovery/provider action.
 
 ## Implementation Notes
+
+Accepted source identities: Background `ce9d6e1017f553d307f21899c20f713d514189fd`; Database `6f42b71112efe7ac63654d55f41cd74ca569b1ae`; Admin `e0699c99e82f12fd8c2a778f38a0a44cebb8a2cf`; accepted SystemTest001 merge `05676a22d111081f3889a0fddcb16820077e3ec6`. New migration `20261113111320_arch075_meta_app_operation_state` SHA256 `413aa05032522ee291cb406325bccbc8dd3c92cf42046ed9841000d5832b856c`. Use exact accepted source provenance in independent disposable fixtures; do not mutate owning repositories. Root explicitly passed the developer manual checkpoint for this terminal task. Preserve prior accepted integrated proof and its documented correctness-image build limitation.
 
 You are not alone; preserve other work. Canonical launcher packet owns start/claim. Root owns all final merges, test/prod migration, worker rollout/drain and protected live evidence. New domain logs reuse published Shared logging; do not duplicate generic telemetry. Return genuine contract gaps before widening scope.
 
