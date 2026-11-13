@@ -48,6 +48,8 @@ Other repositories, Shared publication/schema, provider guard weakening, uncerta
 
 Recover only exact BLOCKED/META_APP_ID_MISSING_OR_INVALID registrations in reviewed bounded manifest (at most20 IDs per operation), repaired trusted app/WABA configuration and current unchanged frozen reviewed source. Require providerTemplateId/lastSubmittedAt absent and no historical CREATE_INTENT, POST_INTENT or other evidence of submission claim/HTTP creation. Lock/CAS exact id,WABA,state,reason,updatedAt and expected immutable snapshot identity; any mismatch/otherfailure/unknown/submitted row refuses. Atomically audit truthful preclaim recovery and set READY_TO_SUBMIT/due through domain method, without resetting history/counters, sending provider requests or creating a new registration. Dry-run default, explicit apply+manifest digest; repeat no duplicate transition/audit. Keep ordinary claim/reconciliation/provider-absence guards unchanged. Live historical20 recovery root-owned only after source acceptance, trusted config and English review repair; task agent does not execute it.
 
+The repaired META_APP_ID configuration proof must refer to the actual messaging worker process that starts startProductionMetaTemplateDuePoller (accepted src/entrypoints/messaging.ts), not the merchant-communications translation worker. Root owns environment correction; no live repair before the correct process is configured and reviewed-source proof holds.
+
 ## Work Items
 
 - [ ] Confirm owning defect and implement only bounded capability.
