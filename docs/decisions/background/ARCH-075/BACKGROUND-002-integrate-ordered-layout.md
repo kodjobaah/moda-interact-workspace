@@ -75,6 +75,10 @@ This combined reader/producer rollout is authorized ONLY because actual SHARED s
 
 Ordered AI delivery must not silently lose the already-supported server-owned productContextUpdate. Optional private frozen carrier uses the existing canonical Shared context schema; source/part digest binds it. Reuse existing current-control/inbound/version/hash final-fence logic at ordinal0 only, atomically with the first irreversible permit; suppression/duplicate/failed admission must not commit a context mutation. Later parts never reapply or overwrite newer context. No new Shared release/schema/policy. Add actual successful and suppressed/duplicate first-part regressions. New optional private format remains covered by the explicit SHARED-absence/drain operational gate above.
 
+### Meta common frame final-race contract
+
+For newly authored approved registrations with commonRef, carry canonical commonRef plus exact verified tenant name/site/checkout values in existing Background-local templateRegistration identity. Bind that data to existing frozen registration identity, never arbitrary caller context. Final existing SQL permit re-reads actual registration locale authoring.commonLayout and REQUIRES matching carrier when present (omission refuses), validates public schema, locks/rechecks current SHARED definition/source/locale and current tenant facts. Reuse/factor current common source/fact checker, no duplicate renderer/SQL policy or new Shared/database schema. Never compile/mutate provider components at send time. Preserve old frozen registration eligibility by its existing identity, no retrofit of current frame. Test slot/source/domain/name/checkout change between preparation and permit, missing/tampered carrier, positive real approved snapshot and legacy behavior.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
