@@ -15,3 +15,6 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 
 ARCH-075-SHARED-007 Pending (resource hold): additive logical-group footer validation; depends on Complete SHARED-006. Enables Pending SHARED-008 release. No writer/publication/native-template activation.
+
+
+ARCH-075-SHARED-007 Superseded unexecuted by explicit single-bubble composite choice; no publication or implementation occurred.
