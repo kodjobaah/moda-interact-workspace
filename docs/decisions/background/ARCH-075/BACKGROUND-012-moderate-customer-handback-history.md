@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T21:51:41Z
@@ -154,24 +154,26 @@ Only the two explicit architect amendments expanded validation/timing detail. No
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Reviewed exact source cbe926522d318953217480932c97233eafd61752 and report46c139f1feb98ed0a0bc1ddc4286f70fda28fa13. No findings. Prior selection exactly preserves the existing mixed20 window; current decisions remain authoritative before historical assessment. Canonical stored-subject moderation/cache/lease authority is reused, and BLOCK/review history remains excluded. Original claim deadline is passed without lease reset; historical16-second ceiling begins before selection, full timeout plus1-second margin is checked before calls, first RETRY stops and existing release scheduling progresses through cached rows. This does not assert a new bound on the pre-existing current moderation loop.
+
+The startup unit fixture amendment was independently inspected against actual entrypoint purpose: missing multipart lifecycle mock is now isolated with exactly-once start/close assertions; due/pending repair assertions and original timeout remain unchanged. No production startup edits.
 
 ### Reviewed Files
 
-None
+history-selection.ts, history.ts, moderation-turn-gate.ts, conversation-turn-processor.service.ts; focused handback/processor tests; actual common-layout/moderation PG regressions; arch047-meta-messaging-startup unit fixture.
 
 ### Validation Reviewed
 
-None
+Final full4344 PASS/10 existing configured skips;98focused;48actual disposable PG/0skips; runtime build/both TypeScript compilers;9-file scoped lint/diff. Original exact gate unit/PG RED captured. Superseded generator/startup traces and narrow correction rationale disclosed. Four unchanged full-lint baseline findings not claimed green. Dedicated mirrored launcher worktree, synchronization, dependency, recursive database and clean publication evidence reviewed.
 
 ### Architecture Conformance
 
-Pending
+Conforms to Background-local bounded handback moderation without queue/schema/Shared change, HUMAN-mode AI work, control/billing weakening, whole-conversation scans or source role elevation. Source accepted independently of live integration.
 
 ### Follow-up
 
-ARCH-075 remains In Progress; no live completion claim.
+Root owns main integration and genuine post-deployment both-sides handback proof. ARCH-075 remains In Progress. User-approved composite layout is a separate design; prior two-bubble group definitions remain unexecuted pending supersession.

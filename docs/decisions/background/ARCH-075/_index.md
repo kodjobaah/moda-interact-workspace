@@ -38,3 +38,8 @@ ARCH-075-BACKGROUND-011 is Complete/Accepted at source01702b7ccf86c195f16ba6eee6
 ### BG012 execution promotion
 
 ARCH-075-BACKGROUND-012 is Ready after actual BG011 source mainac2ef244a36a63f13cb794bef41a4d7a27207cb2 and accepted parent1309896672d0b80122e99fae30efe8782d995bb9 integration. Earlier Pending notes are historical. Owner must use normal preparation and preserve current-turn moderation/control semantics. No live proof or architecture completion is claimed.
+
+
+### BG012 accepted bounded customer handback
+
+ARCH-075-BACKGROUND-012 Complete/Accepted at sourcecbe926522d318953217480932c97233eafd61752/report46c139f1feb98ed0a0bc1ddc4286f70fda28fa13.4344 full/48 actualPG/98focused/build/scopedlint passed; existing configured skips and unchanged baseline lint disclosed. Exact prior20 assessment and original-lease timing/control guards retained. Root deployment/live proof remains pending. Architecture stays In Progress.
