@@ -1081,3 +1081,5 @@ In Progress. Background-owned footer/divider coverage extends to human and eligi
 - [ARCH-073: Tenant-specific recovery shop headers and optional logos](ARCH-073-tenant-recovery-shop-headers.md) — Implemented; genuine authorized image delivery/read verified.
 
 - [ARCH-074: Recovery branding independent of billing scope](ARCH-074-recovery-branding-billing-scope.md) — In Progress.
+
+- [ARCH-075: Ordered recovery logo and product message layout](ARCH-075-ordered-recovery-message-layout.md) — In Progress.
