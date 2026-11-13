@@ -9,13 +9,14 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-038-DATABASE-001
+  - ARCH-017-DATABASE-002
 enables:
   - ARCH-038-ADMIN-004
 created: 2026-11-13
@@ -48,7 +49,10 @@ Order Support retirement/history, application UI/runtime edits, provider/credent
 
 - Preserve the existing budget schemaVersion1, positive safe integer validation, required Platform deadlineMs/outputTokens, sparse plan/shop overrides and1–64 tool-call bound. Existing legacy missing-field reads retain historical16; do not invent a different Preview policy owner.
 - Verify root-owned read-only test/production migration ledger evidence before changing migration bytes. If already deployed, canonicalize the exact SHA256 3be33e9e482addfe38683a7407394faf5059e726ec56f77e625b06fcd987d539 with its original name and bytes; do not tidy duplicate function definitions in an applied migration. If not deployed, report that fact and still preserve authorized backed-up semantics; never fabricate ledger rows or run live DDL.
+- Root-owned read-only ledger check confirmed the new budget migration absent from BOTH environments on2026-11-13. Its duplicated function definition may therefore be simplified before first publication, preserving behavior and recording the new checksum. Historical order_support migration bytes remain immutable under ARCH017DATABASE002.
+- Wrap the complete new migration in explicit BEGIN/COMMIT so a backfill failure cannot leave its guard trigger disabled.
 - Migration changes only the intended JSON validator/default state, preserving existing values, audit/ownership constraints and newer ARCH075 migrations. Temporary trigger disabling must be bounded within the migration transaction and restored before commit; genuine failure must roll back safely. Never leave an unaudited broad writer path open.
+- Hosted upgrade applies this earlier-named pending migration AFTER newer ARCH075 migrations already recorded. Prove upgrade by applying ALL existing canonical migrations except the new budget target (including later timestamps), seed legacy rows, then apply the new target LAST. Fresh applies the full sorted chain.
 - Correct the PG harness's obsolete assumption that this target must be the final migration. Prove the target is included in the complete ordered canonical chain and fresh/upgrade behavior with later migrations retained; don't discard newer sources. No seed retirement or legacy order_support migration in this task.
 - Port selectively from the verified external backup onto current main. Preserve primary originals and all newer main functionality; no wholesale old-tree replacement. Source integration and actual hosted migration rollout are separate root-owned gates; Admin writers remain gated until schema rollout is verified.
 
@@ -64,7 +68,7 @@ Existing architecture-owned contracts and current published dependencies remain 
 
 ## Dependencies
 
-ARCH-038-DATABASE-001
+ARCH-038-DATABASE-001, ARCH-017-DATABASE-002
 
 ## Enables
 

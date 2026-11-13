@@ -236,6 +236,8 @@ DATABASE-002 is preserved as a **superseded** historical task definition: no imp
 
 ### Preserved local functionality reconciliation — 2026-11-13
 
-ARCH-038-DATABASE-003 (ready) owns the bounded outcome: Persist the initial outreach tool-call policy. Background main already consumes initialOutreachToolCalls with default16 and max64, but canonical Database still rejects that key and Admin has unpublished editing support. Backed-up local SQL adds the existing JSON budget field and LIVE Platform default; no new schema model or Shared contract is needed. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
+ARCH-038-DATABASE-003 (pending) owns the bounded outcome: Persist the initial outreach tool-call policy. Background main already consumes initialOutreachToolCalls with default16 and max64, but canonical Database still rejects that key and Admin has unpublished editing support. Backed-up local SQL adds the existing JSON budget field and LIVE Platform default; no new schema model or Shared contract is needed. The verified full external backup and current main are retained; selective incorporation is mandatory. Root owns final merges and any operational rollout; no credential/scratch publication or architecture completion claim.
 
-| ARCH-038-DATABASE-003 | moda_database | ready | ARCH-038-DATABASE-001 |
+| ARCH-038-DATABASE-003 | moda_database | pending | ARCH-038-DATABASE-001, ARCH-017-DATABASE-002 |
+
+Historical ledger canonicalization ARCH017DATABASE002 must be accepted/integrated first. New budget SQL is absent both live ledgers; explicit transaction and actual out-of-timestamp-order upgrade proof are required. Root verifies hosted migration rollout before Admin004 writes deploy.
