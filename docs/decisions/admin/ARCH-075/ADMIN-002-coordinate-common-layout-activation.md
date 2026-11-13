@@ -54,6 +54,10 @@ Source/approval workflows must keep existing Meta snapshots immutable, clone/reg
 
 When common-layout mode is activated, new publication/submission of unstamped legacy saved/queued definitions must refuse with a clone-with-common-layout action. Do not retrofit current common content during an HTTP send, mutate old snapshots or silently publish duplicate versions. Active replacement cohort is reviewed from real supported scenario inventory, not merely two existing NO_OFFER definitions. Root reviews copy and coverage before external registration. Existing legacy records stay readable/cloneable and historical sends unchanged.
 
+### Explicit live registration environment constraint
+
+User authorizes recovery template registration in PRODUCTION Meta account only. Root then copies the approved immutable catalogue/registration metadata and referenced common source coherently to test for the same provider assets. Never initiate duplicate external registration from test. Keep local source/reference/locale identities and provider WABA/content/approval proof consistent; no fabricated approval or source-hash rewrite. Actual callback/status environment routing must be verified before claiming live ordered test processing: copied provider metadata alone does not prove delivery callbacks reach the test database. Root owns every live registration/copy/activation action after concrete review.
+
 ## Work Items
 
 - [ ] Complete assigned bounded capability only.
