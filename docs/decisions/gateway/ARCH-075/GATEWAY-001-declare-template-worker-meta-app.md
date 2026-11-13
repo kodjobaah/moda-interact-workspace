@@ -9,11 +9,11 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 5
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-13T09:07:05Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-075-SYSTEM-TEST-001
