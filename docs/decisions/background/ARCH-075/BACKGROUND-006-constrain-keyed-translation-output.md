@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T09:44:29Z
@@ -161,24 +161,24 @@ None requiring cross-owner changes. No bound/schema-subset gap was found for the
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending exact source review.
+Accepted exact source `6bf2da70f935aaaa287454904bbf9387157ff153` and mirrored report `b3284de732491802f53dfd35c6bbf0aaa5ced583`. Independent review confirms actual keyed Batch JSONL now attaches strict Responses format derived by installed official SDK from the existing ResultSchema. No hand-maintained parallel schema, field stripping, model switch or weaker local parser.
 
 ### Reviewed Files
 
-None
+Translation provider and owning segment codec schema export; actual uploaded JSONL/provider contract, bounds/metadata, codec and lifecycle ingestion regressions.
 
 ### Validation Reviewed
 
-None
+Meaningful two-payload baseline failures; final 50 focused tests, typecheck, lint, Prisma generation and diff checks passed. Exact-head CI runs 43405101447 and 43405196810 passed 384 files / 4213 tests. Canonical prepared isolation/synchronization/recursive evidence reviewed. Official OpenAI structured-output guide and actual GPT-4.1 mini model page independently confirm Responses, Batch and structured-output support; installed SDK helper/types align. No real provider or persistence change.
 
 ### Architecture Conformance
 
-Pending
+Only keyed-segments-v1 receives strict root/segment object required fields and additionalProperties:false, retaining existing bounds. Ordinary translation format, selected model, batch identity and provider failures remain unchanged. Runtime ingestion still rejects extra metadata, truncation/refusal, wrong keys and missing/moved markers. No Shared release, dependency or database change. Architecture remains In Progress.
 
 ### Follow-up
 
-None
+Root owns merge/deploy and normal UI retry of affected locale; fresh output still needs semantic review. Preserve terminal same claim and all previous integrated/alias/readiness proof; reconcile this narrow provider-source delta before final system acceptance. Provider format correctness does not establish translation quality or Meta approval.

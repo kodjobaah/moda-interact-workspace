@@ -13,4 +13,4 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 | ARCH-075-BACKGROUND-005 | complete | ARCH-075-BACKGROUND-004 |
 
-| ARCH-075-BACKGROUND-006 | ready | ARCH-075-BACKGROUND-005, ARCH-075-SHARED-004 |
+| ARCH-075-BACKGROUND-006 | complete | ARCH-075-BACKGROUND-005, ARCH-075-SHARED-004 |
