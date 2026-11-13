@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T05:35:26Z
@@ -64,11 +64,17 @@ Also prove common editable Admin revision custom header/footer parity across com
 
 Exercise real accepted contracts/migration/worker producer+status queue+part engine, ordered2/3 sends, quoted eachpart, exactfooter, one logical usage, callbackbeforeACK/readbefore-delivered, process death/restart, unknown/no prefix resend and takeovercancel. Validate legacy compatibility and absence of customer/secret telemetry. No source implementation, paid service or unauthorized live send. This terminal test never gates unfinished implementation tasks.
 
+### Bounded accepted localized-command followup
+
+Retain the completed thirteen integrated checks and same original claim. Before final acceptance, independently validate accepted Background merge c5dad158175733849fb6f9ab6ff2e89841d195cf: exact STOPP, DUR, PARAR and STOPPA must reach the real opt-out priority/durable CUSTOMER_STOP path and suppress an unadmitted ordered tail; demonstrate no ordinary model/provider response, plus sentence/substrings/nontext negatives. Existing full proof remains valid for unchanged code; record the delta rather than claiming its earlier image contained new aliases.
+
+A separate temporary derivative of the approved correctness image may replace only compiler-emitted changed phone.js/source-map (and matching source provenance) from the exact accepted source with the locked TypeScript/options. Record base/derived image IDs, source commit and old/new module hashes, and verify other runtime modules/dependencies/ENV/CMD remain unchanged. No handwritten JavaScript regex substitution, dependency rebuild, production artifact promotion or broader resource change. If additional emitted runtime modules differ unexpectedly, return the evidence before broadening the overlay. Same-attempt continuation is authorized; no claim reset/reprepare. Owner updates in-progress/report fields while preserving earlier proof.
+
 ## Work Items
 
-- [ ] Implement only assigned capability and document compatibility.
-- [ ] Complete meaningful required checks and regression/negative evidence.
-- [ ] Publish mirrored branch/report and return review, then stop.
+- [x] Implement only assigned capability and document compatibility.
+- [x] Complete meaningful required checks and regression/negative evidence.
+- [x] Publish mirrored branch/report and return review, then stop.
 
 ## Interfaces / Contracts
 
@@ -86,16 +92,16 @@ Only dependent tasks after architect acceptance; never begin them implicitly.
 
 ## Acceptance Criteria
 
-- [ ] Assigned bounded capability and frozen contract behavior satisfied.
-- [ ] Legacy reads/records remain compatible; no unauthorized cross-owner/billing/security change.
-- [ ] Durable/contract identity and fault cases satisfy required checks without silent fallback.
-- [ ] Canonical dedicated mirrored worktree, synchronization and recursive evidence recorded; no private proof committed.
+- [x] Assigned bounded capability and frozen contract behavior satisfied.
+- [x] Legacy reads/records remain compatible; no unauthorized cross-owner/billing/security change.
+- [x] Durable/contract identity and fault cases satisfy required checks without silent fallback.
+- [x] Canonical dedicated mirrored worktree, synchronization and recursive evidence recorded; no private proof committed.
 
 ## Validation
 
-- [ ] Deterministic integrated realPG/Redis/worker provider-fault scenarios and independently recorded accepted revision/package/migration evidence.
-- [ ] Isolation/privacy checks and report measured outcomes/limits; no genuine production send unless separately authorized.
-- [ ] Diff/privacy hygiene and report actual results, no production sends or secrets.
+- [x] Deterministic integrated realPG/Redis/worker provider-fault scenarios and independently recorded accepted revision/package/migration evidence.
+- [x] Isolation/privacy checks and report measured outcomes/limits; no genuine production send unless separately authorized.
+- [x] Diff/privacy hygiene and report actual results, no production sends or secrets.
 
 ## Stop Condition
 
@@ -121,65 +127,200 @@ Record source/database commits, compiler and host/runtime versions, exact base d
 
 ### Status
 
-In Progress — partial checkpoint only; acceptance criteria are not satisfied.
+Ready for Review — accepted localized-command followup passed; earlier proof retained.
+Independent disposable integrated proof only; no production
+activation or live provider-delivery claim. Implementation draft PR:
+https://github.com/kodjobaah/moda-interact-system-test/pull/6
 
 ### Files Changed
 
-Implementation checkpoint `806f251` on `task/ARCH-075-SYSTEM-TEST-001`:
-image builder and focused tests; work-in-progress independent Admin/provider/worker
-fixture modules; `docs/validation/ordered-recovery-progress.md` with measured limits.
-No implementation submodule gitlink or other task files changed.
+Baseline implementation `f11bf99d2c082ac407dc533db81f4b378f76bd3f` on mirrored branch
+`task/ARCH-075-SYSTEM-TEST-001` (earlier partial checkpoint `806f251`).
+
+- `src/harness/ordered-recovery/`: independent actual Admin compiler/activation,
+  verified product/HUMAN preparation, local provider, real worker process,
+  fault scenarios, migration proof and bounded correctness-image helpers.
+- `scripts/validate-ordered-recovery.js`,
+  `scripts/build-ordered-correctness-image.js` and capability package scripts.
+- Opt-in approved build-heap option in the existing image helper; focused tests.
+- Three `test/harness/ordered-*.test.js` files; validation guide and evidence
+  under `docs/validation/ordered-recovery*.md`.
+- Only this parent task report changed; no implementation submodule gitlink,
+  domain index, architecture, other task, policy or rollup independently staged.
 
 ### Work Completed
 
-Preserved prepared canonical mirrored worktrees and claim. Added the explicitly
-authorized reversible build-stage-only 3072 MiB heap option, exact Dockerfile hash
-and separate image tag; focused coverage refuses a larger heap. Began independent
-Admin common-source activation and actual worker producer fixture adapters.
-These fixture modules are unfinished and have no executable integration entry point.
+Prepared canonical isolated implementation/parent worktrees and original claim
+were reused. Start packet claim `9d1b0c346a17b9cbdc9175623f180b4cd5a99272`,
+attempt 1, executor codex; no reprepare/reclaim or branch rewriting.
+Final self-review preserved the existing image helper's original default result
+shape; only opt-in heap builds add overlay metadata (final compatibility commit
+`f11bf99`, integrated implementation `9f4045f`). The parent
+branch was subsequently fast-forwarded to accepted `origin/main` at
+`ff66c06e2d990047eb2ed3c482691356026b4d52`; implementation main was unchanged.
+
+Exact accepted inputs: Background `d7a9bd1b0d1cceb908dd8ee23942dc93a9cf0417`,
+database `a9b6ab852a8245dfd14447808aac288a23b113d0`, corrected Admin source
+`d63ba84cca54732c776e9c1be7d5ff4f11c52f34` / accepted merge
+`c765be827cd6086157d38060ab5a200745b25052`, public Shared 5.13.9 and its locked
+SRI (recorded in implementation evidence). Admin004 was accepted before the
+integrated run; no dependency gate was bypassed.
+
+The actual accepted AI/HUMAN preparation/delivery services, PostgreSQL final
+fences, multipart engine, Redis BullMQ status/continuation consumer and repair
+run with deterministic verified product fixtures and a local HTTP provider.
+The worker factory is real; unrelated external-provider pollers are excluded.
+Common editable Admin source and compiled synthetic-approved Meta projection
+share the custom header/footer used by actual AI/HUMAN receipts. Logo and
+product images remain separate; the checkout URL is last without truncation.
 
 ### Validation Results
 
-- 6/6 focused image-builder tests passed.
-- `npm run typecheck` and `npm run lint` passed; `git diff --check` passed.
-- Disposable PostgreSQL owning migration deployment succeeded during Admin-only
-  setup; the Admin fixture itself did not execute due to harness ESM/Prisma
-  packaging. Adapter correction is not yet rerun.
-- Exact Background `d7a9bd1b0d1cceb908dd8ee23942dc93a9cf0417` production build
-  failed at TypeScript compilation with V8 heap exhaustion, exit 134.
-- Authorized 3072 MiB temporary Dockerfile attempt failed with Docker exit 102,
-  ResourceExhausted / cannot allocate memory after 61.73 s. No resulting runtime
-  image exists; runtime heap-environment inspection and integrated tests remain
-  pending. No resource escalation attempted.
-- Disposable PostgreSQL containers were cleaned. No deployed-environment or
-  live provider requests, sends, replays or counters were used.
+Final capability run: **12 delivery/fault/legacy scenarios plus one telemetry
+check**, 13 integrated checks total, all passed. Recorded execution:
+2026-11-13T06:23:59.845Z through 2026-11-13T06:28:43.352Z.
+
+- Two/three-part logo/product/answer layout; complete authored text; exact footer.
+- Actual HUMAN preparation/claim and one command completion with authored whitespace.
+- HTTP ACK gate, READ-before-ACK, duplicate/out-of-order status monotonicity;
+  sender-bound physical part quote lookup, one logical automated usage and
+  product-context revision despite duplicate continuation.
+- Actual worker process death/restart resumes only tail; uncertain transport is
+  not replayed after repair/restart; definitive failure retains accepted prefix.
+- Takeover, stale common source, CUSTOMER_STOP and expired verified customer
+  window cancel unsent tails; no freeform product tail escapes its window.
+- Legacy v1 frozen record sends once with its original layout.
+- Captured application telemetry excludes authored answers, recipients, checkout
+  URLs and synthetic credentials; Meta contact response identifiers are redacted.
+
+Separate actual Admin fixture assertions passed: twenty synthetic APPROVED locale
+targets atomically switched, custom source/Meta checkout-last and opt-out preserved,
+stale preview rejected without writes, replay/audit stable and original snapshots
+unchanged. Synthetic approval is not a live Meta approval claim.
+
+All **77 owning migrations** finished on disposable PostgreSQL and matched the
+image's exact migration.sql SHA-256 ledger, including
+`20261113004310_arch075_ordered_delivery_parts` checksum
+`1693a27606d6e661369cc76fbb8a71ab98da44c8aab510602e7038014352adb8`.
+Actual container-installed versions independently read: Shared 5.13.9,
+Prisma 6.19.3 and TypeScript 6.0.2.
+
+Agent-owned checks passed:
+
+- `npm run validate:recovery:ordered -- --image-manifest <local-manifest> --admin-root <accepted-admin-worktree>`.
+- `node --test test/harness/ordered-*.test.js test/harness/background-production-image.test.js`: **10 passed**, zero failures/skips.
+- Neighboring image/runtime/container plus ordered harness regression command:
+  `node --test test/harness/background-*.test.js test/harness/ordered-*.test.js`: **18 passed**, zero failures/skips (includes the ten focused tests).
+- `npm run typecheck`: 265 JavaScript files parsed; syntax rechecked after the
+  default image-metadata compatibility refinement.
+- `npm run lint`: syntax and source/test 300-line/module structure passed.
+- `npm run validate:catalogue` and `git diff --check`: passed.
+- Actual Node22 container parsed harness JS. Disposable PG/Redis/worker containers
+  were cleaned; no deployed/shared service requests, live sends/replays or
+  production counter/credential changes occurred.
 
 ### Deviations
 
-Only the architect-authorized one-line test build-resource accommodation was
-attempted. It also failed; no successful production-image parity claim is made.
-Original/derived Dockerfile hashes and exact measured evidence are recorded in
-implementation progress documentation. Raw diagnostic logs are local `/tmp`
-artifacts, not committed private proof.
+Both exact production Docker compilation and the authorized 3072 MiB build-stage
+only override exhausted local resources (exit 134 and Docker exit 102). The
+architect-approved f00b01888 fallback compiled exact source/lock with locked
+TypeScript 6.0.2, ES2022/NodeNext under host Node v24.19.0. Only audited JS/maps
+and declared fixed JPEG outputs entered a separate Linux context; no host
+node_modules, Prisma clients, native binaries, environment files or symlinks.
+
+The final test image preserves its own Linux npm/Prisma/sharp and original runtime
+ENV/CMD. Exact Node22.23.5 base digest, 1,130 allowed output hashes/sizes
+(5,946,937 bytes), both failed-build diagnostics and original/derived Dockerfile
+hashes are recorded. Actual runtime NODE_OPTIONS is absent. Image identity:
+`sha256:18f6133e6f745619557d3c5e52b4d724ab5e9287fb14555ac93f7d2e029f6aad`.
+
+This validates source-derived runtime correctness under adjusted test build
+mechanics, **not** production build reproducibility, build-memory performance or
+Node24-to-Node22 build parity. The image must never be promoted.
 
 ### Assumptions
 
-Synthetic media metadata and APPROVED fixtures are local integration inputs only;
-they do not prove Meta approval, R2 media delivery or production activation.
+Verified product facts/media metadata, provider approvals and customer data are
+explicit disposable fixtures. Model execution, signed ingress, full entrypoint
+readiness, real R2 image processing, translation quality and live Meta delivery
+are outside this boundary and not claimed. Root separately owns live verification.
 
 ### Unresolved Issues
 
-Docker compilation resources block the real worker image and all required
-PG/Redis/worker fault scenarios. Root reported a new Admin staging/footer source
-correction prerequisite; independent integrated execution is held pending its
-acceptance and architect task amendment. Await architecture decision on any
-host-compiled-output alternative; read-only build mapping was supplied to root.
+No integrated implementation defect remains. Initial failures were bounded build
+resources or fixture packaging / missing linked Shopify customer / no-contact
+consistency setup; those fixtures were corrected without relaxing production
+validators, database constraints or source-owner code. Production Docker build
+parity remains an explicit approved proof limitation, not a passing result.
 
 ### Architectural Concerns
 
-No cross-owner implementation, weakened validators, synthetic production claim,
-source/main merge or billing/security change. Task stays in progress; this is not
-Ready for Review and must not be accepted as completed system validation.
+No source implementation changes in other repositories, duplicated production
+validators, billing/security bypass or unsupported exactly-once claim. Raw local
+artifacts stay ignored; committed evidence is sanitized. Review is requested only
+for the bounded independent proof described above; no main merge or deployment
+was performed by this task.
+
+### Accepted localized-command followup
+
+Current combined implementation head:
+`ee5bc22dc92d7c644bf146ccedbcee8e00c33583` (same draft PR #6 and mirrored task
+branch). The preceding thirteen-check proof remains against its original d7a9bd1
+source/image; it is not relabeled as containing the newly accepted aliases.
+This bounded same-attempt continuation follows amendment a6fb84ca5 and accepted
+Background merge `c5dad158175733849fb6f9ab6ff2e89841d195cf`; original claim
+`9d1b0c346a17b9cbdc9175623f180b4cd5a99272` and attempt 1 remain unchanged.
+
+Final current-source run **passed four aliases and eight strict negative
+boundaries**, 2026-11-13T08:55:33.046Z through 2026-11-13T09:03:44.229Z:
+
+- Exact `STOPP`, `DUR`, `PARAR`, `STOPPA` traverse canonical Shared-validated
+  message-received Redis jobs and the real inbound worker/priority opt-out path.
+  All take priority over an actually saturated `RAW_SENDER` limiter, commit durable
+  CUSTOMER_STOP reason/timestamp/revision and one support notice each, and cancel
+  their already prepared but unadmitted ordered tail.
+- `Please STOPP`, `DURING`, `PARAR now`, `STOPPABLE`, `STOPPA123`, `PARAR?`, audio
+  media named STOPP and unsupported type named STOPPA remain non-STOP boundaries.
+  No-contact fields/notices stay unchanged, their ordinary path stops at the real
+  limiter, and their ordered tail still sends following a delivery callback.
+- No ordinary inbound persistence, model-turn job or ordinary provider reply
+  occurs. The intentionally prepared prefix/tails use only the local HTTP
+  simulator. Exactly four real worker STOP records/notices are observed.
+- Telemetry hygiene passes over 315,924 captured bytes (37 forbidden-value
+  checks). Disposable PostgreSQL/Redis/worker containers were cleaned.
+- The fresh delta session again verifies all 77 owning migration checksums.
+- `node --test test/harness/background-*.test.js test/harness/ordered-*.test.js test/harness/recovery-optout-image.test.js`:
+  **19 passed**, zero failures/skips (includes the prior eighteen).
+  Syntax/structure checks pass for 271 JavaScript files; catalogue and diff checks
+  pass. New source/test helpers remain below the 300-line module limit.
+
+Exact current source was freshly compiled with locked/installed TypeScript 6.0.2,
+declared ES2022/NodeNext commands and host Node v24.19.0. Across 1,130 audited
+outputs, only compiler-emitted phone.js and its map differ; every other 1,128
+output matches. Full package/lockfile and both tsconfig hashes match the base.
+Old/new module hashes, matching source hash and COPY-only Dockerfile hash are in
+`docs/validation/recovery-opt-out-evidence.md` and the local manifest.
+
+Base correctness image:
+`sha256:18f6133e6f745619557d3c5e52b4d724ab5e9287fb14555ac93f7d2e029f6aad`.
+Final immutable derivative used for every Docker invocation in the measured run:
+`sha256:f1ff2479d5b1f35a85921be15d206709707b5f7d53902a1efd0915c864584c5e`.
+Only the emitted phone.js/map and matching accepted TypeScript source are copied.
+Original dependency layers, runtime ENV/CMD/entrypoint and Node22.23.5 remain;
+NODE_OPTIONS is absent. All actual derived runtime outputs were independently
+hashed inside Linux and match the current compiler manifest. No handwritten
+JavaScript regex replacement, dependency rebuild, host/VM resource change or
+production artifact promotion occurred.
+
+The validator pins immutable image IDs. A preliminary tag-based run was not used
+as final artifact-identity proof because a cached COPY rebuild changed image
+metadata while leaving identical audited runtime bytes; the bounded delta was
+repeated under the final immutable ID. No repetition of the unchanged original
+thirteen checks was claimed or required. This is still source-derived local
+correctness, not production-build reproducibility, signed ingress, real model /
+R2 / Meta behavior, full entrypoint readiness, live activation or delivery.
+No cross-owner implementation defect remains; no live request, send, replay,
+production counter/credential update or merge into main was performed.
 
 ## Architect Review
 
