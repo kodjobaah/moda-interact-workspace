@@ -72,7 +72,7 @@ Genuine binding gap: canonical Shared keys lack shop.websiteUrl. Shared003 adds 
 | Task | Owner | State | Dependencies |
 |---|---|---|---|
 | ARCH-075-SHARED-003 | moda_shared | Complete | ARCH-075-SHARED-002 |
-| ARCH-075-SHARED-004 | moda_shared | Ready | ARCH-075-SHARED-003 |
+| ARCH-075-SHARED-004 | moda_shared | Complete | ARCH-075-SHARED-003 |
 
 Background001 remains unchanged/content-agnostic on5.13.8. Background002 and Admin consumer definitions will depend on Shared004 and reference this same common projection; terminal system validation includes Meta and dynamic parity. No source implementation is authorized by this amendment outside canonical assigned tasks.
 
