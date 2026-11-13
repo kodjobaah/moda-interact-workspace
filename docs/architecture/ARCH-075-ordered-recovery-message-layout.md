@@ -53,7 +53,7 @@ No new service or Gateway topology. Reuse existing Background queue/worker and s
 | ARCH-075-SHARED-002 | moda_shared | Complete | ARCH-075-SHARED-001 |
 | ARCH-075-BACKGROUND-001 | moda_background | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002, ARCH-075-SHARED-004 |
 | ARCH-075-BACKGROUND-002 | moda_background | Complete | ARCH-075-BACKGROUND-001, ARCH-075-SHARED-004, ARCH-075-ADMIN-001 |
-| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Pending | All implementation/publication tasks |
+| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Ready | All implementation/publication tasks |
 
 PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Shared public release, Background engine then producer integration; developer deploys/drains old readers before emitting new manifests. No production replay/reset/extra test send without authorization. New format cannot roll back to old readers blindly; stop generation/drain new pending work first, preserve all outcome records. Source tasks never depend on system test. Developer manual checkpoint precedes Ready terminal system-test invocation. Architecture Implemented only after accepted terminal validation and genuine ordered WhatsApp proof with explicit partial/unknown behavior evidence. Public documentation excludes customer/provider identifiers and URLs.
 
@@ -83,7 +83,7 @@ Common reference contract owner Shared003: exact schemaVersion1/definitionId/sou
 | Task | Owner | State | Dependencies |
 |---|---|---|---|
 | ARCH-075-ADMIN-001 | moda_admin | Complete | ARCH-075-SHARED-004 |
-| ARCH-075-ADMIN-002 | moda_admin | Ready | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
+| ARCH-075-ADMIN-002 | moda_admin | Complete | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
 
 Background002 additionally depends on Shared004 and Admin001. It replaces fixed-prefix decoration for new replies with additive local receiptv2 binding the actual rendered common reference/header/footer and trusted split boundaries; v1 frozen replay remains unchanged. Admin002 coordinates approved global SHARED revision with per-shop Meta assignment safely; actual transaction gap must be returned before unsafe mixed-version activation. All required replacements approved before activation, and consumer deployed first. Terminal system-test additionally depends on Admin001/Admin002/Shared003/Shared004; no implementation depends on system-test.
 Reader-first staging correction: Background001 must understand local receiptv2/commonRef and custom rendered header/footer boundaries BEFORE new producers emit them. It now consumes published Shared0045.13.9 for final reader support; Background002 remains producer composition only. Existing engine work on5.13.8 stays preserved, but no unpublished consumer artifact or new-format activation is allowed. Final exact-head engine validation/rollout follows the published dependency. This prevents an older v1-only reader from aborting new-format tails during producer overlap.
@@ -93,3 +93,7 @@ Single-send notice staging exception: Background002 adds privatev2 common single
 ## Compatible reader rollout evidence
 
 Root verified accepted compatible-engine source02e62447 Live with healthy runtime in both environments using supplied deployment/runtime evidence. Predecessor termination is a documented-platform inference rather than a claimed observed stopped line: Render applies the sequence to background workers and force-terminates predecessors after its bounded shutdown interval; the conservative interval had elapsed with successful current deployments. No rollback/custom support override was evidenced, and no Redis or restricted Render-origin workaround was used. Source: [Render deployment lifecycle](https://render.com/docs/deploys). This satisfies the reader-stage rollout gate; root must still reverify no active SHARED slot before producer merge and wait for producer Live/drain before common activation. Actual Meta approval, catalogue copy and genuine ordered messages remain pending.
+
+### Coordinated activation transaction refinement
+
+Admin inspection established that existing per-definition/per-shop publication cannot atomically switch a global common pointer. Admin002 therefore uses an existing-JSON versioned coordinator and a single bounded serializable activation transaction covering the entire affected selectable cohort, assignments and SHARED CAS/audit. Bounds are six scenario definitions, 50 shops, 1,000 replacement targets and 1,000 existing affected variants, and a 1 MiB snapshot. Overflow refuses; this is not a measured scalability claim. Ordinary assignment/common-pointer writers participate in the shared fence or equivalent verified conflicts. Historical audience slots remain intact because accepted Background common-mode precedence is explicit. No new schema, external provider action or partial activation is introduced.
