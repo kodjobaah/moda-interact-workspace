@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T11:03:20Z
@@ -50,9 +50,9 @@ Dedicated whatsapp.MetaTemplateAppOperationState keyed by existing CommerceEnvir
 
 ## Work Items
 
-- [ ] Implement only the owning bounded outcome and final contract.
-- [ ] Prove meaningful failure/concurrency/compatibility behavior.
-- [ ] Complete mirrored report/checks, return review and stop.
+- [x] Implement only the owning bounded outcome and final contract.
+- [x] Prove meaningful failure/concurrency/compatibility behavior.
+- [x] Complete mirrored report/checks, return review and stop.
 
 ## Interfaces / Contracts
 
@@ -68,14 +68,14 @@ ARCH-075-BACKGROUND-007
 
 ## Acceptance Criteria
 
-- [ ] Assigned bounded capability/invariants and explicit negative behavior satisfied.
-- [ ] Existing provider-intent, tenant/environment, immutable source and legacy lifecycle guards remain intact.
-- [ ] Canonical matching physical isolation/sync and exact validation evidence reported; no live mutation.
+- [x] Assigned bounded capability/invariants and explicit negative behavior satisfied.
+- [x] Existing provider-intent, tenant/environment, immutable source and legacy lifecycle guards remain intact.
+- [x] Canonical matching physical isolation/sync and exact validation evidence reported; no live mutation.
 
 ## Validation
 
-- [ ] Real PostgreSQL fresh+populated-upgrade migration, duplicate app identity, environment separation, lease tuple/nonnegative/generation and stale-owner invariants; generated Prisma/types/static checks and focused ERD. No unrelated baseline diagram/history repair.
-- [ ] Diff/privacy hygiene; no secrets/private production identifiers or unsupported capability claim.
+- [x] Real PostgreSQL fresh+populated-upgrade migration, duplicate app identity, environment separation, lease tuple/nonnegative/generation and stale-owner invariants; generated Prisma/types/static checks and focused ERD. No unrelated baseline diagram/history repair.
+- [x] Diff/privacy hygiene; no secrets/private production identifiers or unsupported capability claim.
 
 ## Stop Condition
 
@@ -89,35 +89,103 @@ You are not alone; preserve other work. Canonical launcher packet owns start/cla
 
 ### Status
 
-Not Started
+Ready for Review. Implementation `f805897e78b41e21f0e959249909bddf3054c6c1`
+is committed and pushed on `task/ARCH-075-DATABASE-002`. No hosted migration,
+provider request, registration repair or application change was performed.
 
 ### Files Changed
 
-None
+Prisma model and additive migration
+`20261113111320_arch075_meta_app_operation_state`; two focused validation scripts
+and package script entries; owning contract documentation, focused PlantUML/PNG
+and the corresponding model block in the existing full ERD source. No previous
+migration or unrelated diagram block was changed.
 
 ### Work Completed
 
-None
+Dedicated `whatsapp.MetaTemplateAppOperationState`, composite primary key
+`environment` / `appId`, numeric app identity, bounded 0–31 throttle count,
+nullable cooldown/last-throttle timestamps, coherent nullable owner/acquisition/
+expiry tuple and monotonic nonnegative bigint generation. SQL guards prohibit
+identity changes, generation regression, active acquisition replacement, a new
+acquisition without a new generation, shortening/clearing future cooldown,
+erasing/backdating throttle time and row deletion that would reset fencing.
+
+Background must still CAS exact environment/app/owner/generation/unexpired lease:
+SQL cannot infer a caller's previously observed token. Release clears the three
+nullable lease fields without resetting generation; renewal preserves original
+owner/generation/acquisition; expired reclaim advances generation. No timing
+policy/provider cache or registration transition was installed by Database.
+The contract documents Background's endorsed 120-second single-operation lease
+and 15-minute exponential cooldown capped at six hours. The PK is the sole index;
+point operations scale with configured apps rather than per-event hot-path rows.
+No tenant relation, credential payload or cascade was added.
 
 ### Validation Results
 
-Pending
+- `npm ci`: locked install passed; no dependency/lock changes.
+- Actual local PostgreSQL17 author fixture: all77 previous migrations deployed;
+  `prisma migrate dev --name arch075_meta_app_operation_state --create-only`
+  generated the new table; reviewed task-only SQL was applied locally.
+- `npm run prisma:generate`: Prisma6.19.3 generated actual client/types.
+- `npm run validate`: schema valid.
+- `npm run test:arch075-meta-app-operation-state`: bounded static checks passed.
+- `npm run lint`: repository ESLint passed, zero warnings.
+- `npm run test:arch075-meta-app-operation-state:postgres`: **67 assertions**
+  passed against invocation-owned PostgreSQL17, actual Prisma migrate deploy
+  fresh and populated upgrade, both subsequent deploys no-op. Duplicate identity,
+  separate environments, numeric/bounded/nullable tuple failures, two concurrent
+  replica acquisitions with exactly one winner, active/expired generation guards,
+  stale-owner completion with zero updates, cooldown/throttle-time anti-regression,
+  deletion prevention and preserved legacy shops/writers all passed. Fixtures and
+  owned containers removed. No hosted database or provider calls.
+- Focused PlantUML PNG generated and visually inspected; `git diff --check` passed.
 
 ### Deviations
 
-None
+Actual migrate-dev generation also proposed unrelated pre-existing schema/history
+index/FK renames/default changes. These were excluded from this task's new,
+unapplied migration before application; existing history was never rewritten.
+On local apply, migrate-dev then prompted to generate the same unrelated drift.
+Queued terminal validation text accidentally became that extra migration's name;
+its first unrelated DROP failed2BP01. Only this invocation's untracked extra
+migration folder was removed and the entire disposable author fixture deleted.
+Final source contains only the intended additive migration. The independent
+noninteractive fresh/upgrade deploy proof passed afterward, without history
+repair or accepting any failed/partial fixture result.
 
 ### Assumptions
 
-No provider reset guarantee; timing bounds are explicit internal policy.
+No provider reset guarantee. Timing bounds are internal Background policy. A
+bigint generation must remain a bigint/string in consumer code; it must not be
+coerced to an unsafe JavaScript number. Count saturates at31. Rare configured-app
+rows are retained; no cleanup scan is needed. The root applies hosted migrations
+before deploying a consumer; old readers/writers are unaffected.
 
 ### Unresolved Issues
 
-None currently.
+None in the bounded database scope. Root/Background own actual throttling evidence,
+provider retry policy, exact historical recovery and live verification.
 
 ### Architectural Concerns
 
-Return actual cross-owner gaps before workaround.
+No cross-owner source change. Background must consume the documented point-CAS
+contract and preserve all registration CREATE/POST uncertainty fences.
+
+### Prepared execution evidence
+
+Canonical primary workspace:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Parent task worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-DATABASE-002`.
+Implementation task worktree:
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-DATABASE-002`.
+Both branches `task/ARCH-075-DATABASE-002`. Existing prepared attempt1/claim
+`040bd0e66a54b9698772a40e3ffbc5084b0048d2` reused unchanged; no re-claim,
+shared checkout mutation or other task worktree reuse. Prepared parent remote
+fast-forward not-needed/main already-current; implementation remote fast-forward
+not-needed/main already-current. Recursive sync/update passed with no nested
+submodules. Deterministic launcher preparation was not repeated.
 
 ## Architect Review
 
