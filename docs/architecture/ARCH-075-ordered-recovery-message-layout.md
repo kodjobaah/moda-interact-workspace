@@ -53,7 +53,7 @@ No new service or Gateway topology. Reuse existing Background queue/worker and s
 | ARCH-075-SHARED-002 | moda_shared | Complete | ARCH-075-SHARED-001 |
 | ARCH-075-BACKGROUND-001 | moda_background | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002, ARCH-075-SHARED-004 |
 | ARCH-075-BACKGROUND-002 | moda_background | Complete | ARCH-075-BACKGROUND-001, ARCH-075-SHARED-004, ARCH-075-ADMIN-001 |
-| ARCH-075-SYSTEM-TEST-001 | moda_system_test | In Progress | All implementation/publication tasks |
+| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Complete | All implementation/publication tasks |
 
 PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Shared public release, Background engine then producer integration; developer deploys/drains old readers before emitting new manifests. No production replay/reset/extra test send without authorization. New format cannot roll back to old readers blindly; stop generation/drain new pending work first, preserve all outcome records. Source tasks never depend on system test. Developer manual checkpoint precedes Ready terminal system-test invocation. Architecture Implemented only after accepted terminal validation and genuine ordered WhatsApp proof with explicit partial/unknown behavior evidence. Public documentation excludes customer/provider identifiers and URLs.
 
@@ -130,3 +130,7 @@ Admin005 moves explicit English Meta review to the existing all20 submission con
 Actual Responses translation echoed input-only protectedTokens fields, correctly rejected by strict ingestion. Background006 constrains keyed Responses Batch generation to the exact existing result JSON schema while preserving all local strict marker/key/hash validation and generic translation behavior. No field stripping, manual candidates, new model or Shared/schema release. Architecture remains In Progress; terminal accepted-current-source reconciliation includes this correction.
 
 | ARCH-075-BACKGROUND-006 | moda_background | Complete | ARCH-075-BACKGROUND-005, ARCH-075-SHARED-004 |
+
+### Independent system validation accepted
+
+The terminal system task is Accepted after actual disposable PostgreSQL/Redis/worker delivery and fault scenarios, canonical Admin activation, localized consent, Meta preclaim readiness and strict translation provider deltas. Exact source/image provenance and approved host-build limitations are recorded in its report. Architecture remains In Progress: synthetic fixtures do not replace live provider approvals, coherent environment copy, coordinated activation or genuine ordered recipient delivery.
