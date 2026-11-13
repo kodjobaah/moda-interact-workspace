@@ -33,3 +33,6 @@ ARCH-075-BACKGROUND-011 is Complete/Accepted at source01702b7ccf86c195f16ba6eee6
 ## Agreed in-session product section and logical footer
 
 User clarified one appended checkout footer per whole reply and header/divider→product photo→answer→footer order. Pending SHARED-007 adds compatible group validation; Pending SHARED-008 publishes accepted exact archive after explicit approval; Pending BACKGROUND-013 depends on publication and BACKGROUND-012. Short product captions combine answer/footer beneath product; long captions use verified product title then full text answer/footer, no truncation. Authored checkout URL occurrences are preserved. Existing frozen manifests replay unchanged. Root must set existing writer gate FALSE BEFORE new writer main merge, deploy compatible readers, verify old readers drained, then enable TRUE. No new env mechanism. Native approved one-media templates remain unchanged pending separate user decision; no false two-image native preview or freeform photo outside the window. Architecture remains In Progress.
+
+
+ARCH-075-BACKGROUND-013 Superseded unexecuted by explicit single-bubble composite choice; no publication or implementation occurred.

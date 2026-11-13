@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
@@ -156,3 +156,8 @@ Pending
 ### Follow-up
 
 No native or overall live completion claim.
+
+
+## Supersession (user-approved composite design)
+
+User explicitly selected a single-bubble composite image with original logo/product assets retained separately. The two-bubble group-footer approach is superseded without implementation, claim or publication. Preserve this definition as history. New composite contract/provenance/renderer tasks require separate bounded design; no automatic successor execution.
