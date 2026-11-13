@@ -115,4 +115,4 @@ Admin004 corrects new editable empty static footer production and selector/eligi
 
 Actual translated customer instructions use exact STOPP, DUR, PARAR and STOPPA. Background004 owns matching those whole commands through the unchanged durable consent path; no substring/NLP or new provider policy. Hold affected live approvals until corrected runtime is deployed. This is a terminal acceptance prerequisite without resetting existing independent system-test work. Architecture remains In Progress.
 
-| ARCH-075-BACKGROUND-004 | moda_background | Ready | ARCH-075-BACKGROUND-003, ARCH-075-SHARED-004 |
+| ARCH-075-BACKGROUND-004 | moda_background | Complete | ARCH-075-BACKGROUND-003, ARCH-075-SHARED-004 |

@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T07:31:55Z
@@ -153,24 +153,24 @@ None identified. Deployment and continued live locale verification remain outsid
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual source review.
+Accepted exact source `6ba473bdd84d9f4b4e1f47e4bf0dfbf32bff583b` and mirrored report `1ea9223da2db3123ee8ef8cff4db74d0a0503ef9`. Independent code review confirms only four evidenced whole-command alternatives were added. Existing anchors, text-only boundary, trim/case and single optional punctuation are unchanged; no NLP, substring or extra language inference.
 
 ### Reviewed Files
 
-None
+Opt-out phone matcher; service boundary/scope/duplicate/persistence regressions; worker priority regression; actual PostgreSQL opt-out integration matrix.
 
 ### Validation Reviewed
 
-None
+Meaningful baseline red: sixteen alias failures and fifteen passes. Final 294 focused tests, 25 disposable PostgreSQL/Redis cases, lint, Prisma generation and typecheck passed. Exact-head full CI `43388148830` passed 382 files / 4183 tests. Reviewed canonical matching physical worktrees, launcher claim, synchronization and recursive evidence. No dependency/schema/live mutation.
 
 ### Architecture Conformance
 
-Pending
+STOPP, DUR, PARAR and STOPPA enter the existing durable consent path with quoted/standalone tenant scope, duplicate protection, persistence before notice, priority ahead of abuse/routing and unchanged send fences. Sentences, substrings, malformed punctuation and nontext inputs refuse. No Shared release or unrelated runtime policy. Architecture remains In Progress.
 
 ### Follow-up
 
-None
+Root owns source merge and rollout. Keep affected translated instructions held until corrected runtime is deployed. Preserve current system-test claim and prior integrated proof; append bounded independent current-source alias/priority/tail-suppression evidence before terminal acceptance. Future unexpected commands require explicit review rather than speculative matcher expansion. No live activation claim.
