@@ -4,4 +4,4 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 | Task | State |
 |---|---|
-| ARCH-075-SYSTEM-TEST-001 | in_progress |
+| ARCH-075-SYSTEM-TEST-001 | complete |
