@@ -65,6 +65,12 @@ Production generation remains off until root verifies accepted compatible-engine
 
 Eligible terminal/template-fallback notices may use actual AUTOMATION, which the accepted ordered engine intentionally does not authorize. Apply the SAME saved common textual header/checkout footer while preserving that actor and existing single-send/current-policy fences; no product pair requires no multipart transport. Never retag as AGENT or create a new actor permit. Preserve verified logo through an existing safely supported single BRAND_IMAGE path where available. If that actual actor path is only TEXT with no safe logo option, return the concrete gap before final acceptance and do not claim full logo parity. Persist/currently validate common-source provenance without rewriting legacy frozen notices or inventing an unreadable envelope; return any real staged-reader contract gap.
 
+### Single-send common reader staging gate
+
+Confirmed local gap: single BRAND_MEDIA header decoder/final fence is v1-only, and new singleTEXT common notice needs a strict private persistedv2 receipt. This task may add existing JSON envelope/header union v1|v2 and currentCommonLayoutMatches to existing single-send paths alongside their producers, preserving actual AUTOMATION policy/actor and safely supported existing logo behavior. No new public schema, database migration, setting or actor authorization. Legacy frozenv1 remains byte-exact; new text/common source authority must not be dropped on restart.
+
+This combined reader/producer rollout is authorized ONLY because actual SHARED slot is absent in BOTH test and production. Root must reverify that absence immediately before merge and keep SHARED unactivated until BG002 is Live and predecessor readers drained in BOTH environments. No new common/v2 single-send or multipart format may emit without selected eligible SHARED common mode. Admin002 activation stays root-owned after those gates. If a SHARED slot exists/changes before rollout, STOP merge and return for separately staged compatible readers; never assume an unrecorded absence or add an unsafe flag. Record coarse runtime proof privately/publicly appropriately, no sensitive identifiers in public docs.
+
 ## Work Items
 
 - [ ] Implement only assigned capability and document compatibility.
