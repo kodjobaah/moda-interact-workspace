@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T13:39:17Z
@@ -54,9 +54,9 @@ Shared/schema/database changes or release; changed template bodies/common layout
 
 ## Work Items
 
-- [ ] Confirm primary contract and sanitized actual success-shape evidence.
-- [ ] Correct only bounded identity validation/request construction while preserving trust and lifecycle guards.
-- [ ] Prove regression and malicious-identity refusal; complete mirrored report and return for review.
+- [x] Confirm primary contract and sanitized actual success-shape evidence.
+- [x] Correct only bounded identity validation/request construction while preserving trust and lifecycle guards.
+- [x] Prove regression and malicious-identity refusal; complete mirrored report and return for review.
 
 ## Interfaces / Contracts
 
@@ -72,16 +72,16 @@ None. Root deployment and operational verification are separate; no implementati
 
 ## Acceptance Criteria
 
-- [ ] EVIDENCED valid signed/opaque session form completes actual session→bytes→handle path without changing identity semantics.
-- [ ] Wrong destination/path/query/normalization/control/oversize/nonstring responses fail before byte HTTP; tests inspect actual constructed URL and headers.
-- [ ] Existing durable app throttle/fence/config/deadline/secret safety and template intent uncertainty behavior remain intact.
-- [ ] Required focused validation, canonical physical isolation/synchronization and mirrored publication evidence recorded truthfully; no live provider action.
+- [x] EVIDENCED valid signed/opaque session form completes actual session→bytes→handle path without changing identity semantics.
+- [x] Wrong destination/path/query/normalization/control/oversize/nonstring responses fail before byte HTTP; tests inspect actual constructed URL and headers.
+- [x] Existing durable app throttle/fence/config/deadline/secret safety and template intent uncertainty behavior remain intact.
+- [x] Required focused validation, canonical physical isolation/synchronization and mirrored publication evidence recorded truthfully; no live provider action as BG008 task executor.
 
 ## Validation
 
-- [ ] Regression red/green uploader tests using sanitized actual valid form, prior simple valid form where still contract-valid, byte-exact query/encoding preservation and malformed/malicious forms including encoded traversal, fragment, backslash, origin and repeated query ambiguity.
-- [ ] Existing focused uploader/Meta management/app-operation regression suites; typecheck, relevant lint and production build using actual declared scripts; exact-head full CI where available. Do not rerun unchanged database migrations or publish Shared.
-- [ ] Error/log privacy assertions for token/session/signature; diff hygiene and unchanged cross-service/schema/intent guards.
+- [x] Regression red/green uploader tests using sanitized actual valid form, prior simple valid form where still contract-valid, byte-exact query/encoding preservation and malformed/malicious forms including encoded traversal, fragment, backslash, origin and repeated query ambiguity.
+- [x] Existing focused uploader/Meta management/app-operation regression suites; typecheck, relevant lint and production build using actual declared scripts; exact-head local full suite passed and pushed CI pending. No unchanged database migrations rerun or Shared publication.
+- [x] Error/log privacy assertions for token/session/signature; diff hygiene and unchanged cross-service/schema/intent guards.
 
 ## Stop Condition
 
@@ -95,31 +95,53 @@ You are not alone; preserve all other work. Use the launcher-resolved dedicated 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/services/meta-template-management/image-header-sample.ts`
+- `tests/unit/services/meta-template-management/image-header-sample.test.ts`
+- `docs/operations/meta-upload-session-identity.md`
+- This task file only in the parent repository.
 
 ### Work Completed
 
-None
+- Implementation commit `36acc5f7b88276b404dcb024275451cd7dcf56d4` pushed to `origin/task/ARCH-075-BACKGROUND-008`. Draft implementation PR requested; CI results remain a root/architect integration gate.
+- Primary Meta-owned Postman pages above require reusing the server-generated Upload-ID. Root-delegated protected diagnostic at13:38:52Z (before this task's13:39:17Z claim) returned HTTP200, object with sole `id` key, string length211: `upload:` +180 alphanumeric characters +`?sig=` +19 alphanumeric characters. Protected raw-response SHA256 `446e49a5c02dcab111a7be6c678b533e0eef8ed802189ad5dea1f253a02781e3`; actual values are excluded from source/report/tests. Only the sanitized structure is reproduced. The diagnostic used the accepted adapter/config/SQL lease and stopped at the old validator before bytes or template create; no live actions occurred as BG008 task executor.
+- Preserve optional single signed query unchanged, bound path/signature character sets and lengths, and independently enforce same configured origin, canonical version namespace, no credentials/fragment/normalization. Existing unsigned form remains supported; unobserved percent/Base64 punctuation is refused rather than speculatively accepted.
+- Redact full session identity, opaque path and signature from byte-upload provider errors, SDK diagnostics and retained Error cause. Existing shared logger remains the only generic logging surface.
+- No changes to app lease/backoff, credential snapshot, JPEG source verification, deadlines, `beforeHttp`, template claims/intents, historical recovery, schema or Shared dependency.
+
+### Physical isolation and synchronization
+
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-008`, branch `task/ARCH-075-BACKGROUND-008`.
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-008`, same task branch.
+- Launcher preparation: parent reused; remote task fast-forward not-needed; origin/main incorporated. Implementation created from accepted main `ce9d6e1017f553d307f21899c20f713d514189fd`; origin/main already-current; recursive database submodule initialized exactly at `6f42b71112efe7ac63654d55f41cd74ca569b1ae`.
+- Claim Attempt1/executor codex committed/pushed at `bc5cb15c61cd6e282f7e2fa0bef558d0083882b0`.
+- No shared/default checkout switched for implementation; no other task worktree reused or edited; no parent gitlink/index/architecture/policy changes.
 
 ### Validation Results
 
-Not run
+- RED: sanitized actual signed-form regression failed with `META_UPLOAD_SESSION_INVALID`;44 prior/negative tests passed.
+- GREEN focused Meta management directory:9 files /152 tests passed. Includes actual URL/query/header/bytes assertions, old unsigned form,26 malformed/malicious identities, trusted Graph/emulator origins and versions, namespace normalization attacks, second-phase fence loss, provider/transport Error/log privacy.
+- Full local suite on final source:390 files passed,1 skipped;4,294 tests passed,10 skipped;139.99s. No test failure. Existing configured skips retained.
+- `npm run build` passed: actual Prisma6.19.3 generation, primary TypeScript and provisioning TypeScript compilers, sample artifact packaging.
+- Targeted ESLint for both changed TypeScript files passed. `git diff --check` passed.
+- Full `npm run lint` equivalent (`eslint .`) FAILED with four pre-existing `@typescript-eslint/no-unused-vars` findings in untouched `candidate-index.store.ts` (one) and `recovery-offer-resolver.service.ts` (three). Exact accepted baseline `ce9d6e1` files piped to ESLint via stdin reproduced the identical four findings; `git diff --exit-code ce9d6e1 -- <both files>` was empty. No matching durable baseline ID was found; coordinator explicitly instructed preservation/reporting rather than widening scope. This is not a full-lint-green claim.
+- Detailed red/green/build/lint/baseline logs retained in protected root-owned `local-backups/arch075-live-20261113/bg008-*.log`; no raw provider identity committed.
 
 ### Deviations
 
-None
+Full repository lint remains limited by the verified four unchanged unrelated baseline findings; targeted task lint/build/full tests pass. Exact pushed-head CI is pending at report publication and must be checked before integration.
 
 ### Assumptions
 
-None; actual successful response shape must be established before implementation.
+Meta-owned primary docs describe opaque reuse; the protected observed success establishes the supported signed structure. Other unobserved identity encodings remain rejected. The successful synthetic sequence proves request construction, not actual production approval or recipient delivery.
 
 ### Unresolved Issues
 
-Protected actual upload-session structural evidence pending from root.
+Root retains provider rollout, normal uncertain-preclaim retry, old403 exact-evidence recovery, approvals, common activation and genuine WhatsApp delivery verification. No live completion claim is made.
 
 ### Architectural Concerns
 
