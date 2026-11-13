@@ -153,7 +153,7 @@ Pending
 
 ### Review Notes
 
-None
+Prepublication candidate review passed (publication remains incomplete): exact source `44356b4ce651b6b9bc3efc06f89e1d1484139f65` changes only three version values in package metadata. Independently verified candidate530497bytes/157members/SHA256 `b667857723818e2232d3fcd3aa40195c71140249d77d7d06e1cec6f0c865dd37`, exact accepted tested archiveSHA35fb4130... and all156 nonmetadata members byte-identical. Parsed package metadata differs only version5.13.10. Root may merge release metadata; public publication still requires explicit exact archive/version/destination/latest approval and actual registry receipt. Task stays in_progress, ReviewStatusPending; no publication completion or BG010 readiness.
 
 ### Reviewed Files
 
