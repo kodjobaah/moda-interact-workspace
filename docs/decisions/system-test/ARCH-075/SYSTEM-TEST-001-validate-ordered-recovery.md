@@ -9,11 +9,11 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-13T05:35:26Z
+attempt: 1
 depends_on:
   - ARCH-075-ADMIN-004
   - ARCH-075-ADMIN-003
@@ -99,7 +99,13 @@ After required work and validation, set review, submit Completion Report and STO
 
 ## Implementation Notes
 
+Admin004 is a newly discovered terminal acceptance prerequisite. Preserve the existing active claim and independently useful fixture work; do not accept this task or claim final common editor workflow coverage until that correction is Complete. No re-claim or reset is authorized.
+
 You are not alone. Preserve others' edits and canonical prepared isolation. Root owns final merges/deployment. Architecture constants resolve inter-agent assumptions; report genuine gaps before expanding scope.
+
+### Bounded test build-resource accommodation
+
+The exact pinned Background Docker build encountered a V8 heap exhaustion (exit 134) during TypeScript compilation. A reversible test-only Dockerfile overlay is authorized: derive from the exact pinned Dockerfile and change only `RUN npm run build` to `RUN NODE_OPTIONS=--max-old-space-size=3072 npm run build`. Keep Node base, lockfiles, source/submodule bytes, runtime ENV and CMD unchanged; do not persist NODE_OPTIONS or change Docker host resource settings. Record the initial failure, exact one-line overlay diff/hash and resulting image identity. Verify the resulting runtime environment has no heap override. This supports integrated correctness under adjusted build resources, not byte-identical production-image or production build-memory parity. If the bounded increase fails, return evidence before further changes; do not invent a source correction.
 
 ## Completion Report
 
