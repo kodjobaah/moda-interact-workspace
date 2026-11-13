@@ -62,3 +62,28 @@ PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Sha
 - Sender isolation amendment: physical parts and normalized status receipts freeze providerAccountId and providerPhoneNumberId as bounded server-resolved scalar identity. Dedupe/correlation includes both plus MetaID/status/provider timestamp. Status or quote from foreign sender cannot attach merely by providerMessageId. Background compares inbound verified account/phone to part before logical-root tenant resolution; old single-message paths remain unchanged.
 
 - Runtime identity amendment: use the same credential snapshot for expected sender validation and actual endpoint/token selection; rotation mismatches refuse before HTTP. Frozen-sender child quote lookup precedes the current-global sender check. Known old-sender quotes may resolve their existing root, but new replies require a currently legitimate matching sender, never silent rotation. Continuation validates original AI inbound/control against current durable state without requiring the released processing lease; HUMAN retains original command/control semantics. Route multipart commands outside legacy single-send expired-permit reconciliation.
+
+## Common Content Scope Amendment
+
+User explicitly extends scope to all Meta templates, AI and HUMAN messages. ONE Admin-owned immutable SHARED wrapper definition/slot/locale projection is content authority, not a new table/setting or parallel hardcoded frame. Name/verified website/divider header and divider/trusted checkout footer surround family-specific body. Logo remains verified separate media; never cover-as-logo. Audience-specific body text and native opt-out content are preserved without adding a second frame. Admin freezes selected common revision into replacement Meta locale authoring JSON; existing registration snapshots remain unchanged. Coordinated activation waits for all required replacement locales to be approved. Freeform product tails remain prohibited outside the valid customer-service window; no unreviewed provider-template multipart contract is introduced.
+
+Genuine binding gap: canonical Shared keys lack shop.websiteUrl. Shared003 adds that semantic key to existing template/wrapper validators and public types only; Shared004 publishes the tested artifact after explicit approval. Existing renderer/token contracts are reused. No new reusable frame builder is needed because the saved common projection is authority.
+
+| Task | Owner | State | Dependencies |
+|---|---|---|---|
+| ARCH-075-SHARED-003 | moda_shared | Complete | ARCH-075-SHARED-002 |
+| ARCH-075-SHARED-004 | moda_shared | Complete | ARCH-075-SHARED-003 |
+
+Background001 preserves existing5.13.8 engine work but final reader support consumes published5.13.9 under the reader-first staging correction below. Background002 and Admin consumer definitions will depend on Shared004 and reference this same common projection; terminal system validation includes Meta and dynamic parity. No source implementation is authorized by this amendment outside canonical assigned tasks.
+
+Common reference contract owner Shared003: exact schemaVersion1/definitionId/sourceHash/localeId/languageTag/contentHash/prepared (existing PreparedWrapper), strict browser-safe parser reusing existing injected-digest projection verification. Admin freezes this ref in new Meta source JSON; Background verifies active SHARED definition/source/locale hash against it. Snapshot validation alone is not authority. New Meta compiler projects common header into BODY prefix, original authored body and preserved native opt-out footer text next, then common checkout conditional as BODY suffix; native FOOTER empty. Existing initial authored Reply-tail semantics stay unchanged; final compiled limits are checked after frame insertion. Duplicate inline checkout needs explicit review, not regex deletion.
+
+## Common-layout consumer tasks
+
+| Task | Owner | State | Dependencies |
+|---|---|---|---|
+| ARCH-075-ADMIN-001 | moda_admin | Complete | ARCH-075-SHARED-004 |
+| ARCH-075-ADMIN-002 | moda_admin | Pending | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
+
+Background002 additionally depends on Shared004 and Admin001. It replaces fixed-prefix decoration for new replies with additive local receiptv2 binding the actual rendered common reference/header/footer and trusted split boundaries; v1 frozen replay remains unchanged. Admin002 coordinates approved global SHARED revision with per-shop Meta assignment safely; actual transaction gap must be returned before unsafe mixed-version activation. All required replacements approved before activation, and consumer deployed first. Terminal system-test additionally depends on Admin001/Admin002/Shared003/Shared004; no implementation depends on system-test.
+Reader-first staging correction: Background001 must understand local receiptv2/commonRef and custom rendered header/footer boundaries BEFORE new producers emit them. It now consumes published Shared0045.13.9 for final reader support; Background002 remains producer composition only. Existing engine work on5.13.8 stays preserved, but no unpublished consumer artifact or new-format activation is allowed. Final exact-head engine validation/rollout follows the published dependency. This prevents an older v1-only reader from aborting new-format tails during producer overlap.

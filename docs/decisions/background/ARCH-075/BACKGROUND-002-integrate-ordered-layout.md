@@ -16,6 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-075-BACKGROUND-001
+  - ARCH-075-SHARED-004
+  - ARCH-075-ADMIN-001
 enables: []
 created: 2026-11-13
 updated: 2026-11-13
@@ -46,6 +48,12 @@ Other repositories/tasks, source main merges/deployment, production sends/replay
 ## Requirements
 
 Build canonical2/3part layout and singleTEXT fallback; eachpart exactcheckoutfooter. Preserve author middle bytes via known receipts/boundaries, never heuristic regex stripping. Actual verified first selected product pair/image only; brandheaderfromcurrentREADYlogo, no cover substitute. Header/detail image precedes separate product; answer fits productcaption then2parts, otherwise finalANSWER third. Missinglogo verifiedtextheader/fullanswer and missingproduct image safeTEXT; no suppressing otherwise legitimate response. Freeze original body/manifest/moderation/authority before firstsend; no postpermit edits/ownership recapture. AIoriginalversion, HUMANcommand/control/lease with newinboundpolicy unchanged, STOP/security/templates oldexact compatibility. One logical reservation/usage/cap, max3physical, no new merchantUIfeature. Handle returned partial/unknown truthfully and preserve inter-response conversation order.
+
+### Common content authority amendment
+
+Consume published5.13.9 commonRef/website binding and Admin001 immutable common revision, not a new hardcoded header/footer builder. Existing RecoveryShopHeaderReceiptv1 helpers enforce a fixed prefix and must remain legacy-only. Introduce additive local receiptv2 (existing JSON only) binding canonical commonRef, actual rendered header/footer and trusted split boundaries from the existing renderer, tenant/name/website/checkout facts and original source/control; final current-slot/source/locale/policy checks preserve original evidence. Frozen v1 replay stays byte-exact, no automatic upgrade. Eliminate fixed common prefix decoration for newly framed replies; audience/family-specific content remains body only. Custom common header/footer edits must visibly match Meta/AI/HUMAN goldens, proving one editable source rather than equal default strings. No regex stripping arbitrary authored HUMAN bytes. Update multipart frozen parser/derivation to recognize new receipt only after strict validation, preserve old plan/digest semantics.
+
+Background website resolvers derive canonical saved tenant domain with existing HTTPS/origin policy. Meta registration preparation validates frozen commonRef against selected common revision; no mutation/recompile of provider snapshots at send. New Meta outreach still uses approved native template transport outside window, never freeform product tail. Product photos remain separate only under valid transport/window and frozen part provenance. Runtime consumer deployment precedes Admin002 activation; return any global-slot/per-shop assignment race gap.
 
 ## Work Items
 
