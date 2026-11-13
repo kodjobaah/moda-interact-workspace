@@ -54,6 +54,10 @@ Shared implementation/publication, saved common source mutation, Meta template A
 - Use accepted published Shared006 version (root verifies registry). No sibling source, copied validator or local expanded Sharedschema. Return any actual contract gap before expanding.
 - Production rollout compatible: root deploys new consumer then verifies old workers stopped/drained before new HEADER-only preparation/live requests. Existing frozen retries remain valid. Root alone runs genuine new human/AI/product tests and verifies provider delivery.
 
+### Two-phase reader/writer rollout gate
+
+Common layout is already active; first boot of a new worker must NOT start writing new HEADER-only plans during overlap with old5.13.9 readers. Add one explicit Background-owned environment feature gate `RECOVERY_BRANDED_MAIN_REPLY_ENABLED`, absent/false means existing legacy composition byte-for-byte, only exact literal true enables new writer. Invalid values must never enable it (fail configuration or explicitly remain disabled with bounded diagnosis). Reads accept old/new plans regardless of writer flag. Test default/off/invalid preserve old plan bytes and true selects new layout. Root deploys PhaseA new readers with legacy writer OFF; verifies all old messaging workers stopped/drained with queue state preserved, then sets true and deploys PhaseB. PhaseA/B overlap is safe because every reader supports new order. No platform pause/drop of events, force replay or mutation of frozen jobs. Gateway002 owns matching Render declaration/operator rollout documentation; no Gateway edits by Background.
+
 ## Work Items
 
 - [ ] Inspect current source and capture awkward old decomposition regression.
