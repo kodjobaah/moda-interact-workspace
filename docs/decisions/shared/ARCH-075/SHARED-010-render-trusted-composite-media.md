@@ -54,6 +54,12 @@ Host database/tenant policy/config reads, live/provider sends, native template c
 - Preserve old1125x600 verification defaults; new composite dimensions explicit, not forged through old verifier. No old output/regression changes.
 - Return actual deterministic output artifact for root visual review using private supplied Eugene logo/product inputs; do not commit those shopassets, customer information or privateURLs. Actual node22-alpine/nohostfont test must prove rendered pixels/text/header/product and readable geometry (not constants-only).
 
+### V1 geometry and offline review inputs
+
+Architect accepted proposed V1 geometry: width1125, branded header height300, contained logo maximum180×180 at48,48, canonical text beside at264,48 within813×180, divider at276. Product optional: preserved1125×600 contain area below y300 gives1125×900; no-product gives1125×300. No crop or distortion of approved temporary banner/product. Final measured artifact is reviewed by root before acceptance, not inferred from constants.
+
+Private operator QA inputs exist under primary local-backups/arch075-live-20261113/composite-qa/{logo.jpg,product.jpg}; original hashes supplied securely by root. Use offline only, never commit those assets or URLs. Canonical full header includes authored translated labels; do not repeat header/divider in caption or invent translations. Unsupported glyph/fit returns safe omission.
+
 ## Work Items
 
 - [ ] Implement safe deterministic compositor/preparation with font/license provenance.
