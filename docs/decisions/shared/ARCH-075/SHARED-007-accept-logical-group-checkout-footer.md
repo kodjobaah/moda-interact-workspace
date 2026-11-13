@@ -46,9 +46,9 @@ New roles/fields/schema versions; body/image contract weakening; native Meta tem
 
 ## Requirements
 
-- Preserve exact legacy every-part-footer acceptance. Add only the alternative where final part ends exact trusted URL and earlier parts have no appended footer. Existing allowed role orders, max3 parts, body/control/caption/media/tenant checks remain unchanged.
-- Do not count occurrences globally or remove/alter authored content. A final answer may already contain the trusted URL verbatim and still append its canonical footer. Host canonical authored boundaries prove one appended footer; Shared validates trusted terminal transport placement, not semantic authorship.
-- No arbitrary URL inference, footer relocation, truncation or divider stripping. Missing/wrong final trusted URL fails closed. No empty caption contract needed: long product transport uses existing verified product title before a separate full answer.
+- Preserve exact legacy every-part-footer acceptance. Add a logical-group alternative whose final part contains the exact trusted checkout URL and whose canonical footer suffix is separately attested by the owning Background receipt/decomposition. The pure transport parser cannot infer appended authorship from strings. Existing allowed role orders, max3 parts, body/control/caption/media/tenant checks remain unchanged.
+- Do not count occurrences globally or remove/alter authored content. A final answer may already contain the trusted URL verbatim and still append its canonical footer. Host canonical authored boundaries prove one appended footer; Shared validates final-part trusted URL presence, not semantic authorship or global occurrence counts.
+- No arbitrary URL inference, footer relocation, truncation or divider stripping. Missing/wrong final trusted URL fails closed. Do not introduce a new rule requiring URL to be the final character: a future valid authored footer may include static text after the link. Existing common-layout reference final-token restrictions remain unchanged and must be disclosed rather than silently widened. No empty caption contract needed: long product transport uses existing verified product title before a separate full answer.
 - Existing frozen manifests/digests remain unchanged. Browser-safe export stays free of Node/Prisma/service imports. Reuse existing parser/schema, not duplicate validators.
 - Explicitly demonstrate old5.13.10 readers reject new shape and new reader accepts old/new. Consumer deployment remains reader-first; this task does not enable any writer.
 
@@ -75,7 +75,7 @@ ARCH-075-SHARED-008 release preparation only after acceptance/integration.
 
 - [ ] Exact legacy manifests accepted unchanged; supported final-only footer group accepted.
 - [ ] Authored final answer containing checkout URL stays verbatim and valid; no global occurrence count.
-- [ ] Invalid last footer, mixed unsupported shapes and existing security/caption/media negatives fail closed.
+- [ ] Missing trusted URL on final part, unsupported role shapes and existing security/caption/media negatives fail closed.
 - [ ] Browser-safe compatibility checks and required repository validation pass, with exact mirrored isolation/report evidence.
 
 ## Validation
