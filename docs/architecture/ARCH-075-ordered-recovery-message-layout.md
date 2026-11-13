@@ -195,3 +195,9 @@ BG010 accepted source `56148f8e4ba1bd4578162a2564720c5de80aa995`: complete brand
 Gateway002 Ready after BG010 mergedsource1b71a7d3582f6f946939ac669a9308f1a0c66b01/acceptedparentffa37c3f3697c038208d20f4054afc2918042141. Ownercodifies operatorpersistedtest/prod gate/PhaseA/B/drain/rollback; root retains all live actions and writer staysOFF until drainproof.
 
 Gateway002 accepted exactsource `4c05b55b54aae8e713d67e463b94321dd4f5093d`: operatorownedtest/prodgate, readerfirst/drain/jobpreservation/rollback checks. Positive/completeNegative+96nestedfixtures/syntax passed. Root merge/sync/PhaseB/liveproof remain; architectureInProgress.
+
+## Human handback history correction — 2026-11-13
+
+Actualdelivered21:11 humancommonreply has preparedbodyALLOW while rawcommandtext differs; historyfilter hashesrawtext anddrops it. BG011 corrects exactpreparedmoderationidentity withtenant/content/lifecycle/modelpolicyfailclosed guards andactualdefaultdispatch→history→resumeproof. No reset orunrelatedproductreferralcausalclaim. Root liveoperations; architectureInProgress.
+
+| ARCH-075-BACKGROUND-011 | moda_background | Ready | ARCH-075-BACKGROUND-010 |
