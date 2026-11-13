@@ -156,6 +156,10 @@ Launcher physical isolation/synchronization evidence:
 
 ## Architect Review
 
+## Developer Integration
+
+Root merged source PR86 at exact reviewed09a195c92f7500597944e26707c5c0a3954b00aa after architect acceptance12ad650f9. Actual source main merge bc98bf13d8d2596490d9497783637e8eac6f96c6 is recorded by this parent gitlink. Final focused23 tests, typecheck/build, packed ESM/types/browser and actual published old-reader compatibility passed; earlier full800 tests reported797 pass/3 configured skips before geometry-only correction, covered by final focused/packed assertions. No hosted checks are configured for this PR. No npm publication, renderer, consumer activation or live delivery is claimed.
+
 ### Review Status
 
 Accepted
