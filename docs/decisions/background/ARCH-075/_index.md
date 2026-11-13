@@ -19,4 +19,4 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 | ARCH-075-BACKGROUND-008 | complete | ARCH-075-BACKGROUND-007 |
 
-| ARCH-075-BACKGROUND-009 | Default human common-root freeze wiring | Ready | ARCH-075-BACKGROUND-002 |
+| ARCH-075-BACKGROUND-009 | Default human common-root freeze wiring | Complete | ARCH-075-BACKGROUND-002 |

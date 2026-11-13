@@ -179,4 +179,6 @@ Root canary created20/20 after boundary correction. UI false provider-drift comp
 
 Root successfully activated production common frame revision1 and approved NoOffer assignments, but genuine human command failed multipart_root_not_prepared with HUMAN revision7 and prepared evidence, no root/parts/provider send. Default dispatcher adapter supplies continue but omits freeze, unlike complete injected test engines. BACKGROUND009 owns minimal delegation plus default-runtime and real PG guarded root regression; no contract/schema release or live mutation. Earlier human-inactive cancellations are separate timing evidence. Root verifies deployed new human and AI messages; architecture stays In Progress.
 
-| ARCH-075-BACKGROUND-009 | moda_background | Ready | ARCH-075-BACKGROUND-002 |
+| ARCH-075-BACKGROUND-009 | moda_background | Complete | ARCH-075-BACKGROUND-002 |
+
+BG009 accepted exactsource `0f7e4d4f8c293d4413bb1f0dc3df30fe66ae622d`: canonicaldefaultfreeze delegation, defaultfactory/PG69/focused169/full4295/build/scopedlintgreen;4unchangedbaselinelint findings disclosed. RootCI/merge/deployment/newhumandelivery required; no architecture completion.
