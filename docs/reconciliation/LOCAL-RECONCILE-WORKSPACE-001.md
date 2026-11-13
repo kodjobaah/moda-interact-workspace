@@ -44,7 +44,7 @@ Root additionally verified all14 implementation HEADs have zero unpublished uniq
 1. `ARCH-017-DATABASE-002`: canonicalize applied `20261106023000_remove_order_support` with exact SHA256 `6afd411b773669387f6289243537ea999df07a1f8c553163862a1f21de06cde2`; fresh seed stops recreating the retired feature. Preserve historical FK/refusal/rollback and all unrelated prices/subscriptions/features.
 2. `ARCH-038-DATABASE-003`: add initialOutreachToolCalls1–64 validation/default16 to existing schemaVersion1 policy, after historical history is canonical. Read-only root/Database evidence confirms this new migration absent both live ledgers. Explicit migration transaction and actual earlier-pending-name applied after newer migrations upgrade proof are required.
 3. `ARCH-038-ADMIN-004`: bounded editors/wizard/inheritance/audit support after accepted Database003. Cached old forms must not reset a persisted new value to16; missing writer input refuses or preserves trusted current state under CAS. Root verifies hosted migration rollout before new writes deploy.
-4. `ARCH-028-SYSTEM-TEST-002`: independent existing implementation prerequisites already Complete; root supplied current manual launch checkpoint. Three source-specific131026 scenarios and modified Free/status/settlement coverage run against disposable actual PostgreSQL/Redis/accepted workers/emulators. This is incremental validation, not full original SYSTEM001 certification.
+4. `ARCH-028-SYSTEM-TEST-002`: independent existing implementation prerequisites already Complete; root supplied current manual launch checkpoint. Three credit-source compensation scenarios and modified Free/status/settlement coverage run against disposable actual PostgreSQL/Redis/accepted workers/emulators. This is incremental validation, not full original SYSTEM001 certification.
 5. `LOCAL-RECONCILE-DOCUMENTATION-001`: parallel independent offline video tooling/input reconciliation under the separately reviewed one-off route exception. No launcher/framework/new-agent change.
 
 All normal architecture tasks use launcher-resolved dedicated matching parent/implementation worktrees and published mirrored task branches; source main merges remain root-owned. No blind application of old whole-tree patches. Source/readiness authority remains the individual task YAML and actual accepted code, not this navigation manifest.
@@ -70,3 +70,10 @@ Audit/task materialization in progress. Root appends final accepted source/paren
 ## Architect Review
 
 Manifest classification accepted as a plan based on direct diffs and owner audits. Each implementation retains its independent final review. Root retains explicit final integration authority; architecture statuses and accepted history remain unchanged except owning task-specific amendments.
+
+
+## Additional preserved branch audit
+
+Root verified older nested encryption validation worktrees: unique API42ab84c, Background644c2b2, Messaging8aa2b97 and Commerce870c156/7381d2b commits contain temporary validation workflows only; Commerce292890c publication-proof files already match fresh main byte-for-byte. No missing application functionality or cherry-pick is required. All those worktrees/refs remain preserved and their refs are in verified bundles; never copy their stale trees over current layout work.
+
+Built-baseline Woo verification additionally identified a possible test hook registry mismatch; canonical ARCH053WOOCOMMERCE009 is prepared for bounded test-only correction after post-build confirmation. The already merged follow-up UI remains unchanged. Documentation actual offline pixel verification caught padding in the original local4K patch; the reviewed exception permits correcting the capture profile and directly related pixel regression, with no unsupported native-rendering claim.
