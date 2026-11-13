@@ -58,6 +58,10 @@ Application source fixes, full18-scenario ARCH028 certification, non131026/uncer
 - Failure-stage diagnostics must remain bounded/redacted, respect actual authenticated merchant UI/tenant boundaries and preserve truthful failures. Existing main readiness/encryption modules are reused rather than replaced with stale local versions.
 - All explicit implementation prerequisites are Complete. Root's new explicit recover/test request supplies the current developer manual launch checkpoint. This is a terminal task; no implementation depends on it. Preserve original SYSTEM001 broad scope/status and accepted ARCH075 evidence. No production/full architecture certification claim.
 
+### Bounded validation-image amendment — 2026-11-13
+
+The exact accepted-source default Docker build exhausted V8 memory (exit134) before business assertions. Existing documented validation already records the default failure and a failed 3072MiB resource override. Reuse the approved correctness-image approach through a task-owned exact-current-source manifest/parameter; do not weaken historical pin guards or present a stale image as current proof. Pin accepted Background and nested Database full commits, source/lock and original/derived Dockerfile hashes. Retain audited JavaScript/maps/JPEG outputs only, unchanged Linux dependencies/Prisma/runtime, image digest and nonpromotable host-compiled-js labels. Validate wrong-pin refusal. Host Node24 compilation versus Linux Node22 runtime must be explicit in evidence. No application-source changes or unnecessary repeated known-failing builds. This fallback can establish business runtime behavior only; production Docker-build parity remains unverified and must be reported separately. Original broad ARCH028 certification and live acceptance are not implied.
+
 ## Work Items
 
 - [ ] Reconcile backup/current-main overlap and port missing behavior only.
