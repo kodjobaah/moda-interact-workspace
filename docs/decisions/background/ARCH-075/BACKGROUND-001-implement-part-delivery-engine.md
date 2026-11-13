@@ -75,7 +75,7 @@ Only server-proven boundaries derive physical payloads: HEADER=header+footer; fi
 
 ## Work Items
 
-- [ ] Implement only assigned capability and document compatibility.
+- [x] Implement only assigned capability and document compatibility.
 - [ ] Complete meaningful required checks and regression/negative evidence.
 - [ ] Publish mirrored branch/report and return review, then stop.
 
@@ -120,35 +120,65 @@ You are not alone. Preserve others' edits and canonical prepared isolation. Root
 
 ### Status
 
-Not Started
+Implementation and local validation passed. Exact-head CI is pending; task remains in progress until that gate passes. This report does not claim architect acceptance or production rollout.
 
 ### Files Changed
 
-None
+- Adopt accepted nested Database commit `a9b6ab852a8245dfd14447808aac288a23b113d0` and exact public Shared `5.13.9` with matching lockfile and consumer version assertions.
+- `src/services/recovery-multipart/{frozen,common-layout,fence,engine,quote,runtime}.ts`: bounded immutable preparation, published contract readers, original authority, physical permits/outcomes, continuation and correlation.
+- Existing recovery final fence and HUMAN preparation/dispatcher readers: per-part policy reuse, true common-layout RENDERED evidence, legacy reconciliation exclusion and safe crash-gap deferral.
+- Messaging worker/entrypoint and both routing readers: active continuation/repair/status integration and sender-bound quote handling.
+- WhatsApp transport types/service: optional server-only expected sender validated against the same credential snapshot used for HTTP.
+- Existing trusted wrapper URL resolver export; no formatter/content definition duplicated.
+- Owned unit/PostgreSQL fixtures and regressions; existing legacy routing unit isolation and installed-package assertions.
 
 ### Work Completed
 
-None
+- One logical message/reservation with at most three immutable physical parts; deterministic per-part identities and deterministic HUMAN root identity. Duplicate freeze/admission cannot issue another provider attempt or replace frozen bytes.
+- Every send goes through the existing Shop/Conversation current tenant/control, window, STOP, consent, entitlement/usage, moderation and media/policy final fence. Later parts require durable predecessor DELIVERED/READ; ACK alone waits asynchronously.
+- Original AI inbound/control and HUMAN command/control/lease authority survive released processor leases. A new HUMAN customer inbound does not add an AI version gate. Admitted groups are excluded from legacy expired single-send reconciliation.
+- Default deadline120s, validated30–300s, repair batch<=100 on5s cadence. Deadline cancels only unadmitted tails; ADMITTED/UNKNOWN never returns to an automatic transport attempt. Missing/in-progress exact moderation may wait only within that original deadline; no send without the final exact ALLOW record.
+- Sender-bound normalized status receipts reconcile before/after ACK, including commit-order races, duplicate/out-of-order/read-before-delivered and late original ACK after expiry. Immutable part/root outcome provenance retains real provider evidence after source corruption/current authorization changes; this never grants another send.
+- Logical SENT only all ACK; DELIVERED/READ only complete corresponding physical evidence. Partial definitive failures retain accepted prefix; UNKNOWN remains conservative. Known-zero-accepted automated failure releases only its exact unused logical usage; accepted/uncertain prefix is retained. Delivered usage records once per logical root.
+- Quotes from any accepted physical part resolve their logical root without inventing root sentAt. Frozen sender IDs and real ACK timestamps are required. Foreign/current-rotation identities cannot cause guidance or a new reply through a different sender.
+- Published5.13.9 commonRef validation supports additive v2 receipt with exact renderer-derived boundaries/trusted variables and fresh locked SHARED definition/source/locale/facts checks. Legacy v1 and old single TEXT/product IMAGE/BRAND_IMAGE records remain readable without rewriting.
+- HUMAN v2 uses true RENDERED/SHARED evidence, explicitly versioned application identity and byte-exact original authored body. No fake NOT_CONFIGURED or legacy flattening; absent-root crash gaps use existing prepermit claim defer/backoff and preserve frozen evidence for the owning producer to resume.
+- A copied envelope from another logical root is refused at the actual selected root before any source-derived cleanup; only that root can be cancelled.
+- Producer generation remains disabled. No Meta source compilation, template activation, production send/replay/reset or merge was performed by this agent.
 
 ### Validation Results
 
-Pending
+- Public Shared `5.13.9` registry installation and lock integrity verified in the canonical worktree: `sha512-bLXw6dofV8bq/TJzE8STzk9/jT0WSHM5R01x4d1Ki+xVQ+VAfVg63+hzewXas5KYjUMtBOMxBX60gtB4U/uVfg==`. No sibling-source or file dependency.
+- Focused units: 91/91 passed across five files, then final root-binding guard focused units 30/30 passed (root-executed canonical validation).
+- PostgreSQL: **35/35 passed across both owned integration files (174 seconds)**. Includes actual normal Free billing admission, current SQL fence, concurrency/unknown/partial outcomes, sender correlation, v1/v2, custom common source and HUMAN crash-gap cases. Earlier fixture-only failures were corrected with valid synthetic phone/native consent observations, proper source confirmation, valid recovery closure instead of prohibited unlink, and locale-before-definition cleanup; no production policy guard or assertion was relaxed.
+- Typecheck: passed; declared `npm run build` passed (exit 0), including Prisma generation and both TypeScript builds.
+- Full unit suite: **4,142/4,142 passed across 381 files (229.84 seconds)** before the final one-line root-binding guard. After that guard: **28/28 engine PostgreSQL cases, 30/30 focused units, typecheck and changed-file lint passed**. The earlier combined 35 PostgreSQL cases include the unchanged common-layout cases. Declared build and changed-file lint passed. Exact-head full CI remains pending.
+- No live database/Redis/provider was used for tests. PostgreSQL tests are guarded disposable integration runs with synthetic recipients and mock transports.
+
+Physical worktree isolation (launcher evidence):
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-001`, branch `task/ARCH-075-BACKGROUND-001`.
+- Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-001`, same branch.
+- Shared/default/another task checkout switched or used for implementation: no.
+- Parent remote task fast-forward: not needed; parent main incorporated: yes. Implementation remote task fast-forward: not needed; implementation main: already current.
+- Recursive submodule sync/update/init passed at launcher preparation, recorded Database base `5329d5390d346042895219663f3a040ea54ae168`; task explicitly advances it to accepted Database source above.
+- Claim already prepared/pushed `c423f670492f6e9bb5ec73b47470c66afb531436`; no repeated claim.
 
 ### Deviations
 
-None
+The child runtime retained restricted write access to sibling canonical worktrees. With root's explicit direction, this agent prepared task-scoped patches under `/tmp`; root applied them only in the authoritative task worktree and executed validation/publication mechanically. No alternate implementation checkout was used. Source/review ownership remained with this agent. Public9/common v2 reader scope was explicitly amended by the architect during the existing claim; dependency completed before consuming its published exports.
 
 ### Assumptions
 
-None beyond canonical contracts.
+Provider acceptance is not exactly-once delivery. A committed ambiguous transport attempt is never blindly resent. Public reference snapshots are validation inputs, never current authorization by themselves.
 
 ### Unresolved Issues
 
-None currently; report concrete gaps.
+Exact-head CI remains pending. Source commit `18ede9eca6b599974c55ca0143818df142499b8b` is pushed on `task/ARCH-075-BACKGROUND-001`; draft implementation PR: https://github.com/kodjobaah/moda-interact-background/pull/212. Canonical implementation worktree is clean. Parent progress-report publication is handled on the same task branch; final review submission follows CI. Production rollout/genuine ordered-message verification belongs to root after review and dependent producer/common-source tasks; it is not asserted by this engine-only report.
 
 ### Architectural Concerns
 
-No weakening of tenant, immutable outcome or uncertain-provider safety.
+No Background-owned schema/queue ingress contract, merchant charge/cap, credential, provider permission or global infrastructure change. The declared nested Database dependency is adopted without editing its schema/migrations. ExistingJSON stores private frozen transport/receipt data. Matched provider facts are retained; unmatched receipt cleanup is bounded7days/100rows using the accepted partial index. New producers must use the same deterministic HUMAN root helper and original frozen authority. Old single-send records are not upgraded automatically. Rollback requires stopping new generation and preserving/draining new groups; old readers cannot safely interpret new manifests.
 
 ## Architect Review
 
