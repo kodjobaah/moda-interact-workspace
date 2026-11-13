@@ -9,12 +9,13 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-075-ADMIN-004
   - ARCH-075-ADMIN-003
   - ARCH-075-BACKGROUND-003
   - ARCH-075-SHARED-003

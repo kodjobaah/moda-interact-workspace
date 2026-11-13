@@ -104,3 +104,9 @@ Actual common-source translation revealed Admin protected-segment validation omi
 
 | ARCH-075-ADMIN-003 | moda_admin | Complete | ARCH-075-ADMIN-002, ARCH-075-SHARED-004 |
 | ARCH-075-BACKGROUND-003 | moda_background | Complete | ARCH-075-BACKGROUND-002, ARCH-075-SHARED-004 |
+
+### Reviewed common editor lifecycle parity
+
+Admin004 corrects new editable empty static footer production and selector/eligibility staging status parity, preserving all immutable saved AST/compiler/hash bytes and strict 20-locale proof. A genuine cloned source is required for existing noncanonical empty-token footer. No Shared release, database status rewrite or Background runtime change. Terminal system acceptance additionally requires Admin004; independent unaffected fixtures may continue, but no architecture completion claim is made.
+
+| ARCH-075-ADMIN-004 | moda_admin | Ready | ARCH-075-ADMIN-003, ARCH-075-SHARED-004 |
