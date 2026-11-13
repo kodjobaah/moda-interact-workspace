@@ -608,3 +608,10 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 - 2026-10-08: Architect accepted `ARCH-028-SHARED-001` Attempt 1. The exact v2 status schema remains strict, while the dual-version canonical Shared parser accepts bounded v3 `FAILED.failure.providerCode` evidence without coercion or policy classification. `ARCH-028-SHARED-002` is now Ready as a publication-only gate; Background, Messaging and downstream system tests remain dependent on the approved consumer-first sequence.
 
 - 2026-10-08: Architect accepted `ARCH-028-SHARED-002` Attempt 3: published `@modainteract/moda-interact-shared@1.3.1` (release metadata only), with exact registry integrity/tarball and clean installed v2/v3 billing parser evidence. `SHARED-003` is Ready; Background and Messaging remain dependency-gated pending Database and consumer-first adoption. Developer owns integration of the accepted Shared publication task branch and parent gitlink before subsequent implementation.
+
+
+### Preserved local source-specific coverage — 2026-11-13
+
+SYSTEM-TEST002 is Ready/Attempt0 for selective recovery of backed-up PAID/PROMO/PURCHASED131026 compensation scenarios and supporting terminal-recipient/merchant-notice/durable-settlement diagnostics onto current main. Explicit accepted implementation dependencies and developer manual checkpoint are satisfied. Newer main catalogue/encryption/Meta-ingress/ARCH075 coverage stays intact. This bounded terminal validation does not claim the original SYSTEM001 full18-scenario certification or production provider acceptance; implementation tasks never depend on system validation.
+
+| ARCH-028-SYSTEM-TEST-002 | moda_system_test | Ready | ARCH-028-ADMIN-001, ARCH-028-BACKGROUND-007, ARCH-028-BACKGROUND-009, ARCH-028-SHOPIFY-001, ARCH-047-ADMIN-007, ARCH-047-BACKGROUND-006 |
