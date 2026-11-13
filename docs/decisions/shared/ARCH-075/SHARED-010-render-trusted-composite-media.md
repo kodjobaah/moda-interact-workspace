@@ -76,6 +76,12 @@ Actual private canonical English header119UTF8bytes SHA2567e2d7c8d8ab536a6addcb2
 
 Root approved DejaVuSans44/dpi72 after actual no-autofit/no-trim fontless Alpine probe: exact canonical header716×241 fits813×252;40pt766×222,48pt779×264 exceeds height. Render at fixed44 with measured width/height/glyph guards, no shrinking. Logo180×180 at48,60; text at264,24; header300. Full compositor image and responsive root visual review still required; text-only preflight does not prove whole image.
 
+### Required opt-in one-root carrier completion (architect amendment)
+
+Read-only Background engine audit confirms accepted009 media union alone cannot pass the existing recovery multipart carrier. Add a NEW opt-in composite-aware recovery carrier/parser/digest in this same010 source before combined release. Minimal new wire shape reuses schemaVersion1/kindRECOVERY_MULTIPART/parts and exactly one HEADER with COMPOSITE_IMAGE; alternatively pass exact legacy carrier unchanged. No new roles/fields, composite+extra-parts or relaxation of old validators.
+
+Trusted parse/build must call accepted009 composite parser with independently supplied canonical boundaries/provenance/output receipt; structural union/digest alone is not authorization. New carrier digest must preserve byte-identical old plan digests; current5.13.10 must reject new shape while new opt-in reader accepts exact old vectors. Export browser-safe pure helpers/types separately from Node renderer. Add focused negative/mixed-role/count/trusted-context and packed/browser/type vectors. Share exact stable API with Background owner before publication; no service-local duplicated validator or second release. This is a directly required contract completion discovered before any publication, not runtime/ownership expansion.
+
 ## Work Items
 
 - [ ] Implement safe deterministic compositor/preparation with font/license provenance.
