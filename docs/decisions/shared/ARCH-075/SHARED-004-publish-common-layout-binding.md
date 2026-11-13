@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T02:16:35Z
@@ -143,24 +143,24 @@ Do not republish on registry propagation or substitute rebuilt bytes after artif
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending actual source review.
+Release-only evidence accepts corrected public5.13.9. User explicitly approved the corrected tested artifact before the single root canonical publication; accepted source merged first. Actual version/latest and downloaded archive hashes match the immutable accepted candidate. Superseded old artifact was not published.
 
 ### Reviewed Files
 
-None
+Assigned release report; prepared packet; root public-release receipt; source acceptance/merge and corrected artifact identity.
 
 ### Validation Reviewed
 
-None
+One npm exit0 canonical public/latest receipt, actual latest/version5.13.9, SHA256 `79731a5e54a1a9f5d1a0fdeb84cc4db1d2968c416cfa9543de52a813088e4043`, SHA1/SHA512 verified against actual downloaded registry archive. Clean unchanged merged implementation1ca3c5ca, dedicated canonical isolation. No repeated source validation/repack/rebuild or second publisher.
 
 ### Architecture Conformance
 
-Pending
+Conforms to published-package sequencing and one immutable common layout contract. This task adds no consumer runtime or live provider behavior.
 
 ### Follow-up
 
-None
+Admin001 can become Ready after accepted report is reconciled in its canonical parent. Active Background001 may consume actual published5.13.9 for final v2 reader support; current original claim remains, no duplicate claim. Producer activation and genuine production validation remain gated.

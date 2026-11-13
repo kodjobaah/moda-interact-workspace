@@ -8,4 +8,4 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 | ARCH-075-SHARED-002 | complete |
 
 | ARCH-075-SHARED-003 | complete |
-| ARCH-075-SHARED-004 | ready |
+| ARCH-075-SHARED-004 | complete |
