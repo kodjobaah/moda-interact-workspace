@@ -96,8 +96,9 @@ You are not alone; preserve other work. Canonical launcher packet owns start/cla
 ### Status
 
 Ready for Review. Independent local proof only; no live repair/fleet/provider
-approval claim. Implementation `0ea7b4c6c997feb32f9c433d3e0a8073601fb71b`
+approval claim. Implementation `ac4c67010bb8a1b602fd9112088a65f7f323938e`
 is committed and pushed on `task/ARCH-075-SYSTEM-TEST-002`.
+Draft implementation PR7 and mirrored parent PR1011 are ready for independent review.
 
 ### Files Changed
 
@@ -162,7 +163,9 @@ Node unit test cases.
 - Foreign WABA refuses before sample/intent. Captured telemetry 39,985 bytes passes
   four injected token/URL/email/phone absence checks. One throttle and four
   deferral events persisted. All owned containers cleaned.
-- Actual Admin006 services: two nonempty retries have distinct audit IDs; two
+- The actual Admin006 bundle executes on host Node24.19 against the same
+  disposable PostgreSQL with matching installed dependencies; its host client
+  is never copied to Linux. Actual Admin006 services: two nonempty retries have distinct audit IDs; two
   concurrent repeats and an empty repeat are no-ops, completed item is unchanged,
   and audit-FK failure rolls back retry writes. No translation provider called.
 - All **78 migrations** finish and match owning checksums. New migration
