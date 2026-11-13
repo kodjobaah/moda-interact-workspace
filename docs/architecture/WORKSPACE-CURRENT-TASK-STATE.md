@@ -1999,3 +1999,8 @@ ADMIN001 Accepted/Complete at9be7c236; COMMERCE001 Accepted/Complete at69acccb6;
 
 ## ARCH-068 initializer accepted / terminal validation ready — 2026-11-10
 ADMIN002 independently Accepted/Complete unchanged Attempt1, source40fc5b67e6a814020668a6d4ae25eaa7c0d5f17a; independent7-unit/11-disposable-PostgreSQL tests and typecheck pass. All eight implementation/publication tasks are Complete. SYSTEM-TEST001 Ready at Attempt0, executor/claimed_at null, manually launched after developer validation; canonical handoff includes the completed prerequisite records and exact Shared5.12.0 pin. Architecture remains In Progress; no system execution, live initialization/activation, deployment, gitlink change or main merge/push. This current frontier supersedes the preceding initializer-readiness snapshot.
+
+
+## ARCH-075 upload-session follow-up — 2026-11-13
+
+BACKGROUND008 newly Ready/Attempt0/unclaimed on accepted BG007. Actual production HTTP200 sample-session response is rejected by local session-ID validation before byte upload/template intent. Owning task is limited to primary-contract/evidenced opaque-ID handling and safe Graph URL construction; no Shared release, schema, blanket repair or common activation. SystemTest002 acceptance/source integration remains a separate current parent task record; existing synthetic proof is not live provider approval. Architecture In Progress with provider approval/coordinated activation/ordered recipient proof pending.

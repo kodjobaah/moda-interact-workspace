@@ -150,3 +150,9 @@ The terminal system task is Accepted after actual disposable PostgreSQL/Redis/wo
 Admin006 corrects a confirmed second-retry collision with the existing unique audit operation identity. Each nonempty serialized retry decision needs its own server identity; empty/concurrent repeats stay no-ops. Existing audit history/index, completed locales and provider policy remain unchanged. This independent task may run beside throttle work; terminal SystemTest002 includes its accepted reconciliation.
 
 | ARCH-075-ADMIN-006 | moda_admin | Complete | ARCH-075-ADMIN-005 |
+
+### Evidenced resumable upload identity correction
+
+Production sample-session requests now return HTTP200 but the local uploader rejects their identifier before byte upload/create intent. Background008 owns only evidenced opaque Upload-ID preservation with trusted Graph destination/path/query validation and existing durable app-operation/deadline/config fences unchanged. Primary Meta documentation and protected actual structural evidence gate the final grammar; no raw signed identifier or secret is committed/logged. Historical403/code4 recovery stays the separate accepted BG007 exact-attestation path. No Shared release/schema/template rewrite is required. New source correction does not depend on terminal SystemTest002; its accepted prior throttle proof remains historical, not proof of this new correction. Common activation/provider approvals and genuine ordered recipient proof remain pending, so ARCH-075 stays In Progress.
+
+| ARCH-075-BACKGROUND-008 | moda_background | Ready | ARCH-075-BACKGROUND-007 |
