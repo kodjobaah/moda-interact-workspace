@@ -15,6 +15,7 @@ executor: codex
 claimed_at: 2026-11-13T05:35:26Z
 attempt: 1
 depends_on:
+  - ARCH-075-BACKGROUND-006
   - ARCH-075-ADMIN-005
   - ARCH-075-BACKGROUND-005
   - ARCH-075-GATEWAY-001
@@ -75,6 +76,12 @@ A separate temporary derivative of the approved correctness image may replace on
 Admin005, Background005 and Gateway001 are Accepted. Preserve the same claim and all prior thirteen integrated checks plus four localized-command/eight-negative followup proof. Before terminal acceptance append one bounded independent disposable flow using accepted Admin merge e52ecdb373a526f07710ecabfb7b3cefabab5018 and Background merge 2ae1eeec611cefb6dc68a3c733133d5201820525: actual confirmed all20 Meta snapshots record English review without changing hashes/registrations; exact missing-app preclaim block recovers through the operator domain method after synthetic trusted configuration repair, then unchanged ordinary claim can acquire durable creation intent. Prove an uncertain/intent-bearing registration still refuses and existing identical confirmation is idempotent. Use no real provider or deployment configuration. Reuse accepted Gateway structural evidence and identify actual messaging worker ownership; do not claim external fleet inspection from a synthetic proof reference.
 
 A bounded temporary runtime overlay may add only freshly compiler-emitted preclaim-recovery.js/map from exact accepted source to the previous alias correctness image, after proving other runtime modules/dependencies/ENV/CMD unchanged. Record base/derived identities, source/compiler/module hashes and this non-production image limit. Admin fixture bundles exact accepted Admin source. No broader rebuild/rerun solely to duplicate unchanged prior scenarios. Return any additional source divergence before widening scope. Architecture remains In Progress pending root-owned live provider approval, coordinated activation and genuine delivery proof.
+
+### Final strict keyed provider delta
+
+Background006 is Accepted and merged at 8599f505c8da84a49db89f52637ebf387c317cea. Preserve the same claim and all earlier integrated, localized-command and Meta-readiness proof. Add only bounded independent actual Node22 builder/codec evidence against this exact source: keyed Batch JSONL has SDK-derived strict schemaVersion1/segments/key/text, required fields, additionalProperties:false and existing bounds; ordinary translation has no added format; actual strict restoration rejects input-only protectedTokens/context/unknown fields and retains valid marker identity. No live OpenAI/Meta request or broad rerun is required.
+
+A temporary derivative may replace only compiler-emitted translation.provider.js, segment-codec.js and their source maps from the exact accepted source under the approved locked compiler/options. Verify all other runtime outputs/dependencies/ENV/CMD unchanged, retain prior base/new image/module manifest identities and no production-build parity/promotion claim. Return unexpected divergence before expanding. Root separately owns normal UI translation retry and semantic review after deploy.
 
 ## Work Items
 
