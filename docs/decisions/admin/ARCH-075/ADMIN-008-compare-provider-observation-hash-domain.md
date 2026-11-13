@@ -170,3 +170,7 @@ Conforms to Admin-internal read-only status ownership. Safe expected hash only c
 ### Follow-up
 
 Root integrates source then accepted parent/gitlink and verifies deployed canary UI against actual observations before expansion/activation. Real provider approvals, coordinated activation and genuine ordered Meta/AI/human/logo/product/checkout delivery proof remain separate. ARCH075 remains In Progress.
+
+## Developer Integration
+
+Admin PR97 merged to main as `622032d4a2e0bbed6f0a65300f5c6612f29ef49d` after architect acceptance and passing local/remote checks. Workspace Admin gitlink follows that merge. Real template-content drift, provider decisions and assignment gates remain enforced. Deployment/readback and common-layout activation/delivery proof remain root-owned operational gates.
