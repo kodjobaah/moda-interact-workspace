@@ -139,7 +139,7 @@ Rollout: additive migration test/prod, accepted Background schema/client adoptio
 
 | ARCH-075-DATABASE-002 | moda_database | Complete | ARCH-075-DATABASE-001 |
 | ARCH-075-BACKGROUND-007 | moda_background | Ready | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-006 |
-| ARCH-075-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001 |
+| ARCH-075-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001, ARCH-075-ADMIN-006 |
 
 ### Independent system validation accepted
 
@@ -149,4 +149,4 @@ The terminal system task is Accepted after actual disposable PostgreSQL/Redis/wo
 
 Admin006 corrects a confirmed second-retry collision with the existing unique audit operation identity. Each nonempty serialized retry decision needs its own server identity; empty/concurrent repeats stay no-ops. Existing audit history/index, completed locales and provider policy remain unchanged. This independent task may run beside throttle work; terminal SystemTest002 includes its accepted reconciliation.
 
-| ARCH-075-ADMIN-006 | moda_admin | Ready | ARCH-075-ADMIN-005 |
+| ARCH-075-ADMIN-006 | moda_admin | Complete | ARCH-075-ADMIN-005 |
