@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 5
 executor: null
 claimed_at: null
@@ -32,6 +32,8 @@ ARCH075; docs/architecture/ARCH-075-ordered-recovery-message-layout.md; coordina
 Codify the reader-first/new-writer-off deployment gate for consolidated branded replies.
 
 ## Context
+
+Root verified BG010 source PR221 merged `1b71a7d3582f6f946939ac669a9308f1a0c66b01`, accepted parent PR1026 `ffa37c3f3697c038208d20f4054afc2918042141`. Dependency Complete and integrated. Runtime gate exacttrue/defaultOFF and safe startup boolean are implemented; root currently observes PhaseA OFF and retains operational enable authority.
 
 Commonlayoutalreadyactive; BG010 must not emit newHEADER-only during overlap with oldShared5.13.9 readers. Background implements RECOVERY_BRANDED_MAIN_REPLY_ENABLED defaultoff. Canonical deployment declaration and operator-controlled PhaseA/B sequence must reflect this explicitly.
 

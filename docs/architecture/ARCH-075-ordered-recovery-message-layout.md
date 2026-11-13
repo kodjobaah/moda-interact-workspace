@@ -191,3 +191,5 @@ SHARED005 accepted exactsource `8276eadb1f2467367e7b1ecb4a1d4e3573048fb6`: onlyH
 BG010 Ready after integratedBG009 and acceptedpublicShared5.13.10receipt/sourceparent3896421ac. Newconsumer mustdeploy writerOFF (stricttrueenable, safe booleanstartup), preserveoldfrozenplans, then root verifiesoldreadersdrained beforePhaseB. Gateway002 retainsPending untilconsumeraccepted; no holdcycle.
 
 BG010 accepted source `56148f8e4ba1bd4578162a2564720c5de80aa995`: complete brandedmain/separateproduct, strictwriterOFFreaderfirst and exactold/newfrozenreceipt guards.4315full/72actualPG/build/scopedlintgreen,4unchangedbaselinelint disclosed. RootCI/merge/Gatewaygate/PhaseAoldreaderdrain→PhaseB/liveproof required.
+
+Gateway002 Ready after BG010 mergedsource1b71a7d3582f6f946939ac669a9308f1a0c66b01/acceptedparentffa37c3f3697c038208d20f4054afc2918042141. Ownercodifies operatorpersistedtest/prod gate/PhaseA/B/drain/rollback; root retains all live actions and writer staysOFF until drainproof.
