@@ -37,7 +37,7 @@ Actual staged registration encountered missing worker META_APP_ID before durable
 
 ## Scope
 
-Relevant render.test.yaml/render.production.yaml merchant-communications worker envVars and canonical render.yaml only if it declares the same service; matching deployment notes and structural checks.
+Relevant render.test.yaml/render.production.yaml messaging worker envVars and canonical render.yaml only if it declares the same service; matching deployment notes and structural checks.
 
 ## Out of Scope
 
@@ -45,7 +45,9 @@ Other repositories, Shared publication/schema, provider guard weakening, uncerta
 
 ## Requirements
 
-Declare META_APP_ID with sync:false only on actual merchant-communications worker services in both environments. No hardcoded app IDs/credential values, unrelated services, topology/scaling or env-group changes. Confirm actual upload adapter consumes the variable and startup worker matches declarations. Document setting the existing provider app identity through secure Render env mechanism; no new app/grants or credential rotation. Document preclaim failure recovery dependency instead of direct database repair. No live Render mutation in task.
+Declare META_APP_ID with sync:false only on actual messaging worker services in both environments. No hardcoded app IDs/credential values, unrelated services, topology/scaling or env-group changes. Confirm actual upload adapter consumes the variable and startup worker matches declarations. Document setting the existing provider app identity through secure Render env mechanism; no new app/grants or credential rotation. Document preclaim failure recovery dependency instead of direct database repair. No live Render mutation in task.
+
+Runtime inspection of accepted Background entrypoints/messaging.ts proves startProductionMetaTemplateDuePoller runs in messaging workers; merchant-communications owns translation execution, not this poller. The original task target was incorrect and is superseded by this evidence without resetting the claim. Root corrects live environment placement separately; no credentials or topology changes.
 
 ## Work Items
 
