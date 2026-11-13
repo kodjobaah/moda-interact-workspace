@@ -42,7 +42,7 @@ Existing Admin approved-source/publication preview, SHARED wrapper activation/CA
 
 ## Out of Scope
 
-Other repositories, new database tables/settings, provider permissions, live registrations/activation, source merges, unapproved publication, changing billing/cap semantics, arbitrary source refactors, automatic mutation of approved templates. Background engine001 remains on published5.13.8 and producer-disabled.
+Other repositories, new database tables/settings, provider permissions, live registrations/activation, source merges, unapproved publication, changing billing/cap semantics, arbitrary source refactors, automatic mutation of approved templates. Background engine001 uses accepted published5.13.9 compatible readers and remains producer-disabled.
 
 ## Requirements
 

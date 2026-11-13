@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -74,6 +74,8 @@ Use canonical ARCH075 frozen decisions. Shared owns ordered schema/digest and ex
 ## Dependencies
 
 ARCH-075-BACKGROUND-001
+ARCH-075-SHARED-004
+ARCH-075-ADMIN-001
 
 ## Enables
 
@@ -98,6 +100,8 @@ Only dependent tasks after architect acceptance; never begin them implicitly.
 After required work and validation, set review, submit Completion Report and STOP. No main merge/deploy or enabled task execution.
 
 ## Implementation Notes
+
+Accepted compatible engine merged at `02e624478fbaf4f4d2c755bfa88e86d4a1a4154c`; launcher implementation must incorporate that main source. Admin001 accepted source merged `73831bb661731bc6d7dd478475ea7acad1ffc4dd`, public Shared5.13.9 actual bytes verified. Root retains producer merge/deployment gate until engine Live/healthy and predecessor drain proof in BOTH environments; implementation may proceed in isolation while that operational proof is pending.
 
 You are not alone. Preserve others' edits and canonical prepared isolation. Root owns final merges/deployment. Architecture constants resolve inter-agent assumptions; report genuine gaps before expanding scope.
 
