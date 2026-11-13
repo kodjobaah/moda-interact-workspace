@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-13T01:33:50Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-075-SHARED-002
@@ -158,24 +158,26 @@ Keep the selected Admin immutable SHARED projection as content authority; do not
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending actual source review.
+Actual source3e1a06fa review found one missing common-reference invariant: required name/site presence does not exclude other valid wrapper variables. Header/conditional can therefore contain values outside the approved common Meta-projectable frame. Correct within this same source task, preserving generic legacy wrapper behavior.
 
 ### Reviewed Files
 
-None
+common-recovery-layout.ts and existing wrapper parser; website binding/resolver source and focused tests; immutable artifact/report evidence.
 
 ### Validation Reviewed
 
-None
+Initial exact head783 passed/3 skips, types/build/installed proof recorded but not accepted as final because the following correction changes runtime. Existing work/isolation evidence remains valid; next claim increments preserved attempt once.
 
 ### Architecture Conformance
 
-Pending
+Correction required: common reference HEADER permits only text and shop.name/shop.websiteUrl, each exactly once; checkout conditional permits only text and checkout.url exactly once on its own final line. Body exactly response slot, static footer empty, no productImage and hash checks remain unchanged. Generic prepared wrappers may still support their existing broader variable set.
 
 ### Follow-up
 
-None
+1. Add explicit token allowlists to the new common-reference parser.
+2. Add valid-hash negative fixtures inserting customer.firstName and logo/other variables in header/conditional; existing common custom-text positives and generic wrapper compatibility remain green.
+3. Run required corrected exact-head source checks/build/installed artifact, submit revised report and immutable5.13.9 hashes. No publication or follow-on work. Reclaim via canonical launcher, no alternate checkout.
