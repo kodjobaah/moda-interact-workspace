@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T09:07:11Z
@@ -156,24 +156,24 @@ None requiring schema/Shared changes. Making rows due intentionally permits late
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Accepted exact source `daf7ed60042ff7977c34ef219d6bdcf855e9bb17` and mirrored report `43285d85447bb86deac50c0bf7144599214d016d`. Independent review confirms strictly bounded operator-only recovery for the exact missing-app preclaim failure. Positive matching blocked history is required; every create/post/result/unknown observation or submission/provider identity refuses. No general BLOCKED retry or automatic poller wiring.
 
 ### Reviewed Files
 
-None
+meta-template-management/preclaim-recovery.ts; operator CLI and operations guide; focused parser/argument and real PostgreSQL recovery/CAS/audit/replay cases.
 
 ### Validation Reviewed
 
-None
+98 focused tests and 21 disposable PostgreSQL cases, lint/typecheck and CLI refusal smoke passed. Both exact-head CI runs 43400908141 and 43400968781 passed 383 files / 4197 tests. Canonical physical worktrees, synchronization, recursive submodule and same prepared claim evidence reviewed.
 
 ### Architecture Conformance
 
-Pending
+At most20 exact IDs, reviewed digest, current trusted configuration and explicit messaging-process evidence attestation; unchanged reviewed source fingerprint, updatedAt/transport CAS, all-or-none batch/audit, no history/counter/source reset. Replay is limited to unchanged unclaimed recovered rows. No provider call/new registration or live repair by agent. Architecture remains In Progress.
 
 ### Follow-up
 
-None
+Root owns source merge/deploy and any exact historical recovery after actual messaging config and normal English review are verified. Repair makes rows due for normal worker processing; it does not prove approval. Preserve system-test same claim/prior proof and append bounded readiness reconciliation before acceptance.
