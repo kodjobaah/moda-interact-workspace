@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 5
 executor: null
 claimed_at: null
@@ -33,6 +33,8 @@ ARCH075; docs/architecture/ARCH-075-ordered-recovery-message-layout.md; coordina
 Deliver a complete branded main answer with one checkout footer, keeping verified product images separate.
 
 ## Context
+
+Prerequisites integrated: BG009 source cb98d6b75da189a6408f7ccfec96a4368ba9baad/parentabfd2768d946b2a63e0d23d00338b85d7c34c3a2; approved public Shared5.13.10 exactarchive receipt accepted311ce54f4, source232bcb3a3e5a8385aa76fc50f1c59da34f323fb1 and parent3896421ac4b076d980df33895d45fb1021b3a50c. Both dependency tasks Complete. Use exactpublished5.13.10 and reader-first writerOFF gate.
 
 Actual AI common reply emitted empty logo/header/footer then answer/footer, creating adjacent dividers. Existing strict common preparation/frozen guards enforce that old decomposition. Shared005/006 add only HEADER-only order; this consumer must use published package and preserve legacy frozen plans. Root user authorizes correction; BG009 urgent default-human freeze remains independent prerequisite.
 
