@@ -37,7 +37,7 @@ The user explicitly requires all Meta templates, AI replies and HUMAN messages t
 
 ## Scope
 
-Add only shop.websiteUrl to canonical recovery-template semantic keys and wrapper variables/parser; public exports/types, compatibility tests and candidate5.13.9 exact artifact. Reuse existing prepared wrapper token contracts/rendering, no new frame/content builder.
+Add shop.websiteUrl to BOTH existing canonical recovery-template semantic key surfaces (recovery-template-bindings and commerce/outreach template contracts), wrapper variables/parser, and additive optional outreach variables.shopWebsiteUrl/resolver plumbing; public exports/types, compatibility tests and candidate5.13.9 exact artifact. Reuse existing prepared wrapper token contracts/rendering, no new frame/content builder.
 
 ## Out of Scope
 
@@ -45,7 +45,7 @@ Other repositories, new database tables/settings, provider permissions, live reg
 
 ## Requirements
 
-The website is a separate semantic value, never overload shop.name or insert multi-line arbitrary text into one Meta parameter. Host supplies verified saved shop origin; Shared does not read environment/database or derive authorization. Existing old projections, unknown-key rejection and checkout conditional restrictions stay intact. New website token may appear wherever the corresponding shop.name text token is valid, subject to existing family-specific Admin rules. No new template-part transport contract. Build exact immutable5.13.9 only if available; no publication in this task.
+Optional outreach carrier is a host-supplied verified single-line HTTPS origin: no credentials, explicit port, query, fragment or non-root path. Absent carrier remains compatible; a requested unavailable website fails through existing resolution semantics. Do not accept the key without making its existing resolver surface functional. The website is a separate semantic value, never overload shop.name or insert multi-line arbitrary text into one Meta parameter. Host supplies verified saved shop origin; Shared does not read environment/database or derive authorization. Existing old projections, unknown-key rejection and checkout conditional restrictions stay intact. New website token may appear wherever the corresponding shop.name text token is valid, subject to existing family-specific Admin rules. No new template-part transport contract. Build exact immutable5.13.9 only if available; no publication in this task.
 
 ## Work Items
 
