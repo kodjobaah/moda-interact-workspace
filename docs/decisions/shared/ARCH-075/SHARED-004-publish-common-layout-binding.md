@@ -83,6 +83,8 @@ After required work and validation, submit review and STOP. No enabled-task exec
 
 ## Implementation Notes
 
+Root is sole publisher. Accepted corrected sourceb576c5ef33df88da1e010f9ceeb76999a3285bee merged at1ca3c5ca4df6620ba3118bb5c5051c4773784e80. Exact corrected candidate5.13.9 artifact `/tmp/moda-arch075-shared003-attempt2-artifacts/modainteract-moda-interact-shared-5.13.9.tgz`, SHA256 `79731a5e54a1a9f5d1a0fdeb84cc4db1d2968c416cfa9543de52a813088e4043`, SHA1 `27a8a49cc80992e109f33d55ea0cfba5aa8ee8b3`. Earlierc848 candidate is superseded and must not publish. Explicit tested-artifact public approval is pending; preparation is not authorization to publish. Wait for root’s recorded user decision, then only one root publish to canonical public registry/latest; no source validation/repack/rebuild.
+
 You are not alone; preserve other changes. Canonical prepared packet is startup/isolation authority. Report actual cross-owner gaps rather than inventing a setting/schema or weakening strict validation.
 
 ## Completion Report
