@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T05:35:26Z
@@ -124,14 +124,14 @@ Record source/database commits, compiler and host/runtime versions, exact base d
 
 ### Status
 
-In Progress — bounded accepted localized-command followup; earlier proof retained.
+Ready for Review — accepted localized-command followup passed; earlier proof retained.
 Independent disposable integrated proof only; no production
 activation or live provider-delivery claim. Implementation draft PR:
 https://github.com/kodjobaah/moda-interact-system-test/pull/6
 
 ### Files Changed
 
-Implementation `f11bf99d2c082ac407dc533db81f4b378f76bd3f` on mirrored branch
+Baseline implementation `f11bf99d2c082ac407dc533db81f4b378f76bd3f` on mirrored branch
 `task/ARCH-075-SYSTEM-TEST-001` (earlier partial checkpoint `806f251`).
 
 - `src/harness/ordered-recovery/`: independent actual Admin compiler/activation,
@@ -257,6 +257,67 @@ validators, billing/security bypass or unsupported exactly-once claim. Raw local
 artifacts stay ignored; committed evidence is sanitized. Review is requested only
 for the bounded independent proof described above; no main merge or deployment
 was performed by this task.
+
+### Accepted localized-command followup
+
+Current combined implementation head:
+`ee5bc22dc92d7c644bf146ccedbcee8e00c33583` (same draft PR #6 and mirrored task
+branch). The preceding thirteen-check proof remains against its original d7a9bd1
+source/image; it is not relabeled as containing the newly accepted aliases.
+This bounded same-attempt continuation follows amendment a6fb84ca5 and accepted
+Background merge `c5dad158175733849fb6f9ab6ff2e89841d195cf`; original claim
+`9d1b0c346a17b9cbdc9175623f180b4cd5a99272` and attempt 1 remain unchanged.
+
+Final current-source run **passed four aliases and eight strict negative
+boundaries**, 2026-11-13T08:55:33.046Z through 2026-11-13T09:03:44.229Z:
+
+- Exact `STOPP`, `DUR`, `PARAR`, `STOPPA` traverse canonical Shared-validated
+  message-received Redis jobs and the real inbound worker/priority opt-out path.
+  All take priority over an actually saturated `RAW_SENDER` limiter, commit durable
+  CUSTOMER_STOP reason/timestamp/revision and one support notice each, and cancel
+  their already prepared but unadmitted ordered tail.
+- `Please STOPP`, `DURING`, `PARAR now`, `STOPPABLE`, `STOPPA123`, `PARAR?`, audio
+  media named STOPP and unsupported type named STOPPA remain non-STOP boundaries.
+  No-contact fields/notices stay unchanged, their ordinary path stops at the real
+  limiter, and their ordered tail still sends following a delivery callback.
+- No ordinary inbound persistence, model-turn job or ordinary provider reply
+  occurs. The intentionally prepared prefix/tails use only the local HTTP
+  simulator. Exactly four real worker STOP records/notices are observed.
+- Telemetry hygiene passes over 315,924 captured bytes (37 forbidden-value
+  checks). Disposable PostgreSQL/Redis/worker containers were cleaned.
+- The fresh delta session again verifies all 77 owning migration checksums.
+- `node --test test/harness/background-*.test.js test/harness/ordered-*.test.js test/harness/recovery-optout-image.test.js`:
+  **19 passed**, zero failures/skips (includes the prior eighteen).
+  Syntax/structure checks pass for 271 JavaScript files; catalogue and diff checks
+  pass. New source/test helpers remain below the 300-line module limit.
+
+Exact current source was freshly compiled with locked/installed TypeScript 6.0.2,
+declared ES2022/NodeNext commands and host Node v24.19.0. Across 1,130 audited
+outputs, only compiler-emitted phone.js and its map differ; every other 1,128
+output matches. Full package/lockfile and both tsconfig hashes match the base.
+Old/new module hashes, matching source hash and COPY-only Dockerfile hash are in
+`docs/validation/recovery-opt-out-evidence.md` and the local manifest.
+
+Base correctness image:
+`sha256:18f6133e6f745619557d3c5e52b4d724ab5e9287fb14555ac93f7d2e029f6aad`.
+Final immutable derivative used for every Docker invocation in the measured run:
+`sha256:f1ff2479d5b1f35a85921be15d206709707b5f7d53902a1efd0915c864584c5e`.
+Only the emitted phone.js/map and matching accepted TypeScript source are copied.
+Original dependency layers, runtime ENV/CMD/entrypoint and Node22.23.5 remain;
+NODE_OPTIONS is absent. All actual derived runtime outputs were independently
+hashed inside Linux and match the current compiler manifest. No handwritten
+JavaScript regex replacement, dependency rebuild, host/VM resource change or
+production artifact promotion occurred.
+
+The validator pins immutable image IDs. A preliminary tag-based run was not used
+as final artifact-identity proof because a cached COPY rebuild changed image
+metadata while leaving identical audited runtime bytes; the bounded delta was
+repeated under the final immutable ID. No repetition of the unchanged original
+thirteen checks was claimed or required. This is still source-derived local
+correctness, not production-build reproducibility, signed ingress, real model /
+R2 / Meta behavior, full entrypoint readiness, live activation or delivery.
+No cross-owner implementation defect remains; no live request, send, replay,
+production counter/credential update or merge into main was performed.
 
 ## Architect Review
 
