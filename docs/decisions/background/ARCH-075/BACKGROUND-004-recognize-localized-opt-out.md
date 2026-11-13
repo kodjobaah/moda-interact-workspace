@@ -119,7 +119,7 @@ Self-review: four implementation files only; exact regex anchors preserved; sent
 - `npm run prisma:generate` and `npx tsc --noEmit`: passed.
 - `node scripts/test-integration.mjs tests/integration/whatsapp-contact-opt-out.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts tests/integration/woo-initial-send-fence-races.integration.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts`: 4 files, 25 tests passed using disposable PostgreSQL/Redis. Includes durable no-contact, duplicate consent, final initial-send fence/races and continuation scheduling.
 - `git diff --check`: passed. Dependency manifests/lockfile and database submodule unchanged.
-- Exact-head full CI: passed (Prisma generation, TypeScript and full unit suite), run https://github.com/kodjobaah/moda-interact-background/actions/runs/43388148830 at `6ba473bdd84d9f4b4e1f47e4bf0dfbf32bff583b`.
+- Exact-head full CI: passed (Prisma generation, TypeScript and full unit suite: 382 files / 4,183 tests), run https://github.com/kodjobaah/moda-interact-background/actions/runs/43388148830 at `6ba473bdd84d9f4b4e1f47e4bf0dfbf32bff583b`.
 
 ### Physical Worktree Isolation and Launcher Evidence
 
