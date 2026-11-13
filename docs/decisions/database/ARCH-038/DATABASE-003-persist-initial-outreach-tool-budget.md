@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -34,6 +34,8 @@ ARCH-038; docs/architecture/ARCH-038-commerce-agent-execution-budget-policies.md
 Persist the initial outreach tool-call policy without losing current main behavior or the verified local backup.
 
 ## Context
+
+Prerequisite integration verified by root: ARCH017DATABASE002 accepted source merged as Database main `86db55833c804327f32a9208977cf54ae93cf4a1` (PR76); accepted parent PR1015 merged `adba9b8efbf85f6c47b26cffeb68670465c8469b`. Both dependency task files are Complete; this task is Ready without an execution claim.
 
 Background main already consumes initialOutreachToolCalls with default16 and max64, but canonical Database still rejects that key and Admin has unpublished editing support. Backed-up local SQL adds the existing JSON budget field and LIVE Platform default; no new schema model or Shared contract is needed.
 
