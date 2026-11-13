@@ -12,3 +12,6 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 
 | ARCH-075-SHARED-006 | Release accepted single branded reply contract | Complete | ARCH-075-SHARED-005 |
 | ARCH-075-SHARED-005 | One complete branded HEADER reply order | Complete | ARCH-075-SHARED-004 |
+
+
+ARCH-075-SHARED-007 Pending (resource hold): additive logical-group footer validation; depends on Complete SHARED-006. Enables Pending SHARED-008 release. No writer/publication/native-template activation.
