@@ -177,3 +177,7 @@ Conforms to Admin-only provider projection ownership and existing Shared immutab
 ### Follow-up
 
 Root integrates source then accepted parent/gitlink and verifies deployment. Clone/review corrected immutable content and submit one English canary before expanding; retain failed120 history. Real Meta approval, coordinated common activation and genuine Eugene Meta/AI/human logo/details/product/checkout proof remain required. ARCH075 remains In Progress; source acceptance is not provider/live acceptance.
+
+## Developer Integration
+
+Admin PR96 merged to main as `8d5acec9813dbd11d610dd4121d1353a21dacd26` after architect acceptance and successful local/remote checks. Canonical workspace Admin gitlink follows that merge. Production deployment, corrected replacement registration and live delivery remain root-owned operational gates; this integration does not claim their completion.
