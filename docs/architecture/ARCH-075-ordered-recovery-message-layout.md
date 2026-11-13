@@ -138,8 +138,8 @@ Actual sample HTTP403/numeric Meta code4 was misclassified as permanent. Existin
 Rollout: additive migration test/prod, accepted Background schema/client adoption, messaging worker rollout and old-reader drain, then exact root-only historical recovery respecting cooldown. Existing creates/POST uncertainty remain unreplayable. Terminal SystemTest002 independently validates the new capability after accepted dependencies/manual checkpoint. Preserve accepted SystemTest001 without reopening or discarding its proof. Architecture remains In Progress.
 
 | ARCH-075-DATABASE-002 | moda_database | Complete | ARCH-075-DATABASE-001 |
-| ARCH-075-BACKGROUND-007 | moda_background | Ready | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-006 |
-| ARCH-075-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001, ARCH-075-ADMIN-006 |
+| ARCH-075-BACKGROUND-007 | moda_background | Complete | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-006 |
+| ARCH-075-SYSTEM-TEST-002 | moda_system_test | Ready | ARCH-075-DATABASE-002, ARCH-075-BACKGROUND-007, ARCH-075-SYSTEM-TEST-001, ARCH-075-ADMIN-006 |
 
 ### Independent system validation accepted
 
