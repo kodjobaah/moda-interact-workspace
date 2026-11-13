@@ -168,7 +168,7 @@ All production policy/editor deltas, directly related parser/action/inheritance/
 
 ### Validation Reviewed
 
-Focused113, full unit812 and security331 passed; all three initially build-dependent runtime checks subsequently passed against actual production server with zero skips. Typecheck, lint0errors, Prisma generation and production build passed. Existing single nested-Database lint warning and optional Valkey build warnings disclosed. Exact source remote verified; root retains final Vercel status gate before merge. No redundant heavy checks rerun.
+Focused113, full unit812 and security331 passed; all three initially build-dependent runtime checks subsequently passed against actual production server with zero skips. Typecheck, lint0errors, Prisma generation and production build passed. Existing single nested-Database lint warning and optional Valkey build warnings disclosed. Exact source remote verified; root confirmed Vercel Success16:23:11Z and Preview Comments Success16:23:12Z for this exact head. No redundant heavy checks rerun.
 
 ### Architecture Conformance
 
@@ -176,4 +176,4 @@ Conforms to ARCH038 approved1–64/default16 policy and existing authorization, 
 
 ### Follow-up
 
-Root must verify final exact-head remote status before source integration, then integrate accepted parent/gitlink. Verify deployed behavior separately where required; do not equate build/reference updates with migrations. System coverage and primary preservation reconciliation remain separate pending work.
+Root verified final exact-head remote status; integrate source then accepted parent/gitlink. Verify deployed behavior separately where required; do not equate build/reference updates with migrations. System coverage and primary preservation reconciliation remain separate pending work.
