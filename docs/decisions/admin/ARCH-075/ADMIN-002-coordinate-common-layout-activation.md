@@ -62,6 +62,10 @@ The reviewed cohort deliberately overapproximates present eligibility: include e
 
 Preserve historical AI/HUMAN slots. Accepted Background common mode selects a valid active common SHARED source before legacy audience overrides; show that precedence rather than deleting the older slots. Activation still requires both-environment producer rollout and drain evidence. No live action is authorized by this task.
 
+### Explicit English Meta source review
+
+Existing translation review excludes English, but Background requires REVIEWED for every Meta locale. Coordinated confirmation must explicitly include review of the exact English Meta compiled content/hash and APPROVED provider registration. Only for META_RECOVERY English SOURCE_SAVED, perform a conditional SOURCE_SAVED-to-REVIEWED lifecycle update with authenticated reviewer/time and existing REVIEW_WHATSAPP_TEMPLATE_LOCALE audit inside the same activation transaction. Leave AST, source/content hashes and registration unchanged. Already REVIEWED is unchanged; unexpected statuses refuse, never normalize provider readiness. Common WRAPPER English SOURCE_SAVED remains its separate canonical lifecycle. Test explicit confirmation, unchanged hashes and rollback of English review on a later cohort conflict.
+
 ### Existing source catalogue gate
 
 When common-layout mode is activated, new publication/submission of unstamped legacy saved/queued definitions must refuse with a clone-with-common-layout action. Do not retrofit current common content during an HTTP send, mutate old snapshots or silently publish duplicate versions. Active replacement cohort is reviewed from real supported scenario inventory, not merely two existing NO_OFFER definitions. Root reviews copy and coverage before external registration. Existing legacy records stay readable/cloneable and historical sends unchanged.
