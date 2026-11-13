@@ -72,6 +72,10 @@ Select official DejaVuSans2.37, not Poppins: archive https://github.com/dejavu-f
 
 Actual private canonical English header119UTF8bytes SHA2567e2d7c8d8ab536a6addcb2aa8061bf4ba8ddd72a391fb0f8a72e288d05798aeb has every scalar supported includingU2500. In real fontless Node22Alpine Sharp0.35.4, font DejaVu Sans28/dpi72/rgba:true/width813/no-trim escapedtext produced537×153 pixels (fits180 height);32pt620×176 fits tightly;36pt exceeds180. Root subsequently required larger mobile-readable text: measure40/44/48 in813×252 (textTop24, logoTop60), choose largest fit without shrinking. The earlier28 result is availability evidence, not final font size. This is preflight text-only, not full compositor acceptance; full bitmap/private root review still mandatory. Local operator copies are in temporary moda-font-preflight directory; renderer owner may copy only verified font/license into its own task source, not the private header/shop assets.
 
+### Final typography choice
+
+Root approved DejaVuSans44/dpi72 after actual no-autofit/no-trim fontless Alpine probe: exact canonical header716×241 fits813×252;40pt766×222,48pt779×264 exceeds height. Render at fixed44 with measured width/height/glyph guards, no shrinking. Logo180×180 at48,60; text at264,24; header300. Full compositor image and responsive root visual review still required; text-only preflight does not prove whole image.
+
 ## Work Items
 
 - [ ] Implement safe deterministic compositor/preparation with font/license provenance.
