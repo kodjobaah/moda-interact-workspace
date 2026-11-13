@@ -177,3 +177,7 @@ Conforms to Background-local bounded handback moderation without queue/schema/Sh
 ### Follow-up
 
 Root owns main integration and genuine post-deployment both-sides handback proof. ARCH-075 remains In Progress. User-approved composite layout is a separate design; prior two-bubble group definitions remain unexecuted pending supersession.
+
+## Developer Integration
+
+Root merged Background PR223 at exact reviewed source cbe926522d318953217480932c97233eafd61752 after both hosted unit checks succeeded and architect acceptance68ed58859. Actual implementation main merge is dd29c40545794ee4ec0997333c064a55ef9bb9f2; this parent gitlink records that merge. Local evidence:4344 full unit tests,98 focused tests,48 actual PostgreSQL tests, build and scoped lint passed. Historical four full-lint findings remain disclosed. Live deployment and genuine post-deployment handback verification remain outstanding; no customer message replay or reset performed. Composite-image layout remains separate work.
