@@ -183,4 +183,4 @@ Conforms to accepted Database002 contract and production-compatible provider saf
 
 ### Follow-up
 
-Root may merge exact reviewed source. Under the authorized manual checkpoint, promote terminal SYSTEM-TEST002 after dependency reconciliation; preserve accepted SYSTEM-TEST001 evidence. ARCH-075 remains In Progress pending live provider/common-layout operational acceptance.
+Root merged PR218 at `ce9d6e1017f553d307f21899c20f713d514189fd`; parent gitlink pins that exact merged implementation. Under the authorized manual checkpoint, promote terminal SYSTEM-TEST002 after dependency reconciliation; preserve accepted SYSTEM-TEST001 evidence. ARCH-075 remains In Progress pending live provider/common-layout operational acceptance.
