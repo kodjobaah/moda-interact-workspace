@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T21:33:11Z
@@ -55,11 +55,11 @@ Product search/referral redesign, modelprompt/roles broadchange, Shared/API/DB s
 
 ## Work Items
 
-- [ ] Capture raw-vs-prepared history mismatch RED using authoritative actualdefaulthumanpreparation.
-- [ ] Correct bounded content-specific eligibility withfailclosedidentitychecks and existinglegacycompatibility.
-- [ ] Prove unit+realPG dispatch/history/resume andnegativeguards; runrelevantchecks.
-- [ ] Inspect CUSTOMER-during-HUMAN capture and report whether existing safe moderation is retained; document a separate bounded follow-up if required.
-- [ ] Publish exactsource/mirroredreport thenreturnreview.
+- [x] Capture raw-vs-prepared history mismatch RED using authoritative actualdefaulthumanpreparation.
+- [x] Correct bounded content-specific eligibility withfailclosedidentitychecks and existinglegacycompatibility.
+- [x] Prove unit+realPG dispatch/history/resume andnegativeguards; runrelevantchecks.
+- [x] Inspect CUSTOMER-during-HUMAN capture and report whether existing safe moderation is retained; document a separate bounded follow-up if required.
+- [x] Publish exactsource/mirroredreport thenreturnreview.
 
 ## Interfaces / Contracts
 
@@ -75,17 +75,17 @@ Root genuine human→AIhandback history verification. No implicitfurtherimplemen
 
 ## Acceptance Criteria
 
-- [ ] Deliveredpreparedhuman commonreply included once afterresume with exactALLOWidentity anduntrustedmerchantrolelabel.
-- [ ] Tamper/foreign/missing/blocked/stalemodelpolicy/unsent invalidcasesremainexcluded/failclosed.
-- [ ] Legacyvalidhistory/chronology/bounds/dedup preserved andnofullpayloadlogging.
-- [ ] Customer-during-HUMAN capture gap is traced to actual source and explicitly dispositioned; unmoderated rows remain excluded and no unsupported both-sides awareness claim is made.
-- [ ] Unit+actualPG/defaultdispatch andrequiredbuild/scopedlint/fullrelevantchecks pass, isolatedsource/reportpublished.
+- [x] Deliveredpreparedhuman commonreply included once afterresume with exactALLOWidentity anduntrustedmerchantrolelabel.
+- [x] Tamper/foreign/missing/blocked/stalemodelpolicy/unsent invalidcasesremainexcluded/failclosed.
+- [x] Legacyvalidhistory/chronology/bounds/dedup preserved andnofullpayloadlogging.
+- [x] Customer-during-HUMAN capture gap is traced to actual source and explicitly dispositioned; unmoderated rows remain excluded and no unsupported both-sides awareness claim is made.
+- [x] Unit+actualPG/defaultdispatch andrequiredbuild/scopedlint/fullrelevantchecks pass, isolatedsource/reportpublished.
 
 ## Validation
 
-- [ ] RED/GREEN historymoderation unitvectors preparedvsraw,legacy,tamper/foreign/assessment/lifecycle negatives andboundedqueryassertions.
-- [ ] ActualdisposablePG defaultdispatcher→realmoderation/delivery→history→resume inclusion, replayonce/rolelabels andguardnegatives;nohostedDBfallback.
-- [ ] Relevantdeclaredfulltests/build/type/scopedlint with exactunchangedbaseline disclosure;diff/privacy andnormalcanonicalworktreeevidence.
+- [x] RED/GREEN historymoderation unitvectors preparedvsraw,legacy,tamper/foreign/assessment/lifecycle negatives andboundedqueryassertions.
+- [x] ActualdisposablePG defaultdispatcher→realmoderation/delivery→history→resume inclusion, replayonce/rolelabels andguardnegatives;nohostedDBfallback.
+- [x] Relevantdeclaredfulltests/build/type/scopedlint with exactunchangedbaseline disclosure;diff/privacy andnormalcanonicalworktreeevidence.
 
 ## Stop Condition
 
@@ -99,35 +99,48 @@ Normal launcher dedicated mirrored worktrees. Youarenotalonepreservecurrentmain/
 
 ### Status
 
-Not Started
+Ready for Review. Implementation `01702b7ccf86c195f16ba6eee6a21248e1524c30` committed and pushed on mirrored `task/ARCH-075-BACKGROUND-011`. No main merge, live write, replay or send by executor.
 
 ### Files Changed
 
-None
+- `src/services/conversation-moderation/moderation-history.ts`: two existing bounded batches now fetch canonical preparation and exact linked command/root/conversation/recovery identity. HUMAN requires SENT command, sent eligible HUMAN root, exact candidate/root/canonical body, valid immutable preparation and current-model/current-policy ALLOW. Explicit malformed or partial preparation cannot fall back to raw text. Genuine legacy raw path requires all prepared fields absent and its own exact content assessment.
+- `src/services/recovery-conversation/human-prepared-command.service.ts`: export/reuse the pure immutable prepared-body reader from dispatch; existing common receipt/application-key checks retained, legacy RENDERED key checked with the same existing final-permit algorithm. No active-slot requirement for historical delivered content.
+- New `tests/unit/services/conversation-moderation/moderation-history.test.ts`: prepared/raw mismatch, legacy compatibility, eleven identity/content/assessment/lifecycle refusals and two bounded query assertions.
+- `tests/integration/arch075-common-layout.integration.test.ts`: actual default HUMAN dispatcher, real SQL moderation service with deterministic classifier, loopback WhatsApp send, AI handback and actual loadCommerceHistory show the complete prepared reply once with user-role untrusted merchant label; repeated read/replay unchanged.
+- `tests/integration/conversation-moderation.integration.test.ts`: old raw-input assertion corrected to the actual persisted prepared body moderated by dispatch; BLOCK/no-send assertions unchanged.
 
 ### Work Completed
 
-None
+Corrected the demonstrated delivered merchant history gap without relaxing moderation, tenant or delivery identity. Existing history chronology, deduplication, current turn selection, prior20/32000 Unicode bounds and merchant role label remain unchanged. No per-message DB/provider calls were added to history: preparation validation is pure and query count remains two batched calls. HUMAN cannot bypass command identity using an unrelated generic message ALLOW.
+
+### Customer During HUMAN — Explicit Disposition
+
+Separate gap confirmed; not implemented in this task. `whatsapp-inbound-processing.service.ts:290–299` persists text then returns before enqueue when control is HUMAN; audio completion uses the same branch at145–151. Current `ModerationTurnGate.moderatePending` is invoked only by the AI turn processor (`conversation-turn-processor.service.ts:375` after control/claim checks). Therefore customer messages received during HUMAN mode can lack immutable ALLOW and remain correctly excluded. This merchant correction does not claim both sides of handback are restored.
+
+Bounded follow-up contract returned to architect and materialised separately as Pending BG012: before the next genuine AI invocation, reuse existing moderation service/turn gate to classify exactly the same visible prior20 plus existing current-turn candidates, dedup IDs, persisted TEXT or COMPLETED AUDIO only, current model/policy/content/tenant; cached assessments and leases remain idempotent. Historical BLOCK/REVIEW remain excluded; historical retry must not alter current-turn allowed/suppressed semantics or cause AI/provider sends during HUMAN. No arbitrary whole-history scan or fabricated assessment.
 
 ### Validation Results
 
-Not run
+- Unit baseline RED against exact unchanged 1b71a7d history reader:2fail/11pass; GREEN focused17tests/2files.
+- Actual default-dispatch PG baseline RED: real canonical prepared moderation and delivered root followed by AI resume yields0 merchant entries instead of1 with old reader;1failure/36name-filter skips,7.19s. Source restored identically before final validation.
+- Final real disposable PostgreSQL/Redis run:2suites47tests PASS,0skip,66.97s (`arch075-common-layout`, `conversation-moderation`). Includes actual default runtime, immutable moderation, history resume/replay, existing BLOCK/current-model/policy and delivery guards. No hosted database fallback.
+- Declared full `vitest run`:392files PASS/1 existing configured skipped;4328tests PASS/10 existing configured skipped,260.84s. Skips are existing environment gates, not substitutes for actual PG.
+- Build PASS: Prisma6.19.3 generation, both TypeScript compilers, sample artifact packaging. Scoped ESLint5changed files and diff check PASS.
+- Known full-lint baseline remains the four unchanged unused-variable errors documented with exact HEAD proof in BG010: candidate-index.store.ts:9 readRecoveryExecutionPolicy; recovery-offer-resolver.service.ts:23–25 MAX_CANDIDATES/VERIFICATION_TIMEOUT_MS/AI_TIMEOUT_MS. Both files unchanged against1b71a7d; no full-lint-green claim or unrelated cleanup.
+- Initial PG run: common-layout suite passed37; moderation suite had one obsolete raw-input expectation and one first-pull Aimock timeout. The expectation now asserts exact persisted prepared body. Pinned image `ghcr.io/copilotkit/aimock:1.45.1` was explicitly cached (digest fc4b72a999544c6c7e475da756932d3384d315da99e66695e5a60d6a2798ec0b); complete final PG run passed. No production code changed after full/build validation; only this relevant PG assertion was corrected, then scoped lint and complete PG rerun passed.
+- Local evidence: `local-backups/arch075-live-20261113/bg011-{red,focused,postgres-red,postgres-final,full-tests,build,lint-final,aimock-pull}.log`. Real private production evidence was not committed or printed as payload.
 
-### Deviations
+### Isolation / Publication Evidence
 
-None
+Normal prepared launcher: dependency BG010 Complete; dedicated parent and implementation worktrees on `task/ARCH-075-BACKGROUND-011`; canonical primary workspace; parent03464d6f4 and implementation1b71a7d3582f6f946939ac669a9308f1a0c66b01 synchronized; recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae exact ready. Attempt1codex claimed2026-11-13T21:33:11Z, pushed claim39251e4f00ded41de38a52367bc8b490d527c30c. Implementation clean after push. No parent gitlink, other task/index, Shared, schema or primary checkout edits.
 
-### Assumptions
+### Deviations / Assumptions
 
-Root owns operational evidence and rollout.
+No feature scope deviation. Existing current moderation operation is supplied by the disposable fixture, not production configuration, while actual persisted source and assessments are used. Root owns independent review, merge, deployment and real history/handback verification.
 
-### Unresolved Issues
+### Unresolved Issues / Architectural Concerns
 
-Live handback/history proof remains required; product referral separate.
-
-### Architectural Concerns
-
-Return gaps before expansion.
+BG012 customer moderation backfill remains separate and Pending. Product referral/search cause remains unproven and was not changed. No live verification or architect acceptance claimed by executor.
 
 ## Architect Review
 
