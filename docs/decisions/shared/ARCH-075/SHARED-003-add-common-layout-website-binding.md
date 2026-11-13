@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-13T02:01:15Z
@@ -95,64 +95,67 @@ You are not alone; preserve other changes. Canonical prepared packet is startup/
 
 ### Status
 
-Ready for Review. Source committed and pushed at `3e1a06fa44733c1c6ade6e9d259a7805a8a7a5cf`, [Shared PR83](https://github.com/kodjobaah/moda-interact-shared/pull/83). Candidate5.13.9 is packed and validated, not published. No source/main merge or live mutation by this task.
+Ready for Review, corrected attempt2. Source committed and pushed at `b576c5ef33df88da1e010f9ceeb76999a3285bee`, [Shared PR83](https://github.com/kodjobaah/moda-interact-shared/pull/83). Candidate5.13.9 is rebuilt/packed and fully validated after Changes Requested, not published. Previous source3e1a06fa and artifact SHA256c8486e03372676760ccffed3c2e6e207d4e0e48acb07321ac5c3f9c671a28054 are superseded and are not release candidates.
 
 ### Files Changed
 
-- `src/recovery-template-bindings.ts` and `src/commerce/outreach/template-contracts.ts`: canonical `shop.websiteUrl` on both existing semantic surfaces; optional nullable `variables.shopWebsiteUrl` host carrier on existing outreach input.
-- `src/commerce/outreach/variables.ts`: resolve that separate saved website scalar through existing binding handling; no checkout/name inference.
-- `src/shop-website-url.ts`: small internal lexical HTTPS-origin guard reused by outreach input/resolver and existing wrapper renderer, no content builder or authority lookup.
-- `src/commerce/presentation/wrapper-contracts.ts`, `wrapper-projection.ts`, `wrapper-render.ts`: new existing-token key and validated value; legacy parser/renderer/digest conventions unchanged.
-- `src/commerce/presentation/common-recovery-layout.ts` and public index: strict `CommonRecoveryLayoutReference` / `readCommonRecoveryLayoutReference(raw,sha256)` reusing existing immutable prepared-wrapper parser/hash.
-- `src/shop-website-url.test.ts`, `src/commerce/presentation/common-recovery-layout.test.ts`, `src/recovery-template-bindings.test.ts`: focused positive, legacy, missing/unsafe, binding, exact-reference/hash and common-boundary coverage.
-- `scripts/validate-recovery-multipart.mjs`, package script alias and README: extend exact installed artifact public Node/types/browser checks for website/common-reference behavior and document source authority/compatibility.
-- `package.json`, `package-lock.json`: candidate5.13.9 metadata only; no dependency changes.
+- Canonical template surfaces `src/recovery-template-bindings.ts`, `src/commerce/outreach/template-contracts.ts`: add `shop.websiteUrl` and optional nullable outreach `variables.shopWebsiteUrl` carrier; no existing button authority widened.
+- `src/commerce/outreach/variables.ts`, `src/shop-website-url.ts`, wrapper contracts/projection/render: resolve the separate host-saved lexical HTTPS origin through existing renderer/token semantics, preserving old values/inputs/digests and missing-value refusal.
+- `src/commerce/presentation/common-recovery-layout.ts` and public index: exact typed snapshot parser reusing existing prepared-wrapper/hash conventions. Attempt2 adds explicit common-only header and conditional token allowlists.
+- Website/bindings/common-layout tests: positive/unknown/unsafe/missing/legacy/immutable-hash checks; attempt2 adds valid-hash prohibited-token injections and generic wrapper compatibility assertions.
+- `scripts/validate-recovery-multipart.mjs`, package alias and README: exact installed artifact Node/public-types/browser proof and content-authority documentation. Attempt2 adds installed Node/browser injection rejection checks.
+- `package.json` and lock: candidate5.13.9 only, no dependency changes. No frame builder, new renderer, table/setting, provider/state transport or consumer implementation.
 
 ### Work Completed
 
-The website remains a separate semantic value, never overloaded into `shop.name` or derived from checkout/model text. Host-provided values must be canonical single-line HTTPS origins, with optional root slash and no credentials/ports/non-root path/query/fragment. Missing optional carrier remains compatible with old inputs; requesting it without a value fails via existing unavailable binding/variable semantics. Both schema and resolver guard invalid values. Existing checkout conditional/button restrictions and unknown-key rejection remain intact.
+The canonical website remains separate from shop.name and is not inferred from checkout/model text. Both existing semantic surfaces and wrapper tokens support it. Optional carrier absence leaves legacy parsing unchanged; selected unavailable values fail normally. Existing origin guard rejects credentials, explicit ports, non-root paths/query/fragments and multi-line/noncanonical data. Website values are host-supplied tenant-verified origins; Shared performs no database/environment/source authorization.
 
-The exact common reference contains schemaVersion1, bounded definitionId/localeId, lower-hex sourceHash/contentHash, canonical supported languageTag and PreparedWrapper. Its parser delegates contentHash verification to `readPreparedWrapper` using the injected existing digest convention. It requires one body response slot, no productImage, exactly one shop name and website header token, empty static footer and one checkout conditional ending with the trusted checkout variable on its own final line. The final-line guard preserves already accepted multipart footer compatibility without rendering, inferring variable content or inserting formatting. No frame/content builder, new renderer, setting/table or transport contract was introduced.
+The exact reference remains schemaVersion1, bounded definitionId/localeId, sourceHash/contentHash, supported canonical languageTag and PreparedWrapper. It delegates contentHash integrity to existing `readPreparedWrapper`/injected SHA256(stableJson(prepared)). Common body is exactly one response.body slot, productImage absent, static footer empty. HEADER now permits only literal text and shop.name/shop.websiteUrl once each; the sole checkout conditional permits only literal text and checkout.url once as its own final line. No content/formatting is generated. Generic wrappers retain their prior broader variables.
 
-Admin's selected immutable SHARED projection remains sole common content authority. The reference parser deliberately does not prove current selection/tenant/source authority: hosts must re-read definition/locale/status/current identity and both hashes. Existing old wrapper projections/registration snapshots remain readable with original hash semantics; new consumer wiring and activation belong to Admin/Background tasks.
+Admin's selected immutable SHARED revision remains content authority; hosts must re-read exact current definition/locale/status/hash identity. Parsed client snapshots never grant tenant/source/provider authority. Old projections/registrations remain immutable/readable; downstream consumers and coordinated activation remain their owning tasks.
+
+#### Changes Requested disposition
+
+1. **Implemented** — explicit token allowlists in `common-recovery-layout.ts`; no change to generic `readPreparedWrapper` or its broader variable set.
+2. **Implemented** — valid-hash customer.firstName, brand name, logo/square/cover URL/alt/dimension header and conditional injection negatives in `common-recovery-layout.test.ts`, plus non-common name/site conditional negatives. Every existing other-variable fixture is still accepted by the generic wrapper parser, proving scoped tightening. Existing custom literal text/common positive cases remain green.
+3. **Implemented** — corrected exact-head full package/types/ESM/DTS/installed artifact/browser checks below. Installed smoke rejects independently rehashed customer/logo injections while preserving generic parsing. No publication or follow-on task executed.
 
 ### Validation Results
 
-All final checks ran against unchanged source `3e1a06fa44733c1c6ade6e9d259a7805a8a7a5cf`:
+- Meaningful original-code regression on source3e1a06fa:5 passed,1 failed; injected customer.firstName with valid contentHash incorrectly returned common-reference ok. Correction changed runtime as requested, not merely test expectations.
+- Corrected focused common-reference + website suite14/14 passed; full exact-head `npm test`:787 total,784 passed,3 existing declared skips,0 failures,73.37s. All legacy wrapper/outreach/media tests remain green.
+- `npm run typecheck`:passed. `npm run build`:ESM and DTS passed (DTS50.14s). All final checks ran with source `b576c5ef33df88da1e010f9ceeb76999a3285bee` unchanged and clean.
+- Fresh same-version candidate path: `/tmp/moda-arch075-shared003-attempt2-artifacts/modainteract-moda-interact-shared-5.13.9.tgz`; separate from the preserved superseded archive. Packed from corrected exact-head validated build with `npm pack --ignore-scripts`.
+- SHA256: `79731a5e54a1a9f5d1a0fdeb84cc4db1d2968c416cfa9543de52a813088e4043`.
+- SHA1: `27a8a49cc80992e109f33d55ea0cfba5aa8ee8b3`.
+- Integrity: `sha512-bLXw6dofV8bq/TJzE8STzk9/jT0WSHM5R01x4d1Ki+xVQ+VAfVg63+hzewXas5KYjUMtBOMxBX60gtB4U/uVfg==`.
+- `npm run validate:common-recovery-layout -- <exact corrected archive>`:passed installed Node ESM/public TypeScript/browser isolation and runtime, including valid-hash prohibited-token rejection and retained multipart/website APIs. Installed metadata is5.13.9 and byte hash matches. `npm run validate:commerce-presentation` and `npm run validate:commerce-outreach` passed existing public JS/declaration/frozen-render checks without provider I/O.
+- Current receipt: `/tmp/moda-arch075-shared003-attempt2-artifact-receipt.json`. The old receipt explicitly records superseded/publication-ineligible state; original archive bytes were preserved, not overwritten.
+- Candidate5.13.9 was unallocated (registryE404) before initial versioning. No publication attempted in either source attempt; release task must recheck availability and approval for the actual accepted artifact. No CI workflow is configured in this repository; no absent CI is claimed green.
+- Diff/whitespace/privacy and clean-tree checks pass. No source schema/type or assertion weakening, production access, cross-owner edit, source/main merge or provider I/O.
 
-- Final focused semantic/wrapper/reference suite19/19 passed. Cases include a real frozen approved-template render using website as its own parameter while preserving shop.name, direct resolver missing/unsafe failures, optional carrier absence without added parsed fields, old output identity, strict keys/buttons, token positions/checkout restriction, canonical origins and immutable common-reference/hash/role boundaries.
-- `npm test`:786 total,783 passed,3 existing declared skips,0 failures;77.91s. Existing legacy wrapper/outreach/media tests remain green.
-- `npm run typecheck`:passed. `npm run build`:passed ESM and DTS (DTS35.10s).
-- Exact accepted-candidate archive: `/tmp/moda-arch075-shared003-artifacts/modainteract-moda-interact-shared-5.13.9.tgz` (530089 bytes), generated from the validated exact-head build with `npm pack --ignore-scripts`.
-- SHA256: `c8486e03372676760ccffed3c2e6e207d4e0e48acb07321ac5c3f9c671a28054`.
-- SHA1: `f9e04f53f0d7ba96ecefcfab0101ca91dc39f2fa`.
-- Integrity: `sha512-iT3WMndGmXHpnmVVX7VDia1DkfCqBTVR7F3mh9I9UgxAFpwOZ/vq7STX2Jbbp25+6VHUjXbPhp1BI9IRutbM3A==`.
-- `npm run validate:common-recovery-layout -- <exact archive>`:passed installed Node ESM/public types/browser runtime+isolation for new bindings/reference and retained multipart exports. Actual installed metadata is5.13.9 and archive SHA256 matches. `npm run validate:commerce-presentation` and `npm run validate:commerce-outreach` passed existing public entrypoint/packed JS/declarations and frozen-render checks without provider I/O. Candidate receipt is `/tmp/moda-arch075-shared003-artifact-receipt.json`.
-- Registry version5.13.9 availability checked before versioning (E404). No public publication attempted. Repository has no configured CI workflow; exact-head local full-suite/build/installed artifact proof is reported, not an invented CI result.
-- Diff/whitespace/privacy checks pass; source tree clean. One initial readonly-array test-fixture type error was corrected by copying fixture arrays, without changing runtime or weakening assertions. No production access or cross-repository implementation edits occurred.
+Canonical attempt2 preparation proof from `/tmp/moda-arch075-shared003-attempt2-prepare.json`:
 
-Prepared launcher isolation/synchronization proof from `/tmp/moda-arch075-shared003-prepare.json`:
-
-- Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-SHARED-003`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-SHARED-003`; both branches `task/ARCH-075-SHARED-003`.
-- Parent/implementation remote-task fast-forward not needed; origin/main already current for both. Implementation base `8fc7bb9981cdd1a410c4a0848b812cfb7b31533a`; pre-claim parent `0030c4eb55822d610a6ba1c53304e2d985c1b5d0`; durable claim `4f64847779d1a41e931c6c6daa997c01af641514`.
-- Recursive submodule sync/update passed, no implementation submodules. Shared/default checkout was not switched/used; no prior task worktree reused or repeat claim/startup discovery. Canonical Node bootstrap used; no environment/permission workaround.
-- Architect scope/coordination commits `a3da50e67` and `a899891f7` are preserved. Only this assigned parent task file is changed for review submission; Architect Review remains unchanged.
+- Primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; dedicated parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-SHARED-003`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-SHARED-003`; both `task/ARCH-075-SHARED-003`.
+- Same correct task worktrees reused; no other task/shared/default checkout used or switched. Parent and implementation remote-task fast-forward not needed; parent origin/main incorporated yes, implementation already current. Parent synchronized pre-claim head `f71460da0cf11379eeacc6826ed8bb2e89da43fb`; implementation pre-attempt head3e1a06fa; durable attempt2 claim `a64d594f226c410a031f74040c1935e50228a9df`.
+- Recursive implementation submodule sync/update passed; no implementation submodules. No repeat claim/startup preparation or environment/permission workaround. Canonical Node bootstrap retained.
+- Changes Requested47eec76e2 and architect coordination/main merge are preserved; only this assigned task record changed for report submission. Latest Architect Review is unchanged by repository owner.
 
 ### Deviations
 
-Necessary binding carrier/resolver and genuine shared common-reference parser were explicitly amended into this task by architect/root before source freeze. No content/frame builder or duplicate renderer was added. No CI workflow exists, so exact-head local and installed artifact proof is recorded accurately.
+None for correction. Initial source work's approved carrier/resolver/reference scope remains intact. Attempt2 implements every requested correction within the same mirrored branches and candidate version; no unauthorized new builder or consumer work.
 
 ### Assumptions
 
-Only a host-verified saved shop origin is supplied. Structural reference validity does not authorize a client snapshot or replace immutable active-definition/locale/status/hash re-read. SourceHash shape is checked here; actual source equality is host authority.
+Hosts enforce selected immutable SHARED definition/locale/status/source/content equality and supply tenant-verified website/checkout values. The snapshot parser validates structure/integrity, not current authority.
 
 ### Unresolved Issues
 
-Publication belongs to SHARED-004 after architect acceptance, root source merge and explicit approval of this exact5.13.9 public artifact. Admin/Background consumers and coordinated Meta locale activation remain their tasks. No old approved template is rewritten by this additive source change.
+None for assigned source correction. Formal architect acceptance, root source merge and explicit public artifact release gate precede SHARED-004; Admin/Background consumption and Meta activation remain downstream. Superseded initial archive must not be published.
 
 ### Architectural Concerns
 
-Keep the selected Admin immutable SHARED projection as content authority; do not create a second formatting source or infer website/tenant authority from model/body/checkout data. Host implementation must preserve authored family body/offer/opt-out content and original current-source fences.
+Common-reference variables must remain intentionally narrower than generic wrappers so Meta projection never invents mappings. Keep the single Admin-owned content source and original current-source/tenant fences; do not substitute parsed snapshots or hardcoded framing.
 
 ## Architect Review
 
