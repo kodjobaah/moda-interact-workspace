@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 5
 executor: codex
 claimed_at: 2026-11-13T20:29:53Z
@@ -62,10 +62,10 @@ Common layout is already active; first boot of a new worker must NOT start writi
 
 ## Work Items
 
-- [ ] Inspect current source and capture awkward old decomposition regression.
-- [ ] Adopt published accepted Shared package and exact new composition/guard decomposition with legacy read preservation.
-- [ ] Prove short/long/logo/product boundaries, AI/human and real PG firstfreeze/retry/ordering/idempotency negatives.
-- [ ] Publish source/report and return review.
+- [x] Inspect current source and capture awkward old decomposition regression.
+- [x] Adopt published accepted Shared package and exact new composition/guard decomposition with legacy read preservation.
+- [x] Prove short/long/logo/product boundaries, AI/human and real PG firstfreeze/retry/ordering/idempotency negatives.
+- [x] Publish source/report and return review.
 
 ## Interfaces / Contracts
 
@@ -81,17 +81,17 @@ Root rollout/drain and actual new human/AI/product delivery verification, no aut
 
 ## Acceptance Criteria
 
-- [ ] Short verified logo reply is one complete caption; selected product remains separate footer-only.
-- [ ] Over1024/noLogo uses complete TEXT main without adjacent empty framing; no answer/product loss or truncation.
-- [ ] Old frozen plans remain readable, new exact guards reject tamper/foreign/duplicate content, physical footers and logical billing/idempotency unchanged.
-- [ ] Required tests/checks/isolation/publication evidence pass; no live mutation.
+- [x] Short verified logo reply is one complete caption; selected product remains separate footer-only.
+- [x] Over1024/noLogo uses complete TEXT main without adjacent empty framing; no answer/product loss or truncation.
+- [x] Old frozen plans remain readable, new exact guards reject tamper/foreign/duplicate content, physical footers and logical billing/idempotency unchanged.
+- [x] Required tests/checks/isolation/publication evidence pass; no live mutation.
 
 ## Validation
 
-- [ ] Focused RED/GREEN AI/human defaultcomposition tests:1024/1025Unicode,4096limit,logo present/absent/invalid,product present/absent/unavailable,exact footer/no duplicated middle.
-- [ ] Frozen legacy/new shape digest/read vectors plus tamper/media/tenant/control/moderation/lease/dispatch negatives.
-- [ ] Disposable PG new root/ordered parts/retry/concurrency/one logical usage/no duplicate provider sends.
-- [ ] Relevant declared full tests/build/type/scoped lint and known unchanged baseline disclosure; exact dependency/registry pin,diff/privacy and launcher isolation/synchronization evidence.
+- [x] Focused RED/GREEN AI/human defaultcomposition tests:1024/1025Unicode,4096limit,logo present/absent/invalid,product present/absent/unavailable,exact footer/no duplicated middle.
+- [x] Frozen legacy/new shape digest/read vectors plus tamper/media/tenant/control/moderation/lease/dispatch negatives.
+- [x] Disposable PG new root/ordered parts/retry/concurrency/one logical usage/no duplicate provider sends.
+- [x] Relevant declared full tests/build/type/scoped lint and known unchanged baseline disclosure; exact dependency/registry pin,diff/privacy and launcher isolation/synchronization evidence.
 
 ## Stop Condition
 
@@ -105,35 +105,50 @@ Normal launcher dedicated mirrored worktrees; you are not alone, preserve others
 
 ### Status
 
-Not Started
+Ready for Review. Source `56148f8e4ba1bd4578162a2564720c5de80aa995` pushed to mirrored `task/ARCH-075-BACKGROUND-010`; no main merge or live operation by executor.
 
 ### Files Changed
 
-None
+- `package.json`, `package-lock.json`: exact public Shared5.13.10 pin and registry integrity.
+- `src/services/recovery-multipart/{composition,common-decomposition,preparation,frozen}.ts`: gated consolidated writer and one exact additive legacy/new decomposition reader.
+- `src/workers/whatsapp.worker.ts`: existing semantic startup event safe boolean.
+- Related composition/frozen/worker unit tests and `tests/integration/arch075-common-layout.integration.test.ts`.
+- Three existing installed-Shared logger/startup tests: expected installed release updated5.13.9→5.13.10; behavioral/privacy assertions retained.
 
 ### Work Completed
 
-None
+Short verified logo main contains complete canonical header, authored answer and footer; verified product remains separate footer-only. Over1024/no valid logo uses complete TEXT main. Logical source/receipt/body stays unchanged. Old plans retain exact bodies/digests and remain readable independent of writer flag. Existing consent/moderation/leases/fences/ordering/ambiguity and one logical usage retained.
+
+`brandedMainReplyEnabled()` enables new writes only for exact `RECOVERY_BRANDED_MAIN_REPLY_ENABLED=true`; absent/false/invalid remains legacy. `whatsapp.worker.started.data.recoveryBrandedMainReplyEnabled` is boolean only. No secrets/environment dumps.
+
+Entrypoint audit: production `src/entrypoints/messaging.ts` alone starts multipart repair plus WhatsApp status/continuation worker and HUMAN dispatcher. Legacy combined `src/index.ts` also starts WhatsApp worker/HUMAN dispatcher and can read/write plans if deployed. No other dedicated entrypoint starts these consumers. Root must inventory every affected instance including any combined process, deploy PhaseA OFF, prove all old readers stopped/drained without changing queued work, then enable PhaseB. No activation performed here.
 
 ### Validation Results
 
-Not run
+- Exact unchanged composition baseline RED:7 failures/5passes,8filtered skips, proving true flag was ignored by old writer. New focused GREEN124tests/8files including AI/HUMAN,1024/1025Unicode,4096TEXT, flag defaults/invalids, old/new reader, safe startup bool. Final full suite includes final additional unavailable-product test.
+- Declared full `vitest run`:391files passed/1configured skipped;4315tests passed/10configured skipped,227.56s. No failures. Skips are existing environment-gated suites, not substituted for disposable PG.
+- Real disposable PostgreSQL/Redis runner:3suites71PASS/0skip,274.61s, including new enabled AI short/long verified-product cases; separate DEFAULT HUMAN consolidated production adapter root/replay/concurrent claim vector1PASS/36name-filter skips,26.91s. Total72actual PG tests pass. Existing suite also exercises stale control/source, expiry, moderation, tampering and provider ambiguity guards. One logical AI usage, zero HUMAN automated usage and no duplicate sends asserted.
+- Build PASS: Prisma6.19.3 generate, both TypeScript compilers and Meta sample packaging. Initial discriminant typing failure fixed using explicit HEADER/ANSWER branches before final build.
+- Scoped ESLint all12changed TS/test files PASS; `git diff --check` PASS.
+- Full ESLint retains exactly4 unchanged `@typescript-eslint/no-unused-vars` baseline errors: candidate-index.store.ts:9 readRecoveryExecutionPolicy; recovery-offer-resolver.service.ts:23–25 MAX_CANDIDATES/VERIFICATION_TIMEOUT_MS/AI_TIMEOUT_MS. Exact unchanged cb98d6b HEAD source via stdin reproduces all4; current diff empty in both. No full-lint-green claim.
+- Initial full test run2failures were obsolete5.13.9 version literals; updated3 release assertions and reran complete final suite successfully. Initial unit fixture issues (empty authored answer / HUMAN with AI-only commerce payload) corrected without relaxing runtime checks.
+- Protected local logs `local-backups/arch075-live-20261113/bg010-{red,focused-final,full-final,postgres,postgres-human,build-final,lint-final,full-lint,baseline-candidate,baseline-offer}.log`; no private live fixture committed.
+
+### Isolation / Publication Evidence
+
+Launcher prepared packet `bg010-prepared.json`: canonical primary workspace, exact dedicated parent/implementation paths, mirrored branch; dependency gate passed Shared006/BG009Complete; attempt1codex at2026-11-13T20:29:53Z; pushed claim `e9d4f0f75720bf857b7a7eb2984cb99eca9b9804`. Parent synchronized f08e7c192; implementation synchronized cb98d6b75da189a6408f7ccfec96a4368ba9baad; recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae exact ready. No sibling/primary edits or unmerged gitlink staged. Shared installed from registry.npmjs.org exact5.13.10 integrity `sha512-PjuTCfTQxb0JIA7LfWIJJjOmmFsjxhB+C+tNdSawUu+uun9VWPEOqn5tRaLeRs55u29JuKmllN2/75kQ1dWs0A==`.
 
 ### Deviations
 
-None
+No feature scope deviation. Existing service4096UTF16 input admission remains unchanged; Unicode caption boundaries1024/1025 use supplementary emoji,4096TEXT test uses ASCII. No Shared implementation/publication, migration, Meta registration/source mutation, main merge or live send.
 
-### Assumptions
+### Assumptions / Unresolved Issues
 
-Root controls rollout and publication authorization.
-
-### Unresolved Issues
-
-Publication/consumer/live proof separate.
+Root owns independent review, merge, all-reader deployment inventory/drain, flag activation and real production recipient/provider verification. These remain operational follow-through and are not claimed by this report.
 
 ### Architectural Concerns
 
-Production old readers reject HEADER-only; root drain gate and legacy frozen read compatibility are mandatory.
+Do not enable writer until every old reader is gone. New readers accept old and new plans regardless of flag; root can safely overlap PhaseA and PhaseB after reader upgrade.
 
 ## Architect Review
 
