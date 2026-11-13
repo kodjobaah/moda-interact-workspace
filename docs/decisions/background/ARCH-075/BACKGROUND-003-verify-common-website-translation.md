@@ -76,7 +76,7 @@ ARCH-075-SYSTEM-TEST-001
 ## Validation
 
 - [ ] Meaningful focused positive/negative regression through actual owning boundary; Admin must demonstrate red before correction.
-- [ ] Repository-declared relevant tests, typecheck/lint/build and exact-head CI or documented repository check configuration.
+- [ ] Focused actual codec/worker tests and scoped lint/typecheck; exact-head repository CI where configured. No unnecessary dependency, database, broad build or runtime changes for test-only coverage.
 - [ ] Diff/privacy hygiene and no live provider/database mutation.
 
 ## Stop Condition
