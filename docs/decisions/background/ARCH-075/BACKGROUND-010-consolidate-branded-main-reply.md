@@ -175,3 +175,7 @@ Existing Sharedv1 additive order consumed from published package; no schema/role
 ### Follow-up
 
 Root CI/source/parent integration and Gateway002 declaration required. PhaseA compatible readers/legacywriterOFF across all messaging or deployed combined instances; verify oldreaders drained with jobs preserved before PhaseBtrue. Newplans may not reach oldreader. Actual shortlogo/body/footer/product and human/AI delivery proof remains root-owned; ARCH075 stays InProgress.
+
+## Developer Integration
+
+Root verified both GitHub unit-test checks passed for exact reviewed source `56148f8e4ba1bd4578162a2564720c5de80aa995` and merged Background PR221. Actual main merge is `1b71a7d3582f6f946939ac669a9308f1a0c66b01`; the workspace pin records that merge. Shared5.13.10 is already publicly published and verified. Gateway002 and the reader-first PhaseA/PhaseB rollout remain operational follow-through; this integration does not claim live activation or recipient delivery.
