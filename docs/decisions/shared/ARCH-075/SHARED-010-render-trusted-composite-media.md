@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -88,7 +88,7 @@ Accepted SHARED009 browser contract; existing commerce/presentation/node safe fe
 
 ## Dependencies
 
-ARCH-075-SHARED-009 Complete/Accepted and integrated before preparation.
+ARCH-075-SHARED-009 Complete/Accepted and integrated: Shared mainbc98bf13d8d2596490d9497783637e8eac6f96c6 and parentmaine8483ed0f6fb078fb694d946f67ff2cf6ec064a9. Normal preparation may claim this Ready task.
 
 ## Enables
 
