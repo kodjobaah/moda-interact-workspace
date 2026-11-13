@@ -59,6 +59,10 @@ New historical work cannot consume the full 120-second logical processing lease.
 
 Reuse immutable cached assessments and existing attempt/backoff caps: subsequent claims traverse cached rows quickly and progress through remaining prior candidates. No new queue/cursor or caller-supplied allowance. Inject a clock for deterministic deadline/progress tests, including slow successful assessments, insufficient actual remaining lease, no assessment after deadline and cached replay progress. Direct helper tests without a processing lease must still enforce the historical elapsed bound; production invocation must supply the real claim deadline. Final source validation follows this amendment; do not repeat superseded expensive checks before code settles.
 
+### Startup fixture correction (architect amendment)
+
+The existing arch047-meta-messaging-startup unit intentionally mocks runtime lifecycles under fake timers to test scheduler start/close, but omitted startMultipartRepair and imported the real DB/runtime graph. Two full runs timed out while the isolated test passed. Permit only a test-local multipart lifecycle stub with exactly-once start/close assertions alongside unchanged due/pending-repair checks. No production startup edits, timeout increase or policy waiver. Record observed failure and final rerun.
+
 ## Work Items
 
 - [ ] Prove absent human-mode customer assessment/history exclusion with a focused RED.
