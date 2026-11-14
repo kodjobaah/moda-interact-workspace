@@ -121,7 +121,7 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others 
 
 ### Status
 
-In Progress — pushed concrete prepublication draft checkpoint. Final public dependency/registry lock/npm-ci gate remains pending; this is not a final review submission or deployment-ready claim.
+In Progress — complete tested prepublication draft checkpoint, awaiting the separately authorised public release. Final public dependency/registry lock/npm-ci gate remains pending; this is not a final review submission or deployment-ready claim.
 
 ### Files Changed
 
@@ -142,10 +142,11 @@ All paths below refer to protected primary `local-backups/arch075-live-20261113/
 
 - Exact accepted release candidate installed by `npm install --no-save --package-lock=false /tmp/ARCH-075-SHARED-011/modainteract-moda-interact-shared-5.13.11.tgz`. SHA256 `d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086`;161 packed files individually compared against installed package with zero mismatches. Manifest now declares planned5.13.11. Existing registry lock remains unchanged intentionally; no fabricated registry URL/integrity or clean npm-ci claim.
 - Actual disposable PG/Redis:73 unique cases verified on frozen runtime source. `bg014-pg3.log` has72 PASS and one fixture failure: directly shortening an active lease correctly hit `ARCH040 cannot steal active lease`. Corrected test waits the actual original5s lease expiration, preserving SQL guards; `bg014-expired-pg.log`1 PASS/44 intentional name-filter skips. Other72 case source/runtime unchanged. Includes actual default HUMAN singleton engine and loopback Meta request/status sender, no-product AI/HUMAN, product AI with first-permit context, one image caption, both usage metrics once, policy/generation/takeover/UNKNOWN/replay and legacy vectors. No live infrastructure used.
-- Focused `bg014-focused-adoption.log`:219 PASS/9 files including real Shared renderer/JPEG output, independent source/output proof, immutable PUT reuse/public byte probe, strict flags, invalid/expired/finite original deadlines, fullTEXT fallback, tamper and immutable HUMAN/AI replay. Final exact-head focused/full checks are in progress following required version-only adoption assertions; no privacy/logging assertion was removed.
+- Final focused exact committed head `bg014-focused-exact-head.log`:237 PASS/11 files,17.05s, including real Shared renderer/JPEG output, independent source/output proof, immutable PUT reuse/public byte probe, strict flags, invalid/expired/finite original deadlines, fullTEXT fallback, self-consistent HUMAN tamper and immutable HUMAN/AI replay. Exact5.13.11 adoption assertions and original logger/privacy/startup checks pass; no privacy/logging assertion was removed.
+- Final declared full suite on immutable source5d799d2d3732552241c5f70f5786211e905a839c, `bg014-full-exact-head.log`:395 files PASS/1 existing configured skip;4370 tests PASS/10 existing configured skips,278.20s,exit0. Runs serialized after PG/build, with no source changes during this run. macOS emitted existing dual-libvips class-load warnings; no test/runtime failure. Superseded runs with exact-version fixture mismatches were stopped and retained, not claimed as passing.
 - Baseline RED: `bg014-baseline-red.log` substitutes only exact unchanged `dd29c405` composition source, fails the single-bubble AI assertion as expected (1 failed,31 filtered skips), then restores task source in finally. Not a broad baseline-suite claim.
 - `bg014-build.log`: full declared build PASS, including Prisma6.19.3 generation, both TypeScript builds and Meta sample packaging; no migration changes. Build/generation/tests serialized.
-- Scoped lint and `git diff --check` PASS. Full lint `bg014-full-lint.log` reports exactly four pre-existing unused-variable errors in untouched `pending-recovery-candidate/candidate-index.store.ts:9` and `recovery-offers/recovery-offer-resolver.service.ts:23–25`. No full-lint-green claim; exact unchanged-baseline proof/final committed-file lint will be retained with final checkpoint.
+- Exact committed-file scoped lint (`bg014-exact-commit-lint.log`) and `git diff --check` PASS. Full lint `bg014-full-lint.log` reports exactly four pre-existing unused-variable errors in untouched `pending-recovery-candidate/candidate-index.store.ts:9` and `recovery-offers/recovery-offer-resolver.service.ts:23–25`. No full-lint-green claim. `bg014-lint-baseline-proof.log` proves unchanged baseline/current blobs8bff21b8514b4449dd326c1c1dac12a3ba4a8dbf and077bcbb76c018428bd5b64c0c82d2a1903b5c6e4; exact original source piped to installed ESLint produces the same1+3 errors. ESLint configuration/registry lock unchanged.
 - Actual private offline Eugene outputs through Background host+accepted Shared renderer/R2/probe: `composite-qa/bg014-product.jpg`1125x90086694B; `bg014-no-product.jpg`1125x30029717B. Exact original assets remain separate. Protected captions257 codepoints (offline sample answer61+canonical footer196), full logical356(header99+caption); caption SHA256 `be83ec185629c741283a5d522890c79b2af52b843ee6084fac6064d459393f57`. Root independently reviewed images/caption equality and closed visual gate. Historical canonical snapshot, synthetic offline product proof, no new DB/provider/model queries or live sends. Checkout bearer URL excluded from pixels/stdout/commits. Sensitive files0600.
 
 ### Git / VCS
@@ -166,7 +167,7 @@ Root owns approval, public release, integration, full reader drain and eventual 
 
 ### Unresolved Issues
 
-Final full-suite terminal result and exact committed-file lint/baseline receipt to be added next; actual public5.13.11 publication/registry lock/clean npm-ci and remote checks remain mandatory before final Review. No live behavior or architecture completion claimed.
+Actual public5.13.11 publication/registry lock/clean npm-ci and remote checks remain mandatory before final Review. All required prepublication local checks are complete on the pushed source; do not repeat broad source validation without a relevant change. No live behavior or architecture completion claimed.
 
 ### Architectural Concerns
 
