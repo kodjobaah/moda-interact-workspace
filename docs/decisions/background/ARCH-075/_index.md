@@ -65,3 +65,5 @@ ARCH-075-BACKGROUND-015 Complete/Accepted: Bound AI product-list composition to 
 BG015 Ready strategy: complete descending verified selected prefixes, exact saved-frame caption budget, filtered proof/pairs/context, no arbitrary prose/HUMAN truncation; fallback if no safe fit.
 
 BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: evidence-safe caption prefixes; root integration/live proof pending.
+
+ARCH-075-BACKGROUND-018 Ready: consume existing durable Admin reconciliation requests through normal leased service; independent of frozen017, no live operations.
