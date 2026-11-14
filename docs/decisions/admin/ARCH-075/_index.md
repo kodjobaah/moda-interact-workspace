@@ -30,3 +30,5 @@ ADMIN010 acceptance: exact7782f4c16a6b2c31a15341585a565cb578029cb6, immutable re
 ARCH-075-ADMIN-011 Ready (preparatory; actual publication final acceptance gate): Author website in saved common caption footer; dependencies ARCH-075-SHARED-015.
 
 Admin011 Complete/Accepted exact885b86bd713f061946e383deb079cf9826099ae6/report9c95e8a2, actualpublished6.0.1. Root BG016-before-Admin integration and immutable livecutover remain separate.
+
+ARCH-075-ADMIN-012 Ready: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
