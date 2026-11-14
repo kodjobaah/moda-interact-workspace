@@ -165,15 +165,17 @@ Pending
 
 ### Review Notes
 
-Pendingcode+actualevidence
+Independent checkpoint review of implementation `b1ea85a19c2c88c226e50b35b51257d4932f9332` found no source finding in the targeted factuality guard. The authorized validated current-turn discovery attempt is recorded before the actual read; final dispatch eligibility depends on independently verified product/fact/options or refreshed shipping presentation. Existing trusted localized referral replaces unsupported historical catalogue prose; ordinary no-attempt answers and original model steps remain unchanged. This is a bounded safety correction, not proof that selection finalization works.
+
+Acceptance remains HELD. Trials010/011 produced empty provider arguments, with011 proving wire/SDK/normalized fidelity for that call. Routing012 correctly nested intended preferences but returned HTTP404 NO_MATCHING_ENDPOINT. No publication, source merge, incident fix or genuine delivery claim is authorized. Sonnet013 is prepared only and awaits explicit user data-recipient/spend approval; no further call follows from this review.
 
 ### Reviewed Files
 
-None
+`src/commerce/host.ts`, `src/commerce/discovery-factuality.ts`, `tests/integration/commerce/host-suites/discovery-factuality.ts`, `tests/unit/commerce/discovery-factuality.test.ts`; prior terminal factory/interface review retained.
 
 ### Validation Reviewed
 
-None
+Owner reports13 pure guard tests and149 unique host cases (147 plus2 targeted fixture corrections), types, scoped lint and production build PASS against exact unpublished c09 candidate. Exact-head remote runs43642981740/43642976475 FAIL at typecheck because published Shared6.0.1 lacks the candidate exports; these are real failures and remain release gates, not waived or represented as green. Broader no-read factuality remains unresolved. Task stays InProgress with review Pending; no acceptance/completion transition.
 
 ### Architecture Conformance
 
