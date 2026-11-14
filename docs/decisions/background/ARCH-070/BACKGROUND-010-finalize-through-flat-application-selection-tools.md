@@ -154,3 +154,9 @@ Pending
 ### Follow-up
 
 Rootrelease/integratedverification
+
+## Branch coexistence / advertisement precision
+
+Exactly ONE productfamily (details/options/recommendations) percanonicalreply; multiplefamilies forbiddenbaseline. Shipping may legitimately accompany anysinglefamily: producttool schemas may include optionalcopiedbounded shippingInformationSelection and responseDisposition adjuncts; projection copies ONLY explicitlysupplied modelvalues, no autofill/secondfamily. Preserve allcanonicalshipping-observation qualification.
+
+App-owned selectTools currentreadonlystate filters declaredstatictoolnames beforeforcedrequest: no nonproduct/redirect escape when currentobservedproducts triggerexistingselectionguard; mandatoryreferraladvertisesreferralonly; shipping-only/limitation alternatives ONLY when originalcanonical currentobservations permit. No businessfilter inShared or inferredcustomerintent. Genericframework validatesselectednames subsetandbinding; canonicalvalidator remainsauthority for everydecision. Testselectionview and allsinglefamily+shipping/referral/nonproduct matrices, no new nestedunion/largeoptionalarrayframework.
