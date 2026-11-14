@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -86,6 +86,10 @@ After definedchecks publishmatching source+parentreport, review and STOP. Public
 ## Implementation Notes
 
 Normal moda-task canonical siblingworktree/claim; notalonepreserveothers. Rootownslive/publicapproval/mainmerge. Inspectrole/policies/declaredscripts. Shopifyingress hotpath unaffected; perconversation ephemeralbounded transcript no globalcache/state. No newgenericlogs/rawcontent; framework/sharedloggingonly.
+
+## Stable API / concurrent preparatory authority
+
+Root approves preparatory source now: RunCommerceTurnInput.toolProtocol optional literal native; ModelRequest.toolTranscript presence including [] firstcall selects strictnativeSDK; ModelCall optional id, native calls require actualprovider IDs. CurrentTurnTransportMessage pureassistant calls{id,name,arguments}/text and tool{callId,name,payload commerce-result|runner-feedback}; observations unchanged. Shared007 offlineSDK3 passed, finalguards/build/packpending. No codec/schema copy or siblingsource imports. Prepare owning source/tests against stableAPI, execute once exactcandidatepack available. Finalacceptance requires accepted007, actualapproved008publication/registrylock/npmci/remote. Root actualprobe must inject BOTH candidateRUNNER and candidateSDK, olddeployedrunner ignoresflag. No actualprovidercalls byagent/no defaultnativefallback/no inferredpublicationapproval.
 
 ## Completion Report
 
