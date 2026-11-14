@@ -116,7 +116,7 @@ Prepared — awaiting exact-archive public approval. Task remains In Progress; p
 
 Prepared public approval target: `@modainteract/moda-interact-shared@6.0.0`, registry `https://registry.npmjs.org`, access `public`, dist-tag `latest`.
 
-- Exact archive: `/tmp/ARCH-075-SHARED-013/modainteract-moda-interact-shared-6.0.0.tgz` (read-only after preparation),965706 bytes,161 files; unpacked size3330453 bytes.
+- Exact archive: `/tmp/ARCH-075-SHARED-013/modainteract-moda-interact-shared-6.0.0.tgz` (read-only after preparation),965706 bytes,161 files; unpacked size3330452 bytes.
 - SHA256: `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8`.
 - SHA512 hex: `f1a827c0a60645a1e93632f90f1a8a37676aa9a83f399c121e3b4402d602f5511e67c35dbd76bcebfbb47255ace7fa79e4fc140773d3e7fc9de80130fbbb6fbf`.
 - npm SHA1/shasum: `d4ee0ab635e55a1f34c82e27c1afb9d2791ec6be`.
