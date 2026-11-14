@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T08:41:55Z
@@ -142,24 +142,26 @@ No Shared/queue/DB contract change, package publication or live operation. Any b
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted exact implementation58783dd643ff75e2ce8e6618277a606fc4b10eee (PR225) and immutable parent report378b9a4f1. Actual all4-file diff independently inspected; source clean and parent actual origin/main already current. Canonical launcher dedicated worktree/sync/recursive submodule evidence reviewed. No findings.
+
+New event is application semantic evidence before runner rejection, not duplicate generic transport telemetry. Allowlisted fixed enums/cappedcounts, trusted forced-tool boolean and lowercase64hex pinned contract hash only; no rawkeys/prose/product/customer/URL data. Shared logger reused, helper catches diagnostic/getter/sink failures. Original returned step/call/args identity/content and existing rewrite/validation/repair/budget behavior preserved. Composition reuses same projection; no competing generic logging or Shared business-rule change.
 
 ### Reviewed Files
 
-None
+final-selection-shape.ts; actual host bridge/pre-postprocess and successful composition seam; helper privacy/reference/failure vectors; actual host-suites terminal omission/partialrecommendation tests and final report.
 
 ### Validation Reviewed
 
-None
+Focused26/declaredhost126/type/build/scopedlint/diff PASS. Actual host omission emits shape before nonretryable FINAL_PRODUCT_SELECTION_MISSING, exact original identity/content preserved, one product read/three model calls unchanged. Both exacthead remote43577944714 and43577902536 SUCCESS,393files4376testsPASS. Full lint4unchanged baseline errors exact starting-source/stdin proof disclosed; no unrelated cleanup/greenclaim or unnecessary broad local repeat.
 
 ### Architecture Conformance
 
-Pending
+Conforms to bounded Background-owned diagnostics, Shared structural/application policy boundary and privacy/failure isolation. No schema/queue/package/prompt/provider/layout/live change. Complete applies this diagnostic capability ONLY; production omission cause and correction remain unresolved, ARCH070 remains In Progress.
 
 ### Follow-up
 
-Incident remains unresolved until actual evidence, bounded correction and genuine production verification.
+Root merges source then actual parent gitlink, verifies deployed source/startup/drain before fresh genuine customer retry. Root synthetic equivalent probe only proved provider can return selection, not historical reproduction. Use actual shape to define any separately bounded application correction; do not fabricate selections, weaken guard or claim incident fixed from this acceptance.

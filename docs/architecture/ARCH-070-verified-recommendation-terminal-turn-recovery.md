@@ -112,3 +112,5 @@ None blocking. Earlier exact raw model values remain unknown; deterministic sema
 ## Reopened production selection incident — 2026-11-14
 
 Prior accepted implementation/deployment history is preserved. New genuine Videographer turn reached FINAL_PRODUCT_SELECTION_MISSING after2successful searches and forcedfinalization; raw final shape unknown. ARCH-070-BACKGROUND-006 Ready adds safe application prevalidation shape evidence without changing args/validators/budgets or Shared. Root bounded synthetic probe runs independently. No fabricated selection/new loop/model switching or new Shared publication. Architecture reopened In Progress until evidence-based correction and genuine live verification; no old success is relabelled failure.
+
+ARCH-070-BACKGROUND-006 Complete/Accepted exactsource58783dd643ff75e2ce8e6618277a606fc4b10eee/report378b9a4f1: prevalidation shape evidence only, args/guards unchanged, focused26/host126/remote4376green. Rootintegration/deployeddiagnostic/freshgenuineevidence and actual correction remain pending; ARCH070 In Progress, no incident-fixed claim.
