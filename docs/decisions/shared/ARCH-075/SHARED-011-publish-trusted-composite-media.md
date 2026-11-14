@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-075-BACKGROUND-014
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-14
 ---
 
 # Publish accepted trusted composite media contract
@@ -51,6 +51,12 @@ Implementation edits or rerunning implementation unit/integration/lint/type/buil
 - Reuse accepted tested build artifacts; compare archive nonmetadata bytes to accepted implementation. No implementation changes.
 - Prepare exact version/archive size, file manifest, SHA256 and integrity plus public diff for root review. STOP before publication until root relays explicit user approval for exact archive/version/registry/latest.
 - After authorized publication, verify registry metadata and independently downloaded archive/version/latest match exactly. No secrets or private fixtures in package.
+
+### Actual accepted source and publication hold
+
+Both009+010 Complete/Accepted and integrated: Shared mainde3f9ee5d1aa24c4ac6c51b3f82b12269fddd300, parentmaineed3357296a61c2196af0e008fa89af6b1efbf7d. Normal preparation may claim release-specific metadata/archive work. Accepted tested010 archive SHA256d3928d3c8f9b4a5bc7415005eab891360c38d5c9b69935f1c8b9d1eda62a19ac (161files, validationversion5.13.10) is baseline. Reuse accepted artifacts; no implementation test/lint/type/build reruns.
+
+Prepare exact next5.13.11 candidate metadata/archive/sourcePR and hand root full hash/integrity/manifest/nonmetadata comparison. Do NOT publish or ask user yourself: root will request exact public approval only AFTER Background014 concrete draft/local integrated tests. Keep release In Progress while approval/registry receipt pending, even if metadata source is ready. Root alone decides merges/publication after explicit user reply. No live flag/send.
 
 ## Work Items
 
