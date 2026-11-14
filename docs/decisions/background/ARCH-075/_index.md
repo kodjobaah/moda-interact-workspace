@@ -52,3 +52,5 @@ BG014 dependency amendment: normal preparation follows accepted009+010 plusBG012
 
 
 BG014 Ready for source/draft+local exact-packed integration after actual009+010/BG012 acceptance/integration; publication011 remains final-readiness gate. No live composite activation.
+
+ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.

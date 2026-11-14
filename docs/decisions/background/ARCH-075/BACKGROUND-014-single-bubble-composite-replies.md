@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-14T00:09:25Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-075-BACKGROUND-012
@@ -75,6 +75,17 @@ Exact accepted010 test archive: temporary ARCH-075-SHARED-010/modainteract-moda-
 ### Existing product-facts trust boundary
 
 “Current product facts” retains the existing architecture: independently host-verified product envelope/proof and digest/first-presented pair bound to the original source/presentation/common/tenant, plus current inbound/control/authority and current DB-backed logo policy/generation checks. Do not add a live commerce/provider fetch inside the final transaction or redesign product freshness. Separate host-only composite preparation evidence must be independently constructed and bound to immutable application/plan identity, not copied from an untrusted stored plan as self-attestation. Frozen runtime/font/output identity is preserved on replay, not regenerated. Return concrete missing integrity proof before widening.
+
+### User-authorized configuration correction — next attempt
+
+The original fixed-layout c78893246b05ca31e90c0df4453d27ab6b6428a9 source/registry proof is preserved on this SAME task branch; do not discard its composite functionality. User now requires runtime-configured visual values before merge/deployment. Latest Architect Review is the authoritative next-attempt contract. Normal launcher may reclaim Ready for bounded owned source prep concurrently with Shared012/Admin009. Existing dependencies remain completed; accepted Shared012 API/pack and separately authorized new publication are mandatory final acceptance gates, not claimed complete now.
+
+- New non-secret key messaging.recoveryCompositeLayout uses existing Background registered/readable/plaintext-policy registry and strict Shared012 profile validator; no DB migration. Read exactly one persisted environment/key snapshot (id/version>=1/value/profile digest) within original media deadline; no process cache or implied active default from missing row/version0.
+- Admin009 owns bounded values/defaults/editor/CAS/audit and same-package two-profile preview. Background must not hardcode visual defaults or duplicate schema. Exact flat profile contract is canonical Shared012 task; no logo-left rule. Use additive profile-aware V2 API, preserve every .11 V1receipt/parser/digest and renderer identity on replay.
+- Freeze separate receipt version with full immutable validated profile and trusted selection environment/key/rowId/version/hash, independent sources/output/runtime/font. Application key binds new selection/plan/receipt. At existing final fence lock/read current profile FOR SHARE and verify exact identity/version/canonical value against frozen selection alongside existing control/common/moderation/logo/product proof; changed/missing profile refuses stale unadmitted plan, never rerender/reselect frozen or UNKNOWN root.
+- Existing admitted/UNKNOWN/idempotency/billing/product-context behavior unchanged. Use existing defaultOFF composite flag; no new deployment mechanism. Missing/invalid profile/media/unsupported glyph/longcaption uses one full canonical TEXT fallback.
+- Preparatory source can proceed against agreed API without copied codecs/sibling imports; install exact accepted012 pack once available for local integrated tests. Final normal registry dependency/lock/npmci follows separately approved publication. Push concrete tested draft BEFORE root asks public release approval. No main/deploy/live changes until coherent accepted profile correction; no extra .12 publication inferred.
+- Required tests: same installed Shared artifact with materially different left-logo and top/centered-logo/text-below profiles including changed font/spacing/gap; real default AI+HUMAN one-send/context/billing; stale profile version/hash/missing/default0 rejection; immutable replay oldV1/newV2, tamper, original deadline, fallback, control/UNKNOWN. Retain prior237/full4370/73PG evidence; run relevant required checks for actual source changes, not blind unchanged reruns.
 
 ## Work Items
 
@@ -186,24 +197,30 @@ None additional found; mandatory independent composite HUMAN binding and finite 
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+User explicitly requests architecture correction before merge/deployment. Prior exact source c78893246b05ca31e90c0df4453d27ab6b6428a9/report9584f391aecd070a24a1e1a1eadeb5cbf16ae1d6 has passing registry adoption/build/types/237focused/bothCI plus retained4370full/73PG. No failure is invented in that implementation. It remains unmerged; preserve it and implement the bounded runtime-profile correction above in the SAME task next attempt. Source/test changes are required.
+
+1. Consume additive Shared012 profile/V2 APIs; remove new-writer dependence on fixed Shared geometry/font values without changing .11 legacy frozen bytes.
+2. Select persisted messaging.recoveryCompositeLayout revision>=1, freeze independently trusted complete profile and row identity/hash, bind application key, final FOR SHARE exact selection check.
+3. Preserve original budget, source/product/logo/control/moderation/billing/UNKNOWN guards, onebubble+caption, fullTEXT fallback and all prior functionality.
+4. Prove two materially different supported profiles via same package plus profile version/hash/default0/stale/replay/tamper/default AI/HUMAN regressions and actual offline outputs.
+5. Final acceptance requires accepted012 and approved actual public release/registry checks. Preparatory isolated source/tests explicitly allowed concurrently; no copied parser or fabricated lock. Root owns main/deployment/live operations.
 
 ### Reviewed Files
 
-None
+Original composite host adapter, composition/decomposition, application-key, HUMAN preparation/replay, frozen/preparation/fence and existing validation report. New correction not yet implemented.
 
 ### Validation Reviewed
 
-None
+Prior source local/registry/CI checks pass as reported and independently reviewed; do not erase historical evidence. New source changes require scoped meaningful validation.
 
 ### Architecture Conformance
 
-Pending
+Return same task Ready with cleared claim and preserved attempt1; next normal launcher claim increments once. No new database/schema/Gateway flag needed. Architecture remains In Progress.
 
 ### Follow-up
 
-No architectural/live completion claim.
+Shared012 implements canonical profile mechanics; Admin009 owns existing policy surface. Publication gate remains separately approved only after exact tested archive and concrete consumers. No live activation before accepted coherent integration and reader-first rollout.

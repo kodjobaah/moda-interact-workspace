@@ -241,3 +241,5 @@ ARCH-075-SHARED-010 Ready after exact accepted009 integration Sharedbc98bf13d8d2
 ### Shared010 accepted
 
 ARCH-075-SHARED-010 Complete/Accepted at source483f7a27c654a3a49d6ec4896c616cd0475a938c/report808520a3668d43de5eb576d8adfe5034c6c02099. Renderer/carrier/whole-pipeline and fontless packed Alpine checks passed; root actual product/no-product visual gate passed. After actual integration,011 release preparation and014 defaultOFF draft consumer can proceed; public approval/published readiness/live sends remain gated. Architecture stays In Progress.
+
+ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.
