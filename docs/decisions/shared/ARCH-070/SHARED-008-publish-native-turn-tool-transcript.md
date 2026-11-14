@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -151,3 +151,7 @@ Root actualintegratedverification
 ## Prepared release plan checkpoint
 
 Architect reviewed accepted c1c1d2b and superseding79003cd3 archive; additive native opt-in, optional terminal port and compatible omission support6.1.0. Whole-batch fields extend only newly unpublished APIs. Root018 natural application outcome remains pending: task stays Pending, no claim/publication authorization inferred. Root must make accepted source/report available to normal launcher dependency resolution before execution. Metadata branch may change package.json/package-lock.json only; no rebuild, source test or lint repetition. Consumer Background and Commerce adoption/deployments precede global saved routing nesting; old consumers cannot remain. Exact archive is reviewable before any public approval question. No publication until root's explicit relay.
+
+### Release preparation promotion after024
+
+Ready for normal preparation only. Accepted007 source is4e0716e3aad311a6d7c8620d11070988a35cbb14; exact accepted implementation archive14dbf8eabaf0a9444ca22b6ed151634d0807bb6a6ac350031a433d33f9d48fd4 supersedes790. Root024 zero-network exact actual batch replay accepted three explicit model pairs; this is offline compatibility, not natural/delivery proof. Use6.1.0 package metadata/lock only, preserve all nonmetadata members of14db exactly and no rebuild/test repetition. If accepted source/docs not yet on implementation/main, stop at launcher/integration dependency and notify root; do not merge/pushmain or silently publish older source. Root owns source/main integration. Prepare reviewable exact archive and receipt, then remain InProgress with publication HELD pending new explicit user approval. No consumer work in release task.
