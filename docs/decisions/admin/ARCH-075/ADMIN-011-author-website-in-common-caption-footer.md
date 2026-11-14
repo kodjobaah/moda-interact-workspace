@@ -108,10 +108,11 @@ UI labels Website and checkout footer / Dynamic footer show where both links bel
 
 ### Validation Results
 
-- Actual published 6.0.0 RED reproduces the Shared reader rejecting the new conditional-website reference. Approved provisional Shared014 archive SHA256 `6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a` hash-verified and installed no-save/no-lock; all **161 installed files** byte-match. Committed package/lock remain unchanged; this is not a registry-readiness claim.
+- Actual published 6.0.0 RED reproduces the Shared reader rejecting the new conditional-website reference. Accepted Shared014 source `20aa60f0e9feb4c14ca909b7d7a68771e2b37bcf` archive SHA256 `6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a` hash-verified and installed no-save/no-lock; all **161 installed files** byte-match. Committed package/lock remain unchanged; this is not a registry-readiness claim.
 - Common/native/activation/translation/profile focused run: **57 passed**. New footer policy, UI and affected authoring-component run after UX changes: **14 passed**. Additional affected authoring/wrapper admission regressions: **51 passed**. Counts are separate runs with overlap, not an aggregate unique total.
 - New cases cover trusted binding counts/allowed placement, exact invalid prepared-reference rejection after rehash, six native scenario BODY/preview parity, AI/human caption ordering, translated variable relocation rejection, source/prepared/profile hashes, immutable read and unchanged old valid header bytes. Actual UI Add button preserves other content and saves correct bindings; nonempty static footer remains visible for correction.
 - Existing disposable PostgreSQL runner: **2 passed**, including real old-header-to-new-footer clone, queued translations and all 20 locale reviews, selector/reference equality, coordinated activation and original/audit preservation. Disposable container removed; no hosted database used.
+- Exact Shared015 **6.0.1 candidate** SHA256 `fd7b4a70d2a54da175556739074acdb5ee4487dc9c7e9c68a656717de3137aa2` independently compared with accepted 014: all **160 nonmetadata files identical**, only package version changed. No-save/no-lock installed candidate **161 files byte-identical**; affected footer/UI **5/5** and typecheck passed. No unchanged build/PostgreSQL/broad suite repeated for metadata only. This is an unpublished candidate proof, not publication or actual-registry readiness.
 - Final types/scoped lint and production build after the dynamic-footer UX change passed (terminal build exit 0). Production browser graph across 71 JS files has no Node renderer/font-loader/frozen-verifier markers. Draft exact source ae8033f Vercel SUCCESS at 2026-11-14T14:28:22Z and Preview Comments SUCCESS at 14:28:23Z; this does not replace the final actual-registry adoption gate. No unaffected full-suite or PostgreSQL repeats.
 
 ### Deviations
@@ -124,7 +125,7 @@ Root owns accepted dependency publication, main integration and normal saved-tem
 
 ### Unresolved Issues
 
-Final accepted Shared014 artifact identity, actual separately approved Shared015 publication and real registry dependency/lock/clean npm-ci adoption are mandatory before Ready for Review. Local UX build and draft exact-head checks passed; final actual-registry installation and exact-head checks still required.
+Accepted Shared014 artifact identity and exact Shared015 candidate proof are complete. Actual separately approved Shared015 publication and real registry dependency/lock/clean npm-ci adoption are mandatory before Ready for Review. Local UX build and draft exact-head checks passed; final actual-registry installation and exact-head checks still required.
 
 ### Architectural Concerns
 
