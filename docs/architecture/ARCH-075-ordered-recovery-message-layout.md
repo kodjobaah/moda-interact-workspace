@@ -291,4 +291,6 @@ Shared014 Accepted exacta870977566babb35aac7b38e59efd194b64770b3/report3e163e8f;
 BG016 Complete/Accepted exact59b593d4fa75f072d22a95875bcae1997f441280/report4ed050b6. Actual6.0.1 and app policy proven; root BG-before-Admin integration/livecutover separate.
 Shared015 Complete/Accepted actual6.0.1 registryfd7b exact receipt14:40:56; actualsource4c736db. Consumer final acceptance/livecutover separate.
 
-ARCH-075-BACKGROUND-017 Ready: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+ARCH-075-BACKGROUND-017 Complete/Accepted: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+
+BG017 Accepted exacteb732bac14aaee02b1db496377cb25ae3c1d3660/reportcab01ee15: evidenced NBSP equivalence only; root live reconcile/rollout separate.

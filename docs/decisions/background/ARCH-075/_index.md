@@ -66,4 +66,6 @@ BG015 Ready strategy: complete descending verified selected prefixes, exact save
 
 BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: evidence-safe caption prefixes; root integration/live proof pending.
 
-ARCH-075-BACKGROUND-017 Ready: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+ARCH-075-BACKGROUND-017 Complete/Accepted: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+
+BG017 Accepted exacteb732bac14aaee02b1db496377cb25ae3c1d3660/reportcab01ee15: evidenced NBSP equivalence only; root live reconcile/rollout separate.
