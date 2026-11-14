@@ -54,6 +54,16 @@ Arbitrary CSS/drawlists/code/custom fonts, native Meta template changes, Backgro
 - Preparatory implementation may use exact agreed interface while012 running; do not duplicate Shared runtime schema. Once012 accepted use hash-verified accepted pack for local tests, then actual approved release registry/lock/npmci before final review. Source draft pushed before root requests new public release approval.
 - No deployment or live changes; root merges only once coherent profile contract/consumer proof passes. Existing composite flag remains defaultOFF.
 
+### Superseding user-approved authority correction
+
+The saved common SHARED template is the SOLE source of layout. All preceding independent messaging.recoveryCompositeLayout PlatformConfiguration editor/key/version authority requirements are superseded; preserve draft history but remove that proposed production path, no separate active row/table/pointer. Repurpose reusable numeric controls/schematic preview into existing SHARED template authoring/CloneAsNew/saved detail/review flows.
+
+Add optional `compositeProfile` to Admin SHARED source AST only; strict root validation and server-owned operational bounds/nonoverlap/product-order rules remain Admin-owned. Compile deterministically into optional prepared `compositeProfile` + `compositeProfileSha256` using canonical Shared012 helpers. Source/prepared hashes bind exact profile, old absent-field records retain exact hashes. Existing readSavedCommonLayout/eligibility/activation reference carries exact prepared profile. Preserve immutable saved sources: geometry edits require CloneAsNew and normal review/activation, never rewrite old definitions/locales.
+
+Translation extraction/restoration treats profile as non-translatable structural metadata: copy exact source profile/digest, verify translated output cannot change it. Header/footer text remains normal translated authored content. Do not add profile into native Meta provider components; native single-image constraints remain unchanged. Preview must show the selected saved template geometry and actual caption ordering honestly.
+
+New validation replaces policy-row tests with saved-template create/clone/compile/read/review/translation-metadata tamper/hash/legacy/source-reference tests. Actual same-package two-layout rendering remains required. Existing authorization/immutable definition/audit/cohort/CAS checks preserved. No new database schema or independent configuration policy. Final accepted Shared012/pack/publication gates and no-live boundary unchanged. This correction is authoritative over earlier scope wording; continue same claimed task, preserve useful draft controls/tests, no reset or extra attempt required.
+
 ## Work Items
 
 - [ ] Add closed policy/defaults/server validation and intentional existing editor/history wiring.
