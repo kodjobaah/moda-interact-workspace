@@ -9,16 +9,16 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-075-BACKGROUND-014
+  - ARCH-075-SHARED-010
 enables: []
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-14
 ---
 
 # Declare default-off composite reply deployment gate
@@ -49,6 +49,10 @@ Application implementation, secrets/hardcodedtrue, other workers/services topolo
 - Document deployed reader-first with compositeOFF: verify actual runtime inventory, every old reader drained, safe startup boolean proof, then root separately authorizes ON and actual one-bubble media/caption. Rollback writerOFF preservingnewreader/frozenplans; noqueueclear/reset.
 - Existing branded-main flag unaffected. No secret values, new services or cost. Preserve current Blueprint validations and existing rollout docs.
 
+### Preparatory execution gate
+
+Root requests all authorized source be concrete/tested/pushed before final public release approval. This Ready task may implement/test/push the narrow sync:false declarations and rollout docs now. Return sourcePR/checkpoint while In Progress if Background014 actual flag proof is still pending. Do not claim completed runtime rollout or set live values. Current branded-main flag stays untouched; new composite flag exactliteraltrue defaultOFF must match Background final source before final acceptance.
+
 ## Work Items
 
 - [ ] Add narrow declarations/negative validation.
@@ -61,7 +65,7 @@ Accepted Background014 gate exact literaltrue and safe startupboolean; existing 
 
 ## Dependencies
 
-BACKGROUND014 accepted/integrated before normal preparation. No implementation worktree/claim/live change at definition time.
+SHARED010 Complete/Accepted/integrated at Sharedmainde3f9ee5d1aa24c4ac6c51b3f82b12269fddd300/parentmaineed3357296a61c2196af0e008fa89af6b1efbf7d. Root explicitly authorizes normal preparatory source/config/docs claim now against stable approved composite flag, in parallel with Background014 source. Final acceptance must verify actual Background014 flag/defaultOFF/startup proof; keep In Progress if that proof is pending. No live config/activation or fabricated deployed capability.
 
 ## Enables
 
