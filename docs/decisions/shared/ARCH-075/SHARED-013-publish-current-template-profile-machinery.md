@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -120,7 +120,7 @@ Root relays exact publication approval only after concrete consumer checkpoints.
 
 ### Unresolved Issues
 
-Dependency actual integration and new public approval pending.
+Dependency integrated: sourcef06cf317781bf584b62f2c286d06118f21e40123, parentb4ae79170ef3427d1744ef1151ef40e013ebbb78. New exact public approval pending.
 
 ### Architectural Concerns
 
