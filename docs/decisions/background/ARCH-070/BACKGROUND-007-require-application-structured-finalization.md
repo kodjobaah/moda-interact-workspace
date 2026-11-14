@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T09:18:12Z
@@ -54,10 +54,10 @@ Shared edits/releases; model/provider/schema changes; fabricated IDs or automati
 
 ## Work Items
 
-- [ ] Add bounded application finalization guidance through existing trusted instruction assembly.
-- [ ] Add pinned-contract-aware field guidance where supported without copying validators.
-- [ ] Prove host/tool/semantic constraints unchanged through focused tests.
-- [ ] Record exact source, isolation and validation plus measured/unknown evidence distinction.
+- [x] Add bounded application finalization guidance through existing trusted instruction assembly.
+- [x] Add pinned-contract-aware field guidance where supported without copying validators.
+- [x] Prove host/tool/semantic constraints unchanged through focused tests.
+- [x] Record exact source, isolation and validation plus measured/unknown evidence distinction.
 
 ## Interfaces / Contracts
 
@@ -73,18 +73,18 @@ None; root-owned deployment and genuine verification follow accepted integration
 
 ## Acceptance Criteria
 
-- [ ] Actual host request includes specific recovery structured-finalization guidance while ordinary tools remain available.
-- [ ] Supported canonical selection fields receive accurate guidance; custom unsupported fields/enums are not invented.
-- [ ] Referral/nonproduct/language envelopes and model args remain unchanged by host processing.
-- [ ] Missing/invalid selections still fail closed with existing single repair and budgets.
-- [ ] Root comparison evidence is recorded honestly; no assertion of original forced-step failure cause.
+- [x] Actual host request includes specific recovery structured-finalization guidance while ordinary tools remain available.
+- [x] Supported canonical selection fields receive accurate guidance; custom unsupported fields/enums are not invented.
+- [x] Referral/nonproduct/language envelopes and model args remain unchanged by host processing.
+- [x] Missing/invalid selections still fail closed with existing single repair and budgets.
+- [x] Root comparison evidence is recorded honestly; no assertion of original forced-step failure cause.
 
 ## Validation
 
-- [ ] Inspect declared package scripts and run focused instruction/helper tests plus declared commerce-host suite.
-- [ ] Typecheck, production build, scoped lint and diff hygiene.
-- [ ] Exact-head configured remote CI passes; disclose known unchanged lint baseline with evidence.
-- [ ] Record root-owned bounded provider comparison outcome; no agent live calls.
+- [x] Inspect declared package scripts and run focused instruction/helper tests plus declared commerce-host suite.
+- [x] Typecheck, production build, scoped lint and diff hygiene.
+- [x] Exact-head configured remote CI passes; disclose known unchanged lint baseline with evidence.
+- [x] Record root-owned bounded provider comparison outcome; no agent live calls.
 
 ## Stop Condition
 
@@ -98,7 +98,7 @@ Use normal moda-task launcher from primary root, dedicated sibling parent/implem
 
 ### Status
 
-Source and focused/host validation complete; all exact checks complete; root-owned measured comparison pending before review return.
+Ready for Review. Source, exact checks and root-owned bounded comparison evidence complete.
 
 ### Files Changed
 
@@ -119,7 +119,7 @@ Implementation `c0292c5d60754b864967ec8ec1ced47236625a9e` pushed on `task/ARCH-0
 - Declared `npm run test:commerce-host`:127PASS, including existing language/referral/evidence/successful product and exact missing-selection terminal/refusal/repair/argument-identity paths plus the new actual request assembly test.
 - `npx tsc --noEmit` and scoped ESLint on all4 changed files: PASS. Full `npm run lint` has exactly4 unchanged `@typescript-eslint/no-unused-vars` errors: candidate-index.store.ts:9 readRecoveryExecutionPolicy; recovery-offer-resolver.service.ts:23-25 MAX_CANDIDATES,VERIFICATION_TIMEOUT_MS,AI_TIMEOUT_MS. Both files are byte-identical at startingbe077bf, currentc0292c5 and prior3e46120 whose stdin baseline was proven in BG006; exact blobs8bff21b8514b4449dd326c1c1dac12a3ba4a8dbf /077bcbb76c018428bd5b64c0c82d2a1903b5c6e4. No new failure or unrelated cleanup; no full-lint-green claim. Exact-head CI [43580528735](https://github.com/kodjobaah/moda-interact-background/actions/runs/43580528735) and [43580502290](https://github.com/kodjobaah/moda-interact-background/actions/runs/43580502290): both SUCCESS. Relevant local logs retained privately in primary `local-backups/arch070-bg007-*`. Parent checkpointe85d08017 and draftPR https://github.com/kodjobaah/moda-interact-workspace/pull/1040 published; no gitlink staged.
 - `git diff --check` PASS; bounded diff/private-content review found no customer payload/provider credentials/prose or logging changes. This task performs no model/provider/Meta/DB live calls and requires no migration/PG changes.
-- Root-owned baseline/candidate unforced actual-model comparison pending. Exact built helper/output was provided to root before probing; only root may supply measured evidence. No efficacy claim from unit assertions alone.
+- Root-owned bounded actual-provider comparison: both unforced baseline and candidate returned exactly1 finalResponse, ANSWER, pinned-schema valid, productDetailSelections count1, recommendation count0; output tokens252baseline/265candidate. Same production DeepSeekV4Flash model, max800tokens/60s; candidate strings matched this actual built helper. Both succeeded, so NO measured efficacy gain or historical-failure reproduction is demonstrated. Important fidelity limit: probe appended candidate hints after response instructions, while the actual host places them before PRODUCT_DISCOVERY/response instructions via hostInstructions. This is a compatibility-only result, not a controlled proof of actual-host efficacy. Root's protected receipt is primary `local-backups/arch075-live-20261113/bg007-unforced-model-comparison.json`; root reports staged checksum failures occurred before any provider calls, then only the final verified pair ran. No WhatsApp sends. The repository agent made no live calls. Root relayed these actual outcomes after source/tests freeze.
 
 ### Deviations
 
@@ -135,7 +135,7 @@ The original08:20 forced-step omission remains unexplained. The target is observ
 
 ### Architectural Concerns
 
-No Shared schema/package, retries/budgets, generated selections or new adapter. Final admission remains existing pinned contract and runner guard. Measured provider outcome and exact remote checks remain required before review return.
+No Shared schema/package, retries/budgets, generated selections or new adapter. Final admission remains existing pinned contract and runner guard. Actual comparison and exact remote checks are recorded above; compatibility only, not an efficacy or production-delivery claim.
 
 ## Architect Review
 
