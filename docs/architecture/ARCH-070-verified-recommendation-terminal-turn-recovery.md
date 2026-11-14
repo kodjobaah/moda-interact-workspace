@@ -126,3 +126,5 @@ ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omi
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
 
 ARCH-070-SHARED-007 ready: Preserve ordered native current-turn tool protocol; propernativeprotocolmechanics only, allbusinessguardsunchanged; rootproof/publicationapprovalgate.
+
+Shared007 Ready reworkattempt2: genericrawtransport/separatehostterminaldecision, no businessmapping; native007negative/flat008capability only. AppBG010ownsflatprotocol; publicationheldnewapproval.
