@@ -185,3 +185,7 @@ Release scope conforms and task Complete records publication only. Current user 
 ### Follow-up
 
 Background014 may finish registry lock/npm-ci and report only. Root owns final parent gitlink integration. All consumer/Gateway merges and live operations remain held pending user discussion of presentation-policy boundaries. No new layout task/source work authorized.
+
+## Developer Integration
+
+Root integrates actual Shared metadata main merge66dfdbe6f7664d5a06622ac8fcedd4d931bfbb64 after acceptancec4a5ea1e8 and independently verified public5.13.11 receipt. Approved archive960025bytes/161files/SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086 is published with latest tag. This gitlink/record integration changes no production worker or live settings. The user has since explicitly requested configuration-driven layout correction, tests, commits/pushes/merges before deployment; the architect is defining that separate correction while preserving this release and legacy receipts. Fixed-layout consumer/Gateway merges and activation remain held until the corrected configuration path is coherent and checked.
