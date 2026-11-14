@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T20:06:13Z
@@ -99,7 +99,7 @@ Normal moda-task canonical siblingworktree/claim; notalonepreserveothers. Rootow
 
 ### Status
 
-Attempt 2 implementation checkpoint; final full-suite and root actual-provider candidate diagnostic pending. No publication, deployment or incident-fix claim. Source pushed on the same mirrored task branch; previous negative native-only diagnostic remains evidence below.
+Ready for independent review of attempt 2 source mechanics; all declared local checks passed. Root actual-provider candidate diagnostic pending. No publication, deployment or incident-fix claim. Source pushed on the same mirrored task branch; previous negative native-only diagnostic remains evidence below.
 
 ### Files Changed
 
@@ -119,12 +119,16 @@ Source checkpoint `ec7658b`, existing PR https://github.com/kodjobaah/moda-inter
 - Typecheck PASS; focused terminal-port/native SDK 14 PASS.
 - tsup ESM and DTS build PASS.
 - Exact installed-package Node SDK, actual IDs, chronology, semantic observation binding, plaintext feedback, generic required alternative tools, exported types and pure browser boundary PASS.
-- Full suite rerun active. Initial full run had 827 PASS/3 configured skips plus one newly authored test-fixture failure (omitted callerSignal); corrected fixture and explicit projected ANSWER negative now pass focused checks. No production-byte change followed archive creation.
+- Final full suite PASS: 828 passed, 3 existing configured skips, 831 total; zero failures. Initial test-only referral fixture mistakes were corrected (callerSignal, canonical negative fixture and curried graph invocation); no production-byte change followed archive creation.
 - `git diff --check` PASS.
 
 ### Exact unpublished provisional artifact
 
 `/tmp/ARCH-070-SHARED-007/terminal-provisional-c09ea94f6907.tgz`, metadata version 6.0.1 (unpublished), 982879 bytes/163 members. SHA256 `c09ea94f6907a46748221c50c0528cd58743cc15f1fd0eb7d79067fcdfdda549`. Shared with Background and root for local installed consumer testing only. Existing public 6.0.1 remains unchanged.
+
+### Diagnostic bundle from exact installed archive
+
+Node22 external-package ESM exports only `runCommerceTurn` and `OpenRouterModelClient`; no renderer assets/maps/declarations. `/tmp/ARCH-070-SHARED-007/diagnostic-c09ea94f6907/native-candidate-c09ea94f6907.node22.mjs`, 145658 bytes, SHA256 `6faf9ab8eb287cd783b7de1240fd1a6fa4a50c778cd699cbc6b7c573c52c1558`. Gzip 43120 bytes, SHA256 `e61f89cb75a2a574058a172fd6d06e105481d1c2a093ea0f928dbe8e2fff46ff`. Root received exact provenance and will combine with application adapter only after consumer checks. No actual provider calls made by this agent.
 
 ### Prior actual diagnostic outcome
 
