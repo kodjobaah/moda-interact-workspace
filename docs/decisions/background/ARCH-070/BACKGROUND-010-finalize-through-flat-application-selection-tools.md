@@ -54,6 +54,8 @@ No Sharedrelease byBGagent. Preparatory source/tests authorized before007accepta
 
 ## Work Items
 
+- [ ] Implement the targeted current-discovery factuality safeguard defined below in this same atomic source PR; preserve ordinary no-attempt answers.
+
 - [ ] Agree genericport and exportsignature; preserve priornativeconsumer lineage.
 - [ ] Implement finiteflatcompletion schemas/pureprojection/hostintegration.
 - [ ] Test everylegitimatebranch and invalidterminal/rawjournal/counter invariants.
@@ -74,6 +76,8 @@ Root testedsource/publicreleaseapproval then integrateddeployment/genuineproduct
 
 ## Acceptance Criteria
 
+- [ ] After validated current-turn resolver/search/get attempts, an ANSWER without independently verified current product or shipping presentation uses existing trusted localized referral/clarification; historical model catalogue prose never reaches dispatch. No question regex, fabricated identities, empty-stock claim or extra model/tool calls.
+
 - [ ] No rawproviderID/name/args changed or resent asprojected; canonicaldecision separate bound.
 - [ ] Everylegitimatecanonical branch retained, no grounded/nonproduct/referral/shipping escape.
 - [ ] Invalidprojectionterminal no extraSDK/MCP/send; validdecision unchangedcanonicalvalidation.
@@ -81,6 +85,8 @@ Root testedsource/publicreleaseapproval then integrateddeployment/genuineproduct
 - [ ] Actualapprovedpublicdependency/npmci/remote finalgates satisfied.
 
 ## Validation
+
+- [ ] Actual host regressions cover resolver UNAVAILABLE plus historical prices, empty/unavailable search/get, verified product/shipping preservation, ordinary no-attempt greeting/thanks, and raw-step immutability; rerun affected types/build/scoped lint and exact-head CI.
 
 - [ ] Pureprojection matrices allmodes/customunsupported/language/evidence/discount/IDs/variants/unknownfields/referral/shipping.
 - [ ] ActualSDKHTTPwire rawversusdecision/nativeIDs/roles/requiredchoice; hostterminality/counters/cancel/staleguard tests.
@@ -177,3 +183,7 @@ App-owned selectTools currentreadonlystate filters declaredstatictoolnames befor
 Actualnatural009 acceptedSTANDARD prose listing historicalproducts/prices after ONLY resolver returnedUNAVAILABLE/outcome+reasonCode (no currentinventoryfacts). Not benignnonproductsuccess; broaderfactualitygap. Root authorizes sameBG010 atomicPR appguard, noShared/businessschemachange. Track actualauthorized/validatedCURRENT resolver/search/get discovery attempts, not questionregex/modelclaimedintent/history. Resolver taxonomyCANDIDATES is NOT shopinventoryauthority. After suchattempt, if finalANSWER lacks independentlyverified currentproduct/facts/options/shipping presentation, do NOTdispatch modelauthoredhistoricalcatalogue prose. Use EXISTING trustedlocalizedreferral/clarification behavior, no inventedstock-empty/no-match/catalogueavailability claim; preserve mandatoryreferral/language/checkoutfooter. OrdinarynonproductwithNOcommerceattempt unchanged. No extra tool/modelcall, no inferredIDs or newretry.
 
 Apply owninghost/resultcomposition guard and focusedactualhost regressions (009-like resolverUNAVAILABLE+13historicnames/prices→trustedreferral; search/get empty/unavailable→safe; freshverifiedproduct/shipping unchanged; normalgreeting/thanks/noattempt unchanged; rawmodelstep unchanged). Add meaningful disposablelifecycle guard ifrequired toprove no unsupportedbody reaches send. Exactscope extends existinghostownership, no compact/policy/sharedmechanics edits. Explicitly document broaderno-read historicalfactuality limitation remains; this targetedguard is not universalproseentailment. Currentrootcontrolledprefixproof usesfrozen157purefactory and is independent ofthishost-onlyguard; do NOTclaim it exercises fullhostdelivery safeguard. Newatomicfinalsource mustrerunaffectedtests/types/build/lint/CI and exactbundleidentitybeforeacceptance.
+
+### Execution clarification after fidelity011
+
+The existing attempt1 claim remains active; this authorized in-scope safeguard continues under that claim after re-reading this task. No second claim or attempt reset is required. Trial011 established provider-origin empty arguments for that call, with wire/AIMessage/normalized equality; terminal protocol efficacy remains unproved and publication/integration gates remain held. Provider routing/model configuration changes are outside this task and require their own explicit authorization.
