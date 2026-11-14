@@ -56,3 +56,9 @@ BG014 Ready for source/draft+local exact-packed integration after actual009+010/
 ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.
 
 ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45b25f4d32e5ca9/reportd2a4561e6: sole saved-template profile authority/current-only composite/actualShared6registry+exactheadCIgreen. Rootactualpin/integration and controlled disabled rollout/current-template replacement/liveproof remain separate; ARCH075 In Progress.
+
+ARCH-075-BACKGROUND-015 Complete/Accepted: Bound AI product-list composition to branded caption budget; dependencies None.
+
+BG015 Ready strategy: complete descending verified selected prefixes, exact saved-frame caption budget, filtered proof/pairs/context, no arbitrary prose/HUMAN truncation; fallback if no safe fit.
+
+BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: evidence-safe caption prefixes; root integration/live proof pending.
