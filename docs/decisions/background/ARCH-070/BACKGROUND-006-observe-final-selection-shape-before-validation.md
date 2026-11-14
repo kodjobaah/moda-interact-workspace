@@ -99,35 +99,44 @@ You are not alone; preserve others. Known existing composition shape projection 
 
 ### Status
 
-Not Started
+Implementation and local validation complete; exact remote checks pending before review return.
 
 ### Files Changed
 
-None
+- `src/commerce/final-selection-shape.ts`: one Background-owned bounded allowlist projection and best-effort Shared-logger adapter.
+- `src/commerce/host.ts`: observes original model step immediately after invoke, before postprocessing/rewrite/runner validation; successful composition uses the same shape projection.
+- `tests/unit/commerce/final-selection-shape.test.ts`: malformed containers, capped arrays/unknown-key counts, fixed enum states, shipping containers, sensitive canaries, trusted forced flag/hash, exact argument identity and throwing getters/sink isolation.
+- `tests/integration/commerce/host-suites/selection-semantics.ts`: actual host omission remains `FINAL_PRODUCT_SELECTION_MISSING`/nonretryable `INVALID_FINAL`, with diagnostic preceding terminal event and exact original final step/call/argument references and content preserved; exhausted correction remains three invocations with one product read.
 
 ### Work Completed
 
-None
+Source `58783dd643ff75e2ce8e6618277a606fc4b10eee` pushed to mirrored implementation branch `task/ARCH-070-BACKGROUND-006`; draft PR https://github.com/kodjobaah/moda-interact-background/pull/225. New event `commerce.host.model_bridge.final_selection_shape` emits only existing trusted turn identifiers, request-derived `forcedFinalResponse`, independently pinned lowercase64hex contract hash, fixed shape states and capped counts. No arbitrary argument keys/values/prose/URLs/product identifiers emitted. No normalization, selection fabrication, schema, retry, prompt, budget, provider or delivery changes. No new generic logger/transport/flag. Existing standard telemetry cannot expose this prevalidation domain shape; Shared logging handles generic emission.
 
 ### Validation Results
 
-Not run
+- Canonical normal launcher packet: primary `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-BACKGROUND-006`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-BACKGROUND-006`. Attempt1/codex claimed2026-11-14T08:41:55Z, pushed parent claim32bcfe9325d68d53c997ce02897ddb14f94221d6. Parent synchronized6567d99f65c664f746d25501d22083ccb64e4929, source baseline3e46120ba79c26389df92fb25504a0a2e652a68b, explicit dependencies complete, database submodule6f42b71112efe7ac63654d55f41cd74ca569b1ae ready. No primary/other worktree modifications.
+- Normal `npm ci`: PASS. `npx vitest run tests/unit/commerce/final-selection-shape.test.ts tests/unit/commerce/model-bridge-diagnostics.test.ts tests/unit/commerce/host-diagnostics.test.ts`:26PASS/3files. First helper attempt had3 test-table array-expansion fixture failures; corrected fixture only and exact focused rerun green. No failure waived.
+- Declared `npm run test:commerce-host`:126PASS, including successful existing composition/referral/evidence paths and new precise terminal omission/order/identity assertion.
+- `npx tsc --noEmit`, `npm run build` and scoped eslint on all4 changed files: PASS. No DB/provider/model/Meta calls or schema/migration checks required by this diagnostic-only scope.
+- Full `npm run lint`: exactly4 existing `@typescript-eslint/no-unused-vars` errors in unchanged `candidate-index.store.ts:9` (readRecoveryExecutionPolicy) and `recovery-offer-resolver.service.ts:23-25` (MAX_CANDIDATES,VERIFICATION_TIMEOUT_MS,AI_TIMEOUT_MS). Both files byte-unchanged from exact starting3e46120. Baseline stdin proof recorded separately; no matching durable baseline ID found, no unrelated cleanup/full-lint-green claim.
+- `git diff --check`: PASS. Diff/privacy review: production change contains no raw payload/model strings, secrets, customer data, URLs or arbitrary unknown-key values. Synthetic sensitive canaries remain only in tests and are asserted absent from diagnostic records.
+- Exact head remote runs43577944714 and43577902536 pending; final status will be recorded before review submission. Logs retained privately under primary `local-backups/arch070-bg006-*` (npm-ci, focused initial/final, host, types, scoped lint, build initial/final, full/baseline lint). No broad4386local rerun: focused and declared host suites are the task-relevant validation; remote workflow covers its declared scope.
 
 ### Deviations
 
-None
+No runtime-scope deviation. Initial fixture correction disclosed above. Full lint remains the exact untouched4-error baseline.
 
 ### Assumptions
 
-Root owns live evidence and source/main integration.
+Root owns live evidence, main integration/deployment and separately authorized synthetic probes. This agent performed none.
 
 ### Unresolved Issues
 
-Exact production omission/partial-field cause not yet established.
+The exact historical production omission/partial-field cause remains unproven. This change supplies evidence before rejection; it is not an incident correction or production AI-delivery verification.
 
 ### Architectural Concerns
 
-Do not turn observability task into speculative model-selection or Shared business-policy change.
+No Shared/queue/DB contract change, package publication or live operation. Any behavioral correction follows actual evidence in a separately bounded task.
 
 ## Architect Review
 
