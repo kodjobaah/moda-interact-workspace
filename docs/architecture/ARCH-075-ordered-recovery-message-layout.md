@@ -270,4 +270,6 @@ ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45
 
 ARCH-075-GATEWAY-003 Complete/Accepted exactsourcea2157f2df59566bbdf1b597ab8a54c42c1e79ca8/report7a0201e1e: finalBGc599 gate/startup/source acceptance reconciled, two messaging-only sync:false inputs. Rootfalsepreprovision verified; actualdeploy/drain/templatecutover/ON/providerproof remain operational, ARCH075 In Progress. Unrelated closedworkspacePR98 description restoration resolved by official evidence; no code effect.
 
-ARCH-075-ADMIN-010 Ready adds Admin-only truthful media-binding presentation/grouped existing dimensions and matching preview; no new SHARED productImage variable or runtime contract. Existing AI binding remains unchanged.
+ARCH-075-ADMIN-010 Complete/Accepted adds Admin-only truthful media-binding presentation/grouped existing dimensions and matching preview; no new SHARED productImage variable or runtime contract. Existing AI binding remains unchanged.
+
+ADMIN010 acceptance: exact7782f4c16a6b2c31a15341585a565cb578029cb6, immutable report1eef4eb6a72a3c95df30ef7b4df255f8bda637de. Admin-only binding/size controls; root integration pending, no live template change.
