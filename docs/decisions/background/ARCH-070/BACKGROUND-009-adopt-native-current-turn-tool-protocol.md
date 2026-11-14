@@ -95,35 +95,42 @@ Root approves preparatory source now: RunCommerceTurnInput.toolProtocol optional
 
 ### Status
 
-Not Started
+In Progress — tested preparatory source pushed; actual native diagnostic, accepted dependency/publication and final registry adoption remain gates. Not merge-ready.
 
 ### Files Changed
 
-None
+Background source `42bbd72`: `src/commerce/host.ts`; host fixture and ai-mock/evidence/selection-semantics suites.
 
 ### Work Completed
 
-None
+Production host requests `toolProtocol: native` from the canonical runner. The existing evidence-ineligible ANSWER-to-REFER fallback retains the actual call ID. Its canonical referral is terminal: regression cases bound invocation counts and assert original provider step/arguments remain unchanged; an invalid original schema instead reaches existing repair with exact original arguments in native transcript.
+
+The synthetic test-provider boundary supplies deterministic fixture IDs only for synthetic calls. Dedicated raw missing/duplicate ID cases bypass this adapter and fail before tool dispatch. Production contains no ID generation or fallback. Actual HTTP tests assert assistant tool calls and matching tool_call_id replies, no duplicated tool-result user JSON, and unchanged nested selection schema, strict/tool-choice and budgets.
 
 ### Validation Results
 
-Pending
+- Exact provisional Shared archive SHA256 `800059e55690d6c27e8233fad8a6d6dd5ee9a09f5d4f9a6fcbe553c1d6fa31a0`, 975475 bytes / 163 files, installed no-save/no-lock. Metadata remains 6.0.1; not public release proof.
+- Host suite 132 PASS (16.26s), including actual SDK HTTP serialization and canonical refusal guards.
+- Model factory / bridge / host diagnostics 25 PASS across 3 files (2.58s).
+- TypeScript, repository build, scoped ESLint and diff checks PASS. Checks serialized; no generator/importer race.
+- First provisional8be host run 126/131 exposed ID-dropping existing host referral reconstruction and test fixture issues. Superseding8000 first run129/132 exposed reused synthetic final sentinel IDs. All corrected without production ID fabrication or validation weakening; final132 PASS as above.
+- Remote CI/clean registry npm-ci are not final evidence until approved release exists and normal lock adoption is complete.
 
 ### Deviations
 
-None
+Root's explicit no-seed native first-actual-SDK trial supersedes earlier seeded probe wording. Both candidate runner and candidate SDK are required. Operator wrapper preserves frozen context-probe core with one hash-bound runner import alias, injects candidate SDK through existing production factory, sets native on copied snapshot and requires first transcript[]. No app-context/normal-form helpers are wired.
 
 ### Assumptions
 
-None
+Normal attempt1 prepared claim `f99a63488b53158fd94e5c77b848673f7547c755`, 2026-11-14T19:13:21Z; launcher-authoritative canonical sibling worktrees and matching task branches used. No primary/other-task source or parent gitlink staged. No agent provider/MCP/live operations.
 
 ### Unresolved Issues
 
-Providerconformance notguaranteed beforeactualnativeproof.
+Root actual probe pending. Accepted Shared source, approved public release, exact registry dependency/lock, clean npm-ci and final checks remain mandatory. Incident fix/deployment not claimed.
 
 ### Architectural Concerns
 
-None
+No additional contract needed beyond coordinated Shared007 native protocol and release gate.
 
 ## Architect Review
 
