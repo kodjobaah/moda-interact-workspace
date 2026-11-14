@@ -126,7 +126,9 @@ Normal attempt1 prepared claim `f99a63488b53158fd94e5c77b848673f7547c755`, 2026-
 
 ### Unresolved Issues
 
-Root actual probe pending. Accepted Shared source, approved public release, exact registry dependency/lock, clean npm-ci and final checks remain mandatory. Incident fix/deployment not claimed.
+Root native007 actual unseeded probe NEGATIVE: 7 actual SDK calls, 5 read-only tools, 10 observed product pairs; native frames correct including first empty transcript, but no accepted selections / STANDARD disposition and terminal FINAL_PRODUCT_SELECTION_MISSING. Final output SHA256 `e20baafb3dc0b5bc3983ec65c99eb7cc66199c546aeecd9cfe33d4eb7b986db8`. Exact archive800059, candidate bundle61b7 (root verified), runner-alias corebcdc and wrapper74c2 were used. This demonstrates structural protocol pairing only, not incident repair or delivery. No further probe/source scope authorized pending architecture disposition.
+
+Remote preparatory CI `43633123642` and `43633100616` failed at Type-check: currently published6.0.1 lacks RunCommerceTurnInput.toolProtocol (TS2353 host439). This is the explicit dependency gate, not a waived test. Accepted Shared source, approved public release, normal exact registry dependency/lock, clean npm-ci and final checks remain mandatory. No publication or deployment claim.
 
 ### Architectural Concerns
 
