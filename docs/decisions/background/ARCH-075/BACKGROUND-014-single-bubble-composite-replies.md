@@ -121,35 +121,56 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others 
 
 ### Status
 
-Not Started
+In Progress — pushed concrete prepublication draft checkpoint. Final public dependency/registry lock/npm-ci gate remains pending; this is not a final review submission or deployment-ready claim.
 
 ### Files Changed
 
-None
+Background source commit `5d799d2d3732552241c5f70f5786211e905a839c`, draft [PR224](https://github.com/kodjobaah/moda-interact-background/pull/224): additive composite host adapter/receipt; existing common composition/preparation/frozen readers/fence; AI original-claim deadline plumbing; actual HUMAN lease plumbing and composite-only application-key binding; existing startup boolean; focused, actual-renderer and disposable PostgreSQL/Redis tests; package adoption assertions and rollout notes `docs/arch075-composite-replies.md`. No Database/Shared implementation changes.
 
 ### Work Completed
 
-None
+- Exact opt-in `RECOVERY_COMPOSITE_REPLY_ENABLED === 'true'`; safe `whatsapp.worker.started.data.recoveryCompositeReplyEnabled`. Existing branded-main writer and old frozen plan/digest bytes remain unchanged when composite is OFF.
+- One existing root and one HEADER COMPOSITE_IMAGE part; bitmap has trusted logo/canonical header and optional verified first-presented product. Caption is exact canonical answer+footer; root/moderation/history retain complete logical header+answer+footer. Complete one-TEXT fallback for missing/invalid optional media, overlong caption and exhausted budget.
+- Separate strict host receipt preserves original logo generation/fingerprint, product facts proof/digest/firstPair, original runtime/font and independently attested output. Existing final transaction rechecks current logo/publicMedia policy, canonical source/control/moderation, immutable plan/receipt/tenant/product bindings. No live commerce lookup inside transaction; ordinal-zero product context preserved.
+- AI uses the original processing claim deadline bounded by original Commerce host authority. Fresh HUMAN preparation uses the actual SQL-read claimed-command lease expiration. One shared <=5s media child deadline/AbortSignal covers all optional stages. Frozen replay has no re-render/network attempt or replacement runtime/font identity.
+- Composite HUMAN application key binds plan+independent receipt+policy tuple at composition, frozen command read and final wrapper checks. A self-consistent changed output/receipt/rehashed plan retaining the original application key fails closed.
+- Existing one-root/one-billing/idempotency/UNKNOWN/no-resend lifecycle reused. Reader consumers audited: dedicated messaging entrypoint and legacy index, if deployed; other dedicated entrypoints do not start multipart/HUMAN/WhatsApp consumers.
 
 ### Validation Results
 
-Not run
+All paths below refer to protected primary `local-backups/arch075-live-20261113/`; private customer/checkout content and shop assets were not committed.
+
+- Exact accepted release candidate installed by `npm install --no-save --package-lock=false /tmp/ARCH-075-SHARED-011/modainteract-moda-interact-shared-5.13.11.tgz`. SHA256 `d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086`;161 packed files individually compared against installed package with zero mismatches. Manifest now declares planned5.13.11. Existing registry lock remains unchanged intentionally; no fabricated registry URL/integrity or clean npm-ci claim.
+- Actual disposable PG/Redis:73 unique cases verified on frozen runtime source. `bg014-pg3.log` has72 PASS and one fixture failure: directly shortening an active lease correctly hit `ARCH040 cannot steal active lease`. Corrected test waits the actual original5s lease expiration, preserving SQL guards; `bg014-expired-pg.log`1 PASS/44 intentional name-filter skips. Other72 case source/runtime unchanged. Includes actual default HUMAN singleton engine and loopback Meta request/status sender, no-product AI/HUMAN, product AI with first-permit context, one image caption, both usage metrics once, policy/generation/takeover/UNKNOWN/replay and legacy vectors. No live infrastructure used.
+- Focused `bg014-focused-adoption.log`:219 PASS/9 files including real Shared renderer/JPEG output, independent source/output proof, immutable PUT reuse/public byte probe, strict flags, invalid/expired/finite original deadlines, fullTEXT fallback, tamper and immutable HUMAN/AI replay. Final exact-head focused/full checks are in progress following required version-only adoption assertions; no privacy/logging assertion was removed.
+- Baseline RED: `bg014-baseline-red.log` substitutes only exact unchanged `dd29c405` composition source, fails the single-bubble AI assertion as expected (1 failed,31 filtered skips), then restores task source in finally. Not a broad baseline-suite claim.
+- `bg014-build.log`: full declared build PASS, including Prisma6.19.3 generation, both TypeScript builds and Meta sample packaging; no migration changes. Build/generation/tests serialized.
+- Scoped lint and `git diff --check` PASS. Full lint `bg014-full-lint.log` reports exactly four pre-existing unused-variable errors in untouched `pending-recovery-candidate/candidate-index.store.ts:9` and `recovery-offers/recovery-offer-resolver.service.ts:23–25`. No full-lint-green claim; exact unchanged-baseline proof/final committed-file lint will be retained with final checkpoint.
+- Actual private offline Eugene outputs through Background host+accepted Shared renderer/R2/probe: `composite-qa/bg014-product.jpg`1125x90086694B; `bg014-no-product.jpg`1125x30029717B. Exact original assets remain separate. Protected captions257 codepoints (offline sample answer61+canonical footer196), full logical356(header99+caption); caption SHA256 `be83ec185629c741283a5d522890c79b2af52b843ee6084fac6064d459393f57`. Root independently reviewed images/caption equality and closed visual gate. Historical canonical snapshot, synthetic offline product proof, no new DB/provider/model queries or live sends. Checkout bearer URL excluded from pixels/stdout/commits. Sensitive files0600.
+
+### Git / VCS
+
+- Task branch in both repositories: `task/ARCH-075-BACKGROUND-014`.
+- Launcher packet: protected `bg014-prepared.json`; claim9bdddc629ca9a584aedb3dbb65b1c2327bb80c88, attempt1, codex,2026-11-14T00:09:25Z; dependency gate passed, recursive submodules ready.
+- Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; dedicated parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-014`; dedicated implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-014`.
+- Launcher fetched/synchronized both task branches and incorporated current origin/main; implementation baseline `dd29c40545794ee4ec0997333c064a55ef9bb9f2`. No primary/shared checkout switched or mutated; no other task worktree reused.
+- Implementation5d799d2d3732552241c5f70f5786211e905a839c pushed origin/task/ARCH-075-BACKGROUND-014; draft PR224. Parent checkpoint report is committed/pushed on its matching branch. No gitlink staged; no main merge/push.
 
 ### Deviations
 
-None
+Explicit task-approved packed prepublication preparation only. Registry lock/npm-ci/remote consumer readiness and final review are pending actual separately approved publication. Superseded test traces retained: initial sender-recording/usage-metric fixture assertions, protected active-lease fixture attempt and exact installed-version adoption assertions; no runtime fence weakened.
 
 ### Assumptions
 
-Root owns final integration and live authorization.
+Root owns approval, public release, integration, full reader drain and eventual live flags/sends. Gateway owns Blueprint declarations. Native Meta template AST/registration unchanged.
 
 ### Unresolved Issues
 
-Publication and consumer/live proof remain gated.
+Final full-suite terminal result and exact committed-file lint/baseline receipt to be added next; actual public5.13.11 publication/registry lock/clean npm-ci and remote checks remain mandatory before final Review. No live behavior or architecture completion claimed.
 
 ### Architectural Concerns
 
-Return gaps before widening.
+None additional found; mandatory independent composite HUMAN binding and finite original deadline edge were corrected within task scope.
 
 ## Architect Review
 
