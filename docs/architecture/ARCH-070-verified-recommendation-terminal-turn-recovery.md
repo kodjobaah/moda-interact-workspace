@@ -121,4 +121,6 @@ BG006 integrated/deployed; genuine09:08 turn successfully delivered one composit
 
 BG007 Accepted/Complete exactc0292c5d60754b864967ec8ec1ced47236625a9e, reportf1403192a528e757732cbb2f9bc8a7f75653e960: application format consistency only. Both actual-provider probes passed already; no measured efficacy or original forced-step reproduction. Original omission remains unknown; root integration/deployment/genuine verification pending, architecture In Progress.
 
-ARCH-070-BACKGROUND-008 Ready: actual16:16 category finaldetails omission proven; app guidance plus actualprovider schemaforwarding audit, no guard/budget/Shared change. Architecture InProgress; root live verification separate.
+ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omission proven; app guidance plus actualprovider schemaforwarding audit, no guard/budget/Shared change. Architecture InProgress; root live verification separate.
+
+BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
