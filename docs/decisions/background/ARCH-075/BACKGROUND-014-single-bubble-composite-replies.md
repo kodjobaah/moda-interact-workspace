@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T01:27:07Z
@@ -102,7 +102,7 @@ User explicitly supersedes old fixed-composite compatibility. Root's PROD02:12:1
 ## Work Items
 
 - [x] Implement current template-bound receipt/readers/fences against the exact provided candidate.
-- [ ] Reconcile actual approved current public release/registry lock and clean npm-ci/remote checks before final review.
+- [x] Reconcile actual approved current public release/registry lock and clean npm-ci/remote checks before final review.
 - [x] Add defaultOFF single-bubble composition and fullTEXT fallback with shared budget.
 - [x] Prove actual default AI/HUMAN optional-product flow, oldplanreplay/guards/billing and actual image+caption.
 - [x] Publish exact source/report/private offline visual artifact; stop for review.
@@ -131,7 +131,7 @@ Root branch review/test and later independently authorized guarded rollout. No l
 - [x] Focused RED/GREEN canonical composite/caption/header/facts/tenant/output/unknownkind/tamper/deadline/fallback/legacy vectors.
 - [x] Actual disposable PG/Redis default HUMAN and AI engine onepart transport+footer/moderation/billing once, control/replay/UNKNOWN negatives.
 - [x] Actual offline private Eugene rendered image and emitted caption for root visual review; no commit of customer/shopasset/privateURL.
-- [ ] Final published dependency/lock/npm-ci/remote gate pending; local fulltests/build/type/scopedlint/exactbaseline/privacy/isolation evidence complete.
+- [x] Final actual published dependency/lock/npm-ci/remote checks and local fulltests/build/type/scopedlint/exactbaseline/privacy/isolation evidence complete.
 
 ## Stop Condition
 
@@ -142,6 +142,18 @@ Publish exact mirrored source/report, set review and return architect. No main m
 Normal launcher dedicated sibling worktrees. You are not alone; preserve others and primary. Original approved mock is schematic only: small contained logo alongside shop details, divider, product beneath. Root owns operational/visual review and integration; no live sends.
 
 ## Completion Report
+
+### Attempt 2 — final registry adoption / Ready for Review
+
+**Status: Ready for Review.** Final implementation `c599f3dd4042a1cc72d764b5a45b25f4d32e5ca9` is committed/pushed on `task/ARCH-075-BACKGROUND-014`; [PR224](https://github.com/kodjobaah/moda-interact-background/pull/224). Runtime/layout code remains exactly52d469b. Actual registry adoptionc7351ce changes only4 package-lock lines; subsequentf042ea2/c599f3d change only two test files. Parent task report is committed/pushed on the matching branch; no gitlink/main/live changes. This repository agent makes no architect acceptance decision.
+
+- Root relayed explicit separately approved publication and independently verified actual public6.0.0/version/latest at2026-11-14T03:13:14Z. Child fetched actual npm dist metadata, verified URL/SHA1/SHA512 against the approved archive, and generated the NORMAL registry lock: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-6.0.0.tgz . SHA512 `sha512-8agnwKYGRaHpNjL5DxqKN2dqqag/OZwSHjtEAtYC9VEeZ8NdvXa86/u0clWs5/p55PwUB3PT5/yd6AEw+7tvvw==`; SHA256 `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8`;965706B/161files. No local archive path or invented registry URL/SRI is committed. Manifest/lock mismatch and ETARGET publication gate below are now HISTORICAL and resolved.
+- `bg014-major6-registry-ci.log`: actual public-registry clean `npm ci` PASS. `bg014-major6-clean-install-proof.json`: all161 installed package files equal the verified approved/public archive, zero mismatches. `bg014-major6-public-dist.json` retains authoritative metadata. `bg014-major6-published-build.log`: full declared build/Prisma6.19.3/both TypeScript outputs/sample packaging PASS. `bg014-major6-published-focused.log`: **403 PASS /19files**,25.89s on locked Vitest4.1.11, including actual installed-version/logger/privacy/startup, current composite/template binding, replay and claim guards. These checks were serialized; unchanged broad full/PG proof was not cosmetically repeated.
+- Exact initial post-publication CI43550868851 installed/type-checked successfully, then had4357 unit PASS and2 actual-render test failures: the authored left300/text240 test frame safely returned `HEADER_OVERFLOW` on Linux. Retain `bg014-major6-ci43550868851-failed.log`; this was NOT ETARGET or a runtime safety failure. Bounded correctionf042ea2 enlarges only the actual-render TEST profile copy to header400/text340/productTop400/output1000; no production/template defaults, renderer, authored text trimming, safety, lease or timeout changes. Original undersized top480/text320 remains a real overflow/no-R2-write negative. Companion testc599f3d explicitly verifies valid-profile typed HEADER_OVERFLOW becomes the whole canonical TEXT reply. Actual operational Admin previews must fit real Render/Linux font/header metrics before activation; this task does not activate a template.
+- `bg014-major6-linux-render-fixture.log`: fresh **Node22-Alpine** locked public6 install and Prisma generation, real renderer **5 PASS /1file**,11.10s, including both left/top product/no-product profiles and actual overflow/no-write. No renderer mock or added system-font dependency; existing Fontconfig default-file warnings and dev-emulator Node>=24 engine warnings are retained. `bg014-major6-fixture-focused.log`: affected **41 PASS /2files**,7.40s on actual clean registry install; `bg014-major6-fixture-lint.log` scoped lint PASS. Production source/DTS were unaffected by these two test-only corrections; prior build/type and76-unique PG evidence apply unchanged.
+- FINAL exactc599f3dd remote CI BOTH **SUCCESS**: [43552210629](https://github.com/kodjobaah/moda-interact-background/actions/runs/43552210629) completed03:36:19Z; [43552204410](https://github.com/kodjobaah/moda-interact-background/actions/runs/43552204410) completed03:34:55Z. Child and root independently verified exact head/status. Earlier failed install/test runs remain disclosed below; none is relabelled green. Full local default footprint4386PASS/10existing skips, current76-unique disposable PG proof, full-lint4 unchanged baseline errors and private current-layout visual/caption proof remain recorded in the checkpoint below. New test-only case is covered by affected41 and final green CI; no unnecessary broad local rerun.
+- All latest mandatory correction items are implemented: sole saved-template profile authority, explicit Background checkout/caption policy, current-only composite receipt/reader, strict missing-profile admission, generic Shared rendering, and preserved established non-composite/control/moderation/usage/UNKNOWN lifecycle. All release/registry/remote gates are resolved. No unresolved implementation or publication gate remains. Root owns independent review, integration, final active-template/flag/reader preflight and any live verification; this task makes no deployment/hold-applied/live-send claim.
+
 
 ### Attempt 2 — tested prepublication checkpoint
 
