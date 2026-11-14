@@ -66,6 +66,10 @@ Implement finite/integer/resource allocation limits, pixel budget and rectangle 
 
 The saved common SHARED template is the sole layout authority. Independent PlatformConfiguration layout policy is superseded and MUST NOT be introduced. Add the smallest optional profile-bearing prepared/common-reference extension needed by Admin009 and BG014: `compositeProfile` plus canonical `compositeProfileSha256` in immutable prepared common layout; Admin source AST owns the profile and deterministic compilation copies/hash-binds it. Existing source/prepared hashes and selected definition/locale/common reference bind these exact bytes. Absent fields preserve legacy prepared bytes/hashes/read results; old frozen receipts remain untouched. New readers validate optional fields structurally plus explicit safety/digest binding, never infer profile from a second active policy/default. Expose one agreed typed prepared/reference API through existing presentation exports, no parallel layout registry/table. Translations must preserve profile metadata unchanged; hosts enforce source/locale/current-reference authority. Existing profile-generic renderer remains; no environment/DB policy logic in Shared. Reader-first rollout must account old readers rejecting new optional fields.
 
+### V2 caption policy boundary
+
+Root explicitly confirms: mandatory checkout URL/checkout-footer-last is application policy, not new Shared V2 validation. Shared V2 verifies exact host-supplied caption/logical parts and cryptographic identity plus actual Meta technical caption limits; it must not impose checkout placement/preferences on otherwise safely bound parts. Background owns canonical footer decomposition/required trusted checkout behavior. Add a safe alternate supplied-parts acceptance vector in Shared and application rejection vector in BG. Published .11 V1 semantics remain exact. This supersedes inherited V1 placement requirements for V2 only.
+
 ## Work Items
 
 - [ ] Add strict profile/provenance/parser/carrier APIs and legacy compatibility vectors.
