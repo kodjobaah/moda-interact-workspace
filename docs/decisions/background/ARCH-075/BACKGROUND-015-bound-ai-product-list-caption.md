@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T14:05:23Z
@@ -48,9 +48,9 @@ Investigate then implement deterministic app-owned bounded product selection/com
 
 ## Work Items
 
-- [ ] Implement only defined owning capability.
-- [ ] Add meaningful affected behavior regressions.
-- [ ] Record exact source and required checks.
+- [x] Implement only defined owning capability.
+- [x] Add meaningful affected behavior regressions.
+- [x] Record exact source and required checks.
 
 ## Interfaces / Contracts
 
@@ -66,9 +66,9 @@ None; dependent promotions architect-owned.
 
 ## Acceptance Criteria
 
-- [ ] Defined capability and owning-policy boundaries satisfied.
-- [ ] Hash/identity/tenant/receipt/permit and mandatory content integrity retained.
-- [ ] Required checks and exact immutable reports complete; no live/merge actions.
+- [x] Defined capability and owning-policy boundaries satisfied.
+- [x] Hash/identity/tenant/receipt/permit and mandatory content integrity retained.
+- [x] Required checks and exact immutable reports complete; no live/merge actions.
 
 ## Validation
 
@@ -92,7 +92,7 @@ Filter derived presentation products, displayedPairs and independent proof/diges
 
 ### Status
 
-Implementation and focused/PostgreSQL evidence complete; final committed build/scoped lint PASS; exact CI pending before review return.
+Ready for Review. Implementation, combined focused/PostgreSQL evidence, final committed build/type/scoped lint and both exact CI checks complete.
 
 ### Files Changed
 
@@ -116,7 +116,7 @@ Retained pairs drive displayed presentation metadata, first image and filtered i
 - Combined170unique focused cases PASS:91 nonprocessor cases across helper/receipt/context/composition/frozen/budget plus final79 ConversationTurnProcessor cases. Final committed helper10/10PASS after test-only readonly-fixture correction. Initial traces retained: long-description test expected raw trailing whitespace instead of existing Shared canonicalized facts (fixed by immutable canonical snapshot); added Woo omitted-ID fixture used invalid nonnumeric ID (fixed to valid20); final typecheck caught test assignment to readonly verified (fixed to immutable fixture copy). No production guard weakened.
 - Disposable actual PostgreSQL lifecycle combined13unique cases PASS: initial11PASS plus2 new compact normal/UNKNOWN cases passed targeted rerun. Original2 new-case failures were test expectation retained<3 while all3 legitimately fit; strengthened only valid synthetic titles to exercise3→2, then both affected cases PASS. Original run is NOT claimed all green. Existing nine HUMAN control/policy/generation/expiry/template/UNKNOWN paths and two ordinary AI paths retained; new compact path verifies filtered proof, exact selected prefix/presentation context, original logical root, one image/one automated charge/one delivery charge; UNKNOWN remains one attempt/no delivery charge/no resend. Command: `node scripts/test-integration.mjs tests/integration/arch075-common-layout.integration.test.ts --testNamePattern 'composite existing lifecycle'`; affected rerun pattern `actual AI composition/admission.*compact`. Only disposable test infrastructure, no managed database/provider calls.
 - Scoped ESLint PASS both before and after the final test-only immutable-copy correction. `git diff --check` PASS. Exact known full-lint4 baseline remains untouched: candidate-index.store.ts:9 readRecoveryExecutionPolicy, recovery-offer-resolver.service.ts:23-25 MAX_CANDIDATES/VERIFICATION_TIMEOUT_MS/AI_TIMEOUT_MS; exact starting/current blobs8bff21b8514b4449dd326c1c1dac12a3ba4a8dbf /077bcbb76c018428bd5b64c0c82d2a1903b5c6e4 match prior proven BG006/BG007 baseline. No unrelated full-lint/broad-unit rerun or green claim.
-- Exact source CI43604763426/43604717962 pending. Relevant private logs under primary `local-backups/arch075-bg015-*`: npm-ci, initial/final build, focused initial/final/corrected, processor-final, helper-final, postgres initial/compact rerun, types and scoped lint. These traces disclose every correction above.
+- Exact source CI [43604763426](https://github.com/kodjobaah/moda-interact-background/actions/runs/43604763426) and [43604717962](https://github.com/kodjobaah/moda-interact-background/actions/runs/43604717962): both SUCCESS on9e5a7f50d97aea739ff0851de2e44c739a6189f1. Mirrored parent evidence checkpoint843bf7c1c pushed before this final review-status commit. Relevant private logs under primary `local-backups/arch075-bg015-*`: npm-ci, initial/final build, focused initial/final/corrected, processor-final, helper-final, postgres initial/compact rerun, types and scoped lint. These traces disclose every correction above.
 - Diff/privacy review: no live IDs/secrets/customer payloads, provider/model calls, environment changes or arbitrary string truncation. No main merge/live send by this agent; root retains production canary/remaining message allowance.
 
 ### Deviations
@@ -133,7 +133,7 @@ If even one complete verified entry or mandatory footer cannot fit, full-text fa
 
 ### Architectural Concerns
 
-No new queue, provider calls/retries, LLM token budget, generic logging, schema, dependency or application layout source. All business fitting policy remains Background; Shared retains renderer/technical safety. Final review still requires committed checks and exact CI below.
+No new queue, provider calls/retries, LLM token budget, generic logging, schema, dependency or application layout source. All business fitting policy remains Background; Shared retains renderer/technical safety. All required committed checks and exact CI are recorded above; no production success claim by this agent.
 
 ## Architect Review
 
