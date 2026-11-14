@@ -70,6 +70,10 @@ The saved common SHARED template is the sole layout authority. Independent Platf
 
 Root explicitly confirms: mandatory checkout URL/checkout-footer-last is application policy, not new Shared V2 validation. Shared V2 verifies exact host-supplied caption/logical parts and cryptographic identity plus actual Meta technical caption limits; it must not impose checkout placement/preferences on otherwise safely bound parts. Background owns canonical footer decomposition/required trusted checkout behavior. Add a safe alternate supplied-parts acceptance vector in Shared and application rejection vector in BG. Published .11 V1 semantics remain exact. This supersedes inherited V1 placement requirements for V2 only.
 
+### User-authoritative current-only composite cleanup
+
+User explicitly removes obsolete template compatibility as an objective. Root's read-only production inventory2026-11-14T02:12:15Z found zero RECOVERY_COMPOSITE outbound presentations and six delivery parts all READ/no future deadline; fixed .11 composite writer was never merged/deployed/enabled. Remove obsolete fixed composite V1 schemas/renderers/exports/carrier decoder branches and V1-preservation tests from NEW source. Public already published .11 artifact remains immutable. Preserve established non-composite TEXT/BRAND_IMAGE/IMAGE and generic multipart/status/repair functionality; do not broaden cleanup to unrelated historical message systems. Current executable composite format is only saved-template-bound profile format. Old template rows/audit/history are retained as non-executing records; applications require current-profile templates and root coordinates replacement before deployment/activation. No record deletion/live migration in this task. This explicitly supersedes previous V1-composite compatibility requirements; preserve source checkpoints/backups rather than adapters. Tests prove old fixed-composite input is rejected, current profile integrity/safety/two-layout behavior and established non-composite behavior remain valid.
+
 ## Work Items
 
 - [ ] Add strict profile/provenance/parser/carrier APIs and legacy compatibility vectors.
