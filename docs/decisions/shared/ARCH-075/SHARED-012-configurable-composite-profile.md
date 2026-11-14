@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T01:23:21Z
@@ -76,10 +76,10 @@ User explicitly removes obsolete template compatibility as an objective. Root's 
 
 ## Work Items
 
-- [ ] Add strict profile/provenance/parser/carrier APIs and legacy compatibility vectors.
-- [ ] Add parameter-driven Node renderer/preparer using existing mechanics.
-- [ ] Validate two profile revisions, actual packed runtime/fontless Alpine output and safety failures.
-- [ ] Push mirrored implementation/report and stop for review.
+- [x] Add current profile/provenance/parser/carrier APIs, reject obsolete fixed composites and preserve established non-composite behavior.
+- [x] Add parameter-driven Node renderer/preparer using existing mechanics.
+- [x] Validate two profile revisions, actual packed runtime/fontless Alpine output and safety failures.
+- [x] Push mirrored implementation/report and stop for review.
 
 ## Interfaces / Contracts
 
@@ -95,16 +95,16 @@ Shared013 release-only preparation/publication; Admin009 bounded existing-policy
 
 ## Acceptance Criteria
 
-- [ ] Runtime profile changes within bounds alter rendering without Shared code/version changes.
-- [ ] V1 replay bytes/digests remain compatible and V2 trusted source/profile/output/caption binding fails closed.
-- [ ] Actual renderer respects approved semantic order, no private pixels and complete text fallback.
-- [ ] Required checks and canonical isolation evidence recorded; no publication/live mutation.
+- [x] Runtime profile changes within technical safety alter rendering without Shared code/version changes.
+- [x] Obsolete fixed composite format is rejected; current trusted source/profile/output/caption binding fails closed; established non-composite behavior remains intact (user-authoritative cleanup supersedes fixed replay compatibility).
+- [x] Actual renderer respects approved semantic order, no answer/checkout pixels and typed omission for complete host text fallback.
+- [x] Required checks and canonical isolation evidence recorded; no publication/live mutation.
 
 ## Validation
 
-- [ ] Focused profile bounds/dimensions/hash/tamper/legacy/transport vectors including left and top/centered arrangements.
-- [ ] Actual two-profile rendering including bundled font/overflow/timeout/R2/probe; packed fontless Alpine and browser-safe imports.
-- [ ] Declared full tests/type/build and package asset/secret/diff checks appropriate to changed code; no invented lint script.
+- [x] Focused explicit safety/dimensions/hash/tamper/current-only/non-composite/transport vectors including left and top/centered arrangements.
+- [x] Actual two-profile rendering including bundled font/overflow/timeout/R2/probe; packed fontless Alpine and browser-safe imports.
+- [x] Declared full tests/type/build and package asset/secret/diff checks appropriate to changed code; no invented lint script.
 
 ## Stop Condition
 
@@ -118,35 +118,56 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve all oth
 
 ### Status
 
-Not Started
+Ready for Review. Required source/package/runtime checks and root actual-image visual review passed. No publication or live changes.
 
 ### Files Changed
 
-None
+Implementation checkpoint `59068290eb69506fd7a5d248c5ed359cfb98163d`, source PR https://github.com/kodjobaah/moda-interact-shared/pull/89 (source review).
+
+- Pure `composite-profile.ts`, `composite-image-v2.ts`, `composite-recovery-v2.ts`: structural profile/current wire types, explicit safety/identity/output/host-byte binding and current-only carrier.
+- `wrapper-contracts.ts`/`wrapper-projection.ts`: optional prepared `compositeProfile` + `compositeProfileSha256`, explicit pair/digest validation; existing whole prepared/common-reference hashes bind both.
+- Node current renderer/preparer and reusable font/raster/preparation/source modules, geometry-free pinned asset manifest; current entrypoint exports.
+- Removed unused fixed composite contracts, renderer/preparer, carrier branches, exports, fixed tests/scripts; retained established non-composite media/multipart behavior. Added current tests, installed-package validation script and README documentation.
 
 ### Work Completed
 
-None
+- Shared owns structural contracts and explicit technical safety only. `RecoveryCompositeProfileSchema` has no operational ranges/refinements/defaults. `assertRecoveryCompositeProfileSafety(profile):void` checks positive safe integer allocation dimensions/font, nonnegative coordinates/spacing, output pixel budget and rectangle containment. `assertRecoveryCompositeTextAllocationV2` separately bounds raw text/Pango work. Admin owns presentation ranges, defaults, nonoverlap/readability/product order; Background owns current selected-template authority.
+- Explicit trusted helpers `assertRecoveryCompositeProvenanceIdentityV2`, `assertRecoveryCompositeOutputIdentityV2`, `assertRecoveryCompositeImageBindingV2` retain independent tenant/source/profile/runtime/output/hash proof. Mandatory host-only `trusted.body` and `trusted.logicalBody` bind exact independently supplied bytes; answer/footer/header metadata is also digest-bound. Shared chooses no concatenation, trim/nonblank/checkout placement/count policy.
+- Exact current APIs: `getRecoveryCompositeRuntimeIdentityV2({profile,profileSha256})` synchronous; `createRecoveryCompositeImageRendererV2({profile,profileSha256})`; `prepareRecoveryCompositeImageV2(input:RecoveryCompositePreparationInputV2,deps?)`. Current carrier parser context is `{checkoutUrl,compositeV2}`; no fixed composite context/decoder.
+- No independent PlatformConfiguration registry or Shared defaults. Saved source/prepared/common reference is the sole application layout authority. Optional absent historical prepared reads remain structural/audit-only; hosts require current profile for executable sending.
+- Profile changes drive both left-logo and centered/top-logo arrangements through the same exact installed artifact. All four optional-product dimensions and pixel separation/containment were verified. Unsupported glyph/overflow/identity/deadline fails closed; selected missing product never becomes header-only success. One original budget covers source/render/immutable storage/probe, including late noncooperative HEAD prevention of later PUT.
+- Root-authorized zero-record cutover removes obsolete fixed composite APIs from new source. Public .11 archive remains immutable; unrelated TEXT/IMAGE/BRAND_IMAGE and established multipart are preserved. Removed public APIs are breaking; architect/root will select a separate major release and exact-public-archive approval. No implementation version change.
 
 ### Validation Results
 
-Not run
+- `npm run typecheck`: PASS, including final current-only tests.
+- Focused current profile/Node + established media/multipart: PASS31/31. Added exact caption/logical independence, fixed-format rejection and current source/output/deadline/late-HEAD/storage/probe regressions: PASS13/13 current-focused total.
+- `npm test`: PASS797, 3 configured skips (800 total); this full run preceded four additional current-only regression cases, all covered by the subsequent focused13 run. No production-byte edits after full run/build.
+- `npm run build`: ESM and DTS PASS. No declared lint script; none invented.
+- Exact unpublished candidate `/tmp/ARCH-075-SHARED-012/shared012-current-029bdf8c2016.tgz`: SHA256 `029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929`, 965707 bytes /161 files, integrity `sha512-CUeAf6EmUBMt5gGsa8lQpjbPsFOZmBhLJkdeIydloc1OLsBGdFX9Fav7ui8hgg2tdoqKxeQTmX4jbO2AdHDQpA==`. Metadata version remains5.13.11 only for unpublished consumer testing; supersedes prior provisional artifacts.
+- `node scripts/validate-recovery-composite-v2.mjs <exact candidate>`: PASS installed Node ESM/types/browser isolation, same-artifact two-profile product/no-product raster/pixel/determinism, saved prepared/common reference binding and mismatch rejection. Public synthetic fixtures only.
+- Packed candidate scan:161 files, zero private QA inputs/assets and zero obsolete fixed layout constants in JS/declarations. `git diff --check`: PASS. PR currently has no configured check statuses.
+- Actual private same-package host proof protected at `/tmp/ARCH-075-SHARED-012/private-actual-final-host/`; fontless Alpine proof at `/tmp/ARCH-075-SHARED-012/private-actual-saveable-alpine/`. Each contains four full images,375px previews and input/runtime/profile/output receipt; no private data is committed. Root independently viewed all four final Alpine previews and relayed PASS through architect. Admin independently evaluated the final top profile with real `compositeProfileError===null` and matching digest `7c8f95941e47a7501da6b3dcad328e67c89769399cd93364498c7a89a13cedfd`.
+- Actual left geometry1125x900/300, text734x213 host versus716x241 Alpine; centered/top1125x1280/640, text669x386 host versus766x414 Alpine. Final consumer-owned top QA profile uses textTop200/textHeight440 within header640, font40/spacing48, contained logo180x160 at472,20 and product1077x576 at24,680. Earlier360/400 text boxes safely returned HEADER_OVERFLOW; no truncation, fallback profile, Shared code/default/range change or false success. Admin’s unchanged authoring helper accepts final profile.
+- Actual host times1034/107/322/140ms; Alpine1052/274/1204/392ms (left product/no-product then top product/no-product; includes375px preview work). Exact tarball unpacked under canonical installed package location, real native Sharp0.35.4 and required external dependencies, Node22.23.5/linuxx64, no installed system-font directories. Complete runtime receipts include all native library versions; same source/profile input hashes and distinct host/Alpine runtime/output hashes explicitly verified. No cross-platform byte identity claimed.
+- Private input SHA256: logo `bc39de76a5c4f5bb3947dea5e308825b0a192324bc2003931a422b7b353b9d9b`, product `dac12cf07aaf872951675788df3c3a2f4ad9aafda8f47ae70d804975ecc7ae9c`, canonical header `7e2d7c8d8ab536a6addcb2aa8061bf4ba8ddd72a391fb0f8a72e288d05798aeb`. No answer/checkout text supplied to bitmap renderer.
+- Launcher canonical isolation: primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `moda-interact-workspace-task-ARCH-075-SHARED-012`; implementation `moda-interact-workspace.worktrees/ARCH-075-SHARED-012`; mirrored `task/ARCH-075-SHARED-012`. Parent reused/implementation created; both origin-main synchronization checks already-current, task remote fast-forward not-needed; recursive submodule ready/no entries. Durable claim `e21752fe25eedfca9dc5cd46e2eb5769ef1c483a`, executor codex/attempt1. No gitlinks/other task files staged.
 
 ### Deviations
 
-None
+Later explicit user amendments supersede initial compatibility/independent-configuration objectives: fixed composite removed; saved template owns profile; Shared validation is structural plus explicit technical/provenance safety. No old fixed-render byte-preservation adapter remains. Existing non-composite behavior retains its own established contracts.
 
 ### Assumptions
 
-Root owns integration, publication approval and rollout.
+Root owns source/parent integration, actual visual approval, separate release/version selection/publication authorization and application rollout.
 
 ### Unresolved Issues
 
-Dependency integration verified: parent main d1319babb4ab9a82f4007d58123497f8987ea96e, Shared main66dfdbe6f7664d5a06622ac8fcedd4d931bfbb64, public5.13.11 verified.
+None for this Shared source scope. Exact artifact was handed to Admin/Background under root’s provisional testing authorization; their lifecycle acceptance remains separately owned. Admin same-pack renderer/profile proof passed; Background same-pack build/type/focused325 passed and its service integration validation remains separately owned.
 
 ### Architectural Concerns
 
-Return concrete gaps before widening.
+Deleting previously public fixed-composite exports is a breaking public API change. A subsequent release must use architect/root-approved version (root guidance6.0.0) and a new exact archive/publication approval; never republish/unpublish public5.13.11. Runtime identity hashes complete sharp.versions/platform/arch/Node/fixed settings/profile; deterministic bytes are promised only within the same pinned runtime. No cross-runtime byte identity or migration mechanism claimed.
 
 ## Architect Review
 
