@@ -23,3 +23,5 @@ ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omi
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
 
 ARCH-070-BACKGROUND-011 Pending: trusted basket fallback after eligible AI failure; depends BG010 and exact seam review.
+
+BG011 Ready independent preparation: exact generation seam and snapshot-labelled basket policy agreed; finalBG010/publicregistry integration gate retained.

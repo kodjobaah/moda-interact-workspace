@@ -9,13 +9,12 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-070-BACKGROUND-010
+depends_on: []
 enables: []
 created: 2026-11-14
 updated: 2026-11-14
@@ -66,7 +65,7 @@ Existing Background recovery/common-layout/outbound contracts and published Shar
 
 ## Dependencies
 
-ARCH-070-BACKGROUND-010; architect seam review before Ready.
+No blocking preparation dependency. Final integration must synchronize accepted BG010 source and approved published dependency; do not overwrite its work.
 
 ## Enables
 
@@ -155,3 +154,13 @@ Background-owned fallback through existing guarded delivery; no Shared business 
 
 Reconcile exact seams and dependency before Ready.
 
+
+### Ready preparation contract after exact seam review
+
+Root authorizes independent isolated preparation now, not premature final readiness. Existing owner read-only review establishes exact seam ONLY around runAgent inside runCommerceAgentAfterAdmission before failPrepared. Use a typed generation outcome/callback; keep same admitted message and agent:conversation:version identity. Skip model detected-language/product-context/success writes, then enter existing composeAiOutbound with actual selectedCommonLayout locale and SAME commonRef, and existing sendPreparedConversation. Do not broadcatch processor, moderation/wrapper refusal, control/authorization/stale/cancel, or provider send/UNKNOWN paths.
+
+Basket is absent from RecoveryAgentContext: read bounded trusted Conversation→CheckoutRecovery matching shop/customer/recovery and active lifetime. Choose explicitly SNAPSHOT-LABELLED saved basket wording, names/quantities only, no current stock/price/total claim. Freeze that saved snapshot/body through existing immutable preparation receipt and normal recovery identity/lifetime/control final checks. The final fence does NOT prove unchanged basket generation: do not claim atomic-current inventory/basket freshness. No new generation protocol is required for clearly historical saved-basket facts. Reuse existing checkout-item formatting with whole-entry bounds; never split/truncate a title, and use honest omitted-count when necessary. Normal mandatory footer and optout content remain intact.
+
+For genuinely absent basket, use trusted inability-only body through an existing valid saved-language/template path; omit basket and checkout if not authorized/available. Never fabricate a recovery, basket, URL or raw unwrapped model output. Distinguish recovery vs genuinely nonrecovery capability; if no supported saved template path exists, return concrete architectural gap before implementing an ad-hoc one. Missing/unsafe mandatory common binding refuses existing guarded preparation, not raw passthrough. Meta unavailable remains observable existing provider retry/UNKNOWN behavior; never promise guaranteed physical delivery.
+
+Eligible failures require explicit typed model-generation stage/reason classification; DENIED/STALE_TURN/CANCELLED/ownership/consent/control/window/cap failures never trigger a send. Deadline fallback requires valid fresh delivery admission under existing bounded signal/lease; no cancellation bypass or budget extension. Add actual PG same-admission duplicate/oneusage/UNKNOWN/no-send-control proofs. File ownership: generation helper/processor/fallback renderer/tests and narrowly required composition plumbing ONLY; no edits to BG010 terminal factory/native integration or Shared. Final sync accepted010 and registry checks before Review. No live operations/model/provider calls/main merges.

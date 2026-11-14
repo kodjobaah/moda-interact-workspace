@@ -128,3 +128,5 @@ BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. Act
 ## Deterministic AI-failure basket fallback
 
 User authorizes ARCH-070-BACKGROUND-011: existing saved common shop template plus honest inability wording/current trusted basket and canonical checkout footer after eligible AI failure. Existing consent/control/window/idempotency/permit/providerUNKNOWN/usage guards remain authoritative. No model retry, fake product selection or guaranteed provider delivery. Pending accepted BG010 and source seam review; no schema/infrastructure change expected.
+
+BG011 Ready isolated preparation: runAgent failure-only typed seam retains same admitted identity and guarded common composition/send. Saved-basket snapshot explicitly historical (no generation-current claim); genuinely no-basket inability-only only via supported saved-language template. Existing provider retry/UNKNOWN preserved, no delivery guarantee. FinalBG010/registry synchronization remains.
