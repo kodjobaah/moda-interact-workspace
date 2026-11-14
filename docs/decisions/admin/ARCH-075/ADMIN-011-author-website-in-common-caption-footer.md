@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T14:06:20Z
@@ -50,7 +50,7 @@ Move common-frame business validation into Admin owning app; Shared only structu
 
 - [x] Implement only defined owning capability.
 - [x] Add meaningful affected behavior regressions.
-- [ ] Record exact source and required checks.
+- [x] Record exact source and required checks.
 
 ## Interfaces / Contracts
 
@@ -66,9 +66,9 @@ None; dependent promotions architect-owned.
 
 ## Acceptance Criteria
 
-- [ ] Defined capability and owning-policy boundaries satisfied.
-- [ ] Hash/identity/tenant/receipt/permit and mandatory content integrity retained.
-- [ ] Required checks and exact immutable reports complete; no live/merge actions.
+- [x] Defined capability and owning-policy boundaries satisfied.
+- [x] Hash/identity/tenant/receipt/permit and mandatory content integrity retained.
+- [x] Required checks and exact immutable reports complete; no live/merge actions.
 
 ## Validation
 
@@ -90,7 +90,7 @@ Root authorizes concurrent owning source preparation using unchanged public read
 
 ### Status
 
-In Progress — concrete tested source checkpoint. Final accepted artifact and actual approved registry release adoption remain mandatory before review; no readiness/live claim.
+Ready for Review — accepted artifact, approved public release adoption, clean registry installation and exact final checks passed. Root retains all main integration and live authority.
 
 ### Files Changed
 
@@ -100,7 +100,7 @@ In Progress — concrete tested source checkpoint. Final accepted artifact and a
 
 ### Work Completed
 
-Source `ae8033f914f3f88237f570a0d3ed51679ce9b255` pushed, draft Admin PR [100](https://github.com/kodjobaah/moda-interact-admin/pull/100). One app-owned policy enforces exactly one trusted shop.name in header, one shop.websiteUrl in header or checkout conditional, response-only body, semantically empty static footer, one checkout.available conditional and one canonical checkout.url alone on its final line. AI-only productImage is rejected for common references. Existing reviewed header website remains valid without rewriting or compatibility adapters; new authoring places it in the clickable caption footer.
+Final source `885b86bd713f061946e383deb079cf9826099ae6` pushed, Admin PR [100](https://github.com/kodjobaah/moda-interact-admin/pull/100). One app-owned policy enforces exactly one trusted shop.name in header, one shop.websiteUrl in header or checkout conditional, response-only body, semantically empty static footer, one checkout.available conditional and one canonical checkout.url alone on its final line. AI-only productImage is rejected for common references. Existing reviewed header website remains valid without rewriting or compatibility adapters; new authoring places it in the clickable caption footer.
 
 `requireCommonLayout` invokes the policy after Shared structural/hash parsing, so readSaved/assertSaved, selectors, native Meta projection, reconstruction and activation inherit it. SHARED compiler/save/review/eligibility and direct common preview also invoke the same policy. Frozen audit verification preserves exact saved bytes; new admission remains strict. Existing source/prepared/profile hashing and locale identity equality are unchanged. Static footer content is not silently omitted: meaningful content is refused with a footer issue; the editor retains its correction path. Empty static footer uses the complete conditional tokens in native BODY and AI/human caption.
 
@@ -108,12 +108,13 @@ UI labels Website and checkout footer / Dynamic footer show where both links bel
 
 ### Validation Results
 
-- Actual published 6.0.0 RED reproduces the Shared reader rejecting the new conditional-website reference. Accepted Shared014 source `20aa60f0e9feb4c14ca909b7d7a68771e2b37bcf` archive SHA256 `6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a` hash-verified and installed no-save/no-lock; all **161 installed files** byte-match. Committed package/lock remain unchanged; this is not a registry-readiness claim.
+- Actual published 6.0.0 RED reproduces the Shared reader rejecting the new conditional-website reference. Accepted Shared014 source `20aa60f0e9feb4c14ca909b7d7a68771e2b37bcf` archive SHA256 `6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a` hash-verified and installed no-save/no-lock; all **161 installed files** byte-match. At that provisional stage package/lock remained unchanged; actual registry adoption is verified below.
 - Common/native/activation/translation/profile focused run: **57 passed**. New footer policy, UI and affected authoring-component run after UX changes: **14 passed**. Additional affected authoring/wrapper admission regressions: **51 passed**. Counts are separate runs with overlap, not an aggregate unique total.
 - New cases cover trusted binding counts/allowed placement, exact invalid prepared-reference rejection after rehash, six native scenario BODY/preview parity, AI/human caption ordering, translated variable relocation rejection, source/prepared/profile hashes, immutable read and unchanged old valid header bytes. Actual UI Add button preserves other content and saves correct bindings; nonempty static footer remains visible for correction.
 - Existing disposable PostgreSQL runner: **2 passed**, including real old-header-to-new-footer clone, queued translations and all 20 locale reviews, selector/reference equality, coordinated activation and original/audit preservation. Disposable container removed; no hosted database used.
-- Exact Shared015 **6.0.1 candidate** SHA256 `fd7b4a70d2a54da175556739074acdb5ee4487dc9c7e9c68a656717de3137aa2` independently compared with accepted 014: all **160 nonmetadata files identical**, only package version changed. No-save/no-lock installed candidate **161 files byte-identical**; affected footer/UI **5/5** and typecheck passed. No unchanged build/PostgreSQL/broad suite repeated for metadata only. This is an unpublished candidate proof, not publication or actual-registry readiness.
-- Final types/scoped lint and production build after the dynamic-footer UX change passed (terminal build exit 0). Production browser graph across 71 JS files has no Node renderer/font-loader/frozen-verifier markers. Draft exact source ae8033f Vercel SUCCESS at 2026-11-14T14:28:22Z and Preview Comments SUCCESS at 14:28:23Z; this does not replace the final actual-registry adoption gate. No unaffected full-suite or PostgreSQL repeats.
+- Exact Shared015 **6.0.1 candidate** SHA256 `fd7b4a70d2a54da175556739074acdb5ee4487dc9c7e9c68a656717de3137aa2` independently compared with accepted 014: all **160 nonmetadata files identical**, only package version changed. No-save/no-lock installed candidate **161 files byte-identical**; affected footer/UI **5/5** and typecheck passed. No unchanged build/PostgreSQL/broad suite repeated for metadata only. That candidate-phase proof did not claim publication; actual approved registry adoption followed below.
+- Final source scoped lint passed. Actual approved public **6.0.1** was adopted through normal `npm install --save-exact` and a real registry lock, followed by clean `npm ci`. Lock resolved URL/SRI matches approved archive `fd7b4a70d2a54da175556739074acdb5ee4487dc9c7e9c68a656717de3137aa2`; all **161 installed files** byte-match. Only package/lock version, URL and SRI changed. Fresh actual-registry affected footer/UI **14/14**, typecheck and production build passed (terminal exit 0); final production browser graph across **71 JS files** has no Node renderer/font-loader/frozen-verifier markers.
+- Exact final source `885b86bd713f061946e383deb079cf9826099ae6`: **Vercel SUCCESS** at 2026-11-14T14:45:18Z and Preview Comments SUCCESS at 14:45:19Z. This supersedes the provisional draft check. No unaffected full-suite or PostgreSQL repeats.
 
 ### Deviations
 
@@ -125,7 +126,7 @@ Root owns accepted dependency publication, main integration and normal saved-tem
 
 ### Unresolved Issues
 
-Accepted Shared014 artifact identity and exact Shared015 candidate proof are complete. Actual separately approved Shared015 publication and real registry dependency/lock/clean npm-ci adoption are mandatory before Ready for Review. Local UX build and draft exact-head checks passed; final actual-registry installation and exact-head checks still required.
+None within the repository task. Accepted Shared014 and approved/published Shared015 dependencies are satisfied. Root owns source integration, deployment verification and normal immutable template/provider replacement and activation; no live-cutover claim is made here.
 
 ### Architectural Concerns
 
