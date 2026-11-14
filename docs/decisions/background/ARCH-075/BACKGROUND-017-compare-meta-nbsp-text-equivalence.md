@@ -164,3 +164,7 @@ Conforms owning Meta equivalence policy, hash/receipt/tenant/current-authority g
 ### Follow-up
 
 Root source/main merge then actual parent pin, deployment/drain and audited normal service reconciliation. Admin012 tests-only parity acceptance independent. Pending provider approvals remain external, no rollout completion claim.
+
+## Developer Integration
+
+Root sourcePR229 merged actualBackgroundmainc8ee5491d2e6eccd54b0de1dfcf8863d9e373d94. Independently fetched exactorigin/main/treeequal reviewedeb732bac. Parent currentmain merged/alreadycurrent, actual merged gitlink recorded; root alone parentmerge/deploy/reconciliation.
