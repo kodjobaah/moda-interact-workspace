@@ -37,3 +37,7 @@ ARCH-075-SHARED-010 Complete/Accepted at source483f7a27c654a3a49d6ec4896c616cd04
 
 
 SHARED011 Ready after actual accepted009+010 integration de3f9ee5/eed335729. Metadata/exactarchive preparation authorized; publication held for concreteBG014drafttests then explicit user approval. No implementation reruns or live send.
+
+### Composite publication receipt — 2026-11-14
+
+ARCH-075-SHARED-011 Complete: public5.13.11/latest independently verified against exact approved SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086. Release acceptance is not layout/deployment approval. Consumer/Gateway main merges, deployment and activation remain HELD for the user's presentation-policy boundary review; Background registry-only adoption checks may finish. ARCH075 remains In Progress.
