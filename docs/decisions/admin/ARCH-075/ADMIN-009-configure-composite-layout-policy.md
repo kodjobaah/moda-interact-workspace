@@ -64,6 +64,10 @@ Translation extraction/restoration treats profile as non-translatable structural
 
 New validation replaces policy-row tests with saved-template create/clone/compile/read/review/translation-metadata tamper/hash/legacy/source-reference tests. Actual same-package two-layout rendering remains required. Existing authorization/immutable definition/audit/cohort/CAS checks preserved. No new database schema or independent configuration policy. Final accepted Shared012/pack/publication gates and no-live boundary unchanged. This correction is authoritative over earlier scope wording; continue same claimed task, preserve useful draft controls/tests, no reset or extra attempt required.
 
+### Current-only template admission cleanup
+
+User explicitly requires no obsolete template execution compatibility. Require compositeProfile for NEW SHARED save/review/eligibility/activation; old missing-profile immutable rows remain display/audit-only and nonselectable. Clone old text only with explicit current profile before save; do not mutate/delete historical rows. Existing historical structural/frozen-hash verification is audit/display only, not sending admission. Add exact compositeProfile/profileSha256 equality with English in protected-token/locale eligibility, preventing individually valid rehashed translation geometry. Root inventory: production95outbound/zero composite and6READ parts/no future deadlines; testzero messages/parts. Fixed composite .11 never deployed, no fixed receipt migration. Root owns controlled replacement of active old no-profile templates before rollout. Established unrelated non-composite systems remain outside this cleanup. Preserve superseded drafts/checkpoints; no live changes.
+
 ## Work Items
 
 - [ ] Add closed policy/defaults/server validation and intentional existing editor/history wiring.
