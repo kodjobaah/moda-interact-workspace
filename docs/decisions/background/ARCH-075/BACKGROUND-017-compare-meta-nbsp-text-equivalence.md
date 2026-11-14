@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T15:45:30Z
@@ -48,10 +48,10 @@ Root actual read-only Graph.find proves French expected BODY and observed BODY d
 
 ## Work Items
 
-- [ ] Audit all owning provider comparison paths.
-- [ ] Apply minimal text-only NBSP equivalence consistently.
-- [ ] Add negative trust/drift and persisted-path parity tests.
-- [ ] Record exact isolated source/check evidence.
+- [x] Audit all owning provider comparison paths.
+- [x] Apply minimal text-only NBSP equivalence consistently.
+- [x] Add negative trust/drift and persisted-path parity tests.
+- [x] Record exact isolated source/check evidence.
 
 ## Interfaces / Contracts
 
@@ -67,16 +67,16 @@ Root normal reconciliation and immutable activation after both apps deployed.
 
 ## Acceptance Criteria
 
-- [ ] Generic French NBSP/ASCII observed text compares equal without modifying inputs/snapshots/submitted hashes.
-- [ ] All owning expected/observed/status/activation/finalpermit paths agree.
-- [ ] Substantive text/URL/binding/category and other whitespace changes still failclosed.
-- [ ] Required tests/checks/remote and report complete; no live operation.
+- [x] Generic French NBSP/ASCII observed text compares equal without modifying inputs/snapshots/submitted hashes.
+- [x] All owning expected/observed/status/activation/finalpermit paths agree.
+- [x] Substantive text/URL/binding/category and other whitespace changes still failclosed.
+- [x] Required tests/checks/remote and report complete; no live operation.
 
 ## Validation
 
-- [ ] Focused actual provider-hash/status/admission tests and matching cross-app golden vectors.
-- [ ] Meaningful disposable PG owning reconciliation/publication/activation/current-authority proof.
-- [ ] Types/scopedlint/build/exact remote checks, diff/privacy. No unrelated broad repeats; inspect declared scripts.
+- [x] Focused actual provider-hash/status/admission tests and matching cross-app golden vectors.
+- [x] Meaningful disposable PG owning reconciliation/publication/activation/current-authority proof.
+- [x] Types/scopedlint/build/exact remote checks, diff/privacy. No unrelated broad repeats; inspect declared scripts.
 
 ## Stop Condition
 
@@ -96,35 +96,48 @@ When representative differs from actualrawobservedhash, durable MetaEvent.eviden
 
 ### Status
 
-Not Started
+Ready for Review — exact source/checks published; no merge or live operations.
 
 ### Files Changed
 
-None
+- `provider-text-equivalence.ts`: bounded Meta display-text equivalence only.
+- `contracts.ts`: hash-only audit evidence type; existing observedContentHash unchanged.
+- `service.ts`: exact category/provider identity gates and frozenRAW representative on proven equivalence.
+- `status-repository.ts`: validates hash-evidence consistency and atomically persists existing RECONCILE event evidence with status projection.
+- Helper/service unit tests plus new disposable reconciliation→selector→SQL final-permit test.
 
 ### Work Completed
 
-None
+Exact source `eb732bac14aaee02b1db496377cb25ae3c1d3660` pushed on matching task branch, source PR229. No Shared/dependency/hash algorithm change. Only HEADER(TEXT), BODY, FOOTER and known button display-text leaves may map U+00A0 to ASCIIspace for comparison; URL/phone/identity/unsupported paths remain exact. Raw URL/placeholder NBSP ambiguity refuses equivalence; no trim/collapse/newline/NFKC/narrowNBSP normalization. Projection uses existing canonical component hash and existing example exclusion. Frozen source/compiled components/bindings/submitted hashes are never rewritten.
+
+If expected and observed raw hashes differ but bounded display equivalence and exact category/provider identity hold, service persists original expectedRAW hash as existing-domain representative. Existing Admin/Shared selector/finalpermit hash consumers remain unchanged. Existing category/status/identity/POST_INTENT/CAS/time/current-source gates remain decisive. Repository requires proof to match the actual frozen raw expected hash and chosen representative, different lowercase64hex raw observed hash and exact normalization kind. Same transaction stores existing RECONCILE/CURRENT event evidence `{normalizationKind,rawObservedContentHash,expectedContentHash}` without raw content. True drift persists actual raw hash. No old status/event row rewrite; root normal reconciliation after deploy is the operational path.
+
+Shared Admin golden fixture expected BODY `Boutique NBSP: Exemple / Panier NBSP: {{1}}` versus ASCIIspaces pins E `e17121a73dfea9c4202119663c50d123ff20f30f0b9d0d8158464c18d5741c77` and O `f6ee4fc0dc11c3ce77ca934eeb477841aa498dd00858a85d371e64219c8841cd`, normalizationkind `U+00A0_TO_U+0020_TEXT_ONLY`. Exact pair/field names relayed to Admin012 for independent raw-consumer parity tests.
 
 ### Validation Results
 
-Pending
+- Normal prepared launcher: primary `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; dedicated parent `moda-interact-workspace-task-ARCH-075-BACKGROUND-017` and implementation `moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-017`, mirrored task branches. Initial parentdf5666d628bd4f237b8336b43e8e2ae7c14581ca/sourcec041c88757ec6d1ddc583dd2cde6e0cf92755796; remote task sync not-needed/originmain already-current both. Recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae ready with sync/update PASS. Attempt1/codex15:45:30Z claim14bebc9efb8a730b487b5717a4636856d6de9927 pushed. No primary/other-task writes.
+- `npm ci --no-audit --no-fund`: PASS. Declared package scripts inspected; no package/lock change.
+- Initial helper/service focused68/2files PASS; production `npm run build` PASS (Prisma generation and TypeScript). Final affected unit suite232/12files PASS, including existing reconciliation/admission/finalpermit and actual shared selection tests. Scoped ESLint all7 changed files PASS; diff/privacy PASS.
+- Actual disposable PostgreSQL runner with new NBSP case plus existing arch047 lifecycle suite:2/2PASS,14.13s. Real claim/POST_INTENT/submission then reconciliation writes expectedRAW representative and exact hash-only event evidence. Real delegated Shared selector and actual locked SQL finalpermit accept it; substantive text, URL, category, provider ID, PAUSED status, stale timestamp, wrong binding fingerprint and disabled current assignment remain refused. Invalid evidence rejected before mutation. Source/locale/submitted/compiled/bindings unchanged; normal fresh equivalent re-observation is the only flag-clearing path. No actual Meta network calls.
+- Exact source GitHub CI43612826090 and43612805748 bothSUCCESS at15:58:17Z/15:58:43Z, including actual typecheck and unit execution. Inspected43612826090 logs396files/4429testsPASS,81.36s. No broad duplicate local run.
+- Logs `/tmp/bg017-focused-initial.log`, `/tmp/bg017-build.log`, `/tmp/bg017-postgres.log`, `/tmp/bg017-focused-final.log`, `/tmp/bg017-lint.log`; no raw production payload/credential fixtures committed. Full repository lint was not repeated; unchanged unrelated baseline errors are outside this task and no full-lint-green claim is made.
 
 ### Deviations
 
-None
+None. Authoritative raw-domain/evidence amendment followed; no normalized persisted hash domain or Shared selector adapter introduced.
 
 ### Assumptions
 
-None
+Root owns integration/deployment and normal production provider reconciliation; all provider calls in validation use injected fixtures/disposable infrastructure.
 
 ### Unresolved Issues
 
-None
+None within task. Production French normal reconciliation/rollout remains root-owned and unclaimed by this agent.
 
 ### Architectural Concerns
 
-None
+None; policy is Meta-specific application semantics, existing raw hashing/serialization mechanics remain unchanged.
 
 ## Architect Review
 
