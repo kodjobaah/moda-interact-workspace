@@ -54,7 +54,7 @@ No Sharedrelease byBGagent. Preparatory source/tests authorized before007accepta
 
 ## Work Items
 
-- [ ] Implement the targeted current-discovery factuality safeguard defined below in this same atomic source PR; preserve ordinary no-attempt answers.
+- [x] Implement the targeted current-discovery factuality safeguard defined below in this same atomic source PR; preserve ordinary no-attempt answers.
 
 - [ ] Agree genericport and exportsignature; preserve priornativeconsumer lineage.
 - [ ] Implement finiteflatcompletion schemas/pureprojection/hostintegration.
@@ -109,7 +109,7 @@ In Progress — concrete locally tested preparatory source pushed. Root actual t
 
 ### Files Changed
 
-Background `157cbe3eced258e51958057860a3870c83424fad`, draft PR235: new `src/commerce/recovery-terminal-finalizer.ts`, matching pure tests, host integration and evidence/selection wire suites. Explicit authorized BG009 lineage `42bbd72` was fast-forward merged after normal fresh BG010 preparation; no diagnostic233 source imported.
+Background atomic checkpoint `b1ea85a19c2c88c226e50b35b51257d4932f9332` (factory-only checkpoint remains `157cbe3eced258e51958057860a3870c83424fad`), draft PR235: new `src/commerce/recovery-terminal-finalizer.ts`, matching pure tests, host integration and evidence/selection wire suites. The targeted safeguard adds `src/commerce/discovery-factuality.ts`, its pure tests and `tests/integration/commerce/host-suites/discovery-factuality.ts` registered in the host test entry point. Explicit authorized BG009 lineage `42bbd72` was fast-forward merged after normal fresh BG010 preparation; no diagnostic233 source imported.
 
 ### Work Completed
 
@@ -119,6 +119,8 @@ A synchronous mode selector uses canonical current product DTO parsing and exist
 
 The optional synchronous evidence authority is supplied by the existing host TurnEvidenceRegistry.hasEligibleEvidence(ids, Date.now()). With no authority, nonempty evidence fails closed. An ineligible evidence ANSWER produces exactly the existing UNVERIFIABLE_FACTS canonical referral before final validation, without changing or re-presenting raw provider output. Actual forced-flat unknown/expired evidence cases prove terminality and raw-step immutability.
 
+The targeted current-discovery safeguard is implemented independently of the selection factory. The host records only resolver/search/get calls after framework argument/authorization and host current-scope/availability checks. At final composition, a current discovery ANSWER without independently verified product/fact/option or refreshed shipping presentation becomes the existing trusted localized UNVERIFIABLE_FACTS referral. Raw model output is not changed. Taxonomy candidates are not inventory authority; empty/null outcomes do not create an empty-stock assertion. No current-question regex, extra model/tool calls, persisted flags or new retry policy were added. No-attempt nonproduct replies and mandatory referrals remain unchanged.
+
 ### Validation Results
 
 - Exact candidate archive `c09ea94f6907a46748221c50c0528cd58743cc15f1fd0eb7d79067fcdfdda549`, 982879 bytes / 163 files, installed no-save/no-lock; metadata6.0.1 is not a publication claim.
@@ -127,6 +129,11 @@ The optional synchronous evidence authority is supplied by the existing host Tur
 - TypeScript, scoped lint and diff checks PASS at final source. Final repository build PASS after bundle generation, with no concurrent importer tests.
 - Earlier provisional checks exposed TS annotations and expected legacy terminal-tool assertions, corrected without weakening guards. A test initially inspected recommendation products for a detail presentation; corrected to the existing productFacts/envelope representation. Review also corrected an incomplete three-value disposition allowlist to the authoritative five-value CommerceResponseDispositionSchema. A structure-only exact production schema fixture (no prompts, customers, URLs or bearers) proves admission; unknown custom values still decline. Two forced-evidence fixtures initially used empty text, which correctly failed before repair; they now emit a genuinely invalid canonical replyText value to enter the existing schema-repair phase. Runtime guards were unchanged; the two targeted cases pass. The old349/78e bundle is superseded and was never probed. No unexplained failure waived.
 - Node22 combined runner+SDK+app bundle uses exact extracted candidate and alias for the application's commerce import; no published Shared duplicate, maps or renderer assets. Source/factory/archive/bundle/external-import receipt `/tmp/arch070-terminal-combined-receipt.json`; bundle SHA256 `5bc223b0ae05563ebd378353f6206e942ed607251974184238c64e5b21e0c5d7` (156012 bytes), deterministic gzip SHA256 `71405befdb7ae3c884097b82a6070f06dbdbf55c656176d31bba1126097565d8` (46127 bytes). App factory SHA256 `de89dcb7bbc8abd49db5b58a049a2e57513d7b871c36f64c96029d41633abb14`.
+
+- Guard pure13 PASS; guard host149 unique cases proven by147 PASS plus2 corrected unavailable fixtures PASS (3.92s) on unchanged runtime. New12 host cases cover009-like resolver UNAVAILABLE plus13 historical names/prices, valid taxonomy candidates, empty search/null get, mandatory unavailable referrals, malformed-argument no actual attempt, French trusted rendering, no-attempt greeting/thanks and current discovery followed by independently refreshed shipping. Existing137 includes verified product/fact/options and checkout footer cases.
+- Guard TypeScript/scoped lint/diff PASS; atomic build running. Exact atomic CI `43642981740` and `43642976475` running; public dependency gate still applies.
+- Initial guard fixtures omitted required renderedText and correctly failed MCP schema validation; corrected canonical test envelopes. Two unavailable fixtures used retryable:true while asserting one read; the existing retry generated two. They now explicitly test nonretryable UNAVAILABLE, without changing production retry policy. Both targeted cases pass; no unexplained failure waived.
+- Factory file SHA remains `de89dcb7bbc8abd49db5b58a049a2e57513d7b871c36f64c96029d41633abb14`; no Shared/factory/prompt/schema/provider changes were made for the safeguard. Frozen bundle5bc represents the factory/runtime experiment only and does not exercise the full host guard.
 
 ### Deviations
 
@@ -140,7 +147,11 @@ Normal claim `bd014b95ee43e78e9c3267353a7a56cf81de5fc6`, attempt1 at2026-11-14T2
 
 Root natural unseeded trial009 was inconclusive for this change: 2 actual SDK calls, 1 read-only MCP call, zero observed products, zero selector/project invocations. The runner returned an ordinary ANSWER with STANDARD/empty details; the new terminal application path was not exercised and acceptedApplicationFinalization was false. This is not a fix, publication or delivery proof. Root/architect disposition pending, with source157/bundle5bc frozen and no further source/probe scope inferred.
 
-Actual exercised-path efficacy remains pending. Accepted Shared007, user-approved publication008, exact registry member identity/lock, clean npm-ci and final checks remain mandatory; task stays InProgress. No production fix/deployment or delivery claim.
+Controlled trial010 was NEGATIVE: all six exact-prefix checks passed, one actual SDK call / zero live MCP, selector1/project1, no extra model call. Raw recovery_complete_details arguments were an empty object (zero keys),218 output tokens; the correct outcome was INVALID_FINAL / TERMINAL_DECISION_INVALID. Subsequent root fidelity011 confirmed empty arguments at the raw-provider, SDK message and normalized layers. No publication, merge or incident-fix claim is supported; no further prompt/schema/context experiments were implemented.
+
+The targeted guard has local regression proof only, not hosted send verification. It covers an actual authorized discovery attempt; historical factual claims with no current discovery attempt remain a broader unresolved limitation, not universal prose entailment.
+
+Actual exercised-path efficacy remains unproven. Accepted Shared007, user-approved publication008, exact registry member identity/lock, clean npm-ci and final checks remain mandatory; task stays InProgress. No production fix/deployment or delivery claim.
 
 ### Architectural Concerns
 
