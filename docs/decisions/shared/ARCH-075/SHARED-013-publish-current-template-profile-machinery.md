@@ -54,8 +54,8 @@ Implementation changes, new runtime behavior, tests/lint/type/build reruns, cons
 
 ## Work Items
 
-- [ ] Verify acceptance/integration and select unused major version.
-- [ ] Prepare metadata-only source/exact archive and approval identity checkpoint.
+- [x] Verify acceptance/integration and select unused major version.
+- [x] Prepare metadata-only source/exact archive and approval identity checkpoint.
 - [ ] Wait for explicit exact-archive public approval.
 - [ ] Publish approved archive and verify independent registry receipt; push report.
 
@@ -73,15 +73,15 @@ Admin009/BG014 final normal registry locks/npmci/CI; no automatic consumer/main/
 
 ## Acceptance Criteria
 
-- [ ] No implementation source changed; metadata-only major release exact accepted bytes.
+- [x] No implementation source changed; metadata-only major release exact accepted bytes.
 - [ ] Explicit exact-archive approval precedes public publication.
 - [ ] Actual registry version/latest/download identity matches approved archive.
 - [ ] Mirrored isolation/source/report publication evidence complete; no live operations.
 
 ## Validation
 
-- [ ] Prerequisite acceptance/integration/source metadata diff verified.
-- [ ] Exact package version/member/byte/hash/private scan and approved identity verified.
+- [x] Prerequisite acceptance/integration/source metadata diff verified.
+- [x] Exact package version/member/byte/hash/private scan and prepared approval identity verified.
 - [ ] Publication command succeeds and independent registry tarball/version/latest/integrity match.
 
 ## Stop Condition
@@ -96,35 +96,51 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others.
 
 ### Status
 
-Not Started
+Prepared — awaiting exact-archive public approval. Task remains In Progress; publication and registry receipt are pending. This is an approval checkpoint, not a completion claim.
 
 ### Files Changed
 
-None
+- Implementation `package.json`, `package-lock.json`: root release version5.13.11→6.0.0 only (three metadata entries); no dependency/runtime/source changes.
+- Metadata commit `dcfbfef99935709dc485fad003dbfa7164a6203b`, draft source PR https://github.com/kodjobaah/moda-interact-shared/pull/90.
+- Task-owned `SHARED-013-release-manifest.json`: immutable candidate identity, byte-comparison result and full161-member SHA256/size manifest.
 
 ### Work Completed
 
-None
+- Normal deterministic launcher claimed attempt1, executor codex, at2026-11-14T02:44:01Z; durable pushed claim `21327d20fa353f0bc32bb8876c9c38a71cee4df9`.
+- Accepted Shared012 source `59068290eb69506fd7a5d248c5ed359cfb98163d` and actual merged `f06cf317781bf584b62f2c286d06118f21e40123` have identical source trees. Launcher proved dependency Complete and integrated parent `b4ae79170ef3427d1744ef1151ef40e013ebbb78` is recorded by the task. Exact accepted candidate SHA256 `029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929` reverified before extraction; its package metadata matches merged source.
+- Registry6.0.0 lookup returned404 (unused); latest remains5.13.11 with prior approved integrity `sha512-rKkT3jdiPMVllTP270KUKQon+kcH5FcxpEojrRmPjhhVVm2bIqYsLtWewhlMa8jLXjToSHwsTwmVhoOxAwKBEA==`. Prior public5.13.11 is unchanged.
+- `npm pack --ignore-scripts --pack-destination /tmp/ARCH-075-SHARED-013 --json` ran from extracted accepted package after changing only package version. No build/install/prepack implementation code was executed; accepted dist, maps, declarations, font/license/cmap and fixtures are reused exactly.
+- Both archives have exactly the same161 members.160 nonmetadata files are byte-identical. Only `package/package.json` differs, solely `version`; its bytes match committed metadata package JSON. Source diff is only package root/lock version entries. No implementation tests/lint/type/build repeated.
 
 ### Validation Results
 
-Not run
+Prepared public approval target: `@modainteract/moda-interact-shared@6.0.0`, registry `https://registry.npmjs.org`, access `public`, dist-tag `latest`.
+
+- Exact archive: `/tmp/ARCH-075-SHARED-013/modainteract-moda-interact-shared-6.0.0.tgz` (read-only after preparation),965706 bytes,161 files; unpacked size3330453 bytes.
+- SHA256: `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8`.
+- SHA512 hex: `f1a827c0a60645a1e93632f90f1a8a37676aa9a83f399c121e3b4402d602f5511e67c35dbd76bcebfbb47255ace7fa79e4fc140773d3e7fc9de80130fbbb6fbf`.
+- npm SHA1/shasum: `d4ee0ab635e55a1f34c82e27c1afb9d2791ec6be`.
+- npm integrity: `sha512-8agnwKYGRaHpNjL5DxqKN2dqqag/OZwSHjtEAtYC9VEeZ8NdvXa86/u0clWs5/p55PwUB3PT5/yd6AEw+7tvvw==`.
+- Release member manifest SHA256: `8995df2d9465b1271f044099f800af7a29ea0afc35dcc66364ac228043339730`; durable full manifest/receipt is `SHARED-013-release-manifest.json` beside this task. Local accepted/release manifests, comparison receipt, npm pack result and registry-before snapshot remain under `/tmp/ARCH-075-SHARED-013/`.
+- Exact member/byte/semantic metadata comparison and package JSON/source metadata equality: PASS. Private asset scan: no actual logo/product/header files, private QA images or backups. `git diff --check`: PASS.
+- Release semantics intentionally use a major version for removed public fixed composite APIs. Existing accepted implementation validation belongs to Shared012 and is not rerun in this release-only task.
+- Prepared launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `moda-interact-workspace-task-ARCH-075-SHARED-013` reused, implementation `moda-interact-workspace.worktrees/ARCH-075-SHARED-013` created, both on mirrored `task/ARCH-075-SHARED-013`. Remote task fast-forward not-needed and origin/main already-current in both repositories. Recursive sync/update passed, submodule statusready/no entries. No shared checkout/main/gitlink/other task changes.
 
 ### Deviations
 
-None
+None. Metadata version6.0.0 is a deliberate major release for accepted breaking export removal; the accepted unpublished5.13.11-named test artifact is only the byte baseline, never republished under5.13.11.
 
 ### Assumptions
 
-Root relays exact publication approval only after concrete consumer checkpoints.
+Root obtains concrete Admin009 and BG014 same-artifact checkpoints and relays NEW explicit user approval of this exact6.0.0 archive/hash/public registry/latest target. Root may independently integrate metadata before publication; this agent does not merge main.
 
 ### Unresolved Issues
 
-Dependency integrated: sourcef06cf317781bf584b62f2c286d06118f21e40123, parentb4ae79170ef3427d1744ef1151ef40e013ebbb78. New exact public approval pending.
+PUBLICATION HOLD: explicit exact-archive user approval has not been relayed. No npm publish command was run. Registry publication/version/latest/download verification is deliberately pending, and task remains In Progress.
 
 ### Architectural Concerns
 
-Breaking export removal requires major version; no compatibility restoration just to avoid major.
+Do not rebuild/repack/change this archive after approval. Public5.13.11 remains immutable. After explicit root authorization, publish exactly this archive with scripts disabled, then independently verify actual registry tarball bytes/version/latest/integrity before submitting final review.
 
 ## Architect Review
 
