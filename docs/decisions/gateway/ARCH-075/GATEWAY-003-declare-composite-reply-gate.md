@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T00:14:56Z
@@ -57,7 +57,7 @@ Root requests all authorized source be concrete/tested/pushed before final publi
 
 - [x] Add narrow declarations/negative validation.
 - [x] Document exact OFF→readerdrain→authorizedON and rollback.
-- [ ] Run bounded Blueprint checks and publish report.
+- [x] Run bounded Blueprint checks and publish report.
 
 ## Interfaces / Contracts
 
@@ -73,9 +73,9 @@ Separately authorized root activation after source/readers/visual checks, not au
 
 ## Acceptance Criteria
 
-- [ ] Exact declaration scoped service-level to two messagingworkers, no enabledvalue/secrets.
-- [ ] Existing topology/commands unchanged; reader-first and rollback documented.
-- [ ] Positive/negative Blueprint checks and clean mirrored evidence.
+- [x] Exact declaration scoped service-level to two messagingworkers, no enabledvalue/secrets.
+- [x] Existing topology/commands unchanged; reader-first and rollback documented.
+- [x] Positive/negative Blueprint checks and clean mirrored evidence.
 
 ## Validation
 
@@ -94,7 +94,7 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others 
 
 ### Status
 
-Preparatory checkpoint — In Progress; final Background014 source proof pending.
+Ready for Review — final immutable Background source contract reconciled; Background CI/architect acceptance and live rollout remain separately gated.
 
 ### Files Changed
 
@@ -107,7 +107,11 @@ Preparatory checkpoint — In Progress; final Background014 source proof pending
 
 Source committed/pushed `a2157f2df59566bbdf1b597ab8a54c42c1e79ca8` on `task/ARCH-075-GATEWAY-003`. Draft source PR: https://github.com/kodjobaah/moda-interact-gateway/pull/18 . Existing branded-main declarations/docs and all service commands/topology remain unchanged. No live environment or provider operations, source/main merges, npm publication or new resources/cost.
 
-Read-only inspection of canonical Background014 implementation worktree finds draft `composite.ts` exact-string `RECOVERY_COMPOSITE_REPLY_ENABLED === 'true'` helper and `whatsapp.worker.started` boolean `recoveryCompositeReplyEnabled`. Those files remain uncommitted drafting evidence; package inspection still reports Shared 5.13.10. Final frozen source, consumer version and focused parser/startup validation evidence must be supplied/verified before this task enters review. No deployed runtime proof is claimed.
+Read-only final reconciliation used immutable Background commit `c7351ce5cbe2b34a7d54e02e5d1dc44affcc2ed6` (PR224; runtime implementation `52d` with only lock adoption changed in this final head). `src/services/recovery-multipart/composite.ts` exports `compositeReplyEnabled()` as `process.env.RECOVERY_COMPOSITE_REPLY_ENABLED === 'true'`; absent, false and all unrecognized strings therefore remain OFF. `src/workers/whatsapp.worker.ts` emits `recoveryCompositeReplyEnabled: compositeReplyEnabled()` on existing `whatsapp.worker.started`; the branded-main boolean and meaning remain unchanged. `docs/arch075-composite-replies.md` confirms reader-first semantics, exact startup field, messaging/legacy combined consumer audit and retained frozen plans on rollback.
+
+Final Background package and lock declare Shared `6.0.0`, resolved from `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-6.0.0.tgz`. Coordinator supplied accepted/published Shared evidence: source `ade292`, accepted parent `a8b71f3d3dce0eeacaa6f797fef07ddb65f979e0`. No Blueprint flag/name/parser mismatch was found; Gateway implementation remains exactly `a2157f2df59566bbdf1b597ab8a54c42c1e79ca8`, with no additional source changes or new environment mechanism. The existing runbook's final-source proof requirement is satisfied by this report's immutable inspection; its activation prerequisites remain operational gates.
+
+Background final CI/tests and architect source acceptance were still finishing at this report checkpoint; no pass or acceptance is claimed on their behalf. Root alone owns preprovisioning the composite setting false and subsequent operational decisions. No deployed startup, drain, enabled writer, media/provider proof or live rollout is claimed.
 
 Actual messaging entrypoint creates WhatsApp worker/multipart repair; combined development `npm start` also creates WhatsApp worker. Runbook requires actual runtime inventory including extra combined/manual readers rather than assuming canonical inventory proves drain.
 
@@ -121,7 +125,7 @@ Gateway has no package.json; inspected actual declared shell validators.
 - `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
 - `git diff --check`: passed; diff contains only configuration, validators and docs, no secrets or application changes.
 
-Bounded checks satisfy preparatory scope; no broad Docker/system/provider suites repeated. Root owns live procedure in `docs/composite-reply-rollout.md`: expected success is complete compatible-reader/source inventory, OFF startup readback, all-old-reader termination with preserved work, separate authorization and ON/readback plus one-bubble provider/visual proof.
+The unchanged Gateway source retains the recorded green bounded checks; no 96-fixture matrix or other unaffected suites were repeated during report-only reconciliation. `git diff --check` and clean implementation status were rechecked. Bounded checks satisfy this configuration scope; no broad Docker/system/provider suites repeated. Root owns live procedure in `docs/composite-reply-rollout.md`: expected success is complete compatible-reader/source inventory, OFF startup readback, all-old-reader termination with preserved work, separate authorization and ON/readback plus one-bubble provider/visual proof.
 
 ### Launcher Isolation Evidence
 
@@ -132,7 +136,7 @@ Both remote task fast-forward checks not-needed; both origin/main incorporations
 
 ### Deviations
 
-None. Preparatory execution explicitly permits source checkpoint before final Background proof. Architect Review Pending has no Changes Requested correction contract.
+None. Preparatory checkpoint is now reconciled against immutable actual-registry Background source. Architect Review Pending has no Changes Requested correction contract.
 
 ### Assumptions
 
@@ -140,11 +144,11 @@ Root owns final integration/release/live authorization. Existing branded-main va
 
 ### Unresolved Issues
 
-Final Background014 gate/default-OFF/startup proof and accepted consumer version pending. Keep task In Progress and source PR draft until verified; no runtime activation or final acceptance claimed.
+Final Background014 CI/test completion and architect acceptance remain external prerequisites for release/integration; immutable flag/default-OFF/startup source and Shared 6.0.0 adoption have been verified. Source PR remains draft under root release hold. Root-owned preprovisioning, actual deployed startup/drain checks and any later activation/provider proof are not performed or claimed by this task.
 
 ### Architectural Concerns
 
-None beyond the explicit prerequisite hold. No infrastructure topology/cost/capacity changes.
+No source contract mismatch. Preserve the explicit Background acceptance/release and root operational gates. No infrastructure topology/cost/capacity changes.
 
 ## Architect Review
 
