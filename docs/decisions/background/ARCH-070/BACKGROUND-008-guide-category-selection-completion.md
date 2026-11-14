@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-14T16:47:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-070-BACKGROUND-007
@@ -168,3 +168,47 @@ Root source merge/actualparentpin/deploydrain then combined BG019 verified-list 
 ## Developer Integration
 
 Root sourcePR231 merged17:06:56Z actualBackgroundmain2bfc7074a7cd2808f65994d301d52649948cf8d5. Independently fetched exactorigin/main/treeequal revieweddea6f14. Parent currentmain already current, actual merged gitlink recorded. Root alone parentmerge/deploy/genuineverification; BG019 must sync this acceptedmain before finalchecks.
+
+## Reopened attempt2 — full-context conformance diagnosis
+
+User/root explicitly reopens after genuinev28 on2352 deployedsource failed. Category/searchOK, INVALID_INPUT nextsearch, newsearchOK, plaintext then forcedfinalANSWER/detailsSTANDARD with allselectionarrays absent. Earlier bounded[]feature syntheticprobe did not reproduce fullhistory. Prior accepted attempt/source/checks remain valid historical evidence, not proof currentincidentresolved. BG019 independentvalid.
+
+Current scope ONLY isolated protected conformance harness and diagnosis; NO furtherpromptchange, schema/Sharedmechanicalfix without evidence/disposition. Use actualpublishedmanifest full ordered featureBehaviours/responseinstructions+apphostguidance, exactsupportedmodelconfig/SDK, boundedexistinghistory/context/currentinput/toolresultsequence and currentselectionconstraint. Do not reconstruct missing historicalrawrequests as exact; label source-derived reconstruction vs capturedexactbytes. Root supplies protected input and executes actualprovider/read-onlyMCP only; repositoryagent writes harness+syntheticguardtests, no livecalls/secrets.
+
+Harness must bypass productionhostexecution/DBwrites/inbound/usage/quota/outbound/Meta. Use actualSharedrunner with isolateddependencies; default offline capturedtoolresults, optional root-only explicitly allowlisted read-onlyMCP under existinggrant and boundedtool/model/deadline/token limits. No discountcreate/apply/cart/order mutations or networkunknown tools. Never invoke productionconversation processor/send/finalpermit. All exactrequests/toolresults/outputs private0600 file under operator-provided protecteddirectory, no stdout rawhistory/prompts/IDs/URLs/credentials/genericlogs. Public output aggregate shapes/reasoncodes/digests only. No hosted diagnostic deployment.
+
+Root bounded actualrun must preserve full instructionorder/features/history and independent canonicalfinalvalidation. Capture model requests and outputs privately sufficient to distinguish prompt conflict vs ignored nestedschema; no repeatedcalls merely chasingpreferredresult. On finding, return concrete minimalmechanical/appownership recommendation with actualproof and tests; do not implement guessedcorrectiveprompt/Sharedrelease within this rework.
+
+### Attempt2 Work Items / Validation
+
+- [ ] Implement isolated safe input/output/callallowlist/budget harness using actualrunner/SDK.
+- [ ] Synthetic tests prove no unsafe tools/writes/sends/rawstdout and exactfullcontextorder forwarded, originalreturnedargs unchanged.
+- [ ] Types/scopedlint/relevantbuild and diffprivacy pass; exactheadCI whereconfigured.
+- [ ] Root actualfullcontextdiagnostic result recorded privately with honest reconstructionlimits.
+- [ ] Return diagnosis+minimalowningcorrection contract to architect; incident remains InProgress.
+
+## Architect Review — latest Changes Requested (attempt2)
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+PriorAccepted0ecba05d5 retained above as historical boundedguidance acceptance. Genuinev28 disproves sufficiency forfullcontext. Reopen SAMEtask statusReady, executor/claimed cleared, acceptedattempt1 preserved; launcher increments exactlyonce. Execute this diagnosiscontract before any additionalbusinesssourcefix. No needcodechurn to reinterpret earliervalidtests.
+
+### Reviewed Files
+
+Newprivatepastedlogs root-supplied; existingfullcontextinstructionassembly and modelbridge audit.
+
+### Validation Reviewed
+
+Earlierprobe excludedfeatures/history; newactualfailure arraysabsent bothfinals. No furthercausalclaim justified.
+
+### Architecture Conformance
+
+Currentevidence requires diagnosis first; Sharedmechanicalgap only if reproduced/confirmed, no releaseinferred.
+
+### Follow-up
+
+Root executes privateboundedactualrun; architect determines correctionowner/task from actualevidence. Do not markincidentfixed from harnessstub or newprompt assertions.
