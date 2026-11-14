@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T22:12:26Z
@@ -96,6 +96,26 @@ After definedchecks publishmatching source+parentreport, review and STOP. Public
 Normal moda-task canonical siblingworktree/claim; notalonepreserveothers. Rootownslive/publicapproval/mainmerge. Inspectrole/policies/declaredscripts. Shopifyingress hotpath unaffected; perconversation ephemeralbounded transcript no globalcache/state. No newgenericlogs/rawcontent; framework/sharedloggingonly.
 
 ## Completion Report
+
+### Attempt 3 — optional transport parameter correction
+
+Ready for Review. All bounded attempt3 source checks passed. Source `667a658915f4071835a966c345e5fe76feda0829`, existing PR https://github.com/kodjobaah/moda-interact-shared/pull/93. Production correction is the deletion of unconditional `parallel_tool_calls: false` in `model/openrouter-model-client.internal.ts`; no replacement provider capability policy or synthetic sequential semantics. Actual SDK HTTP regressions and old configuration expectation updated; installed proof checks omission too.
+
+Latest Changes Requested items:
+
+- Implemented: default HTTP request omits the optional parameter. Actual SDK assertions preserve exact schemas/strict, auto/named/required tool choice and `max_tokens`.
+- Implemented: native batches, remote/model ceilings, budget-reserved unexecuted pairing, retry, actual IDs and result pairing remain unchanged and pass affected tests.
+- Implemented: terminal projection, required referral, invalid decisions, cancellation/deadline and canonical guards remain unchanged and pass affected tests.
+- Implemented: types/build and focused affected model/runner checks PASS (208 tests). No unrelated full-suite repeat, as directed by latest correction.
+- Implemented: exact installed Node SDK HTTP omission/native pairing/current-objective/semantic binding/plaintext repair/types and pure-browser checks PASS. Archive-derived Node22 bundle produced; no actual provider call by this agent. Root trial015 restored HTTP with omission but still had empty selections; this source correction is compatibility-only, not an incident fix.
+
+Exact superseding unpublished archive `/tmp/ARCH-070-SHARED-007/transport-omission-890d060d52d4.tgz`, metadata6.0.1, 982847 bytes/163 members, SHA256 `890d060d52d4a840eecd4393527b895b1874a97770248a8eec1e34ff3ba0e1fd`. Prior c09ea artifact/report retained historically and superseded for current diagnostic source. Public6.0.1 unchanged, no release/merge/live operation authorized or performed.
+
+Launcher evidence: attempt3 codex claim `70ba11c5cd6e7998ec6fd4ed7eeda697f2666bdd`, canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-SHARED-007`, implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-SHARED-007`, both `task/ARCH-070-SHARED-007`, reused canonical worktrees. Both remote task FF not needed and origin/main already current; recursive implementation sync/update passed with no entries. Initial parent3579bd9eb/implementationec7658b. No shared checkout switched, other task reused or parent submodule gitlink staged.
+
+Installed receipt bound to exact archive890d060d52d4: all Node/type/browser checks PASS. Node22 external-package diagnostic bundle exports only `runCommerceTurn` and `OpenRouterModelClient`, no assets/maps/declarations. `/tmp/ARCH-070-SHARED-007/diagnostic-890d060d52d4/native-candidate-890d060d52d4.node22.mjs`, 145635 bytes, SHA256 `b1acf14a669e1551e985e01c1844789d0d96e1e5ae1346a8c633b4f63e5ccd7d`; gzip 43114 bytes, SHA256 `5df6c336462d0a7bafc4973c2c34779d8aa425eb945ae9b0ef02a40b69a0b010`. Root and Background received exact identities. Eventual additive release recommendation remains6.1.0, requiring separate exact metadata/archive review and new explicit public approval. No version change performed inside implementation.
+
+### Historical attempt 2 report
 
 ### Status
 
