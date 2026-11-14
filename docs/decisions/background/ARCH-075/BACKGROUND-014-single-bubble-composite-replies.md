@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
   - ARCH-075-SHARED-010
 enables: []
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-14
 ---
 
 # Prepare single-bubble trusted composite recovery replies
@@ -65,6 +65,12 @@ After root-relayed explicit011 publication and exact registry receipt, reconcile
 ### Actual HUMAN deadline plumbing
 
 Existing RenderConversationResponseInput stores deadline under commercePresentation, absent for HUMAN. Do not use undefined deadline or Date.now() as an already-expired HUMAN deadline, nor grant a fresh deadline on replay/resume. New HUMAN media preparation must derive one bounded5-second child budget from actual claimed command lease and original host authority, supplying it through the preparation/composition seam for product and no-product cases. AI retains original turn deadline. Replay of an already prepared immutable composite performs no new rendering/network attempt. Include actual default HUMAN no-product success, lease-expired refusal and frozen replay tests.
+
+### Preparatory execution promotion
+
+Actual dependencies Complete/Accepted and integrated: BG012 Backgroundmaindd29c40545794ee4ec0997333c064a55ef9bb9f2; Shared009+010 mainde3f9ee5d1aa24c4ac6c51b3f82b12269fddd300 with accepted parentmaineed3357296a61c2196af0e008fa89af6b1efbf7d. Normal launcher may claim this Ready task for actual source implementation/draftPR and local integrated tests under the explicit packed-preparation exception above.
+
+Exact accepted010 test archive: temporary ARCH-075-SHARED-010/modainteract-moda-interact-shared-5.13.10.tgz, SHA256d3928d3c8f9b4a5bc7415005eab891360c38d5c9b69935f1c8b9d1eda62a19ac,161files. Use verified archive/installed canonical exports, no sibling sources; final registry lock/npmci and task acceptance still gated011 actual public release. Return concrete tested draft/source checkpoint to root while In Progress before user public-approval prompt. No live sends/flags/main merge.
 
 ## Work Items
 

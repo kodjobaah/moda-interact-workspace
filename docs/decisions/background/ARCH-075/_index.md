@@ -49,3 +49,6 @@ BACKGROUND014 Pending: published trusted composite consumer, defaultOFF new gate
 
 
 BG014 dependency amendment: normal preparation follows accepted009+010 plusBG012; root explicitly permits exact-packed preparatory source/draftPR/localfulltests BEFORE public approval. Final acceptance/registrylock/npmci still requires actual011 publication. No unpublished deployment or siblingcode.
+
+
+BG014 Ready for source/draft+local exact-packed integration after actual009+010/BG012 acceptance/integration; publication011 remains final-readiness gate. No live composite activation.
