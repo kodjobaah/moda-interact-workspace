@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T00:09:25Z
@@ -78,10 +78,10 @@ Exact accepted010 test archive: temporary ARCH-075-SHARED-010/modainteract-moda-
 
 ## Work Items
 
-- [ ] Adopt accepted dependency and exact dual-provenance receipt/readers/fences.
-- [ ] Add defaultOFF single-bubble composition and fullTEXT fallback with shared budget.
-- [ ] Prove actual default AI/HUMAN optional-product flow, oldplanreplay/guards/billing and actual image+caption.
-- [ ] Publish exact source/report/private offline visual artifact; stop for review.
+- [x] Adopt accepted dependency and exact dual-provenance receipt/readers/fences.
+- [x] Add defaultOFF single-bubble composition and fullTEXT fallback with shared budget.
+- [x] Prove actual default AI/HUMAN optional-product flow, oldplanreplay/guards/billing and actual image+caption.
+- [x] Publish exact source/report/private offline visual artifact; stop for review.
 
 ## Interfaces / Contracts
 
@@ -97,17 +97,17 @@ Root branch review/test and later independently authorized guarded rollout. No l
 
 ## Acceptance Criteria
 
-- [ ] Single composite bubble correct approved order, actual answer+footer text, optional product and exact fullTEXT fallback.
-- [ ] Both trusted source/policy/facts and logical-vs-caption identities verified fail-closed, old frozen plans unchanged.
-- [ ] Full media work remains under original deadline/budget; defaultOFF and observable reader-first rollout.
-- [ ] Meaningful actual default dispatch/PG/loopback + offline render evidence and required checks, clean mirrored branch/report; no live sends.
+- [x] Single composite bubble correct approved order, actual answer+footer text, optional product and exact fullTEXT fallback.
+- [x] Both trusted source/policy/facts and logical-vs-caption identities verified fail-closed, old frozen plans unchanged.
+- [x] Full media work remains under original deadline/budget; defaultOFF and observable reader-first rollout.
+- [x] Meaningful actual default dispatch/PG/loopback + offline render evidence and required checks, clean mirrored branch/report; no live sends.
 
 ## Validation
 
-- [ ] Focused RED/GREEN canonical composite/caption/header/facts/tenant/output/unknownkind/tamper/deadline/fallback/legacy vectors.
-- [ ] Actual disposable PG/Redis default HUMAN and AI engine onepart transport+footer/moderation/billing once, control/replay/UNKNOWN negatives.
-- [ ] Actual offline private Eugene rendered image and emitted caption for root visual review; no commit of customer/shopasset/privateURL.
-- [ ] Relevant declared fulltests/build/type/scopedlint/exactbaseline, published dependency/lock integrity/privacy/isolation evidence.
+- [x] Focused RED/GREEN canonical composite/caption/header/facts/tenant/output/unknownkind/tamper/deadline/fallback/legacy vectors.
+- [x] Actual disposable PG/Redis default HUMAN and AI engine onepart transport+footer/moderation/billing once, control/replay/UNKNOWN negatives.
+- [x] Actual offline private Eugene rendered image and emitted caption for root visual review; no commit of customer/shopasset/privateURL.
+- [x] Relevant declared fulltests/build/type/scopedlint/exactbaseline, published dependency/lock integrity/privacy/isolation evidence.
 
 ## Stop Condition
 
@@ -121,11 +121,11 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others 
 
 ### Status
 
-In Progress — complete tested prepublication draft checkpoint, awaiting the separately authorised public release. Final public dependency/registry lock/npm-ci gate remains pending; this is not a final review submission or deployment-ready claim.
+Ready for Review — public registry adoption and newly enabled checks complete. Explicit user architecture HOLD remains on all consumer/Gateway main merges, deployment and activation. This task grants no live authorization; PR224 stays draft.
 
 ### Files Changed
 
-Background source commit `5d799d2d3732552241c5f70f5786211e905a839c`, draft [PR224](https://github.com/kodjobaah/moda-interact-background/pull/224): additive composite host adapter/receipt; existing common composition/preparation/frozen readers/fence; AI original-claim deadline plumbing; actual HUMAN lease plumbing and composite-only application-key binding; existing startup boolean; focused, actual-renderer and disposable PostgreSQL/Redis tests; package adoption assertions and rollout notes `docs/arch075-composite-replies.md`. No Database/Shared implementation changes.
+Background runtime source commit `5d799d2d3732552241c5f70f5786211e905a839c`; final real-registry lock adoption `c78893246b05ca31e90c0df4453d27ab6b6428a9` changes only4 lockfile lines. Draft [PR224](https://github.com/kodjobaah/moda-interact-background/pull/224): additive composite host adapter/receipt; existing common composition/preparation/frozen readers/fence; AI original-claim deadline plumbing; actual HUMAN lease plumbing and composite-only application-key binding; existing startup boolean; focused, actual-renderer and disposable PostgreSQL/Redis tests; package adoption assertions and rollout notes `docs/arch075-composite-replies.md`. No Database/Shared implementation changes.
 
 ### Work Completed
 
@@ -140,7 +140,7 @@ Background source commit `5d799d2d3732552241c5f70f5786211e905a839c`, draft [PR22
 
 All paths below refer to protected primary `local-backups/arch075-live-20261113/`; private customer/checkout content and shop assets were not committed.
 
-- Exact accepted release candidate installed by `npm install --no-save --package-lock=false /tmp/ARCH-075-SHARED-011/modainteract-moda-interact-shared-5.13.11.tgz`. SHA256 `d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086`;161 packed files individually compared against installed package with zero mismatches. Manifest now declares planned5.13.11. Existing registry lock remains unchanged intentionally; no fabricated registry URL/integrity or clean npm-ci claim.
+- Exact accepted release candidate installed by `npm install --no-save --package-lock=false /tmp/ARCH-075-SHARED-011/modainteract-moda-interact-shared-5.13.11.tgz`. SHA256 `d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086`;161 packed files individually compared against installed package with zero mismatches. This was the explicit prepublication checkpoint; the final actual public registry adoption is recorded below. No registry URL/integrity was fabricated.
 - Actual disposable PG/Redis:73 unique cases verified on frozen runtime source. `bg014-pg3.log` has72 PASS and one fixture failure: directly shortening an active lease correctly hit `ARCH040 cannot steal active lease`. Corrected test waits the actual original5s lease expiration, preserving SQL guards; `bg014-expired-pg.log`1 PASS/44 intentional name-filter skips. Other72 case source/runtime unchanged. Includes actual default HUMAN singleton engine and loopback Meta request/status sender, no-product AI/HUMAN, product AI with first-permit context, one image caption, both usage metrics once, policy/generation/takeover/UNKNOWN/replay and legacy vectors. No live infrastructure used.
 - Final focused exact committed head `bg014-focused-exact-head.log`:237 PASS/11 files,17.05s, including real Shared renderer/JPEG output, independent source/output proof, immutable PUT reuse/public byte probe, strict flags, invalid/expired/finite original deadlines, fullTEXT fallback, self-consistent HUMAN tamper and immutable HUMAN/AI replay. Exact5.13.11 adoption assertions and original logger/privacy/startup checks pass; no privacy/logging assertion was removed.
 - Final declared full suite on immutable source5d799d2d3732552241c5f70f5786211e905a839c, `bg014-full-exact-head.log`:395 files PASS/1 existing configured skip;4370 tests PASS/10 existing configured skips,278.20s,exit0. Runs serialized after PG/build, with no source changes during this run. macOS emitted existing dual-libvips class-load warnings; no test/runtime failure. Superseded runs with exact-version fixture mismatches were stopped and retained, not claimed as passing.
@@ -149,17 +149,26 @@ All paths below refer to protected primary `local-backups/arch075-live-20261113/
 - Exact committed-file scoped lint (`bg014-exact-commit-lint.log`) and `git diff --check` PASS. Full lint `bg014-full-lint.log` reports exactly four pre-existing unused-variable errors in untouched `pending-recovery-candidate/candidate-index.store.ts:9` and `recovery-offers/recovery-offer-resolver.service.ts:23–25`. No full-lint-green claim. `bg014-lint-baseline-proof.log` proves unchanged baseline/current blobs8bff21b8514b4449dd326c1c1dac12a3ba4a8dbf and077bcbb76c018428bd5b64c0c82d2a1903b5c6e4; exact original source piped to installed ESLint produces the same1+3 errors. ESLint configuration/registry lock unchanged.
 - Actual private offline Eugene outputs through Background host+accepted Shared renderer/R2/probe: `composite-qa/bg014-product.jpg`1125x90086694B; `bg014-no-product.jpg`1125x30029717B. Exact original assets remain separate. Protected captions257 codepoints (offline sample answer61+canonical footer196), full logical356(header99+caption); caption SHA256 `be83ec185629c741283a5d522890c79b2af52b843ee6084fac6064d459393f57`. Root independently reviewed images/caption equality and closed visual gate. Historical canonical snapshot, synthetic offline product proof, no new DB/provider/model queries or live sends. Checkout bearer URL excluded from pixels/stdout/commits. Sensitive files0600.
 
+### Final Public Registry Adoption
+
+- Root relayed actual separately authorised publication and independent public registry verification at2026-11-14T01:03:37Z; published version/latest5.13.11 matches the exact approved archive above. This repository agent did not publish the package.
+- Source `c78893246b05ca31e90c0df4453d27ab6b6428a9` updates ONLY the root dependency entry and Shared version/actual registry URL/SRI in package-lock.json (4 removed/4 added lines). Runtime/layout source remains exactly5d799d2. Real tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.13.11.tgz . Actual SHA512 integrity `sha512-rKkT3jdiPMVllTP270KUKQon+kcH5FcxpEojrRmPjhhVVm2bIqYsLtWewhlMa8jLXjToSHwsTwmVhoOxAwKBEA==`; registry shasum `1fc0e04d684ecfd726b94a9c92013e5dadea1a61`.
+- `bg014-registry-metadata.json` verifies lock SRI equals actual public dist metadata. `bg014-registry-ci.log`: clean real-registry npm-ci completed609 packages/audited610. After the clean install all161 approved package files again match byte-for-byte (SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086), zero mismatches. No local archive path is stored in the committed lock.
+- `bg014-published-build.log`: declared build/Prisma6.19.3 generation/both TypeScript outputs/sample packaging PASS after clean npm-ci. `bg014-published-focused.log`:237 tests PASS/11 files,18.21s on locked Vitest4.1.11, including installed-version/logger/privacy/startup and composite/claim/receipt/replay checks. These dependency-gated checks ran serially; unchanged broad local full/PG suites were not repeated.
+- Both remote unit checks completed SUCCESS on exact final headc78893246b05ca31e90c0df4453d27ab6b6428a9: [run43538778296](https://github.com/kodjobaah/moda-interact-background/actions/runs/43538778296), [run43538785870](https://github.com/kodjobaah/moda-interact-background/actions/runs/43538785870).
+- Root/user architecture discussion expressly HOLDS all consumer/Gateway main merges, deployment and activation. No new layout tasks/redesign, live flag/send, main merge or integration was performed. Implementation is returned only for architect review; hold remains independent of this validation result.
+
 ### Git / VCS
 
 - Task branch in both repositories: `task/ARCH-075-BACKGROUND-014`.
 - Launcher packet: protected `bg014-prepared.json`; claim9bdddc629ca9a584aedb3dbb65b1c2327bb80c88, attempt1, codex,2026-11-14T00:09:25Z; dependency gate passed, recursive submodules ready.
 - Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; dedicated parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-014`; dedicated implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-014`.
 - Launcher fetched/synchronized both task branches and incorporated current origin/main; implementation baseline `dd29c40545794ee4ec0997333c064a55ef9bb9f2`. No primary/shared checkout switched or mutated; no other task worktree reused.
-- Implementation5d799d2d3732552241c5f70f5786211e905a839c pushed origin/task/ARCH-075-BACKGROUND-014; draft PR224. Parent checkpoint report is committed/pushed on its matching branch. No gitlink staged; no main merge/push.
+- Implementationc78893246b05ca31e90c0df4453d27ab6b6428a9 pushed origin/task/ARCH-075-BACKGROUND-014 (runtime5d799d2 unchanged); draft PR224. Parent final report is committed/pushed on its matching branch. No gitlink staged; no main merge/push.
 
 ### Deviations
 
-Explicit task-approved packed prepublication preparation only. Registry lock/npm-ci/remote consumer readiness and final review are pending actual separately approved publication. Superseded test traces retained: initial sender-recording/usage-metric fixture assertions, protected active-lease fixture attempt and exact installed-version adoption assertions; no runtime fence weakened.
+Explicit task-approved packed prepublication preparation was followed by actual approved registry adoption and clean-install/remote validation. Superseded test traces retained: initial sender-recording/usage-metric fixture assertions, protected active-lease fixture attempt and exact installed-version adoption assertions; no runtime fence weakened.
 
 ### Assumptions
 
@@ -167,7 +176,7 @@ Root owns approval, public release, integration, full reader drain and eventual 
 
 ### Unresolved Issues
 
-Actual public5.13.11 publication/registry lock/clean npm-ci and remote checks remain mandatory before final Review. All required prepublication local checks are complete on the pushed source; do not repeat broad source validation without a relevant change. No live behavior or architecture completion claimed.
+No unresolved implementation dependency gate remains. User architecture HOLD blocks all consumer/Gateway main merges, deployment and activation pending root/user discussion. No live behavior, architect acceptance or architecture completion claimed.
 
 ### Architectural Concerns
 
