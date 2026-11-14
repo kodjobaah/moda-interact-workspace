@@ -98,35 +98,44 @@ Use normal moda-task launcher from primary root, dedicated sibling parent/implem
 
 ### Status
 
-Not Started
+Source and focused/host validation complete; final checks and root-owned measured comparison pending before review return.
 
 ### Files Changed
 
-None
+- `src/commerce/structured-finalization-instructions.ts`: Background-owned universal finalResponse completion guidance and pinned-schema-aware product detail/options/recommendation hints.
+- `src/commerce/host.ts`: derives guidance from `verifyResponseContract` and inserts it into existing trusted host instructions; no model-call adapter or argument transformation.
+- `tests/unit/commerce/structured-finalization-instructions.test.ts`: supported identity arrays, custom unsupported fields/types/capacity, incompatible version enum, actual positive recommendation hint, immutable contract content and nonproduct/referral constraints.
+- `tests/integration/commerce/host-suites/instruction-composition.ts`: actual request contains helper output, remains initially unforced and retains ordinary tools; original finalResponse bytes and referral preserved.
 
 ### Work Completed
 
-None
+Implementation `c0292c5d60754b864967ec8ec1ced47236625a9e` pushed on `task/ARCH-070-BACKGROUND-007`, draft PR https://github.com/kodjobaah/moda-interact-background/pull/226. Every customer-facing completion is instructed to use the existing finalResponse, including simple answers, clarifications and referrals. Product detail/options hints require pinned array/object/string identity shape with nonzero capacity. Recommendation hints additionally require actual pinned version string enum support for1, beyond Shared's presence-only canonical contract predicate. No hints for unsupported custom fields/enums. Guidance is format policy, not a copied validator; Shared pinned validation remains authoritative. Initial tools/requiredToolName, response objects, referral/language handling, budgets and single repair remain unchanged. No Shared/publication/layout/provider/DB/logging changes.
 
 ### Validation Results
 
-Pending
+- Normal canonical prepared launcher: primary `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-BACKGROUND-007`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-BACKGROUND-007`; matching mirrored task branches. Attempt1/codex claimed2026-11-14T09:18:12Z, parent claimdb6fe8e665099b36886fe7cc020e3824dd21be52 pushed; synchronized parentd7b1ba0d488208f1f2405a66be7a154c988e4a68/sourcebe077bf7bd6b5e7f5a91fad1ee84c75dc76e13fa. BG006 dependency complete, database submodule6f42b71112efe7ac63654d55f41cd74ca569b1ae ready. No primary/other-task edits.
+- `npm ci`, `npm run build`: PASS.
+- Focused `npx vitest run tests/unit/commerce/structured-finalization-instructions.test.ts tests/unit/commerce/final-selection-shape.test.ts tests/unit/commerce/model-bridge-diagnostics.test.ts`:31PASS/3files.
+- Declared `npm run test:commerce-host`:127PASS, including existing language/referral/evidence/successful product and exact missing-selection terminal/refusal/repair/argument-identity paths plus the new actual request assembly test.
+- Final type/scopedlint/full lint baseline and exact CI43580528735/43580502290 pending. Relevant local logs retained privately in primary `local-backups/arch070-bg007-*`.
+- `git diff --check` PASS; bounded diff/private-content review found no customer payload/provider credentials/prose or logging changes. This task performs no model/provider/Meta/DB live calls and requires no migration/PG changes.
+- Root-owned baseline/candidate unforced actual-model comparison pending. Exact built helper/output was provided to root before probing; only root may supply measured evidence. No efficacy claim from unit assertions alone.
 
 ### Deviations
 
-None
+No source-scope deviation. Root review caught presence-only recommendation predicate insufficiency before source freeze: added actual pinned types/enum support and negative custom-contract tests. No schema/validator weakening.
 
 ### Assumptions
 
-None
+Root owns bounded synthetic model comparison, integration, deployment and genuine production verification. This agent performs no live operations.
 
 ### Unresolved Issues
 
-Original forced-step omission remains unknown.
+The original08:20 forced-step omission remains unexplained. The target is observed09:08 ordinary plaintext completion requiring existing repair; this does not attribute the original failure to layout/template changes or prove model reliability.
 
 ### Architectural Concerns
 
-None
+No Shared schema/package, retries/budgets, generated selections or new adapter. Final admission remains existing pinned contract and runner guard. Measured provider outcome and exact remote checks remain required before review return.
 
 ## Architect Review
 
