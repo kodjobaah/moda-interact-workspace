@@ -168,3 +168,7 @@ Conforms narrowed tests-only app parity scope, unchanged Shared/dependencies/raw
 ### Follow-up
 
 Root source merge, actual parent gitlink integration and optional automatic deploy verification. Production French reconciliation/activation remains root-owned; pending provider statuses not bypassed.
+
+## Developer Integration
+
+Root sourcePR101 merged actualAdminmainbeb082cd4c6f813de560fd723d951ac84b01ac4a. Independently fetched exactorigin/main/treeequal reviewede2ffe1f2. Parent merged currentmain12e14870 preserving append sections/acceptedBG017 actualpin. Actual Admin gitlink recorded; root alone parentmerge/live verification.
