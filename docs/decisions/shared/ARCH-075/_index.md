@@ -41,3 +41,5 @@ SHARED011 Ready after actual accepted009+010 integration de3f9ee5/eed335729. Met
 ### Composite publication receipt — 2026-11-14
 
 ARCH-075-SHARED-011 Complete: public5.13.11/latest independently verified against exact approved SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086. Release acceptance is not layout/deployment approval. Consumer/Gateway main merges, deployment and activation remain HELD for the user's presentation-policy boundary review; Background registry-only adoption checks may finish. ARCH075 remains In Progress.
+
+ARCH-075-SHARED-013 Pending actual012 integration: metadata-only major release preparation, no repeated implementation validation, public publication explicitly held until exact archive and concrete consumer proofs plus new user approval.
