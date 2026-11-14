@@ -43,3 +43,16 @@ ARCH-075-BACKGROUND-012 is Ready after actual BG011 source mainac2ef244a36a63f13
 ### BG012 accepted bounded customer handback
 
 ARCH-075-BACKGROUND-012 Complete/Accepted at sourcecbe926522d318953217480932c97233eafd61752/report46c139f1feb98ed0a0bc1ddc4286f70fda28fa13.4344 full/48 actualPG/98focused/build/scopedlint passed; existing configured skips and unchanged baseline lint disclosed. Exact prior20 assessment and original-lease timing/control guards retained. Root deployment/live proof remains pending. Architecture stays In Progress.
+
+
+BACKGROUND014 Pending: published trusted composite consumer, defaultOFF new gate, one bubble or fullTEXT fallback; depends BG012+Shared011. Supersedes unexecuted013; no native change/live sends.
+
+
+BG014 dependency amendment: normal preparation follows accepted009+010 plusBG012; root explicitly permits exact-packed preparatory source/draftPR/localfulltests BEFORE public approval. Final acceptance/registrylock/npmci still requires actual011 publication. No unpublished deployment or siblingcode.
+
+
+BG014 Ready for source/draft+local exact-packed integration after actual009+010/BG012 acceptance/integration; publication011 remains final-readiness gate. No live composite activation.
+
+ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.
+
+ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45b25f4d32e5ca9/reportd2a4561e6: sole saved-template profile authority/current-only composite/actualShared6registry+exactheadCIgreen. Rootactualpin/integration and controlled disabled rollout/current-template replacement/liveproof remain separate; ARCH075 In Progress.

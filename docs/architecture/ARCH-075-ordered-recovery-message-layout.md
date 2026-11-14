@@ -242,6 +242,7 @@ ARCH-075-SHARED-010 Ready after exact accepted009 integration Sharedbc98bf13d8d2
 
 ARCH-075-SHARED-010 Complete/Accepted at source483f7a27c654a3a49d6ec4896c616cd0475a938c/report808520a3668d43de5eb576d8adfe5034c6c02099. Renderer/carrier/whole-pipeline and fontless packed Alpine checks passed; root actual product/no-product visual gate passed. After actual integration,011 release preparation and014 defaultOFF draft consumer can proceed; public approval/published readiness/live sends remain gated. Architecture stays In Progress.
 
+ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.
 ### Configuration-driven composite correction — 2026-11-14
 
 User authorized bounded runtime presentation policy rather than package-bound geometry. SHARED012 Pending depends accepted/integrated SHARED011; additive V2 profile/renderer retains immutable V1. Admin009 existing policy controls and corrected BG014 follow accepted profile API; SHARED013 publication remains separately approved. No new Gateway flag/database schema required by inspected evidence. Native templates unchanged. Architecture remains In Progress; no deployment before coherent tests/integration.
@@ -264,5 +265,7 @@ ARCH-075-SHARED-013 Ready after actual012 integration b4ae79170ef3427d1744ef1151
 ARCH-075-SHARED-013 Complete/Accepted: actual public6.0.0/latest independently downloaded exact49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8,965706B161files; finalreport4cf181e9dec04f68c7f774aed081525ae8ca689c. Consumer registry/CI/review/integration and controlled deployment remain separate; ARCH075 In Progress.
 
 ARCH-075-ADMIN-009 Complete/Accepted source4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f/report32350812a3a7154caee3d50ac3e7a351221825d0: saved-template owned profile authoring/clone/review/preview, realShared6registry adoption and exactheadVercelgreen. No separate layout policy remains. Rootcontrolled integration/cutover/live proof pending; ARCH075 In Progress.
+
+ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45b25f4d32e5ca9/reportd2a4561e6: sole saved-template profile authority/current-only composite/actualShared6registry+exactheadCIgreen. Rootactualpin/integration and controlled disabled rollout/current-template replacement/liveproof remain separate; ARCH075 In Progress.
 
 ARCH-075-GATEWAY-003 Complete/Accepted exactsourcea2157f2df59566bbdf1b597ab8a54c42c1e79ca8/report7a0201e1e: finalBGc599 gate/startup/source acceptance reconciled, two messaging-only sync:false inputs. Rootfalsepreprovision verified; actualdeploy/drain/templatecutover/ON/providerproof remain operational, ARCH075 In Progress. Unrelated closedworkspacePR98 description restoration resolved by official evidence; no code effect.

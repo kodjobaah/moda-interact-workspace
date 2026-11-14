@@ -177,3 +177,11 @@ Conforms: only independent sync:false flag on2messaging workers, no hardcodedval
 ### Follow-up
 
 Root merges source then actual parent gitlink and owns all live operations. Verify accepted worker source/startupfalse and every predecessor drain before enabling; controlled new template/reference/native cohort flow has no provider-name adoption bypass. Do not delete immutable audit/customer records. Unrelated closed workspacePR98 body incident is RESOLVED by root using official edit UI2INS/0DEL evidence, exactempty restoration and REST/UIreadback; no code affected/no further unrelated edits.
+
+## Developer Integration
+
+- Source PR https://github.com/kodjobaah/moda-interact-gateway/pull/18 merged by root on 2026-11-14T03:42:27Z after architect acceptance `f91c8d1b4`.
+- Reviewed source `a2157f2df59566bbdf1b597ab8a54c42c1e79ca8`; actual merged Gateway main `0c737786189efa86158816ab8d8a0f03d62e1a94` is recorded by the workspace gitlink.
+- Required Blueprint validation and negative/regression cases passed; no hosted checks are configured for this source PR.
+- Both messaging worker flags were pre-provisioned and read back as `false` through save-only operations. Actual worker deployment/drain, template replacement and activation remain separate operational gates.
+- Parent append conflict was resolved by preserving both accepted Background and Gateway records; unrelated staged primary work was untouched.
