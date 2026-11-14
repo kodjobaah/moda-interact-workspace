@@ -278,3 +278,10 @@ Conforms to final template-driven/current-only composite scope, Shared/applicati
 ### Follow-up
 
 Root merges implementation then actual parent gitlink. Gateway003 only declares separate operator gate; source gate absent/false is OFF and existing non-composite writer stays unchanged. Root verified both live values explicitly false via save-only, not an enable/deploy claim. Current-template controlled replacement/cohort compatibility, compatible-reader startup/drain and separately authorized live verification remain operational gates. Preserve unrelated staged primary ARCH069 file; no primary task edits. ARCH075 In Progress.
+
+## Developer Integration
+
+- Source PR https://github.com/kodjobaah/moda-interact-background/pull/224 merged by root on 2026-11-14T03:40:53Z after exact-head CI success and architect acceptance `ffcefe2e6`.
+- Reviewed source `c599f3dd4042a1cc72d764b5a45b25f4d32e5ca9`; actual merged Background main `3e46120ba79c26389df92fb25504a0a2e652a68b` is recorded by the workspace gitlink.
+- Both GitHub unit jobs passed on the reviewed head; registry, local tests, database and Linux-render evidence above were reviewed before merge.
+- Both live composite flags are saved `false`. Deployment startup/drain, current-template replacement and enabled provider verification remain separate operational gates.
