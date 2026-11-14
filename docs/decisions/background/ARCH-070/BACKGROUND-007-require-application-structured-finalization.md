@@ -162,3 +162,7 @@ Conforms to bounded Background-owned application policy. Shared mechanics/contra
 ### Follow-up
 
 Root owns source merge, actual parent gitlink integration, deployment/drain and genuine postchange trace. Preserve diagnostics and original unresolved omission explicitly; no extra model calls merely to seek a preferred comparative result.
+
+## Developer Integration
+
+Root merged source PR226 at2026-11-14T09:34:26Z to actual Background main d0c968e68d38031a9b3e884301573adbcbb08652. Architect independently fetched implementation origin/main, verified exact SHA, accepted c0292c5 is ancestor and tree diff is empty. Parent gitlink records actual merged main, not task head. Root alone performs parent PR1040 merge and deployment/drain/genuine verification. No efficacy or original-incident resolution claim.
