@@ -101,7 +101,8 @@ User explicitly supersedes old fixed-composite compatibility. Root's PROD02:12:1
 
 ## Work Items
 
-- [x] Adopt accepted dependency and exact dual-provenance receipt/readers/fences.
+- [x] Implement current template-bound receipt/readers/fences against the exact provided candidate.
+- [ ] Reconcile actual approved current public release/registry lock and clean npm-ci/remote checks before final review.
 - [x] Add defaultOFF single-bubble composition and fullTEXT fallback with shared budget.
 - [x] Prove actual default AI/HUMAN optional-product flow, oldplanreplay/guards/billing and actual image+caption.
 - [x] Publish exact source/report/private offline visual artifact; stop for review.
@@ -130,7 +131,7 @@ Root branch review/test and later independently authorized guarded rollout. No l
 - [x] Focused RED/GREEN canonical composite/caption/header/facts/tenant/output/unknownkind/tamper/deadline/fallback/legacy vectors.
 - [x] Actual disposable PG/Redis default HUMAN and AI engine onepart transport+footer/moderation/billing once, control/replay/UNKNOWN negatives.
 - [x] Actual offline private Eugene rendered image and emitted caption for root visual review; no commit of customer/shopasset/privateURL.
-- [x] Relevant declared fulltests/build/type/scopedlint/exactbaseline, published dependency/lock integrity/privacy/isolation evidence.
+- [ ] Final published dependency/lock/npm-ci/remote gate pending; local fulltests/build/type/scopedlint/exactbaseline/privacy/isolation evidence complete.
 
 ## Stop Condition
 
@@ -141,6 +142,37 @@ Publish exact mirrored source/report, set review and return architect. No main m
 Normal launcher dedicated sibling worktrees. You are not alone; preserve others and primary. Original approved mock is schematic only: small contained logo alongside shop details, divider, product beneath. Root owns operational/visual review and integration; no live sends.
 
 ## Completion Report
+
+### Attempt 2 — tested prepublication checkpoint
+
+**Status: In Progress; source checkpoint tested and pushed, actual public registry adoption pending.** This is not final review or deployment readiness. Current source is `52d469b4c797c169f9a941259c691c2683862300` on mirrored `task/ARCH-075-BACKGROUND-014`; [draft PR224](https://github.com/kodjobaah/moda-interact-background/pull/224). No main merge, live configuration, provider send, database migration or customer/audit-record mutation was performed.
+
+#### Mandatory corrections implemented
+
+1. **Implemented:** current composite rendering consumes the Shared profile-aware API. The optional `compositeProfile` / `compositeProfileSha256` pair comes exclusively from the SAME selected immutable common template/prepared reference as header/footer. Background owns no visual defaults, duplicated profile schema, independent active profile row or `messaging.recoveryCompositeLayout` key. Superseded policy drafts are preserved privately, not executed.
+2. **Implemented:** strict host receipt binds `templateReferenceHash`, independently verified logo/product facts, profile-bound output and original font/runtime identities. Full template/profile remains frozen in the common reference and image provenance/application key. Existing `currentCommonReferenceMatches` locks and re-reads the exact active definition/locale/reference before dispatch; there is no separate configuration authority or extra network work in the transaction.
+3. **Implemented:** the NEW composite branch refuses a missing/unsafe template profile through existing `PREPARED_INVALID` admission. Valid-profile optional media/font/network/caption failures preserve one full canonical TEXT fallback. Existing flag-OFF established non-composite writer remains unchanged per the explicit root cutover disposition. Current composite has no fixed-format ReceiptV1/context/decoder execution path. Root's read-only zero-composite inventory is the removal basis; historical records and established TEXT/BRAND/PRODUCT/multipart lifecycle are retained.
+4. **Implemented:** Background explicitly enforces trusted checkout as the final canonical footer line plus exact caption/logical decomposition, independently of Shared technical machinery. Tests prove Shared can bind alternate supplied parts while Background rejects the noncanonical application layout. Host `trusted.body` is assembled independently from canonical answer+footer, never copied from an untrusted plan.
+5. **Implemented:** original AI/HUMAN lease budget, source/tenant/product/brand/control/moderation/billing/UNKNOWN/no-resend and immutable current replay guards remain. Two saved-template geometries through the SAME installed renderer include left logo and centered/top logo with different font/spacing/product gap. Normal cloned-template activation races are tested without mutating immutable saved source.
+6. **Pending release gate:** exact candidate6.0.0 is locally installed and tested. Root expressly authorised the WIP `package.json` declaration6.0.0 and exact-version assertions while the original registry lock remains unchanged. Manifest/lock mismatch is intentional PREPUBLICATION WIP: clean npm-ci and remote CI are NOT ready/passing claims. Real registry URL/SRI/lock adoption and newly enabled checks must follow separately authorised actual publication. No registry metadata was invented.
+
+#### Exact validation and artifact evidence
+
+Evidence is protected under primary `local-backups/arch075-live-20261113/`; private checkout content/assets are not committed.
+
+- Provided current-only archive029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929:965707B/161files; all installed files compared exact. `bg014-attempt2-current-pack.json`. Final major6.0.0 candidate `/tmp/ARCH-075-SHARED-013/modainteract-moda-interact-shared-6.0.0.tgz`, SHA256 `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8`,965706B/161files; all160 nonmetadata members identical to029b, only package version differs. `bg014-attempt2-major6-comparison.json`; no-save/no-lock installation again compares all161 files exact and verifies registry lock untouched (`bg014-attempt2-install-major6.log`). Candidate is not a public-registry readiness claim.
+- Source build / both TypeScript outputs / Prisma6.19.3 generation / Meta sample packaging PASS (`bg014-attempt2-build-current.log`); independent current source noEmit PASS (`bg014-attempt2-type-current.log`). Major6 changes metadata only; exact DTS/runtime member comparison retained. Generation, tests and integration were serialized.
+- Focused current suite PASS325 tests/15files,21.29s (`bg014-attempt2-focused-final.log`). Initial centered fixture correctly returned typed `HEADER_OVERFLOW`: the authored text frame was too small for its multiline header/46pt spacing. Corrected only the test-authored frame; the undersized profile remains an actual-renderer overflow/no-R2-write negative. No renderer/safety rule or timeout was weakened; diagnostic traces retained.
+- Actual disposable PostgreSQL/Redis: **76 unique cases verified**. Combined two-file run `bg014-attempt2-postgres-current.log`:75 PASS/1 failure caused by existing `engine.reconcileRoot` Prisma commit expiry (5000ms limit,6239ms elapsed), no provider send. Exact same source and unchanged timeout isolated rerun `bg014-attempt2-postgres-isolated-template-revision.log`:1 PASS/47 intentional name-filter skips,2.79s test. Engine diff is empty. Preserve both traces; do NOT claim the original combined run was green or assert an unproved environment cause. Includes actual default AI/HUMAN one-part transport/status, once-only billing/product context, control/UNKNOWN/replay and cloned-template revision/profile/no-profile races.
+- Final immutable52d469b major6 default test footprint covered by disjoint declared-unit and embedded-source runs: `bg014-attempt2-full-major6.log` (`npm run test:unit`) **4359 PASS /392files**,246.45s; `bg014-attempt2-embedded-src-major6.log` (`npx vitest run src`) **27 PASS /4files plus1existing skipped file/10existing skips**,5.63s. Combined **4386 PASS /396files;10existing skips/1file**. This covers default Vitest include `tests/**` + `src/**` with integration excluded by standard config; no duplicated broad rerun and no source changes during either final run. Existing macOS dual-libvips class warnings remain; no test failure.
+- All changed-file scoped ESLint and `git diff --check` PASS (`bg014-attempt2-lint-major6.log`, `bg014-attempt2-diff-check.log`). Full lint `bg014-attempt2-full-lint-major6.log` has exactly4 pre-existing `@typescript-eslint/no-unused-vars` errors: `pending-recovery-candidate/candidate-index.store.ts:9`, `recovery-offers/recovery-offer-resolver.service.ts:23–25`. Both files byte-compared against unchangedc788932; no full-lint-green claim.
+- Current offline synthetic saved-template candidates use retained historical shop header/assets, no live DB/provider/model request/send. Four protected outputs: `composite-qa/bg014-current-left-no-product.jpg`1125x30028908B; `left-product.jpg`1125x90053621B; `top-no-product.jpg`1125x60023999B; `top-product.jpg`1125x124066836B. Root independently reviewed original product JPEGs: shop details + authored divider, separate product region, no source crop, no answer/checkout pixels. All captions equal257 codepoints / SHA256 `be83ec185629c741283a5d522890c79b2af52b843ee6084fac6064d459393f57`; full logical356 equals exact canonical header99+caption, exact footer196 retained and trusted checkout once in this offline fixture. Caption/body/receipt files0600. The offline helper's initial hardcoded test environment was correctly refused; only that private fixture was corrected to actual host environment, preserving runtime policy guards.
+
+#### Attempt 2 isolation / Git evidence
+
+Normal prepared launcher packet `bg014-attempt2-prepared.json`: claim `1d7e7280851d76fb92349d7754df5a0fa7d0d83b`, attempt2, codex,2026-11-14T01:27:07Z, synchronized parentf77037138 and explicit dependency/submodule gates passed. Canonical primary `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-014`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-014`. SAME task branches reused for rework; no primary/default/sibling checkout switched, no gitlink staged. Source52d469b pushed; parent checkpoint committed/pushed separately. No architect acceptance decision is made by this agent; final review waits actual approved publication/registry adoption.
+
+### Attempt 1 — historical checkpoint (superseded implementation; retained evidence)
 
 ### Status
 
