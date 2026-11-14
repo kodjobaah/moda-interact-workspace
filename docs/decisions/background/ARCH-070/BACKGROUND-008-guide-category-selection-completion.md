@@ -139,7 +139,7 @@ The historical model intent/adherence cause is unproven. Root owns synthetic con
 
 None requiring Shared source/release. SDK forwarding is intact; the current correction is narrowly application-owned semantics.
 
-## Architect Review
+## Historical Architect Review — accepted attempt1
 
 ### Review Status
 
@@ -187,7 +187,7 @@ Root bounded actualrun must preserve full instructionorder/features/history and 
 - [ ] Root actualfullcontextdiagnostic result recorded privately with honest reconstructionlimits.
 - [ ] Return diagnosis+minimalowningcorrection contract to architect; incident remains InProgress.
 
-## Architect Review — latest Changes Requested (attempt2)
+## Architect Review
 
 ### Review Status
 
