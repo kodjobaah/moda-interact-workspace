@@ -273,3 +273,5 @@ ARCH-075-GATEWAY-003 Complete/Accepted exactsourcea2157f2df59566bbdf1b597ab8a54c
 ARCH-075-ADMIN-010 Complete/Accepted adds Admin-only truthful media-binding presentation/grouped existing dimensions and matching preview; no new SHARED productImage variable or runtime contract. Existing AI binding remains unchanged.
 
 ADMIN010 acceptance: exact7782f4c16a6b2c31a15341585a565cb578029cb6, immutable report1eef4eb6a72a3c95df30ef7b4df255f8bda637de. Admin-only binding/size controls; root integration pending, no live template change.
+
+ARCH-075-SHARED-015 pending: Publish accepted common layout structural reader; Release-only accepted source as proposed6.0.1; confirm semver before metadata. Produce immutable exact archive and public diff, no implementation changes. Public npm publication requires ROOT relay of explicit user approval for that exact archive; existing6.0.0 approval does not apply. Do not publish before concrete Admin/BG candidate validation. Verify registry downloaded bytes/SRI/latest and report.
