@@ -279,3 +279,6 @@ ARCH-075-BACKGROUND-015 Complete/Accepted: Bound AI product-list composition to 
 BG015 Ready strategy: complete descending verified selected prefixes, exact saved-frame caption budget, filtered proof/pairs/context, no arbitrary prose/HUMAN truncation; fallback if no safe fit.
 
 BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: evidence-safe caption prefixes; root integration/live proof pending.
+ARCH-075-SHARED-014 Complete/Accepted: Parse common layout structure without application placement policy; Keep envelope/prepared/hash verification and exact mechanical single response slot; remove shop.name/site header placement, empty footer, checkout conditional/last-line business checks from readCommonRecoveryLayoutReference. No new website footer placement rule. Preserve exact hash integrity, reject malformed shape/tamper/duplicate response slots, no operational authority. Audit exported callers. Explicit application policy must guard Admin/BG consumer paths before new writes. Add tests for structurally intact alternative section placements accepted and tampered/unsafe frames rejected. No renderer or unrelated contract refactor.
+
+Shared014 Accepted exacta870977566babb35aac7b38e59efd194b64770b3/report3e163e8f; structural only. App-owned consumers and actual approved publication remain gated.
