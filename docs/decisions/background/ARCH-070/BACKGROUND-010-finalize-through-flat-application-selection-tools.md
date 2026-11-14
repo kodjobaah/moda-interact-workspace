@@ -99,35 +99,42 @@ Normalmoda-task newcanonical sibling/claim. NotaloneShared007owner/API maychange
 
 ### Status
 
-Not Started
+In Progress — concrete locally tested preparatory source pushed. Root actual trial and accepted/public dependency/registry gates remain; not merge-ready.
 
 ### Files Changed
 
-None
+Background `349112ea610da2903865900dbe5db0987fd7d11c`, draft PR235: new `src/commerce/recovery-terminal-finalizer.ts`, matching pure tests, host integration and evidence/selection wire suites. Explicit authorized BG009 lineage `42bbd72` was fast-forward merged after normal fresh BG010 preparation; no diagnostic233 source imported.
 
 ### Work Completed
 
-None
+Stable export `makeRecoveryTerminalFinalizer({responseContract,responseContractHash,digest,platform})` returns the canonical Shared TerminalDecisionPort or null for unsupported pinned shapes. Finite direct-object completion tools preserve model-selected detail/options/recommendation identities, shipping-only disposition/identity, shipping adjuncts on each sole family, truthful shipping limitation, nonproduct/redirect and exact mandatory referral. Optional shipping/disposition values are copied only when model-supplied. Referral tool never offers null; custom disposition/version meanings retain original canonical path rather than being silently discarded.
+
+A synchronous mode selector uses canonical current product DTO parsing and existing provider-aware shipping observation helpers. Required referral advertises referral only; required product grounding excludes nonproduct/redirect; shipping modes require current matching observations. Projection returns a separate framework binding and canonical value, preserves raw call ID/name/arguments, rejects malformed/unknown/duplicate/foreign identities and unsupported fields, and retains canonical schema/referral/language/evidence authority. Shared owns final grounding and terminal failure mechanics, including no extra model/tool work.
 
 ### Validation Results
 
-Pending
+- Exact candidate archive `c09ea94f6907a46748221c50c0528cd58743cc15f1fd0eb7d79067fcdfdda549`, 982879 bytes / 163 files, installed no-save/no-lock; metadata6.0.1 is not a publication claim.
+- Final pure matrix20 PASS (1.22s), including all modes/adjuncts, recognized shipping dispositions accepted by the existing canonical selection helper, mandatory referral, language pair, duplicate/foreign/no-observation/provider checks and unsupported custom pins.
+- Actual host suite137 PASS (21.52s): real SDK HTTP flat required-tool choice; raw provider ID/name/arguments unchanged while canonical decision is separately verified; invalid empty/foreign/multi/nonproduct decisions terminal with unchanged call counts/no extra reads; stale state blocks final reads/delivery. Ordinary discovery/canonical outcomes retained.
+- TypeScript, scoped lint and diff checks PASS at final source. Repository build running after bundle generation, with no concurrent importer tests.
+- Earlier provisional checks exposed TS annotations and expected legacy terminal-tool assertions, corrected without weakening guards. A test initially inspected recommendation products for a detail presentation; corrected to the existing productFacts/envelope representation. No unexplained failure waived.
+- Node22 combined runner+SDK+app bundle uses exact extracted candidate and alias for the application's commerce import; no published Shared duplicate, maps or renderer assets. Source/factory/archive/bundle/external-import receipt `/tmp/arch070-terminal-combined-receipt.json`; bundle SHA256 `78e886e5a6309c6b64b813e6f11e0282e631bac89d7dd29c7252759963b1215b` (155430 bytes), deterministic gzip SHA256 `ca1a17a7c0e4eb87f4b71025911668c792facd7db3c1c8542c0be49f7ff3793b` (45968 bytes). App factory SHA256 `913b128b919f2f76b01abc4f1c79a0af0bb9926fe4ef5134780ce0d730eb6c3e`.
 
 ### Deviations
 
-None
+No final approval or publication inferred. Source and local package remain a held draft; normal registry pin/lock/npm-ci and exact CI follow actual approved publication. Root alone executes the natural no-seed full-context trial with both candidate runtime/SDK and exact app factory; no agent provider/MCP/live action.
 
 ### Assumptions
 
-None
+Normal claim `bd014b95ee43e78e9c3267353a7a56cf81de5fc6`, attempt1 at2026-11-14T20:07:16Z. Launcher authoritative fresh sibling worktrees/mirrored task branches used. No primary/other implementation source or parent gitlink staged.
 
 ### Unresolved Issues
 
-Fullcontext efficacy notyetproven.
+Actual full-context efficacy pending. Accepted Shared007, user-approved publication008, exact registry member identity/lock, clean npm-ci and final checks remain mandatory; task stays InProgress. No production fix/deployment or delivery claim.
 
 ### Architectural Concerns
 
-None
+None beyond explicit dependency and actual-conformance gates.
 
 ## Architect Review
 
