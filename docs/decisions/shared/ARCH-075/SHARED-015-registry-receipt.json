@@ -1,0 +1,22 @@
+{
+  "verifiedAt": "2026-11-14T14:40:56.354354+00:00",
+  "package": "@modainteract/moda-interact-shared",
+  "version": "6.0.1",
+  "registry": "https://registry.npmjs.org",
+  "access": "public",
+  "latest": "6.0.1",
+  "tarball": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-6.0.1.tgz",
+  "bytes": 965127,
+  "files": 161,
+  "sha256": "fd7b4a70d2a54da175556739074acdb5ee4487dc9c7e9c68a656717de3137aa2",
+  "shasum": "b0fd8cc7801bb49ba1d74aae30151b8e189895b6",
+  "integrity": "sha512-q/nZZUpDIwCnaCvyJTa200XRzr9NRtBlMjDV64Ks77419Bw/eGWcft9XeounZfzY+GlocfjU5LbyxskS1FH92Q==",
+  "registryBytesEqualApprovedArchive": true,
+  "packageMetadataVersionVerified": true,
+  "priorPublic600IntegrityUnchanged": true,
+  "sourceMetadataCommit": "016f660d0a51469233b29552be3acfef637899e7",
+  "actualMergedSource": "4c736db2422a2001d0f3634403734f85a75626c0",
+  "explicitUserApproval": "Root relayed explicit user approval: \"Publish 6.0.1 publicly\", for this exact fd7b4a70 archive on the existing public package/latest after consumer candidate gates passed",
+  "publishExitCode": 0,
+  "publishCommand": "npm publish /tmp/ARCH-075-SHARED-015/modainteract-moda-interact-shared-6.0.1.tgz --ignore-scripts --access public --tag latest --registry https://registry.npmjs.org"
+}
