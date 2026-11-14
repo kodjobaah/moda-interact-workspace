@@ -94,35 +94,49 @@ Source inspection proves no existing reconciliation read-lease (CREATE submissio
 
 ### Status
 
-Not Started
+Implementation and all local required checks complete; exact remote CI pending before review return.
 
 ### Files Changed
 
-None
+- `src/services/meta-template-management/admin-reconciliation.ts`: exact persisted Admin command identity/frozen-hash predicate; no repair/coercion or submission authority.
+- `repository.ts`: bounded pending Admin request discovery merged with existing due rows, oldest effective due/request order, registration deduplication, max50 rows/receipts per scan and exact selected receipt IDs.
+- `service.ts`: Admin timer items use only existing reconcileRegistration, validate selected receipts before provider verification/read, and count stale/rejected commands separately from successfully handled observations; ordinary submission path unchanged.
+- `status-repository.ts`: terminal fixed-reason REJECTED for invalid exact requests, pending/backoff preservation, exact selected receipt revalidation and atomic successful receipt/status CAS; no newer request sweep. Accepted BG017 raw-hash/equivalence event evidence preserved.
+- `tests/unit/services/meta-template-management/admin-reconciliation.test.ts`, `meta-management.test.ts`: identity changes, processed/unsubmitted/frozen mismatch, bounded discovery ordering/deduplication and actual normal timer Admin-only/no-CREATE routing.
+- `tests/integration/arch075-admin-meta-reconciliation.integration.test.ts`: actual durable Admin-shaped receipt→normal timer→authoritative projection+receipt, concurrency, replay, newer concurrent request, identity rejection, unavailable/backoff, stale row, never-submitted no-CREATE and externally processed receipt cases.
 
 ### Work Completed
 
-None
+Exact source `1d01849aa0b1a67f4baca9f9e9eac2828d532a19` pushed on `task/ARCH-075-BACKGROUND-018`, draft PR https://github.com/kodjobaah/moda-interact-background/pull/230. Pending valid requests can refresh a submitted registration despite its normal future six-hour schedule. Discovery stays bounded and FIFO by effective due/request time; no queue, schema, new event type/configuration or Shared/Admin changes. Receipt registration/WABA/provider ID/name/language/submitted hash and locale frozen identity must match before GET. Exact invalid receipts terminate REJECTED with fixed ADMIN_RECONCILE_IDENTITY_STALE, never success; valid newer requests are untouched. Successful authoritative CAS rechecks and marks only selected request IDs in the same transaction; receipt races cannot authorize an uncorrelated projection. Provider exceptions leave the valid command pending and retain existing durable retry/backoff; repeated clicks cannot bypass it.
+
+Source inspection disproved the assumed existing read lease. Root/architect amendment0d20d5dc2 explicitly permits bounded at-least-once read-only GETs and existing updatedAt CAS as single authoritative commit, with no pseudo-lease via failureCode/nextRetryAt and no new claim/schema. Implementation follows that clarification: no network inside SQL transactions, no CREATE/resend for an Admin command. This control timer path adds bounded discovery/identity work only; Shopify hot path and customer messaging/billing are unchanged.
 
 ### Validation Results
 
-Pending
+- Normal launcher packet: primary `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; canonical parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-018`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-018`; mirrored task branches. Attempt1/codex claimed2026-11-14T16:02:08Z, pushed parent claim6d57b7a870ccb4a509a32de0e259e1a0c6dd0abe. Starting parent258541a48171e9856f9316b86eefff539e87f7f4/sourcec041c88757ec6d1ddc583dd2cde6e0cf92755796; database submodule6f42b71112efe7ac63654d55f41cd74ca569b1ae initialized/ready. No primary/other-task modifications or gitlink staging.
+- Synced actual accepted BG017 origin/main `c8ee5491d2e6eccd54b0de1dfcf8863d9e373d94` before implementation/final checks. No diff in its contracts/provider-text-equivalence helper; status/service additions preserve its rawhash/equivalence evidence. Parent scope amendment0d20d5dc2 read without a new claim.
+- `npm ci` and declared `npm run build`: PASS, including both TypeScript compilations. Scoped ESLint on all7 changed files: PASS. `git diff --check`: PASS.
+- `npx vitest run tests/unit/services/meta-template-management`:189PASS/11files, covering timer/service/repository/identity and existing provider/sample/throttle/equivalence paths.
+- Actual disposable PostgreSQL combined14unique cases PASS: initial3files12PASS (`arch075-admin-meta-reconciliation`, accepted `arch075-meta-nbsp-equivalence`, existing `arch047-meta-template-management`) plus2 final negative cases added after the first run loaded, bothPASS via targeted `--testNamePattern 'never-submitted|externally handled'`. No failed tests, no waived cases, no redundant broad rerun. Commands use existing `node scripts/test-integration.mjs`; only disposable PostgreSQL/fake provider, no managed DB/network provider operations.
+- PG receipts prove normal future-six-hour row is discovered through its Admin request; replay idle; two concurrent read-only GETs but exactly one RECONCILE/status commit; selected receipt processed once; later request not consumed by older observation; exact identity mismatches rejected before provider verification/GET; never-submitted Admin command cannot trigger CREATE; unavailable provider leaves pending/backoff and later retry succeeds; changed row CAS or externally handled receipt cannot commit stale success. Provider create spies remain unused in command processing. BG017 NBSP/raw identity/final-admission regression and existing047 intent/webhook regression PASS.
+- Known full-lint4 baseline remains untouched: candidate-index.store.ts:9 readRecoveryExecutionPolicy and recovery-offer-resolver.service.ts:23-25 MAX_CANDIDATES/VERIFICATION_TIMEOUT_MS/AI_TIMEOUT_MS. Starting/current exact blobs8bff21b8514b4449dd326c1c1dac12a3ba4a8dbf /077bcbb76c018428bd5b64c0c82d2a1903b5c6e4 match previously proven BG006/BG007 baseline. No unrelated full-repo cleanup/reinvestigation or full-lint-green claim.
+- Exact remote CI43615034048/43614951519 pending. Private logs retained under primary `local-backups/arch075-bg018-*` (npm-ci, build, focused, postgres, postgres-negative, scopedlint, preparation packet). Source/report contain only synthetic test identities, no live secrets/raw customer payloads.
 
 ### Deviations
 
-None
+Root-authorized correction of nonexistent read-lease assumption recorded above; no new lock/claim/lease mechanism. Two late-added negative tests were executed separately after the original PG run had loaded; combined exact unique receipt reported honestly, with no failures/waivers.
 
 ### Assumptions
 
-None
+Root owns accepted merges, deployment and normal Admin UI/worker proof. This agent performs no live calls, provider submission/activation, managed DB flag edits or main merges.
 
 ### Unresolved Issues
 
-None
+No local implementation blocker. Existing read-only GET duplication remains bounded at-least-once under concurrent workers by explicit scope; only CAS-authorized projection/receipt commits once. Provider approval/PENDING state and actual UI rollout proof remain external/root-owned.
 
 ### Architectural Concerns
 
-None
+No Shared release/schema/queue/Admin edit, no sample/create lease reuse, no pseudo-lease and no new generic logger/transport. Existing service/provider validation/CAS/backoff remain owners of reconciliation.
 
 ## Architect Review
 
