@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T22:37:56Z
@@ -96,6 +96,26 @@ After definedchecks publishmatching source+parentreport, review and STOP. Public
 Normal moda-task canonical siblingworktree/claim; notalonepreserveothers. Rootownslive/publicapproval/mainmerge. Inspectrole/policies/declaredscripts. Shopifyingress hotpath unaffected; perconversation ephemeralbounded transcript no globalcache/state. No newgenericlogs/rawcontent; framework/sharedloggingonly.
 
 ## Completion Report
+
+### Attempt 4 — whole-batch terminal equivalence
+
+Current source `c1c1d2b8d00276dd88bf974997db2c8855fa9aa4`, existing PR https://github.com/kodjobaah/moda-interact-shared/pull/93. Prior accepted source/report retained below. Ready for Review; all bounded local checks passed. No incident-efficacy or release claim.
+
+Latest Changes Requested checklist:
+
+- Implemented: only the existing terminal-decision phase admits an equivalence class when every actual call has a valid unique provider ID, a currently advertised identical name and canonical-JSON-identical arguments. Ordinary, unknown, selected-out, differently named/valued, duplicate/missing-ID or no-call responses invalidate the entire batch before projection/tool work. Ordinary and absent-port routing unchanged.
+- Implemented: `TerminalDecisionBinding` adds ordered immutable `callIds`, `rawStepSha256`, `rawCallsSha256`; existing `callId/toolName/rawCallSha256` explicitly identify the first ACTUAL member only after equivalence proof. `TerminalDecisionInput.calls` exposes the whole immutable class alongside unchanged full `transportStep`. Application must return the exact framework binding reference; no manufactured call/ID or rewritten provider arguments.
+- Implemented: one synchronous project and unchanged canonical validators; raw original step/text/calls/journal preserved. Every accepted actual ID receives its own mechanical native acknowledgement. Original model step/output charged once, remote work remains zero for terminal tools. Existing count/trace limits/cancel/deadline/referral/evidence/selection guards retained.
+- Implemented: generic synthetic equivalent3-call fixture (two synthetic selected pairs and accompanying provider text), all ordered IDs/fullstep/calls digests/immutability, complete native pairing and project-once checks. Negative differing argument/name/ordinary/unadvertised/duplicate/missing ID, batch mutation/foreignbinding/invalid projected result are terminal. Actual pinned SDK retains all three raw calls/IDs/text. No merchant data fixture committed.
+- Implemented: typecheck and focused affected model/runner 212 PASS; tsup ESM+DTS PASS; git diff check PASS. No unrelated full-suite repeat, as directed.
+- Implemented: exact installed Node SDK/native IDs/chronology/observation binding/plaintext/optional-parameter omission/type/browser checks PASS, including whole-batch binding type access. Exact archive-derived Node22 bundle produced. Root exclusively performs actual private016 offline replay and any separately authorized natural proof before efficacy acceptance. No provider call by this agent.
+
+Exact superseding unpublished archive `/tmp/ARCH-070-SHARED-007/terminal-batch-79003cd3cd4e.tgz`, metadata6.0.1, 983660 bytes/163 members, SHA256 `79003cd3cd4e7a73ce83f4bc6c6e6ce073a26a0c9c1166553074227f42d80b2b`. Background/root received identity for local integration only. Previous archives remain historical and public6.0.1 unchanged. Eventual additive6.1.0 release remains separate and requires new exact public approval.
+
+Launcher evidence: attempt4 codex claim `3ff55dea11839e5f5ea3ed794fce0730815a2f81`; canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-SHARED-007`, implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-SHARED-007`, both `task/ARCH-070-SHARED-007`, canonical worktrees reused. Both task remote FF not needed and origin/main already current; recursive implementation sync/update passed with no entries. Initial parent1b025bebf/implementation667a658. No shared checkout switched, other task reused or parent gitlink staged. Source committed/pushed, no main merge/publication/live operation.
+
+
+Attempt4 archive-derived Node22 diagnostic exports only `runCommerceTurn` and `OpenRouterModelClient`, external packages/no assets/maps/declarations. `/tmp/ARCH-070-SHARED-007/diagnostic-79003cd3cd4e/native-candidate-79003cd3cd4e.node22.mjs`, 146172 bytes, SHA256 `1ba349f16fd74b7dd9b39141971a89fc3883ffa805fd63125cbd7042be7581cf`; gzip 43278 bytes, SHA256 `721fdedc90a4698288da8e2001e0bdc025f6bf9bcab4424310a1f943533ad782`. Root received exact identities for private offline016 replay. No actual provider efficacy inferred from offline fixtures.
 
 ### Attempt 3 — optional transport parameter correction
 
