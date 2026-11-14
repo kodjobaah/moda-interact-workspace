@@ -95,6 +95,10 @@ Select optional prepared `compositeProfile` + `compositeProfileSha256` only from
 
 Adapt tests to two saved common-template profile revisions through the SAME installed renderer; source/locale/profile/hash mismatch, profile metadata tamper/changed selected template, default AI/HUMAN replay/control/UNKNOWN and oldV1 intact. Preserve old immutable source and require normal new template clone/review activation, no in-place template mutation. Existing native Meta templates untouched. Continue same attempt2; authoring/operational rules in Admin, wire/safety in Shared, selected current template authority in Background. Root owns accepted coherent merges/deployment; no live changes.
 
+### Current-only composite cleanup and application policy
+
+User explicitly supersedes old fixed-composite compatibility. Root's PROD02:12:15Z and TEST02:13:09Z read-only inventories found zero fixed-composite outbound/parts; .11 fixed-composite source was never deployed. Remove fixed ReceiptV1/trusted-context/adapter/decoder branches and preservation tests, not established live non-composite TEXT/BRAND/PRODUCT/multipart/control/history lifecycle. Current executable composite requires same selected saved-template profile; no current profile means no obsolete composite execution. Retain immutable audit/customer/history records, no database deletion/migration. Root replaces active missing-profile sources before rollout. New V2 Shared does NOT enforce application checkout placement; Background explicitly verifies canonical trusted footer/checkout decomposition before I/O and final authority, with alternate safely bound parts rejected by application. Exact host caption/logical identity still cryptographically bound. No new compatibility adapters; retain checkpoints/backups only. This supersedes earlier fixed-composite V1 preservation instructions, not unrelated existing message support.
+
 ## Work Items
 
 - [x] Adopt accepted dependency and exact dual-provenance receipt/readers/fences.
