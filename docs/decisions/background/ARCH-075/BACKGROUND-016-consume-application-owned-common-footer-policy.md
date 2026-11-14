@@ -90,35 +90,42 @@ Root explicitly authorizes independent concurrent Background specialist for comm
 
 ### Status
 
-Not Started
+In Progress — concrete candidate source/tests pushed; final publication/registry checks held.
 
 ### Files Changed
 
-None
+- New common-layout-policy.ts: application-owned trusted binding/placement admission wrapper over canonical Shared reader.
+- common-layout.ts: receipt/rendered-boundary/current-source readers use owning policy.
+- composition.ts: selectedCommonLayout only substitutes policy reader import/call; no compact product edits.
+- recovery-template-common.ts: native source/reference identity paths use same app policy.
+- New focused policy tests and separate disposable PostgreSQL current-source authority test.
 
 ### Work Completed
 
-None
+Source be0128b593323b87297b111327fbf10cc741d419 pushed on matching task branch. Shared remains technical snapshot parser; Background requires exactly one trusted name in header, one website in old header OR checkout-aware conditional, empty static footer, exactly one checkout conditional, allowed bindings only, and exact trusted checkout token on final separate line. All direct exported reader callsites audited and routed through this app policy. Original valid header-site sources are preserved byte-for-byte. No source rehash/rewrite, arbitrary authored text surgery, model/compact/permit/billing change.
 
 ### Validation Results
 
-Pending
+- Exact accepted Shared014 archive6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a SHA verified; clean npmci then no-save/no-lock install; all161 installed archive files byte-identical.
+- Focused candidate tests24/24PASS2files: new app policy/native identities/website caption plus existing immutable/frozen common receipt tests. Structurally valid forbidden/duplicate/missing/trailing content rejected by host before SQL; exact website caption/native parameters and old hashes retained.
+- Build/types/scopedlint/expanded affected tests and separate disposable PostgreSQL authority proof active; no final passing claim yet. Final actual published6.0.1 adoption/real registry lock/npmci/remote CI held until root approval+publication. No fabricated registry metadata.
+- Prepared launcher: canonical primary /Users/kwadwoadomafriyie/project/moda-interact-workspace; parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-016 and implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-016, both task/ARCH-075-BACKGROUND-016. Initial parent8ffc7049778d4d400f7629dd6a4d7a056ee4eb1f; source d0c968e68d38031a9b3e884301573adbcbb08652. Both remote task sync not-needed/originmain already-current. Recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae ready, sync/update passed. Attempt1/codex claimed14:19:39Z commit6a3f94440529919986cea98282914f23a716674f pushed. No primary/other-task edits.
 
 ### Deviations
 
-None
+None. Preparatory execution authorized despite publication final gate.
 
 ### Assumptions
 
-None
+Root owns all merges/live/provider operations and exact public approval. Final sync with accepted BG015 main before coherent acceptance if it integrates first.
 
 ### Unresolved Issues
 
-None
+Actual approved6.0.1 publication and final registry checks pending; task remains In Progress.
 
 ### Architectural Concerns
 
-None
+None; semantic reader policy is deliberately application-owned rather than a duplicated Shared structural codec.
 
 ## Architect Review
 
