@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T17:36:21Z
@@ -181,40 +181,56 @@ Root bounded actualrun must preserve full instructionorder/features/history and 
 
 ### Attempt2 Work Items / Validation
 
-- [ ] Implement isolated safe input/output/callallowlist/budget harness using actualrunner/SDK.
-- [ ] Synthetic tests prove no unsafe tools/writes/sends/rawstdout and exactfullcontextorder forwarded, originalreturnedargs unchanged.
-- [ ] Types/scopedlint/relevantbuild and diffprivacy pass; exactheadCI whereconfigured.
-- [ ] Root actualfullcontextdiagnostic result recorded privately with honest reconstructionlimits.
-- [ ] Return diagnosis+minimalowningcorrection contract to architect; incident remains InProgress.
+- [x] Implement isolated safe input/output/callallowlist/budget harness using actualrunner/SDK.
+- [x] Synthetic tests prove no unsafe tools/writes/sends/rawstdout and exactfullcontextorder forwarded, originalreturnedargs unchanged.
+- [x] Types/scopedlint/relevantbuild and diffprivacy pass; exactheadCI whereconfigured.
+- [x] Root actualfullcontextdiagnostic result recorded privately with honest reconstructionlimits.
+- [x] Return diagnosis+minimalowningcorrection contract to architect; incident remains InProgress.
 
 ## Attempt2 Completion Report
 
 ### Status
 
-Implementation and local validation complete; awaiting root full-context diagnostic result and exact-head remote CI before review submission.
+Ready for Review. Diagnostic implementation, local checks and both exact-head CI checks passed. Root's authorized trials did not establish a working correction; incident remains unresolved and no diagnostic helper is wired into production.
 
 ### Changes Requested correction checklist
 
-- Implemented: isolated published-runner harness with complete supplied manifest/app instructions/context/history/current input, default offline captured model/tool receipts, no production host/database/processor/persistence/delivery imports (`src/commerce/diagnostics/context-probe.ts`).
-- Implemented: explicit operator gate for root-only injected configured model/read-only MCP, fixed 12/6/60000/2048 limits, safe read-tool allowlist, exact pinned grant/descriptor/version matching and exact captured argument replay.
-- Implemented: original request/output capture in fresh 0700 directory and exclusive 0600 artifacts, original model arguments unchanged, only safe shape/count/digest result exposed. Existing shared logger with private sink; no competing generic logger or public raw output.
-- Implemented: deployed evidence extractor callback passed unchanged to runner tools. Search/get/category/shipping do not normally produce discount evidence; retain the callback anyway. Host post-model ineligible-evidence rewrite and delivery revalidation are explicitly outside this isolated runner; no delivery equivalence claimed.
-- Implemented: synthetic guards for full context and ordered feature forwarding/private permissions/no stdout, default no model/network, explicit operator gating, unsafe descriptors/wrong tenant, unsafe model-requested create operation never dispatched, fixed budgets, exact read replay/refusal and original invalid model output preserved/canonical refusal.
-- Pending root evidence: actual configured model/MCP execution and causal/owning-correction disposition. No further prompt, schema, Shared release or production behavior changes were implemented.
+- Implemented: isolated published-runner harness with complete supplied ordered manifest/features/app instructions/history/current context, default offline captured receipts, optional unchanged deployed evidence extractor, and no host/database/processor/persistence/delivery imports.
+- Implemented: root-only explicit operator gates, fixed 12 model / 6 remote / 60000ms / 2048-token limits, read-tool allowlist, exact grant/descriptor/tenant matching, exact original argument replay and private exclusive 0600 artifacts in a fresh 0700 directory.
+- Implemented: pure diagnostic prior-step context helper, bounded known-schema normal-form transformer, and chronological current-turn context helper. None has a production caller. No business selections, IDs, arguments, canonical validator, retry count or provider configuration were changed.
+- Implemented: guards for privacy, original request/output identity, unsupported/collision/overflow refusal, canonical schema equivalence vectors and actual runner-visible chronology. Trace omission aborts the operator trial before SDK invocation; it does not silently run an unchanged baseline.
+- Implemented: root execution results classified below, preserving reconstruction and path differences. The next correction requires the owning native protocol contract; no further application-context trial or speculative prompt patch is proposed.
 
-### Source and validation
+### Source and local validation
 
-- Source `5bbbca7a99f15c14f8a4be607549ab922d74ee3d`, draft Background PR233. Owned files: harness, `tests/unit/commerce/context-probe.test.ts`, `docs/diagnostics/commerce-context-probe.md`.
-- Final focused guard suite: 7 PASS, 2.15s. Repository build passed initial harness; final evidence-callback delta passed `tsc --noEmit`, scoped ESLint and exact Node22 operator bundle build; diff check PASS. No unchanged broad local suite repeated.
-- Initial synthetic fixture used invalid language source `shop`; corrected to published `shopify`. Extractor fixture initially lacked canonical get-product payload and correctly failed before extraction; corrected to `{product:null}`, preserving all canonical validation. These were fixture corrections, not source guard weakening.
-- Exact Node22-compatible operator bundle `/tmp/arch070-context-probe.mjs` SHA256 `eaa5037c0a7e89bc479f31e58982c79f6b6e46a849f82a5e437c7053febc2cee`; published Shared dependency remains external. This is a local diagnostic artifact, not a hosted deployment or package release.
-- Exact source CI `43623474142` and `43623467171`: both SUCCESS at exact source `5bbbca7a99f15c14f8a4be607549ab922d74ee3d`.
+Exact source `d340061`, draft Background PR233. Owned source is under `src/commerce/diagnostics/`, with matching unit tests and `docs/diagnostics/commerce-context-probe.md`.
 
-### Isolation and limitations
+- Harness 7 guards PASS; prior-model helper 16 guards PASS; normal-form 3 tests including 502 original-versus-transformed AJV acceptance vectors PASS; final chronology helper 6 guards PASS. These differential fixtures are evidence for the supported known shape, not a formal arbitrary-schema equivalence proof.
+- Repository build passed initial harness; subsequent diagnostic-only deltas passed TypeScript, scoped ESLint, diff checks and exact Node22 operator bundle builds. No unchanged broad local suite was repeated.
+- Final chronology helper SHA256 `1192cfe93af33b192c7117b3bca21a674422a246424b27c28b89511babdb2efe`; root wrapper SHA256 `19437bdcf857b6adda52a2c03744b0e55a003f2576560c6c015a3379422834f1`. The helper bounds 18 whole events / 64KiB and context+history+current messages+runtime messages to 131072 canonical UTF-8 bytes; full request bytes including instructions/tool schemas are recorded separately.
+- Initial synthetic language/payload and canonical schema fixture errors were corrected without relaxing runtime guards. Full-lint has the previously verified four unchanged unrelated baseline errors; scoped lint passed. No full-lint-green claim.
+- Final source CI runs `43629429786` and `43629425012`: both SUCCESS at exact `d340061`. Earlier harness source `5bbbca7` had both configured unit checks SUCCESS.
 
-Normal attempt2 claim `1dfb8257de7f8f4fabb522cd0c23540c675b054e`; canonical mirrored task branches/worktrees reused and main synchronized by launcher. No primary/other task files or parent gitlink staged. No provider or live MCP calls made by repository agent.
+### Root-only actual diagnostic evidence
 
-Root snapshot uses actual moderation-aware production history/context readers and ordered pinned manifest, explicitly CURRENT_RECONSTRUCTION because the original processing boundary/request bytes were not retained. Exact ModelRequest and ModelStep artifacts are protected; they are not raw provider HTTP/reasoning captures. Injected operator adapters must retain production authorization and redirect their own transport output privately. Diagnostic success alone cannot prove the genuine incident fixed.
+All actual calls were executed by root, with protected artifacts and no shopper send, usage write, delivery replay or host persistence. Installed production Shared was 6.0.1. The snapshot uses actual moderation-aware readers and pinned feature order but is CURRENT_RECONSTRUCTION: the original pending boundary/request bytes were not retained.
+
+- 001: two actual model calls and two category-resolution reads; no currently observed products and no finalResponse call. It did not exercise required selection and is not efficacy or delivery proof.
+- 002: invalid diagnostic fixture text failed before actual SDK/MCP calls. Root corrected the fixture in a fresh directory; no guard was weakened.
+- 003: explicit artificial first browse discovery step, then four actual SDK calls/six read-only tools. Product observations were present; terminal FINAL_PRODUCT_SELECTION_MISSING. Finalization was budget-forced, unlike the genuine version28 plaintext missing-selection repair. Its preceding model output was an ordinary discovery call, not a prior invalid final answer.
+- 004: one SDK call/zero MCP using immediate prior-output context; NEGATIVE. Pinned schema valid, accepted selection false, ANSWER details empty. No production wiring.
+- 005: one SDK call/zero MCP with the lossless known-schema visibility candidate; NEGATIVE. Pinned schema valid but both original dynamic tool schema and normalized schema invalid; accepted selection false. Generic JSON-schema equivalence does not imply OpenAI/DeepSeek native strict-subset portability. No production wiring.
+- 006: one approved full-run chronology trial, five steps including the explicit diagnostic browse seed, four actual SDK calls/three tools. NEGATIVE: FINAL_PRODUCT_SELECTION_MISSING, no selections, trace was never omitted. Eight trace events; maximum combined data bytes 36045 and full canonical request bytes 77737, both within reviewed limits. Final output SHA256 `24cdaf0967d97830bc3f2392d766fbfdd55a735a955ff3e5f204dcba72fbcbbe`. Root inspected all four actual request frames: after two successful browse reads and one category resolution, an ordinary plaintext category answer had no calls; the existing missing-selection repair then forced finalResponse with empty details. This exercises the same repair path as genuine version28, unlike budget-forced003, while remaining a current reconstruction with an artificial first browse step rather than exact historical replay. No input-cap omission or output-token exhaustion was observed.
+
+### Concrete gap and next ownership boundary
+
+Current model requests retain original conversation history and runner tool-result messages, but not a native ordered assistant/tool transcript with real tool-call IDs. Runtime results are serialized as human JSON messages. Bounded app-context feedback and schema visibility changes failed these controlled trials and must remain unwired.
+
+A proper correction needs a coordinated Shared-owned request-local native transcript contract preserving real assistant tool-call identities and ordered matching tool outcomes (including truthful local validation/cache/budget outcomes), with bounded serialization and unchanged canonical verification. Background should consume that contract only after a separate accepted task/release. This report does not authorize a schema fork, fabricated IDs/selections, more retries or a production fix claim.
+
+### Isolation
+
+Attempt2 claim `1dfb8257de7f8f4fabb522cd0c23540c675b054e`; canonical mirrored task worktrees/branches reused and synchronized by launcher. No primary/other task files or parent gitlink staged. Repository agent made no actual provider/MCP/live calls. Diagnostic source remains on the task branch pending review and root disposition.
 
 
 ## Architect Review
