@@ -82,6 +82,8 @@ Root source/parent integration and separately owned deployment verification. No 
 
 ## Validation
 
+- [ ] Build the exact production MCP Dockerfile on accepted pin (actual Node24.19bookworm path), with no sensitive env/buildargs; reuse existing lifecycle runner if it builds the same file, avoid duplicate heavy build. Root explicitly requires this actual failing build path, not host TypeScript alone.
+
 - [ ] Bounded old-pin failure and new generated-schema/build proof.
 - [ ] Declared npm run build,typecheck,lint,test:unit and typecheck:integration where relevant to actual runtime harness.
 - [ ] Existing disposable PostgreSQL integration runner covering real purpose reader and denial cases (no hosted DB); report exact executed subset/flags and skips.
