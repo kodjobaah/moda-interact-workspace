@@ -1,7 +1,7 @@
 ---
 id: ARCH-075-ADMIN-009
 architecture_id: ARCH-075
-title: Configure bounded composite layout profiles through existing policy controls
+title: Author immutable template-owned composite layout profiles
 task_kind: implementation
 domain: admin
 repository: moda-interact-admin
@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T01:25:12Z
@@ -169,24 +169,26 @@ Physical isolation: canonical root `/Users/kwadwoadomafriyie/project/moda-intera
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted immutable final source4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f (Admin PR98) and report32350812a3a7154caee3d50ac3e7a351221825d0. Actual source reviewed against baseline622032d4, and final delta099a→4e8 verified only real registry dependency/lock adoption. Source tracked clean. Canonical launcher claim/worktree/synchronization/recursive Database evidence reviewed. Parent actual published-main records reconciled in8ce288d0a, preserving both sections.
+
+Saved SHARED source is sole layout authority. Deterministic prepared pair/hash and exact English/translated geometry equality enforced; no independent policy row/editor or source-default injection into historical clones. Admin owns ranges/defaults/nonoverlap/order, Shared structural parsing and explicit safety only. Strict new admission excludes historical no-profile sources while display/audit records retained. Existing clone/review/activation authority stays intact.
 
 ### Reviewed Files
 
-None
+Actual source profile helper, source types/validation/projection/draft operations, translation segment protections, wrapper eligibility, existing authoring controls/read-only/saved preview and added unit/UI/renderer/PostgreSQL coverage; package and lock final registry delta.
 
 ### Validation Reviewed
 
-None
+846unit/17focused/331security plus3postbuild runtime PASS; actualPG2 including20locale profile/source/clone/activation and zero separate policy rows; types/lint/build and browser0Node markers PASS. Final clean registry npm-ci/161files/SRI identity to approved49802947, freshfocused17/type/build PASS. Root exacthead VercelSUCCESS03:21:48Z/PreviewCommentsSUCCESS verified. Final actual QA profile7c8f... independently accepted by Admin helper. No broad repeated suite required for byte-identical release metadata adoption.
 
 ### Architecture Conformance
 
-Pending
+Conforms to final user saved-template-only/current-only instruction and repository boundaries. Native Meta payload unchanged for geometry-only edit; separate internal full-reference activation limitation remains documented, not bypassed or misrepresented as provider requirement. Acceptance is source functionality only, not live activation/ARCH075 completion.
 
 ### Follow-up
 
-No architecture completion/live claim.
+Root merges source then parent actual gitlink; controlled active-template replacement precedes composite activation. Root is aware of owner accidental edit to unrelated CLOSED workspace PR98 description while using wrong gh context; no code/main change, record preserved here and root may restore original body if recoverable. No invented restoration or source churn required. Root owns all main/deploy/live actions. ARCH075 remains In Progress.
