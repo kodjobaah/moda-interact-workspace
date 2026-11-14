@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-14T20:06:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables: []
@@ -201,3 +201,11 @@ Background ARCH-070-BACKGROUND-010 owns finite simpleflat completiontools/pinned
 ## Terminal tool subset selection precision
 
 Root/architect authorize OPTIONAL synchronous pure selectTools(readonly currentobservations/requiredReferral/frameworkcontext) returning a boundedunique nonempty subset of declared terminalToolNAMES. Shared only validates declaration/subset/immutability/binding, NO businessfilter. Selectedset bound to existingforcedinvocation; soleactualcall must be selected. Throws/async/unknownnames/duplicates/emptysubset terminal/noextraSDKcall. Background owns semanticavailability so knowninvalidnonproduct/shipping escapes aren't advertised merelytofailcanonicalguard. Samecheckedcopy/deepfreeze beforeandafter callback; rawprovidertransport unchanged.
+
+### Latest correction contract: DeepSeek transport capability (2026-11-14)
+
+Changes Requested. Preserve attempt2 and its report; normal launcher claim increments the next attempt. Trial015 changed only omission of unconditional `parallel_tool_calls:false` from exact012 and restored HTTP success through DeepInfra; raw empty arguments remained and terminal decision correctly failed. This proves a separate compatibility defect, not an incident selection fix.
+
+Remove unconditional emission of the optional parallel-tool-call parameter. Omit it by default rather than claiming provider capability; do not synthesize sequential-provider semantics. Preserve native actual calls, batch budget/accounting, authorization, tool choice, strict schemas, model/token/deadline/cancellation and canonical business guards. No business/model/provider routing preference change in Shared. Explicit future caller opt-in is unnecessary unless existing public API already requires it; no opportunistic capability registry.
+
+Required source tests: actual SDK HTTP body omits the key by default while exact schemas/strict/named-or-required choice/max_tokens remain unchanged; multi-call batches still respect existing remote/model budgets and result pairing; native terminal/referral/invalid-decision guards remain intact. Run affected focused checks, types/build/installed package proofs appropriate to the changed source; no unrelated broad repeats. Supply exact superseding archive/bundle identity to BG010/root. Publication remains separate and unapproved; actual full-context proof is still required before incident acceptance. Return Review and STOP.
