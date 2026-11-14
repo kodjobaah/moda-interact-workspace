@@ -98,7 +98,7 @@ Use normal moda-task launcher from primary root, dedicated sibling parent/implem
 
 ### Status
 
-Source and focused/host validation complete; final checks and root-owned measured comparison pending before review return.
+Source and focused/host validation complete; all exact checks complete; root-owned measured comparison pending before review return.
 
 ### Files Changed
 
@@ -117,7 +117,7 @@ Implementation `c0292c5d60754b864967ec8ec1ced47236625a9e` pushed on `task/ARCH-0
 - `npm ci`, `npm run build`: PASS.
 - Focused `npx vitest run tests/unit/commerce/structured-finalization-instructions.test.ts tests/unit/commerce/final-selection-shape.test.ts tests/unit/commerce/model-bridge-diagnostics.test.ts`:31PASS/3files.
 - Declared `npm run test:commerce-host`:127PASS, including existing language/referral/evidence/successful product and exact missing-selection terminal/refusal/repair/argument-identity paths plus the new actual request assembly test.
-- Final type/scopedlint/full lint baseline and exact CI43580528735/43580502290 pending. Relevant local logs retained privately in primary `local-backups/arch070-bg007-*`.
+- `npx tsc --noEmit` and scoped ESLint on all4 changed files: PASS. Full `npm run lint` has exactly4 unchanged `@typescript-eslint/no-unused-vars` errors: candidate-index.store.ts:9 readRecoveryExecutionPolicy; recovery-offer-resolver.service.ts:23-25 MAX_CANDIDATES,VERIFICATION_TIMEOUT_MS,AI_TIMEOUT_MS. Both files are byte-identical at startingbe077bf, currentc0292c5 and prior3e46120 whose stdin baseline was proven in BG006; exact blobs8bff21b8514b4449dd326c1c1dac12a3ba4a8dbf /077bcbb76c018428bd5b64c0c82d2a1903b5c6e4. No new failure or unrelated cleanup; no full-lint-green claim. Exact-head CI [43580528735](https://github.com/kodjobaah/moda-interact-background/actions/runs/43580528735) and [43580502290](https://github.com/kodjobaah/moda-interact-background/actions/runs/43580502290): both SUCCESS. Relevant local logs retained privately in primary `local-backups/arch070-bg007-*`. Parent checkpointe85d08017 and draftPR https://github.com/kodjobaah/moda-interact-workspace/pull/1040 published; no gitlink staged.
 - `git diff --check` PASS; bounded diff/private-content review found no customer payload/provider credentials/prose or logging changes. This task performs no model/provider/Meta/DB live calls and requires no migration/PG changes.
 - Root-owned baseline/candidate unforced actual-model comparison pending. Exact built helper/output was provided to root before probing; only root may supply measured evidence. No efficacy claim from unit assertions alone.
 
