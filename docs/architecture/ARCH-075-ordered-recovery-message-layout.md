@@ -278,3 +278,5 @@ ARCH-075-BACKGROUND-016 Ready (preparatory; publication final gate): Consume app
 ARCH-075-SHARED-014 Complete/Accepted: Parse common layout structure without application placement policy; Keep envelope/prepared/hash verification and exact mechanical single response slot; remove shop.name/site header placement, empty footer, checkout conditional/last-line business checks from readCommonRecoveryLayoutReference. No new website footer placement rule. Preserve exact hash integrity, reject malformed shape/tamper/duplicate response slots, no operational authority. Audit exported callers. Explicit application policy must guard Admin/BG consumer paths before new writes. Add tests for structurally intact alternative section placements accepted and tampered/unsafe frames rejected. No renderer or unrelated contract refactor.
 
 Shared014 Accepted exacta870977566babb35aac7b38e59efd194b64770b3/report3e163e8f; structural only. App-owned consumers and actual approved publication remain gated.
+
+BG016 Complete/Accepted exact59b593d4fa75f072d22a95875bcae1997f441280/report4ed050b6. Actual6.0.1 and app policy proven; root BG-before-Admin integration/livecutover separate.
