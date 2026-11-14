@@ -124,3 +124,7 @@ BG007 Accepted/Complete exactc0292c5d60754b864967ec8ec1ced47236625a9e, reportf14
 ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omission proven; app guidance plus actualprovider schemaforwarding audit, no guard/budget/Shared change. Architecture InProgress; root live verification separate.
 
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
+
+## Deterministic AI-failure basket fallback
+
+User authorizes ARCH-070-BACKGROUND-011: existing saved common shop template plus honest inability wording/current trusted basket and canonical checkout footer after eligible AI failure. Existing consent/control/window/idempotency/permit/providerUNKNOWN/usage guards remain authoritative. No model retry, fake product selection or guaranteed provider delivery. Pending accepted BG010 and source seam review; no schema/infrastructure change expected.
