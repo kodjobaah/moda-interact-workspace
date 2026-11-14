@@ -1,0 +1,137 @@
+---
+id: ARCH-069
+title: WhatsApp sender pool and checkout reply routing
+status: agreed
+coordinator: moda_architect
+created: 2026-11-13
+updated: 2026-11-14
+---
+
+# ARCH-069 — WhatsApp sender pool and checkout reply routing
+
+## Product rule
+
+Each merchant determines which checkouts exist, remain open, or supersede one another. Moda keeps one conversation per recovery and one active sender per customer and shop. On a new shop's first recovery, prefer an enabled number unused for that customer. If every enabled number already serves a shop for that customer, share the enabled number serving the fewest active shops for them. Ties use inventory priority and then phone-number ID. All eligible baskets at one shop continue on its assigned number. Each customer has independent capacity.
+
+| Activity for the same customer phone | Sender and reply attribution |
+| --- | --- |
+| Shop A sends about a blue shirt and later about a distinct running-shoes basket | Both send from Number 1. A quote identifies its basket. An unquoted question can use the item description after the shop is established. |
+| Shop B sends while Number 2 is enabled and free | Use Number 2. Each number currently reaches one shop for this customer. |
+| Shop B sends when Number 1 is the only enabled number and already serves Shop A | Use Number 1 for both shops. A bare message can now refer to either shop. Both shops retain independent recovery, consent, history and credit records. |
+| Shop A's shirt basket expires | Its membership ends; the running-shoes basket keeps A's route. B's route is independent. |
+| Shop A's last basket also expires, while B's remains active | Close A's route. Keep B's route and the shared WhatsApp thread generation. Earlier questions about A cannot be reassigned to B. |
+| The last remaining shop route on Number 1 closes | Close the thread generation. The next claim for that customer/number opens a new generation. Late answers, quotes and statuses remain attributable to their original evidence. |
+
+Independent checkout keys remain independent. Repeated events and real supersession of the same Woo checkout still use the current platform lifecycle. Shopify materialisation calls `findLatestRecovery(shopId, checkoutToken)`; Woo reads generations under that same pair. The pool adds no store-wide basket limit.
+
+## What the uploaded snapshot does today
+
+Paths below are relative to the parent workspace. All runtime observations are from static inspection on 13 November 2026.
+
+| Touchpoint | Observed behaviour |
+| --- | --- |
+| `moda-interact-database/prisma/schema.prisma` | `commerce.CheckoutRecovery` identifies a generation by shop, checkout token and generation. `whatsapp.Conversation.checkoutRecoveryId` is unique. `ConversationMessage` stores the provider message ID and dispatch permit. `RecoveryOutreachAttempt` stores the recipient. These rows do not record the selected Moda number. Conversation and message deletion can cascade. |
+| `moda-interact-background/src/services/whatsapp.service.ts` | Text, image and template methods independently resolve the single encrypted `messaging.sender` and use its phone-number ID in the Meta endpoint. Selecting a number only in the initial worker would still send from the singleton. |
+| `moda-interact-messaging/app/lib/whatsapp/inbound-message-normalizer.ts` and `provider-status-normalizer.ts` in the same directory | Inbound normalization carries the business account from `entry.id`, receiving phone-number ID from `metadata.phone_number_id`, customer number from `messages[].from`, and optional quote from `context.id`. Status normalization also carries both business identifiers. Shared already validates these envelopes. |
+| `moda-interact-background/src/services/whatsapp-inbound-processing.service.ts` and `recovery-routing.service.ts` | The active worker handles STOP first. Its router permits the configured singleton, then checks a persisted inbound replay, a quoted outbound, or a recipient-only recovery query capped at two candidates. Two candidates produce neutral guidance. The worker already separates active and historical replies. |
+| `moda-interact-background/src/services/checkout-recovery-expiry.service.ts` | Expiry uses `BackgroundRuntimeConfig.checkoutRecoveryLifetimeDays` and `lastExternalActivityAt`. The sweep records EXPIRED and cancels eligible unsent work. Use this same expiry rule when deciding if a sending number is available. |
+| `moda-interact-background/src/services/whatsapp-provider-status.service.ts` | Status handling starts from provider message ID. Post-transaction paths can repair billing, reachability and merchant notices, including on duplicate statuses. The actual sending number is absent from that lookup. |
+
+ARCH-012 explicitly deferred sender pooling. ARCH-020 C2 and ARCH-052 document why a single shared sender requires quoted replies or neutral guidance on ambiguity. ARCH-069 replaces the unquoted lookup for newly assigned chats. Keep existing shop-scoped customer identity, consent, ARCH-040 conversation control, ARCH-045/046 STOP and ARCH-028 delivery reconciliation.
+
+## How the application selects the sending number
+
+1. **Enrol verified senders.** A super-admin records the registered Meta phone-number ID and priority. Verify its CONNECTED status on the credential's WABA at enrolment and enablement. Rows start disabled. Selecting a sender uses the local verified inventory. The encrypted account credential continues to authorise transport.
+2. **Reuse the open customer/shop route first.** After canonicalising the recipient, attach the new conversation to its shop's existing eligible route, even if the sender has since been drained. Close empty or effectively expired routes before allocation. Use the same inclusive lifetime cutoff as the expiry sweep. Released members and closed routes retain their historical evidence.
+3. **Allocate a new shop route.** Count open shop routes for this recipient on each verified, enabled number in the credential WABA, including valid preparations before credit. Rank by count ascending, inventory priority ascending, then provider phone-number ID in C collation. A zero-count sender wins whenever available. When every count is positive, share the lowest-ranked result under that order. Establish or reuse its recipient/sender thread and add an immutable, separate shop route and membership. No existing shop migrates when another sender becomes free.
+4. **Send through the chosen number.** Reserve the recovery's own credit only after a successful claim. The Shopify/Woo final send permit rechecks its precise conversation, shop, membership, recipient, consent, eligibility and WABA, and returns the chosen identity. The worker calls `POST /{phone-number-id}/messages` with the customer's phone in `to`. Initial, follow-up, AI and human sends use the original route. A shop-neutral clarification uses a separate customer-initiated thread permit on the verified receiving number.
+5. **Handle an active-pool configuration fault.** Activation requires at least one enabled registered sender for the active WABA. Admin prevents disabling the final enabled sender or switching an active WABA to one with no enabled sender, including concurrent writes. If drift leaves zero enabled senders for a new route, Background retains the recovery status and original attempt, records `WHATSAPP_SENDER_POOL_EXHAUSTED` only on the original eligible uncharged initial attempt, and reports the operator fault before provider admission. The existing `RECOVERY_CAPACITY_REPAIR` worker rediscovers the marker across restart and revalidates the original recovery after the sender configuration is repaired. A terminal or expired recovery receives no send. A current shop with a pinned route can still contact its customer on a drained sender. Admission failures and unknown provider results retain their normal handling.
+6. **Release in scope.** A terminal recovery releases its own membership. End the shop route after its last live member, then end the thread generation after its last live shop route. Confirmed receipts and delayed callbacks stay with their original provider message across reuse.
+
+## Stored ownership and concurrency
+
+| Record | Responsibility |
+| --- | --- |
+| `WhatsAppPoolSender` | Immutable registered phone-number ID and owning WABA, with inventory priority and allocation-enabled flag. |
+| `RecoverySenderThread` | One open generation per canonical recipient and registered sender. A thread can carry several shops simultaneously. |
+| `RecoverySenderRoute` | One open route per recipient and shop. The immutable thread link and sender identity pin the original shop's sends. Several shops can have routes on one thread. |
+| `RecoverySenderAssignment` | One member per recovery conversation. Several concurrent baskets can belong to one shop route. |
+| `RecoveryBasketRoutingTurn` | One durable record per inbound provider ID requiring routing. Records thread generation, original request, independent question/parent references, eligible scope at receipt and confirmed clarification. Its shop route can initially be absent. A prompt retains its scope at send time, even if its original question later resolves to a shop. |
+
+Serialize concurrent allocation for the same recipient. Use the thread/route/member locks and uniqueness constraints in DATABASE-001 and BACKGROUND-001. Last-member closure must race safely with additions to that shop or a different shop on the same thread. Route-bound questions lose access to a closed route; open questions can never acquire a later route generation by the same shop. Cascading deletion and lazy expiry must permit empty rows to close without transferring pending questions. Keep provider calls, model calls and cross-shop cleanup outside a shop-locked claim transaction.
+
+## How the agent gets the right basket
+
+The snapshot's `RecoveryAgentContextService.getAgentContext(checkoutRecoveryId, conversationId, ...)` loads one recovery, checks the conversation and reads that conversation's history. Each commerce turn and its grants still belong to a single verified shop, recovery and conversation. The worker chooses the target in stages.
+
+1. Verify the receiving WABA, registered sender, recipient and thread generation. Use provider occurrence time and confirmed initial outreach to establish which shop routes can be candidates. A valid reply to a previously sent checkout, AI or human message provides exact scope through its original provider ID. Content and store names cannot create a candidate.
+2. With several eligible shops, resolve only against that customer's verified, already-contacted shops on this thread. Explicit, uniquely matched public store identity or a verified reference can identify a shop. A generic question stays at thread scope. Ask the customer to name the store or use WhatsApp Reply on its message. Keep the neutral question free of merchant names, sites, and basket items until one shop has been established. No merchant-specific Commerce call or cross-shop product/history query takes place during this step.
+3. After shop selection, follow its `RecoverySenderRoute → RecoverySenderAssignment → Conversation.checkoutRecoveryId → CheckoutRecovery` for members with confirmed outreach and a current eligible generation. With a sole eligible basket and no conflicting pending selection, route directly. With several possibilities, give the shop-configured read-only routing model the original moderated question or verified voice transcript and every item in every eligible basket from this shop. Use request-local basket keys; expose only the safe saved title, variant and quantity for each line, and the basket total and currency when available. Have the model compare the entire set and assess its confidence that one particular basket is the customer's intended checkout. Background accepts one offered key and its integer confidence from 80 through 100, inclusive, after verifying that the same candidates, items, shop and checkout remain eligible. The model owns the semantic comparison; language, synonyms, quantities and indirect product descriptions can all inform it. An explicit clarification decision, a score below 80, invalid output or an incomplete model request uses the fixed shop-scoped clarification wording on the receiving number. Do not send a truncated set or use a dictionary, word-overlap test, second model or recency tie-breaker to decide the basket.
+4. When the customer must choose among a known shop’s baskets, open the fixed text with “Which basket from {shop} did you mean?” Use the public `commerce.ShopBrand.brandName` associated with that exact shop, preserving display case. If unusable, use the verified, display-safe `commerce.Shop.domain` for the same shop, including a verified store path when present. Number the baskets in the frozen prompt order. Put each basket on its own line and show every saved customer-facing item in that basket, including known quantities and genuine variants. End with “Reply with the basket number.” and the question reference. The number selects the whole basket.
+5. Render the full message inside the existing 1,000-Unicode-code-point budget including the header, line breaks, instructions and reference. Use the named request to reply to the intended original WhatsApp message when a complete, safe and distinguishable list cannot be shown. If both public identity sources are unusable, omit shop and basket details and ask for a reply on an original basket message; the known route retains its merchant scope. Save the exact rendered text, choices, scope and receipt. Honor the wording and option mapping of a clarification already sent before this revision.
+6. Atomically project the original customer request into the selected checkout when the worker can prove its owner. Preserve the authentic dialogues for the selected merchant according to the task's scoped transcript rules. Only substantive customer instructions enter Commerce. Its one-checkout grant, human takeover, normal moderation and service window still apply. A selection-only answer such as “2” cannot become an order quantity, a new objective or a later model instruction.
+
+## How the application identifies the checkout
+
+### Independent questions in a shared WhatsApp chat
+
+| Exchange on one registered sender | Durable result and handoff |
+| --- | --- |
+| X asks “Can it arrive by Friday?” while A and B both have confirmed outreach. | Persist the original provider ID, exact customer content and thread generation as question Q1 before sending the store clarification. Neither merchant receives an unresolved question. |
+| X independently asks “Can I collect my Shop B order instead?” before answering Q1. | Identify B only on positive evidence in the eligible set. Treat the new substantive question as Q2. If B has one eligible basket, process collection there. Keep Q1 pending. |
+| X uses WhatsApp Reply on the confirmed Q1 clarification and answers “Shop A.” | Bind that reply to Q1, verify A belonged to Q1's original eligible set and is still eligible, then continue the same original Friday question. If A has two baskets and the original question remains ambiguous, ask “Which basket from Shop A did you mean?” followed by their separately numbered full item lists. |
+| X replies “2” to the verified Shop A basket prompt. | Validate the actual displayed option and its original membership. Resume “Can it arrive by Friday?” once in that checkout. The model cannot interpret the digit as a quantity. |
+| X has two outstanding questions and sends an unquoted “2”. | Ask X to reply to the intended clarification. Preserve both questions until one is explicitly identified or its scope/retention ends. |
+| X quotes the verified Shop B answer about collection and asks “What time do you close?” | A new substantive request follows that confirmed outbound's own basket. It does not consume the pending delivery question. |
+
+Several questions can remain pending on one thread at once. A question may await the shop and then await the basket without losing its original text. Persist the precise prompt receipt, the candidate route generations and the options actually offered. Recheck them on answers, after model latency and at commit. Redelivery, restart, delayed receipts and concurrent answers must not duplicate an action, turn a selection into an objective or cause a different shop to receive the message. An expired candidate, a new shop joining, or another shop becoming the sole survivor cannot silently decide an older ambiguous question. When a delayed event's ownership cannot be proved at its provider occurrence time, use neutral guidance. Never default an independent question to the last shop or basket discussed.
+
+The exact quoted outbound message supplies historical scope even after expiry. Standalone STOP on a recognised number, or STOP quoting an unverified or merchant-neutral store-selection prompt, uses existing all-registered-shops suppression. A verified quote of a merchant-owned outbound or confirmed merchant-specific prompt applies to that merchant. Freeze the scope at prompt admission so a subsequently selected shop cannot retroactively narrow a previous neutral prompt. On a verified, eligible shared thread, voice uses the existing platform media and transcription credentials after admission. Store its confirmed transcript once and reuse it after shop selection. Unrecognised senders grant no media access. Clarifications consume no proactive outreach slot or recovery credit. Provider statuses for clarifying prompts remain separate from checkout billing, delivery, reachability and merchant-notification paths.
+
+BACKGROUND-003 owns sender, occurrence-time and quote proof. BACKGROUND-004 owns independent pending questions, clarification and handoff. Apply content retention and the chronological, identity and replay guards in those tasks. Keep raw phone numbers, questions, product details, credentials and provider response bodies out of logs.
+
+## Implementation boundaries and rollout
+
+The current Shared v1 inbound and v2/v3 status envelopes already carry both provider IDs. Keep existing Messaging ingress, public schemas, queues, merchant checkout behaviour, and credential administration. Database owns the forward migration. Admin owns inventory management. Background owns dispatch, lifecycle, reply attribution and clarification. System Test owns end-to-end evidence using deterministic provider/model fixtures.
+
+Apply DATABASE-001, integrate the database pin, then deploy Admin and the complete sender-aware Background build. Quiesce incompatible old send workers and drain old requests before enabling pool traffic. Enrol and enable verified numbers. The previous singleton is eligible for enrolment after active legacy use has drained. Enrolment and general dispatch share the membership lock. New general sends may use the singleton only when it is outside recovery inventory, storing the exact account and phone on the dispatch permit. Rollback pauses new pooled admissions while retaining sender-aware readers and reconciliation for already admitted work.
+
+Use BACKGROUND-003's exact persisted sender proof for legacy messages. Missing proof, a wrong account/number, database errors or zero enabled inventory cannot justify a guess or a fallback to the encrypted singleton for pooled sends. Preserve structured errors and bounded diagnostics for allocations, releases, exhaustion, routing and clarification, without customer phones, basket contents or message text in logs.
+
+## Acceptance examples
+
+- With two enabled senders, first point Shop A and Shop B at different senders for X. When a third shop is added, prefer the enabled sender with the fewest active shops for X, with deterministic priority/ID ties. Another customer has independent counts.
+- With one enabled number, two independent Shop A baskets and a Shop B basket all get their own initial send, recovery identity and credit outcome on the same number. An injected zero-enabled configuration fault on a new route preserves the checkout state and the original uncharged attempt with its repair marker. Restoring inventory allows that same attempt to proceed only while still eligible. An open drained route can continue for its own shop.
+- On the shared number, interleave Q1 and Q2 as above, including two indistinguishable bare choices, a quoted human/AI response, a missing/invalid quote, an expired option and a restarted worker. At no time should a foreign merchant see the other shop's basket facts, history, unresolved request or actions.
+- Capture the same-shop routing-model request, the actual WhatsApp clarification text, the selected Commerce request and the merchant transcript separately. With three active baskets at the same shop, verify one public shop label in the header and three numbered groups of items. A reply of “2” resumes only the second displayed basket. Capture every safe item of every eligible basket from the proved shop with the moderated original objective, including an item past the outreach preview. With the same indirect product description and eligible checkout, script 79 to prompt and 80 to route. A selection-only “2” stays out of commerce instructions. Exercise mixed replies, audio, customer opt-out, closure mid-flow and unknown/duplicate provider receipts.
+- Use disposable PostgreSQL, Redis, a provider emulator and deterministic moderation/model fixtures. Check the actual provider endpoint, original message IDs, atomic association, exact charge and correct membership on both normal and shared paths.
+
+## Task definitions and execution order
+
+All seven definitions are portable and unclaimed. The parent architecture and each linked task belong to the parent workspace. Source, repository-local tests and submodule pins belong to their implementation repositories. The launcher resolves isolated task worktrees. The developer integrates accepted branches. A ready task represents permission to start the defined implementation through the normal launcher, independently of other branches still pending.
+
+| Task and source of detail | Owner | Initial status | Direct dependencies |
+| --- | --- | --- | --- |
+| [DATABASE-001](../decisions/database/ARCH-069/DATABASE-001-create-sender-pool-and-active-assignments.md) — exact Prisma additions, SQL, fresh/upgrade and concurrency checks | moda_database | Ready | None |
+| [ADMIN-001](../decisions/admin/ARCH-069/ADMIN-001-manage-verified-whatsapp-pool-senders.md) — enrol, enable, reorder and drain registered numbers | moda_admin | Pending | DATABASE-001 |
+| [BACKGROUND-001](../decisions/background/ARCH-069/BACKGROUND-001-allocate-and-release-recovery-senders.md) — shop route, basket membership, immediate expiry and original-attempt repair | moda_background | Pending | DATABASE-001 |
+| [BACKGROUND-002](../decisions/background/ARCH-069/BACKGROUND-002-pin-senders-through-provider-dispatch.md) — Shopify/Woo dispatch, billing order, repair worker and transport | moda_background | Pending | BACKGROUND-001 |
+| [BACKGROUND-003](../decisions/background/ARCH-069/BACKGROUND-003-route-replies-and-status-by-sender.md) — thread and shop attribution, exact quotes, STOP, guidance and provider status | moda_background | Pending | BACKGROUND-002 |
+| [BACKGROUND-004](../decisions/background/ARCH-069/BACKGROUND-004-resolve-same-shop-baskets-and-clarify-replies.md) — resolve the shop then the basket, preserve each independent question and resume the original request | moda_background | Pending | BACKGROUND-003 |
+| [SYSTEM-TEST-001](../decisions/system-test/ARCH-069/SYSTEM-TEST-001-verify-sender-selection-expiry-reuse-and-reply-ownership.md) — alternating questions on a shared number, merchant isolation, reuse and credit effects | moda_system_test | Pending | ADMIN-001, BACKGROUND-004 |
+
+Start DATABASE-001. After its accepted implementation is available at the intended database pin, ADMIN-001 and BACKGROUND-001 can proceed in parallel. Continue the Background stream in order through BACKGROUND-002, BACKGROUND-003 and BACKGROUND-004. The final system test is developer-launched after its prerequisites are accepted. No implementation task depends on the system test. The published Shared schemas already contain both provider IDs. Shopify and Woo storefront clients do not pick or persist a Moda sender. No new Shared, Messaging ingress, merchant client, Hosted API or infrastructure task is required.
+
+Implementation agents use their task's exact change set, validation cases and stop condition. If actual source contradicts the specified ordering, schema or contract, record the file, symbol, command and observed result and return it to the architect. An agent may make routine local coding choices while preserving this contract.
+
+## Change history
+
+13 November 2026, revision 04. The product owner confirmed merchant control of concurrent baskets, one sender per customer/shop, and a clarifying question when the customer's message cannot identify a basket. This revision supersedes the earlier one-active-checkout allocation design. The seven implementation and verification tasks are defined but not materialised.
+
+13 November 2026, revision 05. Documented how the model receives the same-shop candidate set and how the single-checkout Commerce agent resumes the substantive request. Corrected selection-only clarification answers in the Commerce prompt, and added acceptance checks at both model boundaries and in the merchant transcript.
+
+14 November 2026, revision 06. Added sharing across stores when all enabled numbers already carry other shops for the recipient. Pending questions now start on the customer/sender thread, with per-question references through shop and basket selection. The portable patch adds the architecture and seven tasks as standalone files.
+
+14 November 2026, revision 12. The shop-specific routing model compares the full item lists and reports confidence in one intended checkout. Set the initial automatic routing threshold at 80 out of 100, inclusive. Background enforces the offered scope, score and current ownership. Existing shop identification, explicit selection, confirmation and one-checkout resumption apply.
+
+14 November 2026, revision 13. The same-shop clarification names the verified shop and shows each basket’s complete item list as one numbered option. Unresolved shop questions retain the neutral template. The 80% routing threshold continues to apply.
