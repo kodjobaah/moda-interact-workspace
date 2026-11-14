@@ -164,3 +164,7 @@ Conforms application-owned category format policy; Shared/model/token/retry/sche
 ### Follow-up
 
 Root source merge/actualparentpin/deploydrain then combined BG019 verified-list fitting and genuine canary. Do not claim prior model intent/rootcause proven solely by conformance or prompt assertions.
+
+## Developer Integration
+
+Root sourcePR231 merged17:06:56Z actualBackgroundmain2bfc7074a7cd2808f65994d301d52649948cf8d5. Independently fetched exactorigin/main/treeequal revieweddea6f14. Parent currentmain already current, actual merged gitlink recorded. Root alone parentmerge/deploy/genuineverification; BG019 must sync this acceptedmain before finalchecks.
