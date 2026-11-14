@@ -27,4 +27,4 @@ ARCH-075-ADMIN-010 Complete/Accepted: expose actual fixed common-composite logo/
 
 ADMIN010 acceptance: exact7782f4c16a6b2c31a15341585a565cb578029cb6, immutable report1eef4eb6a72a3c95df30ef7b4df255f8bda637de. Admin-only binding/size controls; root integration pending, no live template change.
 
-ARCH-075-ADMIN-011 pending: Author website in saved common caption footer; dependencies ARCH-075-SHARED-015.
+ARCH-075-ADMIN-011 Ready (preparatory; actual publication final acceptance gate): Author website in saved common caption footer; dependencies ARCH-075-SHARED-015.
