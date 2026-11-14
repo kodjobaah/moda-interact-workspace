@@ -9,13 +9,12 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-075-SHARED-015
+depends_on: []
 enables: []
 created: 2026-11-14
 updated: 2026-11-14
@@ -82,6 +81,10 @@ After required work/checks publish matching source and parent report, set review
 ## Implementation Notes
 
 Normal moda-task canonical sibling isolation/claim required. You are not alone; do not revert others. Pending consumer tasks may perform preparatory source work only after explicit architect Ready amendment; final acceptance requires accepted published dependency. No unpublished sibling imports or fabricated registry lock.
+
+## Preparatory execution and final release gate
+
+Root authorizes concurrent owning source preparation using unchanged public reader signature. No unpublished sibling imports or fabricated registry lock. Shared014 must be accepted and its exact tested pack used for affected consumer validation before requesting publication approval. Final review/acceptance requires actual approved Shared015 publication, real registry dependency/lock/npmci and exact remote checks. Task Ready permits source preparation, not readiness/deployment claims. Desired saved frame puts website inside existing checkout.available conditional before canonical checkout URL; staticfooter empty can stay app policy. No generic checkout contextual-rule widening needed.
 
 ## Completion Report
 
