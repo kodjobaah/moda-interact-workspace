@@ -157,6 +157,16 @@ Actual exercised-path efficacy remains unproven. Accepted Shared007, user-approv
 
 None beyond explicit dependency and actual-conformance gates.
 
+### Identity-only factual completion checkpoint (2026-11-14)
+
+Implementation `1cb735da920f1f8af2749a43a0acde92fe0f53aa` is committed/pushed on the same task branch. Minimal DETAIL/OPTIONS tools require only explicit `selectedPairs`; rich context/language/shipping/evidence branches remain. Initial canonical content contains only exact unanimously observed titles, including repeated identical current observations; conflicting/malformed titles fail closed, differing initial prices are never chosen. Host-local framework binding plus canonical digest permits replacement only after independent refresh and exact verified pair/facts comparison. Ordinary answers are unchanged. Refresh failure returns the existing safe `PRODUCT_NOT_FOUND` failure, without initial title content. Raw provider transport remains unchanged.
+
+Factory adds required trusted `locale`; exported `recoveryTerminalModelRequest(request,pinnedContract)` is shared by production host and isolated probe. It replaces only exact owned application formatting guidance in the alternate-tool final phase; pinned business/security/language instructions and ordinary discovery stay unchanged. Rich completion remains available for explicit new language detection.
+
+Validation against exact unpublished transport-omission archive `890d060d52d4a840eecd4393527b895b1874a97770248a8eec1e34ff3ba0e1fd`: TypeScript, scoped ESLint and production build PASS. Focused unit tests:33 PASS across3 files. Combined actual-host evidence covers153 unique cases: initial run149 PASS plus3 new failures caused by a recommendation-only synthetic pinned fixture; after explicitly adding its detail/options schemas,3 new positive cases PASS. The added missing-refresh case initially asserted the wrong error (`INVALID_FINAL`); actual existing behavior was safe `PRODUCT_NOT_FOUND`, and its corrected assertion PASS. No runtime guard was weakened. This is combined evidence, not one unqualified153-green invocation. New coverage includes repeated30 rows/10 identities, exact title agreement/conflict, refreshed price/title, bound-only replacement, explicit rich-language change and missing-refresh refusal. Original failed traces retained.
+
+Factory SHA256 `2037f42c509bbb7929ff1274fca6db6abb1998d8ac47182d339df97fc2bd1d62`; phase helper SHA256 `f1c3afef9fd7d051b4b2a7f7f5b2a8913c28342944c5f283adc93d06f316d856`. Root owns the exact runner+SDK+factory+phase-helper bundle and bounded actual trial. No provider/MCP calls, live changes, publication or merges were performed by this agent. Actual efficacy, accepted Shared/public registry adoption/clean npm-ci/final remote CI remain held; task remains InProgress.
+
 ## Architect Review
 
 ### Review Status
