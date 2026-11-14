@@ -49,9 +49,12 @@ Release-only accepted007 source. Determine semver from actualpublicAPI compatibi
 
 ## Work Items
 
-- [ ] Implement owning bounded capability/release gate.
-- [ ] Preserve exact identity/arguments/results/businessguards.
-- [ ] Complete required checks/exactreport.
+- [ ] Verify accepted007 exact source c1c1d2b8d00276dd88bf974997db2c8855fa9aa4 and root018 disposition before normal preparation.
+- [ ] Apply additive version6.1.0 to package metadata/lock only and prepare one immutable archive from accepted built output, without rebuilding accepted implementation.
+- [ ] Compare every nonmetadata member with accepted79003cd3 archive; record exact archive SHA256/size/member count/SHA1/SRI for user review.
+- [ ] Hold publication until root relays new explicit user approval for that exact archive/public latest.
+- [ ] Publish the approved exact archive without repack/rebuild; independently verify registry version/latest/download bytes/SRI and unchanged public6.0.1.
+- [ ] Return immutable publication receipt/report and STOP; consumers remain separate.
 
 ## Interfaces / Contracts
 
@@ -67,10 +70,11 @@ Source007→release008→finalconsumer009; localpackedconsumerproof permitted be
 
 ## Acceptance Criteria
 
-- [ ] Exactnativeassistant/toolpair semantics and unchangedbusinessguards verified whereowning.
-- [ ] UnsafeIDs/orphans/overflow/retry/budget boundaries failclosed.
-- [ ] Actualdiagnostic outcome/limits explicit; no productionfixclaim fromstubtests.
-- [ ] Requiredchecks and exactimmutablehandoff complete.
+- [ ] Source007 is architect-accepted and root application evidence disposition permits preparation.
+- [ ] Version6.1.0 metadata-only release preserves every accepted nonmetadata member exactly.
+- [ ] New explicit exact-artifact publication approval is recorded before publish.
+- [ ] Actual public registry receipt proves exact approved archive/version/latest;6.0.1 unchanged.
+- [ ] No implementation validation reruns or consumer integration inside this release task.
 
 ## Validation
 
@@ -143,3 +147,7 @@ Pending
 ### Follow-up
 
 Root actualintegratedverification
+
+## Prepared release plan checkpoint
+
+Architect reviewed accepted c1c1d2b and superseding79003cd3 archive; additive native opt-in, optional terminal port and compatible omission support6.1.0. Whole-batch fields extend only newly unpublished APIs. Root018 natural application outcome remains pending: task stays Pending, no claim/publication authorization inferred. Root must make accepted source/report available to normal launcher dependency resolution before execution. Metadata branch may change package.json/package-lock.json only; no rebuild, source test or lint repetition. Consumer Background and Commerce adoption/deployments precede global saved routing nesting; old consumers cannot remain. Exact archive is reviewable before any public approval question. No publication until root's explicit relay.
