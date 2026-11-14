@@ -192,3 +192,10 @@ Conforms to final user saved-template-only/current-only instruction and reposito
 ### Follow-up
 
 Root merges source then parent actual gitlink; controlled active-template replacement precedes composite activation. Root is aware of owner accidental edit to unrelated CLOSED workspace PR98 description while using wrong gh context; no code/main change, record preserved here and root may restore original body if recoverable. No invented restoration or source churn required. Root owns all main/deploy/live actions. ARCH075 remains In Progress.
+
+## Developer Integration
+
+- Source PR https://github.com/kodjobaah/moda-interact-admin/pull/98 merged by root on 2026-11-14T03:29:25Z after exact-head Vercel and Preview Comments success and architect acceptance `1732efe18`.
+- Reviewed source `4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f`; actual merged Admin main `f84a32cb8c2f24d076c7eeda9c80e2f472b4459e` is recorded by the workspace gitlink.
+- Uses verified public Shared 6.0.0. Tests, clean registry install, byte identity and build evidence are recorded above.
+- Both messaging worker composite flags are explicitly saved `false` without deployment. Background CI/integration, deployment verification, current-template replacement and activation remain separately gated.
