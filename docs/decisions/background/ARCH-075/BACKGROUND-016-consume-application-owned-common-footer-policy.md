@@ -156,3 +156,7 @@ Conforms application policy vs Shared technical grammar, immutable source/profil
 ### Follow-up
 
 Root integrates BG016 before Admin011, updates actual merged pins then verifies workers/drain. Root owns new saved common/native cohort review/registration/activation and genuine delivery; no provider bypass.
+
+## Developer Integration
+
+Root sourcePR228 merged actualBackgroundmainc041c88757ec6d1ddc583dd2cde6e0cf92755796; independently fetched origin/main exact and tree-equal reviewed59b593d. Parent merged currentorigin/main preserving append records, actual merged gitlink recorded. Root owns parent merge/live verification.

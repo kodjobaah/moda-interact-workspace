@@ -60,3 +60,8 @@ ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45
 ARCH-075-BACKGROUND-016 Ready (preparatory; publication final gate): Consume application-owned common footer policy; dependencies ARCH-075-SHARED-015.
 
 BG016 Complete/Accepted exact59b593d4fa75f072d22a95875bcae1997f441280/report4ed050b6. Actual6.0.1 and app policy proven; root BG-before-Admin integration/livecutover separate.
+ARCH-075-BACKGROUND-015 Complete/Accepted: Bound AI product-list composition to branded caption budget; dependencies None.
+
+BG015 Ready strategy: complete descending verified selected prefixes, exact saved-frame caption budget, filtered proof/pairs/context, no arbitrary prose/HUMAN truncation; fallback if no safe fit.
+
+BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: evidence-safe caption prefixes; root integration/live proof pending.
