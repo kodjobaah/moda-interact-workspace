@@ -150,20 +150,22 @@ Pending
 
 ### Review Notes
 
-None
+PREPUBLICATION metadata/archive checkpoint reviewed, not final release acceptance: exact source dcfbfef99935709dc485fad003dbfa7164a6203b/PR90, immutable parent report9a7a12181e5e640c5adb103b52e961ba499e365b. Actual diff is only three root version values across package.json/package-lock.json; no implementation/dependency changes. Root may integrate this metadata checkpoint separately if desired.
+
+Architect independently compared all161 archive members with accepted029b: same names,160 byte-identical nonmetadata files; package JSON differs only5.13.11→6.0.0 and all other values equal. Candidate965706bytes SHA25649802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8. Major version appropriate for explicit obsolete public-export removal. No source/archive findings; no implementation revalidation rerun.
 
 ### Reviewed Files
 
-None
+Actual package.json/package-lock.json metadata diff, exact accepted/candidate tar members/bytes, release manifest/report/isolation evidence.
 
 ### Validation Reviewed
 
-None
+Release-only metadata/version/member/hash comparison PASS; accepted012 actual integration verified. NEW explicit public approval, publication and independent registry receipt still pending. No completion claim.
 
 ### Architecture Conformance
 
-Pending
+Preparation conforms to release-only gate. Task remains In Progress; source metadata review is not consent/publication/consumer/deployment approval.
 
 ### Follow-up
 
-No architecture/live completion claim.
+Root waits concrete tested Admin/BG candidate-major checkpoints then obtains explicit exactarchive public6.0.0/latest approval. Publish only that archive after relayed approval; verify registry download then return final review. Root owns metadata/main/gitlink integration and all live operations.
