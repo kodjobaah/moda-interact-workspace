@@ -18,3 +18,5 @@ Shared007 Ready reworkattempt2: genericrawtransport/separatehostterminaldecision
 Shared007 Complete: architect accepted exact667a658 attempt3 reusable source; application efficacy unproved. Shared008 remains held for root016 disposition and exact public approval.
 
 Shared007 Ready attempt4 correction: root reopened after016 identical terminal batch; preserve accepted attempt3 history, whole-batch equivalence binding required. Shared008 remains held.
+
+Shared007 Complete attempt4: exactc1c1d2b whole-batch equivalence accepted; root017 offline actual replay PASS. Publication/natural application proof held.

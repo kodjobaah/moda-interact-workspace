@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T22:37:56Z
@@ -267,3 +267,11 @@ Authorize one bounded generic correction: only the existing PURE terminal-decisi
 Bind the projected decision to the WHOLE original batch: ordered actual IDs plus canonical full raw-step/calls digest, same turn/inbound/modelstep/responsecontract. Preserve existing per-call identity as a representative ONLY after proving equivalence, explicitly recording that it is one actual member of the bound class, not a manufactured provider call. Expose sufficient immutable batch binding/input for the application callback to echo the exact framework binding reference; never present modified canonical args as provider-issued. Deep-copy/freeze all snapshots and validate binding before and after callback. Keep raw ModelStep and native journal byte/value-identical. Apply project ONCE; charge the original model output and step ONCE. Every canonical grounding/referral/shipping/evidence check remains authoritative; any projection or canonical failure terminal with no repair/reinvoke. Existing single-call behavior remains valid.
 
 Required regressions: actual captured STRUCTURAL equivalent3-call batch with generic synthetic IDs/pairs projects once; all IDs/order/fullbatchdigest bound and immutable; raw unchanged; duplicate/missing IDs, one differing argument/name, one ordinary/unadvertised call, mutation/foreign binding all reject with zero project/tool work; invalid projected value still terminal; native transcript and budgets unchanged. Exact local offline replay of private016 by root must pass unchanged canonical result and exact observed membership before any further bounded natural proof. Public fixtures must not contain merchant data. Run affected focused/types/build/installed SDK/type/browser checks, no unrelated broad repeats. Deliver new exact archive/bundle and review report; STOP. No publication/main/live operation.
+
+### Final independent source acceptance — attempt 4
+
+Review Status: Accepted. Exact source c1c1d2b8d00276dd88bf974997db2c8855fa9aa4 and report6fba2364f accepted. Reviewed terminal-decision.ts, model-step.ts, graph invoke/routing/final-validation changes and wire/terminal tests. Equivalence is proven across every advertised call before any representative is exposed; missing/duplicate IDs and any differing name/arguments fail the whole batch. Ordered actual IDs, full raw-step/calls digests and representative digest are immutable framework binding fields. Raw transport remains unchanged, callback projects once, canonical validation remains authoritative, every original call receives paired terminal outcome, budgets/ordinary routing unchanged.
+
+Validation reviewed: affected212 tests, type/build/installed SDK/types/browser/diff checks PASS, normal canonical mirrored launcher attempt4 evidence in report. Root private017 receipt independently inspected: zero actual model/MCP calls, all7 reconstructed requests checked, three actual captured calls preserved, bindingProof/rawUnchanged true, one projection, canonical ANSWER selects two observed pairs and equals projected decision. No source finding remains. Attempt3 acceptance and subsequent correction history retained.
+
+This is acceptance of generic protocol correctness and exact offline replay, not natural production efficacy or delivery. Root018 bounded natural proof and BG010 application acceptance remain independent gates; Shared008 publication remains held until root evidence disposition and new explicit exact-archive public approval. No merge/publication/live action performed. Architecture remains In Progress.

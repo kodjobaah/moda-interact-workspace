@@ -136,3 +136,5 @@ Shared007 Complete at667a658: native transcript/terminal mechanics and optional 
 ## Shared terminal equivalent-batch correction
 
 Root016 returned three identical pure terminal decisions selecting observed pairs. Shared007 reopened Ready (attempt3 preserved) for whole-raw-batch identity/digest binding and exactly-once projection of proven equivalent calls. Any differing/ordinary/foreign batch remains rejected. No business guard, provider budget or raw transport rewrite; publication and incident verification remain held.
+
+Shared007 attempt4 sourcec1c1d2b accepted: exact-equivalent terminal raw batches bound and projected once; differing batches fail closed. Root017 zero-network exact captured replay passed. Natural application proof, consumer registry gates and public release approval remain pending.
