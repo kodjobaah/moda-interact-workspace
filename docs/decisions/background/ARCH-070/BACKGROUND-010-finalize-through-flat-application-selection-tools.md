@@ -132,7 +132,9 @@ Normal claim `bd014b95ee43e78e9c3267353a7a56cf81de5fc6`, attempt1 at2026-11-14T2
 
 ### Unresolved Issues
 
-Actual full-context efficacy pending. Accepted Shared007, user-approved publication008, exact registry member identity/lock, clean npm-ci and final checks remain mandatory; task stays InProgress. No production fix/deployment or delivery claim.
+Root natural unseeded trial009 was inconclusive for this change: 2 actual SDK calls, 1 read-only MCP call, zero observed products, zero selector/project invocations. The runner returned an ordinary ANSWER with STANDARD/empty details; the new terminal application path was not exercised and acceptedApplicationFinalization was false. This is not a fix, publication or delivery proof. Root/architect disposition pending, with source157/bundle5bc frozen and no further source/probe scope inferred.
+
+Actual exercised-path efficacy remains pending. Accepted Shared007, user-approved publication008, exact registry member identity/lock, clean npm-ci and final checks remain mandatory; task stays InProgress. No production fix/deployment or delivery claim.
 
 ### Architectural Concerns
 
