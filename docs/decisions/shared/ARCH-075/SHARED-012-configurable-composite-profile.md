@@ -198,3 +198,11 @@ Conforms to current saved-template-only authority, structural/safety Shared boun
 ### Follow-up
 
 Root merges source then parent actual gitlink. Shared013 prepares a major release exact archive; public publication requires separate explicit approval after concrete consumer proofs. Admin009/BG014 final accepted-artifact/publication/registry/CI gates remain separate. Root owns controlled current-template replacement/activation and deployment; no live change by this acceptance.
+
+## Developer Integration
+
+- Source PR https://github.com/kodjobaah/moda-interact-shared/pull/89 merged by root on 2026-11-14T02:40:39Z after architect acceptance `79c29607c`.
+- Reviewed source head: `59068290eb69506fd7a5d248c5ed359cfb98163d`.
+- Actual merged Shared main: `f06cf317781bf584b62f2c286d06118f21e40123`; workspace gitlink records that merged main, not the feature head.
+- No configured hosted source checks; required local/full/installed-package/actual fontless-runtime and visual evidence above passed.
+- This integrates source capability only. Publication, consumer main merges, template replacement and production activation remain separate gates. No live configuration changed.
