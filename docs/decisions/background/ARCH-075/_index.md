@@ -57,4 +57,4 @@ ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c7
 
 ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45b25f4d32e5ca9/reportd2a4561e6: sole saved-template profile authority/current-only composite/actualShared6registry+exactheadCIgreen. Rootactualpin/integration and controlled disabled rollout/current-template replacement/liveproof remain separate; ARCH075 In Progress.
 
-ARCH-075-BACKGROUND-016 pending: Consume application-owned common footer policy; dependencies ARCH-075-SHARED-015.
+ARCH-075-BACKGROUND-016 Ready (preparatory; publication final gate): Consume application-owned common footer policy; dependencies ARCH-075-SHARED-015.

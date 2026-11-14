@@ -9,13 +9,12 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-075-SHARED-015
+depends_on: []
 enables: []
 created: 2026-11-14
 updated: 2026-11-14
@@ -82,6 +81,10 @@ After required work/checks publish matching source and parent report, set review
 ## Implementation Notes
 
 Normal moda-task canonical sibling isolation/claim required. You are not alone; do not revert others. Pending consumer tasks may perform preparatory source work only after explicit architect Ready amendment; final acceptance requires accepted published dependency. No unpublished sibling imports or fabricated registry lock.
+
+## Preparatory execution authority
+
+Root explicitly authorizes independent concurrent Background specialist for common-layout policy/admission and dependency adoption only. Do not modify BG015 compact helpers/presentation proof/receipts. Start normal canonical currentmain sibling; sync accepted BG015 main before final coherence checks if it merges first. API unchanged. Verify exact accepted Shared014 local6618d7 artifact no-save/no-lock for candidate tests; no fabricated registry lock. Final acceptance requires actual approved Shared015 publication, real registry lock/npmci and remote CI. Publication must await concrete consumer policy tests, so Ready permits preparatory source and pack validation independently of final release. No live operations.
 
 ## Completion Report
 
