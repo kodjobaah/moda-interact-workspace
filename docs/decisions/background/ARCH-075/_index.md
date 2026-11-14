@@ -43,3 +43,36 @@ ARCH-075-BACKGROUND-012 is Ready after actual BG011 source mainac2ef244a36a63f13
 ### BG012 accepted bounded customer handback
 
 ARCH-075-BACKGROUND-012 Complete/Accepted at sourcecbe926522d318953217480932c97233eafd61752/report46c139f1feb98ed0a0bc1ddc4286f70fda28fa13.4344 full/48 actualPG/98focused/build/scopedlint passed; existing configured skips and unchanged baseline lint disclosed. Exact prior20 assessment and original-lease timing/control guards retained. Root deployment/live proof remains pending. Architecture stays In Progress.
+
+
+BACKGROUND014 Pending: published trusted composite consumer, defaultOFF new gate, one bubble or fullTEXT fallback; depends BG012+Shared011. Supersedes unexecuted013; no native change/live sends.
+
+
+BG014 dependency amendment: normal preparation follows accepted009+010 plusBG012; root explicitly permits exact-packed preparatory source/draftPR/localfulltests BEFORE public approval. Final acceptance/registrylock/npmci still requires actual011 publication. No unpublished deployment or siblingcode.
+
+
+BG014 Ready for source/draft+local exact-packed integration after actual009+010/BG012 acceptance/integration; publication011 remains final-readiness gate. No live composite activation.
+
+ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.
+
+ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45b25f4d32e5ca9/reportd2a4561e6: sole saved-template profile authority/current-only composite/actualShared6registry+exactheadCIgreen. Rootactualpin/integration and controlled disabled rollout/current-template replacement/liveproof remain separate; ARCH075 In Progress.
+
+ARCH-075-BACKGROUND-016 Ready (preparatory; publication final gate): Consume application-owned common footer policy; dependencies ARCH-075-SHARED-015.
+
+BG016 Complete/Accepted exact59b593d4fa75f072d22a95875bcae1997f441280/report4ed050b6. Actual6.0.1 and app policy proven; root BG-before-Admin integration/livecutover separate.
+ARCH-075-BACKGROUND-015 Complete/Accepted: Bound AI product-list composition to branded caption budget; dependencies None.
+
+BG015 Ready strategy: complete descending verified selected prefixes, exact saved-frame caption budget, filtered proof/pairs/context, no arbitrary prose/HUMAN truncation; fallback if no safe fit.
+
+BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: evidence-safe caption prefixes; root integration/live proof pending.
+
+ARCH-075-BACKGROUND-018 Complete/Accepted: consume existing durable Admin reconciliation requests through normal leased service; independent of frozen017, no live operations.
+
+BG018 Accepted exact1d01849aa0b1a67f4baca9f9e9eac2828d532a19/report9507bccb, durable UI request consumer. Root integration/live proof separate.
+ARCH-075-BACKGROUND-017 Complete/Accepted: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+
+BG017 Accepted exacteb732bac14aaee02b1db496377cb25ae3c1d3660/reportcab01ee15: evidenced NBSP equivalence only; root live reconcile/rollout separate.
+
+ARCH-075-BACKGROUND-019 Complete/Accepted: originallymulti-product AI detail overflow uses honest verifiedbriefsummary, singleproductfidelity preserved, savedfooter budget/proof intact.
+
+BG019 Accepted exact09298ac0369cfce1c4484bf8265f2b1b8bb18053/report7aea3e75, verifiedbriefmultiproduct policy; root integratedgenuine proof pending.

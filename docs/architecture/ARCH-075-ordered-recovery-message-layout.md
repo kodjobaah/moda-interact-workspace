@@ -242,6 +242,7 @@ ARCH-075-SHARED-010 Ready after exact accepted009 integration Sharedbc98bf13d8d2
 
 ARCH-075-SHARED-010 Complete/Accepted at source483f7a27c654a3a49d6ec4896c616cd0475a938c/report808520a3668d43de5eb576d8adfe5034c6c02099. Renderer/carrier/whole-pipeline and fontless packed Alpine checks passed; root actual product/no-product visual gate passed. After actual integration,011 release preparation and014 defaultOFF draft consumer can proceed; public approval/published readiness/live sends remain gated. Architecture stays In Progress.
 
+ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.
 ### Configuration-driven composite correction — 2026-11-14
 
 User authorized bounded runtime presentation policy rather than package-bound geometry. SHARED012 Pending depends accepted/integrated SHARED011; additive V2 profile/renderer retains immutable V1. Admin009 existing policy controls and corrected BG014 follow accepted profile API; SHARED013 publication remains separately approved. No new Gateway flag/database schema required by inspected evidence. Native templates unchanged. Architecture remains In Progress; no deployment before coherent tests/integration.
@@ -249,6 +250,8 @@ User authorized bounded runtime presentation policy rather than package-bound ge
 
 ARCH-075-SHARED-011 Complete: public5.13.11/latest independently verified against exact approved SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086. Release acceptance is not layout/deployment approval. Consumer/Gateway main merges, deployment and activation remain HELD for the user's presentation-policy boundary review; Background registry-only adoption checks may finish. ARCH075 remains In Progress.
 
+ARCH-075-ADMIN-009 Ready for bounded preparatory existing-policy UI/source under explicit accepted-Shared012/release final gates. Key messaging.recoveryCompositeLayout; no new database schema/editor framework.
+ARCH-075-SHARED-013 Pending actual012 integration: metadata-only major release preparation, no repeated implementation validation, public publication explicitly held until exact archive and concrete consumer proofs plus new user approval.
 ARCH-075-SHARED-012 Ready: actual SHARED011 integration d1319babb4ab9a82f4007d58123497f8987ea96e verified; normal isolated owner execution may begin.
 
 ### Saved-template sole authority — superseding correction
@@ -256,3 +259,48 @@ ARCH-075-SHARED-012 Ready: actual SHARED011 integration d1319babb4ab9a82f4007d58
 User confirms the saved common SHARED template owns layout. Earlier independent PlatformConfiguration profile proposal is superseded/unimplemented. Shared012 structural prepared extension carries optional compositeProfile/compositeProfileSha256 with legacy absent bytes unchanged; reusable V2 renderer only. Admin009 owns template authoring/clone/review/preview and operational rules; BG014 derives/freeze/rechecks the same selected immutable common reference. No separate active policy/editor/table/pointer. Generic renderer tests continue; all coherent source/tests/review/integration precede deployment, and new public package requires exact explicit approval.
 
 ARCH-075-SHARED-012 Complete/Accepted exact source59068290eb69506fd7a5d248c5ed359cfb98163d/report8b3310e943a610e8a243829c6e88410ad42c96cd: current template-profile machinery, structural Shared parsing/safety, unused fixed-composite removal. Major release013 remains separate and explicitly approved only after tested archive/consumers. ARCH075 remains In Progress.
+
+ARCH-075-SHARED-013 Ready after actual012 integration b4ae79170ef3427d1744ef1151ef40e013ebbb78 / Sharedf06cf317781bf584b62f2c286d06118f21e40123; release preparation only, public approval held.
+
+ARCH-075-SHARED-013 Complete/Accepted: actual public6.0.0/latest independently downloaded exact49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8,965706B161files; finalreport4cf181e9dec04f68c7f774aed081525ae8ca689c. Consumer registry/CI/review/integration and controlled deployment remain separate; ARCH075 In Progress.
+
+ARCH-075-ADMIN-009 Complete/Accepted source4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f/report32350812a3a7154caee3d50ac3e7a351221825d0: saved-template owned profile authoring/clone/review/preview, realShared6registry adoption and exactheadVercelgreen. No separate layout policy remains. Rootcontrolled integration/cutover/live proof pending; ARCH075 In Progress.
+
+ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45b25f4d32e5ca9/reportd2a4561e6: sole saved-template profile authority/current-only composite/actualShared6registry+exactheadCIgreen. Rootactualpin/integration and controlled disabled rollout/current-template replacement/liveproof remain separate; ARCH075 In Progress.
+
+ARCH-075-GATEWAY-003 Complete/Accepted exactsourcea2157f2df59566bbdf1b597ab8a54c42c1e79ca8/report7a0201e1e: finalBGc599 gate/startup/source acceptance reconciled, two messaging-only sync:false inputs. Rootfalsepreprovision verified; actualdeploy/drain/templatecutover/ON/providerproof remain operational, ARCH075 In Progress. Unrelated closedworkspacePR98 description restoration resolved by official evidence; no code effect.
+
+ARCH-075-ADMIN-010 Complete/Accepted adds Admin-only truthful media-binding presentation/grouped existing dimensions and matching preview; no new SHARED productImage variable or runtime contract. Existing AI binding remains unchanged.
+
+ADMIN010 acceptance: exact7782f4c16a6b2c31a15341585a565cb578029cb6, immutable report1eef4eb6a72a3c95df30ef7b4df255f8bda637de. Admin-only binding/size controls; root integration pending, no live template change.
+
+ARCH-075-ADMIN-011 Ready (preparatory; actual publication final acceptance gate): Author website in saved common caption footer; Move common-frame business validation into Admin owning app; Shared only structural parser/hash machinery. Require trusted shop.name/site and checkout identity counts and allowed variables; support saved header Shop/name/divider and checkout.available conditional containing website followed by canonical checkout URL last. Retain static footer empty if smallest existing app contract; do not add unsupported variables. Audit every requireCommonLayout/readSaved/eligibility/clone/translation/frozen-review/Meta projection/common activation path. Exact source/prepared/locale/profile hashes and locale equality preserved, no silent old source rewriting. Existing native projection can consume conditional website tokens; test provider preview matches submitted body. App admission remains failclosed for untrusted/duplicate/missing bindings. Preserve reviewed immutable audit reads. No live template edits, registrations or activation.
+
+Admin011 Complete/Accepted exact885b86bd713f061946e383deb079cf9826099ae6/report9c95e8a2, actualpublished6.0.1. Root BG016-before-Admin integration and immutable livecutover remain separate.
+ARCH-075-BACKGROUND-016 Ready (preparatory; publication final gate): Consume application-owned common footer policy; Adopt exact published reader and implement Background application policy at every common reference selection/read/frozen/finalpermit/native preparation path. Allow saved website in checkout.available conditional before trusted checkout URL final line, unique trusted name/site/checkout bindings, allowed-variable authority. Remove website-in-header assumptions without dropping rendered boundary/hash/receipt proof. No URL counting/strip heuristics over authored answer; no invented URLs. Existing immutable common refs remain frozen and current-source locks authoritative. Final checkout and STOP/body preservation remain app-owned. No Shared business rules/release or live writes.
+ARCH-075-SHARED-015 Complete/Accepted (actual6.0.1published): Publish accepted common layout structural reader; Release-only accepted source as proposed6.0.1; confirm semver before metadata. Produce immutable exact archive and public diff, no implementation changes. Public npm publication requires ROOT relay of explicit user approval for that exact archive; existing6.0.0 approval does not apply. Do not publish before concrete Admin/BG candidate validation. Verify registry downloaded bytes/SRI/latest and report.
+ARCH-075-BACKGROUND-015 Complete/Accepted: Bound AI product-list composition to branded caption budget; Investigate then implement deterministic app-owned bounded product selection/composition for long AI lists, preserving exact verified IDs/facts/discount provenance and rendered mandatory STOP/checkout footer. Budget full caption<=1024 after actual canonical footer; no arbitrary model prose truncation, no human text truncation, no automatic invented selection or weakening model/receipt/permit guards. If no evidence-safe compact form fits, retain fullTEXT fallback. Shared6 renderer unchanged; root owns actual model/customer/live operations. Source profile/saved template remains authority. This task becomes Ready only after concrete composition strategy is documented by architect.
+
+BG015 Ready strategy: complete descending verified selected prefixes, exact saved-frame caption budget, filtered proof/pairs/context, no arbitrary prose/HUMAN truncation; fallback if no safe fit.
+
+BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: evidence-safe caption prefixes; root integration/live proof pending.
+ARCH-075-SHARED-014 Complete/Accepted: Parse common layout structure without application placement policy; Keep envelope/prepared/hash verification and exact mechanical single response slot; remove shop.name/site header placement, empty footer, checkout conditional/last-line business checks from readCommonRecoveryLayoutReference. No new website footer placement rule. Preserve exact hash integrity, reject malformed shape/tamper/duplicate response slots, no operational authority. Audit exported callers. Explicit application policy must guard Admin/BG consumer paths before new writes. Add tests for structurally intact alternative section placements accepted and tampered/unsafe frames rejected. No renderer or unrelated contract refactor.
+
+Shared014 Accepted exacta870977566babb35aac7b38e59efd194b64770b3/report3e163e8f; structural only. App-owned consumers and actual approved publication remain gated.
+
+BG016 Complete/Accepted exact59b593d4fa75f072d22a95875bcae1997f441280/report4ed050b6. Actual6.0.1 and app policy proven; root BG-before-Admin integration/livecutover separate.
+Shared015 Complete/Accepted actual6.0.1 registryfd7b exact receipt14:40:56; actualsource4c736db. Consumer final acceptance/livecutover separate.
+
+ARCH-075-BACKGROUND-018 Complete/Accepted: consume existing durable Admin reconciliation requests through normal leased service; independent of frozen017, no live operations.
+
+BG018 Accepted exact1d01849aa0b1a67f4baca9f9e9eac2828d532a19/report9507bccb, durable UI request consumer. Root integration/live proof separate.
+ARCH-075-ADMIN-012 Complete/Accepted: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+
+Admin012 Accepted exacte2ffe1f2147146963aa6d42603bf610e0629a7df/reportedffb75b: rawhash status/publication/currentprofile activation parity only; runtime unchanged.
+ARCH-075-BACKGROUND-017 Complete/Accepted: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+
+BG017 Accepted exacteb732bac14aaee02b1db496377cb25ae3c1d3660/reportcab01ee15: evidenced NBSP equivalence only; root live reconcile/rollout separate.
+
+ARCH-075-BACKGROUND-019 Complete/Accepted: originallymulti-product AI detail overflow uses honest verifiedbriefsummary, singleproductfidelity preserved, savedfooter budget/proof intact.
+
+BG019 Accepted exact09298ac0369cfce1c4484bf8265f2b1b8bb18053/report7aea3e75, verifiedbriefmultiproduct policy; root integratedgenuine proof pending.

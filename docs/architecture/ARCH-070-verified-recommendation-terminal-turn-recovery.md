@@ -1,7 +1,7 @@
 ---
 id: ARCH-070
 title: Verified recommendation evidence and terminal turn recovery
-status: implemented
+status: in_progress
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
@@ -108,3 +108,19 @@ None blocking. Earlier exact raw model values remain unknown; deterministic sema
 - 2026-11-12: Defined bounded catalogue evidence, terminal recovery and eligible AI footer tasks.
 - 2026-11-12: Added canonical semantic/shipping qualification and strict referral provider guidance through separately accepted releases/consumers.
 - 2026-11-12: All eleven tasks accepted; final genuine production recommendation/footer delivery and read receipt verified. Architecture marked Implemented with redacted public evidence and password-gate qualification.
+
+## Reopened production selection incident — 2026-11-14
+
+Prior accepted implementation/deployment history is preserved. New genuine Videographer turn reached FINAL_PRODUCT_SELECTION_MISSING after2successful searches and forcedfinalization; raw final shape unknown. ARCH-070-BACKGROUND-006 Ready adds safe application prevalidation shape evidence without changing args/validators/budgets or Shared. Root bounded synthetic probe runs independently. No fabricated selection/new loop/model switching or new Shared publication. Architecture reopened In Progress until evidence-based correction and genuine live verification; no old success is relabelled failure.
+
+ARCH-070-BACKGROUND-006 Complete/Accepted exactsource58783dd643ff75e2ce8e6618277a606fc4b10eee/report378b9a4f1: prevalidation shape evidence only, args/guards unchanged, focused26/host126/remote4376green. Rootintegration/deployeddiagnostic/freshgenuineevidence and actual correction remain pending; ARCH070 In Progress, no incident-fixed claim.
+
+## Application completion-format correction — 2026-11-14
+
+BG006 integrated/deployed; genuine09:08 turn successfully delivered one composite after ordinary plaintext then existing forced selection repair. Original08:20 forced-step omission remains unknown. Root causal diff found runner/model/response/selection sources unchanged across5.13.10→6.0.0 and Background host/discovery unchanged across composite adoption. ARCH-070-BACKGROUND-007 Ready adds application-owned structured finalization instructions with pinned-contract-aware guidance, no output mutation, new retry or Shared change. Root bounded unforced synthetic baseline/comparison measures benefit separately; subsequent genuine verification remains required.
+
+BG007 Accepted/Complete exactc0292c5d60754b864967ec8ec1ced47236625a9e, reportf1403192a528e757732cbb2f9bc8a7f75653e960: application format consistency only. Both actual-provider probes passed already; no measured efficacy or original forced-step reproduction. Original omission remains unknown; root integration/deployment/genuine verification pending, architecture In Progress.
+
+ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omission proven; app guidance plus actualprovider schemaforwarding audit, no guard/budget/Shared change. Architecture InProgress; root live verification separate.
+
+BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
