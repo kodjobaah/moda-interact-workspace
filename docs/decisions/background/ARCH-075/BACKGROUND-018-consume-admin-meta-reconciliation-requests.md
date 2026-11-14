@@ -163,3 +163,7 @@ Conforms existing durable Admin command, bounded at-least-once GET and updatedAt
 ### Follow-up
 
 Root source merge then actual parent pin/currentmain integration, worker deployment/drain and normal UI request lifecycle confirmation. No provider approval/activation bypass or rollout completion implied.
+
+## Developer Integration
+
+Root sourcePR230 merged actualBackgroundmain8244752ba6dd987eb8873e216b2fec75011ad0f0. Independently fetched exactorigin/main/treeequal reviewed1d01849. Parent merged currentmain7aa12b29 preserving append sections/accepted017+Admin012 actualpins; actual Background gitlink recorded. Root alone parentmerge/deploy/normal UI lifecycle verification.

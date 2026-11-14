@@ -69,3 +69,6 @@ BG015 Accepted exact9e5a7f50d97aea739ff0851de2e44c739a6189f1/report7ecc4cf5e: ev
 ARCH-075-BACKGROUND-018 Complete/Accepted: consume existing durable Admin reconciliation requests through normal leased service; independent of frozen017, no live operations.
 
 BG018 Accepted exact1d01849aa0b1a67f4baca9f9e9eac2828d532a19/report9507bccb, durable UI request consumer. Root integration/live proof separate.
+ARCH-075-BACKGROUND-017 Complete/Accepted: app-owned Meta NBSP provider-text equivalence only; exact immutable identities and substantive drift guards preserved.
+
+BG017 Accepted exacteb732bac14aaee02b1db496377cb25ae3c1d3660/reportcab01ee15: evidenced NBSP equivalence only; root live reconcile/rollout separate.
