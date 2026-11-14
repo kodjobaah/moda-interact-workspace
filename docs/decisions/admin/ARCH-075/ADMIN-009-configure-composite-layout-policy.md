@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T01:25:12Z
@@ -73,7 +73,7 @@ User explicitly requires no obsolete template execution compatibility. Require c
 - [x] Put bounded geometry and truthful preview in existing SHARED authoring/CloneAsNew/saved detail/review flows; no independent policy authority.
 - [x] Require current profiles for new admission/eligibility and exact translated profile equality; preserve historical audit records.
 - [x] Validate and push a tested source/report checkpoint against the exact provisional current-only package.
-- [ ] Adopt final accepted Shared archive and separately approved actual registry release/lock; submit final review only after this gate.
+- [x] Adopt final accepted Shared archive and separately approved actual registry release/lock; submit final review only after this gate.
 
 ## Interfaces / Contracts
 
@@ -89,17 +89,17 @@ Background014 next-attempt runtime-selected profile and user-owned reviewed poli
 
 ## Acceptance Criteria
 
-- [ ] Two materially different profiles can be saved/previewed using same installed Shared artifact without code/version changes.
-- [ ] Strict server bounds/role/environment/CAS/audit and missing-row preview-vs-authority distinction hold.
-- [ ] Preview honestly reflects supported composition and caption, no private values.
-- [ ] Required tests/build/registry adoption and isolation report complete; no live writes.
+- [x] Two materially different profiles can be saved/previewed using same installed Shared artifact without code/version changes.
+- [x] Strict server bounds, existing role/environment/immutable review/audit and saved-template authority hold; superseded policy-row/CAS requirements do not apply.
+- [x] Preview honestly reflects supported composition and caption, no private values.
+- [x] Required tests/build/registry adoption and isolation report complete; no live writes.
 
 ## Validation
 
 - [x] Focused current saved-template bounds, structure/safety separation, hash/source/translation tamper and truthful UI checks.
 - [x] Disposable PostgreSQL create/clone/read, all 20 locale reviews, exact selected reference, immutable audit/activation and original-record preservation.
 - [x] Same installed provisional package two-layout actual rendering, full unit/security/types/lint/build and post-build runtime/browser graph checks.
-- [ ] Final accepted artifact identity comparison, approved public registry adoption and clean lock/npm-ci validation.
+- [x] Final accepted artifact identity comparison, approved public registry adoption and clean lock/npm-ci validation.
 
 ## Stop Condition
 
@@ -113,7 +113,7 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others.
 
 ### Status
 
-In Progress — tested source checkpoint, not Ready for Review. Final accepted archive and approved public registry adoption remain mandatory. No main merge/deployment is authorized by this checkpoint.
+Ready for Review — accepted artifact, approved public registry adoption, clean installation and final exact-head checks passed. Root retains main integration and deployment authority.
 
 ### Files Changed
 
@@ -124,7 +124,7 @@ In Progress — tested source checkpoint, not Ready for Review. Final accepted a
 
 ### Work Completed
 
-- Source `099a3241ad4987a03ac634c96c0aaba673485915` pushed on mirrored task branch; draft Admin PR [98](https://github.com/kodjobaah/moda-interact-admin/pull/98). Final source commit normalizes trailing whitespace only after successful validation; runtime logic is unchanged.
+- Final source `4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f` pushed on mirrored task branch; Admin PR [98](https://github.com/kodjobaah/moda-interact-admin/pull/98). Final commit adopts actual published Shared 6.0.0 through its normal registry dependency and lock; no unrelated dependency changes.
 - Required current profile is part of immutable SHARED authoring and prepared identity. New drafts carry an explicit Admin-owned starting profile; historical clones receive no automatic profile and require explicit authoring before save/review/activation. Historical rows remain audit/display-only and nonselectable, with no new execution fallback.
 - Profile metadata never enters translated text. English/source, prepared digest and every reviewed locale remain independently checked; native Meta components/bindings are unchanged for geometry-only edits.
 - Left-logo and top/centered-logo geometries render through the same installed package. Browser preview is explicitly schematic, with authored header and actual caption ordering shown separately; the real renderer retains contained original media and typed failure outcomes.
@@ -132,7 +132,7 @@ In Progress — tested source checkpoint, not Ready for Review. Final accepted a
 
 ### Validation Results
 
-Root accepted the current-only Shared source at `f06cf317`; tested archive SHA-256 `029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929` was verified and installed `--no-save --package-lock=false --ignore-scripts`. Committed dependency/lock are unchanged; this is not a registry readiness claim.
+Root accepted the current-only Shared source at `f06cf317`; tested archive SHA-256 `029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929` was verified and installed `--no-save --package-lock=false --ignore-scripts`. This accepted-code phase was followed by the approved actual public 6.0.0 registry adoption below.
 
 - Focused source/UI/common/actual-render: **17 passed**.
 - Declared full `npm run test:unit`: final rerun **846 passed, 0 failed, 0 skipped**. One prior outdated assertion expected profile-less SHARED admission; corrected to require explicit current profile, with affected **11/11** also passing.
@@ -140,9 +140,12 @@ Root accepted the current-only Shared source at `f06cf317`; tested archive SHA-2
 - `npx tsc --noEmit`, `npm run lint`, `npm run build`: passed. Lint retains one unchanged nested Database anonymous-default-export warning; build retains existing optional BullMQ Valkey resolution warnings.
 - Declared disposable common-layout PostgreSQL runner: **2 passed**, including saved/clone/audit, all 20 reviewed profile snapshots, exact common reference, coordinated activation/replay and unchanged original rows; independent layout policy count stays zero. Disposable container removed; no hosted database used.
 - Actual package render proofs: 1125×900 left arrangement and 1125×1200 top arrangement; logo containment/letterbox, separate product pixels, header-only mode, overflow/unsupported glyph and profile tamper all passed. Fixture images visually inspected.
-- Exact major **6.0.0** candidate SHA-256 `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8` independently verified: all **160 non-metadata files byte-identical** to the accepted 029b archive; only package version changes. No-save/no-lock installed major candidate; affected source/UI/real-render **17/17 passed**, `npx tsc --noEmit` passed. No unchanged broad suite repeated for this metadata-only step; actual registry adoption remains gated.
+- Exact major **6.0.0** candidate SHA-256 `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8` independently verified: all **160 non-metadata files byte-identical** to the accepted 029b archive; only package version changes. No-save/no-lock installed major candidate; affected source/UI/real-render **17/17 passed**, `npx tsc --noEmit` passed. No unchanged broad suite repeated for this metadata-only step; actual registry adoption subsequently passed below.
 - Root's updated actual top QA profile independently passes unchanged Admin validator; canonical digest `7c8f95941e47a7501da6b3dcad328e67c89769399cd93364498c7a89a13cedfd` matches. QA-only values did not change defaults or bounds.
 - Production browser graph has zero Node-renderer/font-loader/frozen-verifier markers. Source diff checks pass; no new logging/runtime telemetry was introduced.
+
+- Approved public Shared **6.0.0** adopted with normal `npm install --save-exact` and clean `npm ci` against registry.npmjs.org. Registry lock SRI matches approved archive `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8`; all **161 installed files** match that archive exactly. Fresh actual-registry focused **17/17**, typecheck and production build passed. Earlier broad results remain applicable by the independent 160-file code identity proof; no unchanged broad suites repeated.
+- Final exact source head `4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f`: **Vercel SUCCESS** at 2026-11-14T03:21:48Z; Preview Comments SUCCESS at 03:21:49Z. The earlier draft failure is superseded by this green exact-head check; no unsupported causal claim is made.
 
 ### Deviations
 
@@ -154,7 +157,7 @@ Root owns accepted source integration, separately approved public release, produ
 
 ### Unresolved Issues
 
-Exact accepted-code/major-candidate comparison is complete. Separate public 6.0.0 approval/publication and actual registry dependency/lock adoption remain pending. Source draft must not merge while its committed dependency lacks these exports. The current draft Vercel failure must be diagnosed/resolved or verified green on the final registry-adoption head before acceptance; no remote causal claim is made.
+None within this task. Root owns integration and controlled live template cutover; this report makes no live activation claim.
 
 ### Architectural Concerns
 
