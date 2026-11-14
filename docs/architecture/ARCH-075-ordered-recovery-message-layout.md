@@ -259,3 +259,5 @@ User confirms the saved common SHARED template owns layout. Earlier independent 
 ARCH-075-SHARED-012 Complete/Accepted exact source59068290eb69506fd7a5d248c5ed359cfb98163d/report8b3310e943a610e8a243829c6e88410ad42c96cd: current template-profile machinery, structural Shared parsing/safety, unused fixed-composite removal. Major release013 remains separate and explicitly approved only after tested archive/consumers. ARCH075 remains In Progress.
 
 ARCH-075-SHARED-013 Ready after actual012 integration b4ae79170ef3427d1744ef1151ef40e013ebbb78 / Sharedf06cf317781bf584b62f2c286d06118f21e40123; release preparation only, public approval held.
+
+ARCH-075-SHARED-013 Complete/Accepted: actual public6.0.0/latest independently downloaded exact49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8,965706B161files; finalreport4cf181e9dec04f68c7f774aed081525ae8ca689c. Consumer registry/CI/review/integration and controlled deployment remain separate; ARCH075 In Progress.
