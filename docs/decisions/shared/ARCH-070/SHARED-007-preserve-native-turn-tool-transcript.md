@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-14T22:12:26Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables: []
@@ -235,3 +235,15 @@ Required source tests: actual SDK HTTP body omits the key by default while exact
 Accepted exact implementation `667a658915f4071835a966c345e5fe76feda0829` and report `ca07361b4`. Canonical mirrored parent/implementation worktrees, normal launcher claim70ba11c5, synchronization and recursive submodule evidence reviewed. Earlier generic native transcript/terminal-port code review retained; latest production delta removes only unconditional parallel_tool_calls:false. Actual SDK wire regressions preserve schemas/strict/auto/named/required choices/max_tokens; affected208/type/build/installed SDK/types/browser proofs pass. Root015 independently shows routing reaches DeepInfra with omission, while empty selection remains correctly rejected.
 
 This acceptance covers reusable native protocol, immutable raw/canonical separation, terminal controls and optional transport compatibility, not application selection efficacy. Root explicitly requests source acceptance now while BG010 actual proof remains held. That application/release gate supersedes earlier wording coupling this generic task completion to incident success. No budgets, referral/grounding/business policy or privacy preference was relaxed. No source finding remains. Additive6.1.0 is the release recommendation; published6.0.1 unchanged. Separate Shared008 publication may prepare only after root's required016 application evidence disposition and requires a new explicit exact-archive public approval. No source/main merge, publication or live operation is performed by this review.
+
+### Latest Architect Review — whole-batch terminal equivalence correction
+
+Review Status: Changes Requested. Root explicitly reopens Complete007 after016; preserve accepted attempt3 history and number, clear claim, next normal launcher claim is attempt4. Earlier accepted source667a658 remains historical only; publication008 remains held.
+
+Actual016 returned three recovery_complete_details calls with distinct actual provider IDs and exactly identical raw argument SHA a7d6f34b8119c94048467a9f39dda7ffa6e8a077382637c042e547ac125f3c22. Each selects two currently observed pairs. The framework correctly rejected its former sole-call contract; do not take an arbitrary first result or rewrite raw provider output.
+
+Authorize one bounded generic correction: only the existing PURE terminal-decision phase may coalesce a batch into one equivalence class when EVERY call is a currently advertised terminal tool, every actual ID is present/unique, all names identical and all parsed arguments canonical-JSON identical. Any ordinary/foreign/unadvertised/differently named/differently valued/invalid-ID call invalidates the ENTIRE batch. Existing bounded call count/transcript limits remain. No ordinary tool execution, synthetic call/ID, new provider request, retry, token/counter reset or business validation change.
+
+Bind the projected decision to the WHOLE original batch: ordered actual IDs plus canonical full raw-step/calls digest, same turn/inbound/modelstep/responsecontract. Preserve existing per-call identity as a representative ONLY after proving equivalence, explicitly recording that it is one actual member of the bound class, not a manufactured provider call. Expose sufficient immutable batch binding/input for the application callback to echo the exact framework binding reference; never present modified canonical args as provider-issued. Deep-copy/freeze all snapshots and validate binding before and after callback. Keep raw ModelStep and native journal byte/value-identical. Apply project ONCE; charge the original model output and step ONCE. Every canonical grounding/referral/shipping/evidence check remains authoritative; any projection or canonical failure terminal with no repair/reinvoke. Existing single-call behavior remains valid.
+
+Required regressions: actual captured STRUCTURAL equivalent3-call batch with generic synthetic IDs/pairs projects once; all IDs/order/fullbatchdigest bound and immutable; raw unchanged; duplicate/missing IDs, one differing argument/name, one ordinary/unadvertised call, mutation/foreign binding all reject with zero project/tool work; invalid projected value still terminal; native transcript and budgets unchanged. Exact local offline replay of private016 by root must pass unchanged canonical result and exact observed membership before any further bounded natural proof. Public fixtures must not contain merchant data. Run affected focused/types/build/installed SDK/type/browser checks, no unrelated broad repeats. Deliver new exact archive/bundle and review report; STOP. No publication/main/live operation.

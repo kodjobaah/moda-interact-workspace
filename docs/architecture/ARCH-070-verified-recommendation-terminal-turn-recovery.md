@@ -132,3 +132,7 @@ Shared007 Ready reworkattempt2: genericrawtransport/separatehostterminaldecision
 ## Shared007 source acceptance checkpoint
 
 Shared007 Complete at667a658: native transcript/terminal mechanics and optional parallel parameter omission accepted independently of application efficacy. Trial015 routes but still rejects empty selection. Shared008 publication remains held until root application evidence disposition and exact new public approval; architecture remains In Progress. Both Background and Commerce SDK consumers must deploy before saved routing nesting.
+
+## Shared terminal equivalent-batch correction
+
+Root016 returned three identical pure terminal decisions selecting observed pairs. Shared007 reopened Ready (attempt3 preserved) for whole-raw-batch identity/digest binding and exactly-once projection of proven equivalent calls. Any differing/ordinary/foreign batch remains rejected. No business guard, provider budget or raw transport rewrite; publication and incident verification remain held.
