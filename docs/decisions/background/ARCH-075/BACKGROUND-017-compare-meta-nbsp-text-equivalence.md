@@ -86,6 +86,12 @@ After work/checks publish matching source+parent report, set review and STOP; ro
 
 Normal moda-task dedicated canonical sibling worktree/claim. You are not alone; do not revert others. Preserve all local/staged work. Read applicable policy/role/AGENTS; report ambiguous boundary rather than broaden normalization.
 
+## Authoritative raw-hash-domain correction
+
+Root accepted concrete Sharedselector boundary finding: persisted lastObservedContentHash MUST remain existing raw expected-component projection domain. Do NOT change Admin/Shared observation hash algorithm. Background reconciliation alone may prove expected-vs-observed provider component equivalence with bounded text U+00A0→ASCIIspace, strict identity/category/status and URL/binding guards. If equivalent, persist expectedRAW projection hash as canonical representative; true drift retains actualrawhash. No preexisting row/flag rewriting or manual clear. Normal root reconciliation establishes proof after deployment.
+
+When representative differs from actualrawobservedhash, durable MetaEvent.evidence MUST retain rawobservedhash, expectedhash and explicit normalizationkind U+00A0_TO_U+0020_TEXT_ONLY, with no raw text/URLs/secrets. Existing unrelated flags/status/identity/category checks stay exact. Admin task is now PARITY/REGRESSION VERIFICATION ONLY unless actual necessary application gap proven; do not add needless normalizer. Tests exercise real representative observation through existing Admin status/publication/activation/frozen identity with negative drift/category/bindings/URLs. Background tests must prove immutable snapshot/source/submitted hashes untouched, durable evidence complete and current selector/finalpermit accepts only actual proven equivalent observation. No Shared release.
+
 ## Completion Report
 
 ### Status
