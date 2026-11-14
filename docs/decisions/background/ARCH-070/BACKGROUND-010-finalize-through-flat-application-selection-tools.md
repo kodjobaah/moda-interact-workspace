@@ -167,6 +167,12 @@ Validation against exact unpublished transport-omission archive `890d060d52d4a84
 
 Factory SHA256 `2037f42c509bbb7929ff1274fca6db6abb1998d8ac47182d339df97fc2bd1d62`; phase helper SHA256 `f1c3afef9fd7d051b4b2a7f7f5b2a8913c28342944c5f283adc93d06f316d856`. Root owns the exact runner+SDK+factory+phase-helper bundle and bounded actual trial. No provider/MCP calls, live changes, publication or merges were performed by this agent. Actual efficacy, accepted Shared/public registry adoption/clean npm-ci/final remote CI remain held; task remains InProgress.
 
+### Whole-batch terminal binding integration checkpoint
+
+Source `fa653d866593b0e44a51ce91fad58503924d39a9` adds test-only adoption of the generic whole-batch binding (`callIds`, `rawStepSha256`, `rawCallsSha256`, `calls`); application runtime remains byte-identical to `1cb735d`. Exact unpublished Shared archive SHA256 `79003cd3cd4e7a73ce83f4bc6c6e6ce073a26a0c9c1166553074227f42d80b2b` was verified and installed without saving dependency/lock changes. TypeScript, production build and scoped lint PASS; focused33 unit cases PASS. Host evidence covers153 unique cases:152 PASS in the full affected run, and one corrected diagnostic assertion PASS in isolation. That existing negative returns unadvertised `finalResponse` during the alternate-tool phase; the new generic batch reader now rejects it earlier with `TERMINAL_DECISION_INVALID`, still terminal `INVALID_FINAL` with no retry or modified raw values. The initial unit run32/33 exposed an `it.each` array-unpacking fixture issue when canonical batch hashes were added; wrapping each row correctly passes the actual empty/duplicate/wrong-type/oversize arrays into unchanged rejection tests. Original failed traces retained; no unqualified single-run153-green claim.
+
+Root trial016 produced three explicit model-issued detail calls rather than empty arguments; the prior one-call framework safely refused them before projection. Whole-batch equivalence/binding belongs Shared; Background does not choose an arbitrary call or rewrite raw provider transport. Root owns replay/actual follow-up classification. Actual efficacy and all publication/registry/integration gates remain held, task InProgress.
+
 ## Architect Review
 
 ### Review Status
