@@ -83,3 +83,5 @@ MCP generated-Prisma review confirmed accepted Commerce publication-storage.ts:1
 2026-11-07: COMMERCE-002 Attempt 1 architect Accepted and explicitly developer-completed (92edcff). All explicit terminal System Test dependencies Complete; System Test dependency-ready, manual-gated, unclaimed. No integrated runtime/deployment result asserted.
 
 ARCH-064-MCP-002 Ready: bounded adoption of accepted Database2e14f866 for already-correct immutable purposeMembers reader; no Shared/schema/auth change, actual generated build and disposable runtime proof required. Parent implementation/runtime architecture completion remains separate.
+
+ARCH-064-MCP-002 Complete/Accepted exactsource8dd4a0854367d84a5c31f6710915def70dfdd5ee/report821c89c1ae1d86bcfbe4396c473fe75b9e5b44e9: acceptedDatabase2e14f866 fixes generatedpurposeMembers build; immutable reader/auth unchanged; unit475/integration36+1optin skip/actualDockerbuild+lifecycle verified. Roothosted migration/schema readiness verified, no newDDL. Rootactualmain integration/deployverification remain separate; no overallarchitecturecompletion claim.
