@@ -70,10 +70,10 @@ User explicitly requires no obsolete template execution compatibility. Require c
 
 ## Work Items
 
-- [ ] Add closed policy/defaults/server validation and intentional existing editor/history wiring.
-- [ ] Add honest preview plus two materially different supported profile fixtures.
-- [ ] Adopt accepted Shared API through approved packed/registry stages, preserving auth/CAS/audit.
-- [ ] Test and push mirrored source/report; stop for review.
+- [x] Put bounded geometry and truthful preview in existing SHARED authoring/CloneAsNew/saved detail/review flows; no independent policy authority.
+- [x] Require current profiles for new admission/eligibility and exact translated profile equality; preserve historical audit records.
+- [x] Validate and push a tested source/report checkpoint against the exact provisional current-only package.
+- [ ] Adopt final accepted Shared archive and separately approved actual registry release/lock; submit final review only after this gate.
 
 ## Interfaces / Contracts
 
@@ -96,9 +96,10 @@ Background014 next-attempt runtime-selected profile and user-owned reviewed poli
 
 ## Validation
 
-- [ ] Focused valid left/top arrangements, geometry/font invalidity, unknown fields, missing profile, unauthorized role/environment, CAS/audit regressions.
-- [ ] Actual disposable PG configuration create/update/history/conflict and unchanged records; existing harness reuse.
-- [ ] Meaningful preview/render evidence with two profiles using exact same accepted package; relevant full unit/security/type/lint/build and clean final registry dependency checks.
+- [x] Focused current saved-template bounds, structure/safety separation, hash/source/translation tamper and truthful UI checks.
+- [x] Disposable PostgreSQL create/clone/read, all 20 locale reviews, exact selected reference, immutable audit/activation and original-record preservation.
+- [x] Same installed provisional package two-layout actual rendering, full unit/security/types/lint/build and post-build runtime/browser graph checks.
+- [ ] Final accepted artifact identity comparison, approved public registry adoption and clean lock/npm-ci validation.
 
 ## Stop Condition
 
@@ -112,35 +113,53 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others.
 
 ### Status
 
-Not Started
+In Progress — tested source checkpoint, not Ready for Review. Final accepted archive and approved public registry adoption remain mandatory. No main merge/deployment is authorized by this checkpoint.
 
 ### Files Changed
 
-None
+- Authoring types/validation/projection/draft/preview plus `composite-profile.ts`: saved SHARED source owns profile and deterministic prepared digest; operational ranges/ordering/nonoverlap stay Admin-owned; Shared supplies structural parsing and explicit renderer safety.
+- Existing wrapper editor, saved detail and read-only preview plus bounded profile controls/schematic: no new editor framework or independent configuration key/row.
+- Translation segment admission and wrapper eligibility: reject translator-supplied profile metadata and require exact English/locale profile+digest equality.
+- Common fixtures/PostgreSQL workflow, current-admission product-image regression, and three focused source/UI/real-render suites.
 
 ### Work Completed
 
-None
+- Source `099a3241ad4987a03ac634c96c0aaba673485915` pushed on mirrored task branch; draft Admin PR [98](https://github.com/kodjobaah/moda-interact-admin/pull/98). Final source commit normalizes trailing whitespace only after successful validation; runtime logic is unchanged.
+- Required current profile is part of immutable SHARED authoring and prepared identity. New drafts carry an explicit Admin-owned starting profile; historical clones receive no automatic profile and require explicit authoring before save/review/activation. Historical rows remain audit/display-only and nonselectable, with no new execution fallback.
+- Profile metadata never enters translated text. English/source, prepared digest and every reviewed locale remain independently checked; native Meta components/bindings are unchanged for geometry-only edits.
+- Left-logo and top/centered-logo geometries render through the same installed package. Browser preview is explicitly schematic, with authored header and actual caption ordering shown separately; the real renderer retains contained original media and typed failure outcomes.
+- Superseded independent-policy draft was preserved byte-for-byte before removal (private archive SHA-256 `e8606547a33b9861b8decf99ee3e8be6d83947e7ef1a70bebd2e4e869f3c9334`). Useful controls/preview were repurposed. No separate layout policy remains.
 
 ### Validation Results
 
-Not run
+Exact provisional current-only Shared archive SHA-256 `029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929` was verified and installed `--no-save --package-lock=false --ignore-scripts`. Committed dependency/lock are unchanged; this is not a registry readiness claim.
+
+- Focused source/UI/common/actual-render: **17 passed**.
+- Declared full `npm run test:unit`: final rerun **846 passed, 0 failed, 0 skipped**. One prior outdated assertion expected profile-less SHARED admission; corrected to require explicit current profile, with affected **11/11** also passing.
+- Declared `npm test`: **331 passed, 0 failed**, three pre-build runtime cases skipped initially; post-build `admin-telemetry-bootstrap.test.mjs` **3/3 passed, 0 skipped**.
+- `npx tsc --noEmit`, `npm run lint`, `npm run build`: passed. Lint retains one unchanged nested Database anonymous-default-export warning; build retains existing optional BullMQ Valkey resolution warnings.
+- Declared disposable common-layout PostgreSQL runner: **2 passed**, including saved/clone/audit, all 20 reviewed profile snapshots, exact common reference, coordinated activation/replay and unchanged original rows; independent layout policy count stays zero. Disposable container removed; no hosted database used.
+- Actual package render proofs: 1125×900 left arrangement and 1125×1200 top arrangement; logo containment/letterbox, separate product pixels, header-only mode, overflow/unsupported glyph and profile tamper all passed. Fixture images visually inspected.
+- Root's updated actual top QA profile independently passes unchanged Admin validator; canonical digest `7c8f95941e47a7501da6b3dcad328e67c89769399cd93364498c7a89a13cedfd` matches. QA-only values did not change defaults or bounds.
+- Production browser graph has zero Node-renderer/font-loader/frozen-verifier markers. Source diff checks pass; no new logging/runtime telemetry was introduced.
 
 ### Deviations
 
-None
+Earlier policy-authority scope was superseded by the explicit user-approved saved-template and current-only amendments. Both corrections are implemented; superseded draft preserved. No unapproved scope expansion.
 
 ### Assumptions
 
-Root owns integration/publication/live review.
+Root owns accepted source integration, separately approved public release, production template replacement/retirement and live verification. No source/main merge, live provider call, live configuration write, historical deletion or npm publication was performed by this agent.
 
 ### Unresolved Issues
 
-Final Shared012 accepted API/pack/release gate pending.
+Final accepted Shared artifact comparison and separately approved registry release/adoption remain pending. Source draft must not merge while its committed dependency lacks these exports.
 
 ### Architectural Concerns
 
-Return concrete gaps before widening.
+Geometry-only edits leave native Meta components/bindings byte-for-byte unchanged, so geometry alone does not technically require Meta review. Separately, existing internal activation requires every replacement reference to match the exact newly reviewed common revision and registrations remain bound to their immutable locale. That coordinator limitation is preserved, not bypassed or described as a Meta API rule. Root owns cutover of active historical templates before current-only rollout.
+
+Physical isolation: canonical root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-ADMIN-009`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-ADMIN-009`; both `task/ARCH-075-ADMIN-009`. No shared/default source checkout or other task worktree used. Launcher verified both remote task fast-forwards not needed and origin/main already current; implementation base `622032d4a2e0bbed6f0a65300f5c6612f29ef49d`; nested Database `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`; recursive submodule preparation passed; durable Attempt-1 claim `e98cd10d7902b7bbd2bf45d3df365ca2684868a4` pushed. Later architect task amendments were reread without a new claim.
 
 ## Architect Review
 
