@@ -49,9 +49,9 @@ Release-only accepted007 source. Determine semver from actualpublicAPI compatibi
 
 ## Work Items
 
-- [ ] Verify accepted007 exact source c1c1d2b8d00276dd88bf974997db2c8855fa9aa4 and root018 disposition before normal preparation.
-- [ ] Apply additive version6.1.0 to package metadata/lock only and prepare one immutable archive from accepted built output, without rebuilding accepted implementation.
-- [ ] Compare every nonmetadata member with accepted79003cd3 archive; record exact archive SHA256/size/member count/SHA1/SRI for user review.
+- [x] Verify accepted007 exact source4e0716e3aad311a6d7c8620d11070988a35cbb14 and root024 disposition before normal preparation.
+- [x] Apply additive version6.1.0 to package metadata/lock only and prepare one immutable archive from accepted built output, without rebuilding accepted implementation.
+- [x] Compare every nonmetadata member with accepted14dbf8 archive; record exact archive SHA256/size/member count/SHA1/SRI for user review.
 - [ ] Hold publication until root relays new explicit user approval for that exact archive/public latest.
 - [ ] Publish the approved exact archive without repack/rebuild; independently verify registry version/latest/download bytes/SRI and unchanged public6.0.1.
 - [ ] Return immutable publication receipt/report and STOP; consumers remain separate.
@@ -70,11 +70,11 @@ Source007→release008→finalconsumer009; localpackedconsumerproof permitted be
 
 ## Acceptance Criteria
 
-- [ ] Source007 is architect-accepted and root application evidence disposition permits preparation.
-- [ ] Version6.1.0 metadata-only release preserves every accepted nonmetadata member exactly.
+- [x] Source007 is architect-accepted and root application evidence disposition permits preparation.
+- [x] Version6.1.0 metadata-only release preserves every accepted nonmetadata member exactly.
 - [ ] New explicit exact-artifact publication approval is recorded before publish.
 - [ ] Actual public registry receipt proves exact approved archive/version/latest;6.0.1 unchanged.
-- [ ] No implementation validation reruns or consumer integration inside this release task.
+- [x] No implementation validation reruns or consumer integration inside this release task.
 
 ## Validation
 
@@ -92,35 +92,38 @@ Normal moda-task canonical siblingworktree/claim; notalonepreserveothers. Rootow
 
 ### Status
 
-Not Started
+Prepared — awaiting explicit exact-archive public/latest approval. Task remains In Progress; no publication performed. Root independently compared the candidate archive and has asked the user; no elapsed-time approval is inferred.
 
-### Files Changed
+### Source and metadata
 
-None
+Accepted implementation4e0716e3aad311a6d7c8620d11070988a35cbb14 is integrated on implementation main d77268b87a924e4c5304f5d328eb232dde119a45. Source tree equality verified before metadata changes. Shared007 is formally Complete; root024 private recorded-batch replay passed offline with zero network calls, not natural/delivery evidence. Additive6.1.0 is the reviewed version: native/terminal APIs opt in, newly unpublished atomic/batch fields affect no released consumer; existing public6.0.1 stays immutable.
 
-### Work Completed
+Metadata-only source commit `aced58dbb479d8a10274b57a762bc6d77951ca8c`, PR https://github.com/kodjobaah/moda-interact-shared/pull/94. Exactly three version strings changed across package.json and package-lock.json; no dependency/source changes. Implementation branch pushed and clean. Root owns main merge.
 
-None
+### Immutable candidate and public diff
 
-### Validation Results
+Archive `/tmp/ARCH-070-SHARED-008/modainteract-moda-interact-shared-6.1.0.tgz`,977151 bytes/163 regular-file members.
 
-Pending
+- SHA256 `302b91f5ad24353ac3052c1e8c5d456b3c90d072d64665edff579eb56eb249d5`
+- SHA1 `cd39becdc2a00529a4920bd4a85c15fa8f6785b0`
+- SRI `sha512-h4bQaLuufY4u2CF4X6oS/7BbRWvNnfVN8cFJvL/xrhcmS4lqnob2qAgSTm/r5q3NqEIUWxuPw9FpypndQT+qiA==`
+- Public target: existing `@modainteract/moda-interact-shared`, version6.1.0, registry.npmjs.org, access public, tag latest. PUBLICATION HELD.
 
-### Deviations
+Exact accepted archive `/tmp/ARCH-070-SHARED-007/terminal-atomic-14dbf8eabaf0.tgz` SHA25614dbf8eabaf0a9444ca22b6ed151634d0807bb6a6ac350031a433d33f9d48fd4 verified before reading. Re-archived its exact members without rebuilding accepted code; only package/package.json substituted from metadata source, differing solely version6.0.1→6.1.0. All162 nonmetadata members are byte-identical, including every dist asset/map/declaration. Member names/count unchanged, no symlinks/new entries. Candidate archive and receipt/manifests are read-only.
 
-None
+Receipts: `/tmp/ARCH-070-SHARED-008/candidate-receipt.json`, `member-manifest.json`, `public-package-diff.txt`. Every member includes byte length/hash and accepted-equality flag; package.json is the sole false flag. Root independently confirmed this exact public diff.
 
-### Assumptions
+### Release mechanics validation
 
-None
+Registry preflight confirmed6.1.0 absent/available, latest6.0.1. Independently downloaded current public6.0.1 before release:965127 bytes, SHA256fd7b4a70d2a54da175556739074acdb5ee4487dc9c7e9c68a656717de3137aa2, SHA1b0fd8cc7801bb49ba1d74aae30151b8e189895b6, SRIsha512-q/nZZUpDIwCnaCvyJTa200XRzr9NRtBlMjDV64Ks77419Bw/eGWcft9XeounZfzY+GlocfjU5LbyxskS1FH92Q==. Baseline stored in `registry-before.json` and `registry-6.0.1-before.tgz` for postpublication immutability verification. Source metadata diff and git diff check PASS. No implementation tests/lint/types/build repeated; no consumer/main/live operations.
 
-### Unresolved Issues
+### Launcher evidence
 
-Providerconformance notguaranteed beforeactualnativeproof.
+Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-SHARED-008`, implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-SHARED-008`, both `task/ARCH-070-SHARED-008`. Parent canonical worktree reused, implementation newly created. Both remote-task FF not needed, origin/main already current; recursive implementation sync/update passed/no entries. Dependency gate Shared007 Complete. Initial parentcb4745217/implementationd77268. Attempt1 codex claim284222cf733764750284067fec0a1959e18b9d03 pushed. No shared checkout switched, another task reused or parent gitlink staged. Prior launcher correctly stopped before claim while dependency task was missing; architect reconciled dependency topology before successful rerun.
 
-### Architectural Concerns
+### Remaining gate
 
-None
+Wait for root's explicit relay of user approval for this exact archive/public/latest. Then publish the existing immutable archive only with ignore-scripts, without repack/rebuild; independently verify downloaded registry bytes/SRI/version/latest and unchanged6.0.1, write immutable publication receipt, submit Review. No publication authorization is inferred from previous versions or candidate preparation.
 
 ## Architect Review
 
