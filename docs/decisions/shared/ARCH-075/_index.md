@@ -46,3 +46,7 @@ SHARED011 Ready after actual accepted009+010 integration de3f9ee5/eed335729. Met
 ARCH-075-SHARED-011 Complete: public5.13.11/latest independently verified against exact approved SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086. Release acceptance is not layout/deployment approval. Consumer/Gateway main merges, deployment and activation remain HELD for the user's presentation-policy boundary review; Background registry-only adoption checks may finish. ARCH075 remains In Progress.
 
 ARCH-075-SHARED-012 Ready: actual SHARED011 integration d1319babb4ab9a82f4007d58123497f8987ea96e verified; normal isolated owner execution may begin.
+
+### Saved-template sole authority — superseding correction
+
+User confirms the saved common SHARED template owns layout. Earlier independent PlatformConfiguration profile proposal is superseded/unimplemented. Shared012 structural prepared extension carries optional compositeProfile/compositeProfileSha256 with legacy absent bytes unchanged; reusable V2 renderer only. Admin009 owns template authoring/clone/review/preview and operational rules; BG014 derives/freeze/rechecks the same selected immutable common reference. No separate active policy/editor/table/pointer. Generic renderer tests continue; all coherent source/tests/review/integration precede deployment, and new public package requires exact explicit approval.
