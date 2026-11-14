@@ -48,8 +48,8 @@ Move common-frame business validation into Admin owning app; Shared only structu
 
 ## Work Items
 
-- [ ] Implement only defined owning capability.
-- [ ] Add meaningful affected behavior regressions.
+- [x] Implement only defined owning capability.
+- [x] Add meaningful affected behavior regressions.
 - [ ] Record exact source and required checks.
 
 ## Interfaces / Contracts
@@ -90,19 +90,29 @@ Root authorizes concurrent owning source preparation using unchanged public read
 
 ### Status
 
-Not Started
+In Progress — concrete tested source checkpoint. Final accepted artifact and actual approved registry release adoption remain mandatory before review; no readiness/live claim.
 
 ### Files Changed
 
-None
+- `authoring/common-layout-policy.ts`, `common-layout.ts`, `validation.ts`, `preview.ts`: Admin trusted-binding/placement admission around the existing Shared technical reader/projection.
+- Existing `wrapper-structure-editor.tsx` and `common-layout-selector.tsx`: discoverable dynamic website/checkout footer, no ignored static footer.
+- New footer-policy/preview/UI regression suite, affected authoring/compilation/wrapper fixtures and existing disposable common-layout PostgreSQL workflow.
 
 ### Work Completed
 
-None
+Source `ae8033f914f3f88237f570a0d3ed51679ce9b255` pushed, draft Admin PR [100](https://github.com/kodjobaah/moda-interact-admin/pull/100). One app-owned policy enforces exactly one trusted shop.name in header, one shop.websiteUrl in header or checkout conditional, response-only body, semantically empty static footer, one checkout.available conditional and one canonical checkout.url alone on its final line. AI-only productImage is rejected for common references. Existing reviewed header website remains valid without rewriting or compatibility adapters; new authoring places it in the clickable caption footer.
+
+`requireCommonLayout` invokes the policy after Shared structural/hash parsing, so readSaved/assertSaved, selectors, native Meta projection, reconstruction and activation inherit it. SHARED compiler/save/review/eligibility and direct common preview also invoke the same policy. Frozen audit verification preserves exact saved bytes; new admission remains strict. Existing source/prepared/profile hashing and locale identity equality are unchanged. Static footer content is not silently omitted: meaningful content is refused with a footer issue; the editor retains its correction path. Empty static footer uses the complete conditional tokens in native BODY and AI/human caption.
+
+UI labels Website and checkout footer / Dynamic footer show where both links belong; a deliberate Add button inserts trusted website then final checkout URL. Existing nonempty static content remains editable for correction. Generic AI/HUMAN branded wrapper tests retain their broader supported fields and audit/CAS/authorization assertions; actual SHARED tests use valid common frames rather than obsolete generic SHARED fixtures.
 
 ### Validation Results
 
-Pending
+- Actual published 6.0.0 RED reproduces the Shared reader rejecting the new conditional-website reference. Approved provisional Shared014 archive SHA256 `6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a` hash-verified and installed no-save/no-lock; all **161 installed files** byte-match. Committed package/lock remain unchanged; this is not a registry-readiness claim.
+- Common/native/activation/translation/profile focused run: **57 passed**. New footer policy, UI and affected authoring-component run after UX changes: **14 passed**. Additional affected authoring/wrapper admission regressions: **51 passed**. Counts are separate runs with overlap, not an aggregate unique total.
+- New cases cover trusted binding counts/allowed placement, exact invalid prepared-reference rejection after rehash, six native scenario BODY/preview parity, AI/human caption ordering, translated variable relocation rejection, source/prepared/profile hashes, immutable read and unchanged old valid header bytes. Actual UI Add button preserves other content and saves correct bindings; nonempty static footer remains visible for correction.
+- Existing disposable PostgreSQL runner: **2 passed**, including real old-header-to-new-footer clone, queued translations and all 20 locale reviews, selector/reference equality, coordinated activation and original/audit preservation. Disposable container removed; no hosted database used.
+- Initial types/scoped lint/build passed; final types/lint/build after the small dynamic-footer UX change are running. Browser graph and exact final registry/remote checks remain final gates. No unaffected full-suite or PostgreSQL repeats.
 
 ### Deviations
 
@@ -110,15 +120,17 @@ None
 
 ### Assumptions
 
-None
+Root owns accepted dependency publication, main integration and normal saved-template/provider replacement/activation. No live edits, provider calls, database schema changes or independent configuration authority. Shared technical reader signature is unchanged; no sibling source imports or fabricated registry lock.
 
 ### Unresolved Issues
 
-None
+Final accepted Shared014 artifact identity, actual separately approved Shared015 publication and real registry dependency/lock/clean npm-ci adoption are mandatory before Ready for Review. Final UX build and exact remote checks pending.
 
 ### Architectural Concerns
 
-None
+Moving the website changes native BODY/binding order, so normal immutable native replacement/provider approval remains required; geometry-only comparisons from the preceding task do not imply this text-placement change is provider-byte-identical. No bypass is added. Static common footer remains semantically empty under app policy; the existing checkout.available footer carries both links without widening generic checkout-context grammar.
+
+Isolation: primary root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-ADMIN-011`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-ADMIN-011`; both `task/ARCH-075-ADMIN-011`. Launcher verified main/task synchronization and recursive Database at `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`; implementation base `907fa32726565ddd0c80bf07273ef6af7418949d`. Attempt1 durable claim `9ce081670c9f400d9ffc3a84882c85caaa36cf4e` pushed. No shared/default or other task source changed.
 
 ## Architect Review
 
