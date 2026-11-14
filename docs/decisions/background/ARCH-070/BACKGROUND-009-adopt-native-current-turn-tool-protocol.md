@@ -150,3 +150,7 @@ Pending
 ### Follow-up
 
 Root actualintegratedverification
+
+## Native probe / fixture precision
+
+Root nativeactualprobe begins naturally with realSDK/no syntheticseed; no fabricatedproviderID mayenter nativepath. If no currentproducts observed, reportuntestedselectioncondition ratherthanconformance. Any separate firstactualSDK discovery-toolchoice experiment requires rootexplicitdisposition and actualproviderissuedID, nevernewproductionAPIjustforprobe. Test-only explicit syntheticprovideradapter may assign deterministicfixtureIDs to existing syntheticsteps, with rawmissing/duplicateIDnegatives bypassing adapter; productionhost/SDK must never synthesize/fallback. Shared007 plaintextrepair now includes finite truthful runner-feedback SystemMessage event (no callId/rawcontentpromotion), finalpackidentity must cover it before finalchecks.
