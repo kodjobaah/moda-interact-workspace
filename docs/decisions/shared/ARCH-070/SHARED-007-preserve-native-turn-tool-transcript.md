@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T23:03:47Z
@@ -96,6 +96,26 @@ After definedchecks publishmatching source+parentreport, review and STOP. Public
 Normal moda-task canonical siblingworktree/claim; notalonepreserveothers. Rootownslive/publicapproval/mainmerge. Inspectrole/policies/declaredscripts. Shopifyingress hotpath unaffected; perconversation ephemeralbounded transcript no globalcache/state. No newgenericlogs/rawcontent; framework/sharedloggingonly.
 
 ## Completion Report
+
+### Attempt 5 — explicit atomic terminal projection and nonreenterable companion text
+
+Ready for Review. Source `4e0716e3aad311a6d7c8620d11070988a35cbb14`, existing PR https://github.com/kodjobaah/moda-interact-shared/pull/93. All bounded owning checks passed; no actual-provider or incident-efficacy claim. Historical attempts/acceptances retained below.
+
+Latest Changes Requested checklist:
+
+- Implemented: optional `TerminalDecisionPort.batchMode: 'atomic'` admits all structurally valid currently advertised native terminal calls with unique actual IDs to one pure app projection; absent/`equivalent` mode preserves exact name/argument equivalence. Shared does no product union or business-mode selection. Raw `calls`, first actual member and whole immutable ordered-ID/fullstep/calls-digest binding retained; mixed ordinary/foreign/invalid-ID batches reject wholly before project/tool work.
+- Implemented: scoped `ModelRequest.terminalResponseOnly` is runner-controlled only on forced native required-tool completion. Terminal response structural/token/call-count/fullstep262144-byte checks remain. Long unused accompanying text remains exact and enters only terminal-only assistant journal (`terminalOnly:true`), with paired original IDs. Ordinary text4096 and canonical reply4096 unchanged. `readTerminalTurnTransportJournal` permits audit of complete terminal journals; normal SDK reader and any subsequent assistant append reject them, making them nonreenterable. No text truncation/drop/canonical promotion.
+- Implemented: one synchronous projection and canonical validators, original model/output counters/budgets unchanged. Invalid projection/canonical result remains terminal without another model/tool invocation, repair or counter reset. No business/schema/provider/privacy settings changed.
+- Implemented: default different-argument batch rejection, atomic differing names/arguments exposed unchanged once, immutable fullbinding/rawtext/digests, mixed/foreign/missing/duplicate IDs, over262144-byte raw, output-token overrun, canonical4097 reply, invalid/foreign/mutating projection and no-reentry tests. Generic synthetic public fixture uses6952-character unused text; no private019 data copied.
+- Implemented: typecheck, 216 affected model/runner tests, ESM+DTS build and diff check PASS. Exact installed SDK/native IDs/order/observation/plaintext/optional-parameter/longterminal+nonreentry/types/browser PASS. No unrelated broad full-suite repeat.
+- Root gate pending: actual private019 full-prefix+response offline replay with exact source and application atomic adapter before any further actual calls or release. Root019 on prior candidate remains FAILURE with differing arguments/6952 raw companion text. This generic correction does not establish natural delivery efficacy.
+
+Exact unpublished archive `/tmp/ARCH-070-SHARED-007/terminal-atomic-14dbf8eabaf0.tgz`, metadata6.0.1,985444 bytes/163 members, SHA256 `14dbf8eabaf0a9444ca22b6ed151634d0807bb6a6ac350031a433d33f9d48fd4`. Source pushed; root/Background have exact artifact. Public6.0.1 unchanged. Eventual additive6.1.0 remains separately reviewed exact archive with new explicit public approval.
+
+Archive-derived Node22 external-package diagnostic exports only `runCommerceTurn`/`OpenRouterModelClient`, no renderer assets/maps/declarations. `/tmp/ARCH-070-SHARED-007/diagnostic-14dbf8eabaf0/native-candidate-14dbf8eabaf0.node22.mjs`,147175 bytes, SHA256 `10639ab25f00bb3b8b9092f777cfd8857543089cf39e0e8876fa5e69ff959a55`; gzip43588 bytes, SHA256 `8f033e5c1e4b6a8fc03821f3f2cd7f718d9300be5d98a5ba22c5f87ee39236aa`. Root received provenance for private offline replay only; no provider calls by this agent.
+
+Launcher evidence: attempt5 codex claim `791b9370f478ab60e823bbb23e31f8f6aca7f547`; canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-SHARED-007`, implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-SHARED-007`, both `task/ARCH-070-SHARED-007`, canonical worktrees reused. Both task remote FF not needed and origin/main already current; recursive sync/update passed/no entries. Initial parent22f5585a3/implementationc1c1d2b. No shared checkout switched, other task reused, parent gitlink staged, main merge, publication or live operation.
+
 
 ### Attempt 4 — whole-batch terminal equivalence
 
