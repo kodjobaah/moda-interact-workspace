@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T09:18:12Z
@@ -141,24 +141,24 @@ No Shared schema/package, retries/budgets, generated selections or new adapter. 
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Review actual source and measured guidance outcome independently; diagnostic success alone does not close incident.
+Independently inspected exact implementation c0292c5d60754b864967ec8ec1ced47236625a9e and immutable parent report f1403192a528e757732cbb2f9bc8a7f75653e960. Accepted solely as application completion-format consistency: two observed product turns initially returned plaintext despite recovery requiring structured composition; the application now states its existing envelope requirement explicitly. This is a defensible instruction correction without claiming measured improvement. BOTH synthetic baseline and candidate already passed; no causal or efficacy inference is made, and differing probe hint order limits fidelity. Original forced-step omission remains unexplained. Architecture remains In Progress pending root integration/deployment/genuine evidence.
 
 ### Reviewed Files
 
-None
+All four changed files: host.ts, structured-finalization-instructions.ts, unit helper tests and actual host instruction-composition integration test. Verified pinned-contract verification occurs before guidance, shape/version gates avoid unsupported custom-field instructions, ordinary tools remain unforced and returned objects/referrals stay unchanged.
 
 ### Validation Reviewed
 
-None
+Canonical launcher packet/isolation/synchronization and recursive database evidence in report; focused31, host127, types/build/scoped lint, exact-head CI43580528735/43580502290 SUCCESS (root verified4385 tests/394 files). Four unrelated full-lint errors disclosed with unchanged blob identities; no broad repeats required. Root bounded two-call result compatibility-only: both valid detail1,252/265 tokens, no historical reproduction. No live operations by repository agent.
 
 ### Architecture Conformance
 
-Pending
+Conforms to bounded Background-owned application policy. Shared mechanics/contracts unchanged; no output transformation, fabricated identities, new retries, budget changes, schema relaxation, infrastructure or database change. No claim that historical intermittent failure is fixed. Automatic completion applies to this bounded instruction task only.
 
 ### Follow-up
 
-Root deployment/genuine verification after acceptance and integration.
+Root owns source merge, actual parent gitlink integration, deployment/drain and genuine postchange trace. Preserve diagnostics and original unresolved omission explicitly; no extra model calls merely to seek a preferred comparative result.
