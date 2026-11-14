@@ -1,0 +1,20 @@
+{
+  "task": "ARCH-075-SHARED-014",
+  "source": "a870977566babb35aac7b38e59efd194b64770b3",
+  "sourcePr": "https://github.com/kodjobaah/moda-interact-shared/pull/91",
+  "archive": "/tmp/ARCH-075-SHARED-014/shared014-provisional-6618d7c97e99.tgz",
+  "sha256": "6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a",
+  "size": 965126,
+  "files": 161,
+  "integrity": "sha512-ac9XAKvQa3pm21n7juEOg9KKIoWSmggb82v2qbKQeHlq6SqEgFe2977gLYCDVwhXRSdR5JIPN7ZMrIPc9843/g==",
+  "shasum": "c5c12158cb71efe5893c1f9aa6513261e584fb80",
+  "metadataVersion": "6.0.0",
+  "published": false,
+  "apiUnchanged": true,
+  "focusedTestsPassed": 27,
+  "typecheck": "PASS",
+  "esmAndDtsBuild": "PASS",
+  "installedNodeTypesBrowser": "PASS",
+  "scopedLint": "UNAVAILABLE: no declared lint script",
+  "manifestSha256": "f8545e4d1f8d6398ec830ab8a7635886a6e7a25c2284e504a7d76be94725fbe8"
+}
