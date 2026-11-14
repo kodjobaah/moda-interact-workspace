@@ -26,3 +26,7 @@ ARCH-075-ADMIN-009 Complete/Accepted source4e8fb70304d47035fbd7ea3d6f640ba0c68e7
 ARCH-075-ADMIN-010 Complete/Accepted: expose actual fixed common-composite logo/product bindings and discoverable existing dimensions; depends ADMIN009.
 
 ADMIN010 acceptance: exact7782f4c16a6b2c31a15341585a565cb578029cb6, immutable report1eef4eb6a72a3c95df30ef7b4df255f8bda637de. Admin-only binding/size controls; root integration pending, no live template change.
+
+ARCH-075-ADMIN-011 Ready (preparatory; actual publication final acceptance gate): Author website in saved common caption footer; dependencies ARCH-075-SHARED-015.
+
+Admin011 Complete/Accepted exact885b86bd713f061946e383deb079cf9826099ae6/report9c95e8a2, actualpublished6.0.1. Root BG016-before-Admin integration and immutable livecutover remain separate.
