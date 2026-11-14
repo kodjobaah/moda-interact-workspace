@@ -229,3 +229,7 @@ Conforms to Shared reusable Node mechanics/browser contract separation, immutabl
 ### Follow-up
 
 Root merges source/parent actual pin. Then promote011 release preparation (no publish before explicit exact-archive approval) and014 defaultOFF preparatory source/local-packed tests. Actual published dependency final lock/npmci and genuine live delivery remain gated. ARCH-075 stays In Progress.
+
+## Developer Integration
+
+Root merged Shared PR87 at reviewed source483f7a27c654a3a49d6ec4896c616cd0475a938c after architect acceptance de7b86b65. Actual source main merge de3f9ee5d1aa24c4ac6c51b3f82b12269fddd300 is recorded by this gitlink.43 focused tests,808 full passes/3 configured skips, build/types, installed packaged assets/browser/old-reader compatibility and exact packed fontless Alpine checks passed. Root independently inspected and approved actual Alpine product/no-product mobile outputs, preserving the original assets and canonical header. No hosted checks are configured for this PR. This integrates source only; no public release, enabled sender or live WhatsApp send.
