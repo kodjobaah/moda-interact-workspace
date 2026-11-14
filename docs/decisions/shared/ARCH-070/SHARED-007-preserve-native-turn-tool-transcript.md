@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-14T22:37:56Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on: []
 enables: []
@@ -275,3 +275,13 @@ Review Status: Accepted. Exact source c1c1d2b8d00276dd88bf974997db2c8855fa9aa4 a
 Validation reviewed: affected212 tests, type/build/installed SDK/types/browser/diff checks PASS, normal canonical mirrored launcher attempt4 evidence in report. Root private017 receipt independently inspected: zero actual model/MCP calls, all7 reconstructed requests checked, three actual captured calls preserved, bindingProof/rawUnchanged true, one projection, canonical ANSWER selects two observed pairs and equals projected decision. No source finding remains. Attempt3 acceptance and subsequent correction history retained.
 
 This is acceptance of generic protocol correctness and exact offline replay, not natural production efficacy or delivery. Root018 bounded natural proof and BG010 application acceptance remain independent gates; Shared008 publication remains held until root evidence disposition and new explicit exact-archive public approval. No merge/publication/live action performed. Architecture remains In Progress.
+
+### Latest Architect Review — explicit atomic terminal batch projection
+
+Review Status: Changes Requested. Root explicitly reopens accepted attempt4; preserve its acceptance/history and attempt number, next normal launcher claim increments once. Actual019 remains FAILURE: two same minimal tool calls contain DIFFERENT model-issued pairs, so equivalence coalescing must reject. Raw companion text6952 UTF16/6962 UTF8, whole step7716 bytes/output1773 tokens; no token/transport budget exhaustion.
+
+Authorize generic opt-in atomic terminal-batch projection. Default port admission remains exact-equivalence. Explicit opt-in may expose ALL immutable advertised terminal calls to one pure app projection after every call has valid unique actual ID, allowed name, structurally valid arguments and existing call-count/resource limits. Bind ordered IDs/full raw-step/calls digests and preserve exact raw text/calls/native journal. Shared does NOT union/select products or filter business branches; application owns all batch semantics. Any foreign/ordinary/unadvertised/invalid-ID call refuses the whole batch. Project once, validate separate canonical decision through all unchanged validators; invalid result terminal, no retry/model reentry/tool execution/extra counters.
+
+Scoped unused companion-text handling is authorized ONLY for admitted pure terminal frames. Preserve structural validation, output-token budget, whole raw step JSON<=262144 bytes and total transcript bound. Ordinary model text and any SDK-reenterable transcript keep exact4096 character limit. Do not globally raise guards, truncate/drop raw text, or let terminal companion text become canonical reply/customer content. The terminal-only frame cannot enter another model invocation even on projection/canonical failure. Canonical reply length unchanged. Bind whole original text in raw-step digest. Represent terminal journal distinctly if necessary to prevent SDK accepting oversized ordinary context; no synthetic provider calls/results.
+
+Tests: opt-in different-args batch reaches pure callback once with all raw data, default different-args rejects, all IDs/binding/deep immutability and budgets preserved; mixed/ordinary/foreign invalid; exact captured STRUCTURE long terminal text under totalcap accepted only scoped path; ordinary4097/reenterable longtext/oversized262144+ raw rejected; projected reply over canonical limit still rejects; no model callback after terminal success/failure. Actual private019 full-prefix+response offline proof by root before any further actual call/publication. Run focused/types/build/installed wire/type/browser checks and deliver exact archive/API. No model/provider/privacy settings, source/main merges or publication.

@@ -138,3 +138,7 @@ Shared007 Complete at667a658: native transcript/terminal mechanics and optional 
 Root016 returned three identical pure terminal decisions selecting observed pairs. Shared007 reopened Ready (attempt3 preserved) for whole-raw-batch identity/digest binding and exactly-once projection of proven equivalent calls. Any differing/ordinary/foreign batch remains rejected. No business guard, provider budget or raw transport rewrite; publication and incident verification remain held.
 
 Shared007 attempt4 sourcec1c1d2b accepted: exact-equivalent terminal raw batches bound and projected once; differing batches fail closed. Root017 zero-network exact captured replay passed. Natural application proof, consumer registry gates and public release approval remain pending.
+
+## Atomic identity batch correction after019
+
+019 distinct model-issued identity calls and oversized unused terminal prose remain a failure. Shared007 reopened for explicit generic immutable atomic-batch projection and terminal-only bounded journal; default equivalence/ordinary4096/canonical reply guards unchanged. BG010 owns exact all-call identity union/aggregate bounds and refreshed final render. Root private offline019 proof precedes further actual call; publication held.
