@@ -14,6 +14,8 @@ Architecture: docs/architecture/ARCH-075-ordered-recovery-message-layout.md
 | ARCH-075-SHARED-005 | One complete branded HEADER reply order | Complete | ARCH-075-SHARED-004 |
 
 
+SHARED011 Pending on accepted009+010: exact tested composite archive5.13.11 provisional, public approval thenregistryreceipt only. Enables Background014 after publication. No implementation revalidation.
+
 SHARED-010 Pending on009: deterministic Node composite renderer/preparer, bundled licensed font and real Alpine/privateQA proof. No public release or hostpolicy.
 
 SHARED-009 Ready: additive trusted composite contract; SHARED010 renderer and011 publication follow. Supersedes unexecuted two-bubble007/008; no native changes.
@@ -32,3 +34,10 @@ ARCH-075-SHARED-010 Ready after exact accepted009 integration Sharedbc98bf13d8d2
 ### Shared010 accepted
 
 ARCH-075-SHARED-010 Complete/Accepted at source483f7a27c654a3a49d6ec4896c616cd0475a938c/report808520a3668d43de5eb576d8adfe5034c6c02099. Renderer/carrier/whole-pipeline and fontless packed Alpine checks passed; root actual product/no-product visual gate passed. After actual integration,011 release preparation and014 defaultOFF draft consumer can proceed; public approval/published readiness/live sends remain gated. Architecture stays In Progress.
+
+
+SHARED011 Ready after actual accepted009+010 integration de3f9ee5/eed335729. Metadata/exactarchive preparation authorized; publication held for concreteBG014drafttests then explicit user approval. No implementation reruns or live send.
+
+### Composite publication receipt — 2026-11-14
+
+ARCH-075-SHARED-011 Complete: public5.13.11/latest independently verified against exact approved SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086. Release acceptance is not layout/deployment approval. Consumer/Gateway main merges, deployment and activation remain HELD for the user's presentation-policy boundary review; Background registry-only adoption checks may finish. ARCH075 remains In Progress.
