@@ -22,3 +22,5 @@ Shared007 Ready attempt4 correction: root reopened after016 identical terminal b
 Shared007 Complete attempt4: exactc1c1d2b whole-batch equivalence accepted; root017 offline actual replay PASS. Publication/natural application proof held.
 
 Shared007 Ready next attempt: explicit atomic terminal batch admission and scoped unused companiontext; attempt4 acceptance historical, release held.
+
+Shared007 Complete attempt5 exact4e0716e: atomic terminal source and root024 offline replay accepted. Shared008 preparation eligible; publication requires new exactapproval.

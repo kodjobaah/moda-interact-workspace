@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T23:03:47Z
@@ -305,3 +305,11 @@ Authorize generic opt-in atomic terminal-batch projection. Default port admissio
 Scoped unused companion-text handling is authorized ONLY for admitted pure terminal frames. Preserve structural validation, output-token budget, whole raw step JSON<=262144 bytes and total transcript bound. Ordinary model text and any SDK-reenterable transcript keep exact4096 character limit. Do not globally raise guards, truncate/drop raw text, or let terminal companion text become canonical reply/customer content. The terminal-only frame cannot enter another model invocation even on projection/canonical failure. Canonical reply length unchanged. Bind whole original text in raw-step digest. Represent terminal journal distinctly if necessary to prevent SDK accepting oversized ordinary context; no synthetic provider calls/results.
 
 Tests: opt-in different-args batch reaches pure callback once with all raw data, default different-args rejects, all IDs/binding/deep immutability and budgets preserved; mixed/ordinary/foreign invalid; exact captured STRUCTURE long terminal text under totalcap accepted only scoped path; ordinary4097/reenterable longtext/oversized262144+ raw rejected; projected reply over canonical limit still rejects; no model callback after terminal success/failure. Actual private019 full-prefix+response offline proof by root before any further actual call/publication. Run focused/types/build/installed wire/type/browser checks and deliver exact archive/API. No model/provider/privacy settings, source/main merges or publication.
+
+### Final independent source acceptance — attempt 5
+
+Review Status: Accepted. Exact source4e0716e3aad311a6d7c8620d11070988a35cbb14/report4397c40b3 accepted. Reviewed atomic opt-in port/admission, model-step bounds, native terminalOnly journal and SDK nonreentry. Default equivalence remains unchanged; whole raw batch/IDs/text/digests immutable, application owns union. Only admitted terminal frame can exceed ordinary4096 text; fullstep262144/transcript/token budgets unchanged, canonical reply validation retained. TerminalOnly journal cannot become another SDK request; no projection retry or ordinary tool execution.
+
+Affected216/type/build/installed SDK longterminal nonreentry/types/browser/diff checks reviewed PASS with normal mirrored attempt5 evidence. Independently inspected root024 receipt: four actual discovery outputs/four read results replayed, five requests compared (new terminalResponseOnly flag explicitly distinguished), actual two differing calls and6952 companion chars preserved, whole binding true, one projection, three explicit union pairs all preserved, zero actual model/MCP, accepted true. Initial020 harness flag-equality mismatch is setup-only, not source failure. No remaining source finding.
+
+Source accepted/Complete as reusable mechanics, not uninterrupted natural or production delivery efficacy. Shared008 may prepare exact6.1.0 metadata archive now; public publication still requires new explicit exact-artifact approval. Background final registry/CI and Commerce adoption/deployment gates remain separate; architecture In Progress. No merge/publication/live action byarchitect.
