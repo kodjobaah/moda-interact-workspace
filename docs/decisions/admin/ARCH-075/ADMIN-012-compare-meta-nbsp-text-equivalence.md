@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T15:45:18Z
@@ -48,10 +48,10 @@ Root actual read-only Graph.find proves French expected BODY and observed BODY d
 
 ## Work Items
 
-- [ ] Audit all owning provider comparison paths.
-- [ ] Apply minimal text-only NBSP equivalence consistently.
-- [ ] Add negative trust/drift and persisted-path parity tests.
-- [ ] Record exact isolated source/check evidence.
+- [x] Audit all owning provider comparison paths.
+- [x] Verify Background-proven expected-RAW representative parity through unchanged Admin comparisons.
+- [x] Add negative trust/drift and persisted-path parity tests.
+- [x] Record exact isolated source/check evidence.
 
 ## Interfaces / Contracts
 
@@ -67,16 +67,16 @@ Root normal reconciliation and immutable activation after both apps deployed.
 
 ## Acceptance Criteria
 
-- [ ] Generic French NBSP/ASCII observed text compares equal without modifying inputs/snapshots/submitted hashes.
-- [ ] All owning expected/observed/status/activation/finalpermit paths agree.
-- [ ] Substantive text/URL/binding/category and other whitespace changes still failclosed.
-- [ ] Required tests/checks/remote and report complete; no live operation.
+- [x] Background-proven French representative passes Admin gates while actual expected/observed RAW hashes stay distinct and inputs/snapshots/submitted hashes remain unchanged.
+- [x] Admin expected/status/publication/common-activation paths agree on the raw expected representative; corresponding selector/finalpermit proof remains Background017-owned.
+- [x] Substantive text/URL/binding/category and other whitespace changes still failclosed.
+- [x] Required tests/checks/remote and report complete; no live operation.
 
 ## Validation
 
-- [ ] Focused actual provider-hash/status/admission tests and matching cross-app golden vectors.
-- [ ] Meaningful disposable PG owning reconciliation/publication/activation/current-authority proof.
-- [ ] Types/scopedlint/build/exact remote checks, diff/privacy. No unrelated broad repeats; inspect declared scripts.
+- [x] Focused actual provider-hash/status/admission tests and matching cross-app golden vectors.
+- [x] Meaningful disposable PG owning reconciliation/publication/activation/current-authority proof.
+- [x] Types/scopedlint/build/exact remote checks, diff/privacy. No unrelated broad repeats; inspect declared scripts.
 
 ## Stop Condition
 
@@ -96,35 +96,52 @@ When representative differs from actualrawobservedhash, durable MetaEvent.eviden
 
 ### Status
 
-Not Started
+Ready for Review — tests-only parity verification complete on exact pushed source; no Admin runtime/hash/dependency changes.
 
 ### Files Changed
 
-None
+- `tests/fixtures/arch075-meta-nbsp.ts`: generic French cross-app expected/observed golden pair and hash-only evidence kind.
+- `tests/unit/arch075-meta-provider-drift.test.tsx`: raw hash-domain/status DTO/UI parity and substantive text, URL, category, explicit-flag and other-whitespace negatives.
+- `tests/unit/arch047-template-publication-pure.test.ts`: real frozen registration/publication representative, exact source/prepared/submitted identity and binding/status/URL negatives.
+- `tests/integration/arch075-common-activation.postgres.test.ts`: current-profile persisted French receipt, durable evidence privacy, timestamp/content/category/flag gates, full cohort activation and unchanged snapshots.
 
 ### Work Completed
 
-None
+Source `e2ffe1f2147146963aa6d42603bf610e0629a7df` pushed on `task/ARCH-075-ADMIN-012`, Admin PR [101](https://github.com/kodjobaah/moda-interact-admin/pull/101). Exactly four test/fixture files changed; `src/`, package/lock, database and existing hash functions are unchanged.
+
+Audited the actual expected-provider hash DTO (`meta/status.ts`), registration/publication equivalence (`publishing/validation.ts`) and fresh observed-content/current-profile activation gate (`common-activation/preview.ts`). Existing exact Admin comparisons already accept Background's proven expected-RAW representative. No normalizer or runtime change is needed or added.
+
+Pinned the BG017-coordinated generic golden pair: expected raw hash `e17121a73dfea9c4202119663c50d123ff20f30f0b9d0d8158464c18d5741c77` and actual observed raw hash `f6ee4fc0dc11c3ce77ca934eeb477841aa498dd00858a85d371e64219c8841cd`. They deliberately remain different. Only the simulated proven receipt uses expected RAW as its observation representative. Durable evidence retains actual raw observed hash, expected hash and `U+00A0_TO_U+0020_TEXT_ONLY`; the status DTO does not expose that evidence or raw content.
+
+The persisted test explicitly simulates BG017's separately tested reconciliation result, not a worker invocation or an Admin equivalence proof. It verifies the unchanged Admin gate contract across all 20 reviewed locales and a 40-target conservative cohort. Background017 owns bounded equivalence, provider identity/category validation and selector/final SQL permit proof. Root owns deployment and normal reconciliation; no manual row/flag rewrite is performed here.
 
 ### Validation Results
 
-Pending
+- Declared unit runner over provider-drift/status, publication-pure and common-activation suites: **43 passed, 0 failed, 0 skipped**. Final narrow status rerun after refining its corresponding prepared-identity fixture: **10 passed**; counts overlap, not an aggregate unique total.
+- Declared `npm run test:arch075-admin-common-activation:postgres`: **2 passed**. Real current-profile saved/read/reviewed cohort accepts expected-RAW representative, rejects unproven actual raw hash, category/explicit drift/substantive content changes and stale reconciliation, then preserves source/prepared/submitted/locale snapshots and normal activation/audit/replay/rollback behavior. Durable hash-only evidence remains server-side. Disposable container removed; no hosted database used.
+- Publication fixture uses the actual `frozenLocaleSnapshot` canonical TEXT registration bindings, retaining sourceHash/localeContentHash and exact expected snapshot checks rather than relaxing any guard.
+- `npx tsc --noEmit`: passed. Configured scoped ESLint invocation returned zero errors with four repository ignore warnings: tests are intentionally excluded by the existing lint configuration; actual runner/typecheck validate these changed files. No lint override or runtime change introduced.
+- Declared `npm run build`: passed, terminal exit 0; existing optional BullMQ Valkey resolution warnings unchanged. Production browser graph across **71 JS files** contains no Node renderer/font-loader/frozen-verifier markers.
+- Exact source `e2ffe1f2147146963aa6d42603bf610e0629a7df`: **Vercel SUCCESS** at 2026-11-14T16:01:08Z; Preview Comments SUCCESS at 16:01:09Z.
+- Diff/privacy/isolation checks passed; source branch clean. Generic fictional fixtures only, no production IDs, raw provider/customer content or credentials. No unrelated broad checks or Shared release.
 
 ### Deviations
 
-None
+The authoritative raw-hash-domain amendment supersedes the initial normalizer wording. This task verifies parity only; changing Admin normalization would break the existing raw selector/permit domain and was deliberately not implemented.
 
 ### Assumptions
 
-None
+Background017 proves bounded text equivalence before recording the expected-RAW representative and preserves actual raw evidence. Admin retains all independent source/approval/freshness guards. Root coordinates source integration, deployment and normal live reconciliation; no main merge or live operations by this agent.
 
 ### Unresolved Issues
 
-None
+None within Admin parity verification. Background017 runtime proof and root deployment/reconciliation remain separately owned and are not claimed by these Admin tests.
 
 ### Architectural Concerns
 
-None
+No necessary application gap found: one unchanged raw domain is retained through status/publication/common activation and the delegated selector/permit boundary. No new hashing primitive, schema, compatibility branch or Shared business policy.
+
+Isolation: primary root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-ADMIN-012`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-ADMIN-012`; both `task/ARCH-075-ADMIN-012`. Launcher verified remote/main synchronization and recursive Database `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`; implementation base `3f316edb00499abd0040ccf95fd6d06ad1f319bc`. Attempt1 claim `563a4784d7efebc9d8da0041cac646efa10fba49` pushed. No primary/default or other task source changed.
 
 ## Architect Review
 
