@@ -50,3 +50,5 @@ ARCH-075-SHARED-012 Ready: actual SHARED011 integration d1319babb4ab9a82f4007d58
 ### Saved-template sole authority — superseding correction
 
 User confirms the saved common SHARED template owns layout. Earlier independent PlatformConfiguration profile proposal is superseded/unimplemented. Shared012 structural prepared extension carries optional compositeProfile/compositeProfileSha256 with legacy absent bytes unchanged; reusable V2 renderer only. Admin009 owns template authoring/clone/review/preview and operational rules; BG014 derives/freeze/rechecks the same selected immutable common reference. No separate active policy/editor/table/pointer. Generic renderer tests continue; all coherent source/tests/review/integration precede deployment, and new public package requires exact explicit approval.
+
+ARCH-075-SHARED-012 Complete/Accepted exact source59068290eb69506fd7a5d248c5ed359cfb98163d/report8b3310e943a610e8a243829c6e88410ad42c96cd: current template-profile machinery, structural Shared parsing/safety, unused fixed-composite removal. Major release013 remains separate and explicitly approved only after tested archive/consumers. ARCH075 remains In Progress.
