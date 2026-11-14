@@ -48,12 +48,12 @@ Admin UI/database/environment selection, arbitrary CSS/drawlists/scripts/font UR
 ## Requirements
 
 - Shared receives explicit trusted profile snapshot; it never chooses active policy, reads DB/env or owns visual defaults. Admin owns runtime values/revision; Background owns selection/freeze/final authority.
-- Profile schemaVersion1 with fixed supported fontId DEJAVU_SANS_2_37 and named fields: canvasWidth,headerHeight; logoLeft,logoTop,logoWidth,logoHeight; textLeft,textTop,textWidth,textHeight,fontSize,lineSpacingPt; productHeight,productPadding,productGapAfterHeader. No arbitrary objects of operations.
-- Technical bounds: canvasWidth640..1600, headerHeight160..640, logo width/height32..320, fontSize24..96, productHeight240..1200,padding0..64,gap0..96. Integers only. Coordinates nonnegative; logo/text rectangles fit header, disjoint with logo left of text; text area positive; lineSpacingPt0 or fontSize..2*fontSize; positive padded product area; total rendered pixels<=2000000. These are safety bounds, not visual defaults. Output dimensions derive from supplied profile and optional product, never fixed1125/300/900 literals in the new contract.
+- Profile schemaVersion1 with fixed supported fontId DEJAVU_SANS_2_37 and named fields: canvasWidth,headerOnlyHeight,withProductHeight; logoLeft,logoTop,logoWidth,logoHeight; textLeft,textTop,textWidth,textHeight,fontSize,textLineSpacingPt; productLeft,productTop,productWidth,productHeight. No arbitrary objects of operations.
+- Technical bounds: canvasWidth640..1600, headerOnlyHeight160..640, withProductHeight400..1840, logo width/height32..320, textWidth128..1600,textHeight32..640, productWidth128..1600,productHeight128..1200,fontSize24..96. Integers only. Coordinates nonnegative and <=1840; logo/text rectangles fit header; textLineSpacingPt0 or fontSize..2*fontSize; productTop>=headerOnlyHeight and product rectangle fits product canvas; withProductHeight>headerOnlyHeight; both outputs<=2000000pixels. Do NOT require logo-left-of-text or any visual placement order; supported bounded profiles may put logo above/centered with text below. Nonoverlap/readability belongs to owning Admin policy where appropriate. These are safety bounds, not visual defaults. Output dimensions derive from supplied profile and optional product, never fixed1125/300/900 literals in the new contract.
 - Preserve literal header incl authored divider exactly once, contained uncropped original logo/product, fixed escaped text/fixedDPI72/white/JPEG/leftalignment/no-autofit semantics. Unsupported glyph/overflow/deadline returns existing typed fallback outcome; no silent truncation/replacement.
 - Add explicit opt-in V2 provenance/plan/prepared output with full validated profile snapshot+canonical digest and source/runtime/font/output/caption/logical-body proofs. Separate content-addressed v2 namespace. Old V1 schemas/parsers/digests/render outputs remain unchanged; new reader delegates old branches byte-for-byte; old .11 rejects V2 safely.
-- Reuse existing immutable upload/probe/AbortSignal/one original media deadline. No duplicate generic crypto/fetch/R2 mechanism. Runtime/font identity binds profile and actual library environment, no cross-platform byte-identity claim.
-- Default-looking profile fixture is consumer-owned test input reproducing accepted visual geometry. Prove at least two different valid profiles produce correct different geometry WITHOUT changing package code, and immutable profile tamper cannot pass trusted validation.
+- Reuse existing immutable upload/probe/AbortSignal/one original media deadline. No duplicate generic crypto/fetch/R2 mechanism. Runtime/font identity binds profile and actual library environment, no cross-platform byte-identity claim. Preserve old manifest/V1 hash computation; V2 resource identity covers the same bundled font/license/cmap without embedded size/geometry, separately bound to the full profile digest.
+- Default-looking profile fixture is consumer-owned test input reproducing accepted visual geometry. Prove two materially different valid profiles (left logo, then top/centered logo with text below plus different font size/spacing/product gap) render correctly through the SAME installed package WITHOUT changing package code, and immutable profile tamper cannot pass trusted validation.
 - No secrets/shop assets/customer URLs in public fixtures/package. Root alone merges/publishes/live tests.
 
 ## Work Items
@@ -84,7 +84,7 @@ Shared013 release-only preparation/publication; Admin009 bounded existing-policy
 
 ## Validation
 
-- [ ] Focused profile bounds/nonoverlap/dimensions/hash/tamper/legacy/transport vectors.
+- [ ] Focused profile bounds/dimensions/hash/tamper/legacy/transport vectors including left and top/centered arrangements.
 - [ ] Actual two-profile rendering including bundled font/overflow/timeout/R2/probe; packed fontless Alpine and browser-safe imports.
 - [ ] Declared full tests/type/build and package asset/secret/diff checks appropriate to changed code; no invented lint script.
 
