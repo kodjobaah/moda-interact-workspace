@@ -55,8 +55,8 @@ Root requests all authorized source be concrete/tested/pushed before final publi
 
 ## Work Items
 
-- [ ] Add narrow declarations/negative validation.
-- [ ] Document exact OFF→readerdrain→authorizedON and rollback.
+- [x] Add narrow declarations/negative validation.
+- [x] Document exact OFF→readerdrain→authorizedON and rollback.
 - [ ] Run bounded Blueprint checks and publish report.
 
 ## Interfaces / Contracts
@@ -79,8 +79,8 @@ Separately authorized root activation after source/readers/visual checks, not au
 
 ## Validation
 
-- [ ] Existing declared Blueprint syntax/negative gate validation and appropriate bounded regression checks.
-- [ ] Diff/privacy and no application/topology change.
+- [x] Existing declared Blueprint syntax/negative gate validation and appropriate bounded regression checks.
+- [x] Diff/privacy and no application/topology change.
 
 ## Stop Condition
 
@@ -94,35 +94,57 @@ Normal launcher dedicated sibling worktrees. You are not alone; preserve others 
 
 ### Status
 
-Not Started
+Preparatory checkpoint — In Progress; final Background014 source proof pending.
 
 ### Files Changed
 
-None
+- `render.test.yaml`, `render.production.yaml`: add only messaging-worker service-level `RECOVERY_COMPOSITE_REPLY_ENABLED`, `sync: false`, no value.
+- `tests/validate-render-blueprints.sh`: enforce the exact two environment-specific messaging-owner inputs.
+- `tests/validate-render-blueprints-negative.sh`: reject missing, fixed false/true, sync-plus-value, duplicate, wrong-owner and group declarations in both environments.
+- `docs/composite-reply-rollout.md`: separate gate, OFF/new readers/all-old-readers drain, root-authorized ON/readback/provider evidence and OFF rollback retaining compatible readers/frozen work.
 
 ### Work Completed
 
-None
+Source committed/pushed `a2157f2df59566bbdf1b597ab8a54c42c1e79ca8` on `task/ARCH-075-GATEWAY-003`. Draft source PR: https://github.com/kodjobaah/moda-interact-gateway/pull/18 . Existing branded-main declarations/docs and all service commands/topology remain unchanged. No live environment or provider operations, source/main merges, npm publication or new resources/cost.
+
+Read-only inspection of canonical Background014 implementation worktree finds draft `composite.ts` exact-string `RECOVERY_COMPOSITE_REPLY_ENABLED === 'true'` helper and `whatsapp.worker.started` boolean `recoveryCompositeReplyEnabled`. Those files remain uncommitted drafting evidence; package inspection still reports Shared 5.13.10. Final frozen source, consumer version and focused parser/startup validation evidence must be supplied/verified before this task enters review. No deployed runtime proof is claimed.
+
+Actual messaging entrypoint creates WhatsApp worker/multipart repair; combined development `npm start` also creates WhatsApp worker. Runbook requires actual runtime inventory including extra combined/manual readers rather than assuming canonical inventory proves drain.
 
 ### Validation Results
 
-Not run
+Gateway has no package.json; inspected actual declared shell validators.
+
+- `bash tests/validate-render-blueprints.sh`: passed, both canonical Blueprints.
+- `NEGATIVE_CASE_FILTER=composite_gate bash tests/validate-render-blueprints-negative.sh`: passed, 14 focused fixtures, exit 0.
+- `NEGATIVE_CASE_FILTER=branded_gate bash tests/validate-render-blueprints-negative.sh`: passed, eight existing gate regression fixtures, exit 0.
+- `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
+- `git diff --check`: passed; diff contains only configuration, validators and docs, no secrets or application changes.
+
+Bounded checks satisfy preparatory scope; no broad Docker/system/provider suites repeated. Root owns live procedure in `docs/composite-reply-rollout.md`: expected success is complete compatible-reader/source inventory, OFF startup readback, all-old-reader termination with preserved work, separate authorization and ON/readback plus one-bubble provider/visual proof.
+
+### Launcher Isolation Evidence
+
+Prepared execution true, dependency gate passed (Shared010 complete), attempt 1 claim `e23e336f98658ab0cc8d23eb63fe954449a8bb1f` committed/pushed.
+Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-GATEWAY-003` reused; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-GATEWAY-003` created. Both branches `task/ARCH-075-GATEWAY-003`.
+Both remote task fast-forward checks not-needed; both origin/main incorporations already-current. Recursive implementation submodule sync/update passed; entries empty. No shared/default checkout switched or mutated; no other task worktree reused; no parent gitlink staged.
 
 ### Deviations
 
-None
+None. Preparatory execution explicitly permits source checkpoint before final Background proof. Architect Review Pending has no Changes Requested correction contract.
 
 ### Assumptions
 
-Root owns final integration and live authorization.
+Root owns final integration/release/live authorization. Existing branded-main value remains untouched; composite operator setting is independent per environment.
 
 ### Unresolved Issues
 
-Publication and consumer/live proof remain gated.
+Final Background014 gate/default-OFF/startup proof and accepted consumer version pending. Keep task In Progress and source PR draft until verified; no runtime activation or final acceptance claimed.
 
 ### Architectural Concerns
 
-Return gaps before widening.
+None beyond the explicit prerequisite hold. No infrastructure topology/cost/capacity changes.
 
 ## Architect Review
 
