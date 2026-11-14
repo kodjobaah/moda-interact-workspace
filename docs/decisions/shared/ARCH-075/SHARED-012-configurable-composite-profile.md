@@ -56,6 +56,12 @@ Admin UI/database/environment selection, arbitrary CSS/drawlists/scripts/font UR
 - Default-looking profile fixture is consumer-owned test input reproducing accepted visual geometry. Prove two materially different valid profiles (left logo, then top/centered logo with text below plus different font size/spacing/product gap) render correctly through the SAME installed package WITHOUT changing package code, and immutable profile tamper cannot pass trusted validation.
 - No secrets/shop assets/customer URLs in public fixtures/package. Root alone merges/publishes/live tests.
 
+### User-authoritative validation boundary — 2026-11-14
+
+User explicitly prohibits Shared Zod business validation. New V2 Zod schemas parse structural wire data only: types, required/exact keys and supported contract versions. Do NOT put operational min/max policy, defaults, active/current revision, eligibility or layout preferences in Zod refinements. Published .11 V1 remains unchanged for compatibility.
+
+Implement finite/integer/resource allocation limits, pixel budget and rectangle containment as explicit named pure rendering-safety functions, invoked before any decode/allocation/network work and reusable by owners. Safety is bounded execution/memory and valid image geometry, not a disguised business range or placement preference. Admin owns operational authoring ranges/defaults/nonoverlap/readability; Background owns persisted selection/eligibility/current revision. Separate these classifications explicitly in report/tests. Independent source/provenance/caption/output integrity checks remain explicit trusted parser functions; wire shape does not grant authorization. Return exact helper API and classification to architect before acceptance. Prior numeric intervals in this definition are intended Admin operational field ranges, not Shared schema rules; Shared retains only justified technical ceilings/positive geometry/finite checks.
+
 ## Work Items
 
 - [ ] Add strict profile/provenance/parser/carrier APIs and legacy compatibility vectors.
