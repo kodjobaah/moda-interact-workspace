@@ -132,7 +132,7 @@ In Progress — tested source checkpoint, not Ready for Review. Final accepted a
 
 ### Validation Results
 
-Exact provisional current-only Shared archive SHA-256 `029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929` was verified and installed `--no-save --package-lock=false --ignore-scripts`. Committed dependency/lock are unchanged; this is not a registry readiness claim.
+Root accepted the current-only Shared source at `f06cf317`; tested archive SHA-256 `029bdf8c2016ffe926d54e3c79ab759d51ad51df234297712a9f1af43a2a0929` was verified and installed `--no-save --package-lock=false --ignore-scripts`. Committed dependency/lock are unchanged; this is not a registry readiness claim.
 
 - Focused source/UI/common/actual-render: **17 passed**.
 - Declared full `npm run test:unit`: final rerun **846 passed, 0 failed, 0 skipped**. One prior outdated assertion expected profile-less SHARED admission; corrected to require explicit current profile, with affected **11/11** also passing.
@@ -140,6 +140,7 @@ Exact provisional current-only Shared archive SHA-256 `029bdf8c2016ffe926d54e3c7
 - `npx tsc --noEmit`, `npm run lint`, `npm run build`: passed. Lint retains one unchanged nested Database anonymous-default-export warning; build retains existing optional BullMQ Valkey resolution warnings.
 - Declared disposable common-layout PostgreSQL runner: **2 passed**, including saved/clone/audit, all 20 reviewed profile snapshots, exact common reference, coordinated activation/replay and unchanged original rows; independent layout policy count stays zero. Disposable container removed; no hosted database used.
 - Actual package render proofs: 1125×900 left arrangement and 1125×1200 top arrangement; logo containment/letterbox, separate product pixels, header-only mode, overflow/unsupported glyph and profile tamper all passed. Fixture images visually inspected.
+- Exact major **6.0.0** candidate SHA-256 `49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8` independently verified: all **160 non-metadata files byte-identical** to the accepted 029b archive; only package version changes. No-save/no-lock installed major candidate; affected source/UI/real-render **17/17 passed**, `npx tsc --noEmit` passed. No unchanged broad suite repeated for this metadata-only step; actual registry adoption remains gated.
 - Root's updated actual top QA profile independently passes unchanged Admin validator; canonical digest `7c8f95941e47a7501da6b3dcad328e67c89769399cd93364498c7a89a13cedfd` matches. QA-only values did not change defaults or bounds.
 - Production browser graph has zero Node-renderer/font-loader/frozen-verifier markers. Source diff checks pass; no new logging/runtime telemetry was introduced.
 
@@ -153,7 +154,7 @@ Root owns accepted source integration, separately approved public release, produ
 
 ### Unresolved Issues
 
-Final accepted Shared artifact comparison and separately approved registry release/adoption remain pending. Source draft must not merge while its committed dependency lacks these exports.
+Exact accepted-code/major-candidate comparison is complete. Separate public 6.0.0 approval/publication and actual registry dependency/lock adoption remain pending. Source draft must not merge while its committed dependency lacks these exports. The current draft Vercel failure must be diagnosed/resolved or verified green on the final registry-adoption head before acceptance; no remote causal claim is made.
 
 ### Architectural Concerns
 
