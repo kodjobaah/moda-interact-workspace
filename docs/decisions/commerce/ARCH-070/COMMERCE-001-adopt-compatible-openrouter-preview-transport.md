@@ -1,0 +1,147 @@
+---
+id: ARCH-070-COMMERCE-001
+architecture_id: ARCH-070
+title: Adopt compatible OpenRouter preview transport
+task_kind: implementation
+domain: commerce
+repository: moda-interact-commerce
+assigned_agent: moda_commerce
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: pending
+priority: 10
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-070-SHARED-008
+enables: []
+created: 2026-11-14
+updated: 2026-11-14
+---
+
+# Adopt compatible OpenRouter preview transport
+
+## Architecture
+
+ARCH-070; docs/architecture/ARCH-070-verified-recommendation-terminal-turn-recovery.md; moda_architect.
+
+## Objective
+
+Adopt the accepted published Shared transport so Commerce preview remains compatible with correctly nested provider routing configuration.
+
+## Context
+
+Preview model-runtime imports OpenRouterModelClient and forwards saved catalogue configuration. Trial015 demonstrated unconditional parallel_tool_calls:false filters all DeepSeek endpoints with require_parameters:true; removing only that hint restores routing. Global catalogue nesting before all consumers adopt the corrected SDK would break preview. Selection efficacy is separate and remains unproved.
+
+## Scope
+
+Exact Shared dependency and real registry lock adoption; focused preview factory/SDK HTTP transport regression; independently reviewable source/report. Expected release6.1.0 is provisional until approved publication; use only actual accepted version from Shared008.
+
+## Out of Scope
+
+Native protocol opt-in, terminal application selection policy, model/catalogue/credential changes, privacy relaxation, Shared mechanics duplication, DB migrations, live calls, settings writes, deployments or main merges.
+
+## Requirements
+
+Use published Shared SDK without local transport copies or sibling imports. Preserve preview credential resolution, tenant isolation, pinned model/configuration, cancellation, budgets, error mapping and logging redaction. Default HTTP omits unsupported parallel_tool_calls; nested provider preferences reach wire unchanged. Preserve strict schemas, tool choices and token limit. No parallel execution authority is inferred from hint omission. Root owns saved configuration mutation only after corrected Background AND Commerce deployments and old-consumer drain.
+
+## Work Items
+
+- [ ] Adopt exact approved public Shared version and normal lock.
+- [ ] Add focused preview/actual SDK HTTP compatibility regression.
+- [ ] Validate and return immutable source/report.
+
+## Interfaces / Contracts
+
+Shared007 owns reusable transport; Shared008 owns accepted publication. Consume @modainteract/moda-interact-shared/commerce/model/node. Existing preview factory remains application-owned.
+
+## Dependencies
+
+ARCH-070-SHARED-008 must be Complete before normal execution. No fake lock or premature claim.
+
+## Enables
+
+Safe root-owned global saved routing configuration correction after both consumers deploy.
+
+## Acceptance Criteria
+
+- [ ] Exact registry dependency installed and lock verified.
+- [ ] Actual SDK wire omits parallel_tool_calls and preserves nested routing, tool schemas/choice and max_tokens.
+- [ ] Preview authorization, credential privacy, cancellation and error boundaries unchanged.
+- [ ] No live/configuration/source ownership violations.
+
+## Validation
+
+- [ ] Clean npm ci and installed registry identity.
+- [ ] Focused model-runtime/preview tests and actual HTTP loopback with no live credentials.
+- [ ] Declared typecheck/build and scoped lint; exact remote checks if configured.
+
+## Stop Condition
+
+After required checks, set Review, complete report and STOP. No live model calls, settings writes or main merges.
+
+## Implementation Notes
+
+Use normal launcher dedicated mirrored worktrees. Not alone: preserve others changes. Inspect package scripts and local instructions; do not repeat unrelated broad tests. Final deployment must precede root catalogue nesting.
+
+## Completion Report
+
+### Status
+
+Not Started
+
+### Files Changed
+
+None
+
+### Work Completed
+
+None
+
+### Validation Results
+
+None
+
+### Deviations
+
+None
+
+### Assumptions
+
+None
+
+### Unresolved Issues
+
+Publication dependency pending.
+
+### Architectural Concerns
+
+Global catalogue configuration affects all consumers; coordinate rollout.
+
+## Architect Review
+
+### Review Status
+
+Pending
+
+### Review Notes
+
+Defined; not executable until published dependency accepted.
+
+### Reviewed Files
+
+Existing preview/model-runtime.ts and package scripts inspected read-only.
+
+### Validation Reviewed
+
+None
+
+### Architecture Conformance
+
+Commerce-only dependency adoption; reusable transport remains Shared-owned.
+
+### Follow-up
+
+Promote after Shared008 Complete.

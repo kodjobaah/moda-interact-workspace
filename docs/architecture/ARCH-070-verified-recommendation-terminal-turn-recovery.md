@@ -124,3 +124,7 @@ BG007 Accepted/Complete exactc0292c5d60754b864967ec8ec1ced47236625a9e, reportf14
 ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omission proven; app guidance plus actualprovider schemaforwarding audit, no guard/budget/Shared change. Architecture InProgress; root live verification separate.
 
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
+
+## Commerce preview transport consumer rollout addition
+
+ARCH-070-COMMERCE-001 (moda_commerce, Pending, depends ARCH-070-SHARED-008) adopts the corrected published OpenRouter SDK. Global saved provider configuration must be nested only after both Background and Commerce corrected deployments replace old consumers. This requires no topology/DB/observability change; root uses the existing audited configuration writer. No selection efficacy is inferred from transport compatibility.
