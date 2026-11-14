@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -82,6 +82,10 @@ After required work/checks publish matching source and parent report, set review
 ## Implementation Notes
 
 Normal moda-task canonical sibling isolation/claim required. You are not alone; do not revert others. Pending consumer tasks may perform preparatory source work only after explicit architect Ready amendment; final acceptance requires accepted published dependency. No unpublished sibling imports or fabricated registry lock.
+
+## Publication authorization gate
+
+Source014 accepted/integrated Sharedmain20aa60f0e9feb4c14ca909b7d7a68771e2b37bcf; parentmain d6d2f0078e05bddad7feb4f37157e6533e532255. Prepare exact6.0.1 metadata/archive from accepted bits without repeating implementation tests/build. Compare nonmetadata archive members against accepted6618d7 candidate. Send archive version/hash/size/SRI and source metadata checkpoint; do NOT publish until root explicitly relays new user approval for that exact archive after concrete consumer tests. Existing6approval is insufficient. Remain In Progress at held release gate.
 
 ## Completion Report
 

@@ -58,4 +58,7 @@ ARCH-075-SHARED-013 Ready after actual012 integration b4ae79170ef3427d1744ef1151
 
 ARCH-075-SHARED-013 Complete/Accepted: actual public6.0.0/latest independently downloaded exact49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8,965706B161files; finalreport4cf181e9dec04f68c7f774aed081525ae8ca689c. Consumer registry/CI/review/integration and controlled deployment remain separate; ARCH075 In Progress.
 
-ARCH-075-SHARED-015 pending: Publish accepted common layout structural reader; dependencies ARCH-075-SHARED-014.
+ARCH-075-SHARED-015 Ready (archive prep, publication approval held): Publish accepted common layout structural reader; dependencies ARCH-075-SHARED-014.
+ARCH-075-SHARED-014 Complete/Accepted: Parse common layout structure without application placement policy; dependencies None.
+
+Shared014 Accepted exacta870977566babb35aac7b38e59efd194b64770b3/report3e163e8f; structural only. App-owned consumers and actual approved publication remain gated.
