@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ User requests compact one-bubble AI product lists and website in clickable capti
 
 ## Scope
 
-Investigate then implement deterministic app-owned bounded product selection/composition for long AI lists, preserving exact verified IDs/facts/discount provenance and rendered mandatory STOP/checkout footer. Budget full caption<=1024 after actual canonical footer; no arbitrary model prose truncation, no human text truncation, no automatic invented selection or weakening model/receipt/permit guards. If no evidence-safe compact form fits, retain fullTEXT fallback. Shared6 renderer unchanged; root owns actual model/customer/live operations. Source profile/saved template remains authority. This task becomes Ready only after concrete composition strategy is documented by architect.
+Investigate then implement deterministic app-owned bounded product selection/composition for long AI lists, preserving exact verified IDs/facts/discount provenance and rendered mandatory STOP/checkout footer. Budget full caption<=1024 after actual canonical footer; no arbitrary model prose truncation, no human text truncation, no automatic invented selection or weakening model/receipt/permit guards. If no evidence-safe compact form fits, retain fullTEXT fallback. Shared6 renderer unchanged; root owns actual model/customer/live operations. Source profile/saved template remains authority. Concrete strategy below is authorized.
 
 ## Out of Scope
 
@@ -44,7 +44,7 @@ Unrelated refactors, arbitrary user-programmable layouts, new database/infrastru
 
 ## Requirements
 
-Investigate then implement deterministic app-owned bounded product selection/composition for long AI lists, preserving exact verified IDs/facts/discount provenance and rendered mandatory STOP/checkout footer. Budget full caption<=1024 after actual canonical footer; no arbitrary model prose truncation, no human text truncation, no automatic invented selection or weakening model/receipt/permit guards. If no evidence-safe compact form fits, retain fullTEXT fallback. Shared6 renderer unchanged; root owns actual model/customer/live operations. Source profile/saved template remains authority. This task becomes Ready only after concrete composition strategy is documented by architect.
+Investigate then implement deterministic app-owned bounded product selection/composition for long AI lists, preserving exact verified IDs/facts/discount provenance and rendered mandatory STOP/checkout footer. Budget full caption<=1024 after actual canonical footer; no arbitrary model prose truncation, no human text truncation, no automatic invented selection or weakening model/receipt/permit guards. If no evidence-safe compact form fits, retain fullTEXT fallback. Shared6 renderer unchanged; root owns actual model/customer/live operations. Source profile/saved template remains authority. Concrete strategy below is authorized.
 
 ## Work Items
 
@@ -81,6 +81,12 @@ After required work/checks publish matching source and parent report, set review
 ## Implementation Notes
 
 Normal moda-task canonical sibling isolation/claim required. You are not alone; do not revert others. Pending consumer tasks may perform preparatory source work only after explicit architect Ready amendment; final acceptance requires accepted published dependency. No unpublished sibling imports or fabricated registry lock.
+
+## Authorized composition strategy
+
+Only overflowing AI verified-product answers may use compact deterministic presentation. Reuse existing verified-facts renderer and complete descending selected prefixes [n,n-1,...,1], maximum existing selected count3. Re-render each candidate through SAME saved common reference; select largest whose actual answer plus exact canonical authored footer fits1024 codepoints. Add one application-owned localized show-more line only if products omitted, counted in budget; no invented commerce claims. Never truncate arbitrary prose or HUMAN/nonproduct text. Preserve existing mandatory shipping/out-of-scope limitations. If no complete item fits or footer alone exceeds budget, retain fullTEXT fallback.
+
+Filter derived presentation products, displayedPairs and independent proof/digest to EXACT retained selected pairs and original verified facts. These drive first image, displayed receipt and committed product-context update; removed pairs must not leak into presentation metadata. Original responseDigest stays original full host input for replay; derived caption/pairs/proof freeze together under existing application key. Observed knowledge references may remain distinct from displayed selections. Keep discounts/permit/current-source and one logical billing guarantees. Tests must prove exact subset provenance and replay/UNKNOWN no resend. Website move belongs saved-template revision, no runtime string replacement. Existing Shared6 sufficient for this task; independent website reader adoption is BG016.
 
 ## Completion Report
 
