@@ -187,6 +187,36 @@ Root bounded actualrun must preserve full instructionorder/features/history and 
 - [ ] Root actualfullcontextdiagnostic result recorded privately with honest reconstructionlimits.
 - [ ] Return diagnosis+minimalowningcorrection contract to architect; incident remains InProgress.
 
+## Attempt2 Completion Report
+
+### Status
+
+Implementation and local validation complete; awaiting root full-context diagnostic result and exact-head remote CI before review submission.
+
+### Changes Requested correction checklist
+
+- Implemented: isolated published-runner harness with complete supplied manifest/app instructions/context/history/current input, default offline captured model/tool receipts, no production host/database/processor/persistence/delivery imports (`src/commerce/diagnostics/context-probe.ts`).
+- Implemented: explicit operator gate for root-only injected configured model/read-only MCP, fixed 12/6/60000/2048 limits, safe read-tool allowlist, exact pinned grant/descriptor/version matching and exact captured argument replay.
+- Implemented: original request/output capture in fresh 0700 directory and exclusive 0600 artifacts, original model arguments unchanged, only safe shape/count/digest result exposed. Existing shared logger with private sink; no competing generic logger or public raw output.
+- Implemented: deployed evidence extractor callback passed unchanged to runner tools. Search/get/category/shipping do not normally produce discount evidence; retain the callback anyway. Host post-model ineligible-evidence rewrite and delivery revalidation are explicitly outside this isolated runner; no delivery equivalence claimed.
+- Implemented: synthetic guards for full context and ordered feature forwarding/private permissions/no stdout, default no model/network, explicit operator gating, unsafe descriptors/wrong tenant, unsafe model-requested create operation never dispatched, fixed budgets, exact read replay/refusal and original invalid model output preserved/canonical refusal.
+- Pending root evidence: actual configured model/MCP execution and causal/owning-correction disposition. No further prompt, schema, Shared release or production behavior changes were implemented.
+
+### Source and validation
+
+- Source `5bbbca7a99f15c14f8a4be607549ab922d74ee3d`, draft Background PR233. Owned files: harness, `tests/unit/commerce/context-probe.test.ts`, `docs/diagnostics/commerce-context-probe.md`.
+- Final focused guard suite: 7 PASS, 2.15s. Repository build passed initial harness; final evidence-callback delta passed `tsc --noEmit`, scoped ESLint and exact Node22 operator bundle build; diff check PASS. No unchanged broad local suite repeated.
+- Initial synthetic fixture used invalid language source `shop`; corrected to published `shopify`. Extractor fixture initially lacked canonical get-product payload and correctly failed before extraction; corrected to `{product:null}`, preserving all canonical validation. These were fixture corrections, not source guard weakening.
+- Exact Node22-compatible operator bundle `/tmp/arch070-context-probe.mjs` SHA256 `eaa5037c0a7e89bc479f31e58982c79f6b6e46a849f82a5e437c7053febc2cee`; published Shared dependency remains external. This is a local diagnostic artifact, not a hosted deployment or package release.
+- Exact source CI `43623474142` and `43623467171`: both SUCCESS at exact source `5bbbca7a99f15c14f8a4be607549ab922d74ee3d`.
+
+### Isolation and limitations
+
+Normal attempt2 claim `1dfb8257de7f8f4fabb522cd0c23540c675b054e`; canonical mirrored task branches/worktrees reused and main synchronized by launcher. No primary/other task files or parent gitlink staged. No provider or live MCP calls made by repository agent.
+
+Root snapshot uses actual moderation-aware production history/context readers and ordered pinned manifest, explicitly CURRENT_RECONSTRUCTION because the original processing boundary/request bytes were not retained. Exact ModelRequest and ModelStep artifacts are protected; they are not raw provider HTTP/reasoning captures. Injected operator adapters must retain production authorization and redirect their own transport output privately. Diagnostic success alone cannot prove the genuine incident fixed.
+
+
 ## Architect Review
 
 ### Review Status
@@ -212,3 +242,7 @@ Currentevidence requires diagnosis first; Sharedmechanicalgap only if reproduced
 ### Follow-up
 
 Root executes privateboundedactualrun; architect determines correctionowner/task from actualevidence. Do not markincidentfixed from harnessstub or newprompt assertions.
+
+### Authorized bounded diagnostic phase002
+
+Probe001 used current reconstruction and returned only category resolver outcomes, no current product observations; runnerok/plaintext was not selection conformance or delivery proof. Root may execute one further bounded diagnostic with explicit artificial initial read-only product DISCOVERY browse {browse:true,query:null,availableOnly:true,limit:5,cursor:null}, actual authorized fresh MCP result then actualproduction SDK/fullcontext. It chooses no product IDs/selections. Same12/6/60s/2048 budgets/private0600 capture/no productionwrites/sends. Label seeded discovery vs historical replay. Capture whether productcondition/repair occurs and exact private prioroutput/request. No app/Sharedrepairfeedback implementation inferred. Candidate invocation-local previous-output feedback must remain lowertrust data, never trustedinstruction/toolresult spoofing, and requires concrete evidence/disposition before source change.
