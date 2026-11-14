@@ -249,6 +249,7 @@ User authorized bounded runtime presentation policy rather than package-bound ge
 
 ARCH-075-SHARED-011 Complete: public5.13.11/latest independently verified against exact approved SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086. Release acceptance is not layout/deployment approval. Consumer/Gateway main merges, deployment and activation remain HELD for the user's presentation-policy boundary review; Background registry-only adoption checks may finish. ARCH075 remains In Progress.
 
+ARCH-075-ADMIN-009 Ready for bounded preparatory existing-policy UI/source under explicit accepted-Shared012/release final gates. Key messaging.recoveryCompositeLayout; no new database schema/editor framework.
 ARCH-075-SHARED-013 Pending actual012 integration: metadata-only major release preparation, no repeated implementation validation, public publication explicitly held until exact archive and concrete consumer proofs plus new user approval.
 ARCH-075-SHARED-012 Ready: actual SHARED011 integration d1319babb4ab9a82f4007d58123497f8987ea96e verified; normal isolated owner execution may begin.
 
@@ -261,3 +262,5 @@ ARCH-075-SHARED-012 Complete/Accepted exact source59068290eb69506fd7a5d248c5ed35
 ARCH-075-SHARED-013 Ready after actual012 integration b4ae79170ef3427d1744ef1151ef40e013ebbb78 / Sharedf06cf317781bf584b62f2c286d06118f21e40123; release preparation only, public approval held.
 
 ARCH-075-SHARED-013 Complete/Accepted: actual public6.0.0/latest independently downloaded exact49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8,965706B161files; finalreport4cf181e9dec04f68c7f774aed081525ae8ca689c. Consumer registry/CI/review/integration and controlled deployment remain separate; ARCH075 In Progress.
+
+ARCH-075-ADMIN-009 Complete/Accepted source4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f/report32350812a3a7154caee3d50ac3e7a351221825d0: saved-template owned profile authoring/clone/review/preview, realShared6registry adoption and exactheadVercelgreen. No separate layout policy remains. Rootcontrolled integration/cutover/live proof pending; ARCH075 In Progress.
