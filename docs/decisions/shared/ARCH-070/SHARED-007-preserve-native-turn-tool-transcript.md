@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T22:12:26Z
@@ -192,7 +192,7 @@ Architect authorizes bounded third transcript row role runner-feedback ONLY when
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
@@ -229,3 +229,9 @@ Changes Requested. Preserve attempt2 and its report; normal launcher claim incre
 Remove unconditional emission of the optional parallel-tool-call parameter. Omit it by default rather than claiming provider capability; do not synthesize sequential-provider semantics. Preserve native actual calls, batch budget/accounting, authorization, tool choice, strict schemas, model/token/deadline/cancellation and canonical business guards. No business/model/provider routing preference change in Shared. Explicit future caller opt-in is unnecessary unless existing public API already requires it; no opportunistic capability registry.
 
 Required source tests: actual SDK HTTP body omits the key by default while exact schemas/strict/named-or-required choice/max_tokens remain unchanged; multi-call batches still respect existing remote/model budgets and result pairing; native terminal/referral/invalid-decision guards remain intact. Run affected focused checks, types/build/installed package proofs appropriate to the changed source; no unrelated broad repeats. Supply exact superseding archive/bundle identity to BG010/root. Publication remains separate and unapproved; actual full-context proof is still required before incident acceptance. Return Review and STOP.
+
+### Final independent source acceptance — attempt 3
+
+Accepted exact implementation `667a658915f4071835a966c345e5fe76feda0829` and report `ca07361b4`. Canonical mirrored parent/implementation worktrees, normal launcher claim70ba11c5, synchronization and recursive submodule evidence reviewed. Earlier generic native transcript/terminal-port code review retained; latest production delta removes only unconditional parallel_tool_calls:false. Actual SDK wire regressions preserve schemas/strict/auto/named/required choices/max_tokens; affected208/type/build/installed SDK/types/browser proofs pass. Root015 independently shows routing reaches DeepInfra with omission, while empty selection remains correctly rejected.
+
+This acceptance covers reusable native protocol, immutable raw/canonical separation, terminal controls and optional transport compatibility, not application selection efficacy. Root explicitly requests source acceptance now while BG010 actual proof remains held. That application/release gate supersedes earlier wording coupling this generic task completion to incident success. No budgets, referral/grounding/business policy or privacy preference was relaxed. No source finding remains. Additive6.1.0 is the release recommendation; published6.0.1 unchanged. Separate Shared008 publication may prepare only after root's required016 application evidence disposition and requires a new explicit exact-archive public approval. No source/main merge, publication or live operation is performed by this review.

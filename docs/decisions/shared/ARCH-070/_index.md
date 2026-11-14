@@ -14,3 +14,5 @@ Architecture: docs/architecture/ARCH-070-verified-recommendation-terminal-turn-r
 ARCH-070-SHARED-007 ready: Preserve ordered native current-turn tool protocol; propernativeprotocolmechanics only, allbusinessguardsunchanged; rootproof/publicationapprovalgate.
 
 Shared007 Ready reworkattempt2: genericrawtransport/separatehostterminaldecision, no businessmapping; native007negative/flat008capability only. AppBG010ownsflatprotocol; publicationheldnewapproval.
+
+Shared007 Complete: architect accepted exact667a658 attempt3 reusable source; application efficacy unproved. Shared008 remains held for root016 disposition and exact public approval.
