@@ -112,7 +112,7 @@ UI labels Website and checkout footer / Dynamic footer show where both links bel
 - Common/native/activation/translation/profile focused run: **57 passed**. New footer policy, UI and affected authoring-component run after UX changes: **14 passed**. Additional affected authoring/wrapper admission regressions: **51 passed**. Counts are separate runs with overlap, not an aggregate unique total.
 - New cases cover trusted binding counts/allowed placement, exact invalid prepared-reference rejection after rehash, six native scenario BODY/preview parity, AI/human caption ordering, translated variable relocation rejection, source/prepared/profile hashes, immutable read and unchanged old valid header bytes. Actual UI Add button preserves other content and saves correct bindings; nonempty static footer remains visible for correction.
 - Existing disposable PostgreSQL runner: **2 passed**, including real old-header-to-new-footer clone, queued translations and all 20 locale reviews, selector/reference equality, coordinated activation and original/audit preservation. Disposable container removed; no hosted database used.
-- Initial types/scoped lint/build passed; final types/lint/build after the small dynamic-footer UX change are running. Browser graph and exact final registry/remote checks remain final gates. No unaffected full-suite or PostgreSQL repeats.
+- Final types/scoped lint and production build after the dynamic-footer UX change passed (terminal build exit 0). Production browser graph across 71 JS files has no Node renderer/font-loader/frozen-verifier markers. Draft exact source ae8033f Vercel SUCCESS at 2026-11-14T14:28:22Z and Preview Comments SUCCESS at 14:28:23Z; this does not replace the final actual-registry adoption gate. No unaffected full-suite or PostgreSQL repeats.
 
 ### Deviations
 
@@ -124,7 +124,7 @@ Root owns accepted dependency publication, main integration and normal saved-tem
 
 ### Unresolved Issues
 
-Final accepted Shared014 artifact identity, actual separately approved Shared015 publication and real registry dependency/lock/clean npm-ci adoption are mandatory before Ready for Review. Final UX build and exact remote checks pending.
+Final accepted Shared014 artifact identity, actual separately approved Shared015 publication and real registry dependency/lock/clean npm-ci adoption are mandatory before Ready for Review. Local UX build and draft exact-head checks passed; final actual-registry installation and exact-head checks still required.
 
 ### Architectural Concerns
 
