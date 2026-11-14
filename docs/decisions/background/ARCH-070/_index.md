@@ -11,3 +11,5 @@ Assigned Agent: moda_background; Coordinator: moda_architect.
 | ARCH-070-BACKGROUND-003 | Trusted recovery checkout footer | Complete | None |
 | ARCH-070-BACKGROUND-004 | Canonical selection semantics adoption | Complete | ARCH-070-SHARED-004 |
 | ARCH-070-BACKGROUND-005 | Typed referral contract adoption | Complete | ARCH-070-SHARED-006 |
+
+ARCH-070-BACKGROUND-006 Ready: safe app-owned prevalidation final selection-shape diagnostic; existing accepted tasks remain Complete. Evidence first, no speculative correction or Shared release.
