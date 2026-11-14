@@ -173,6 +173,14 @@ Source `fa653d866593b0e44a51ce91fad58503924d39a9` adds test-only adoption of the
 
 Root trial016 produced three explicit model-issued detail calls rather than empty arguments; the prior one-call framework safely refused them before projection. Whole-batch equivalence/binding belongs Shared; Background does not choose an arbitrary call or rewrite raw provider transport. Root owns replay/actual follow-up classification. Actual efficacy and all publication/registry/integration gates remain held, task InProgress.
 
+### Atomic minimal identity batch checkpoint
+
+Implementation `c1e2fb0ce0e8a85d59a9850902a7f353fdfa9cde` explicitly opts into Shared `batchMode:"atomic"` and validates every raw call. Minimal same-DETAIL or same-OPTIONS calls each pass exact canonical `matchesSubset` advertised-schema validation, individual duplicate/current-membership/title-consistency guards. All explicitly selected identities are unioned in first-occurrence call/pair order with exact cross-call identity deduplication only. Aggregate respects pinned minimum and maximum capped at3; overflow, mixed mode/rich names, any invalid/foreign/conflicting member rejects the whole batch. Existing rich single/equivalent behavior remains separate. No provider arguments/text are rewritten. Existing whole-batch binding/canonical digest and final host refresh require every unioned pair to refresh and match before returning factual content.
+
+Exact unpublished Shared atomic archive SHA256 `14dbf8eabaf0a9444ca22b6ed151634d0807bb6a6ac350031a433d33f9d48fd4` verified/installed no-save/no-lock. TypeScript, scoped lint and serial production build PASS. Focused35 unit cases PASS. Host155 unique cases proven by154 PASS in the full affected run plus2 targeted atomic-union cases PASS after correcting one assertion to inspect the existing `commercePresentation.envelope.details` result location; no runtime change followed that failure. Tests prove overlapping same-mode union/order, all-pair refreshed prices/titles, missing second refresh refusal, atomic bad/mixed/foreign/title-conflict/overflow rejection and unchanged raw batch/text. Original failure trace retained; no unqualified single-run155-green claim. Factory SHA256 `189a71a7540c9ab9b7c541ce1c605b5ac92b375a955833355caba3007b65899a`.
+
+Root owns the exact private019-prefix offline replay, subsequent actual evidence disposition and all publication/live/integration actions. No provider/MCP/live action by this agent. Task remains InProgress with efficacy, accepted/public dependency, registry/npm-ci and final remote CI gates held.
+
 ## Architect Review
 
 ### Review Status
