@@ -265,3 +265,5 @@ ARCH-075-SHARED-013 Ready after actual012 integration b4ae79170ef3427d1744ef1151
 ARCH-075-SHARED-013 Complete/Accepted: actual public6.0.0/latest independently downloaded exact49802947a11110f9cbd211b9a10849b019c4ce10d8519416977add0564fecfc8,965706B161files; finalreport4cf181e9dec04f68c7f774aed081525ae8ca689c. Consumer registry/CI/review/integration and controlled deployment remain separate; ARCH075 In Progress.
 
 ARCH-075-ADMIN-009 Complete/Accepted source4e8fb70304d47035fbd7ea3d6f640ba0c68e7b6f/report32350812a3a7154caee3d50ac3e7a351221825d0: saved-template owned profile authoring/clone/review/preview, realShared6registry adoption and exactheadVercelgreen. No separate layout policy remains. Rootcontrolled integration/cutover/live proof pending; ARCH075 In Progress.
+
+ARCH-075-BACKGROUND-014 Complete/Accepted exactsourcec599f3dd4042a1cc72d764b5a45b25f4d32e5ca9/reportd2a4561e6: sole saved-template profile authority/current-only composite/actualShared6registry+exactheadCIgreen. Rootactualpin/integration and controlled disabled rollout/current-template replacement/liveproof remain separate; ARCH075 In Progress.
