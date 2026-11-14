@@ -1,7 +1,7 @@
 ---
 id: ARCH-070
 title: Verified recommendation evidence and terminal turn recovery
-status: implemented
+status: in_progress
 coordinator: moda_architect
 created: 2026-11-12
 updated: 2026-11-12
@@ -108,3 +108,9 @@ None blocking. Earlier exact raw model values remain unknown; deterministic sema
 - 2026-11-12: Defined bounded catalogue evidence, terminal recovery and eligible AI footer tasks.
 - 2026-11-12: Added canonical semantic/shipping qualification and strict referral provider guidance through separately accepted releases/consumers.
 - 2026-11-12: All eleven tasks accepted; final genuine production recommendation/footer delivery and read receipt verified. Architecture marked Implemented with redacted public evidence and password-gate qualification.
+
+## Reopened production selection incident — 2026-11-14
+
+Prior accepted implementation/deployment history is preserved. New genuine Videographer turn reached FINAL_PRODUCT_SELECTION_MISSING after2successful searches and forcedfinalization; raw final shape unknown. ARCH-070-BACKGROUND-006 Ready adds safe application prevalidation shape evidence without changing args/validators/budgets or Shared. Root bounded synthetic probe runs independently. No fabricated selection/new loop/model switching or new Shared publication. Architecture reopened In Progress until evidence-based correction and genuine live verification; no old success is relabelled failure.
+
+ARCH-070-BACKGROUND-006 Complete/Accepted exactsource58783dd643ff75e2ce8e6618277a606fc4b10eee/report378b9a4f1: prevalidation shape evidence only, args/guards unchanged, focused26/host126/remote4376green. Rootintegration/deployeddiagnostic/freshgenuineevidence and actual correction remain pending; ARCH070 In Progress, no incident-fixed claim.
