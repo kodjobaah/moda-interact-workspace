@@ -72,6 +72,10 @@ Actual dependencies Complete/Accepted and integrated: BG012 Backgroundmaindd29c4
 
 Exact accepted010 test archive: temporary ARCH-075-SHARED-010/modainteract-moda-interact-shared-5.13.10.tgz, SHA256d3928d3c8f9b4a5bc7415005eab891360c38d5c9b69935f1c8b9d1eda62a19ac,161files. Use verified archive/installed canonical exports, no sibling sources; final registry lock/npmci and task acceptance still gated011 actual public release. Return concrete tested draft/source checkpoint to root while In Progress before user public-approval prompt. No live sends/flags/main merge.
 
+### Existing product-facts trust boundary
+
+“Current product facts” retains the existing architecture: independently host-verified product envelope/proof and digest/first-presented pair bound to the original source/presentation/common/tenant, plus current inbound/control/authority and current DB-backed logo policy/generation checks. Do not add a live commerce/provider fetch inside the final transaction or redesign product freshness. Separate host-only composite preparation evidence must be independently constructed and bound to immutable application/plan identity, not copied from an untrusted stored plan as self-attestation. Frozen runtime/font/output identity is preserved on replay, not regenerated. Return concrete missing integrity proof before widening.
+
 ## Work Items
 
 - [ ] Adopt accepted dependency and exact dual-provenance receipt/readers/fences.
