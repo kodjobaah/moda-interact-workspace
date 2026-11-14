@@ -173,3 +173,10 @@ Major release appropriately reflects explicit removal of unused fixed-composite 
 ### Follow-up
 
 Root integrates final parent actual gitlink. Admin009/BG014 finish real registrylock/npmci/remotechecks and separate reviews; Gateway003 final proof remains independently owned. Root owns all main/deployment/current-template replacement/live operations. No new approval required for this completed authorized publication.
+
+## Developer Integration
+
+- Metadata PR https://github.com/kodjobaah/moda-interact-shared/pull/90 merged by root on 2026-11-14T02:49:35Z, reviewed head `dcfbfef99935709dc485fad003dbfa7164a6203b`.
+- Actual Shared main `ade292b55e85fbdc38b0810459a7e126493dd620` is recorded by the workspace gitlink.
+- User explicitly approved public 6.0.0/latest publication; independent registry receipt at 2026-11-14T03:13:14Z matches the exact approved archive. Release acceptance `92c9a5543` reviewed before parent integration.
+- Application registry adoption, remote checks, main merges, current-template replacement and live activation remain separately gated. No production setting or deployment changed by this integration.
