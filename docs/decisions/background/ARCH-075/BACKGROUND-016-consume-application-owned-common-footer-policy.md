@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T14:19:39Z
@@ -48,9 +48,9 @@ Adopt exact published reader and implement Background application policy at ever
 
 ## Work Items
 
-- [ ] Implement only defined owning capability.
-- [ ] Add meaningful affected behavior regressions.
-- [ ] Record exact source and required checks.
+- [x] Implement only defined owning capability.
+- [x] Add meaningful affected behavior regressions.
+- [x] Record exact source and required checks.
 
 ## Interfaces / Contracts
 
@@ -66,9 +66,9 @@ None; dependent promotions architect-owned.
 
 ## Acceptance Criteria
 
-- [ ] Defined capability and owning-policy boundaries satisfied.
-- [ ] Hash/identity/tenant/receipt/permit and mandatory content integrity retained.
-- [ ] Required checks and exact immutable reports complete; no live/merge actions.
+- [x] Defined capability and owning-policy boundaries satisfied.
+- [x] Hash/identity/tenant/receipt/permit and mandatory content integrity retained.
+- [x] Required checks and exact immutable reports complete; no live/merge actions.
 
 ## Validation
 
@@ -90,44 +90,46 @@ Root explicitly authorizes independent concurrent Background specialist for comm
 
 ### Status
 
-In Progress — concrete candidate source/tests pushed; final publication/registry checks held.
+Ready for Review — all required local/publication/registry/exact-head remote checks passed.
 
 ### Files Changed
 
-- New common-layout-policy.ts: application-owned trusted binding/placement admission wrapper over canonical Shared reader.
-- common-layout.ts: receipt/rendered-boundary/current-source readers use owning policy.
-- composition.ts: selectedCommonLayout only substitutes policy reader import/call; no compact product edits.
-- recovery-template-common.ts: native source/reference identity paths use same app policy.
-- New focused policy tests and separate disposable PostgreSQL current-source authority test.
+- `common-layout-policy.ts`: app-owned trusted binding/placement admission after canonical Shared parsing.
+- `common-layout.ts`, `composition.ts`, `recovery-template-common.ts`: all direct common reference selection/render/receipt/native/current-source paths use same policy.
+- New focused policy and disposable PostgreSQL authority tests; composition AI/HUMAN website-caption/frozen-plan tests.
+- Real6.0.1 package/lock adoption and three existing literal installed-version assertions; privacy/runtime assertions otherwise unchanged.
 
 ### Work Completed
 
-Initial source be0128b593323b87297b111327fbf10cc741d419 pushed on matching task branch. Shared remains technical snapshot parser; Background requires exactly one trusted name in header, one website in old header OR checkout-aware conditional, empty static footer, exactly one checkout conditional, allowed bindings only, and exact trusted checkout token on final separate line. All direct exported reader callsites audited and routed through this app policy. Original valid header-site sources are preserved byte-for-byte. No source rehash/rewrite, arbitrary authored text surgery, model/compact/permit/billing change.
+Final source `59b593d4fa75f072d22a95875bcae1997f441280`, source Draft PR228. Background owns exactly one trusted header shop.name, one website in old header OR checkout-aware caption, one final separate-line checkout URL and strict allowed-variable placement. Staticfooter accepts only semantically empty exact text tokens (or empty array), matching Admin; whitespace/nontext/nonempty staticfooter refused. No trimming/hash normalization/source rewriting. Root's premerge parity finding implemented with explicit rendered-boundary/hash/tamper vectors. Shared remains structural/hash/mechanical parser. All source selection, frozen receipt/boundary, final locked current-reference and native reference/identity paths enforce policy; no alternate unguarded direct Shared reader remains outside helper.
+
+Accepted compact-list Background main9d82f403272c7832b8abcbdf672676028551b061 merged INTO task branch90c5775. Sole conflict consisted of two new composition imports; both preserved, no compact helper/proof/runtime changes. Test-only b8453d3 adds actual AI/HUMAN composite service→frozen reader new website caption and verifies bitmap provenance receives exact header with no website URL. Current valid header-site sources remain unmodified and acceptable. No model/budget/args/provider/usage/SQL/schema/logging changes.
 
 ### Validation Results
 
-- Exact accepted Shared014 archive6618d7c97e99c1e75ab67240ba940a5a5eade2a37a5661de000f25c5ade3a97a SHA verified; clean npmci then no-save/no-lock install; all161 installed archive files byte-identical.
-- Focused candidate tests24/24PASS2files: new app policy/native identities/website caption plus existing immutable/frozen common receipt tests. Structurally valid forbidden/duplicate/missing/trailing content rejected by host before SQL; exact website caption/native parameters and old hashes retained.
-- Candidate build/types/scopedlint PASS. Expanded affected suite276/19files PASS. Separate actual disposable PostgreSQL locked-source test1/1 PASS: reviewed website-caption source accepted, stale editVersion/sourceHash/contentHash refused, replacement with structurally intact forbidden customer binding refused, old selected reference refused after switch. No fixture/timeout/guard weakening. Logs /tmp/bg016-build-candidate.log, /tmp/bg016-types-candidate.log, /tmp/bg016-scopedlint.log, /tmp/bg016-expanded-focused.log and /tmp/bg016-postgres-candidate.log. Draft source PR228. Preliminary remoteCI43605019489 failed under still-declared public6.0.0: Shared technical-acceptance assertion returns invalid at new policy test41; exact failed log inspected. This is the deliberately held new-publication gate, not passing CI. Final actual published6.0.1 adoption/real registry lock/npmci/remote CI held until root approval+publication. No fabricated registry metadata.
-- Prepared launcher: canonical primary /Users/kwadwoadomafriyie/project/moda-interact-workspace; parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-016 and implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-016, both task/ARCH-075-BACKGROUND-016. Initial parent8ffc7049778d4d400f7629dd6a4d7a056ee4eb1f; source d0c968e68d38031a9b3e884301573adbcbb08652. Both remote task sync not-needed/originmain already-current. Recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae ready, sync/update passed. Attempt1/codex claimed14:19:39Z commit6a3f94440529919986cea98282914f23a716674f pushed. No primary/other-task edits.
-
-- Root requested integration of accepted BG015 main9d82f403272c7832b8abcbdf672676028551b061. Merged INTO task implementation branch90c5775; sole composition.ts conflict was two new imports, both preserved. No compact runtime edits. New test-only b8453d3cd5ef696288088a1afeed314c004f6e0e verifies actual AI/HUMAN service composite generation with saved website caption, exact header image-provenance input without URL and successful frozen-plan reread. Combined affected63/3files PASS; combined types/scopedlint PASS. Prior expanded276/19 and PG1 proofs retained (policy runtime unchanged). Final public registry checks remain held.
+- Normal launcher isolation: primary `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; dedicated parent `moda-interact-workspace-task-ARCH-075-BACKGROUND-016` and implementation `moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-016`, matching task branches. Initial parent8ffc7049778d4d400f7629dd6a4d7a056ee4eb1f/source d0c968e68d38031a9b3e884301573adbcbb08652; remote task sync not-needed/originmain already-current both; recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae ready with recursive sync/update PASS. Attempt1/codex14:19:39Z claim6a3f94440529919986cea98282914f23a716674f pushed. No primary/another-task writes.
+- Accepted candidate6618d7 archive verified/all161 installed bytes equal; initial24focused then expanded276/19files PASS, build/types/scopedlint PASS. Actual disposable PostgreSQL new authority test1/1 PASS: reviewed website-caption source accepted; stale version/hash and replacement with forbidden customer binding fail closed. Root-shared source/policy runtime remained identical afterward except semantic-empty footer admission, proven separately by final focused tests; no broad PG repeat.
+- Post-BG015 integration combined63/3files PASS, types/scopedlint PASS; no website copied into AI/HUMAN bitmap header, exact canonical caption/frozen receipt preserved.
+- Actual approved publication receipt verified14:40:56Z, Shared6.0.1 latest, source4c736db, parentrelease d78d810f3883ac145a5bbf283580a4b8033609b4. Approved archivefd7b4a70d2a54da175556739074acdb5ee4487dc9c7e9c68a656717de3137aa2 (965127B/161files). Independent comparison all160 nonmetadata files exactly tested6618d7; only package version differs. Normal registry install then clean npmci PASS, actual registry URL/SRI match approved archive; all161 installed files byte-identical. No fabricated URL/SRI/unpublished lock. Public6.0.0 unchanged.
+- Real registry e7badaa adoption: productionbuild/types/scopedlint and151affected tests/11files PASS. Root parity review then exact final59b593d focused78/4files PASS, fresh productionbuild (types included)/scopedlint PASS. Prior separate typecheck/build and actual registry proofs retained; no unchanged full local/PG repetitions.
+- Preliminary remoteCI43605019489 under still-declared public6.0.0 failed new technical-acceptance assertion at policy test41; exact log inspected, transparently retained as prepublication dependency gate. Final registry CI supersedes that stage; final exact59b593d CI43606717242 and43606711494 bothSUCCESS (14:49:57Z/14:50:27Z); inspected actual43606717242 logs395files/4405testsPASS,78.54s.
+- Logs retained `/tmp/bg016-*` (candidate/combined/registry/parity validation); `git diff --check` PASS, diff/privacy review no customer/private inputs or credentials. Full repository lint was not repeated; task requires scoped lint and unchanged unrelated known four-errors baseline remains outside this task. No full-lint-green claim.
 
 ### Deviations
 
-None. Preparatory execution authorized despite publication final gate.
+Root found actual Admin cleared-footer projection preserves empty text token(s), whereas first Background draft required zero tokens. Corrected in59b593d to exact semantic-empty parity; source/hash normalization forbidden. Root and architect confirmed within scope. No other deviation.
 
 ### Assumptions
 
-Root owns all merges/live/provider operations and exact public approval. Final sync with accepted BG015 main before coherent acceptance if it integrates first.
+Root owns merges, deploy/drain and normal immutable saved-template/cohort activation. Existing old valid live source remains usable until reviewed replacement; no compatibility rewrite introduced.
 
 ### Unresolved Issues
 
-Actual approved6.0.1 publication and final registry checks pending; task remains In Progress.
+None. No source changes after tested59b593d.
 
 ### Architectural Concerns
 
-None; semantic reader policy is deliberately application-owned rather than a duplicated Shared structural codec.
+None. Mandatory content/placement policy remains owning applications; Shared parser success is never operational authorization.
 
 ## Architect Review
 
