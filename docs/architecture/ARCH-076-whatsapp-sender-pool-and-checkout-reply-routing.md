@@ -11,7 +11,7 @@ updated: 2026-11-15
 
 ## Status
 
-Agreed design; user authorizes implementation, task tests, commit/push and integration, with test verification before production. SYSTEM-TEST remains explicitly deferred. DATABASE-001 has prepared attempt 1 (`executor: codex`, claimed 2026-11-15T11:46:23Z); preparation is not source implementation; the user has now authorized this revised schema. No migration or runtime change is claimed by these definition edits. Preserve completed chronological ARCH-069 unchanged.
+Agreed design; user authorizes implementation, task tests, commit/push and integration, with test verification before production. SYSTEM-TEST remains explicitly deferred. DATABASE-001 is executing prepared attempt 1 (`executor: codex`, claimed 2026-11-15T11:46:23Z); preparation is not source implementation; the user has now authorized this revised schema. No migration or runtime change is claimed by these definition edits. Preserve completed chronological ARCH-069 unchanged.
 
 ## Problem and goals
 
@@ -138,19 +138,19 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 
 | Task | Owner | State | Direct dependencies |
 | --- | --- | --- | --- |
-| ARCH-076-DATABASE-001 | moda_database | In progress, prepared attempt1 | None |
+| ARCH-076-DATABASE-001 | moda_database | In progress, active attempt1 | None |
 | ARCH-076-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
 | ARCH-076-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
 | ARCH-076-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
-| ARCH-076-ADMIN-003 | moda_admin | Ready, independent | None |
+| ARCH-076-ADMIN-003 | moda_admin | In progress, task-branch attempt1 | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003 |
-| ARCH-076-DATABASE-002 | moda_database | Ready, independent | None |
+| ARCH-076-DATABASE-002 | moda_database | In progress, attempt1 | None |
 | ARCH-076-BACKGROUND-005 | moda_background | Pending | DATABASE-002 |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004 |
 
-All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 prepared attempt1 resumes; independent D002, ADMIN002 and ADMIN003 are Ready/unclaimed; dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
+All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are active attempt1; ADMIN002 is Complete; ADMIN003 has a canonical task-branch attempt1 claim at 2026-11-15T13:00:12Z (its merged-main definition remains Ready until that task branch is integrated). Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
 
 ## Change history
 
@@ -185,3 +185,5 @@ A directly attributed NEW_QUESTION may resolve with witness=self, admitting only
 Required positive PostgreSQL case: persist Q1, freeze CLARIFY, admit/confirm prompt, persist Q2 with exact parent and SELECT_ONLY, bind Q1 owner+witness and admit original exactly once, preserving both classifier decisions and exact original message content. Also test SELECT_AND_QUESTION exact clause admission, independent NEW_QUESTION leaving Q1 pending, concurrent Q2/Q3 attempts, replay after crash, wrong-parent/prompt/thread/assignment forged witness, terminal rebinding and deferred retention deletion. SQL enforces structural identity/freeze; application revalidates current eligibility and authentic evidence.
 
 15 November ADMIN002 accepted and automatically Complete: tested Admin source4bfefc5 merged main5558daadd (identical Git tree). Parent gitlink records actual merged main. BG004 still waits for BG003 and ADMIN003; SYSTEM-TEST remains deferred.
+
+Completion frontier correction: D001 active implementation, D002 claimed attempt1 at 2026-11-15T12:59:02Z, ADMIN003 canonical branch claimed attempt1 at 2026-11-15T13:00:12Z. ADMIN002 clears active claim fields on automatic completion while retaining historical evidence. No other task claim metadata is changed by this reconciliation.

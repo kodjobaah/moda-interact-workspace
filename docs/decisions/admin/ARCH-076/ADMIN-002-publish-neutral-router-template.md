@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: complete
 priority: 25
-executor: codex
-claimed_at: 2026-11-15T12:57:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: [ARCH-076-BACKGROUND-004]
@@ -176,7 +176,7 @@ Accepted — automatic completion, 15 November 2026.
 
 ### Review Notes
 
-Root architectural review accepted source commit 4bfefc5d1e20bb41c65a0d0dcce90c8a7e05e3f5 (Admin PR102), merged as actual Admin main 5558daadddfdc4a420e300cfb348a2b2eb109812. Independently fetched the merge and compared Git trees: both e7ade8d406a8ee5549141cfa23675732036089f5; implementation versus merged-main diff is empty. Prepared canonical worktree/attempt1 synchronization and recursive Database pin evidence are recorded above. Preserve executor/claimed_at/attempt as accepted execution history. No live configuration or provider activation was performed.
+Root architectural review accepted source commit 4bfefc5d1e20bb41c65a0d0dcce90c8a7e05e3f5 (Admin PR102), merged as actual Admin main 5558daadddfdc4a420e300cfb348a2b2eb109812. Independently fetched the merge and compared Git trees: both e7ade8d406a8ee5549141cfa23675732036089f5; implementation versus merged-main diff is empty. Prepared canonical worktree/attempt1 synchronization and recursive Database pin evidence are recorded above. The completed task clears active executor/claimed_at metadata; original executor, timestamp and attempt1 remain recorded in the Git/VCS Completion Report as historical evidence. No live configuration or provider activation was performed.
 
 ### Reviewed Files
 
