@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-11-15T12:59:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: [ARCH-076-BACKGROUND-005]
@@ -139,29 +139,24 @@ None requiring cross-repository schema change. Sender and renewal task streams r
 
 ### Review Status
 
-Pending
+Accepted — automatic completion, 15 November 2026.
 
 ### Review Notes
 
-Definition only; implementation not started.
+Root reviewed SQL/integrated tests and merged Database PR78 as actual main 0a965c549b4916085acd8a806d5ecf376eda0e47. Independently fetched and compared tested source a27f9919414ee5d81862de0c4f6820cde183df7f with that merged main: both tree e6394b6345368ee95aff6c12a44a68677b021045; empty source diff. Combined tree retains accepted D001 sender storage. Reviewed the migration owner lock order (Conversation FOR UPDATE then recovery FOR SHARE), reciprocal deferred ownership guards, immutable message pin and exact reservation lineage. No hosted migration or runtime activation is claimed.
 
 ### Reviewed Files
 
-None
+prisma/schema.prisma; conversation_allowance_blocks migration SQL; validation script and disposable PostgreSQL runner; package scripts and scoped ERD changes. Completion Report records exact prepared canonical worktrees, synchronized start and recursive evidence. Attempt1/claim timestamp remain in historical report; active executor/claimed_at cleared on completion.
 
 ### Validation Reviewed
 
-None
+Final combined-head validate, prisma:generate, lint, test:conversation-allowance and real test:conversation-allowance:postgres all passed. Root reviewed 129 assertions across fresh/full-history upgrade, both observed owner-race orderings, generated Prisma Client operations, retained legacy messages/usage/reservations, no-op redeploy and deferred cascades. Final baseline144 Prisma models/114 PUML entities/82 migrations includes both D001 and D002. Scoped ERD rendered/inspected. No redundant test rerun on the identical accepted merge tree. SYSTEM-TEST was not executed.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms to independent funded-block storage, no sender dependency or duplicate financial state, immutable exact message→block pin, tenant/owner integrity, pending/active concurrency and repair fencing. Existing UsageReservation/provider evidence remains authoritative; no usage reset or second Conversation. Application owns actual funding/compensation/admission policy, including proof for permitted ACTIVE→CANCELLED transition.
 
 ### Follow-up
 
-None
-
-
-### 15 November definition amendment
-
-This is a new independently scoped definition, not implementation evidence. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.
+Promote only ARCH-076-BACKGROUND-005 to Ready: its sole DATABASE002 dependency is now Complete. Other task metadata/claims unchanged. Root owns final parent integration, deployment sequencing and test-before-production verification. SYSTEM-TEST remains user-deferred.
