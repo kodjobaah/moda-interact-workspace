@@ -101,7 +101,7 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Review submission held pending full unit-suite and final GitHub CI verification. Source and report are committed/pushed; PR239 is draft while broader orchestration-fixture corrections are validated.
+Ready for Review. Required owner-scope checks and final-head full GitHub CI passed; source and report are committed/pushed for architect review.
 
 ### Files Changed
 
@@ -123,7 +123,7 @@ Review submission held pending full unit-suite and final GitHub CI verification.
 
 ### Validation Results
 
-- Broader GitHub unit CI exposed partial-database orchestration fixtures in matured-candidate materialization and checkout refresh reaching the newly injected allocation boundary. Explicit assigned allocation-port mocks isolate those pre-existing orchestration fixtures; the actual PostgreSQL allocation/race tests remain unchanged. Full unit-suite revalidation and final CI are in progress; the prior affected-suite result below is not a claim that full CI passed.
+- Broader GitHub unit CI exposed partial-database orchestration fixtures in matured-candidate materialization and checkout refresh reaching the newly injected allocation boundary. Explicit assigned allocation-port mocks isolate those pre-existing orchestration fixtures; the actual PostgreSQL allocation/race tests remain unchanged. Corrected in source commits `5de094f` and `0f2685a`. Both final-head GitHub workflows passed the full `npm run test:unit` suite: **403 files / 4,561 tests**, plus workflow typechecking. Runs: https://github.com/kodjobaah/moda-interact-background/actions/runs/43726145285 and https://github.com/kodjobaah/moda-interact-background/actions/runs/43726149730. The redundant local full-suite repeats were stopped and are not counted as passes; their task-owned loopback Redis container was removed after CI supplied the complete evidence.
 
 - Focused affected initial/expiry/Woo checks: 102 passed.
 - Expanded affected checkout-recovery/Woo suites plus new recipient serialization unit checks: 41 files, 564 tests passed.
@@ -139,7 +139,7 @@ Review submission held pending full unit-suite and final GitHub CI verification.
 - Both task branches: `task/ARCH-076-BACKGROUND-001`. Shared/default checkouts not switched/mutated; no other task worktree reused.
 - Prepared packet `/tmp/arch076-background001-prepared.json`: both worktrees newly created; remote task fast-forward not-needed; origin/main already-current; recursive submodule sync/update/status ready at recorded Database6f42b711. Claim15ed711ce attempt1, executorcodex, claimed2026-11-15T14:04:07Z, committed/pushed by launcher. No repeated preparation or claim.
 - Root explicitly authorized nested Database update to accepted D001a7c2046. No Database source edited or parent gitlink staged by this repository agent.
-- Implementation commit `f8d8e418049d081856e52a2d01e4e8ee3b7c48b6` committed/pushed on the task branch. Source PR239: https://github.com/kodjobaah/moda-interact-background/pull/239. Parent report committed on its matching task branch; current origin/main merged without dropping accepted D002/Commerce/cutover governance. Root owns all main merges and acceptance; no acceptance decision is made by this agent.
+- Implementation commit `f8d8e418049d081856e52a2d01e4e8ee3b7c48b6`, followed by orchestration-fixture corrections through final head `0f2685a21aa62aacc5ac7f5668146ad924877cbd`, committed/pushed on the task branch. Source PR239: https://github.com/kodjobaah/moda-interact-background/pull/239. Parent report committed on its matching task branch; current origin/main merged without dropping accepted D002/Commerce/cutover governance. Root owns all main merges and acceptance; no acceptance decision is made by this agent.
 
 ### Deviations
 
