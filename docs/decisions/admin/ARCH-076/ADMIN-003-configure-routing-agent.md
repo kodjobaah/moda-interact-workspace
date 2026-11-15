@@ -44,6 +44,9 @@ Other repository implementation, live settings, production migration and activat
 
 ## Requirements
 
+- [ ] Publish routing revisions in the existing PLATFORM prompt lineage with sourceContextJson purpose RECOVERY_ROUTING, using existing revision/hash/auth/CAS/audit machinery without ordinary autoactivation.
+- [ ] Configure only recovery.routingAgent.promptRevisionId; leave normal CommerceAgentConfiguration activePromptRevisionId/promptEditVersion unchanged. Reject routing-tagged revisions in normal Commerce activation and require the tag/PUBLISHED/platform scope on router activation.
+
 - [ ] Use existing PlatformConfiguration versioned JSON; no new agent table or mutation of ordinary CommerceAgentConfiguration pointers.
 - [ ] Validate enabled/model binding/published platform prompt revision/threshold/budgets/retries/history and candidate limits/decision lifetime/template audience; no hardcoded business defaults.
 - [ ] Reuse existing model catalogue provider parameters/reasoning and protected credential resolver; prohibit credentials in JSON/browser/logs.
@@ -72,6 +75,9 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 
 ## Acceptance Criteria
 
+- [ ] Publish routing revisions in the existing PLATFORM prompt lineage with sourceContextJson purpose RECOVERY_ROUTING, using existing revision/hash/auth/CAS/audit machinery without ordinary autoactivation.
+- [ ] Configure only recovery.routingAgent.promptRevisionId; leave normal CommerceAgentConfiguration activePromptRevisionId/promptEditVersion unchanged. Reject routing-tagged revisions in normal Commerce activation and require the tag/PUBLISHED/platform scope on router activation.
+
 - [ ] Use existing PlatformConfiguration versioned JSON; no new agent table or mutation of ordinary CommerceAgentConfiguration pointers.
 - [ ] Validate enabled/model binding/published platform prompt revision/threshold/budgets/retries/history and candidate limits/decision lifetime/template audience; no hardcoded business defaults.
 - [ ] Reuse existing model catalogue provider parameters/reasoning and protected credential resolver; prohibit credentials in JSON/browser/logs.
@@ -80,6 +86,8 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 - [ ] Snapshot config version, model editVersion and prompt ID/hash per request; validate JSON references at save and use (they are not DB foreign keys).
 
 ## Validation
+
+- [ ] Test routing draft/publish/configure leaves normal effective model/prompt and pointer versions unchanged; reject tagged normal activation and untagged/draft/foreign router activation; concurrent normal/router publication preserves both references.
 
 - [ ] Admin unit/component tests for full editor, authorization, CAS, invalid scope/model/prompt and secret exclusion.
 - [ ] Disposable PostgreSQL save/audit/conflicting update tests and preserved normal commerce agent settings.
