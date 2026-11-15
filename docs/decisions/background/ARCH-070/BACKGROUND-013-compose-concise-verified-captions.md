@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-15T01:20:37Z
@@ -149,7 +149,7 @@ No claim that concise composition fixes selection/model failures or guarantees p
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
@@ -170,3 +170,13 @@ Backgroundpolicy only, no Sharedorproviderchange.
 ### Follow-up
 
 Execute via normal launcher; root integratedcanarylater.
+
+### Final independent acceptance
+
+Accepted exactc4e87f9671a6ab984ef7956fb90d4a91cff8346f PR238 and report4b6b9381978c3cdcc47870baa4308a98aeb6271e PR1058. Reviewed brief-product-list.ts, compact-product-presentation.ts, narrowcomposition integration and affectedtests/actualPG proofs. Source normalclaim/dedicated mirrored worktrees and actualaccepted012main79cee ancestry/sync before finalchecks documented. Parent40b governance merge preserves all appended accepted012/currentmain records.
+
+No source finding remains after mandatory-adjunct correction: concise DETAIL refuses rewrite when canonical shippingselection/unverified/redirect, nonnullpolicy/requiresShipping(includingfalse), offer/nooffer terms require completebody. Wholeverified title/price/currency/stock/selectedoptions retained, prefixes choosecompleteentries and exactretainedpairs/proof/image/context; no human/policy/rawprose slicing. Actualresolved body+footer counted in400codepoint/8nonemptyline softtarget,1024technical safety remains; nonfit preservescomplete safe behavior with targetMetfalse, not a promise about clientfolding. Original source digest/replay identity unchanged.
+
+Validation reviewed:118focused/typesbuild/7filescopedlint, actualPG9 plus DEFAULT HUMAN1, both independentlyverified exactheadCI43664260607/43664253381 SUCCESS4553tests/402files. Initialfixture falseprooftitle/missingreadonly/normalreservation expectation corrections disclosed and retained. Rootprotected actual offline516UTF16/513points→286points/6lines with exactcheckoutonce/end and firstpair/logo unchanged supports sizing/provenance only, not customer delivery. Rootgenuinecanary still outstanding.
+
+Complete implementation only; no Sharedpublication/provider/model/budget/settings change, no mainmerge/liveoperation byarchitect. Root source/parentmerge/deploy/drain and authorized genuinecheckout/message verification remain; architecture In Progress.

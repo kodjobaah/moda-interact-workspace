@@ -37,3 +37,5 @@ ARCH-070-BACKGROUND-013 Ready: conservative400codepoint/8line verifiedcaption po
 ARCH-070-BACKGROUND-012 Ready: current-question authority; depends accepted011.
 
 BG012 Complete exactb8e6f92: latestobjective/moderation accepted, bothCI4550/PG13/typesbuildlintPASS; genuinecanary pending013.
+
+BG013 Complete exactc4e87f9: conciseverifiedcaption accepted,118focused/PG10/bothCI4553; realproductioncanary remainsrootowned.
