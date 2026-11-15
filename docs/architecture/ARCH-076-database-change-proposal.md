@@ -64,3 +64,7 @@ Existing NULL messages remain initial block-zero usage; lazy initial adoption on
 ## Separation and review
 
 Sender tasks have no allowance prerequisite. Configurable AI uses existing PlatformConfiguration/catalogue/published prompt machinery; neutral ROUTER template is application owned. R15 role decisions persist in routingDecision and remain subject to the exact parent question/clarification contract. No runtime or migration is implemented.
+
+## R15 evidence privacy clarification
+
+routingDecision stores identities/offsets/hashes only, never plaintext newQuestionClause. Exact text is retained in pending inputJson until atomic association to existing ConversationMessage, then terminal payloads are scrubbed. Frozen input/candidate/config/parent bindings permit only destructive terminal NULL cleanup and actual FK SET NULL, never replacement, resurrection or rebinding. See the parent R15 evidence privacy amendment for exact lifecycle and validation.

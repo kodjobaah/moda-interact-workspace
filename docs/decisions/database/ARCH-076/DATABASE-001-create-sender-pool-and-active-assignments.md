@@ -44,6 +44,9 @@ Other repository implementation, live settings, production migration and activat
 
 ## Requirements
 
+- [ ] Follow the parent R15 evidence privacy amendment: routingDecision contains only message IDs, clause offsets/hashes and structural evidence, no exact clause plaintext. Preserve exact wording through pending inputJson then atomic existing ConversationMessage association.
+- [ ] Freeze input/candidate/config/parent scope; permit only explicit destructive terminal value→NULL scrub and real FK SET NULL cleanup, never rebind or payload resurrection. Terminal scrub removes ephemeral customer/candidate/prompt payloads without deleting authentic owned Conversation history.
+
 - [ ] Add nullable routingDecision JSONB separately from configurationSnapshot, with structural schema-version/object validation and write-once decision evidence. Preserve the parent R15 original/current inbound, confirmed prompt, candidate fingerprint, exact clause/moderation, policy/template and owner/control bindings. Application owns role/evidence business validation; SQL guards prevent replacement of frozen evidence and terminal-resolution rebinding.
 
 - [ ] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
@@ -84,6 +87,8 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 - [ ] Preserve prepared attempt 1 metadata; resume only in its canonical prepared implementation worktree.
 
 ## Validation
+
+- [ ] Verify exact clause survives association/retry through authentic message IDs and offsets/hash; routingDecision contains no customer plaintext. Test frozen payload replacement rejection, terminal destructive scrub, FK cleanup and resurrection/rebinding rejection.
 
 - [ ] Disposable PostgreSQL checks cover NULL initial decision, one valid freeze, attempted replacement, wrong schema shape, terminal replay and preservation of configurationSnapshot as a distinct record.
 
