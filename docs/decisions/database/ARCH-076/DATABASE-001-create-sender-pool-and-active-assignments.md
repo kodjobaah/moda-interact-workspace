@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-11-15T11:46:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: [ARCH-076-BACKGROUND-001, ARCH-076-ADMIN-001]
@@ -43,6 +43,8 @@ Prisma, one forward sender migration, constraints/indexes, scoped ERD and dispos
 Other repository implementation, live settings, production migration and activation. Sender tasks must not implement allowance renewal; allowance tasks must not implement sender allocation. The SYSTEM-TEST task is deferred at the user's request.
 
 ## Requirements
+
+- [x] Support the parent explicit R15 two-stage star relation: Q2 shop choice and Q3 basket choice both parent Q1 substantive original; Q3 names exact basket prompt Q2, whose parent is Q1. Prompt may be Q1 or its explicitly identified direct child, not necessarily original itself.
 
 - [x] Follow the parent R15 evidence privacy amendment: routingDecision contains only message IDs, clause offsets/hashes and structural evidence, no exact clause plaintext. Preserve exact wording through pending inputJson then atomic existing ConversationMessage association.
 - [x] Freeze input/candidate/config/parent scope; permit only explicit destructive terminal value→NULL scrub and real FK SET NULL cleanup, never rebind or payload resurrection. Terminal scrub removes ephemeral customer/candidate/prompt payloads without deleting authentic owned Conversation history.
@@ -87,6 +89,8 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 - [x] Preserve prepared attempt 1 metadata; resume only in its canonical prepared implementation worktree.
 
 ## Validation
+
+- [x] Positive Q1 unknown-shop→Q2 shop selection and basket prompt→Q3 exact basket selection→Q1 resolution/admission flow; reject foreign original/prompt/thread/route scope and missing confirmation, with replay/concurrency tests. No extra table/column or recursive/newest prompt lookup.
 
 - [x] Verify exact clause survives association/retry through authentic message IDs and offsets/hash; routingDecision contains no customer plaintext. Test frozen payload replacement rejection, terminal destructive scrub, FK cleanup and resurrection/rebinding rejection.
 
@@ -183,27 +187,27 @@ No new concern. Reviewed privacy, parent-retention, immutable resolution witness
 
 ### Review Status
 
-Pending.
+Accepted — root review, 15 November 2026.
 
 ### Review Notes
 
-Pending.
+Accepted exact tested implementation; see final root acceptance evidence below.
 
 ### Reviewed Files
 
-Pending.
+Prisma schema, sender migration and integrity triggers, PostgreSQL runner, package scripts, architecture notes and scoped ERD.
 
 ### Validation Reviewed
 
-Pending.
+226 fresh/seeded-upgrade PostgreSQL assertions, lint, Prisma validate/client generation, scoped ERD and exact merged-tree equality.
 
 ### Architecture Conformance
 
-Pending.
+Five explicit routing entities; same original Conversation retained; no allowance funding rules or Shared changes.
 
 ### Follow-up
 
-Pending.
+ADMIN001 and BACKGROUND001 are Ready. Actual allocation-service last-member race belongs BACKGROUND001. Hosted rollout and SYSTEM-TEST remain deferred.
 
 ## Reconciliation provenance — 15 November 2026
 
@@ -229,3 +233,9 @@ Restored exact storage contract: use parent Explicit sender storage field table,
 Parent relationship correction: parentProviderMessageId FK NO ACTION DEFERRABLE INITIALLY DEFERRED; allow NULL→ID once after classification (row must exist before model I/O), then no clear/rebind. Retention deletes eligible parent/dependent cohorts or full thread cascade; selected Conversation associates only atomically with frozen routingDecision. Validate deferred parent deletion protection, bind-once concurrency and cohort deletion. This supersedes generic parent FK SET NULL cleanup wording.
 
 R15 positive resolution lifecycle correction: classifier routingDecision and later original-request resolution are separate. Add nullable resolutionInboundProviderMessageId TEXT self-FK NO ACTION DEFERRABLE INITIALLY DEFERRED (no global UNIQUE). Q1 frozen CLARIFY stays unchanged; confirmed prompt + Q2 frozen exact-parent SELECT_ONLY/SELECT_AND_QUESTION permits Q1's initial selectedConversationId+witness=Q2 bind atomically with original admission and terminal scrub. Direct NEW_QUESTION may use self witness and leaves older pending originals alone. Bound witness is immutable; a preexisting CLARIFY decision must not block valid first resolution. Validate same-thread/route original/prompt/candidate and current owner/control/moderation under lock. Required positive PostgreSQL original→CLARIFY→confirmed prompt→child selection→original admission case, plus simultaneous selections/replay/crash, forged witness, separate new question, exact additional clause and retention-cohort deletion. Do not rewrite classifier decisions or infer resolver by reverse-child lookup.
+
+The parent R15 explicit two-stage shop then basket clarification section is authoritative. Preserve Q1/Q2 CLARIFY decisions; Q3 exact role decision and Q1 resolution witness provide later admission evidence. Prior wording requiring promptTurnId equal originalTurnId is superseded by the direct-child star contract.
+
+### Root acceptance and automatic completion — 15 November 2026
+
+Accepted source PR79 at actual Database main a7c204618c6b0ad83952a7b661482cfd03acf899; merged tree ec1a255c3501e239d9173671d5ced7a43f8b4089 is identical to tested87fbe59. Root reviewed schema, sender/owner integrity, explicit original/prompt/resolution relationships and final evidence. Final226 disposable PostgreSQL assertions pass across fresh and seeded full-history upgrade, plus lint, Prisma validation/client generation and scoped ERD. Checks include the two-stage Q1/Q2/Q3 star relationship and forged-scope rejection. The sibling release/admission check does not replace BACKGROUND-001 actual last-member allocation service race. Automatic completion retains attempt1 and claim history, clears activeclaim fields, and promotes only explicit dependent tasks. No hosted migration, activation or SYSTEM-TEST performed.

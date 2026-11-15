@@ -4,5 +4,5 @@ Implementation authorized at the dependency frontier. Sender routing and allowan
 
 | Task | Status | Dependencies |
 | --- | --- | --- |
-| [ARCH-076-DATABASE-001](DATABASE-001-create-sender-pool-and-active-assignments.md) | in_progress | [] |
+| [ARCH-076-DATABASE-001](DATABASE-001-create-sender-pool-and-active-assignments.md) | complete | [] |
 | [ARCH-076-DATABASE-002](DATABASE-002-persist-conversation-allowance-blocks.md) | ready | [] |
