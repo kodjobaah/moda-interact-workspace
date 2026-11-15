@@ -143,7 +143,7 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
 | ARCH-076-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
-| ARCH-076-ADMIN-002 | moda_admin | Ready, independent | None |
+| ARCH-076-ADMIN-002 | moda_admin | Complete | None |
 | ARCH-076-ADMIN-003 | moda_admin | Ready, independent | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003 |
 | ARCH-076-DATABASE-002 | moda_database | Ready, independent | None |
@@ -183,3 +183,5 @@ Add nullable `RecoveryBasketRoutingTurn.resolutionInboundProviderMessageId TEXT`
 A directly attributed NEW_QUESTION may resolve with witness=self, admitting only its current question; it never resolves older pending Q1. A resolving child may also record its own self-resolution, therefore do NOT globally UNIQUE the witness column. Child.parentProviderMessageId plus same-owner transaction locks and witness validation constrain a selection to its intended original; no reverse-child search or newest-prompt inference. Retention deletes dependent witness/parent cohorts atomically after eligibility or through whole-thread cascade. No extra table or index is needed merely for this scalar proof.
 
 Required positive PostgreSQL case: persist Q1, freeze CLARIFY, admit/confirm prompt, persist Q2 with exact parent and SELECT_ONLY, bind Q1 owner+witness and admit original exactly once, preserving both classifier decisions and exact original message content. Also test SELECT_AND_QUESTION exact clause admission, independent NEW_QUESTION leaving Q1 pending, concurrent Q2/Q3 attempts, replay after crash, wrong-parent/prompt/thread/assignment forged witness, terminal rebinding and deferred retention deletion. SQL enforces structural identity/freeze; application revalidates current eligibility and authentic evidence.
+
+15 November ADMIN002 accepted and automatically Complete: tested Admin source4bfefc5 merged main5558daadd (identical Git tree). Parent gitlink records actual merged main. BG004 still waits for BG003 and ADMIN003; SYSTEM-TEST remains deferred.
