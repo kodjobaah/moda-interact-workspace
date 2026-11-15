@@ -125,6 +125,10 @@ ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omi
 
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
 
+## Commerce preview transport consumer rollout addition
+
+ARCH-070-COMMERCE-001 (moda_commerce, Pending, depends ARCH-070-SHARED-008) adopts the corrected published OpenRouter SDK. Global saved provider configuration must be nested only after both Background and Commerce corrected deployments replace old consumers. This requires no topology/DB/observability change; root uses the existing audited configuration writer. No selection efficacy is inferred from transport compatibility.
+
 ## Deterministic AI-failure basket fallback
 
 User authorizes ARCH-070-BACKGROUND-011: existing saved common shop template plus honest inability wording/current trusted basket and canonical checkout footer after eligible AI failure. Existing consent/control/window/idempotency/permit/providerUNKNOWN/usage guards remain authoritative. No model retry, fake product selection or guaranteed provider delivery. Pending accepted BG010 and source seam review; no schema/infrastructure change expected.
@@ -160,3 +164,9 @@ Shared007 attempt4 sourcec1c1d2b accepted: exact-equivalent terminal raw batches
 Shared007 attempt5 accepted4e0716e after024 exact offline actual019 batch proof. Shared008 metadata6.1.0 preparation eligible, publication/newregistry consumer gates remain. No natural delivery or incident completion claim.
 
 Shared008 Complete public6.1.0 exact302b/977151bytes verified00:03:39Z after explicit approval. Commerce001 actualregistryadoption promoted; BG consumers finalregistrychecks. Bothconsumer deployments/drain precede globalprovider nesting. No productionefficacy/delivery claim.
+
+## Mandatory catalogue routing rollout gate
+
+Before nested global provider preferences are saved, root must verify corrected Shared6.1 consumers deployed and predecessor processes drained in BOTH recovery workers (including initial-outreach SDK usage) and messaging workers, plus Commerce preview, for each affected environment. Existing normal audited catalogue writer follows; then genuine production canary. Offline024/host tests support source acceptance only, never substitute for postdeployment delivery. Commerce001 full declared typecheck must pass after bounded five-test fixture corrections explicitly authorized byroot.
+
+Commerce001 Complete exactf0876d5: corrected SDK consumer and actualwire proof accepted;1880unitPASS+1configuredskip/alltypesbuildlint. Root bothCommerce deployments and recovery/messagingdrain precede globalproviderconfig andgenuinecanary. Architecture In Progress.
