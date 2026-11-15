@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T20:07:16Z
@@ -17,7 +17,7 @@ attempt: 1
 depends_on: []
 enables: []
 created: 2026-11-14
-updated: 2026-11-14
+updated: 2026-11-15
 ---
 
 # Finalize recovery through explicit flat application selection tools
@@ -56,11 +56,11 @@ No Sharedrelease byBGagent. Preparatory source/tests authorized before007accepta
 
 - [x] Implement the targeted current-discovery factuality safeguard defined below in this same atomic source PR; preserve ordinary no-attempt answers.
 
-- [ ] Agree genericport and exportsignature; preserve priornativeconsumer lineage.
-- [ ] Implement finiteflatcompletion schemas/pureprojection/hostintegration.
-- [ ] Test everylegitimatebranch and invalidterminal/rawjournal/counter invariants.
-- [ ] Provide exactbundle/localpack forrootnaturalactualprobe, record honestoutcome.
-- [ ] Finalactualregistryadoption/checks/report afterapprovedpublication.
+- [x] Agree genericport and exportsignature; preserve priornativeconsumer lineage.
+- [x] Implement finiteflatcompletion schemas/pureprojection/hostintegration.
+- [x] Test everylegitimatebranch and invalidterminal/rawjournal/counter invariants.
+- [x] Provide exactbundle/localpack forrootnaturalactualprobe, record honestoutcome.
+- [x] Finalactualregistryadoption/checks/report afterapprovedpublication.
 
 ## Interfaces / Contracts
 
@@ -76,22 +76,22 @@ Root testedsource/publicreleaseapproval then integrateddeployment/genuineproduct
 
 ## Acceptance Criteria
 
-- [ ] After validated current-turn resolver/search/get attempts, an ANSWER without independently verified current product or shipping presentation uses existing trusted localized referral/clarification; historical model catalogue prose never reaches dispatch. No question regex, fabricated identities, empty-stock claim or extra model/tool calls.
+- [x] After validated current-turn resolver/search/get attempts, an ANSWER without independently verified current product or shipping presentation uses existing trusted localized referral/clarification; historical model catalogue prose never reaches dispatch. No question regex, fabricated identities, empty-stock claim or extra model/tool calls.
 
-- [ ] No rawproviderID/name/args changed or resent asprojected; canonicaldecision separate bound.
-- [ ] Everylegitimatecanonical branch retained, no grounded/nonproduct/referral/shipping escape.
-- [ ] Invalidprojectionterminal no extraSDK/MCP/send; validdecision unchangedcanonicalvalidation.
-- [ ] Exact captured full-context prefix plus actual019 response offline024 proves unchanged raw binding, complete model-issued union and observed membership; actual host refresh/guard regressions pass. Genuine natural production delivery remains a separate root-owned postdeployment checkpoint, not claimed by this source task.
-- [ ] Actualapprovedpublicdependency/npmci/remote finalgates satisfied.
+- [x] No rawproviderID/name/args changed or resent asprojected; canonicaldecision separate bound.
+- [x] Everylegitimatecanonical branch retained, no grounded/nonproduct/referral/shipping escape.
+- [x] Invalidprojectionterminal no extraSDK/MCP/send; validdecision unchangedcanonicalvalidation.
+- [x] Exact captured full-context prefix plus actual019 response offline024 proves unchanged raw binding, complete model-issued union and observed membership; actual host refresh/guard regressions pass. Genuine natural production delivery remains a separate root-owned postdeployment checkpoint, not claimed by this source task.
+- [x] Actualapprovedpublicdependency/npmci/remote finalgates satisfied.
 
 ## Validation
 
-- [ ] Actual host regressions cover resolver UNAVAILABLE plus historical prices, empty/unavailable search/get, verified product/shipping preservation, ordinary no-attempt greeting/thanks, and raw-step immutability; rerun affected types/build/scoped lint and exact-head CI.
+- [x] Actual host regressions cover resolver UNAVAILABLE plus historical prices, empty/unavailable search/get, verified product/shipping preservation, ordinary no-attempt greeting/thanks, and raw-step immutability; rerun affected types/build/scoped lint and exact-head CI.
 
-- [ ] Pureprojection matrices allmodes/customunsupported/language/evidence/discount/IDs/variants/unknownfields/referral/shipping.
-- [ ] ActualSDKHTTPwire rawversusdecision/nativeIDs/roles/requiredchoice; hostterminality/counters/cancel/staleguard tests.
-- [ ] Types/build/scopedlint/exactCI, exactlocalpack+rootboundedactualprobe.
-- [ ] Finalregistrylock/npmci/memberidentity/affectedchecks; no unchangedbroadrepeats.
+- [x] Pureprojection matrices allmodes/customunsupported/language/evidence/discount/IDs/variants/unknownfields/referral/shipping.
+- [x] ActualSDKHTTPwire rawversusdecision/nativeIDs/roles/requiredchoice; hostterminality/counters/cancel/staleguard tests.
+- [x] Types/build/scopedlint/exactCI, exactlocalpack+rootboundedactualprobe.
+- [x] Finalregistrylock/npmci/memberidentity/affectedchecks; no unchangedbroadrepeats.
 
 ## Stop Condition
 
@@ -105,7 +105,19 @@ Normalmoda-task newcanonical sibling/claim. NotaloneShared007owner/API maychange
 
 ### Status
 
-In Progress — concrete locally tested preparatory source pushed. Root actual trial and accepted/public dependency/registry gates remain; not merge-ready.
+Ready for Review — exact final source and actual published dependency validated; root owns merge, rollout and genuine postdeployment verification.
+
+### Final published-dependency validation (2026-11-15)
+
+Final implementation head `cbcef46e60b4e2d05ca6d8492c44597baa06241f`, PR235. Atomic application runtime remains `c1e2fb0`; final changes are normal dependency adoption and three exact installed-version assertions only. Real public Shared6.1.0 is pinned in package.json/package-lock.json using actual official tarball URL and SRI. Verified public archive:977151 bytes, SHA256 `302b91f5ad24353ac3052c1e8c5d456b3c90d072d64665edff579eb56eb249d5`; all163 installed members match the public archive byte-for-byte. Clean official-registry npm-ci PASS. Initial normal lock command received ETARGET from stale metadata; explicit official registry --prefer-online read returned6.1.0 and ordinary lock generation succeeded, without invented URL/integrity. Initial command trace retained.
+
+Final local checks with the actual registry dependency: TypeScript PASS;48 focused application/guard tests PASS across4files;155 host cases PASS in one full affected invocation; serial production build PASS. Existing scoped lint proof retained, and three changed version-test files pass scoped lint. The first actual-registry remote suite passed4489 tests and failed only3 exact installed-version assertions still expecting6.0.1; those literal assertions now expect6.1.0, retaining logger/privacy/startup behavior. Their28 actual cases and scoped lint PASS. Both final exact-head remote runs **43657217722** and **43657211470** are SUCCESS. No failed check waived; no broad unchanged local full rerun was added.
+
+Root024 full-prefix/actual-response offline proof exercises the final atomic decision with two differing model-issued calls, all3 current observed identities, full raw6952-character companion text and whole-batch binding preserved, one projection and zero actual network calls. Per the final criterion disposition this satisfies source-validation evidence together with actual host independent-refresh/control/raw-immutability regressions. It is NOT a natural atomic model run or delivery proof. Root owns the genuine postdeployment canary and all merge/deploy/configuration actions. No provider/MCP/live calls, publication or main merges were performed by this agent.
+
+Budget audit found no change needed: existing host total10 provider calls reserves6 for runner discovery (`planCommerceVerificationBudget(10)`); final refresh increments the same total counter. Four discovery plus3 selected refreshes consume7/10. Every refresh retains original signal/deadline/current-turn checks; no cap was raised or bypassed.
+
+All amendment items are implemented: targeted current-discovery referral guard; minimal title-only identity projection with repeated-observation consistency; preserved rich/language/shipping/referral branches; exact phase formatting; whole-batch atomic ordered union/refusal; provenance-bound all-pair independent refreshed rendering; actual public dependency/npm-ci/exact CI. Historical failures and combined earlier runs remain documented below; final actual-registry host run is155/155. Remaining limitation: no-attempt historical factual prose is not universally entailed, and physical delivery is subject to existing moderation/consent/control/window/caps/provider outcomes. Task is returned to review; no architect acceptance decision is made here.
 
 ### Files Changed
 
