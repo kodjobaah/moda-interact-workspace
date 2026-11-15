@@ -145,9 +145,10 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
 | ARCH-076-ADMIN-003 | moda_admin | In progress, task-branch attempt1 | None |
-| ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003 |
+| ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
 | ARCH-076-DATABASE-002 | moda_database | In progress, attempt1 | None |
 | ARCH-076-BACKGROUND-005 | moda_background | Pending | DATABASE-002 |
+| ARCH-076-COMMERCE-001 | moda_commerce | Ready | None |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004 |
 
 All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are active attempt1; ADMIN002 is Complete; ADMIN003 has a canonical task-branch attempt1 claim at 2026-11-15T13:00:12Z (its merged-main definition remains Ready until that task branch is integrated). Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
@@ -200,3 +201,7 @@ This is the required unknown-shop→known-shop→basket flow, not an optional ex
 Prompt validation reads the explicitly named prompt ID only. Require promptTurnId==Q1 OR that exact prompt row's immutable parentProviderMessageId==Q1; same thread, compatible verified route, frozen promptScopeRouteId and confirmed receipt must agree with the selected route/assignment and original. A neutral original prompt scope may remain NULL; a later basket prompt retains its exact verified route scope. Reject a prompt belonging to another original, foreign thread/shop, unconfirmed prompt, stale candidate or conflicting role—even if its display text/number matches. Do not infer prompt by reverse-child query, newest message, recursive ancestry or credit/allowance state. These rules require no new columns, tables or weakened evidence constraints.
 
 Required positive disposable PostgreSQL/provider-fixture case: Q1 unknown-shop original→confirmed neutral prompt→Q2 verified shop selection→confirmed basket prompt on Q2→Q3 selection naming Q1/Q2 explicitly→exactly-once Q1 admission via Q3 witness. Include multiple simultaneous originals, Q3 additional exact question clause, duplicate/restart replay, forged Q2 from another root, wrong route/prompt scope, missing confirmation, expiry/control/template changes and concurrent resolution attempts. Keep SYSTEM-TEST deferred; these are owner task-local checks.
+
+## Commerce Studio routing-purpose isolation
+
+ARCH-076-COMMERCE-001 (moda_commerce, Ready, no dependencies) closes the existing Studio setPointer/read/seed gap for RECOVERY_ROUTING-tagged revisions. It preserves exact-scope/auth/CAS and actual shared-lineage revision numbering. ADMIN003 source remains independently acceptable; BG004 acceptance and live routing activation require this Commerce task Complete. No schema or Shared change. SYSTEM-TEST depends on this final owning implementation and remains user-deferred.
