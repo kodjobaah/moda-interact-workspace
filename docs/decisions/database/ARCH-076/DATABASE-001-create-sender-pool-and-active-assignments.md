@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -239,3 +239,31 @@ The parent R15 explicit two-stage shop then basket clarification section is auth
 ### Root acceptance and automatic completion — 15 November 2026
 
 Accepted source PR79 at actual Database main a7c204618c6b0ad83952a7b661482cfd03acf899; merged tree ec1a255c3501e239d9173671d5ced7a43f8b4089 is identical to tested87fbe59. Root reviewed schema, sender/owner integrity, explicit original/prompt/resolution relationships and final evidence. Final226 disposable PostgreSQL assertions pass across fresh and seeded full-history upgrade, plus lint, Prisma validation/client generation and scoped ERD. Checks include the two-stage Q1/Q2/Q3 star relationship and forged-scope rejection. The sibling release/admission check does not replace BACKGROUND-001 actual last-member allocation service race. Automatic completion retains attempt1 and claim history, clears activeclaim fields, and promotes only explicit dependent tasks. No hosted migration, activation or SYSTEM-TEST performed.
+
+## Developer Override — explicit reopen, 15 November 2026
+
+User decision: **“Reopen DATABASE-001 for this correction.”** Root received this explicit decision before this lifecycle edit. Reopen preserves the Accepted attempt-1 review, report, source and claim history above. Current status is Ready, executor/claimed_at remain null and attempt remains 1; only the next prepared execution claim increments to attempt 2. Execution remains agent-owned with automatic architect completion. This is a bounded correction of the existing R15 integrity contract, not permission to recreate sender storage or edit old migration history.
+
+### Correction objective and ownership
+
+The existing ARCH040 moderation subject trigger requires a CUSTOMER_MESSAGE assessment digest to equal the complete authentic ConversationMessage content. R15 SELECT_AND_QUESTION preserves that full inbound text for merchant history while independently moderating its exact genuine question clause. Add one forward migration to authorize only that proven clause subject. No new table, column, Shared API, plaintext decision field or general digest bypass. Consume latest accepted Database main including D002; preserve all existing sender/allowance constraints.
+
+### Required integrity contract
+
+- Preserve the existing full-content digest path unchanged for ordinary customer text/transcripts and all AGENT/AUTOMATION/HUMAN subjects. An unmatched alternative must still fail closed.
+- The narrow alternative applies only CUSTOMER_MESSAGE/TEXT on the actual authentic inbound CUSTOMER message. Require an immutable RESOLVED RoutingTurn with SELECT_AND_QUESTION, actual current provider ID and associatedMessages.currentMessageId matching this exact message, selectedConversationId matching its real Conversation/shop, and resolutionInboundProviderMessageId equal to the current routing inbound identity.
+- Require the referenced original root to be the explicitly bound parent, same thread and selected owner, resolved by this same current witness. Validate the exact confirmed prompt relationship: prompt is original root or its explicitly bound direct child, confirmed provider receipt matches decision, and frozen route/prompt scope agrees with selected owner. Do not infer a parent or prompt from newest/reverse traversal. Preserve direct NEW_QUESTION/SELECT_ONLY/CLARIFY rejection for clause digests.
+- Require current authentic full text moderation ALLOW proof under its exact full digest and current policy before accepting the independently assessed clause. Keep original-Q1 assessment proof and application moderation lifecycle intact. A failed or absent full-current assessment cannot be laundered by a clause ALLOW.
+- Validate frozen clause start/end as bounded integer **JavaScript UTF-16 code-unit offsets** against actual immutable full message content. Reject negative/reversed/out-of-bounds offsets and split-surrogate boundaries. Hash precisely the corresponding UTF-8 encoding of the JavaScript slice; Postgres code-point substring is not equivalent when astral characters precede the clause. Both decision clause.sha256 and NEW.contentSha256 must equal that exact slice digest. Never store clause plaintext in routingDecision or retain scrubbed customer payloads there.
+- Retain same-owner/actor/input checks, assessment lease/lifecycle guards, prepared decision immutability and terminal payload scrub. Use existing rows/evidence only. No timestamps fabricated or policy decisions moved into structural Shared validation.
+
+### Attempt-2 work and acceptance checks
+
+- [ ] Add an additive, safely ordered forward migration replacing only the owning moderation digest guard behavior; do not modify already deployed ARCH040/D001/D002 migration bytes.
+- [ ] Positive actual transaction: Q1 original → confirmed clarification → authentic Q3 SELECT_AND_QUESTION full text, frozen decision/resolution association, full-current ALLOW plus independently moderated exact clause, all same owner. Verify persisted full text and two distinct exact digest assessments; Q1 remains separately proven.
+- [ ] Positive two-stage Q1/Q2/Q3 star, ASCII and emoji/astral-prefix UTF-16 offsets, fresh database and upgrade from full current accepted migration history.
+- [ ] Negative wrong message/provider ID/Conversation/shop/thread/parent/resolution witness/prompt receipt/route scope; mutable or unconfirmed decision; wrong role; missing/disallowed full-current moderation; forged hash, malformed/noninteger/out-of-range/split-surrogate offsets; transcript/AGENT/AUTOMATION/HUMAN alternatives; foreign assessment and replay/tamper. No blanket exception.
+- [ ] Existing moderation subject/lifecycle regressions and sender evidence/privacy invariants continue passing. Run task-local disposable PostgreSQL checks, owning schema/client validation and required repository lint/build checks; inspect actual package scripts. SYSTEM-TEST remains explicitly deferred.
+- [ ] Record new migration identity/checksum, exact tested source, physical prepared attempt-2 isolation/synchronization and complete test evidence. Return Review and stop; no hosted migration or live activation.
+
+BG004 may continue its independent implementation under its existing active claim, but clause-path acceptance/rollout is held until this correction is architect-accepted and its migration is present in the tested environment. Completed downstream tasks retain their historical acceptance; they are not silently reopened. No new unrelated task is introduced.
