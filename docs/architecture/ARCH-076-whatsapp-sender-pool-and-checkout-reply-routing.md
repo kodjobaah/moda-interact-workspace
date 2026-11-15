@@ -147,7 +147,7 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-ADMIN-003 | moda_admin | Complete | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
 | ARCH-076-DATABASE-002 | moda_database | Complete | None |
-| ARCH-076-BACKGROUND-005 | moda_background | Ready | DATABASE-002 |
+| ARCH-076-BACKGROUND-005 | moda_background | Complete | DATABASE-002 |
 | ARCH-076-COMMERCE-001 | moda_commerce | Complete | None |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
 
@@ -260,3 +260,5 @@ At each NEW reply permit, take the existing exact-phone non-pooled membership ad
 A prior admitted/UNKNOWN provider operation is never retransmitted through this continuation path. Each new customer/human reply has its own existing idempotent message/command identity. Status callbacks and quoted history continue against original exact evidence, never a new route generation. Test successful AI and human continuation with both approved proof forms, NULL/no-witness refusal, changed sender/recipient refusal, inventory-disabled fence, concurrent enrollment versus permit, assigned-recovery refusal, initial/proactive-followup exclusion, and duplicate/unknown replay with no second provider send. This preserves a legitimate old conversation, not an obsolete schema-format adapter.
 
 15 November ADMIN001 accepted Complete: tested `2c48d70449b1ce1fb8c9f0d8a8645e988da10616` and merged Admin main `ed0036eaf25efce71e8eb77435b8b04d8078084d` share exact tree `48dc8435fe9742c220c1aae1f4e51105d89a4b86`. Inventory provider/authentication/concurrency checks passed, including 10 disposable PostgreSQL scenarios. No dependent task becomes newly Ready: BG003 still requires BG002; BG004 still requires BG003; SYSTEM-TEST remains Pending and user-deferred. This is source acceptance, not inventory activation or production verification.
+
+15 November BG005 accepted Complete: tested `69a5bb3ec28ec70c0388dae67d73b7221634abaf` and actual merged Background main `0a6bb0ba2ea1042ef79588592a4e39e7bf20ea94` share exact tree `15b0db811cdafc8883684de699ec9dfb12d9c4ee`. Independent allowance tests and architectural review passed; no dependent task is newly promoted. BG002 must integrate and validate the union of sender and allowance final-permit checks before acceptance. Pool activation and production verification remain held; SYSTEM-TEST remains explicitly deferred.
