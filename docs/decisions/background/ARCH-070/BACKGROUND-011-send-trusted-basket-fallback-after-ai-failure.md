@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T23:54:36Z
@@ -150,7 +150,7 @@ Prepared fallback is not a successful AI answer, does not fix the AI failure, an
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
@@ -194,3 +194,13 @@ Root explicitly requires no silent generation failure merely because basket rows
 ### Model-timeout fallback reserve (root/architect clarification)
 
 Establish an earlier AI child deadline BEFORE invoking generation, reserving a fixed bounded preparation/send allowance inside the ORIGINAL admitted claim/lease deadline. Derive child limit from the smaller existing AI cap and original remaining claim minus reserve; never renew or extend parent lease/deadline. Child-generation timeout may trigger eligible fallback while parent control/cancellation signal remains valid. Original parent deadline/abort, stale inbound, control change or lease loss never becomes eligible fallback and cannot receive a fresh budget. If remaining original budget cannot cover safe admission, explicitly skip AI/refuse under current policy rather than overrun. Tests must prove child timeout→fallback/preparation/permit within original deadline, plus expired parent/cancel/lease-lost NO send. Preserve bounded provider sending semantics and no physical-delivery guarantee.
+
+### Final independent acceptance (2026-11-15)
+
+Accepted exact implementationee3e61218f2446dbff629d7b92c207f28d8a4a93 PR236 and report747df050af75f42282444cb7fb2faad0aaf1d257 PR1052. Actual source ancestry includes acceptedmain7a7a9f47 (merge75e2f52), independently verified; normal launcher claim18a136bb/dedicated mirroredworktrees and recursion documented. Worktrees clean. Reviewed fallback service/typed classifier/childdeadline, processor runAgent-only callback beforecleanup, existing admission helper, wholeentry summary, worker and tests. No source finding remains after finite-log correction.
+
+Fallback reuses same admitted idempotent reservation/root and ordinary common composition/send; exact selected common reference must match. Original claim owner/inbound/control rechecked; reserve15s with minimum10s preparation/send allowance is within original lease, no renewal. Only typed eligible generation failure recovers; parentcancel/denial/stale/unsafe authority never becomes send. Names/quantities describe explicitly saved basket snapshot, invalid/missing rows omitfacts and use inability-only while valid recovery/common/checkout required. No invented products/stock/currentprices/checkout, no initialrawmodelprose. No-basket genuine nonrecovery runtime remains unsupported documented gap.
+
+Reviewed170 affected tests and final46 privacy/auth tests, types/build/scopedlint, actualpublic6.1 all163bytes, disposablePG4 normal/UNKNOWN/missingcommon/revoked-control proof. Exact remote43657987279/43657977999 SUCCESS402files4541tests verified byroot. Sourceprivacy patch replaces arbitrary Error.name/raw errorcause logging with finite classifications and canaries. Typed model-account401/403 nested failure may recover, MCPsource401/403/grant/tenant/stale refuses; no classifier widening. Earlier fixture/PG corrections and targeted reruns retained truthfully. Root readonlyproductionprepare162chars only is not send proof.
+
+Complete implementation only. Existing Meta retry/UNKNOWN/no-resend/usage safety retained, physical delivery is not guaranteed. Root owns merge/deploy/drain/config/canary; real production failure fallback and allconsumer rollout still require verification. No mainmerge/liveoperation byarchitect.
