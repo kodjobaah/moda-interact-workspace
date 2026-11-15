@@ -137,6 +137,12 @@ Prepared execution packet `/tmp/arch076-commerce001-prepared.json` was read in f
 - Existing attempt 1 claim `5e527fbbd6f8fc0950715623da17c759979ff10b`, claimed `2026-11-15T13:59:51Z`, preserved.
 - Implementation committed/pushed `59735a4e6c248734afea37c6792594b5cb24d738`, tree `500ca32e165d9974a02cd0ff46f4e5128aca175d`; PR https://github.com/kodjobaah/moda-interact-commerce/pull/197. No main merge/push, parent gitlink or Architect Review edits by this agent.
 
+### Post-review Merge Evidence
+
+Root accepted the bounded source implementation and merged PR197 to actual Commerce main `608ce7e6bb1ed96171b57671ef20861b0824b792`. This repository agent fetched that commit and independently verified its tree equals the tested source `59735a4e6c248734afea37c6792594b5cb24d738`: both are `500ca32e165d9974a02cd0ff46f4e5128aca175d`, with an empty diff. Required passing checks therefore cover the exact merged tree without redundant reruns.
+
+The parent task branch incorporated current `origin/main` before this evidence update. Root/architect retains Accepted review, automatic completion, active-claim clearing and final Commerce gitlink authority. This agent keeps status `review` and leaves Architect Review unchanged; it has not merged main, staged a gitlink or changed live settings.
+
 ### Deviations
 
 None. The omitted-text draft seed and actual max revision allocation implement the explicit task requirement; supplied text/template behavior is unchanged.
