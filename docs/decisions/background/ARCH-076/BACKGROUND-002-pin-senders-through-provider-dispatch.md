@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: [ARCH-076-BACKGROUND-001]
 enables: [ARCH-076-BACKGROUND-003]
 created: 2026-11-13
@@ -44,20 +44,20 @@ Other repository implementation, live settings, production migration and activat
 
 ## Requirements
 
-- [ ] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
-- [ ] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
-- [ ] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
-- [ ] Initial/follow-up/AI/human paths all use pinned sender; ordinary text/image/template transport must not resolve singleton sender again.
-- [ ] Recheck sender/WABA/recipient/consent/owner/control/service window immediately before permit; no network in DB transactions.
-- [ ] Use existing ordered delivery parts and immutable sender pair for receipts/status; preserve exact credit lineage and admission behavior without renewing allowance.
-- [ ] Unknown provider results remain uncertain; never retry send automatically based on timeout.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Initial/follow-up/AI/human paths all use pinned sender; ordinary text/image/template transport must not resolve singleton sender again.
+- [x] Recheck sender/WABA/recipient/consent/owner/control/service window immediately before permit; no network in DB transactions.
+- [x] Use existing ordered delivery parts and immutable sender pair for receipts/status; preserve exact credit lineage and admission behavior without renewing allowance.
+- [x] Unknown provider results remain uncertain; never retry send automatically based on timeout.
 
 ## Work Items
 
-- [ ] Inspect the exact latest accepted repository pin and existing owning mechanisms.
-- [ ] Implement only this task's scope and requirements.
-- [ ] Complete the focused checks below and record exact commands and evidence.
-- [ ] Return the isolated implementation branch and parent Completion Report for review.
+- [x] Inspect the exact latest accepted repository pin and existing owning mechanisms.
+- [x] Implement only this task's scope and requirements.
+- [x] Complete the focused checks below and record exact commands and evidence.
+- [x] Return the isolated implementation branch and parent Completion Report for review.
 
 ## Interfaces / Contracts
 
@@ -73,19 +73,19 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 
 ## Acceptance Criteria
 
-- [ ] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
-- [ ] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
-- [ ] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
-- [ ] Initial/follow-up/AI/human paths all use pinned sender; ordinary text/image/template transport must not resolve singleton sender again.
-- [ ] Recheck sender/WABA/recipient/consent/owner/control/service window immediately before permit; no network in DB transactions.
-- [ ] Use existing ordered delivery parts and immutable sender pair for receipts/status; preserve exact credit lineage and admission behavior without renewing allowance.
-- [ ] Unknown provider results remain uncertain; never retry send automatically based on timeout.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Initial/follow-up/AI/human paths all use pinned sender; ordinary text/image/template transport must not resolve singleton sender again.
+- [x] Recheck sender/WABA/recipient/consent/owner/control/service window immediately before permit; no network in DB transactions.
+- [x] Use existing ordered delivery parts and immutable sender pair for receipts/status; preserve exact credit lineage and admission behavior without renewing allowance.
+- [x] Unknown provider results remain uncertain; never retry send automatically based on timeout.
 
 ## Validation
 
-- [ ] Focused unit tests for every requirement, lint/typecheck/build as declared for changed code.
-- [ ] Disposable PostgreSQL race/replay/restart tests with two recipients, two shops, multiple checkouts and shared sender.
-- [ ] Provider HTTP fixtures for exact sender, failed initial delivery, unknown result, duplicate/foreign statuses and no network inside transactions.
+- [x] Focused unit tests for every requirement, lint/typecheck/build as declared for changed code.
+- [x] Disposable PostgreSQL race/replay/restart tests with two recipients, two shops, multiple checkouts and shared sender.
+- [x] Provider HTTP fixtures for exact sender, failed initial delivery, unknown result, duplicate/foreign statuses and no network inside transactions.
 
 Inspect the repository package.json before selecting actual commands. Required disposable PostgreSQL checks are task-local repository checks, not execution of the deferred system-test task. No live customer/provider calls belong to these checks.
 
@@ -101,61 +101,78 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Not Started
+Ready for Review. Source PR240: https://github.com/kodjobaah/moda-interact-background/pull/240, pushed head `fbab80f41b2b9e69234124df47fd05c5a613d939`. This includes accepted BACKGROUND-005 main `0a6bb0ba2ea1042ef79588592a4e39e7bf20ea94` and combined Database `0a965c549b4916085acd8a806d5ecf376eda0e47`; sender authority and independent funding authority both remain in the final permit.
 
 ### Files Changed
 
-None
+- New `src/services/recovery-sender-pool/dispatch-sender.ts`; sender permit and transport wiring in outbound delivery, recovery final fence, Woo initial fence, general fence, HUMAN dispatcher and multipart fence/engine.
+- Scalar provider-status ownership guard and temporary legacy routing-guidance enrollment precheck.
+- Focused unit fixtures, `tests/integration/arch076-dispatch-sender.integration.test.ts`, declared PostgreSQL command and source-owned dispatch documentation.
 
 ### Work Completed
 
-None
+- Validate/unseal current sender configuration outside SQL; check row/version, immutable assignment, frozen recipient, account membership and owner policy inside final permits. Freeze exact root sender pair and retain ordered-part identity.
+- Serialize new standalone permits against disabled/enabled enrollment; preserve narrow proved preexisting unassigned AI/HUMAN continuation without assignment backfill.
+- Forward exact sender through text/image/template transports; foreign stamped statuses have no lifecycle, credit or contact effects.
 
 ### Validation Results
 
-Not run; definition only.
+- `npm run test:arch076-sender-dispatch:postgres`: final integrated tree, 16/16 passed, exit 0 (`/tmp/bg002-union-pg.log`). Real migrated PostgreSQL covers standalone/Woo permits, replay, drained assignment, two shops and recipients sharing sender, exact/foreign recipient and WABA, both membership-lock winners, credential-row CAS, actual funded AI and uncounted HUMAN legacy permits, historical multipart provenance, foreign JSON shop/root witnesses, NULL provider-receipt refusal and unknown-result no-resend.
+- Focused delivery: 52 passed; text/image/template snapshot: 18 passed; guidance precheck: 10 passed. Foreign scalar status fixtures assert no lifecycle, compensation, contact or notification effects. Full final-head CI supplies broad unit coverage.
+- Exact integrated head `fbab80f41b2b9e69234124df47fd05c5a613d939` CI workflows [43743664168](https://github.com/kodjobaah/moda-interact-background/actions/runs/43743664168) and [43743669876](https://github.com/kodjobaah/moda-interact-background/actions/runs/43743669876) passed, including typecheck and all 403 unit files / 4,575 tests. Local `npm run lint`, `npx tsc --noEmit --pretty false` and declared `npm run build` all passed in the final integrated-tree batch, exit 0 (`/tmp/bg002-union-validation.log`). Earlier `24f45ef` CI is historical evidence only.
+- Pre-union 16-case PostgreSQL passed. Redundant local full-unit and pre-union compile runs were intentionally stopped after CI/accepted-main integration; interrupted runs are not counted as passes. Initial fixture/discovery failures were corrected and are not reported as successful runs.
 
 ### Deviations
 
-None
+The old neutral routing-guidance path has a membership/configuration precheck but still only historical Redis admission. This is **not** a complete durable permit or a closed commit-to-provider enrollment race. Pool activation is gated on BACKGROUND-004's persisted RoutingTurn replacement. No fabricated Conversation or external I/O in SQL was introduced.
 
 ### Assumptions
 
-None
+Sender routing remains independent of allowance funding. Accepted BACKGROUND-005 funding checks and combined Database `0a965c5` are preserved in the integrated source. The actual AI fixture uses the canonical Free reservation/commit lifecycle and ordinary outbound admission, without fabricated funding blocks. No Shared release, live mutation, deployment or deferred SYSTEM-TEST execution.
 
 ### Unresolved Issues
 
-Use owning task launcher at the accepted dependency frontier.
+No unresolved implementation or validation failure. No main merge by this agent. Pool activation remains coordinator-owned and gated on BACKGROUND-003/004, including durable neutral guidance replacement.
+
+### Launcher Evidence
+
+- Canonical root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-BACKGROUND-002`, `task/ARCH-076-BACKGROUND-002`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-BACKGROUND-002`, `task/ARCH-076-BACKGROUND-002`.
+- Launcher created both worktrees, incorporated current origin/main, verified recursive submodules and dependency, and committed/pushed claim `ca9404984845ba2b3af2c5cd2426bb4d5fe16c07`, attempt1 at `2026-11-15T14:58:50Z`.
+- Source initial head `f6bbcc5fbf247ea9b8df87ad0ba34ade079d9c38`; initial nested Database `a7c204618c6b0ad83952a7b661482cfd03acf899`. No shared/default checkout switch or another task's worktree reuse. No parent implementation gitlink staged.
+- Parent origin/main subsequently merged to consume the exact legacy continuation amendment and accepted Admin governance. Architect Review remains untouched.
 
 ### Architectural Concerns
 
-None
+None beyond the explicit staged legacy-guidance durability gate above.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — 15 November 2026. Automatic completion; attempt 1 preserved. Historical codex claim at 2026-11-15T14:58:50Z, prepared claim `ca9404984845ba2b3af2c5cd2426bb4d5fe16c07`.
 
 ### Review Notes
 
-Awaiting implementation.
+Independently reviewed sender snapshot and legacy proof, final sender/recipient/configuration and membership fences, transport propagation, root/part stamps and status side-effect isolation. Reviewed the final merge union with accepted BG005: both sender and funding authorities remain; HUMAN insert retains sender pair plus allowance pin, and delivery preserves capacity-reopened handling. Root merged PR240 to Background main `cb625e626bebba337c1dda3ce4190bd00f3ad7f1`; exact tree `ebd71d2e89d1b91f355420c7b93b813d5883e875` matches tested `fbab80f41b2b9e69234124df47fd05c5a613d939`. Prepared canonical mirrored isolation and synchronization evidence is satisfactory.
 
 ### Reviewed Files
 
-None.
+Dispatch sender helper, recovery/general/Woo final fences, HUMAN dispatcher, multipart fence/engine, outbound delivery, WhatsApp transport and provider-status service; guidance precheck and sender dispatch PostgreSQL/unit fixtures.
 
 ### Validation Reviewed
 
-None.
+Final combined PostgreSQL 16/16; exact-head CI 403 unit files / 4,575 tests; local lint, TypeScript and production build passed. Reviewed enrollment race both winners, drained assignment, exact sender/recipient/account and receipt evidence, funded AI versus uncounted HUMAN, foreign status zero effects and unknown-result no-resend. Interrupted runs remain excluded from passing evidence.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to immutable assignment/dispatch sender identity, proven recipient, non-pooled enrollment serialization, narrow historical continuation and no assigned fallback. Accepted BG005 funding checks and combined Database `0a965c549b4916085acd8a806d5ecf376eda0e47` are retained. No schema or Shared release, live activation or integrated SYSTEM-TEST execution.
 
 ### Follow-up
 
-None.
+Promote only ARCH-076-BACKGROUND-003 to Ready; BG004 still depends on its completion. The legacy neutral guidance precheck is not a durable permit: pool activation remains gated on BG004's persisted RoutingTurn replacement and test-first verification. SYSTEM-TEST remains user-deferred.
+
 
 ## Reconciliation provenance — 15 November 2026
 
