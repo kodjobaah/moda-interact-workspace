@@ -193,3 +193,5 @@ Historical renewal amendment is superseded for this sender task: allowance work 
 ### 15 November definition amendment
 
 Historical fixed SQL must be regenerated for the restored five-entity contract plus R15 evidence; hardcoded router policy remains superseded. Historical claim/review evidence above is retained as history, not approval of the replacement implementation. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.
+
+Parent relationship correction: persist input before model/classification; bind parentProviderMessageId NULL→exact ID once after role classification, then never clear/rebind. Selected Conversation and frozen decision associate atomically. Retention operates on eligible request cohorts under deferred parent FK, never orphaning a pending original/child.
