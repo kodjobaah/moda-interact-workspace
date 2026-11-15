@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-11-15T14:04:09Z
@@ -66,10 +66,10 @@ No checkout assignment, customer UI, Meta phone registration, template mutation,
 
 ## Work Items
 
-- [ ] Wire the authorised page, operator controls, input validation, localized presentation and typed Server Actions.
-- [ ] Verify connected phone membership on the trusted WABA and handle unavailable, malformed, duplicate, stale and rotated configuration deterministically.
-- [ ] Implement DB membership locking, duplicate enrolment, legacy cutover preflight, guarded setting edits and original-error diagnostics.
-- [ ] Write and run all declared unit, component, disposable PG and baseline checks. Document operator use and publish the parent and implementation task report for architect review.
+- [x] Wire the authorised page, operator controls, input validation, localized presentation and typed Server Actions.
+- [x] Verify connected phone membership on the trusted WABA and handle unavailable, malformed, duplicate, stale and rotated configuration deterministically.
+- [x] Implement DB membership locking, duplicate enrolment, legacy cutover preflight, guarded setting edits and original-error diagnostics.
+- [x] Write and run all declared unit, component, disposable PG and baseline checks. Document operator use and publish the parent and implementation task report for architect review.
 
 ## Interfaces / Contracts
 
@@ -100,11 +100,11 @@ type PoolRow = SenderSettings & {
 
 ## Acceptance Criteria
 
-- [ ] Demonstrate the actual authenticated route, form and server actions. Include empty/missing config, stable tie-break, stale update, safe error display and disabled status; Console/DTOs never carry secrets. Lower roles and forged input fail including direct invocation. Disabling does not fetch Graph.
-- [ ] Stub Graph for paged success, wrong WABA, disconnected/absent ID, missing status, repeated cursor/hostile link, HTTP failure, timeout, invalid envelope, token rotation and safe diagnostics. Assert no remote registration or message send for **any** case.
-- [ ] In real disposable Postgres verify idempotent/concurrent enrolment, disabled default, immediate disable, re-enable with new membership proof, negative/fractional priority rejection, enable/disable conflicting edits, immutable account, and no writes to routes, route members or pending clarification on disable. Two admitted checkouts at one shop for the same phone share one route. Their existing memberships must survive priority edits and disabling allocation; Admin never caps the number of eligible checkouts.
-- [ ] Exercise existing singleton enrolment with an active pre-cutover recovery and standalone message; assert blocked including grant-of-permit vs enrolment race. Exercise same recipient with expired-only checkout evidence before and after the sweep; assert no enrolment conflict. Seed a different pool sender and show mixed-use checks do not block it solely because an unrelated legacy singleton is busy.
-- [ ] Document numbered operator steps for enrol, enable, order and drain. Record changed paths, database pin and actual provider-fixture/loopback DB cleanup in the Completion Report.
+- [x] Demonstrate the actual authenticated route, form and server actions. Include empty/missing config, stable tie-break, stale update, safe error display and disabled status; Console/DTOs never carry secrets. Lower roles and forged input fail including direct invocation. Disabling does not fetch Graph.
+- [x] Stub Graph for paged success, wrong WABA, disconnected/absent ID, missing status, repeated cursor/hostile link, HTTP failure, timeout, invalid envelope, token rotation and safe diagnostics. Assert no remote registration or message send for **any** case.
+- [x] In real disposable Postgres verify idempotent/concurrent enrolment, disabled default, immediate disable, re-enable with new membership proof, negative/fractional priority rejection, enable/disable conflicting edits, immutable account, and no writes to routes, route members or pending clarification on disable. Two admitted checkouts at one shop for the same phone share one route. Their existing memberships must survive priority edits and disabling allocation; Admin never caps the number of eligible checkouts.
+- [x] Exercise existing singleton enrolment with an active pre-cutover recovery and standalone message; assert blocked including grant-of-permit vs enrolment race. Exercise same recipient with expired-only checkout evidence before and after the sweep; assert no enrolment conflict. Seed a different pool sender and show mixed-use checks do not block it solely because an unrelated legacy singleton is busy.
+- [x] Document numbered operator steps for enrol, enable, order and drain. Record changed paths, database pin and actual provider-fixture/loopback DB cleanup in the Completion Report.
 
 ## Validation
 
@@ -125,7 +125,7 @@ Use only invocation-owned disposable DB/Redis or mock services for checks. Recor
 
 ## Implementation Notes
 
-Defined but not materialised. Run `/moda-task ARCH-076-ADMIN-001` only after accepted Database schema is available on the intended dependency pin. Use the canonical prepared packet, mirrored parent/implementation branches, and finish with architect review. Do not contact production, provision phones, deploy, enable pool rows, send messages or merge main as part of authorship/validation. Stop with path, error and command if the accepted schema/credential contract differs from this definition. Blocking provider failures on the running application are typed operator outcomes, not a reason to change architecture.
+Executed the launcher-prepared attempt 1 claim in the canonical isolated worktrees below. The accepted D001 schema was consumed at its exact main commit with root authorization; no schema was authored here. The active-pool appendix was reconciled from current parent main before reporting. No production/provider invocation, deployment, pool activation, system validation or main merge was performed.
 
 After Work Items, Acceptance Criteria and Validation pass, set status to review, deliver the Completion Report to `moda_architect` and stop. Do not run terminal system validation as part of this task.
 
@@ -133,35 +133,60 @@ After Work Items, Acceptance Criteria and Validation pass, set status to review,
 
 ### Status
 
-Not Started.
+Ready for Review. Implementation [PR 104](https://github.com/kodjobaah/moda-interact-admin/pull/104), commit `2c48d70449b1ce1fb8c9f0d8a8645e988da10616`, is pushed on `task/ARCH-076-ADMIN-001`. Parent review submission uses the same branch name and preserves the original claim metadata.
 
 ### Files Changed
 
-Pending implementation.
+- Protected platform-configuration page, new sender-pool Client Component and authenticated Server Action; English catalogue/required keys and numbered README operator steps.
+- Server inventory service/core, strict Admin-local DTO/input validator, provider membership reader, legacy-use preflight, shared environment fence and bounded Shared-logger diagnostic adapter.
+- Extracted the existing SUPER_ADMIN guard without changing its policy. Narrow `messaging.sender` secret-writer integration takes the same environment fence, guards active WABA transitions and retains real CAS/redacted durable audit.
+- Unit/component/service-entrypoint tests, disposable PostgreSQL tests/harness and two package scripts. Source nested `database` gitlink consumes accepted D001; no schema, Shared package or parent implementation gitlink edits.
 
 ### Work Completed
 
-Pending implementation. Record launcher-resolved parent and implementation worktrees, mirrored branch names, start sync and final SHAs, consumer submodule pin where applicable, and cleanup.
+- Prepared canonical root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-ADMIN-001`; source worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-ADMIN-001`. Both use `task/ARCH-076-ADMIN-001`.
+- Launcher claim `e0796e1734d900c9d6d723f330f587611c976b16` was already prepared. Initial parent main was `a01d784df230ff1a74b50b798acc1e7dcf867f8a`; initial source main was `e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2`. Parent fetched/merged current `origin/main` at the reporting boundary, preserving attempt/executor/claimed_at and the authoritative active-pool clarification.
+- Root explicitly authorized source nested Database consumption from packet pin `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7` to accepted D001 main `a7c204618c6b0ad83952a7b661482cfd03acf899`. Prisma Client was generated from this real schema.
+- New registration verifies exact CONNECTED membership on the saved sealed WABA, starts disabled, and only explicit fresh verification enables allocation. Inventory identities stay immutable; settings edits are CAS guarded and exact replays do not rewrite state.
+- Real short transactions serialize configuration/enrolment/drain changes; Graph calls remain outside locks. Active last drain/direct switch to an empty WABA are refused. Priority/non-final drain remain Graph-free during outages; unreadable potentially-final identity fails closed; revoke/set bootstrap remains available.
+- Legacy dispatch proof, effectively expired baskets, standalone rolling-window/in-flight history and permit/enrolment races are checked without modifying conversations/routes/assignments/clarifications. UTC handling is explicit for historical naive timestamps. Same-shop two-basket memberships survive edits/drain byte-for-byte.
+- Credentials never enter client DTOs or inventory. Provider diagnostics redact tokens/URLs and retain bounded safe code/subcode/trace and causes; malformed decrypted JSON cannot appear in logs.
 
 ### Validation Results
 
-Pending. Record exact commands, exit status, container IDs, cleanup, failures and warnings. Report baseline issues separately from this change.
+All final commands below passed in the prepared source worktree:
+
+| Command | Result |
+| --- | --- |
+| `npm ci` | Exit 0; existing audit advisories reported, no dependency upgrade. |
+| `npm run prisma:generate` | Exit 0 against accepted D001 pin. |
+| `npm run test:sender-pool:unit` | Exit 0, 12/12 including rendered component controls, provider fixtures, secret/AAD safety and actual public service-entry execution of auth plus real SUPER_ADMIN policy before DB access. |
+| `npm run test:arch043-admin-secrets:unit` | Exit 0, existing 16/16. |
+| `npm run test:sender-pool:postgres` | Exit 0, 10/10; all recorded migrations on invocation-owned pg17/pgvector. Real locks, membership race, CAS/rotation, final drains/switch race, zero/full-int/inclusive expiry including non-UTC session, standalone proof and pinned-state preservation. |
+| `npx tsc --noEmit` | Exit 0. |
+| `npm run lint` | Exit 0, no errors; one unchanged nested `database/eslint.config.mjs` anonymous-default-export warning. That file is unchanged across both Database pins. |
+| `npm run build` | Exit 0, optimized production build. Existing queue-monitor/BullMQ optional `@valkey/valkey-glide` warning; queue code and dependency lockfile were not modified. |
+| `git diff --check` / staged equivalent | Exit 0. |
+
+Final fixture: `moda-arch076-sender-pool-c4769521-0a78-4c49-b89a-4a06280aea4b`, container ID `5e70b5f6e00b93a648a4e90c8bf2b7f2c34b8f3d60abf4e42c4330bd2b53af22`; Docker destroy event confirms cleanup. Harness finally removes its generated bundle and container. Earlier failing harness attempts also cleaned up. Initial failures were esbuild synchronous-plugin collection and invalid legacy dispatch/clock-boundary fixtures; the final suite uses async bundling, the real required dispatch tuple and DB-safe timestamp fixture. PostgreSQL advisory locks return a supported scalar through a MATERIALIZED CTE, and are exercised rather than mocked.
 
 ### Deviations
 
-None recorded.
+- Root approved using the established `scripts/test-unit.mjs` ESM bundler instead of the task's direct `tsx --test` spelling: current Shared exports are import-only. No global module conditions, package/dependency change or substitute contracts.
+- Disposable PostgreSQL harness substitutes only the HTTP Auth.js module with fail-closed functions to avoid Next's extensionless runtime resolver outside Next. Trusted workflows retain real role checks, real PostgreSQL locks and existing secret CAS/audit. Independently, unit tests execute the actual public service entrypoints with injected authentication and the real SUPER_ADMIN policy; browser identity/OAuth itself is outside this fixture.
+- Root coordinated resource windows; canonical bootstrap selected the workspace Node version. One retry reused the already-verified runtime at root's then-explicit instruction; later launches returned to canonical bootstrap in a persistent shell when that instruction was retracted. No Node/dependency/version change.
 
 ### Assumptions
 
-None recorded.
+The current sealed sender record and verified inventory define active-pool state exactly as the accepted appendix. Operator cutover must retire unfenced workers and drain provider I/O; this task does not perform rollout or live enrollment.
 
 ### Unresolved Issues
 
-None recorded.
+None within this task. Coordinated Background/runtime rollout, test-first verification and deferred SYSTEM-TEST remain with their owning tasks/root.
 
 ### Architectural Concerns
 
-None recorded.
+No new cross-service contracts, schema or Shared release. The optional BullMQ build warning and nested Database lint warning are unrelated unchanged paths; no unrelated fixes were introduced.
 
 ## Architect Review
 
