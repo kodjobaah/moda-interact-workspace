@@ -138,9 +138,9 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 
 | Task | Owner | State | Direct dependencies |
 | --- | --- | --- | --- |
-| ARCH-076-DATABASE-001 | moda_database | In progress, active attempt1 | None |
-| ARCH-076-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
-| ARCH-076-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
+| ARCH-076-DATABASE-001 | moda_database | Complete | None |
+| ARCH-076-ADMIN-001 | moda_admin | Ready | DATABASE-001 |
+| ARCH-076-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
 | ARCH-076-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
@@ -206,3 +206,5 @@ Required positive disposable PostgreSQL/provider-fixture case: Q1 unknown-shop o
 
 ARCH-076-COMMERCE-001 (moda_commerce, Ready, no dependencies) closes the existing Studio setPointer/read/seed gap for RECOVERY_ROUTING-tagged revisions. It preserves exact-scope/auth/CAS and actual shared-lineage revision numbering. ADMIN003 source remains independently acceptable; BG004 acceptance and live routing activation require this Commerce task Complete. No schema or Shared change. SYSTEM-TEST depends on this final owning implementation and remains user-deferred.
 15 November ADMIN003 accepted and automatically Complete: Admin PR103 main e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2 has the identical tested tree. All routing attributes are explicit Admin settings. The owning Commerce Studio routing-prompt isolation guard is required before routing activation. SYSTEM-TEST remains deferred.
+
+15 November DATABASE001 accepted at Database main a7c204618c6b0ad83952a7b661482cfd03acf899, same tested tree. ADMIN001 and BACKGROUND001 are dependency-ready. DATABASE002 remains independent in progress; SYSTEM-TEST is deferred.
