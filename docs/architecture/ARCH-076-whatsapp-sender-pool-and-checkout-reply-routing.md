@@ -146,8 +146,8 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
 | ARCH-076-ADMIN-003 | moda_admin | Complete | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
-| ARCH-076-DATABASE-002 | moda_database | In progress, attempt1 | None |
-| ARCH-076-BACKGROUND-005 | moda_background | Pending | DATABASE-002 |
+| ARCH-076-DATABASE-002 | moda_database | Complete | None |
+| ARCH-076-BACKGROUND-005 | moda_background | Ready | DATABASE-002 |
 | ARCH-076-COMMERCE-001 | moda_commerce | Ready | None |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
 
@@ -208,3 +208,5 @@ ARCH-076-COMMERCE-001 (moda_commerce, Ready, no dependencies) closes the existin
 15 November ADMIN003 accepted and automatically Complete: Admin PR103 main e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2 has the identical tested tree. All routing attributes are explicit Admin settings. The owning Commerce Studio routing-prompt isolation guard is required before routing activation. SYSTEM-TEST remains deferred.
 
 15 November DATABASE001 accepted at Database main a7c204618c6b0ad83952a7b661482cfd03acf899, same tested tree. ADMIN001 and BACKGROUND001 are dependency-ready. DATABASE002 remains independent in progress; SYSTEM-TEST is deferred.
+
+15 November DATABASE002 accepted Complete: tested a27f99194 and actual merged Database main0a965c549 have identical tree, combined with accepted D001. Only BG005 promoted Ready; runtime application work and test-first deployment verification remain pending, SYSTEM-TEST deferred.
