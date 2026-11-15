@@ -1,7 +1,7 @@
 ---
 id: ARCH-076-BACKGROUND-002
 architecture_id: ARCH-076
-title: Pin the selected sender through initial, automated and merchant WhatsApp dispatch
+title: Carry the immutable assignment through each provider permit
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,153 +9,199 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: [ARCH-076-BACKGROUND-001]
 enables: [ARCH-076-BACKGROUND-003]
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-15
 ---
 
-# Pin senders through the provider dispatch
+# Carry the immutable assignment through each provider permit
 
 ## Architecture
 
-[ARCH-076 — WhatsApp sender pool and checkout reply routing](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md), coordinated by `moda_architect`.
+[ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md), coordinator moda_architect.
 
 ## Objective
 
-Send each recovery message through its membership of the customer/shop route, and return parked attempts to the existing provider flow. Two eligible baskets at one shop use one physical WhatsApp sender; both retain their own admission, credit, conversation and provider-message history.
+Carry the immutable assignment through each provider permit.
 
 ## Context
 
-Preserved from original local commit `59705bb589342f31054e6c1fd011dacf9d495ae6` under root-authorized ARCH-076 collision correction. Defined portable design only; Pending/unclaimed until current-main compatibility review and explicit architect promotion. No runtime implementation or launch is authorized by preservation.
-
-Integrate the accepted BACKGROUND-001 allocator into the **existing** initial-outreach, final-permit and transport paths. The first credit reservation precedes the existing final SQL permit. Source keys are stable and a RELEASED reservation cannot be reopened. Join the existing same-shop route, or obtain a new route plus this recovery’s provisional membership, before reserving its credit. Confirm that exact member at the final permit. A provisional member alone cannot receive an inbound reply. Never infer a provider confirmation from a pool row. All paths below are relative to `moda-interact-background`. Read the [binding architecture](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md).
+15 November user-selected design retains five explicit sender entities plus the R15 evidence amendment. Sender attribution and conversation-credit renewal are independent streams. The user has authorized implementation of this reviewed design. Preserve prepared claims; execute only through the owning task launcher and accepted dependency frontier.
 
 ## Scope
 
-Change the two initial outreach coordinators, existing final permits, HTTP transport, human dispatcher and pool retry integration listed below, plus their tests. All repository paths are relative to `moda-interact-background`.
+Owning Background services and focused unit/provider-fixture/disposable PostgreSQL tests.
 
 ## Out of Scope
 
-Do not enable test-only Woo production outreach, introduce an alternative billing or standalone routing policy, change provider registrations, or deploy. BACKGROUND-003 owns inbound identity, STOP, guidance and provider status. The checkout selection/clarification task owns route-level dialogue and its provider permits.
+Other repository implementation, live settings, production migration and activation. Sender tasks must not implement allowance renewal; allowance tasks must not implement sender allocation. The SYSTEM-TEST task is deferred at the user's request.
 
 ## Requirements
 
-All distinct recoveries accepted by the merchant/platform checkout flow run their own pre-credit preparation; a shop with multiple checkouts for this recipient shares its open sender route. No latest-basket or one-basket-per-shop selection or cancellation belongs in outbound. Keep all send eligibility, moderation, approved template, service-window, credit and idempotency checks. Only a committed permit can supply the sender for the HTTP call. General outbound uses a server-resolved configured singleton only while it is outside the inventory.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Initial/follow-up/AI/human paths all use pinned sender; ordinary text/image/template transport must not resolve singleton sender again.
+- [x] Recheck sender/WABA/recipient/consent/owner/control/service window immediately before permit; no network in DB transactions.
+- [x] Use existing ordered delivery parts and immutable sender pair for receipts/status; preserve exact credit lineage and admission behavior without renewing allowance.
+- [x] Unknown provider results remain uncertain; never retry send automatically based on timeout.
 
 ## Work Items
 
-- [ ] **Shopify first send.** In `src/services/checkout-recovery/recovery-initiation.service.ts` preserve lookup of sequence one, its conversation, existing provider admission and credit evidence. An earlier confirmed or uncertain permit continues through its original finalisation/hold first. On a fresh or proven pre-permit PENDING attempt run BG001 `prepareInitialSender` after eligibility/consent and approved template selection and immediately before the first `billingService.admit`. Existing credit can continue only with the same durable sender preparation for this recovery. If that preparation is missing on pre-cutover reserved credit, hold for its existing reconciliation and do not submit a provider request. Expose `sender-pool-exhausted` as a typed deferred outcome through `checkout-recovery/recovery-materialization.service.ts`, `checkout-recovery.service.ts` and worker handling. For PENDING, a normal exhausted result acknowledges work only after the wait marker commits. A billing-capacity re-entry of an existing CAPACITY_BLOCKED attempt keeps its existing capacity-repair owner if no sender is available; it never becomes a fresh sender waiter or loses its billing status. Never mark the attempt FAILED, emit a billing-capacity notice, consume a dispatch ID, or mark outreach sent. Before revalidating retained credit, recognise the exact PENDING wait-marker case and run pre-credit claim/clear. Do not treat an existing independently eligible checkout in this shop as a duplicate or cancel its conversation. Preserve all other failure/hold decisions at `src/services/recovery-billing/initial-outreach-credit.service.ts`.
-- [ ] **Woo first send.** In `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts` call the same service after `resolve-conversation` and before `reserve-recovery-credit` in `processInitial`. Carry attemptId/conversationId, canonical recipient and configured WABA through the existing `woo-recovery-composition.ts` injection. Preserve `woo-guarded-initial-sender.service.ts`, Redis observed-order check, actual Woo consent snapshot and `WooInitialSendFenceService` final SQL permission. Treat pool exhaustion as parked work in `woo-recovery-orchestrator.service.ts`, before the generic deferred-to-BullMQ-error conversion. Preserve `NODE_ENV==='test'` and existing Woo outbound/test admission switches. A production or development Woo sender must not be activated by this task.
-- [ ] **Pre-credit outcomes.** On no credit available or other definitive refusal before a provider permit use the existing reason, billing cleanup and the guarded BG001 discard operation. A capacity wait cannot enter a release-and-re-reserve cycle. Transient failure before the permit may resume the same assignment, attempt, retained credit and prepared message following the established progress classifier. On a definite no-send, prove the original reservation belongs to that attempt before release. On possibly admitted or genuinely provider-uncertain outcomes keep the assignment and existing credit/UNKNOWN lineage for reconciliation; never re-post, retry as text or change phone. Expiry releases this member; the slot becomes free when the shop route loses its last open member. Any old acknowledgement after reassignment finalises only its old message/attempt. Remove only this failed tentative membership when permitted. Do not free a shop route while a sibling remains open.
-- [ ] **Repair wiring.** Add `src/services/whatsapp-sender-pool/retry-job.ts`. Keep the existing `PENDING_RECOVERY_CANDIDATE_QUEUE`. Job name `recovery-sender-pool-retry-v1`, exact data `{recoveryId:string,attemptId:string}`, existing bounded ID grammar, deterministic BullMQ job ID `sender-pool-` plus lowercase SHA-256 of UTF-8 recoveryId, NUL, attemptId. Mirror the add/getJob/validate/retry-failed semantics and removeOnComplete/failed retention of `woocommerce-recovery/woo-initial-dispatch.queue.ts`; share the stable queue helper where this preserves both existing job identities. Add the job to the established worker's allowed job names and discriminant in `src/workers/pending-recovery-candidate.worker.ts`. The repair callback in `src/entrypoints/recovery.ts` must call BG001 waiter discovery on the existing `RECOVERY_CAPACITY_REPAIR` leased tick with `recoveryRepairShopBatchSize`. Run original billing repair and pool discovery independently, collect/log failures, and propagate errors so neither silently disables the other. Add shutdown of the producer handle. Use the DB marker/open preparation as recovery source after a crash, not the finite BullMQ retry count.
-- [ ] **Exact repair continuation.** The worker reloads attempt, recovery, shop/platform, generation, recipient, latest external activity and original dispatch progress by its payload IDs. An unrelated, terminal, changed, superseded or no-longer-waiting/non-provisional owner is a no-op; confirmed/admitted work only enters its established receipt/hold continuation. Resolve the platform from this join. On Woo call `onInitialDispatch(recoveryId,attemptId)`, preserving its checkout lock. On Shopify use `RecoveryMaterializationService.materialize` via `checkoutRecoveryService.materializeMaturedCandidate` with an optional internal expected `{recoveryId,attemptId,generation}` for this retry only. Build the existing PendingRecoveryCandidate from trusted shop.id/domain, checkoutToken, cartToken, checkoutUrl, detectedAt/lastExternalActivityAt. Inside its existing checkout lock verify expected owner, latest generation, DETECTED, active lifetime, current policy recovery delay and no newer candidate/order both before provider preparation and at the existing admission gate. A waiting job may never manufacture a next generation when it finds an expired original. Use the normal authoritative checkout lookup, consent, recipient, discount/template and billing path. On a newer event or a still-future maturity, leave the durable eligible state for normal maturity/next repair. Do not call the checkout-event ingress as a new event or fabricate a recent activity time. Retained unknown/prepared progress uses ordinary idempotency; do not issue an extra API call to Meta.
-- [ ] **Final permits.** In `src/services/recovery-conversation/outbound-send-fence.service.ts` extend successful `DispatchPermit` with required `sender: ModaWhatsAppSender`. Apply to all HUMAN/AGENT/AUTOMATION kinds and both free-form and proactive sends. In `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts` extend the successful `WooInitialFinalPermit` identically. Under the normal Shop -> Conversation -> CheckoutRecovery ordering, lock the target recovery, its open shop route and then its unreleased membership, and call BG001's `requireAssignedSender`; ensure the permit checks effective lifetime even when the expiry sweep is late. Perform the check before mutating usage/claims/product context/permit evidence and commit the decision with the dispatch key. For initial sends require DETECTED and sequence-one scope, for later sends require eligible MESSAGE_SENT/ENGAGED and confirmed initial send to the same canonical recipient. Ignore allocationEnabled for a still-open route, including an eligible newly joined sibling. Match the target conversation, shop and canonical recipient to the immutable membership/route proof. Sharing a transport number never authorises one checkout to spend or send against another. Validate the approved template registration WABA against the permitted WABA, including Woo and merchant post-window templates. Reject released/stale owner, changed generation, missing credentials, wrong WABA or recipient with a typed pre-permit denial. Keep moderation, controls, final offer/image checks, local STOP, consent and customer service window in their original gates.
-- [ ] **Transport.** Reuse `ModaWhatsAppSender` from `src/services/whatsapp.service.ts` (move its type-only definition into `src/integration/whatsapp/types.ts` and re-export if needed). Require a trusted sender argument on all three final HTTP methods, `sendWhatsAppTemplate(input,sender,signal?)`, `sendWhatsAppText(input,sender,signal?)`, `sendWhatsAppImage(input,sender,signal?)`. This separate parameter keeps preparers/templates/media inputs free of sender authority. In those methods use up-to-date token and verify token configuration's businessAccountId matches sender.providerAccountId. Build the Graph endpoint only from `sender.providerPhoneNumberId`. Never reread singleton phoneNumberId as the source for a pooled send; no provider-side discovery per checkout, fallback phone, retry on another number, request-body 'from', or sender in AI/merchant input. In `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts` replace the private null-for-success fence result with a discriminated admitted sender or normal suppression; carry it through prepared text, frozen image, template, terminal text and Woo-specific send without dropping it. In `src/services/recovery-conversation/human-command-dispatcher.service.ts` keep the exact message/delivery plan from the committed permit, pass its sender to direct text/image/follow-up sends, and preserve its UNKNOWN recording on uncertain results. Adapt `outbound-whatsapp-admission.service.ts`, `outbound-whatsapp-admission/outbound-whatsapp-admission.types.ts`, provider ports, immediate callers and focused fakes to compile. Adapt `src/services/routing-guidance.service.ts` to pass the sender identity already validated against its inbound event. BACKGROUND-003 upgrades that singleton validation for recognition of pooled numbers. Expose the same sender-explicit text transport to the route-level clarification owner. For its approved routing question, accept only `{to,text}` and the verified `{providerAccountId,providerPhoneNumberId}` supplied by the clarification owner’s committed route-scoped prompt permit. A model never chooses the number, recipient, shop or provider endpoint. The clarification is a service-window response on the incoming number; it must not call an initial/follow-up recovery sender or bill one of the candidate baskets. This task supplies the transport interface and fake-provider contract test; the clarification task implements prompt authentication, moderation, dedupe, provider evidence and revalidation.
-- [ ] **Standalone and legacy.** A genuine standalone outbound still uses the existing encrypted singleton when it is outside the pool. In `outbound-whatsapp-admission/general-outbound-send-fence.service.ts`, require proven standalone ownership, trusted sender resolved from server configuration, and a protected negative inventory lookup. Within the final transaction take the membership lock used by Admin, `pg_advisory_xact_lock(hashtextextended('whatsapp-pool-membership:' || phone_id,0))` with bound ID before reading inventory. Presence of the phone row in any state including disabled returns typed `sender-reserved-for-recoveries` before dispatch. No second choice. At successful general permit, write DATABASE-001's message fields `dispatchProviderAccountId` and `dispatchProviderPhoneNumberId` together, with the dispatch key, return those IDs in the permit and use them on the wire. These fields remain null for newly pooled messages, whose exact conversation membership -> immutable route -> inventory provides sender evidence even after its member is released and its route is closed. A recovery never enters the general fence because its sender is missing. Leave pre-cutover unassigned retained recovery messages on historical quote/status handling using positive evidence only; if a legacy outbound is to continue, require immutable sender proof matching original and configured singleton, outside the inventory under the same membership lock, then persist sender on that message as for general sends. If proof is unavailable, refuse the new legacy dispatch. An old unassigned already-admitted recovery is never recreated as fresh pooled outreach. Preserve existing authenticated guidance exemption for neutral non-merchant replies.
-- [ ] **Coverage, operational visibility and rollout.** Use the existing shared logger. Emit bounded exhaustion, claim, release, denied owner, WABA mismatch and ambiguous dispatch outcomes with recovery/attempt/message internal IDs. Preserve redacted original error message, safe provider error code/status and relevant response details. No raw recipient/token/body or new middleware/metrics. Deploy only as coordinated pre-production cutover after inbound/STOP/status handling and Admin are integrated. A one-number pool is supported. Do not add a feature toggle, extra credential, provider call to probe configuration on every send or live activation.
+- [x] Inspect the exact latest accepted repository pin and existing owning mechanisms.
+- [x] Implement only this task's scope and requirements.
+- [x] Complete the focused checks below and record exact commands and evidence.
+- [x] Return the isolated implementation branch and parent Completion Report for review.
 
 ## Interfaces / Contracts
 
-Consume BACKGROUND-001's four local services and DATABASE-001's schema. The required final HTTP sender argument is `ModaWhatsAppSender = {providerAccountId:string, providerPhoneNumberId:string}`. The success result from each provider permit carries exactly that sender. The internal retry queue protocol and job name are defined above. Do not add cross-service wire contracts.
+The parent architecture's Explicit sender storage, Independent allowance storage and Configurable routing sections are authoritative. Existing published Shared remains reusable structural machinery. Applications own routing, funding, eligibility and authorization. Do not add compatibility paths for the superseded three-table draft or an unreviewed schema.
 
 ## Dependencies
 
-ARCH-076-BACKGROUND-001, accepted and integrated.
+ARCH-076-BACKGROUND-001
 
 ## Enables
 
-ARCH-076-BACKGROUND-003.
+Recalculate from dependent task metadata after architect acceptance; no implicit implementation handoff.
 
 ## Acceptance Criteria
 
-- [ ] The normal Shopify and Woo paths join a shared same-shop sender route for independently accepted baskets. Each basket retains one recoverable initial attempt, an independent credit and its own initial provider message ID. No second sender or charge is created for a retry.
-- [ ] A captured fake Meta server sees the same selected phone-number ID for two simultaneous baskets of the same shop and recipient. A second shop uses another number if the first shop still has an open member. No extra call occurs for a new shop when all senders are occupied. The route-level clarification text transport sends on the supplied verified route number.
-- [ ] Concurrent expiry, drift, terminal state or unknown dispatch never authorise a second HTTP submit. General/legacy sends cannot leak into a pool sender.
-- [ ] Crash injection across tentative claim, marker clearing, credit reservation, final permit and provider response is reconciled by the defined owner.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Initial/follow-up/AI/human paths all use pinned sender; ordinary text/image/template transport must not resolve singleton sender again.
+- [x] Recheck sender/WABA/recipient/consent/owner/control/service window immediately before permit; no network in DB transactions.
+- [x] Use existing ordered delivery parts and immutable sender pair for receipts/status; preserve exact credit lineage and admission behavior without renewing allowance.
+- [x] Unknown provider results remain uncertain; never retry send automatically based on timeout.
 
 ## Validation
 
-Create `tests/integration/whatsapp-sender-pool-dispatch.integration.test.ts` and `tests/unit/services/whatsapp-sender-pool/retry-job.test.ts`. Extend the existing focused unit suites for the changed fences/HTTP callers and worker. Use disposable PostgreSQL 17 with pgvector + Redis and a loopback fake Graph service. Commands from the prepared implementation worktree:
+- [x] Focused unit tests for every requirement, lint/typecheck/build as declared for changed code.
+- [x] Disposable PostgreSQL race/replay/restart tests with two recipients, two shops, multiple checkouts and shared sender.
+- [x] Provider HTTP fixtures for exact sender, failed initial delivery, unknown result, duplicate/foreign statuses and no network inside transactions.
 
-```bash
-npm ci
-npm run prisma:generate
-npx vitest run tests/unit/services/whatsapp-sender-pool tests/unit/services/whatsapp.service.test.ts tests/unit/services/routing-guidance.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts
-node scripts/test-integration.mjs tests/integration/whatsapp-sender-pool-dispatch.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/woo-initial-send-fence-races.integration.test.ts tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/general-outbound-stop-fence.integration.test.ts tests/integration/arch068-conversation-image.integration.test.ts
-npm run build
-git diff --check
-```
+Inspect the repository package.json before selecting actual commands. Required disposable PostgreSQL checks are task-local repository checks, not execution of the deferred system-test task. No live customer/provider calls belong to these checks.
 
-Prove exact Graph path and request `to` for Shopify and permitted Woo initial, follow-up, merchant and AI text/image, prepared template/terminal-text paths, and legacy general success/denial. Exercise one available number, an existing Shopify CAPACITY_BLOCKED attempt re-entering once funded with both a busy and a free pool, two non-superseded baskets for one shop/recipient sharing a sender with independent debit/receipt/follow-up lineage, sibling expiry and one remaining basket, different shops on distinct numbers, no credit on wait, automatic recovery after expiry/addition, same attempt/source key, pool drain during preparation, membership race against standalone send, changed token/WABA, changed recipient, effective expiry at final permit, worker restart after each stage, no duplicate submit after timeout, correct receipt from an older admitted message after reuse. Use real transactions and captured request counts. Force a failure on a waiter's queue publication and repair it; simulate loss of a queue job after provisional-claim commit but before billing and after reserve but before permit. Verify no current waiter is charged or looped solely because every sender is occupied. Keep legacy confirmation/repair idempotent. Confirm the Woo normal-entrypoint deployment restriction stays in force.
+## Stop Condition
+
+After Work Items, Acceptance Criteria and Validation pass, set review, return the Completion Report and STOP. Do not execute another task or deploy.
 
 ## Implementation Notes
 
-Stop and refer exact evidence to the architect if a prerequisite contract is absent or conflicting. Keep all billing source selection rules intact.
-
-Portable definition. Execute with /moda-task ARCH-076-BACKGROUND-002 following architect acceptance/integration of BACKGROUND-001. Record prepared isolated worktrees, mirrored branches/commits, database pin, changed files, exact validation results and container cleanup. Report remaining baseline failures separately. Execution status: not started.
+Existing published Shared remains reusable structural machinery. Applications own routing, funding, eligibility and authorization. Do not add compatibility paths for the superseded three-table draft or an unreviewed schema.
 
 ## Completion Report
 
 ### Status
 
-Not Started.
+Ready for Review. Source PR240: https://github.com/kodjobaah/moda-interact-background/pull/240, pushed head `fbab80f41b2b9e69234124df47fd05c5a613d939`. This includes accepted BACKGROUND-005 main `0a6bb0ba2ea1042ef79588592a4e39e7bf20ea94` and combined Database `0a965c549b4916085acd8a806d5ecf376eda0e47`; sender authority and independent funding authority both remain in the final permit.
 
 ### Files Changed
 
-None.
+- New `src/services/recovery-sender-pool/dispatch-sender.ts`; sender permit and transport wiring in outbound delivery, recovery final fence, Woo initial fence, general fence, HUMAN dispatcher and multipart fence/engine.
+- Scalar provider-status ownership guard and temporary legacy routing-guidance enrollment precheck.
+- Focused unit fixtures, `tests/integration/arch076-dispatch-sender.integration.test.ts`, declared PostgreSQL command and source-owned dispatch documentation.
 
 ### Work Completed
 
-None.
+- Validate/unseal current sender configuration outside SQL; check row/version, immutable assignment, frozen recipient, account membership and owner policy inside final permits. Freeze exact root sender pair and retain ordered-part identity.
+- Serialize new standalone permits against disabled/enabled enrollment; preserve narrow proved preexisting unassigned AI/HUMAN continuation without assignment backfill.
+- Forward exact sender through text/image/template transports; foreign stamped statuses have no lifecycle, credit or contact effects.
 
 ### Validation Results
 
-Awaiting execution.
+- `npm run test:arch076-sender-dispatch:postgres`: final integrated tree, 16/16 passed, exit 0 (`/tmp/bg002-union-pg.log`). Real migrated PostgreSQL covers standalone/Woo permits, replay, drained assignment, two shops and recipients sharing sender, exact/foreign recipient and WABA, both membership-lock winners, credential-row CAS, actual funded AI and uncounted HUMAN legacy permits, historical multipart provenance, foreign JSON shop/root witnesses, NULL provider-receipt refusal and unknown-result no-resend.
+- Focused delivery: 52 passed; text/image/template snapshot: 18 passed; guidance precheck: 10 passed. Foreign scalar status fixtures assert no lifecycle, compensation, contact or notification effects. Full final-head CI supplies broad unit coverage.
+- Exact integrated head `fbab80f41b2b9e69234124df47fd05c5a613d939` CI workflows [43743664168](https://github.com/kodjobaah/moda-interact-background/actions/runs/43743664168) and [43743669876](https://github.com/kodjobaah/moda-interact-background/actions/runs/43743669876) passed, including typecheck and all 403 unit files / 4,575 tests. Local `npm run lint`, `npx tsc --noEmit --pretty false` and declared `npm run build` all passed in the final integrated-tree batch, exit 0 (`/tmp/bg002-union-validation.log`). Earlier `24f45ef` CI is historical evidence only.
+- Pre-union 16-case PostgreSQL passed. Redundant local full-unit and pre-union compile runs were intentionally stopped after CI/accepted-main integration; interrupted runs are not counted as passes. Initial fixture/discovery failures were corrected and are not reported as successful runs.
 
 ### Deviations
 
-None.
+The old neutral routing-guidance path has a membership/configuration precheck but still only historical Redis admission. This is **not** a complete durable permit or a closed commit-to-provider enrollment race. Pool activation is gated on BACKGROUND-004's persisted RoutingTurn replacement. No fabricated Conversation or external I/O in SQL was introduced.
 
 ### Assumptions
 
-None.
+Sender routing remains independent of allowance funding. Accepted BACKGROUND-005 funding checks and combined Database `0a965c5` are preserved in the integrated source. The actual AI fixture uses the canonical Free reservation/commit lifecycle and ordinary outbound admission, without fabricated funding blocks. No Shared release, live mutation, deployment or deferred SYSTEM-TEST execution.
 
 ### Unresolved Issues
 
-None.
+No unresolved implementation or validation failure. No main merge by this agent. Pool activation remains coordinator-owned and gated on BACKGROUND-003/004, including durable neutral guidance replacement.
+
+### Launcher Evidence
+
+- Canonical root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-BACKGROUND-002`, `task/ARCH-076-BACKGROUND-002`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-BACKGROUND-002`, `task/ARCH-076-BACKGROUND-002`.
+- Launcher created both worktrees, incorporated current origin/main, verified recursive submodules and dependency, and committed/pushed claim `ca9404984845ba2b3af2c5cd2426bb4d5fe16c07`, attempt1 at `2026-11-15T14:58:50Z`.
+- Source initial head `f6bbcc5fbf247ea9b8df87ad0ba34ade079d9c38`; initial nested Database `a7c204618c6b0ad83952a7b661482cfd03acf899`. No shared/default checkout switch or another task's worktree reuse. No parent implementation gitlink staged.
+- Parent origin/main subsequently merged to consume the exact legacy continuation amendment and accepted Admin governance. Architect Review remains untouched.
 
 ### Architectural Concerns
 
-None.
+None beyond the explicit staged legacy-guidance durability gate above.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — 15 November 2026. Automatic completion; attempt 1 preserved. Historical codex claim at 2026-11-15T14:58:50Z, prepared claim `ca9404984845ba2b3af2c5cd2426bb4d5fe16c07`.
 
 ### Review Notes
 
-Awaiting implementation.
+Independently reviewed sender snapshot and legacy proof, final sender/recipient/configuration and membership fences, transport propagation, root/part stamps and status side-effect isolation. Reviewed the final merge union with accepted BG005: both sender and funding authorities remain; HUMAN insert retains sender pair plus allowance pin, and delivery preserves capacity-reopened handling. Root merged PR240 to Background main `cb625e626bebba337c1dda3ce4190bd00f3ad7f1`; exact tree `ebd71d2e89d1b91f355420c7b93b813d5883e875` matches tested `fbab80f41b2b9e69234124df47fd05c5a613d939`. Prepared canonical mirrored isolation and synchronization evidence is satisfactory.
 
 ### Reviewed Files
 
-None.
+Dispatch sender helper, recovery/general/Woo final fences, HUMAN dispatcher, multipart fence/engine, outbound delivery, WhatsApp transport and provider-status service; guidance precheck and sender dispatch PostgreSQL/unit fixtures.
 
 ### Validation Reviewed
 
-None.
+Final combined PostgreSQL 16/16; exact-head CI 403 unit files / 4,575 tests; local lint, TypeScript and production build passed. Reviewed enrollment race both winners, drained assignment, exact sender/recipient/account and receipt evidence, funded AI versus uncounted HUMAN, foreign status zero effects and unknown-result no-resend. Interrupted runs remain excluded from passing evidence.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to immutable assignment/dispatch sender identity, proven recipient, non-pooled enrollment serialization, narrow historical continuation and no assigned fallback. Accepted BG005 funding checks and combined Database `0a965c549b4916085acd8a806d5ecf376eda0e47` are retained. No schema or Shared release, live activation or integrated SYSTEM-TEST execution.
 
 ### Follow-up
 
-None.
+Promote only ARCH-076-BACKGROUND-003 to Ready; BG004 still depends on its completion. The legacy neutral guidance precheck is not a durable permit: pool activation remains gated on BG004's persisted RoutingTurn replacement and test-first verification. SYSTEM-TEST remains user-deferred.
+
+
+## Reconciliation provenance — 15 November 2026
+
+Reconciled from the later local sender-pool revision formerly labelled ARCH-069. The completed chronological-input architecture and its ARCH-069 task identities are unchanged. ARCH-076 was already reserved for the earlier sender-pool proposal; this revision updates that proposal in place, retaining its Git history. These are definition changes, not implementation or deployment evidence. All execution remains Pending until compatibility review and dependency promotion.
+
+## Mandatory same-conversation allowance renewal amendment
+
+Historical renewal amendment is superseded for this sender task: allowance work belongs only to independent DATABASE-002/BACKGROUND-005 and does not gate sender routing. Never filter ownership by credit or cap.
+
+
+### 15 November definition amendment
+
+Historical fixed SQL must be regenerated for the restored five-entity contract plus R15 evidence; hardcoded router policy remains superseded. Historical claim/review evidence above is retained as history, not approval of the replacement implementation. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.
+
+
+## Existing singleton cutover proof boundary
+
+BG002 must retain the approved non-pooled send-versus-enrollment fence, not merely change recovery transport endpoints. Before a new standalone/non-pooled provider permit, acquire the same transaction advisory membership key as Admin enrollment: `pg_advisory_xact_lock(hashtextextended('whatsapp-pool-membership:' || phoneId::text, 0))`. Under that lock reject the non-pooled permit if any inventory row exists for that exact phone, even allocation-disabled. Freeze the exact dispatchProviderAccountId/dispatchProviderPhoneNumberId pair on the durable root permit and current delivery parts; no network inside the lock. Enrollment collision preflight and permit must serialize on that key. Existing already-admitted/unknown provider work retains exact proof and must not be resent after cutover. Recovery initial/followup/AI/human sends use their existing assignment's sender; non-pooled sends may use only the permitted current credential identity and never bypass enrolled inventory.
+
+BG003 must distinguish newly pooled routing from exact preexisting unassigned singleton evidence. An authentic quoted prior outbound, persisted inbound replay or exact status receipt may resolve its original existing Conversation using immutable recorded root/part sender evidence and matching authenticated WABA/phone/recipient. An old NULL root pair without another exact durable sender/recipient witness remains held; current singleton configuration alone never proves historical identity. Never fabricate sender proof, backfill assignment, bind old history to a new route generation or use recipient-only fallback to select an owner. Closed/expired history remains history and never reopens recovery or bypasses STOP/window/control/cap. Foreign sender statuses/quotes have no effects. This preserves production evidence, not a compatibility path for obsolete new schema formats.
+
+Owner checks: concurrent standalone permit versus first disabled enrollment (either permit wins and enrollment reports protected use, or enrollment wins and permit is refused); inventory disabled still blocks new non-pooled permit; pooled endpoints never fall back to singleton; exact preexisting singleton quote/replay/status succeeds only with matching stable proof, wrong/changed/unknown account proof refuses, no assignment backfill or repeated provider admission. Partial BG001 may hold zero-inventory initial work, but inventory cannot activate until complete pinning/ownership path is test-verified and old consumers/inflight work are drained. Production auto-deploy holds remain.
+
+## Proven preexisting unassigned recovery continuation
+
+The clean-sender cutover may leave an old singleton unenrolled while its legitimate preexisting recovery Conversation continues. Permit only new customer-initiated in-window AI or human free-form replies on that exact unassigned Conversation when durable original sender AND recipient proof exists. This does not authorize proactive followup, new initial outreach, or generic unassigned recovery fallback.
+
+Accepted proof sources are (a) a confirmed prior outbound root with its immutable dispatch sender pair plus the exact sent INITIAL RecoveryOutreachAttempt recipient tied to that root/Conversation, or (b) frozen multipart source recipient plus sender pair and confirmed matching part evidence. Match authenticated quote/replay/current owned human-command scope and the exact Conversation; a mutable customer/Conversation phone, current configuration alone, bare recipient lookup or an old NULL sender pair without another durable witness is insufficient. If proof is missing, changed or conflicting, hold without backfill, migration or guessing.
+
+At each NEW reply permit, take the existing exact-phone non-pooled membership advisory fence, verify no inventory row exists for that phone (even disabled rows forbid this path), and hold current credential row FOR SHARE while checking its WABA/phone against the durable proof. Freeze exact sender pair on the new root/parts and use the proved recipient. Existing consent, STOP, window, moderation, control revision, quota and billing admission checks remain mandatory. Assigned recovery always uses assignment and never this path, even on missing credentials or drained inventory; all new initial recoveries require assignment.
+
+A prior admitted/UNKNOWN provider operation is never retransmitted through this continuation path. Each new customer/human reply has its own existing idempotent message/command identity. Status callbacks and quoted history continue against original exact evidence, never a new route generation. Test successful AI and human continuation with both approved proof forms, NULL/no-witness refusal, changed sender/recipient refusal, inventory-disabled fence, concurrent enrollment versus permit, assigned-recovery refusal, initial/proactive-followup exclusion, and duplicate/unknown replay with no second provider send. This preserves a legitimate old conversation, not an obsolete schema-format adapter.

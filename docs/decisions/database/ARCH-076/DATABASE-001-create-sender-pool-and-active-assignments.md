@@ -1,7 +1,7 @@
 ---
 id: ARCH-076-DATABASE-001
 architecture_id: ARCH-076
-title: Persist shop sender routes, checkout members and reply clarification
+title: Persist explicit sender ownership and routing evidence
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -9,358 +9,271 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-15T19:56:51Z
+attempt: 2
 depends_on: []
-enables: ["ARCH-076-ADMIN-001", "ARCH-076-BACKGROUND-001"]
+enables: [ARCH-076-BACKGROUND-001, ARCH-076-ADMIN-001]
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-15
 ---
 
-# Persist shop sender routes, checkout members and reply clarification
+# Persist explicit sender ownership and routing evidence
 
 ## Architecture
 
-[ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md), coordinated by `moda_architect`.
+[ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md), coordinator moda_architect.
 
 ## Objective
 
-Persist one active sender route per shop and customer, any number of active checkout conversations as its members, and durable handling of ambiguous replies. Preserve original sender proof on every admitted outbound.
+Persist sender ownership and unresolved originals with five durable records.
 
 ## Context
 
-Preserved from original local commit `59705bb589342f31054e6c1fd011dacf9d495ae6` under root-authorized ARCH-076 collision correction. Defined portable design only; Pending/unclaimed until current-main compatibility review and explicit architect promotion. No runtime implementation or launch is authorized by preservation.
-
-The merchant's platform and shop decide which checkouts can coexist. Distinct recoveries admitted by existing merchant/platform rules each retain their own recovery, attempt, credit and conversation. One shop and customer share a single Moda number across those recoveries. A different shop serving the same phone must use a different number while the first route has any active member. Closing one member leaves all others intact. The last member closing releases the route for reuse without a cooldown. Within this application each environment has a separate database.
+15 November user-selected design retains five explicit sender entities plus the R15 evidence amendment. Sender attribution and conversation-credit renewal are independent streams. The user has authorized implementation of this reviewed design. Preserve prepared claims; execute only through the owning task launcher and accepted dependency frontier.
 
 ## Scope
 
-Implement the Prisma shape, one forward migration, explicit SQL constraints/indexes, schema checks, disposable PostgreSQL fresh/upgrade/concurrency tests, package scripts and corresponding ERD relationships described below.
+Prisma, one forward sender migration, constraints/indexes, scoped ERD and disposable PostgreSQL tests; see exact fields in parent architecture.
 
 ## Out of Scope
 
-Do not mutate the API or worker, administer Meta assets or enrol a sender, update submodule pins in consumers, deploy or alter old migrations. Checkout lifecycle, permission and message routing remain Background-owned.
+Other repository implementation, live settings, production migration and activation. Sender tasks must not implement allowance renewal; allowance tasks must not implement sender allocation. The SYSTEM-TEST task is deferred at the user's request.
 
 ## Requirements
 
-Paths below are in `moda-interact-database`. Add `recoverySenderRoutes RecoverySenderRoute[]` to `Shop`. Add `basketRoutingSelections RecoveryBasketRoutingTurn[]` and `recoverySenderAssignment RecoverySenderAssignment?` to the existing `Conversation` model in `prisma/schema.prisma`. Add the following fields immediately after `ConversationMessage.providerDispatchAdmittedAt`. They are the WABA and phone chosen on a durable provider permit when its message lacks recovery assignment evidence; callbacks use the original pair. They are nullable for historical rows and are updated together. No default, backfill, provider ID inference or extra index.
+- [x] Support the parent explicit R15 two-stage star relation: Q2 shop choice and Q3 basket choice both parent Q1 substantive original; Q3 names exact basket prompt Q2, whose parent is Q1. Prompt may be Q1 or its explicitly identified direct child, not necessarily original itself.
 
-```prisma
-  dispatchProviderAccountId     String?
-  dispatchProviderPhoneNumberId String?
-```
+- [x] Follow the parent R15 evidence privacy amendment: routingDecision contains only message IDs, clause offsets/hashes and structural evidence, no exact clause plaintext. Preserve exact wording through pending inputJson then atomic existing ConversationMessage association.
+- [x] Freeze input/candidate/config/parent scope; permit only explicit destructive terminal value→NULL scrub and real FK SET NULL cleanup, never rebind or payload resurrection. Terminal scrub removes ephemeral customer/candidate/prompt payloads without deleting authentic owned Conversation history.
 
-Place the following models beside `Conversation`. Keep partial indexes SQL-only in this Prisma 6.19.3 schema. A client-generated `cuid()` does not produce a PostgreSQL DEFAULT. Supply the ID on raw inserts.
+- [x] Add nullable routingDecision JSONB separately from configurationSnapshot, with structural schema-version/object validation and write-once decision evidence. Preserve the parent R15 original/current inbound, confirmed prompt, candidate fingerprint, exact clause/moderation, policy/template and owner/control bindings. Application owns role/evidence business validation; SQL guards prevent replacement of frozen evidence and terminal-resolution rebinding.
 
-```prisma
-model WhatsAppPoolSender {
-  providerPhoneNumberId String   @id
-  providerAccountId     String
-  allocationEnabled     Boolean  @default(false)
-  priority              Int
-  createdAt             DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt             DateTime @default(now()) @updatedAt @db.Timestamptz(3)
-  routes                RecoverySenderRoute[]
-
-  @@schema("whatsapp")
-}
-
-model RecoverySenderRoute {
-  id                    String @id @default(cuid())
-  shopId                String
-  canonicalRecipient    String @db.VarChar(15)
-  providerPhoneNumberId String
-  openedAt              DateTime @default(now()) @db.Timestamptz(3)
-  closedAt              DateTime? @db.Timestamptz(3)
-  shop                  Shop @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  sender                WhatsAppPoolSender @relation(fields: [providerPhoneNumberId], references: [providerPhoneNumberId], onDelete: Restrict, onUpdate: Restrict)
-  assignments           RecoverySenderAssignment[]
-  routingTurns          RecoveryBasketRoutingTurn[]
-
-  @@schema("whatsapp")
-}
-
-model RecoverySenderAssignment {
-  conversationId        String @id
-  routeId               String
-  assignedAt            DateTime @default(now()) @db.Timestamptz(3)
-  releasedAt            DateTime? @db.Timestamptz(3)
-  conversation          Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  route                 RecoverySenderRoute @relation(fields: [routeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@schema("whatsapp")
-}
-
-model RecoveryBasketRoutingTurn {
-  inboundProviderMessageId String @id
-  routeId                  String
-  occurredAt               DateTime @db.Timestamptz(3)
-  inputJson                Json? @db.JsonB
-  candidatesJson           Json? @db.JsonB
-  moderationJson           Json? @db.JsonB
-  parentProviderMessageId  String?
-  state                    String @default("RECEIVED")
-  selectedConversationId   String?
-  promptText               String?
-  promptAdmittedAt         DateTime? @db.Timestamptz(3)
-  promptSentAt             DateTime? @db.Timestamptz(3)
-  promptProviderMessageId   String? @unique
-  createdAt                DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt                DateTime @default(now()) @updatedAt @db.Timestamptz(3)
-  route                    RecoverySenderRoute @relation(fields: [routeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  parent                   RecoveryBasketRoutingTurn? @relation("BasketRoutingQuestionReplies", fields: [parentProviderMessageId], references: [inboundProviderMessageId], onDelete: SetNull, onUpdate: NoAction)
-  replies                  RecoveryBasketRoutingTurn[] @relation("BasketRoutingQuestionReplies")
-  selectedConversation     Conversation? @relation(fields: [selectedConversationId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  @@index([routeId, state, occurredAt], map: "RecoveryBasketRoutingTurn_route_state_time_idx")
-  @@schema("whatsapp")
-}
-```
-
-### Forward migration
-
-Create **only** `prisma/migrations/20261113120000_whatsapp_sender_pool/migration.sql` for this change. In a disposable development database generate `prisma migrate dev --create-only` against the updated schema, normalize the new directory name, and supplement that new SQL with the CHECKs, indexes and narrow identity guard below. Historical migrations are immutable. In particular preserve `20261111090000_arch038_initial_outreach_tool_call_budget` at the snapshot tip. Equivalent formatting is allowed. Apply these exact table names, types, constraints, predicate and actions.
-
-```sql
-ALTER TABLE "whatsapp"."ConversationMessage"
-  ADD COLUMN "dispatchProviderAccountId" TEXT,
-  ADD COLUMN "dispatchProviderPhoneNumberId" TEXT,
-  ADD CONSTRAINT "ConversationMessage_dispatch_sender_pair"
-    CHECK (("dispatchProviderAccountId" IS NULL) = ("dispatchProviderPhoneNumberId" IS NULL));
-
-CREATE TABLE "whatsapp"."WhatsAppPoolSender" (
-  "providerPhoneNumberId" TEXT PRIMARY KEY,
-  "providerAccountId" TEXT NOT NULL,
-  "allocationEnabled" BOOLEAN NOT NULL DEFAULT false,
-  "priority" INTEGER NOT NULL,
-  "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT "WhatsAppPoolSender_phone_format" CHECK ("providerPhoneNumberId" ~ '^[0-9]{4,32}$'),
-  CONSTRAINT "WhatsAppPoolSender_account_format" CHECK ("providerAccountId" ~ '^[0-9]{4,32}$'),
-  CONSTRAINT "WhatsAppPoolSender_nonnegative_priority" CHECK ("priority" >= 0)
-);
-
-CREATE TABLE "whatsapp"."RecoverySenderRoute" (
-  "id" TEXT PRIMARY KEY,
-  "shopId" TEXT NOT NULL,
-  "canonicalRecipient" VARCHAR(15) NOT NULL,
-  "providerPhoneNumberId" TEXT NOT NULL,
-  "openedAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "closedAt" TIMESTAMPTZ(3),
-  CONSTRAINT "RecoverySenderRoute_canonical_recipient" CHECK ("canonicalRecipient" ~ '^[1-9][0-9]{1,14}$'),
-  CONSTRAINT "RecoverySenderRoute_close_order" CHECK ("closedAt" IS NULL OR "closedAt" >= "openedAt"),
-  CONSTRAINT "RecoverySenderRoute_shopId_fkey" FOREIGN KEY ("shopId")
-    REFERENCES "commerce"."Shop" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT "RecoverySenderRoute_providerPhoneNumberId_fkey" FOREIGN KEY ("providerPhoneNumberId")
-    REFERENCES "whatsapp"."WhatsAppPoolSender" ("providerPhoneNumberId") ON UPDATE RESTRICT ON DELETE RESTRICT
-);
-CREATE UNIQUE INDEX "RecoverySenderRoute_open_recipient_shop_key"
-  ON "whatsapp"."RecoverySenderRoute" ("canonicalRecipient", "shopId") WHERE "closedAt" IS NULL;
-CREATE UNIQUE INDEX "RecoverySenderRoute_open_recipient_sender_key"
-  ON "whatsapp"."RecoverySenderRoute" ("canonicalRecipient", "providerPhoneNumberId") WHERE "closedAt" IS NULL;
-
-CREATE TABLE "whatsapp"."RecoverySenderAssignment" (
-  "conversationId" TEXT PRIMARY KEY,
-  "routeId" TEXT NOT NULL,
-  "assignedAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "releasedAt" TIMESTAMPTZ(3),
-  CONSTRAINT "RecoverySenderAssignment_release_order" CHECK ("releasedAt" IS NULL OR "releasedAt" >= "assignedAt"),
-  CONSTRAINT "RecoverySenderAssignment_conversationId_fkey" FOREIGN KEY ("conversationId")
-    REFERENCES "whatsapp"."Conversation" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT "RecoverySenderAssignment_routeId_fkey" FOREIGN KEY ("routeId")
-    REFERENCES "whatsapp"."RecoverySenderRoute" ("id") ON UPDATE RESTRICT ON DELETE CASCADE
-);
-CREATE INDEX "RecoverySenderAssignment_open_route_member_idx"
-  ON "whatsapp"."RecoverySenderAssignment" ("routeId","conversationId") WHERE "releasedAt" IS NULL;
-
-CREATE TABLE "whatsapp"."RecoveryBasketRoutingTurn" (
-  "inboundProviderMessageId" TEXT PRIMARY KEY,
-  "routeId" TEXT NOT NULL,
-  "occurredAt" TIMESTAMPTZ(3) NOT NULL,
-  "inputJson" JSONB,
-  "candidatesJson" JSONB,
-  "moderationJson" JSONB,
-  "parentProviderMessageId" TEXT,
-  "state" TEXT NOT NULL DEFAULT 'RECEIVED',
-  "selectedConversationId" TEXT,
-  "promptText" TEXT,
-  "promptAdmittedAt" TIMESTAMPTZ(3),
-  "promptSentAt" TIMESTAMPTZ(3),
-  "promptProviderMessageId" TEXT,
-  "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT "RecoveryBasketRoutingTurn_state" CHECK ("state" IN
-    ('RECEIVED','NEEDS_CLARIFICATION','PROMPT_ADMITTED','AWAITING_REPLY','RESOLVED','IGNORED')),
-  CONSTRAINT "RecoveryBasketRoutingTurn_prompt_evidence" CHECK (
-    ("promptSentAt" IS NULL) = ("promptProviderMessageId" IS NULL)
-    AND ("promptSentAt" IS NULL OR "promptAdmittedAt" IS NOT NULL)),
-  CONSTRAINT "RecoveryBasketRoutingTurn_distinct_parent" CHECK ("inboundProviderMessageId" <> "parentProviderMessageId"),
-  CONSTRAINT "RecoveryBasketRoutingTurn_routeId_fkey" FOREIGN KEY ("routeId")
-    REFERENCES "whatsapp"."RecoverySenderRoute" ("id") ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT "RecoveryBasketRoutingTurn_parentProviderMessageId_fkey" FOREIGN KEY ("parentProviderMessageId")
-    REFERENCES "whatsapp"."RecoveryBasketRoutingTurn" ("inboundProviderMessageId") ON DELETE SET NULL ON UPDATE NO ACTION,
-  CONSTRAINT "RecoveryBasketRoutingTurn_selectedConversationId_fkey" FOREIGN KEY ("selectedConversationId")
-    REFERENCES "whatsapp"."Conversation" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-CREATE UNIQUE INDEX "RecoveryBasketRoutingTurn_promptProviderMessageId_key"
-  ON "whatsapp"."RecoveryBasketRoutingTurn" ("promptProviderMessageId");
-CREATE INDEX "RecoveryBasketRoutingTurn_route_state_time_idx"
-  ON "whatsapp"."RecoveryBasketRoutingTurn" ("routeId","state","occurredAt");
-CREATE INDEX "RecoveryBasketRoutingTurn_pending_age_idx"
-  ON "whatsapp"."RecoveryBasketRoutingTurn" ("createdAt","inboundProviderMessageId")
-  WHERE "state" IN ('RECEIVED','NEEDS_CLARIFICATION','PROMPT_ADMITTED','AWAITING_REPLY');
-
-CREATE INDEX "RecoveryOutreachAttempt_sender_pool_wait_idx"
-  ON "commerce"."RecoveryOutreachAttempt" ("updatedAt", "id")
-  WHERE "sequence" = 1 AND "status" = 'PENDING'
-    AND "failureCode" = 'WHATSAPP_SENDER_POOL_EXHAUSTED';
-
-CREATE FUNCTION "whatsapp"."prevent_pool_sender_identity_change"()
-RETURNS TRIGGER LANGUAGE plpgsql AS $func$
-BEGIN
-  IF OLD."providerPhoneNumberId" IS DISTINCT FROM NEW."providerPhoneNumberId"
-     OR OLD."providerAccountId" IS DISTINCT FROM NEW."providerAccountId" THEN
-    RAISE EXCEPTION USING ERRCODE = '23514', MESSAGE = 'Immutable WhatsApp pool sender identity';
-  END IF;
-  RETURN NEW;
-END;
-$func$;
-
-CREATE TRIGGER "WhatsAppPoolSender_immutable_identity"
-BEFORE UPDATE OF "providerPhoneNumberId", "providerAccountId"
-ON "whatsapp"."WhatsAppPoolSender" FOR EACH ROW
-EXECUTE FUNCTION "whatsapp"."prevent_pool_sender_identity_change"();
-```
-
-The inventory identity guard preserves the WABA/phone provenance of historic messages. Route identity (`id, shopId, canonicalRecipient, providerPhoneNumberId`) and an admitted member's `conversationId, routeId` are insert-once in the application. For reuse insert a new route ID; do not move or reopen a closed one. At an existing recovery/permit boundary join Conversation with its CheckoutRecovery and verify its shop, canonical phone and conversation match the route before attaching it. Use an explicit CAS with `closedAt IS NULL` or `releasedAt IS NULL` plus original route/member identity for closure. A single short transaction under the route row lock releases a member, rechecks other non-released members and closes that same route only when none remain. A cascade delete can remove the final member without application code. Under the route lock, Background's next allocation closes an empty open route before returning pool exhaustion. Closure immediately invalidates that generation's pending questions. BACKGROUND-004 checks the generation on each use and owns bounded cleanup of invalidated turns; releasing a member or a route does not scan or lock sibling routing turns. No route-closing SQL trigger or materialized member count is required. Duplicate recovery replay, member reallocation and operator settings never mutate past message ownership.
-
-The existing `RecoveryOutreachAttempt` waiter predicate and non-pooled permit fields are unchanged. This development baseline has no installed ARCH-076 migrations. Add one new forward migration at the specified path against the original uploaded workspace. Create empty new tables. Do not seed inventory or infer past sender identity. Initial schema changes are additive to existing data, with no down migration.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Enforce immutable recipient/sender identity and assignment-per-Conversation; protect original request candidate snapshots and terminal resolutions.
+- [x] Preserve current ordered-delivery sender/status evidence; use database baseline 2e14f866 with all 80 predecessor migrations through 20261113111320_arch075_meta_app_operation_state; sender target 20261113120000_whatsapp_sender_pool remains available.
+- [x] Preserve prepared attempt 1 metadata; resume only in its canonical prepared implementation worktree.
 
 ## Work Items
 
-- [ ] Implement the specified models, message fields, constraints, relations and indexes in one new forward migration.
-- [ ] Run the schema, concurrency and fresh/upgrade tests and ERD validation.
-- [ ] Record actual migrations, database image, branch SHA, worktree path, changed files and cleanup in the Completion Report.
-- [ ] Publish implementation and task report on their launcher-resolved mirrored branches for architect review.
+- [x] Inspect the exact latest accepted repository pin and existing owning mechanisms.
+- [x] Implement only this task's scope and requirements.
+- [x] Complete the focused checks below and record exact commands and evidence.
+- [x] Return the isolated implementation branch and parent Completion Report for review.
 
 ## Interfaces / Contracts
 
-Admin reads and writes `whatsapp."WhatsAppPoolSender"`. Background resolves `RecoverySenderRoute` by open (recipient, shop) to allocate or open (recipient, sender) to receive. `RecoverySenderAssignment` is the per-conversation membership and pins original sender through its route even after either row closes. Multiple same-shop conversations with the same recipient and sender are valid and deliberately exercise the same route row. Partial unique indexes are on open routes, never on individual checkouts in that route. Original non-pooled transport evidence remains on `ConversationMessage`.
-
-`RecoveryBasketRoutingTurn` is the durable, shop-scoped record when a reply must be interpreted within the route, before it has a checkout owner. Use exactly the content shapes and state machine owned by BACKGROUND-004. Null is SQL NULL for absent/erased JSON, not JSON `null`. Its primary key is the original inbound provider message ID, also used by the existing unique ConversationMessage ID when an inbound is ultimately attached. Lock/check both records on retry; a duplicate must never move to a later route or checkout. A clarification answer links to its exact parent inbound. Store and reuse the option order actually shown. A prompt has at most one provider admission and one receipt recorded on that original turn. Scrub customer text, transcripts, candidates and prompt text in the same transaction as terminal handling. On IGNORED use SQL NULL for inputJson. On RESOLVED replace it with a content-free versioned role marker as defined by BACKGROUND-004. Its complete shape is one of `{v:1,role:"objective"}`, `{v:1,role:"selectionOnly"}` or, for a verified reply containing a choice and a same-basket substantive request, `{v:1,role:"mixedObjective",startCodePoint,endCodePoint}`. The half-open Unicode code-point offsets identify the exact substantive suffix of the separately moderated original ConversationMessage text or transcript. Set terminal moderationJson to SQL NULL except for a mixedObjective. There retain only the versioned, content-free proof for the complete source and exact model-visible suffix defined in BACKGROUND-004. Keep the ordinary ConversationModerationAssessment bound to the full authentic message. Refreshing an outdated policy proof must preserve the original RESOLVED admission timestamp. The role marker contains no customer text and is frozen with the selected conversation, timestamps and original provider ID. This remains unambiguous if the parent FK later becomes null. Missing, invalid or mismatched evidence grants no model objective. No additional Prisma field, migration, payload copy or model-generated text is required. Expire pending content at its immutable first database receipt time (`createdAt + 24 hours`). The separate customer-service send window is bounded by the verified provider occurrence time. Duplicate delivery, later attempts and scrubbing never renew either clock. Freeze `updatedAt` at RESOLVED in the same transaction as normal conversation pending-turn admission. Later replay observes that admission stamp without issuing another update to the terminal routing row. BACKGROUND-004 owns the bounded sweep. The SQL-only pending-age index lets the maintenance worker read oldest-first without scanning terminal tombstones. Immutable IDs, time stamps and terminal state may remain while the route history exists to prevent duplicate effects. A timeout after prompt admission stays uncertain: do not reset the admit time or resend automatically. A route may contain two unresolved originals. There is no per-shop or per-route one-question uniqueness and no arbitrary sibling-recovery limit.
-
-`selectedConversationId` and the optional `parentProviderMessageId` FK protect existence. Background's locked commit also verifies matching route ID, eligible membership/ownership and event time. A status update or answer arriving after route reuse cannot select another shop's recovery. All billing, checkout-linked message authorisation and AI routing remain outside this database-only task.
+The parent architecture's Explicit sender storage, Independent allowance storage and Configurable routing sections are authoritative. Existing published Shared remains reusable structural machinery. Applications own routing, funding, eligibility and authorization. Do not add compatibility paths for the superseded three-table draft or an unreviewed schema.
 
 ## Dependencies
 
-None.
+None
 
 ## Enables
 
-`ARCH-076-ADMIN-001` and `ARCH-076-BACKGROUND-001` consume the accepted schema.
+Recalculate from dependent task metadata after architect acceptance; no implicit implementation handoff.
 
 ## Acceptance Criteria
 
-- [ ] Only the declared new forward migration, schema, targeted ERD and validation files/scripts change. Each Prisma model matches the SQL and the PostgreSQL partial indexes have the exact declared keys and predicates.
-- [ ] Both independent runner modes pass on PostgreSQL 17 with pgvector: same-shop co-membership, cross-shop exclusion, last-member release and immediate number reuse, concurrent reservations, durable clarification and stale messages under real database constraints.
-- [ ] Old conversations, recipients, attempts and message proofs remain readable; old writers and both-null/frozen-pair data work. Fresh and upgrade assertions reject half-filled dispatch evidence and mutating a sender identity.
-- [ ] Original credentials and customer rows are preserved, migration creates zero inventory records, and the temporary runner resources are removed after success or failure.
+- [x] Frozen routingDecision cannot be replaced during retry or terminal replay; invalid structural shape is rejected without imposing model confidence business policy in SQL or Shared.
+
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Enforce immutable recipient/sender identity and assignment-per-Conversation; protect original request candidate snapshots and terminal resolutions.
+- [x] Preserve current ordered-delivery sender/status evidence; use database baseline 2e14f866 with all 80 predecessor migrations through 20261113111320_arch075_meta_app_operation_state; sender target 20261113120000_whatsapp_sender_pool remains available.
+- [x] Preserve prepared attempt 1 metadata; resume only in its canonical prepared implementation worktree.
 
 ## Validation
 
-Add `scripts/validate-whatsapp-sender-pool.mjs`, `scripts/test-whatsapp-sender-pool-postgres.mjs` and these two `package.json` scripts.
+- [x] Positive Q1 unknown-shop→Q2 shop selection and basket prompt→Q3 exact basket selection→Q1 resolution/admission flow; reject foreign original/prompt/thread/route scope and missing confirmation, with replay/concurrency tests. No extra table/column or recursive/newest prompt lookup.
 
-- `test:sender-pool:schema` → `node scripts/validate-whatsapp-sender-pool.mjs`
-- `test:sender-pool:postgres` → `node scripts/test-whatsapp-sender-pool-postgres.mjs`
+- [x] Verify exact clause survives association/retry through authentic message IDs and offsets/hash; routingDecision contains no customer plaintext. Test frozen payload replacement rejection, terminal destructive scrub, FK cleanup and resurrection/rebinding rejection.
 
-Use the fresh/upgrade patterns in `scripts/test-arch068-conversation-delivery-plan-postgres.mjs`. Run both paths within the new command in an invocation-owned disposable `pgvector/pgvector:pg17` container with loopback-only or container-internal access. Never run migrations against a developer or hosted database. For upgrade, apply all migrations through the immediate predecessor, seed two shops, recoveries, conversations, old messages, an existing pending attempt and existing sender configuration with fixture values, then apply the new migration. For fresh, deploy the entire history and build equivalent fixtures. Check old records/receipt IDs/config are byte/value preserved, both dispatch columns read NULL on old rows and new tables are empty before pool fixtures. Insert a whole non-null dispatch pair on a new message, allow both-null, reject either half alone, prove the old writer still works. Verify each case below.
+- [x] Disposable PostgreSQL checks cover NULL initial decision, one valid freeze, attempted replacement, wrong schema shape, terminal replay and preservation of configurationSnapshot as a distinct record.
 
-1. Inspect Prisma DMMF names, fields, defaults, relations and nullability. Use PostgreSQL catalogs (`pg_get_expr`, `pg_get_indexdef`, `pg_indexes`, `pg_constraint`) to verify partial index predicates and keys and all FKs/checks. Check there is no unique constraint on individual recovery memberships by sender, no global uniqueness of customer phone and no table-level unique `(shopId,canonicalRecipient)` that would reject historical closed routes.
-2. With independent database connections, concurrently open (X, Shop A, S1) twice, then (X, Shop A, S2) and (X, Shop B, S1) against an existing committed A/S1. Check duplicate OPEN rows violate SQLSTATE 23505 under the appropriate unique index. Multiple memberships A1 + A2 on the same A/S1 route succeed. X/Shop B/S2 and Y/Shop A/S1 also succeed; X/Shop C/S1 conflicts while A/S1 is open. Test rollback visibility.
-3. Release only A1, show A2 remains open and X/Shop C/S1 is still unavailable. Release A2 and close A's original route in one transaction; adding X/Shop C/S1 then succeeds immediately. Historical A quotes still map to A's older route ID. A delayed close of old A cannot release C. FKs and canonical-recipient grammar, negative priority and invalid time order fail correctly. A CAS replay of an open/member insert cannot change its owner. Deleting the parent shop cascades only its route/member and route-local inbound evidence. Deleting an inventory row that retains a route fails. Ordinary priority/drain operations succeed; changing persisted phone/WABA raises 23514.
-4. Create two unresolved turns with different provider IDs on the same route. Reject duplicate inbound IDs, reuse of a non-null confirmed outbound prompt ID across turns and impossible receipt/admit combinations. Allow a question and scoped answer to retain original linkage. Verify terminal content scrub, exact content-free RESOLVED role markers and IGNORED input SQL NULL, including preserved classification after parent deletion. Confirm deduplication and original IDs survive, selected conversation deletion sets selection NULL, route/shop deletion cascades only its rows and invalid states fail. Verify the pending-age index excludes terminal states and sorts unresolved rows by first database receipt and provider ID. Assert the existing durable pool waiter partial predicate by including matching and nonmatching attempt states, sequences and failure codes. Retain other billing wait behavior.
-5. Refresh the tracked `docs/generated/prisma-erd.puml` and render `docs/generated/erd.png` following the established generator workflow (the PUML declares `@startuml erd`; the snapshot omits the generated PNG). Include the new entities and owned relationship changes only; record pre-existing unrelated diagram drift separately. Destroy only the container/work dir this invocation created in finally on pass/failure. Record the run and cleanup evidence.
+- [x] Prisma validate/generate and scoped ERD render against actual declared commands.
+- [x] Fresh and full-history upgrade replay preserve existing rows, ordered delivery parts, Meta operation state and old-writer nullable fields.
+- [x] Real PostgreSQL constraint, immutability, duplicate inbound, concurrent recipient allocation/release and deletion cases.
 
-From the prepared Database worktree, use the repository's Node/npm baseline and run:
+Inspect the repository package.json before selecting actual commands. Required disposable PostgreSQL checks are task-local repository checks, not execution of the deferred system-test task. No live customer/provider calls belong to these checks.
 
-```bash
-npm ci --ignore-scripts
-npm run prisma:validate
-npm run prisma:generate
-npm run test:sender-pool:schema
-npm run test:sender-pool:postgres
-npm run lint
-npm run erd
-git diff --check
-```
+## Stop Condition
 
-Use a disposable local connection for commands requiring `DATABASE_URL`. No application code, consumer submodule update, release, production migration or previous-migration edits are in the Database task.
+After Work Items, Acceptance Criteria and Validation pass, set review, return the Completion Report and STOP. Do not execute another task or deploy.
 
 ## Implementation Notes
 
-Ready, defined but not materialised. Run `/moda-task ARCH-076-DATABASE-001` using the parent portable definition and normal prepared packet. On a genuine schema conflict, report the exact schema/SQL and failing command to the architect rather than changing the invariant. On acceptance, consumer tasks use the accepted Database commit after the developer's normal integration. No agent merges main.
-
-After the Work Items, Acceptance Criteria and Validation pass, set status to review, send the Completion Report to `moda_architect` and stop. Do not execute a downstream task.
+Replace obsolete fixed SQL counts with exact reviewed five-table objects. Generate final SQL from the user-authorized field contract; do not copy historical five-table SQL.
 
 ## Completion Report
 
 ### Status
 
-Not Started.
+Ready for Review — prepared attempt 1 resumed without re-claiming or incrementing. This agent performed no hosted migration, service activation, system-test execution or main merge. The coordinator subsequently merged the accepted implementation source as recorded below.
 
 ### Files Changed
 
-Pending implementation.
+Implementation repository only:
+
+- `prisma/schema.prisma`: five sender/routing models, inverse relations, two nullable root dispatch sender fields; unchanged one-Conversation-per-checkout uniqueness.
+- `prisma/migrations/20261113120000_whatsapp_sender_pool/migration.sql`: additive tables, 9 FKs, 14 CHECKs, 16 explicit indexes, 8 functions and 11 triggers. Parent/assignment/resolution FKs use reviewed deferred deletion semantics.
+- `scripts/test-arch076-sender-pool-postgres.mjs` and package script: invocation-owned PostgreSQL authoring/deployment, preservation, ownership, freeze, concurrency, resolution and deletion validation.
+- `docs/architecture/arch076-sender-pool.md`, scoped `docs/generated/arch076-sender-pool.puml/.png`, and scoped additions to `docs/generated/prisma-erd.puml`.
+
+Parent write: this task file only. No parent submodule gitlink staged.
 
 ### Work Completed
 
-Pending implementation. Record launcher-resolved parent and implementation worktrees, mirrored branch names, start sync and final SHAs, consumer submodule pin where applicable, and cleanup.
+- Implemented immutable verified sender identity, recipient/sender thread generations, shop routes and lifetime recovery Conversation assignments. Assignment creation locks Conversation then CheckoutRecovery, while deferred reverse-owner checks prevent concurrent parent edits from invalidating ownership.
+- Preserved separate bound-shop and admitted-prompt scope. A neutral prompt remains neutral after shop binding; physical shop deletion scrubs pending private input without rebinding historical scope.
+- Added structural schema-versioned, write-once routing decisions and explicit immutable resolution witnesses. A frozen Q1 CLARIFY is preserved while a later child authorizes resolution; direct usable classifications may self-resolve, but CLARIFY cannot. Explicit prompt lookup supports original → shop prompt holder → basket selection, with no newest/reverse/recursive inference.
+- Protected raw input/candidate/moderation/configuration snapshots from replacement, permitted destructive terminal cleanup, excluded plaintext clause fields from decision evidence, preserved exact prompt receipts, and prevented terminal owner/resolver rebinding.
+- Preserved existing ordered physical delivery/status proofs and nullable old-writer message inserts. No credit/allowance fields, counter resets, fake funding or additional Conversation were added.
 
 ### Validation Results
 
-Pending. Record exact commands, exit status, container IDs, cleanup, failures and warnings. Report baseline issues separately from this change.
+Final tested implementation commit: `87fbe59edfc6aa80607f2dfdc409e9f1e5ed3dda`; tree `ec1a255c3501e239d9173671d5ced7a43f8b4089`.
+
+- `npm run lint` — PASS, exit 0.
+- `npm run test:arch076-sender-pool:postgres` — PASS, exit 0, **226 assertions**, actual Prisma migrate dev `--create-only --skip-generate` against disposable local PostgreSQL, then migrate deploy on fresh and seeded upgrade databases. All 80 predecessors replayed; 81 migrations through this target, re-deploy no-op.
+- Upgrade fingerprints preserved Shop, CheckoutRecovery, Conversation, CustomerPhone/consent, UsageEvent, UsageReservation, ConversationMessage, ConversationDeliveryPart, ConversationDeliveryStatusReceipt and MetaTemplateAppOperationState rows.
+- Positive and negative SQL cases covered frozen decisions, original/current identities, private-clause exclusion, neutral prompt scope, cross-thread/shop/parent/assignment rejection, parent/resolver cohort retention, physical owner deletion, immutable generation/assignment/dispatch proofs, concurrent owner mutation versus assignment insert, serialized recipient allocation, sibling release/admission, duplicate/restarted admission, SELECT_ONLY, SELECT_AND_QUESTION, independent NEW_QUESTION, distinct competing selection children, CLARIFY self-resolution rejection, and two-stage shop/basket prompts with forged root/thread/scope/receipt rejection.
+- `npm run validate` — PASS, exit 0.
+- `npm run prisma:generate` — PASS, Prisma Client 6.19.3, exit 0.
+- `npm run erd:puml` — PASS; retained only task-scoped new entities/relations and new message columns in the tracked aggregate ERD to avoid unrelated snapshot churn. `plantuml -tpng docs/generated/arch076-sender-pool.puml` — PASS; rendered PNG visually inspected.
+- `git diff --check` — PASS; final implementation worktree clean.
+
+Final invocation-owned PostgreSQL container `moda-arch076-sender-73bc8629-2bde-49be-88e7-30fbd1ad1930` and its volumes/temporary migration files were removed by the runner. Earlier interrupted containers were removed; no unrelated container or hosted DB was targeted.
+
+Resolved iteration failures: non-login shell initially lacked Docker; login shell plus canonical Node bootstrap resolved it. Workspace ENOSPC/containerd I/O failure interrupted one run; root coordinated disk/Docker recovery before the final successful replay. An expanded-fixture helper ordering ReferenceError and lint `no-unsafe-finally` were corrected and rerun. Cleanup now preserves the primary failure. `npm ci --ignore-scripts` reported 8 dependency audit findings; dependency versions/lockfile were not changed by this task.
+
+### Git / VCS
+
+- Mirrored branch: `task/ARCH-076-DATABASE-001` in both repositories.
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-DATABASE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-DATABASE-001`.
+- Shared workspace/shared implementation checkout switched or mutated for implementation: no. Another task worktree reused: no.
+- Prepared packet: parent remote task fast-forward not-needed; origin/main incorporated yes; implementation remote task fast-forward not-needed; origin/main already-current at `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7`.
+- Recursive submodule sync/update passed in launcher; no nested implementation submodules.
+- Original durable claim remains `5c0bc8cbe931abe52716492a9ccb150abcf5fe71`, attempt 1, executor codex, claimed_at 2026-11-15T11:46:23Z. Parent resumed current governance by merging origin/main into this same task branch, most recently `2628b87dfc6e1877bf6eb853bc7c7308366195e8`.
+- Source commit/tree above pushed to `origin/task/ARCH-076-DATABASE-001`; source PR [Database #79](https://github.com/kodjobaah/moda-interact-database/pull/79).
+- Coordinator merged source PR #79 to actual Database main `a7c204618c6b0ad83952a7b661482cfd03acf899`. A read-only fetch verified its tree `ec1a255c3501e239d9173671d5ced7a43f8b4089` exactly matches the tested source tree; no additional schema/code changes were introduced by integration.
+- Parent task/report is published on the same mirrored branch; historical governance PR #1059 is already merged, and the new report PR URL is provided in the coordinator handoff; initial review-report publication commit `b9c07371e1d0fe4c93f50f40bb038ec2771ca4ba` is pushed; final source-integration evidence publication SHA is recorded in the coordinator handoff.
+- Implementation main merged by this agent: no. Parent main merged by this agent: no. Unmerged implementation gitlink staged: no. Coordinator owns acceptance, final main integration and accepted DB consumer pin.
 
 ### Deviations
 
-None recorded.
+No runtime scope expansion. Added selective partial indexes for historical scope cleanup and parent/resolver/selected-pointer retention/deletion queries, avoiding full retained-turn scans. The sibling release/admission fixture deliberately retains another live assignment; it is not represented as the actual allocation service's last-member generation-closure race, which belongs to BACKGROUND-001.
 
 ### Assumptions
 
-None recorded.
+Background owns consent, window, contacted/eligible candidates, moderation, confidence, configuration and provider admission. SQL supplies durable structural identity/ownership/freeze constraints, not model confidence business policy. Allowance renewal remains independent DATABASE-002/BACKGROUND-005 work.
 
 ### Unresolved Issues
 
-None recorded.
+None blocking this bounded database task. Hosted rollout and architecture-level system tests are not claimed; SYSTEM-TEST-001 remains deferred at the user's request.
 
 ### Architectural Concerns
 
-None recorded.
+No new concern. Reviewed privacy, parent-retention, immutable resolution witness, ownership concurrency and multi-stage prompt amendments are incorporated.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — root review, 15 November 2026.
 
 ### Review Notes
 
-Pending.
+Accepted exact tested implementation; see final root acceptance evidence below.
 
 ### Reviewed Files
 
-Pending.
+Prisma schema, sender migration and integrity triggers, PostgreSQL runner, package scripts, architecture notes and scoped ERD.
 
 ### Validation Reviewed
 
-Pending.
+226 fresh/seeded-upgrade PostgreSQL assertions, lint, Prisma validate/client generation, scoped ERD and exact merged-tree equality.
 
 ### Architecture Conformance
 
-Pending.
+Five explicit routing entities; same original Conversation retained; no allowance funding rules or Shared changes.
 
 ### Follow-up
 
-Pending.
+ADMIN001 and BACKGROUND001 are Ready. Actual allocation-service last-member race belongs BACKGROUND001. Hosted rollout and SYSTEM-TEST remain deferred.
+
+## Reconciliation provenance — 15 November 2026
+
+Reconciled from the later local sender-pool revision formerly labelled ARCH-069. The completed chronological-input architecture and its ARCH-069 task identities are unchanged. ARCH-076 was already reserved for the earlier sender-pool proposal; this revision updates that proposal in place, retaining its Git history. These are definition changes, not implementation or deployment evidence. All execution remains Pending until compatibility review and dependency promotion.
+
+## Current-main definition review — 15 November 2026
+
+Architect read-only compatibility review against Database `2e14f866` found no conflicting Prisma anchor, table, foreign-key target or prescribed SQL name. The predecessor has 80 migration SQL files ending at `20261113111320_arch075_meta_app_operation_state`; the prescribed unused `20261113120000_whatsapp_sender_pool` target is the 81st through that migration. Upgrade fixtures replay all 80 predecessors and preserve the existing `ConversationDeliveryPart`, `ConversationDeliveryStatusReceipt` and Meta operation-state tables/rows in addition to the ordinary seeded ownership, consent, billing and message rows. Expected source counts are 138 Prisma models and 108 tracked PUML entities before this task.
+
+The SQL contract remains five new tables, eight foreign keys, thirteen CHECKs, nine explicit indexes (six partial) and one identity trigger/function. Required fresh/upgrade/concurrency validation belongs to the Database implementation attempt; this read-only definition review is not evidence those tests passed.
+
+DATABASE-001 is independently Ready: it supplies sender-pool storage only. The same-Conversation renewed-credit amendment belongs to separate DATABASE-002 and BACKGROUND-005 definitions and does not authorize adding allowance fields or billing policy here. No downstream task is promoted by this definition review. No implementation worktree, claim, schema migration or live mutation has been performed by the architect.
+
+
+### 15 November definition amendment
+
+Historical fixed SQL must be regenerated for the restored five-entity contract plus R15 evidence; hardcoded router policy remains superseded. Historical claim/review evidence above is retained as history, not approval of the replacement implementation. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.
+
+Prepared claim evidence: parent task claim commit `5c0bc8cbe`, attempt 1, executor codex, claimed_at 2026-11-15T11:46:23Z. Dedicated implementation worktree remains untouched at Database main 2e14f866. The earlier user-review pause is lifted; resume this exact prepared attempt without erasing its claim or incrementing a new attempt.
+
+Restored exact storage contract: use parent Explicit sender storage field table, FK/delete actions and indexes for all five entities; preserve R15 routingDecision separate from configurationSnapshot and immutable candidate/original/prompt scope. Prior SQL block/counts in historical review are not current migration instructions. No new claim; prepared attempt1 resumes under the user authorization.
+
+Parent relationship correction: parentProviderMessageId FK NO ACTION DEFERRABLE INITIALLY DEFERRED; allow NULL→ID once after classification (row must exist before model I/O), then no clear/rebind. Retention deletes eligible parent/dependent cohorts or full thread cascade; selected Conversation associates only atomically with frozen routingDecision. Validate deferred parent deletion protection, bind-once concurrency and cohort deletion. This supersedes generic parent FK SET NULL cleanup wording.
+
+R15 positive resolution lifecycle correction: classifier routingDecision and later original-request resolution are separate. Add nullable resolutionInboundProviderMessageId TEXT self-FK NO ACTION DEFERRABLE INITIALLY DEFERRED (no global UNIQUE). Q1 frozen CLARIFY stays unchanged; confirmed prompt + Q2 frozen exact-parent SELECT_ONLY/SELECT_AND_QUESTION permits Q1's initial selectedConversationId+witness=Q2 bind atomically with original admission and terminal scrub. Direct NEW_QUESTION may use self witness and leaves older pending originals alone. Bound witness is immutable; a preexisting CLARIFY decision must not block valid first resolution. Validate same-thread/route original/prompt/candidate and current owner/control/moderation under lock. Required positive PostgreSQL original→CLARIFY→confirmed prompt→child selection→original admission case, plus simultaneous selections/replay/crash, forged witness, separate new question, exact additional clause and retention-cohort deletion. Do not rewrite classifier decisions or infer resolver by reverse-child lookup.
+
+The parent R15 explicit two-stage shop then basket clarification section is authoritative. Preserve Q1/Q2 CLARIFY decisions; Q3 exact role decision and Q1 resolution witness provide later admission evidence. Prior wording requiring promptTurnId equal originalTurnId is superseded by the direct-child star contract.
+
+### Root acceptance and automatic completion — 15 November 2026
+
+Accepted source PR79 at actual Database main a7c204618c6b0ad83952a7b661482cfd03acf899; merged tree ec1a255c3501e239d9173671d5ced7a43f8b4089 is identical to tested87fbe59. Root reviewed schema, sender/owner integrity, explicit original/prompt/resolution relationships and final evidence. Final226 disposable PostgreSQL assertions pass across fresh and seeded full-history upgrade, plus lint, Prisma validation/client generation and scoped ERD. Checks include the two-stage Q1/Q2/Q3 star relationship and forged-scope rejection. The sibling release/admission check does not replace BACKGROUND-001 actual last-member allocation service race. Automatic completion retains attempt1 and claim history, clears activeclaim fields, and promotes only explicit dependent tasks. No hosted migration, activation or SYSTEM-TEST performed.
+
+## Developer Override — explicit reopen, 15 November 2026
+
+User decision: **“Reopen DATABASE-001 for this correction.”** Root received this explicit decision before this lifecycle edit. Reopen preserves the Accepted attempt-1 review, report, source and claim history above. Current status is Ready, executor/claimed_at remain null and attempt remains 1; only the next prepared execution claim increments to attempt 2. Execution remains agent-owned with automatic architect completion. This is a bounded correction of the existing R15 integrity contract, not permission to recreate sender storage or edit old migration history.
+
+### Correction objective and ownership
+
+The existing ARCH040 moderation subject trigger requires a CUSTOMER_MESSAGE assessment digest to equal the complete authentic ConversationMessage content. R15 SELECT_AND_QUESTION preserves that full inbound text for merchant history while independently moderating its exact genuine question clause. Add one forward migration to authorize only that proven clause subject. No new table, column, Shared API, plaintext decision field or general digest bypass. Consume latest accepted Database main including D002; preserve all existing sender/allowance constraints.
+
+### Required integrity contract
+
+- Preserve the existing full-content digest path unchanged for ordinary customer text/transcripts and all AGENT/AUTOMATION/HUMAN subjects. An unmatched alternative must still fail closed.
+- The narrow alternative applies only CUSTOMER_MESSAGE/TEXT, or CUSTOMER_MESSAGE/TRANSCRIPT with the verified audio proof below, on the actual authentic inbound CUSTOMER message. Require an immutable RESOLVED RoutingTurn with SELECT_AND_QUESTION, actual current provider ID and associatedMessages.currentMessageId matching this exact message, selectedConversationId matching its real Conversation/shop, and resolutionInboundProviderMessageId equal to the current routing inbound identity.
+- Require the referenced original root to be the explicitly bound parent, same thread and selected owner, resolved by this same current witness. Validate the exact confirmed prompt relationship: prompt is original root or its explicitly bound direct child, confirmed provider receipt matches decision, and frozen route/prompt scope agrees with selected owner. Do not infer a parent or prompt from newest/reverse traversal. Preserve direct NEW_QUESTION/SELECT_ONLY/CLARIFY rejection for clause digests.
+- Require current authentic full text moderation ALLOW proof under its exact full digest and current policy before accepting the independently assessed clause. Keep original-Q1 assessment proof and application moderation lifecycle intact. A failed or absent full-current assessment cannot be laundered by a clause ALLOW.
+- Validate frozen clause start/end as bounded integer **JavaScript UTF-16 code-unit offsets** against actual immutable full message content. Reject negative/reversed/out-of-bounds offsets and split-surrogate boundaries. Hash precisely the corresponding UTF-8 encoding of the JavaScript slice; Postgres code-point substring is not equivalent when astral characters precede the clause. Both decision clause.sha256 and NEW.contentSha256 must equal that exact slice digest. Never store clause plaintext in routingDecision or retain scrubbed customer payloads there.
+- Retain same-owner/actor/input checks, assessment lease/lifecycle guards, prepared decision immutability and terminal payload scrub. Use existing rows/evidence only. No timestamps fabricated or policy decisions moved into structural Shared validation.
+
+### Attempt-2 work and acceptance checks
+
+- [ ] Add an additive, safely ordered forward migration replacing only the owning moderation digest guard behavior; do not modify already deployed ARCH040/D001/D002 migration bytes.
+- [ ] Positive actual transaction: Q1 original → confirmed clarification → authentic Q3 SELECT_AND_QUESTION full text, frozen decision/resolution association, full-current ALLOW plus independently moderated exact clause, all same owner. Verify persisted full text and two distinct exact digest assessments; Q1 remains separately proven.
+- [ ] Positive two-stage Q1/Q2/Q3 star, ASCII and emoji/astral-prefix UTF-16 offsets, fresh database and upgrade from full current accepted migration history.
+- [ ] Negative wrong message/provider ID/Conversation/shop/thread/parent/resolution witness/prompt receipt/route scope; mutable or unconfirmed decision; wrong role; missing/disallowed full-current moderation; forged hash, malformed/noninteger/out-of-range/split-surrogate offsets; unverified transcript/AGENT/AUTOMATION/HUMAN alternatives; foreign assessment and replay/tamper. No blanket exception.
+- [ ] Existing moderation subject/lifecycle regressions and sender evidence/privacy invariants continue passing. Run task-local disposable PostgreSQL checks, owning schema/client validation and required repository lint/build checks; inspect actual package scripts. SYSTEM-TEST remains explicitly deferred.
+- [ ] Record new migration identity/checksum, exact tested source, physical prepared attempt-2 isolation/synchronization and complete test evidence. Return Review and stop; no hosted migration or live activation.
+
+BG004 may continue its independent implementation under its existing active claim, but clause-path acceptance/rollout is held until this correction is architect-accepted and its migration is present in the tested environment. Completed downstream tasks retain their historical acceptance; they are not silently reopened. No new unrelated task is introduced.
+
+### Verified voice clause clarification — attempt 2, 15 November 2026
+
+Voice is already part of R15; the user's general exact verified question-clause correction includes this case. Extend the same narrow alternative to TRANSCRIPT only when the authentic message is inbound CUSTOMER, contentType AUDIO and transcriptionStatus COMPLETED. Require actual full transcript content and immutable authenticated provider-message/media identity to match the verified transcript/source hash and operation/configuration provenance supplied before classification; reject missing, altered or unverified transcript evidence. Keep full-current canonical TRANSCRIPT ALLOW under its full-content hash as prerequisite, followed by an independent canonical clause TRANSCRIPT assessment with the exact UTF-16 slice hash. Apply the same resolved owner/original/prompt/witness checks as TEXT. Test verified voice SELECT_AND_QUESTION (including astral-prefix offsets), wrong media/source/full transcript hash, incomplete/failed transcription, foreign provenance, missing full-current ALLOW and ordinary unverified transcript refusal. Existing non-routing TRANSCRIPT full-content validation remains unchanged.
+
+Background reuses the existing configured speech/download/validation primitives under the durable RoutingTurn lease before a Conversation is selected. Immutable inputJson retains the authenticated raw audio event. Existing single-fill moderationJson temporarily holds verified full transcript, exact source/media digest, immutable speech operation/configuration provenance and full-current moderation proof before classification. Later immutable routingDecision may retain bounded **nonplaintext** assessment metadata (IDs, hashes, model, categories/outcomes and configuration revisions) for full/clause proof; never transcript or clause plaintext. Final same-owner admission creates the real AUDIO/COMPLETED message and canonical full-current plus clause assessment rows atomically; JSON is evidence, never a replacement moderation store. Terminal scrub removes ephemeral transcript/proof payloads while preserving required nonplaintext decision evidence. No fake Conversation, new table/column, Shared release, invented speech defaults or credit debit. Exact provider billing is not claimed once-only if an unknown speech operation must be retried.
+
+This clarification preserves the active prepared attempt-2 claim and report. Database and Background owners must agree the precise existing JSON proof shape before freezing the SQL guard; no broad AUDIO/TRANSCRIPT digest exemption is authorized.
+
+Because moderationJson is scrubbed at terminal association, the immutable routingDecision must retain the bounded **nonplaintext transcript attestation** required to validate later canonical assessment lifecycle operations: authentic provider/media identity and source digests, exact full-transcript hash, speech operation/configuration revision proof and full-current assessment ID/hash with inputKind TRANSCRIPT. Match this attestation to the actual AUDIO/COMPLETED message, full content and canonical assessment. Do not depend on scrubbed plaintext to authorize later updates, and do not retain transcript/clause text in this attestation.

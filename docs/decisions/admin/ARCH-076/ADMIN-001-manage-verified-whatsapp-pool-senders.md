@@ -9,15 +9,15 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-076-DATABASE-001"]
-enables: ["ARCH-076-SYSTEM-TEST-001"]
+enables: []
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-15
 ---
 
 # Manage verified WhatsApp pool senders in platform configuration
@@ -34,7 +34,7 @@ Expose verified operator enrolment, priority and eligibility for the registered 
 
 Preserved from original local commit `59705bb589342f31054e6c1fd011dacf9d495ae6` under root-authorized ARCH-076 collision correction. Defined portable design only; Pending/unclaimed until current-main compatibility review and explicit architect promotion. No runtime implementation or launch is authorized by preservation.
 
-Implement the operator inventory in [ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md). A server-authenticated SUPER_ADMIN enrols already registered Meta phone-number IDs under Moda's current WhatsApp Business Account (WABA), assigns priority and can disable allocation to a number. Admin never assigns numbers to checkouts. The single existing encrypted sender configuration supplies the server-side account and token. The inventory contains only non-secret IDs, status, priority and timestamps. Storefront and merchant checkout policy governs how many distinct baskets can coexist. When several recoveries share one shop and customer, Background attaches them to their existing sender route. A different shop still needs a separate active route for that customer. Closing the final active member ends that route. Admin only manages the available number inventory and never imposes a per-shop basket limit.
+Implement the operator inventory in [ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md). A server-authenticated SUPER_ADMIN enrols already registered Meta phone-number IDs under Moda's current WhatsApp Business Account (WABA), assigns priority and can disable allocation to a number. Admin never assigns numbers to checkouts. The single existing encrypted sender configuration supplies the server-side account and token. The inventory contains only non-secret IDs, status, priority and timestamps. Storefront and merchant checkout policy governs how many distinct baskets can coexist. When several recoveries share one shop and customer, Background attaches them to their existing sender route. A different shop receives an independent route; when every enabled sender is occupied, Background shares the sender serving the fewest active shops for that recipient, under the canonical architecture ranking. Admin does not enforce one shop per physical sender. Closing the final active member ends that route. Admin only manages the available number inventory and never imposes a per-shop basket limit.
 
 ## Scope
 
@@ -66,10 +66,10 @@ No checkout assignment, customer UI, Meta phone registration, template mutation,
 
 ## Work Items
 
-- [ ] Wire the authorised page, operator controls, input validation, localized presentation and typed Server Actions.
-- [ ] Verify connected phone membership on the trusted WABA and handle unavailable, malformed, duplicate, stale and rotated configuration deterministically.
-- [ ] Implement DB membership locking, duplicate enrolment, legacy cutover preflight, guarded setting edits and original-error diagnostics.
-- [ ] Write and run all declared unit, component, disposable PG and baseline checks. Document operator use and publish the parent and implementation task report for architect review.
+- [x] Wire the authorised page, operator controls, input validation, localized presentation and typed Server Actions.
+- [x] Verify connected phone membership on the trusted WABA and handle unavailable, malformed, duplicate, stale and rotated configuration deterministically.
+- [x] Implement DB membership locking, duplicate enrolment, legacy cutover preflight, guarded setting edits and original-error diagnostics.
+- [x] Write and run all declared unit, component, disposable PG and baseline checks. Document operator use and publish the parent and implementation task report for architect review.
 
 ## Interfaces / Contracts
 
@@ -100,11 +100,11 @@ type PoolRow = SenderSettings & {
 
 ## Acceptance Criteria
 
-- [ ] Demonstrate the actual authenticated route, form and server actions. Include empty/missing config, stable tie-break, stale update, safe error display and disabled status; Console/DTOs never carry secrets. Lower roles and forged input fail including direct invocation. Disabling does not fetch Graph.
-- [ ] Stub Graph for paged success, wrong WABA, disconnected/absent ID, missing status, repeated cursor/hostile link, HTTP failure, timeout, invalid envelope, token rotation and safe diagnostics. Assert no remote registration or message send for **any** case.
-- [ ] In real disposable Postgres verify idempotent/concurrent enrolment, disabled default, immediate disable, re-enable with new membership proof, negative/fractional priority rejection, enable/disable conflicting edits, immutable account, and no writes to routes, route members or pending clarification on disable. Two admitted checkouts at one shop for the same phone share one route. Their existing memberships must survive priority edits and disabling allocation; Admin never caps the number of eligible checkouts.
-- [ ] Exercise existing singleton enrolment with an active pre-cutover recovery and standalone message; assert blocked including grant-of-permit vs enrolment race. Exercise same recipient with expired-only checkout evidence before and after the sweep; assert no enrolment conflict. Seed a different pool sender and show mixed-use checks do not block it solely because an unrelated legacy singleton is busy.
-- [ ] Document numbered operator steps for enrol, enable, order and drain. Record changed paths, database pin and actual provider-fixture/loopback DB cleanup in the Completion Report.
+- [x] Demonstrate the actual authenticated route, form and server actions. Include empty/missing config, stable tie-break, stale update, safe error display and disabled status; Console/DTOs never carry secrets. Lower roles and forged input fail including direct invocation. Disabling does not fetch Graph.
+- [x] Stub Graph for paged success, wrong WABA, disconnected/absent ID, missing status, repeated cursor/hostile link, HTTP failure, timeout, invalid envelope, token rotation and safe diagnostics. Assert no remote registration or message send for **any** case.
+- [x] In real disposable Postgres verify idempotent/concurrent enrolment, disabled default, immediate disable, re-enable with new membership proof, negative/fractional priority rejection, enable/disable conflicting edits, immutable account, and no writes to routes, route members or pending clarification on disable. Two admitted checkouts at one shop for the same phone share one route. Their existing memberships must survive priority edits and disabling allocation; Admin never caps the number of eligible checkouts.
+- [x] Exercise existing singleton enrolment with an active pre-cutover recovery and standalone message; assert blocked including grant-of-permit vs enrolment race. Exercise same recipient with expired-only checkout evidence before and after the sweep; assert no enrolment conflict. Seed a different pool sender and show mixed-use checks do not block it solely because an unrelated legacy singleton is busy.
+- [x] Document numbered operator steps for enrol, enable, order and drain. Record changed paths, database pin and actual provider-fixture/loopback DB cleanup in the Completion Report.
 
 ## Validation
 
@@ -125,7 +125,7 @@ Use only invocation-owned disposable DB/Redis or mock services for checks. Recor
 
 ## Implementation Notes
 
-Defined but not materialised. Run `/moda-task ARCH-076-ADMIN-001` only after accepted Database schema is available on the intended dependency pin. Use the canonical prepared packet, mirrored parent/implementation branches, and finish with architect review. Do not contact production, provision phones, deploy, enable pool rows, send messages or merge main as part of authorship/validation. Stop with path, error and command if the accepted schema/credential contract differs from this definition. Blocking provider failures on the running application are typed operator outcomes, not a reason to change architecture.
+Executed the launcher-prepared attempt 1 claim in the canonical isolated worktrees below. The accepted D001 schema was consumed at its exact main commit with root authorization; no schema was authored here. The active-pool appendix was reconciled from current parent main before reporting. No production/provider invocation, deployment, pool activation, system validation or main merge was performed.
 
 After Work Items, Acceptance Criteria and Validation pass, set status to review, deliver the Completion Report to `moda_architect` and stop. Do not run terminal system validation as part of this task.
 
@@ -133,58 +133,107 @@ After Work Items, Acceptance Criteria and Validation pass, set status to review,
 
 ### Status
 
-Not Started.
+Ready for Review. Implementation [PR 104](https://github.com/kodjobaah/moda-interact-admin/pull/104), commit `2c48d70449b1ce1fb8c9f0d8a8645e988da10616`, is pushed on `task/ARCH-076-ADMIN-001`. Parent review submission uses the same branch name and preserves the original claim metadata.
 
 ### Files Changed
 
-Pending implementation.
+- Protected platform-configuration page, new sender-pool Client Component and authenticated Server Action; English catalogue/required keys and numbered README operator steps.
+- Server inventory service/core, strict Admin-local DTO/input validator, provider membership reader, legacy-use preflight, shared environment fence and bounded Shared-logger diagnostic adapter.
+- Extracted the existing SUPER_ADMIN guard without changing its policy. Narrow `messaging.sender` secret-writer integration takes the same environment fence, guards active WABA transitions and retains real CAS/redacted durable audit.
+- Unit/component/service-entrypoint tests, disposable PostgreSQL tests/harness and two package scripts. Source nested `database` gitlink consumes accepted D001; no schema, Shared package or parent implementation gitlink edits.
 
 ### Work Completed
 
-Pending implementation. Record launcher-resolved parent and implementation worktrees, mirrored branch names, start sync and final SHAs, consumer submodule pin where applicable, and cleanup.
+- Prepared canonical root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-ADMIN-001`; source worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-ADMIN-001`. Both use `task/ARCH-076-ADMIN-001`.
+- Launcher claim `e0796e1734d900c9d6d723f330f587611c976b16` was already prepared. Initial parent main was `a01d784df230ff1a74b50b798acc1e7dcf867f8a`; initial source main was `e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2`. Parent fetched/merged current `origin/main` at the reporting boundary, preserving attempt/executor/claimed_at and the authoritative active-pool clarification.
+- Root explicitly authorized source nested Database consumption from packet pin `2e14f8668346dfc135aa12f8d1fbc94e05c12ce7` to accepted D001 main `a7c204618c6b0ad83952a7b661482cfd03acf899`. Prisma Client was generated from this real schema.
+- New registration verifies exact CONNECTED membership on the saved sealed WABA, starts disabled, and only explicit fresh verification enables allocation. Inventory identities stay immutable; settings edits are CAS guarded and exact replays do not rewrite state.
+- Real short transactions serialize configuration/enrolment/drain changes; Graph calls remain outside locks. Active last drain/direct switch to an empty WABA are refused. Priority/non-final drain remain Graph-free during outages; unreadable potentially-final identity fails closed; revoke/set bootstrap remains available.
+- Legacy dispatch proof, effectively expired baskets, standalone rolling-window/in-flight history and permit/enrolment races are checked without modifying conversations/routes/assignments/clarifications. UTC handling is explicit for historical naive timestamps. Same-shop two-basket memberships survive edits/drain byte-for-byte.
+- Credentials never enter client DTOs or inventory. Provider diagnostics redact tokens/URLs and retain bounded safe code/subcode/trace and causes; malformed decrypted JSON cannot appear in logs.
 
 ### Validation Results
 
-Pending. Record exact commands, exit status, container IDs, cleanup, failures and warnings. Report baseline issues separately from this change.
+All final commands below passed in the prepared source worktree:
+
+| Command | Result |
+| --- | --- |
+| `npm ci` | Exit 0; existing audit advisories reported, no dependency upgrade. |
+| `npm run prisma:generate` | Exit 0 against accepted D001 pin. |
+| `npm run test:sender-pool:unit` | Exit 0, 12/12 including rendered component controls, provider fixtures, secret/AAD safety and actual public service-entry execution of auth plus real SUPER_ADMIN policy before DB access. |
+| `npm run test:arch043-admin-secrets:unit` | Exit 0, existing 16/16. |
+| `npm run test:sender-pool:postgres` | Exit 0, 10/10; all recorded migrations on invocation-owned pg17/pgvector. Real locks, membership race, CAS/rotation, final drains/switch race, zero/full-int/inclusive expiry including non-UTC session, standalone proof and pinned-state preservation. |
+| `npx tsc --noEmit` | Exit 0. |
+| `npm run lint` | Exit 0, no errors; one unchanged nested `database/eslint.config.mjs` anonymous-default-export warning. That file is unchanged across both Database pins. |
+| `npm run build` | Exit 0, optimized production build. Existing queue-monitor/BullMQ optional `@valkey/valkey-glide` warning; queue code and dependency lockfile were not modified. |
+| `git diff --check` / staged equivalent | Exit 0. |
+
+Final fixture: `moda-arch076-sender-pool-c4769521-0a78-4c49-b89a-4a06280aea4b`, container ID `5e70b5f6e00b93a648a4e90c8bf2b7f2c34b8f3d60abf4e42c4330bd2b53af22`; Docker destroy event confirms cleanup. Harness finally removes its generated bundle and container. Earlier failing harness attempts also cleaned up. Initial failures were esbuild synchronous-plugin collection and invalid legacy dispatch/clock-boundary fixtures; the final suite uses async bundling, the real required dispatch tuple and DB-safe timestamp fixture. PostgreSQL advisory locks return a supported scalar through a MATERIALIZED CTE, and are exercised rather than mocked.
 
 ### Deviations
 
-None recorded.
+- Root approved using the established `scripts/test-unit.mjs` ESM bundler instead of the task's direct `tsx --test` spelling: current Shared exports are import-only. No global module conditions, package/dependency change or substitute contracts.
+- Disposable PostgreSQL harness substitutes only the HTTP Auth.js module with fail-closed functions to avoid Next's extensionless runtime resolver outside Next. Trusted workflows retain real role checks, real PostgreSQL locks and existing secret CAS/audit. Independently, unit tests execute the actual public service entrypoints with injected authentication and the real SUPER_ADMIN policy; browser identity/OAuth itself is outside this fixture.
+- Root coordinated resource windows; canonical bootstrap selected the workspace Node version. One retry reused the already-verified runtime at root's then-explicit instruction; later launches returned to canonical bootstrap in a persistent shell when that instruction was retracted. No Node/dependency/version change.
 
 ### Assumptions
 
-None recorded.
+The current sealed sender record and verified inventory define active-pool state exactly as the accepted appendix. Operator cutover must retire unfenced workers and drain provider I/O; this task does not perform rollout or live enrollment.
 
 ### Unresolved Issues
 
-None recorded.
+None within this task. Coordinated Background/runtime rollout, test-first verification and deferred SYSTEM-TEST remain with their owning tasks/root.
 
 ### Architectural Concerns
 
-None recorded.
+No new cross-service contracts, schema or Shared release. The optional BullMQ build warning and nested Database lint warning are unrelated unchanged paths; no unrelated fixes were introduced.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — 15 November 2026. Automatic completion; attempt 1 retained. Historical claim: codex, 2026-11-15T14:04:09Z; prepared claim e0796e1734d900c9d6d723f330f587611c976b16.
 
 ### Review Notes
 
-Pending.
+Inspected the actual provider, inventory, authorization, configuration-fence, secret-service and PostgreSQL fixture implementation independently of the report. Root accepted and merged implementation PR104 to Admin main `ed0036eaf25efce71e8eb77435b8b04d8078084d`. Its tree exactly matches tested head `2c48d70449b1ce1fb8c9f0d8a8645e988da10616`: `48dc8435fe9742c220c1aae1f4e51105d89a4b86`. Dedicated mirrored worktrees, prepared synchronization and attempt evidence are recorded above. Parent gitlink records actual merged main; no implementation checkout was reset.
 
 ### Reviewed Files
 
-Pending.
+Platform configuration sender-pool core, preflight, provider lookup, membership and environment fences, diagnostics/types, server-only service and action; secret-service/service authorization integration; sender-pool UI; actual unit/component/authentication and PostgreSQL fixtures.
 
 ### Validation Reviewed
 
-Pending.
+Sender-pool unit/component/actual service authorization 12/12; existing secret tests 16/16; disposable PostgreSQL tests 10/10. Prisma generation, TypeScript, lint, production build and diff checks passed. Reviewed concurrent final drains, WABA/configuration CAS, Graph outage, credential rotation, UTC expiry, enrollment-versus-permit fencing and pinned-history preservation. Reported unchanged optional BullMQ/nested Database warnings do not represent task regressions.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to inventory-only ownership, server-only credentials, SUPER_ADMIN authorization, verified enrollment/enablement, active-pool bootstrap and final-drain invariants, shared lock ordering and Graph-free permitted operations. No network work occurs inside final transactions. No sender assignment, schema, Shared publication, live activation or integrated system-test execution is claimed.
 
 ### Follow-up
 
-Pending.
+No correction required. SYSTEM-TEST remains Pending and user-deferred while BACKGROUND-004 is incomplete. BACKGROUND-003 remains gated by BACKGROUND-002; BACKGROUND-004 remains gated by BACKGROUND-003. This acceptance adds no newly executable dependency frontier and does not authorize production rollout.
+
+## Reconciled active-pool configuration invariant
+
+For the current canonical shared-number design, sender occupancy is not exhaustion. Admin must reject disabling the last enabled verified sender of an active WABA and switching active messaging configuration to a WABA with no enabled verified sender. Serialize these checks with competing inventory/configuration writes; test concurrent disables and WABA switch against inventory enable/drain. Preserve the existing credential format and authenticated server-only boundary. An empty inventory is permitted before coordinated activation. A drained sender retains its original live and historical routes. The Active-pool predicate and bootstrap compatibility section below is the controlling transition rule, including initial/revoked bootstrap.
+
+
+## Explicit storage amendment — 15 November 2026
+
+Five sender entities exist: WhatsAppPoolSender, RecoverySenderThread, RecoverySenderRoute, RecoverySenderAssignment and RecoveryBasketRoutingTurn. Admin inventory operations manage only WhatsAppPoolSender; Background owns thread/route/assignment lifecycle. Drain preserves pinned conversations; no allowance/credit dependency.
+
+Inventory verification contract: populate verifiedAt only after successful provider CONNECTED/WABA verification at enrollment/enablement. New inventory remains allocationEnabled=false until explicit enabled verification. No unverified default timestamp is proof.
+
+## Active-pool predicate and bootstrap compatibility
+
+This is the authoritative interpretation of the active-pool invariant; it supersedes a blanket prohibition on zero inventory or all enabled credential writes. A pool is active exactly when the current environment's messaging.sender is a valid enabled sealed secret AND its WABA has at least one enabled, provider-verified inventory row. No activation column is introduced.
+
+- Reject an inventory change that would take that active WABA from one enabled verified sender to zero. Draining a non-final sender and priority-only changes remain Graph-free. Existing routes/history remain pinned even on drained inventory.
+- Reject a direct enabled messaging.sender WABA switch from an active pool to a target WABA with no enabled verified sender. Rotation within the same active WABA preserves the pool; secret values remain protected and normal CAS/audit applies.
+- Initial/zero/inactive bootstrap may save credentials before inventory exists, then provider-verify enrollment (disabled row), then provider-verify enable. Zero inventory is a Background configuration/repair hold, not permission to send or a fabricated active pool. Deliberate authorized revoke→set replacement uses the same bootstrap path; existing secret-service revocation stores DISABLED_SECRET and does not preserve editable staged plaintext. Do not invent an enabled flag inside the existing payload or require an impossible enrollment before credentials exist.
+- Credential/provider outage does not block priority-only changes or provably non-final drains. If the current sealed identity cannot be verified, refuse a potentially-final drain with bounded CONFIGURATION_UNAVAILABLE; never guess the WABA or expose decrypted values. Authorized secret revoke remains available for shutdown/security response.
+
+Fence all inventory mutations that alter enablement and messaging.sender set/update/rotate/revoke with one environment-scoped transaction advisory key `whatsapp-pool-configuration:<environment>`. Take it first in the final short transaction, before existing phone-membership advisory lock (when needed), configuration row lock and deterministic inventory row locks. Read the current actual configuration and inventory under the fence, compute before/after active transition and CAS outcome, then write/audit atomically. This also serializes a missing first config row; locking only an existing row is insufficient. Membership Graph lookup stays outside locks; recheck snapshot version/WABA after acquiring the fence, so rotated credentials cannot authorize a stale enrollment/enable. Never hold network work inside a DB transaction. Use this same lock ordering in secret-service and inventory paths; preserve the existing non-pooled membership fence.
+
+Required owner tests: initial credentials→zero inventory→disabled enroll→verified enable; deliberate revoke→set new WABA bootstrap; active direct switch to empty target refusal; last drain refusal; two concurrent drains cannot both succeed; switch versus enable/drain races; provider outage permits priority/non-final drain; unreadable sealed identity rejects potentially-final drain; stale Graph verification after credential rotation; audit/CAS and absence of plaintext/secrets in errors. No live provider calls. This clarification does not add a sender-runtime activation feature or couple routing to renewal.

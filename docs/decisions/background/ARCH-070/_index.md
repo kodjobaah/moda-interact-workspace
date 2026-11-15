@@ -21,3 +21,21 @@ ARCH-070-BACKGROUND-006 Complete/Accepted exactsource58783dd643ff75e2ce8e6618277
 ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omission proven; app guidance plus actualprovider schemaforwarding audit, no guard/budget/Shared change. Architecture InProgress; root live verification separate.
 
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
+
+ARCH-070-BACKGROUND-011 Pending: trusted basket fallback after eligible AI failure; depends BG010 and exact seam review.
+
+BG011 Ready independent preparation: exact generation seam and snapshot-labelled basket policy agreed; finalBG010/publicregistry integration gate retained.
+
+ARCH-070-BACKGROUND-011 Complete: exactee3e612 accepted after4541tests/PG4/privacy/auth proof; realproductiondelivery rootpending.
+
+ARCH-070-BACKGROUND-010 Ready(preparatory): appownedflatterminalselectionprotocol viaShared007raw/separatedecision, fullcontextproof/publicapprovalgate.
+
+ARCH-070-BACKGROUND-010 Complete: accepted exactcbcef46 real6.1 registry/bothCI4492PASS; genuinepostdeploycanary pending. BG011 fallback separate.
+
+ARCH-070-BACKGROUND-013 Ready: conservative400codepoint/8line verifiedcaption policy, independent012; finalsync required.
+
+ARCH-070-BACKGROUND-012 Ready: current-question authority; depends accepted011.
+
+BG012 Complete exactb8e6f92: latestobjective/moderation accepted, bothCI4550/PG13/typesbuildlintPASS; genuinecanary pending013.
+
+BG013 Complete exactc4e87f9: conciseverifiedcaption accepted,118focused/PG10/bothCI4553; realproductioncanary remainsrootowned.

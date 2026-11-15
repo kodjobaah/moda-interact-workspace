@@ -1,7 +1,7 @@
 ---
 id: ARCH-076-BACKGROUND-001
 architecture_id: ARCH-076
-title: Share WhatsApp senders by shop and release them after the last checkout
+title: Allocate immutable conversation senders under recipient serialization
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,156 +9,176 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: [ARCH-076-DATABASE-001]
 enables: [ARCH-076-BACKGROUND-002]
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-15
 ---
 
-# Share WhatsApp senders by shop and release them after the last checkout
+# Allocate immutable conversation senders under recipient serialization
 
 ## Architecture
 
-[ARCH-076 — WhatsApp sender pool and checkout reply routing](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md), coordinated by `moda_architect`.
+[ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md), coordinator moda_architect.
 
 ## Objective
 
-Give each customer/shop pair one sending number while any checkout has an open membership. Allow all separately eligible checkouts at that shop to share it. Release each checkout independently and make the sender available across shops immediately when its last member ends.
+Allocate immutable conversation senders under recipient serialization.
 
 ## Context
 
-Preserved from original local commit `59705bb589342f31054e6c1fd011dacf9d495ae6` under root-authorized ARCH-076 collision correction. Defined portable design only; Pending/unclaimed until current-main compatibility review and explicit architect promotion. No runtime implementation or launch is authorized by preservation.
-
-Implement Background-owned allocation, release and wait discovery in the repository named above. All paths below are relative to that repository. Read the [parent architecture](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md) and the accepted DATABASE-001 definition. Pin `database` to the integrated DB revision that contains that migration. This task supplies working database services, terminal transition wiring and integration tests. BACKGROUND-002 owns enabling pre-credit selection in the two outbound entry points, the repair-worker job handler and the provider-send bridge. Keep repair discovery exported and directly tested here. Wire the tick and worker together in BACKGROUND-002 so an intermediate checkout never publishes unrecognised jobs.
+15 November user-selected design retains five explicit sender entities plus the R15 evidence amendment. Sender attribution and conversation-credit renewal are independent streams. The user has authorized implementation of this reviewed design. Preserve prepared claims; execute only through the owning task launcher and accepted dependency frontier.
 
 ## Scope
 
-Own the three new sender-pool service modules, shared expiry operation, existing recovery terminal writers and focused unit/PostgreSQL tests listed below. Paths are relative to `moda-interact-background`.
+Owning Background services and focused unit/provider-fixture/disposable PostgreSQL tests.
 
 ## Out of Scope
 
-The final permit, HTTP transport, Admin UI, schema migration, webhook routing and activation are separate boundaries.
+Other repository implementation, live settings, production migration and activation. Sender tasks must not implement allowance renewal; allowance tasks must not implement sender allocation. The SYSTEM-TEST task is deferred at the user's request.
 
 ## Requirements
 
-The shop supplies checkout identity through its platform and its existing checkout lifecycle. Repeated events for the same checkout use existing generation/attempt semantics. A separate eligible checkout at that shop remains a separate recovery, conversation, consent/admission evaluation and credit. Never deduplicate, cancel or supersede it solely because the customer phone or sender is shared. PostgreSQL enforces one open shop route for (canonicalRecipient, shopId) and a single shop owner for each (canonicalRecipient, providerPhoneNumberId). Each recovery conversation independently joins that route. Detect effective expiry immediately, including before a sweep. A temporary pre-credit membership occupies a route slot but becomes eligible for normal replies only after that recovery's eligible initial send is confirmed. Release after the last open member, including clean-up of never-admitted preparations. Retain exact sender history for admitted messages.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Use one transaction-scoped advisory lock keyed canonical recipient across replicas; lock ordering is recipient then local owner records.
+- [x] Reuse live same-shop route and add immutable assignment even on drained sender; otherwise choose enabled verified sender with fewest distinct live shops for recipient, then priority and phone ID C order.
+- [x] Release only terminal/expired assignment; close route after last live assignment and thread after last live route under recipient serialization. Never move pending originals to a new generation or reset history.
+- [x] Handle last-assignment release racing same-shop/new-shop allocation; zero enabled inventory uses existing original-attempt capacity repair marker without new outreach identity.
 
 ## Work Items
 
-- [ ] Add `src/services/whatsapp-sender-pool/assignment.ts`, `expiry.ts` and `waiters.ts`. Use the existing Prisma client and bound values for SQL. The new directory owns one implementation shared by the Shopify and Woo paths. Keep runtime names domain-specific. Use `canonicalWhatsAppSender` from `src/services/whatsapp-contact-opt-out/phone.ts`, returning the digits-only canonical form or an invalid-owner result. Propagate actual database/configuration errors.
-- [ ] Export `prepareInitialSender({shopId,recoveryId,conversationId,attemptId,recipient,providerAccountId})`. Success returns `{kind:'assigned',routeId,assignedAt,sender:{providerAccountId,providerPhoneNumberId}}`; the internal Date assignedAt and routeId identify this exact provisional membership. Resolve shop/recipient/checkout ownership from persisted rows, never from a model or client. Remaining outcomes are `{kind:'pool-exhausted'}`, `{kind:'ineligible'}` and `{kind:'already-admitted'}`. If there is no existing open same-shop route and no new eligible sender, return pool-exhausted. Require one current matching shop, RECOVERY conversation, current checkout generation, active canonical recipient and eligible sequence-one attempt before a new claim. Accept PENDING, and CAPACITY_BLOCKED **only** when the existing authorised billing-capacity re-entry calls this path and has proved its ordinary preconditions. Preserve every existing billing failure code/hold. A CAPACITY_BLOCKED attempt can occupy an available tentative sender for its ordinary re-entry; if the pool is full, retain billing capacity as its existing retry owner and never replace its status with PENDING or overwrite its reason. Check the exact attempt's dispatch and receipt proofs even when its outboundMessageId is still null (use the existing initial admission idempotency-key lookup). Admitted/sent/unknown evidence returns already-admitted to existing continuation. Never manufacture an assignment to explain an old permit. Only current DETECTED recoveries are eligible to claim. Legacy customer snapshots still follow existing ownership rules.
-- [ ] In a short claim transaction take `pg_advisory_xact_lock(hashtextextended('whatsapp-pool-allocation:' || $1,0))` on the bound canonical recipient before any other row locks. Revalidate this attempt under the existing Shop -> Conversation -> CheckoutRecovery -> attempt lock order. Probe its immutable conversation membership first. Discover routeId without a member lock, lock its immutable route row first, then re-read/lock the exact member and compare the original route ID. Unreleased matching member and open route return their original sender/assignedAt idempotently. If released or wrong shop, recipient, WABA or generation, return ineligible, never re-home it. A previously admitted conversation lacking a historical membership follows its existing reconciliation.
-- [ ] If this checkout has no member, look up the existing open `whatsapp."RecoverySenderRoute"` by its exact (canonicalRecipient, shopId), join the verified inventory WABA, and lock the route row. If it still exists and has at least one live/provisional sibling, insert **only this checkout's membership** under that route. Reuse it even when its inventory row is currently drained, another sender is idle, or every sender is occupied by open routes. Draining prevents new shop routes. It does not split an existing shop thread or prevent another eligible checkout at that shop joining it. A conflicting WABA/identity is a typed ineligible/configuration failure, with no reselection. Never merge conversations or select an existing checkout here. Re-read the owner if a wait on its route lock observes closure. A found route with no current member must first be closed under its row lock; this prevents attachment to an earlier, empty route generation.
-- [ ] Otherwise start a new route. Select the first enabled inventory entry on the trusted WABA, ordered by `priority ASC, "providerPhoneNumberId" COLLATE "C" ASC`, with no open route for (canonicalRecipient, providerPhoneNumberId). Lock the inventory row FOR SHARE; recheck priority candidate eligibility and drain state. Insert the route with database time and its first member in the same transaction. `RecoverySenderAssignment.conversationId` PK and the two open-route partial unique indexes enforce ownership. Use conflict-safe inserts, re-read an atomically claimed same-shop route or retry another eligible sender. Under a competing claim a checkout can never have two memberships or two charged initial sends. No Redis lock or contact row serializes assignments across tenants.
-- [ ] Expire stale members by exact recovery ID before declaring a route occupied. Discover only this recipient's relevant open routes and their members using the partial indexes in DATABASE-001. Perform conditional expiry on stale owners one recovery at a time in separate short transactions using the same operation as the scheduler; never hold a new shop's or recipient allocation lock while expiring a different shop. At claim time, if a prior open member was found newly due or terminal, exit the claim transaction without business effects, process that owner and reread. Use the actual database cutoff and status, latest platform generation, and ordinary expiry side effects. An already-terminal member with a stale open row is released on exact owner proof. Close an empty orphan route under its lock if a cascade removed all of its members. While a shop route retains **any** live or valid pre-credit member, another shop cannot use its number for this recipient. Three retries for SQLSTATE 40001/40P01, then log and let the existing job retry. A database failure never becomes pool exhaustion.
-- [ ] Extract the exact expiry cutoff used by `src/services/checkout-recovery-expiry.service.ts` (retain BigInt arithmetic/range handling, zero and inclusive `lastExternalActivityAt <= now - lifetime`). Reuse `src/services/recovery-lifetime/checkout-recovery-lifetime.ts` for policy parsing. Read `checkoutRecoveryLifetimeDays` for the active environment from the same runtime config row as the Woo initial fence. Do not substitute an arbitrary maximum. Recheck time after lock acquisition in claim and permit. Compare actual DB status and the cutoff even before the scheduled sweep. On expiry/cancellation/completion close only the member for this checkout. After its existing recovery lock, read the member route ID without taking a member row lock, take the immutable route row FOR UPDATE, then lock/update the member. Require the same route ID, conversation ID and `releasedAt IS NULL`. Use database statement time. Under that same route lock run `UPDATE whatsapp."RecoverySenderRoute" r SET "closedAt"=statement_timestamp() WHERE r.id=$1 AND r."closedAt" IS NULL AND NOT EXISTS (SELECT 1 FROM whatsapp."RecoverySenderAssignment" m WHERE m."routeId"=r.id AND m."releasedAt" IS NULL)`. Use a fresh READ COMMITTED statement snapshot after acquiring the lock, or retry the whole operation on serialization conflict. Never lock all sibling recoveries/members merely to count them. Attach and every close/discard serialize on that route lock before modifying any membership. Final fences honor established Shop/Conversation/Recovery ordering, then route -> member. Close never takes the allocator advisory lock. Closing the route immediately invalidates every pending basket clarification on that route ID. BACKGROUND-004 owns revalidation and bounded content cleanup. Release does not wait for a cleanup job. An old route can never attach to its successor. Preserve history and existing attempt, usage, support and status-history effects.
-- [ ] Wire this terminal-release operation inside the same transaction as the successful status CAS in `src/services/checkout-recovery-expiry.service.ts`, `src/services/checkout-recovery/order-recovery-correlation.service.ts`, `src/services/checkout-recovery/recovery-capacity-resume-terminalization.ts`, `src/services/woocommerce-recovery/woo-checkout-activity.adapters.ts` (closeForResumption) and `src/services/woocommerce-recovery/woo-order-reconciliation.service.ts`. Inspect repository writers of CheckoutRecovery terminal status for equivalent SQL transitions. Release the old member by exact conversation and route. Closing A1 with A2 still open preserves that shop route and sender. Independent checkout keys remain eligible, including for the same recipient. Closing the final member makes the sender immediately reusable. A stale close of A1 cannot close or discard A2 or a newer shop route. Keep the existing terminal writer lock discipline and transaction boundaries.
-- [ ] Export `requireAssignedSender(tx,{shopId,recoveryId,conversationId,recipient,providerAccountId})` for BACKGROUND-002. Caller already holds the normal final-fence shop/conversation locks. Lock the recovery row before route and member; verify the exact recovery-conversation membership, unreleased member, unclosed route, route.shopId and canonicalRecipient, WABA, latest generation, status and effective lifetime. Shared ownership by a sibling gives no permission to send on the target recovery. Disabled inventory still permits use of an open shop route. Use current statement time, not a config-cache TTL, to decide expiry. Return the existing assignment or ineligible. Never create/transfer a row or acquire the allocation advisory lock from a final fence. Reuse this owner check in the inbound task where a current route needs revalidation.
-- [ ] Export `discardUnusedPreparation({shopId,recoveryId,conversationId,attemptId,recipient,routeId,providerPhoneNumberId,assignedAt})` using the typed proof from the claim. Under the same owner locks, compare exact original preparation identity (return the persisted assignedAt to the coordinator as an internal receipt); use the checkout's existing coordination plus durable attempt/message/credit evidence before removing it. Under route -> member locks, delete only the exact never-admitted membership after proving no admitted/confirmed/unknown dispatch for this conversation, no in-progress rival pre-credit handoff, and an absent or definitively released credit reservation. If it was the final open member, close that same route with the locked empty-membership test. Siblings, their reservations and original sender evidence remain independent. Where durable state cannot prove exclusive ownership, retain it for replay or expiry. After any admitted permit keep the row as original sender history and only close via release time. Never reopen RELEASED billing reservations.
-- [ ] An existing eligible same-shop route always takes precedence over declaring a waiter, even on a one-number full pool. Waiting is represented only by `commerce."RecoveryOutreachAttempt"` with sequence 1, PENDING and `failureCode='WHATSAPP_SENDER_POOL_EXHAUSTED'` (index from DATABASE-001). Set marker in the same transaction where a clean pre-credit claim confirms exhaustion. No Meta calls, UsageReservation, dispatch permit or extra attempt. Reconfirm no prior billing reservation/permit before first marking. A pre-existing reserved or uncertain credit without ownership follows the explicit cutover/reconciliation path, never the new waiter branch. Clear only this marker on the exact attempt in the same transaction as a successful initial claim. The stored tentative assignment is its durable replacement during the pre-credit handoff. An already claimed same-owner retry clears a stale identical marker idempotently. Existing initial-credit validation treats a non-null failureCode as a hold. Preserve all other failure codes.
-- [ ] Export `dispatchWaitingRecoveries({limit,enqueue})`. Use the existing recoveryRepairShopBatchSize as the positive bound. Page oldest by attempt.updatedAt ASC, id ASC under the partial index. Select DETECTED active owners only, clearing stale markers on terminal/non-pending rows by conditional update. Enqueue only {recoveryId,attemptId} from persisted state. On durable queue acknowledgement conditionally advance that waiter's updatedAt using its observed timestamp and marker; keep the marker for crash recovery. Rotate still-busy rows (and log/rethrow queue failures after attempting the rest of the batch). Older rows must not permanently starve a later eligible recipient. A later repair tick can republish missing work after restart or Admin enables a sender. As a separate bounded repair query in this same pass, identify open provisional rows with a DETECTED unblocked recovery, sequence-one PENDING attempt, no competing terminal/settlement proof, and no provider permit. These cover a crash after successful claim/marker clear and before billing or dispatch. Use the open member index joined to its unclosed route and conversation->recovery and unique (recovery,sequence), order by attempt.updatedAt,id, limit per branch, advance selected attempt.updatedAt conditionally only after acknowledgement. Include legal retained pre-permit prepared message/credit so its original continuation can finish. Require policy eligibility again at dispatch. Release unused preparations proven terminal or definitively pre-permit denied; avoid waking billing-capacity/consent-blocked recoveries under this scheduler. No new lease, service, unbounded sweep, cross-shop customer table or outbound call in the scheduler.
+- [x] Inspect the exact latest accepted repository pin and existing owning mechanisms.
+- [x] Implement only this task's scope and requirements.
+- [x] Complete the focused checks below and record exact commands and evidence.
+- [x] Return the isolated implementation branch and parent Completion Report for review.
 
 ## Interfaces / Contracts
 
-`prepareInitialSender`, `requireAssignedSender`, `discardUnusedPreparation` and `dispatchWaitingRecoveries` are Background-local calls with the inputs and results frozen above. Successful preparation returns the trusted sender pair, `routeId` and `assignedAt` for tentative-cleanup CAS. `requireAssignedSender` returns only current pinned sender details and route identity for the caller’s exact member. Recovery-level outbound remains per checkout; shop-level clarification never uses this call as a surrogate recovery permit. The authenticated WABA is supplied from the encrypted server configuration. DATABASE-001 is the schema and index owner.
+The parent architecture's Explicit sender storage, Independent allowance storage and Configurable routing sections are authoritative. Existing published Shared remains reusable structural machinery. Applications own routing, funding, eligibility and authorization. Do not add compatibility paths for the superseded three-table draft or an unreviewed schema.
 
 ## Dependencies
 
-ARCH-076-DATABASE-001, accepted and integrated.
+ARCH-076-DATABASE-001
 
 ## Enables
 
-ARCH-076-BACKGROUND-002.
+Recalculate from dependent task metadata after architect acceptance; no implicit implementation handoff.
 
 ## Acceptance Criteria
 
-- [ ] Concurrent A1/A2 for the same shop and recipient use exactly one route/sender and two recovery memberships. Replays return the original route/member. Concurrent A and B for the same recipient use distinct senders. Another recipient can independently use either. Business tests distinguish two real checkout identities from an update/duplicate of one.
-- [ ] Each terminal transition releases only the exact member. A live sibling keeps the number for its shop. Expiry/release of the last member frees the pair immediately, including before the sweep. Empty routes left by cascade have no long-lived claim.
-- [ ] Busy attempts incur no billing/permit, persist the exact wait marker and are discoverable fairly after a crash.
-- [ ] Verification covers released historical rows, orphan tentative rows, drain, concurrent lifetime/activity changes and failed queue acknowledgements.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Use one transaction-scoped advisory lock keyed canonical recipient across replicas; lock ordering is recipient then local owner records.
+- [x] Reuse live same-shop route and add immutable assignment even on drained sender; otherwise choose enabled verified sender with fewest distinct live shops for recipient, then priority and phone ID C order.
+- [x] Release only terminal/expired assignment; close route after last live assignment and thread after last live route under recipient serialization. Never move pending originals to a new generation or reset history.
+- [x] Handle last-assignment release racing same-shop/new-shop allocation; zero enabled inventory uses existing original-attempt capacity repair marker without new outreach identity.
 
 ## Validation
 
-Add `tests/unit/services/whatsapp-sender-pool/assignment.test.ts`, `waiters.test.ts` beside it and `tests/integration/whatsapp-sender-pool-lifecycle.integration.test.ts`. Run from the prepared repository worktree:
+- [x] Focused unit tests for every requirement, lint/typecheck/build as declared for changed code.
+- [x] Disposable PostgreSQL race/replay/restart tests with two recipients, two shops, multiple checkouts and shared sender.
+- [x] Provider HTTP fixtures for exact sender, failed initial delivery, unknown result, duplicate/foreign statuses and no network inside transactions.
 
-```bash
-npm ci
-npm run prisma:generate
-npx vitest run tests/unit/services/whatsapp-sender-pool tests/unit/services/checkout-recovery-expiry.service.test.ts
-node scripts/test-integration.mjs tests/integration/whatsapp-sender-pool-lifecycle.integration.test.ts
-npm run build
-git diff --check
-```
+Inspect the repository package.json before selecting actual commands. Required disposable PostgreSQL checks are task-local repository checks, not execution of the deferred system-test task. No live customer/provider calls belong to these checks.
 
-Use disposable PostgreSQL 17 + pgvector and Redis under the integration harness. Use independent DB connections and deterministic barriers. Demonstrate (1) two real A checkouts with one phone share one route even when S2 is free, when only S1 exists, and when S1 is subsequently drained; two shops for X receive distinct numbers, repeats of one recovery use the same member, and other recipients can reuse S1; (2) one-number exhaustion has a pending waiter and zero charges; (3) immediate availability at the exact configured cutoff, before the sweep, after it, for zero days, and after completion/cancellation/Woo resumption; (4) activity CAS racing expiry, lazy reclaim racing sweep, concurrent opposite-shop expiries, inventory drain and stale close vs newer assignment; (5) tentative cleanup cannot erase a competing/admitted permit; (6) concurrent A1 release versus A2 attach, simultaneous closure of A1/A2, cascade-to-empty route, different-shop reclaim and stale A1 close after reuse; prove no double route, no prematurely closed live A2 route, and eventual waiter success after the final release; (7) queue publication failed before/after commit, paging fairness, replay of cursor timestamp CAS, preserved credit history and pre-cutover unassigned already-sent evidence. Verify row counts, actual sender IDs and history, not solely return kinds. Check the identity and lifecycle of each route, membership and provider permit separately. Recheck merchant-specific STOP/consent and per-recovery credit evidence independently for every member. Keep provider-ambiguous credit correction independent of release.
+## Stop Condition
+
+After Work Items, Acceptance Criteria and Validation pass, set review, return the Completion Report and STOP. Do not execute another task or deploy.
 
 ## Implementation Notes
 
-Stop and return exact path/symbol and failing test/SQLSTATE if the accepted DB artifact lacks required names/indexes. Report newly observed supported paths to the architect when they contradict the binding. No provider enrolment, live send, deployment, historical migration edit or new billing algorithm. Record baseline defects separately.
-
-Portable definition. /moda-task ARCH-076-BACKGROUND-001 after dependency integration. Report prepared parent/implementation worktrees, branch/SHA and database pin, changed paths, command/exit codes, all DB/Redis cleanup and concurrency proof in this task. Return for architect review. Execution status: not started.
+Existing published Shared remains reusable structural machinery. Applications own routing, funding, eligibility and authorization. Do not add compatibility paths for the superseded three-table draft or an unreviewed schema.
 
 ## Completion Report
 
 ### Status
 
-Not Started.
+Ready for Review. Required owner-scope checks and final-head full GitHub CI passed; source and report are committed/pushed for architect review.
 
 ### Files Changed
 
-None.
+- `src/services/recovery-sender-pool/recipient-lock.ts` and `sender-pool.service.ts`.
+- Shopify recovery initiation, Woo initial outreach service/adapter and existing recovery-expiry cleanup.
+- Task-local PostgreSQL allocation/race tests and focused recipient-lock, initial hold and lifecycle regression tests.
+- Package test script and `docs/architecture/arch076-sender-allocation.md`.
+- Nested Database gitlink consumes accepted D001 main `a7c204618c6b0ad83952a7b661482cfd03acf899`.
+- Authorized validation-only cleanup removes one unused import and three unreferenced obsolete offer-budget constants in preexisting baseline files; no runtime/configuration values changed.
 
 ### Work Completed
 
-None.
+- Actual allocation/release service serializes by canonical recipient across replicas. Stable Conversation owner locks precede recovery locks; owner lookup uses live-recipient assignment IDs rather than an all-Conversation correlated scan.
+- Same-shop live route and existing Conversation assignment stay immutable, including drained inventory and current-credential configuration outages. A different recipient cannot take over an existing assignment. No new Conversation, history reset or allowance/credit/model/plan predicate.
+- New routes select enabled verified inventory from the server-validated current WABA only, ranked by distinct live shops for this recipient, priority and C-collated phone ID. Configuration is validated/unsealed outside locks. A new route requires the same deployment/row/version under FOR SHARE, fencing concurrent credential-account CAS. No provider/model/Redis I/O inside transactions.
+- Inclusive lifetime/terminal release closes only the last live route/thread generation. Future-dated activity alone is not expiry. Allocation and explicit release share the same recipient lock; the existing expiry tick reconciles terminal cleanup after crashes without a new worker.
+- Shopify and Woo initial gates allocate before new credit/provider admission. Zero inventory marks only the same unsent initial attempt CAPACITY_BLOCKED with bounded SENDER_INVENTORY_UNAVAILABLE reason and existing recovery capacity-repair marker. Success clears only that inventory-owned marker; retry preserves attempt/Conversation identity.
+- Existing consent, STOP, mode, service-window and final permit checks remain authoritative. Allocation is not send permission or contacted-candidate proof. Exact provider dispatch sender/status, failed/unknown initial contact evidence are explicitly handed to BACKGROUND002/003 rather than duplicated here; root confirmed that scope division.
 
 ### Validation Results
 
-Awaiting execution.
+- Broader GitHub unit CI exposed partial-database orchestration fixtures in matured-candidate materialization and checkout refresh reaching the newly injected allocation boundary. Explicit assigned allocation-port mocks isolate those pre-existing orchestration fixtures; the actual PostgreSQL allocation/race tests remain unchanged. Corrected in source commits `5de094f` and `0f2685a`. Both final-head GitHub workflows passed the full `npm run test:unit` suite: **403 files / 4,561 tests**, plus workflow typechecking. Runs: https://github.com/kodjobaah/moda-interact-background/actions/runs/43726145285 and https://github.com/kodjobaah/moda-interact-background/actions/runs/43726149730. The redundant local full-suite repeats were stopped and are not counted as passes; their task-owned loopback Redis container was removed after CI supplied the complete evidence.
+
+- Focused affected initial/expiry/Woo checks: 102 passed.
+- Expanded affected checkout-recovery/Woo suites plus new recipient serialization unit checks: 41 files, 564 tests passed.
+- `npm run test:arch076-sender-pool:postgres`: 12 passed against the actual service on disposable full-migration PostgreSQL. Covers same-shop concurrent allocation, drain/restart immutable identity, least-load/priority/C ordering, independent recipients, actual last-member release racing same/new-shop allocation, live siblings, inclusive expiry/future activity, terminal restart repair, zero-inventory same-attempt no-reservation/no-provider hold and success cleanup, foreign WABA exclusion, current-account CAS blocked-session fence and configuration outage reuse. Runner removed owned infrastructure.
+- First PostgreSQL run had one fixture-only duplicate Shop ID under Promise.all; fixture IDs corrected before final passing runs. Earlier 10/11 and 11/11 runs are superseded by final 12/12.
+- Initial `npx tsc --noEmit`: passed. Final `npm run lint` and `npm run build` passed (exit0) on the committed tree. Build includes Prisma generation, source TypeScript and provisioning TypeScript. Final19 expiry/recipient tests passed after the tiny cutoff cleanup edit; generated build output contains that edit (source14:24:39, compiled14:25:53). Interrupted/failed checks are not counted as passing.
+- `git diff --check`: passed. No hosted database, provider/customer call, live settings, deployment, Shared publication or deferred SYSTEM-TEST execution.
+
+### Physical Worktree and Publication Evidence
+
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-BACKGROUND-001`; implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-BACKGROUND-001`.
+- Both task branches: `task/ARCH-076-BACKGROUND-001`. Shared/default checkouts not switched/mutated; no other task worktree reused.
+- Prepared packet `/tmp/arch076-background001-prepared.json`: both worktrees newly created; remote task fast-forward not-needed; origin/main already-current; recursive submodule sync/update/status ready at recorded Database6f42b711. Claim15ed711ce attempt1, executorcodex, claimed2026-11-15T14:04:07Z, committed/pushed by launcher. No repeated preparation or claim.
+- Root explicitly authorized nested Database update to accepted D001a7c2046. No Database source edited or parent gitlink staged by this repository agent.
+- Implementation commit `f8d8e418049d081856e52a2d01e4e8ee3b7c48b6`, followed by orchestration-fixture corrections through final head `0f2685a21aa62aacc5ac7f5668146ad924877cbd`, committed/pushed on the task branch. Source PR239: https://github.com/kodjobaah/moda-interact-background/pull/239. Parent report committed on its matching task branch; current origin/main merged without dropping accepted D002/Commerce/cutover governance. Root owns all main merges and acceptance; no acceptance decision is made by this agent.
 
 ### Deviations
 
-None.
+Provider HTTP sender/status behavior belongs to subsequent BACKGROUND002/003; task-local allocation fixtures prove database-only/no-send hold and retry behavior. Root approved this boundary and the bounded unused-symbol lint cleanup. No scope expansion into allowance accounting. Subsequent BG002 handoff must include the newly reconciled PR1071 old-singleton/nonpooled provider-admission fences before any pool inventory is enabled.
 
 ### Assumptions
 
-None.
+Current verified inventory is authored by ADMIN001. Provider send time revalidates pinned sender credential membership in BACKGROUND002. Existing policy, consent and lifecycle services remain authoritative.
 
 ### Unresolved Issues
 
-None.
+None within allocation ownership; final checks passed. Runtime activation remains root-owned after dependent sender transport/routing tasks and test verification. Do not enable an empty/partial test pool during this task.
 
 ### Architectural Concerns
 
-None.
+Independent BG005 funding changes may advance the nested Database pin beyond D001; accepted combined integration must preserve that later pin and rerun relevant checks. This branch does not implement funding or provider dispatch.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — automatic completion, 15 November 2026.
 
 ### Review Notes
 
-Awaiting implementation.
+Root reviewed allocator/account fencing, outage/reuse behavior and exact final validation, then merged source PR239 as actual Background main f6bbcc5fbf247ea9b8df87ad0ba34ade079d9c38. Independently fetched and compared tested source0f2685a21aa62aacc5ac7f5668146ad924877cbd: both tree840860afe657fa61f6add12eb09084ead030bee1, empty diff. Preserve prepared attempt1 history in report; clear active claim fields on completion. No provider/runtime activation or hosted mutation is claimed.
 
 ### Reviewed Files
 
-None.
+Actual recipient-lock.ts and sender-pool.service.ts current-WABA/version FOR SHARE fence, indexed owner lookup, immutable existing assignment/reuse and expiry/release path. Root reviewed Shopify/Woo initial allocation gates, task-local PostgreSQL allocation service races, fixtures and final CI. Nested Database source remains accepted D001a7c2046; later BG005 integration must retain combined Database0a965 rather than regress it.
 
 ### Validation Reviewed
 
-None.
+Final actual-service PostgreSQL12/12 passed; complete final GitHub unit CI403 files/4561 tests and workflow typechecks passed in both workflows listed in report. Relevant local initial/expiry/recipient checks, lint and build passed; report distinguishes interrupted/earlier runs from final results. Source versus merged tree identical, so no redundant rerun. Physical canonical parent/implementation worktree, launcher sync/recursive submodule and attempt1 evidence recorded. No SYSTEM-TEST execution.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to independent sender allocation: current verified WABA for new routes, recipient serialization, same-shop/drained route reuse during credential outage, precise expiry/lifecycle release, original-attempt zero-inventory repair before new credit. No routing-by-credit or allowance renewal implementation. BG002/003 own provider pinning/non-pooled enrollment fence/exact historical proof; allocation alone is not send permission or contacted evidence.
 
 ### Follow-up
 
-None.
+Promote only BACKGROUND002 Ready because its sole BG001 prerequisite is Complete. BG003/BG004 remain Pending; BG005 independent active work is unchanged. Keep pool inventory disabled/consumers held until complete sender path is test-verified, old workers drained and root authorizes activation. Production auto-deploy holds and SYSTEM-TEST deferral remain.
