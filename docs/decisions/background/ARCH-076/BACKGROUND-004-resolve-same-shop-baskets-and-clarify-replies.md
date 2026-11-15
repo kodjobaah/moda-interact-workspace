@@ -44,6 +44,8 @@ Other repository implementation, live settings, production migration and activat
 
 ## Requirements
 
+- [ ] Support the parent explicit R15 two-stage star relation: Q2 shop choice and Q3 basket choice both parent Q1 substantive original; Q3 names exact basket prompt Q2, whose parent is Q1. Prompt may be Q1 or its explicitly identified direct child, not necessarily original itself.
+
 - [ ] Follow the parent R15 evidence privacy amendment: routingDecision contains only message IDs, clause offsets/hashes and structural evidence, no exact clause plaintext. Preserve exact wording through pending inputJson then atomic existing ConversationMessage association.
 - [ ] Freeze input/candidate/config/parent scope; permit only explicit destructive terminal value→NULL scrub and real FK SET NULL cleanup, never rebind or payload resurrection. Terminal scrub removes ephemeral customer/candidate/prompt payloads without deleting authentic owned Conversation history.
 
@@ -101,6 +103,8 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 - [ ] Resolve original once with authentic question/selection transcript; selection-only reply never replaces substantive original question.
 
 ## Validation
+
+- [ ] Positive Q1 unknown-shop→Q2 shop selection and basket prompt→Q3 exact basket selection→Q1 resolution/admission flow; reject foreign original/prompt/thread/route scope and missing confirmation, with replay/concurrency tests. No extra table/column or recursive/newest prompt lookup.
 
 - [ ] Verify exact clause survives association/retry through authentic message IDs and offsets/hash; routingDecision contains no customer plaintext. Test frozen payload replacement rejection, terminal destructive scrub, FK cleanup and resurrection/rebinding rejection.
 
@@ -197,3 +201,5 @@ Historical fixed SQL must be regenerated for the restored five-entity contract p
 Parent relationship correction: persist input before model/classification; bind parentProviderMessageId NULL→exact ID once after role classification, then never clear/rebind. Selected Conversation and frozen decision associate atomically. Retention operates on eligible request cohorts under deferred parent FK, never orphaning a pending original/child.
 
 R15 positive resolution lifecycle correction: classifier routingDecision and later original-request resolution are separate. Add nullable resolutionInboundProviderMessageId TEXT self-FK NO ACTION DEFERRABLE INITIALLY DEFERRED (no global UNIQUE). Q1 frozen CLARIFY stays unchanged; confirmed prompt + Q2 frozen exact-parent SELECT_ONLY/SELECT_AND_QUESTION permits Q1's initial selectedConversationId+witness=Q2 bind atomically with original admission and terminal scrub. Direct NEW_QUESTION may use self witness and leaves older pending originals alone. Bound witness is immutable; a preexisting CLARIFY decision must not block valid first resolution. Validate same-thread/route original/prompt/candidate and current owner/control/moderation under lock. Required positive PostgreSQL original→CLARIFY→confirmed prompt→child selection→original admission case, plus simultaneous selections/replay/crash, forged witness, separate new question, exact additional clause and retention-cohort deletion. Do not rewrite classifier decisions or infer resolver by reverse-child lookup.
+
+The parent R15 explicit two-stage shop then basket clarification section is authoritative. Preserve Q1/Q2 CLARIFY decisions; Q3 exact role decision and Q1 resolution witness provide later admission evidence. Prior wording requiring promptTurnId equal originalTurnId is superseded by the direct-child star contract.
