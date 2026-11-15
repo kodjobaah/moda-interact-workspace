@@ -313,3 +313,7 @@ Review Status: Accepted. Exact source4e0716e3aad311a6d7c8620d11070988a35cbb14/re
 Affected216/type/build/installed SDK longterminal nonreentry/types/browser/diff checks reviewed PASS with normal mirrored attempt5 evidence. Independently inspected root024 receipt: four actual discovery outputs/four read results replayed, five requests compared (new terminalResponseOnly flag explicitly distinguished), actual two differing calls and6952 companion chars preserved, whole binding true, one projection, three explicit union pairs all preserved, zero actual model/MCP, accepted true. Initial020 harness flag-equality mismatch is setup-only, not source failure. No remaining source finding.
 
 Source accepted/Complete as reusable mechanics, not uninterrupted natural or production delivery efficacy. Shared008 may prepare exact6.1.0 metadata archive now; public publication still requires new explicit exact-artifact approval. Background final registry/CI and Commerce adoption/deployment gates remain separate; architecture In Progress. No merge/publication/live action byarchitect.
+
+### Root integration receipt
+
+Root merged implementationPR93 exact4e0716e to actualSharedd77268b87a924e4c5304f5d328eb232dde119a45; identical source tree independently verified. Parentgitlink records actual mergedsource, not taskhead. Mainmerge remains rootowned; no liveoperation.
