@@ -125,6 +125,14 @@ ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omi
 
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
 
+## Deterministic AI-failure basket fallback
+
+User authorizes ARCH-070-BACKGROUND-011: existing saved common shop template plus honest inability wording/current trusted basket and canonical checkout footer after eligible AI failure. Existing consent/control/window/idempotency/permit/providerUNKNOWN/usage guards remain authoritative. No model retry, fake product selection or guaranteed provider delivery. Pending accepted BG010 and source seam review; no schema/infrastructure change expected.
+
+BG011 Ready isolated preparation: runAgent failure-only typed seam retains same admitted identity and guarded common composition/send. Saved-basket snapshot explicitly historical (no generation-current claim); genuinely no-basket inability-only only via supported saved-language template. Existing provider retry/UNKNOWN preserved, no delivery guarantee. FinalBG010/registry synchronization remains.
+
+BG011 Complete exactee3e612, admitted-root fallback/currentcontrols/deadlinereserve/savedbasket/PG4 and bothCI4541PASS accepted. No guaranteedMeta delivery; realcanary and recovery+messaging+Commerce rollout/config gates remain. Architecture In Progress.
+
 ARCH-070-BACKGROUND-010 Ready(preparatory): appownedflatterminalselectionprotocol viaShared007raw/separatedecision, fullcontextproof/publicapprovalgate.
 
 BG010 implementation Complete exactcbcef46 after actual6.1registry/all163 and bothCI4492PASS. Source024/hostproof is not genuineproductiondelivery. BG011, Commerceconsumerdeployment and recovery+messagingdrain/config/canary gates remain; architecture In Progress.
