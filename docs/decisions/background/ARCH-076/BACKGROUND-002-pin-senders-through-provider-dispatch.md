@@ -101,35 +101,50 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Not Started
+Implementation in progress. Source draft PR240: https://github.com/kodjobaah/moda-interact-background/pull/240. Initial source head `24f45ef` is committed/pushed; additional exact-history proof tests and integration of accepted BACKGROUND-005 main remain before review readiness.
 
 ### Files Changed
 
-None
+- New `src/services/recovery-sender-pool/dispatch-sender.ts`; sender permit and transport wiring in outbound delivery, recovery final fence, Woo initial fence, general fence, HUMAN dispatcher and multipart fence/engine.
+- Scalar provider-status ownership guard and temporary legacy routing-guidance enrollment precheck.
+- Focused unit fixtures, `tests/integration/arch076-dispatch-sender.integration.test.ts`, declared PostgreSQL command and source-owned dispatch documentation.
 
 ### Work Completed
 
-None
+- Validate/unseal current sender configuration outside SQL; check row/version, immutable assignment, frozen recipient, account membership and owner policy inside final permits. Freeze exact root sender pair and retain ordered-part identity.
+- Serialize new standalone permits against disabled/enabled enrollment; preserve narrow proved preexisting unassigned AI/HUMAN continuation without assignment backfill.
+- Forward exact sender through text/image/template transports; foreign stamped statuses have no lifecycle, credit or contact effects.
 
 ### Validation Results
 
-Not run; definition only.
+- Focused delivery: 52 passed; text/image/template snapshot: 18 passed; guidance precheck: 10 passed; scalar status suite passed before additional paired-identity cases.
+- Disposable PostgreSQL: 9 cases passed, including actual standalone/Woo permits, replay, disabled enrollment, both membership-lock winners, shared sender/recipient/account checks and credential CAS serialization. Additional explicit AI/HUMAN and historical multipart cases are being validated.
+- Full lint and source typecheck passed before the latest proof-test additions. Full unit CI/integrated-main verification and build remain pending. Interrupted/failing discovery runs are not counted as passes.
 
 ### Deviations
 
-None
+The old neutral routing-guidance path has a membership/configuration precheck but still only historical Redis admission. This is **not** a complete durable permit or a closed commit-to-provider enrollment race. Pool activation is gated on BACKGROUND-004's persisted RoutingTurn replacement. No fabricated Conversation or external I/O in SQL was introduced.
 
 ### Assumptions
 
-None
+Sender routing remains independent of allowance funding. Preserve accepted BACKGROUND-005 funding checks and combined Database `0a965c5` when integrating current main. No Shared release, live mutation, deployment or deferred SYSTEM-TEST execution.
 
 ### Unresolved Issues
 
-Use owning task launcher at the accepted dependency frontier.
+Final integrated validation/review submission pending; no main merge by this agent.
+
+### Launcher Evidence
+
+- Canonical root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-BACKGROUND-002`, `task/ARCH-076-BACKGROUND-002`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-BACKGROUND-002`, `task/ARCH-076-BACKGROUND-002`.
+- Launcher created both worktrees, incorporated current origin/main, verified recursive submodules and dependency, and committed/pushed claim `ca9404984845ba2b3af2c5cd2426bb4d5fe16c07`, attempt1 at `2026-11-15T14:58:50Z`.
+- Source initial head `f6bbcc5fbf247ea9b8df87ad0ba34ade079d9c38`; initial nested Database `a7c204618c6b0ad83952a7b661482cfd03acf899`. No shared/default checkout switch or another task's worktree reuse. No parent implementation gitlink staged.
+- Parent origin/main subsequently merged to consume the exact legacy continuation amendment and accepted Admin governance. Architect Review remains untouched.
 
 ### Architectural Concerns
 
-None
+None beyond the explicit staged legacy-guidance durability gate above.
 
 ## Architect Review
 
