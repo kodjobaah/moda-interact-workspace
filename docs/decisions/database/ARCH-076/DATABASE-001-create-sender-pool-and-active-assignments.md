@@ -160,7 +160,7 @@ Resolved iteration failures: non-login shell initially lacked Docker; login shel
 - Original durable claim remains `5c0bc8cbe931abe52716492a9ccb150abcf5fe71`, attempt 1, executor codex, claimed_at 2026-11-15T11:46:23Z. Parent resumed current governance by merging origin/main into this same task branch, most recently `2628b87dfc6e1877bf6eb853bc7c7308366195e8`.
 - Source commit/tree above pushed to `origin/task/ARCH-076-DATABASE-001`; source PR [Database #79](https://github.com/kodjobaah/moda-interact-database/pull/79).
 - Coordinator merged source PR #79 to actual Database main `a7c204618c6b0ad83952a7b661482cfd03acf899`. A read-only fetch verified its tree `ec1a255c3501e239d9173671d5ced7a43f8b4089` exactly matches the tested source tree; no additional schema/code changes were introduced by integration.
-- Parent task/report is submitted on the same mirrored branch/PR #1059; initial review-report publication commit `b9c07371e1d0fe4c93f50f40bb038ec2771ca4ba` is pushed; final source-integration evidence publication SHA is recorded in the coordinator handoff.
+- Parent task/report is published on the same mirrored branch; historical governance PR #1059 is already merged, and the new report PR URL is provided in the coordinator handoff; initial review-report publication commit `b9c07371e1d0fe4c93f50f40bb038ec2771ca4ba` is pushed; final source-integration evidence publication SHA is recorded in the coordinator handoff.
 - Implementation main merged by this agent: no. Parent main merged by this agent: no. Unmerged implementation gitlink staged: no. Coordinator owns acceptance, final main integration and accepted DB consumer pin.
 
 ### Deviations
