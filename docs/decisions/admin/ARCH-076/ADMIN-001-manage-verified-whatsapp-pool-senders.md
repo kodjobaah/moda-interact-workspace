@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -191,7 +191,7 @@ Pending.
 
 ## Reconciled active-pool configuration invariant
 
-For the current canonical shared-number design, sender occupancy is not exhaustion. Admin must reject disabling the last enabled verified sender of an active WABA and switching active messaging configuration to a WABA with no enabled verified sender. Serialize these checks with competing inventory/configuration writes; test concurrent disables and WABA switch against inventory enable/drain. Preserve the existing credential format and authenticated server-only boundary. An empty inventory is permitted before coordinated activation. A drained sender retains its original live and historical routes. Complete this amendment's compatibility review before promoting the task.
+For the current canonical shared-number design, sender occupancy is not exhaustion. Admin must reject disabling the last enabled verified sender of an active WABA and switching active messaging configuration to a WABA with no enabled verified sender. Serialize these checks with competing inventory/configuration writes; test concurrent disables and WABA switch against inventory enable/drain. Preserve the existing credential format and authenticated server-only boundary. An empty inventory is permitted before coordinated activation. A drained sender retains its original live and historical routes. The Active-pool predicate and bootstrap compatibility section below is the controlling transition rule, including initial/revoked bootstrap.
 
 
 ## Explicit storage amendment — 15 November 2026
@@ -199,3 +199,16 @@ For the current canonical shared-number design, sender occupancy is not exhausti
 Five sender entities exist: WhatsAppPoolSender, RecoverySenderThread, RecoverySenderRoute, RecoverySenderAssignment and RecoveryBasketRoutingTurn. Admin inventory operations manage only WhatsAppPoolSender; Background owns thread/route/assignment lifecycle. Drain preserves pinned conversations; no allowance/credit dependency.
 
 Inventory verification contract: populate verifiedAt only after successful provider CONNECTED/WABA verification at enrollment/enablement. New inventory remains allocationEnabled=false until explicit enabled verification. No unverified default timestamp is proof.
+
+## Active-pool predicate and bootstrap compatibility
+
+This is the authoritative interpretation of the active-pool invariant; it supersedes a blanket prohibition on zero inventory or all enabled credential writes. A pool is active exactly when the current environment's messaging.sender is a valid enabled sealed secret AND its WABA has at least one enabled, provider-verified inventory row. No activation column is introduced.
+
+- Reject an inventory change that would take that active WABA from one enabled verified sender to zero. Draining a non-final sender and priority-only changes remain Graph-free. Existing routes/history remain pinned even on drained inventory.
+- Reject a direct enabled messaging.sender WABA switch from an active pool to a target WABA with no enabled verified sender. Rotation within the same active WABA preserves the pool; secret values remain protected and normal CAS/audit applies.
+- Initial/zero/inactive bootstrap may save credentials before inventory exists, then provider-verify enrollment (disabled row), then provider-verify enable. Zero inventory is a Background configuration/repair hold, not permission to send or a fabricated active pool. Deliberate authorized revoke→set replacement uses the same bootstrap path; existing secret-service revocation stores DISABLED_SECRET and does not preserve editable staged plaintext. Do not invent an enabled flag inside the existing payload or require an impossible enrollment before credentials exist.
+- Credential/provider outage does not block priority-only changes or provably non-final drains. If the current sealed identity cannot be verified, refuse a potentially-final drain with bounded CONFIGURATION_UNAVAILABLE; never guess the WABA or expose decrypted values. Authorized secret revoke remains available for shutdown/security response.
+
+Fence all inventory mutations that alter enablement and messaging.sender set/update/rotate/revoke with one environment-scoped transaction advisory key `whatsapp-pool-configuration:<environment>`. Take it first in the final short transaction, before existing phone-membership advisory lock (when needed), configuration row lock and deterministic inventory row locks. Read the current actual configuration and inventory under the fence, compute before/after active transition and CAS outcome, then write/audit atomically. This also serializes a missing first config row; locking only an existing row is insufficient. Membership Graph lookup stays outside locks; recheck snapshot version/WABA after acquiring the fence, so rotated credentials cannot authorize a stale enrollment/enable. Never hold network work inside a DB transaction. Use this same lock ordering in secret-service and inventory paths; preserve the existing non-pooled membership fence.
+
+Required owner tests: initial credentials→zero inventory→disabled enroll→verified enable; deliberate revoke→set new WABA bootstrap; active direct switch to empty target refusal; last drain refusal; two concurrent drains cannot both succeed; switch versus enable/drain races; provider outage permits priority/non-final drain; unreadable sealed identity rejects potentially-final drain; stale Graph verification after credential rotation; audit/CAS and absence of plaintext/secrets in errors. No live provider calls. This clarification does not add a sender-runtime activation feature or couple routing to renewal.

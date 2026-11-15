@@ -138,16 +138,16 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 
 | Task | Owner | State | Direct dependencies |
 | --- | --- | --- | --- |
-| ARCH-076-DATABASE-001 | moda_database | In progress, active attempt1 | None |
-| ARCH-076-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
-| ARCH-076-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
+| ARCH-076-DATABASE-001 | moda_database | Complete | None |
+| ARCH-076-ADMIN-001 | moda_admin | Ready | DATABASE-001 |
+| ARCH-076-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
 | ARCH-076-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
 | ARCH-076-ADMIN-003 | moda_admin | Complete | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
-| ARCH-076-DATABASE-002 | moda_database | In progress, attempt1 | None |
-| ARCH-076-BACKGROUND-005 | moda_background | Pending | DATABASE-002 |
+| ARCH-076-DATABASE-002 | moda_database | Complete | None |
+| ARCH-076-BACKGROUND-005 | moda_background | Ready | DATABASE-002 |
 | ARCH-076-COMMERCE-001 | moda_commerce | Ready | None |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
 
@@ -206,3 +206,20 @@ Required positive disposable PostgreSQL/provider-fixture case: Q1 unknown-shop o
 
 ARCH-076-COMMERCE-001 (moda_commerce, Ready, no dependencies) closes the existing Studio setPointer/read/seed gap for RECOVERY_ROUTING-tagged revisions. It preserves exact-scope/auth/CAS and actual shared-lineage revision numbering. ADMIN003 source remains independently acceptable; BG004 acceptance and live routing activation require this Commerce task Complete. No schema or Shared change. SYSTEM-TEST depends on this final owning implementation and remains user-deferred.
 15 November ADMIN003 accepted and automatically Complete: Admin PR103 main e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2 has the identical tested tree. All routing attributes are explicit Admin settings. The owning Commerce Studio routing-prompt isolation guard is required before routing activation. SYSTEM-TEST remains deferred.
+
+15 November DATABASE001 accepted at Database main a7c204618c6b0ad83952a7b661482cfd03acf899, same tested tree. ADMIN001 and BACKGROUND001 are dependency-ready. DATABASE002 remains independent in progress; SYSTEM-TEST is deferred.
+
+15 November DATABASE002 accepted Complete: tested a27f99194 and actual merged Database main0a965c549 have identical tree, combined with accepted D001. Only BG005 promoted Ready; runtime application work and test-first deployment verification remain pending, SYSTEM-TEST deferred.
+
+## Active-pool predicate and bootstrap compatibility
+
+This is the authoritative interpretation of the active-pool invariant; it supersedes a blanket prohibition on zero inventory or all enabled credential writes. A pool is active exactly when the current environment's messaging.sender is a valid enabled sealed secret AND its WABA has at least one enabled, provider-verified inventory row. No activation column is introduced.
+
+- Reject an inventory change that would take that active WABA from one enabled verified sender to zero. Draining a non-final sender and priority-only changes remain Graph-free. Existing routes/history remain pinned even on drained inventory.
+- Reject a direct enabled messaging.sender WABA switch from an active pool to a target WABA with no enabled verified sender. Rotation within the same active WABA preserves the pool; secret values remain protected and normal CAS/audit applies.
+- Initial/zero/inactive bootstrap may save credentials before inventory exists, then provider-verify enrollment (disabled row), then provider-verify enable. Zero inventory is a Background configuration/repair hold, not permission to send or a fabricated active pool. Deliberate authorized revoke→set replacement uses the same bootstrap path; existing secret-service revocation stores DISABLED_SECRET and does not preserve editable staged plaintext. Do not invent an enabled flag inside the existing payload or require an impossible enrollment before credentials exist.
+- Credential/provider outage does not block priority-only changes or provably non-final drains. If the current sealed identity cannot be verified, refuse a potentially-final drain with bounded CONFIGURATION_UNAVAILABLE; never guess the WABA or expose decrypted values. Authorized secret revoke remains available for shutdown/security response.
+
+Fence all inventory mutations that alter enablement and messaging.sender set/update/rotate/revoke with one environment-scoped transaction advisory key `whatsapp-pool-configuration:<environment>`. Take it first in the final short transaction, before existing phone-membership advisory lock (when needed), configuration row lock and deterministic inventory row locks. Read the current actual configuration and inventory under the fence, compute before/after active transition and CAS outcome, then write/audit atomically. This also serializes a missing first config row; locking only an existing row is insufficient. Membership Graph lookup stays outside locks; recheck snapshot version/WABA after acquiring the fence, so rotated credentials cannot authorize a stale enrollment/enable. Never hold network work inside a DB transaction. Use this same lock ordering in secret-service and inventory paths; preserve the existing non-pooled membership fence.
+
+Required owner tests: initial credentials→zero inventory→disabled enroll→verified enable; deliberate revoke→set new WABA bootstrap; active direct switch to empty target refusal; last drain refusal; two concurrent drains cannot both succeed; switch versus enable/drain races; provider outage permits priority/non-final drain; unreadable sealed identity rejects potentially-final drain; stale Graph verification after credential rotation; audit/CAS and absence of plaintext/secrets in errors. No live provider calls. This clarification does not add a sender-runtime activation feature or couple routing to renewal.
