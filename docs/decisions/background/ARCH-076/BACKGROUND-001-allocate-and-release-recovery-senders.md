@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-11-15T14:04:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-076-DATABASE-001]
 enables: [ARCH-076-BACKGROUND-002]
@@ -161,33 +161,24 @@ Independent BG005 funding changes may advance the nested Database pin beyond D00
 
 ### Review Status
 
-Pending.
+Accepted — automatic completion, 15 November 2026.
 
 ### Review Notes
 
-Awaiting implementation.
+Root reviewed allocator/account fencing, outage/reuse behavior and exact final validation, then merged source PR239 as actual Background main f6bbcc5fbf247ea9b8df87ad0ba34ade079d9c38. Independently fetched and compared tested source0f2685a21aa62aacc5ac7f5668146ad924877cbd: both tree840860afe657fa61f6add12eb09084ead030bee1, empty diff. Preserve prepared attempt1 history in report; clear active claim fields on completion. No provider/runtime activation or hosted mutation is claimed.
 
 ### Reviewed Files
 
-None.
+Actual recipient-lock.ts and sender-pool.service.ts current-WABA/version FOR SHARE fence, indexed owner lookup, immutable existing assignment/reuse and expiry/release path. Root reviewed Shopify/Woo initial allocation gates, task-local PostgreSQL allocation service races, fixtures and final CI. Nested Database source remains accepted D001a7c2046; later BG005 integration must retain combined Database0a965 rather than regress it.
 
 ### Validation Reviewed
 
-None.
+Final actual-service PostgreSQL12/12 passed; complete final GitHub unit CI403 files/4561 tests and workflow typechecks passed in both workflows listed in report. Relevant local initial/expiry/recipient checks, lint and build passed; report distinguishes interrupted/earlier runs from final results. Source versus merged tree identical, so no redundant rerun. Physical canonical parent/implementation worktree, launcher sync/recursive submodule and attempt1 evidence recorded. No SYSTEM-TEST execution.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to independent sender allocation: current verified WABA for new routes, recipient serialization, same-shop/drained route reuse during credential outage, precise expiry/lifecycle release, original-attempt zero-inventory repair before new credit. No routing-by-credit or allowance renewal implementation. BG002/003 own provider pinning/non-pooled enrollment fence/exact historical proof; allocation alone is not send permission or contacted evidence.
 
 ### Follow-up
 
-None.
-
-## Reconciliation provenance — 15 November 2026
-
-Reconciled from the later local sender-pool revision formerly labelled ARCH-069. The completed chronological-input architecture and its ARCH-069 task identities are unchanged. ARCH-076 was already reserved for the earlier sender-pool proposal; this revision updates that proposal in place, retaining its Git history. These are definition changes, not implementation or deployment evidence. All execution remains Pending until compatibility review and dependency promotion.
-
-
-### 15 November definition amendment
-
-Historical fixed SQL must be regenerated for the restored five-entity contract plus R15 evidence; hardcoded router policy remains superseded. Historical claim/review evidence above is retained as history, not approval of the replacement implementation. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.
+Promote only BACKGROUND002 Ready because its sole BG001 prerequisite is Complete. BG003/BG004 remain Pending; BG005 independent active work is unchanged. Keep pool inventory disabled/consumers held until complete sender path is test-verified, old workers drained and root authorizes activation. Production auto-deploy holds and SYSTEM-TEST deferral remain.
