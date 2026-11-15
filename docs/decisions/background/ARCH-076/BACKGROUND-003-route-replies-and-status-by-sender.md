@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: [ARCH-076-BACKGROUND-002]
 enables: [ARCH-076-BACKGROUND-004]
 created: 2026-11-13
@@ -44,20 +44,20 @@ Other repository implementation, live settings, production migration and activat
 
 ## Requirements
 
-- [ ] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
-- [ ] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
-- [ ] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
-- [ ] Receiving WABA/sender/recipient must match verified assignment; exact quote/replay binds original message and Conversation.
-- [ ] Confirmed failed initial delivery such as 131049 does not establish contacted ownership; HTTP acceptance alone is insufficient.
-- [ ] Use sender-specific existing per-part receipt proof for status callbacks; foreign sender evidence has no effect.
-- [ ] STOP, history and HUMAN control retain existing semantics independent of credit or allowance; ambiguous original is saved outside merchant transcript.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Receiving WABA/sender/recipient must match verified assignment; exact quote/replay binds original message and Conversation.
+- [x] Confirmed failed initial delivery such as 131049 does not establish contacted ownership; HTTP acceptance alone is insufficient.
+- [x] Use sender-specific existing per-part receipt proof for status callbacks; foreign sender evidence has no effect.
+- [x] STOP, history and HUMAN control retain existing semantics independent of credit or allowance; ambiguous original is saved outside merchant transcript.
 
 ## Work Items
 
-- [ ] Inspect the exact latest accepted repository pin and existing owning mechanisms.
-- [ ] Implement only this task's scope and requirements.
-- [ ] Complete the focused checks below and record exact commands and evidence.
-- [ ] Return the isolated implementation branch and parent Completion Report for review.
+- [x] Inspect the exact latest accepted repository pin and existing owning mechanisms.
+- [x] Implement only this task's scope and requirements.
+- [x] Complete the focused checks below and record exact commands and evidence.
+- [x] Return the isolated implementation branch and parent Completion Report for review.
 
 ## Interfaces / Contracts
 
@@ -73,19 +73,19 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 
 ## Acceptance Criteria
 
-- [ ] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
-- [ ] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
-- [ ] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
-- [ ] Receiving WABA/sender/recipient must match verified assignment; exact quote/replay binds original message and Conversation.
-- [ ] Confirmed failed initial delivery such as 131049 does not establish contacted ownership; HTTP acceptance alone is insufficient.
-- [ ] Use sender-specific existing per-part receipt proof for status callbacks; foreign sender evidence has no effect.
-- [ ] STOP, history and HUMAN control retain existing semantics independent of credit or allowance; ambiguous original is saved outside merchant transcript.
+- [x] Use inventory, explicit recipient/sender Thread, shop Route, immutable Conversation Assignment and unresolved RoutingTurn from the parent exact schema.
+- [x] Preserve Conversation.checkoutRecoveryId uniqueness and existing recovery/consent/history/STOP semantics.
+- [x] Never filter ownership candidates or select another checkout based on credits, allowance, model capacity or paid plan.
+- [x] Receiving WABA/sender/recipient must match verified assignment; exact quote/replay binds original message and Conversation.
+- [x] Confirmed failed initial delivery such as 131049 does not establish contacted ownership; HTTP acceptance alone is insufficient.
+- [x] Use sender-specific existing per-part receipt proof for status callbacks; foreign sender evidence has no effect.
+- [x] STOP, history and HUMAN control retain existing semantics independent of credit or allowance; ambiguous original is saved outside merchant transcript.
 
 ## Validation
 
-- [ ] Focused unit tests for every requirement, lint/typecheck/build as declared for changed code.
-- [ ] Disposable PostgreSQL race/replay/restart tests with two recipients, two shops, multiple checkouts and shared sender.
-- [ ] Provider HTTP fixtures for exact sender, failed initial delivery, unknown result, duplicate/foreign statuses and no network inside transactions.
+- [x] Focused unit tests for every requirement, lint/typecheck/build as declared for changed code.
+- [x] Disposable PostgreSQL race/replay/restart tests with two recipients, two shops, multiple checkouts and shared sender.
+- [x] Provider HTTP fixtures for exact sender, failed initial delivery, unknown result, duplicate/foreign statuses and no network inside transactions.
 
 Inspect the repository package.json before selecting actual commands. Required disposable PostgreSQL checks are task-local repository checks, not execution of the deferred system-test task. No live customer/provider calls belong to these checks.
 
@@ -101,61 +101,80 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Not Started
+Ready for Review. Source [PR242](https://github.com/kodjobaah/moda-interact-background/pull/242), clean source head `f09b1471d5ba1445d6dc2c4396b85b568c962a1b`, is committed and pushed with both exact-head CI workflows passing. Final tested source tree is `43a9f786787f0a4877af02a2b09acb6472e123fe`.
 
 ### Files Changed
 
-None
+- `recovery-sender-pool/inbound-authority.ts`, `inbound-writer.ts`, `routing-handoff.ts`: exact immutable ownership, sender-aware quote/replay proof, shared provider-ID serialization, atomic transcript/activity/engagement and scoped pending-original persistence.
+- Actual `recovery-routing.service.ts`, `whatsapp-inbound-processing.service.ts`, `conversation.service.ts`, audio reservation/completion, STOP quote validation, scalar provider statuses and production delayed-turn composition.
+- Task-local PostgreSQL suite/script, focused unit fixtures, delayed-turn regression cases and `docs/architecture/arch076-inbound-attribution.md`.
 
 ### Work Completed
 
-None
+- Resolve known pool sender independently of allocation-enabled state. Match WABA, frozen recipient, exact thread/route generation and immutable assignment. No credits, message allowance or model-capacity candidate filter; exhausted baskets remain candidates.
+- Unquoted contacted eligibility requires provider delivery/read proof. HTTP acceptance alone does not establish ownership. An authentic customer quote of an exact accepted SENT root/ACKNOWLEDGED part with stable sender, recipient, provider ID and source proof may establish direct contact for that referenced live input. Its authenticated stamped inbound/quote witness can prove later contact; no provider timestamps are invented. FAILED/UNKNOWN/NULL/foreign evidence does not grant active ownership.
+- Shared provider-ID advisory lock composes merchant transcript and RoutingTurn writers. Final owner, lifetime and generation are rechecked before text/audio persistence, engagement and activity changes. Duplicates and historical input do not revive a recovery. Audio existing/P2002 winners verify owner and receiving pair; delayed production turns check ownership before context/model and again at control/provider boundaries.
+- Exact confirmed RoutingTurn prompt quotes and compatible outstanding prompts hand off before a single-candidate shortcut. Unknown-shop input remains thread-scoped; verified shop scope is explicit. BG004 owns classification, exact original/prompt linkage, role-aware history before latest/caps and durable neutral prompt execution.
+- Pending persistence consumes an explicit validated complete policy snapshot port and saved TTL/retention. Missing policy holds, with no hidden model/business defaults. Current saved policy version is rechecked under share lock. Full BG004 policy wiring and terminal scrub/association are activation gates.
 
 ### Validation Results
 
-Not run; definition only.
+- Focused four-suite status/conversation/audio/STOP checks: 129 passed, exit 0 (`/tmp/bg003-helper-unit.log`), including foreign/NULL status no-effects and public audio reserve/P2002 owner/sender refusal.
+- Router plus delayed-turn suites: 89 passed, exit 0 (`/tmp/bg003-routing-turn-unit.log`).
+- `npm run test:arch076-inbound-routing:postgres`: final 24/24 passed, exit 0 (`/tmp/bg003-pg-final24.log`). Covers two shops/recipients, sender drain, release/generation reuse, shared-provider-ID race, routing persistence/replay, real STOP and status integration, multipart ownership, allowance-exhausted candidates, and actual quote-before-callback inbound-to-AI-enqueue pipeline. Discovery failures and superseded/interrupted runs are not counted as final passes.
+- Replaced obsolete recipient-only router mocks with explicit ownership/handoff unit seams and real PostgreSQL regressions. The final PostgreSQL cases specifically preserve Woo completed-successor generation exclusion, inactive-shop refusal, historical quote with no Commerce enqueue/activity, and a later valid quote witness surviving an earlier failed witness. No unique constraint was disabled for fixtures.
+- Final `npm run lint` and `npm run build`: exit 0 (`/tmp/bg003-final-validation.log`). Declared build runs Prisma generation, `tsc`, `tsc -p tsconfig.provision.json`, and sample packaging; it covers the final witness-iteration runtime source. The only subsequent edit corrected a PostgreSQL fixture. Separate prior `npx tsc --noEmit --pretty false` passed; final exact-head CI will supply the explicit noEmit and broad-unit evidence.
+- Final exact clean-head CI passed: [push workflow 43750386225](https://github.com/kodjobaah/moda-interact-background/actions/runs/43750386225) and [PR workflow 43750391288](https://github.com/kodjobaah/moda-interact-background/actions/runs/43750391288). Both execute the repository broad unit/typecheck workflow against source `f09b1471d5ba1445d6dc2c4396b85b568c962a1b`. Identical tested tree was preserved through authorized history cleanup; local checks were not redundantly repeated.
 
 ### Deviations
 
-None
+No new Shared contract, schema, model policy, funding path, provider callback configuration or live setting is introduced. BG003 deliberately exposes a fail-closed typed policy/prompt seam; BG004 must provide its validated policy and durable prompt/decision consumer before any pool activation.
 
 ### Assumptions
 
-None
+Accepted sender allocation/dispatch and independent allowance renewal are preserved from Background main `cb625e626bebba337c1dda3ce4190bd00f3ad7f1`, with Database `0a965c549b4916085acd8a806d5ecf376eda0e47`. The SYSTEM-TEST task remains deferred. Root owns main merges, final parent pin, test activation and production rollout.
 
 ### Unresolved Issues
 
-Use owning task launcher at the accepted dependency frontier.
+No implementation issue remains for this bounded task. BG004 policy/prompt wiring remains a rollout gate, not implemented here. Coordinator performed the user-authorized cleanup of only this unmerged source task branch, preserving the exact tested tree. Private verified history bundle `local-backups/arch076-design-review/background003-before-authorized-cleanup.bundle` has mode 0600; coordinator audit `background003-authorized-history-cleanup.json` records the operation. Newly introduced fixtures use reserved fictional numbers. Existing main history and unrelated baseline fixtures were unchanged. No history rewrite or force-push by this agent.
+
+### Launcher Evidence
+
+- Exact primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-BACKGROUND-003`, branch `task/ARCH-076-BACKGROUND-003`.
+- Source `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-BACKGROUND-003`, same task branch. No shared/default checkout switched or another task worktree reused for source edits.
+- Prepared attempt1 claim `6abec40415acfd33393fe1ce0dca3cc9220ef982`, executor codex, `2026-11-15T18:03:14Z`, committed/pushed by launcher. Parent main `fa21dddfdb3e84057cfaf4a59e33a885eb894201` and source main `cb625e626bebba337c1dda3ce4190bd00f3ad7f1` already incorporated; no remote task fast-forward needed at creation.
+- Recursive submodule sync/update passed in launcher; Database recorded `0a965c549b4916085acd8a806d5ecf376eda0e47`. No startup re-claim or redundant submodule preparation. No parent implementation gitlink staged.
 
 ### Architectural Concerns
 
-None
+No source blocker. The explicit BG004 activation boundary remains; coordinator-owned narrow history cleanup is complete with the tested tree preserved.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — 15 November 2026. Automatic completion; attempt 1 preserved. Historical codex claim 2026-11-15T18:03:14Z, prepared commit `6abec40415acfd33393fe1ce0dca3cc9220ef982`.
 
 ### Review Notes
 
-Awaiting implementation.
+Independently inspected actual ownership authority, final inbound writer, routing handoff, quote/replay, STOP/status and delayed-turn integration. Earlier SQL alias, pending-clarification single-candidate and router-prompt quote findings were corrected. Exact authenticated SENT/ACKNOWLEDGED quotes can establish contact before delivery callbacks, with actual stamped inbound evidence and one logical AI job; no Meta timestamps are fabricated. Distinct valid witnesses are not hidden by another failed quote. Root merged source PR242 to `61cbc9cd8fc1661e9ca17b774f6d338517cdb58b`, exact tested tree `43a9f786787f0a4877af02a2b09acb6472e123fe` matching clean head `f09b1471d5ba1445d6dc2c4396b85b568c962a1b`. Authorized task-only history cleanup preserves that tree and private evidence; new fixtures use reserved fictional numbers.
 
 ### Reviewed Files
 
-None.
+Inbound authority/writer/routing-handoff, recovery routing, conversation and audio persistence, contact opt-out and quoted ownership, provider status, inbound processing and production turn composition; actual PostgreSQL and affected unit fixtures.
 
 ### Validation Reviewed
 
-None.
+24/24 actual PostgreSQL scenarios, focused 129 plus router/delayed-turn 89 unit tests, lint and production build passed. Exact clean-head CI workflows 43750386225 and 43750391288 passed broad units and typecheck. Reviewed full quote-before-callback enqueue/replay, generation reuse, Woo completed successor, inactive shop, historical no-model/no-activity, STOP/foreign status isolation and contact-witness iteration. Prepared physical mirrored worktrees, synchronization and recursive Database evidence are recorded above.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to exact sender/recipient/thread/route ownership, immutable provider-ID arbitration, lifetime/generation revalidation, atomic text/audio persistence, historical preservation and allowance-independent candidate selection. Missing routing policy holds through explicit typed port; no model defaults, schema or Shared release introduced. BG004 remains responsible for complete configured routing, R15 decisions and durable neutral prompts before activation.
 
 ### Follow-up
 
-None.
+Promote only ARCH-076-BACKGROUND-004 to Ready: BG003, ADMIN002, ADMIN003 and COMMERCE001 are Complete. No pool activation, deployment verification or deferred SYSTEM-TEST execution is claimed. Production holds and test-first manual verification remain coordinator-owned.
 
 ## Reconciliation provenance — 15 November 2026
 
