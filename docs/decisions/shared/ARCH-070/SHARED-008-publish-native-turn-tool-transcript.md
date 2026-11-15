@@ -174,3 +174,7 @@ Ready for normal preparation only. Accepted007 source is4e0716e3aad311a6d7c8620d
 Accepted exact metadata sourceaced58dbb479d8a10274b57a762bc6d77951ca8c mergedactualmain8bb6ca5ec0ce28540e99c92084885fae8ebb1af9 and finalreport443164c10. Prerequisite007 Complete/accepted4e0716e; root explicitly relayed user public6.1.0 approval before publication. Metadata/package-lock only, all162 nonmetadata members identical accepted14db; no implementation revalidation/rebuild performed.
 
 Independently inspected actual registry receipt00:03:39Z: version/latest6.1.0,977151 bytes, SHA256302b91f5ad24353ac3052c1e8c5d456b3c90d072d64665edff579eb56eb249d5, SHA1cd39becdc2a00529a4920bd4a85c15fa8f6785b0 and approved SRI match. Old6.0.1 redownloadfd7b4a70 and integrity unchanged. No sourcefinding/scopeviolation. Complete release only; application efficacy and finalconsumer/admission/provider delivery remain unproved separate gates. Promote Commerce001 actualregistryadoption and BG010/011 finalregistry checks; root owns source/parent merges/deploy/settings. No repeated implementation tests or live operation byreviewer.
+
+### Actual metadata-main integration receipt
+
+Root merged metadataPR94 to actualShared8bb6ca5ec0ce28540e99c92084885fae8ebb1af9; parentgitlink now records this final public6.1 source. Accepted007 history and actuald772 source receipt retained. Root owns parentmainmerge; no liveoperation.
