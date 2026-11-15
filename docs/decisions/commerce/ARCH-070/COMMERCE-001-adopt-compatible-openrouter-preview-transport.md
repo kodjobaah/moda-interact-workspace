@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-15T00:07:00Z
@@ -49,9 +49,9 @@ Use published Shared SDK without local transport copies or sibling imports. Pres
 
 ## Work Items
 
-- [ ] Adopt exact approved public Shared version and normal lock.
-- [ ] Add focused preview/actual SDK HTTP compatibility regression.
-- [ ] Validate and return immutable source/report.
+- [x] Adopt exact approved public Shared version and normal lock.
+- [x] Add focused preview/actual SDK HTTP compatibility regression.
+- [x] Validate and return immutable source/report.
 
 ## Interfaces / Contracts
 
@@ -67,16 +67,16 @@ Safe root-owned global saved routing configuration correction after both consume
 
 ## Acceptance Criteria
 
-- [ ] Exact registry dependency installed and lock verified.
-- [ ] Actual SDK wire omits parallel_tool_calls and preserves nested routing, tool schemas/choice and max_tokens.
-- [ ] Preview authorization, credential privacy, cancellation and error boundaries unchanged.
-- [ ] No live/configuration/source ownership violations.
+- [x] Exact registry dependency installed and lock verified.
+- [x] Actual SDK wire omits parallel_tool_calls and preserves nested routing, tool schemas/choice and max_tokens.
+- [x] Preview authorization, credential privacy, cancellation and error boundaries unchanged.
+- [x] No live/configuration/source ownership violations.
 
 ## Validation
 
-- [ ] Clean npm ci and installed registry identity.
-- [ ] Focused model-runtime/preview tests and actual HTTP loopback with no live credentials.
-- [ ] Declared typecheck/build and scoped lint; exact remote checks if configured.
+- [x] Clean npm ci and installed registry identity.
+- [x] Focused model-runtime/preview tests and actual HTTP loopback with no live credentials.
+- [x] Declared typecheck/build and scoped lint; exact remote checks if configured.
 
 ## Stop Condition
 
@@ -90,35 +90,52 @@ Use normal launcher dedicated mirrored worktrees. Not alone: preserve others cha
 
 ### Status
 
-Not Started
+Ready for Review. Exact source `5901420c41f6a9a60fdef283e55cd8829c815dd8`, https://github.com/kodjobaah/moda-interact-commerce/pull/196. Published6.1.0 dependency and focused preview transport adoption complete. No native opt-in, runtime business-code, model/configuration, database or live changes.
 
 ### Files Changed
 
-None
+- package.json and package-lock.json: exact public Shared5.13.0→6.1.0; one manifest/four lock lines only.
+- tests/preview-openrouter-transport.test.ts: actual installed SDK through default preview factory and local127.0.0.1 HTTP server; automatic/named choices, exact schemas/strict, nested routing, absent unsupported parallel hint,2048 tokens, original request unchanged.
+- tests/arch066-initial-outreach-host.test.ts: authorized duplicate type import removal, existing recovery-policy mock completion, unnecessary any removal, synthetic approved registration raw observation hash vs authored submitted hash separation, diagnostic assertion message.
+- tests/arch066-initial-outreach-lifecycle.test.ts, tests/arch066-initial-outreach-media.test.ts, tests/arch066-initial-outreach-preview.test.ts, tests/arch066-initial-outreach-refusals.test.ts: required existing readBudgetDefaults fixture mocks; lifecycle unused import removal.
 
 ### Work Completed
 
-None
+Adopted real registry URL and SRI through normal npm install; clean npm ci then all163 installed package files byte-matched the approved302b91f5 archive (977151B). Integrity `sha512-h4bQaLuufY4u2CF4X6oS/7BbRWvNnfVN8cFJvL/xrhcmS4lqnob2qAgSTm/r5q3NqEIUWxuPw9FpypndQT+qiA==`. No sibling source imports/local transport copies or fabricated lock. Preview credential resolution, current snapshot configuration, cancellation/error mapping and staff/tenant boundaries retain existing runtime code. All required full typecheck diagnostics were corrected in authorized fixtures without skips, relaxed assertions, null observation hashes or production changes.
 
 ### Validation Results
 
-None
+- Normal registry install and `npm ci --registry=https://registry.npmjs.org`: PASS. Approved archive SHA256302b91f5ad24353ac3052c1e8c5d456b3c90d072d64665edff579eb56eb249d5/SRI/version6.1.0 and163/163 installed members PASS.
+- Focused preview commands: `npm test -- tests/preview-openrouter-transport.test.ts tests/preview-openrouter-runtime.test.ts tests/arch067-model-context.test.ts tests/preview-service.test.ts tests/preview-integration.test.ts tests/preview-routes.test.ts`; five suites56PASS initially, routes import initially lacked fresh generated Prisma enum. Declared `npm run prisma:generate` PASS; exact routes rerun7PASS. Combined63 unique tests/six files PASS, not one all-green original invocation.
+- Authorized five ARCH066 fixture suites: initial44 tests yielded40PASS/4FAIL (missing existing policy mock caused503). Mock completion exposed three synthetic production parity PROVIDER_DRIFT failures; diagnostic confirmed wrong observed hash domain. Corrected nonnull raw components-only hash while authored submitted hash remains locale.contentHash; final exact host rerun5/5PASS. Retained39 other unique passing cases →44 unique outreach cases PASS. No assertion/guard weakening. Total focused107 unique cases across11 files; traces retained under /tmp/arch070-commerce001-*.log.
+- Final `npm run typecheck`: PASS exit0 after fixture corrections; no baseline waiver. Initial ten errors (duplicate import and missing required budget mocks) disclosed and resolved. Final log /tmp/arch070-commerce001-types-green.log.
+- `npm run typecheck:build`: PASS. `npm run build`: PASS exit0, Next webpack/types/prerender complete; existing Nunjucks dynamic-dependency warning. Later changes confined to test files excluded by tsconfig.build.json, no production/dependency byte changes after build.
+- Scoped ESLint over new transport test and all five corrected outreach files: PASS exit0/zero output, /tmp/arch070-commerce001-lint-green.log. Initial inherited any error/unused import warning corrected, not waived.
+- `git diff --check`: PASS. Exact head PR196 statusCheckRollup empty; GitHub check-runs/statuses total0. No hosted check success claimed when none configured.
+- Install warnings: existing peer/deprecation/allow-scripts notices and npm audit36 vulnerabilities (18moderate/17high/1critical). Lock diff changes only Shared pin/URL/SRI; no audit remediation or unrelated dependency upgrade authorized/performed.
+- No live model/provider/DB/Redis service, Meta or Render calls. Local Redis test fixtures use owned Unix sockets with suite cleanup; wire uses synthetic credentials and local HTTP only.
 
 ### Deviations
 
-None
+Authorized scope extensions9792391c0/bcc48f9a9 and subsequent root/architect instruction repaired exact five existing test fixtures to make full checks green. No runtime behavior changes beyond consuming the published SDK correction. Initial bootstrap lacked explicit MODA_WORKSPACE_ROOT while outside primary; corrected using exact launcher root and sanctioned bootstrap before Node execution. No manual Node path/version change.
 
 ### Assumptions
 
-None
+Root deploys corrected Commerce and both catalogue-consuming Background workers and drains old processes BEFORE nested provider configuration is saved. This task does not perform or certify that rollout.
 
 ### Unresolved Issues
 
-Publication dependency pending.
+None in implementation. Architect acceptance and root source/parent integration/deployment remain; no main merges or live operations by agent.
 
 ### Architectural Concerns
 
-Global catalogue configuration affects all consumers; coordinate rollout.
+Global saved catalogue configuration affects all consumers. Do not apply nesting before all corrected SDK consumers deploy/drain. Transport regression proves serialization compatibility only, not model selection efficacy or WhatsApp delivery.
+
+### Git / VCS
+
+Normal launcher prepared attempt1/codex claim `2aa345e87e82ea15f92d5ec9fc2437faeb0e5a9a` at2026-11-15T00:07:00Z. Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-COMMERCE-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-COMMERCE-001`; both branches task/ARCH-070-COMMERCE-001. Parent reused, implementation newly created; no shared checkout switched/mutated, no other task worktree reused. Launcher dependency Shared008 Complete verified; parent task FF not needed/originmain alreadycurrent at4d6a1346a; implementation task FF not needed/originmain alreadycurrent at4485f16d19c01afc09496aef280ad109af068825. Recursive submodule sync/init passed, database exact5329d5390d346042895219663f3a040ea54ae168 ready. No database pin edits.
+
+Implementation source5901420c41f6a9a60fdef283e55cd8829c815dd8 committed/pushed origin/task/ARCH-070-COMMERCE-001; parent current task report committed/pushed separately. Parent gitlink not staged. No implementation/workspace main merge, main push, force push, publication or deployment.
 
 ## Architect Review
 
