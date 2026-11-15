@@ -11,7 +11,7 @@ updated: 2026-11-15
 
 ## Status
 
-Agreed design; user authorizes implementation, task tests, commit/push and integration, with test verification before production. SYSTEM-TEST remains explicitly deferred. DATABASE-001 has prepared attempt 1 (`executor: codex`, claimed 2026-11-15T11:46:23Z); preparation is not source implementation; the user has now authorized this revised schema. No migration or runtime change is claimed by these definition edits. Preserve completed chronological ARCH-069 unchanged.
+Agreed design; user authorizes implementation, task tests, commit/push and integration, with test verification before production. SYSTEM-TEST remains explicitly deferred. DATABASE-001 is executing prepared attempt 1 (`executor: codex`, claimed 2026-11-15T11:46:23Z); preparation is not source implementation; the user has now authorized this revised schema. No migration or runtime change is claimed by these definition edits. Preserve completed chronological ARCH-069 unchanged.
 
 ## Problem and goals
 
@@ -138,19 +138,19 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 
 | Task | Owner | State | Direct dependencies |
 | --- | --- | --- | --- |
-| ARCH-076-DATABASE-001 | moda_database | In progress, prepared attempt1 | None |
+| ARCH-076-DATABASE-001 | moda_database | In progress, active attempt1 | None |
 | ARCH-076-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
 | ARCH-076-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
 | ARCH-076-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
-| ARCH-076-ADMIN-002 | moda_admin | Ready, independent | None |
-| ARCH-076-ADMIN-003 | moda_admin | Ready, independent | None |
+| ARCH-076-ADMIN-002 | moda_admin | Complete | None |
+| ARCH-076-ADMIN-003 | moda_admin | In progress, task-branch attempt1 | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003 |
-| ARCH-076-DATABASE-002 | moda_database | Ready, independent | None |
+| ARCH-076-DATABASE-002 | moda_database | In progress, attempt1 | None |
 | ARCH-076-BACKGROUND-005 | moda_background | Pending | DATABASE-002 |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004 |
 
-All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 prepared attempt1 resumes; independent D002, ADMIN002 and ADMIN003 are Ready/unclaimed; dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
+All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are active attempt1; ADMIN002 is Complete; ADMIN003 has a canonical task-branch attempt1 claim at 2026-11-15T13:00:12Z (its merged-main definition remains Ready until that task branch is integrated). Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
 
 ## Change history
 
@@ -183,3 +183,20 @@ Add nullable `RecoveryBasketRoutingTurn.resolutionInboundProviderMessageId TEXT`
 A directly attributed NEW_QUESTION may resolve with witness=self, admitting only its current question; it never resolves older pending Q1. A resolving child may also record its own self-resolution, therefore do NOT globally UNIQUE the witness column. Child.parentProviderMessageId plus same-owner transaction locks and witness validation constrain a selection to its intended original; no reverse-child search or newest-prompt inference. Retention deletes dependent witness/parent cohorts atomically after eligibility or through whole-thread cascade. No extra table or index is needed merely for this scalar proof.
 
 Required positive PostgreSQL case: persist Q1, freeze CLARIFY, admit/confirm prompt, persist Q2 with exact parent and SELECT_ONLY, bind Q1 owner+witness and admit original exactly once, preserving both classifier decisions and exact original message content. Also test SELECT_AND_QUESTION exact clause admission, independent NEW_QUESTION leaving Q1 pending, concurrent Q2/Q3 attempts, replay after crash, wrong-parent/prompt/thread/assignment forged witness, terminal rebinding and deferred retention deletion. SQL enforces structural identity/freeze; application revalidates current eligibility and authentic evidence.
+
+15 November ADMIN002 accepted and automatically Complete: tested Admin source4bfefc5 merged main5558daadd (identical Git tree). Parent gitlink records actual merged main. BG004 still waits for BG003 and ADMIN003; SYSTEM-TEST remains deferred.
+
+Completion frontier correction: D001 active implementation, D002 claimed attempt1 at 2026-11-15T12:59:02Z, ADMIN003 canonical branch claimed attempt1 at 2026-11-15T13:00:12Z. ADMIN002 clears active claim fields on automatic completion while retaining historical evidence. No other task claim metadata is changed by this reconciliation.
+
+## R15 explicit two-stage shop then basket clarification
+
+This is the required unknown-shop→known-shop→basket flow, not an optional extension. Keep a star relation anchored to the substantive original, without recursive/newest-child search:
+
+1. Q1 is the customer's substantive original (for example “Can it arrive Friday?”), parentProviderMessageId=NULL. Its frozen CLARIFY classification and exact original input remain authoritative; a neutral confirmed shop prompt may live on Q1.
+2. Q2 is the verified shop-selection response. It binds parentProviderMessageId=Q1 once, uses that verified same-thread route and freezes its own CLARIFY decision when basket selection is still needed. Q2 holds the exact admitted/confirmed shop-scoped basket prompt and frozen offered candidate facts. Q1 is not resolved merely by choosing a shop.
+3. Q3 is the basket-selection response. It also binds parentProviderMessageId=Q1 (not Q2). Its frozen role decision names originalTurnId=Q1 and promptTurnId=Q2 plus the exact Q2 confirmedPromptProviderMessageId and offered assignment/option. SELECT_ONLY resumes only Q1; SELECT_AND_QUESTION admits Q1 plus the authentic moderated Q3 new clause.
+4. Resolve Q1 once with resolutionInboundProviderMessageId=Q3 and selectedConversationId in the same owner-locked transaction as original admission and destructive scrub. Preserve Q1/Q2 CLARIFY decisions and Q3 selection decision; no synthetic replacement question or new Conversation.
+
+Prompt validation reads the explicitly named prompt ID only. Require promptTurnId==Q1 OR that exact prompt row's immutable parentProviderMessageId==Q1; same thread, compatible verified route, frozen promptScopeRouteId and confirmed receipt must agree with the selected route/assignment and original. A neutral original prompt scope may remain NULL; a later basket prompt retains its exact verified route scope. Reject a prompt belonging to another original, foreign thread/shop, unconfirmed prompt, stale candidate or conflicting role—even if its display text/number matches. Do not infer prompt by reverse-child query, newest message, recursive ancestry or credit/allowance state. These rules require no new columns, tables or weakened evidence constraints.
+
+Required positive disposable PostgreSQL/provider-fixture case: Q1 unknown-shop original→confirmed neutral prompt→Q2 verified shop selection→confirmed basket prompt on Q2→Q3 selection naming Q1/Q2 explicitly→exactly-once Q1 admission via Q3 witness. Include multiple simultaneous originals, Q3 additional exact question clause, duplicate/restart replay, forged Q2 from another root, wrong route/prompt scope, missing confirmation, expiry/control/template changes and concurrent resolution attempts. Keep SYSTEM-TEST deferred; these are owner task-local checks.
