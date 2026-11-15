@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-11-15T18:03:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-076-BACKGROUND-002]
 enables: [ARCH-076-BACKGROUND-004]
@@ -154,27 +154,27 @@ No source blocker. The explicit BG004 activation boundary remains; coordinator-o
 
 ### Review Status
 
-Pending.
+Accepted — 15 November 2026. Automatic completion; attempt 1 preserved. Historical codex claim 2026-11-15T18:03:14Z, prepared commit `6abec40415acfd33393fe1ce0dca3cc9220ef982`.
 
 ### Review Notes
 
-Awaiting implementation.
+Independently inspected actual ownership authority, final inbound writer, routing handoff, quote/replay, STOP/status and delayed-turn integration. Earlier SQL alias, pending-clarification single-candidate and router-prompt quote findings were corrected. Exact authenticated SENT/ACKNOWLEDGED quotes can establish contact before delivery callbacks, with actual stamped inbound evidence and one logical AI job; no Meta timestamps are fabricated. Distinct valid witnesses are not hidden by another failed quote. Root merged source PR242 to `61cbc9cd8fc1661e9ca17b774f6d338517cdb58b`, exact tested tree `43a9f786787f0a4877af02a2b09acb6472e123fe` matching clean head `f09b1471d5ba1445d6dc2c4396b85b568c962a1b`. Authorized task-only history cleanup preserves that tree and private evidence; new fixtures use reserved fictional numbers.
 
 ### Reviewed Files
 
-None.
+Inbound authority/writer/routing-handoff, recovery routing, conversation and audio persistence, contact opt-out and quoted ownership, provider status, inbound processing and production turn composition; actual PostgreSQL and affected unit fixtures.
 
 ### Validation Reviewed
 
-None.
+24/24 actual PostgreSQL scenarios, focused 129 plus router/delayed-turn 89 unit tests, lint and production build passed. Exact clean-head CI workflows 43750386225 and 43750391288 passed broad units and typecheck. Reviewed full quote-before-callback enqueue/replay, generation reuse, Woo completed successor, inactive shop, historical no-model/no-activity, STOP/foreign status isolation and contact-witness iteration. Prepared physical mirrored worktrees, synchronization and recursive Database evidence are recorded above.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to exact sender/recipient/thread/route ownership, immutable provider-ID arbitration, lifetime/generation revalidation, atomic text/audio persistence, historical preservation and allowance-independent candidate selection. Missing routing policy holds through explicit typed port; no model defaults, schema or Shared release introduced. BG004 remains responsible for complete configured routing, R15 decisions and durable neutral prompts before activation.
 
 ### Follow-up
 
-None.
+Promote only ARCH-076-BACKGROUND-004 to Ready: BG003, ADMIN002, ADMIN003 and COMMERCE001 are Complete. No pool activation, deployment verification or deferred SYSTEM-TEST execution is claimed. Production holds and test-first manual verification remain coordinator-owned.
 
 ## Reconciliation provenance — 15 November 2026
 
