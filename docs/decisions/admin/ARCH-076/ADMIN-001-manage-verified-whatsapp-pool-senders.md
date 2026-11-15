@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-076-DATABASE-001"]
-enables: ["ARCH-076-SYSTEM-TEST-001"]
+enables: []
 created: 2026-11-13
 updated: 2026-11-13
 ---
@@ -192,3 +192,10 @@ Pending.
 ## Reconciled active-pool configuration invariant
 
 For the current canonical shared-number design, sender occupancy is not exhaustion. Admin must reject disabling the last enabled verified sender of an active WABA and switching active messaging configuration to a WABA with no enabled verified sender. Serialize these checks with competing inventory/configuration writes; test concurrent disables and WABA switch against inventory enable/drain. Preserve the existing credential format and authenticated server-only boundary. An empty inventory is permitted before coordinated activation. A drained sender retains its original live and historical routes. Complete this amendment's compatibility review before promoting the task.
+
+
+## Explicit storage amendment — 15 November 2026
+
+Five sender entities exist: WhatsAppPoolSender, RecoverySenderThread, RecoverySenderRoute, RecoverySenderAssignment and RecoveryBasketRoutingTurn. Admin inventory operations manage only WhatsAppPoolSender; Background owns thread/route/assignment lifecycle. Drain preserves pinned conversations; no allowance/credit dependency.
+
+Inventory verification contract: populate verifiedAt only after successful provider CONNECTED/WABA verification at enrollment/enablement. New inventory remains allocationEnabled=false until explicit enabled verification. No unverified default timestamp is proof.
