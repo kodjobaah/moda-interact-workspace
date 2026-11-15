@@ -9,15 +9,15 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-15T14:04:09Z
+attempt: 1
 depends_on: ["ARCH-076-DATABASE-001"]
 enables: []
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-15
 ---
 
 # Manage verified WhatsApp pool senders in platform configuration
