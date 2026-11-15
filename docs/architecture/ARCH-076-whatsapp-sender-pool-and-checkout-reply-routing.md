@@ -144,7 +144,7 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
-| ARCH-076-ADMIN-003 | moda_admin | In progress, task-branch attempt1 | None |
+| ARCH-076-ADMIN-003 | moda_admin | Complete | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003 |
 | ARCH-076-DATABASE-002 | moda_database | In progress, attempt1 | None |
 | ARCH-076-BACKGROUND-005 | moda_background | Pending | DATABASE-002 |
@@ -200,3 +200,5 @@ This is the required unknown-shop→known-shop→basket flow, not an optional ex
 Prompt validation reads the explicitly named prompt ID only. Require promptTurnId==Q1 OR that exact prompt row's immutable parentProviderMessageId==Q1; same thread, compatible verified route, frozen promptScopeRouteId and confirmed receipt must agree with the selected route/assignment and original. A neutral original prompt scope may remain NULL; a later basket prompt retains its exact verified route scope. Reject a prompt belonging to another original, foreign thread/shop, unconfirmed prompt, stale candidate or conflicting role—even if its display text/number matches. Do not infer prompt by reverse-child query, newest message, recursive ancestry or credit/allowance state. These rules require no new columns, tables or weakened evidence constraints.
 
 Required positive disposable PostgreSQL/provider-fixture case: Q1 unknown-shop original→confirmed neutral prompt→Q2 verified shop selection→confirmed basket prompt on Q2→Q3 selection naming Q1/Q2 explicitly→exactly-once Q1 admission via Q3 witness. Include multiple simultaneous originals, Q3 additional exact question clause, duplicate/restart replay, forged Q2 from another root, wrong route/prompt scope, missing confirmation, expiry/control/template changes and concurrent resolution attempts. Keep SYSTEM-TEST deferred; these are owner task-local checks.
+
+15 November ADMIN003 accepted and automatically Complete: Admin PR103 main e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2 has the identical tested tree. All routing attributes are explicit Admin settings. The owning Commerce Studio routing-prompt isolation guard is required before routing activation. SYSTEM-TEST remains deferred.
