@@ -23,3 +23,5 @@ ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omi
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
 
 ARCH-070-BACKGROUND-010 Ready(preparatory): appownedflatterminalselectionprotocol viaShared007raw/separatedecision, fullcontextproof/publicapprovalgate.
+
+ARCH-070-BACKGROUND-010 Complete: accepted exactcbcef46 real6.1 registry/bothCI4492PASS; genuinepostdeploycanary pending. BG011 fallback separate.

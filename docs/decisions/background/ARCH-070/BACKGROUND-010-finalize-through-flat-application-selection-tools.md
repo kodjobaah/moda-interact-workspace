@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T20:07:16Z
@@ -197,7 +197,7 @@ Root owns the exact private019-prefix offline replay, subsequent actual evidence
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
@@ -276,3 +276,11 @@ Exact sourcec1e2fb0ce0e8a85d59a9850902a7f353fdfa9cde reviewed with existing host
 Root explicitly accepted024 actual captured019 full-prefix/response offline replay as implementation/release prerequisite and requests source merge followed by production verification, with no further model experiment before release. Accordingly the earlier natural-atomic-source criterion is superseded by exact offline024 binding/union/current-membership proof plus real host/wire/refreshed-body/control regressions and actual public registry/exactCI checks. This does not claim a natural atomic model run, uninterrupted60s success or actual delivery. Those remain root-owned integrated postdeployment canary evidence. Do not fabricate or relabel018 cap/019 failure as success; preserve all historical failures. No canonical guard, authorization, budget or evidence requirement is relaxed.
 
 Rollout must replace/drain BOTH production messaging and recovery worker processes AND Commerce preview consumers before root uses the audited normal catalogue writer to nest global provider preferences. Initial-outreach runtime is also a catalogue SDK consumer in recovery worker; no unrelated application source change is needed.
+
+### Final independent acceptance (2026-11-15)
+
+Accepted exact implementationcbcef46e60b4e2d05ca6d8492c44597baa06241f PR235 and finalreportf205ce2da. Reviewed actual runtimec1e2 factory/host/identity receipt/phase guidance/discovery safeguard and final c1e2→cbcef diff: only real6.1.0 package/lock and three exactversion test assertions. Normal canonical mirrored attempt1 worktree/launcher/synchronization evidence and authorized009 source lineage retained, no diagnostics233 imported. No source finding remains.
+
+Validated actualregistry6.1.0 approved302b bytes/SRI, clean npmci/all163 members identical, types/build,48 focused unit,155 host in single final run,28 changed versioncases and scopedlint. Root independently verified both exact-headCI43657217722/43657211470 SUCCESS401files4492tests. Prior ETARGET/stale metadata, failed oldversion assertions and testfixture corrections are retained; no failed check waived. Exact024 root receipt verifies full captured prefix/actual differentcalls/rawtext preserved, one bound atomicprojection and allthree observed modelpairs retained with0network. Refreshedhost body/control/noattempt/rawimmutability tests reviewed.
+
+Atomic union is application-owned and validates every minimal call, exactcurrent identities/titleconsistency, deterministic exactdedup and aggregate<=pinned3; anymixed/bad/overflow refuses, richreferral/shipping/recommendation semantics retained. Rawtransport remains separate, originalbudgets and canonical guards unchanged. Finalbody only after independently refreshed exactboundfacts. Source criterion explicitly uses offlineactualresponse+host regressions; genuine production canary is root-owned postdeployment, NOT claimed as complete. Both recovery/messaging andCommerce correcteddeployment/drain before globalroutingnesting remains mandatory. No mainmerge/liveoperation byarchitect. Completion closes implementation only; fallback011 and integrated delivery still outstanding.
