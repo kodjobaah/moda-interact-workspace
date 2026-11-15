@@ -148,7 +148,7 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
 | ARCH-076-DATABASE-002 | moda_database | Complete | None |
 | ARCH-076-BACKGROUND-005 | moda_background | Ready | DATABASE-002 |
-| ARCH-076-COMMERCE-001 | moda_commerce | Ready | None |
+| ARCH-076-COMMERCE-001 | moda_commerce | Complete | None |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
 
 All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are active attempt1; ADMIN002 and ADMIN003 are Complete; actual merged Admin pin is e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2. Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
@@ -204,7 +204,7 @@ Required positive disposable PostgreSQL/provider-fixture case: Q1 unknown-shop o
 
 ## Commerce Studio routing-purpose isolation
 
-ARCH-076-COMMERCE-001 (moda_commerce, Ready, no dependencies) closes the existing Studio setPointer/read/seed gap for RECOVERY_ROUTING-tagged revisions. It preserves exact-scope/auth/CAS and actual shared-lineage revision numbering. ADMIN003 source remains independently acceptable; BG004 acceptance and live routing activation require this Commerce task Complete. No schema or Shared change. SYSTEM-TEST depends on this final owning implementation and remains user-deferred.
+ARCH-076-COMMERCE-001 (moda_commerce, Complete, no dependencies) closes the existing Studio setPointer/read/seed gap for RECOVERY_ROUTING-tagged revisions. It preserves exact-scope/auth/CAS and actual shared-lineage revision numbering. ADMIN003 source remains independently acceptable; BG004 acceptance and live routing activation require this Commerce task Complete. No schema or Shared change. SYSTEM-TEST depends on this final owning implementation and remains user-deferred.
 15 November ADMIN003 accepted and automatically Complete: Admin PR103 main e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2 has the identical tested tree. All routing attributes are explicit Admin settings. The owning Commerce Studio routing-prompt isolation guard is required before routing activation. SYSTEM-TEST remains deferred.
 
 15 November DATABASE001 accepted at Database main a7c204618c6b0ad83952a7b661482cfd03acf899, same tested tree. ADMIN001 and BACKGROUND001 are dependency-ready. DATABASE002 remains independent in progress; SYSTEM-TEST is deferred.
@@ -223,6 +223,8 @@ This is the authoritative interpretation of the active-pool invariant; it supers
 Fence all inventory mutations that alter enablement and messaging.sender set/update/rotate/revoke with one environment-scoped transaction advisory key `whatsapp-pool-configuration:<environment>`. Take it first in the final short transaction, before existing phone-membership advisory lock (when needed), configuration row lock and deterministic inventory row locks. Read the current actual configuration and inventory under the fence, compute before/after active transition and CAS outcome, then write/audit atomically. This also serializes a missing first config row; locking only an existing row is insufficient. Membership Graph lookup stays outside locks; recheck snapshot version/WABA after acquiring the fence, so rotated credentials cannot authorize a stale enrollment/enable. Never hold network work inside a DB transaction. Use this same lock ordering in secret-service and inventory paths; preserve the existing non-pooled membership fence.
 
 Required owner tests: initial credentials→zero inventory→disabled enroll→verified enable; deliberate revoke→set new WABA bootstrap; active direct switch to empty target refusal; last drain refusal; two concurrent drains cannot both succeed; switch versus enable/drain races; provider outage permits priority/non-final drain; unreadable sealed identity rejects potentially-final drain; stale Graph verification after credential rotation; audit/CAS and absence of plaintext/secrets in errors. No live provider calls. This clarification does not add a sender-runtime activation feature or couple routing to renewal.
+
+15 November COMMERCE001 accepted Complete: tested59735a4 and merged Commerce main608ce7e have identical tree. Purpose isolation gate satisfied; BG004 remains Pending on BG003, and test-first rollout plus deferred SYSTEM-TEST status are unchanged.
 
 ## Existing singleton cutover proof boundary
 
