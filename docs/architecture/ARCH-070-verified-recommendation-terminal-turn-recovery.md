@@ -174,3 +174,9 @@ Commerce001 Complete exactf0876d5: corrected SDK consumer and actualwire proof a
 ## Concise application caption follow-up
 
 BG013 Ready owns conservative400codepoint/8nonemptyline actualcaption includingexactcommonfooter, wholeverifiedentry summaries and matchingproofs. No arbitraryprosetruncation or guaranteedWhatsAppfoldthreshold. IndependentBG012latestquestionboundary, finalsource synchronization required; all deliveryguards unchanged.
+
+## Latest-question correctness follow-up
+
+BG012 Ready: investigate/prove and correct current objective/history contamination after observed categorylead in latestdetail reply. App-only exactinbound/version authority; preservehistory/followups/grounding/fallback. No Shared release or budget/provider changes. Root genuinecanary required after sourceacceptance.
+
+BG012 Complete exactb8e6f92, latestcustomer authority/moderation/chronology accepted withPG13/bothCI4550. BG013 caption and postdeploymentgenuinecanary remain; architecture In Progress.
