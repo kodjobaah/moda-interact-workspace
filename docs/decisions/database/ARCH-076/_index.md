@@ -4,4 +4,4 @@ Proposed preserved sender-pool design; all tasks Pending/unclaimed behind curren
 
 | Task | Status | Dependencies |
 | --- | --- | --- |
-| [ARCH-076-DATABASE-001](DATABASE-001-create-sender-pool-and-active-assignments.md) | Pending | See task metadata |
+| [ARCH-076-DATABASE-001](DATABASE-001-create-sender-pool-and-active-assignments.md) | Ready | See task metadata |
