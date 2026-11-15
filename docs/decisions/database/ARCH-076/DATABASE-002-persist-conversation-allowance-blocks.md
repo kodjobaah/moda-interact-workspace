@@ -160,3 +160,7 @@ Conforms to independent funded-block storage, no sender dependency or duplicate 
 ### Follow-up
 
 Promote only ARCH-076-BACKGROUND-005 to Ready: its sole DATABASE002 dependency is now Complete. Other task metadata/claims unchanged. Root owns final parent integration, deployment sequencing and test-before-production verification. SYSTEM-TEST remains user-deferred.
+
+## Post-acceptance application assumption clarification
+
+The accepted D002 schema is unchanged. ACTIVE may coexist with one PENDING successor. Ordinary admission uses derived normalLimit=hardMessageLimit-terminalReservedSlots. Keep predecessor ACTIVE while cap consists of provisional/compensatable usage; at final pre-provider permit revalidate live capacity and cancel/release pending renewal if capacity reopened. Funding choice freezes at provider admission. Confirmed CONTINUATION settlement marks predecessor EXHAUSTED and successor ACTIVE; genuine FOLLOW_UP closes prior ACTIVE instead. Definitive preactivation failure leaves prior ACTIVE, eligible postactivation exact compensation retains cancelled lineage/new-ordinal retry without EXHAUSTED→ACTIVE. See parent Funded allowance boundary protocol; business proof/compensation belongs BG005, not new SQL checks or schema changes. Historical accepted review/claim/test evidence remains unchanged.
