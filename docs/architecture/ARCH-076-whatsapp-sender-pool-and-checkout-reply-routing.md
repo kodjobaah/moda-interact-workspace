@@ -141,8 +141,8 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-DATABASE-001 | moda_database | Complete | None |
 | ARCH-076-ADMIN-001 | moda_admin | Complete | DATABASE-001 |
 | ARCH-076-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
-| ARCH-076-BACKGROUND-002 | moda_background | Ready | BACKGROUND-001 |
-| ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
+| ARCH-076-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001 |
+| ARCH-076-BACKGROUND-003 | moda_background | Ready | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
 | ARCH-076-ADMIN-003 | moda_admin | Complete | None |
 | ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
@@ -262,3 +262,5 @@ A prior admitted/UNKNOWN provider operation is never retransmitted through this 
 15 November ADMIN001 accepted Complete: tested `2c48d70449b1ce1fb8c9f0d8a8645e988da10616` and merged Admin main `ed0036eaf25efce71e8eb77435b8b04d8078084d` share exact tree `48dc8435fe9742c220c1aae1f4e51105d89a4b86`. Inventory provider/authentication/concurrency checks passed, including 10 disposable PostgreSQL scenarios. No dependent task becomes newly Ready: BG003 still requires BG002; BG004 still requires BG003; SYSTEM-TEST remains Pending and user-deferred. This is source acceptance, not inventory activation or production verification.
 
 15 November BG005 accepted Complete: tested `69a5bb3ec28ec70c0388dae67d73b7221634abaf` and actual merged Background main `0a6bb0ba2ea1042ef79588592a4e39e7bf20ea94` share exact tree `15b0db811cdafc8883684de699ec9dfb12d9c4ee`. Independent allowance tests and architectural review passed; no dependent task is newly promoted. BG002 must integrate and validate the union of sender and allowance final-permit checks before acceptance. Pool activation and production verification remain held; SYSTEM-TEST remains explicitly deferred.
+
+15 November BG002 accepted Complete: tested `fbab80f41b2b9e69234124df47fd05c5a613d939` and merged Background main `cb625e626bebba337c1dda3ce4190bd00f3ad7f1` share exact tree `ebd71d2e89d1b91f355420c7b93b813d5883e875`. Sender/funding union passed 16 PostgreSQL scenarios and exact-head full unit/type/build checks. BG003 alone becomes Ready; BG004 remains gated by BG003. Neutral guidance's temporary precheck remains insufficient for activation until BG004 replaces it with durable RoutingTurn admission; test-first rollout and deferred SYSTEM-TEST remain unchanged.
