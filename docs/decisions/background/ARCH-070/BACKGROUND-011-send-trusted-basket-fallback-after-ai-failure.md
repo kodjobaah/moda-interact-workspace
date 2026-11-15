@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-14T23:54:36Z
@@ -17,7 +17,7 @@ attempt: 1
 depends_on: []
 enables: []
 created: 2026-11-14
-updated: 2026-11-14
+updated: 2026-11-15
 ---
 
 # Send trusted basket fallback after eligible AI failure
@@ -54,10 +54,10 @@ Before source execution, architect must reconcile read-only seam findings into t
 
 ## Work Items
 
-- [ ] Confirm exact failure classification/composition/admission seams with architect.
-- [ ] Add trusted localized basket fallback and guarded failure integration.
-- [ ] Prove no duplicate/unsafe send and preserved provider retry/usage behavior.
-- [ ] Return immutable source/report.
+- [x] Confirm exact failure classification/composition/admission seams with architect.
+- [x] Add trusted localized basket fallback and guarded failure integration.
+- [x] Prove no duplicate/unsafe send and preserved provider retry/usage behavior.
+- [x] Return immutable source/report.
 
 ## Interfaces / Contracts
 
@@ -73,18 +73,18 @@ Root-owned deployment and genuine failure fallback verification after all curren
 
 ## Acceptance Criteria
 
-- [ ] Eligible AI failure produces honest saved-common basket body and canonical checkout footer.
-- [ ] Trusted facts only; missing/oversized inputs handled without fabricated claims/truncation.
-- [ ] Control/consent/window/stale/authorization/cancel exclusions remain fail closed.
-- [ ] Existing idempotency/permit/usage/UNKNOWN/retry behavior preserved.
-- [ ] Original AI failure and distinct fallback outcome remain observable without sensitive data.
+- [x] Eligible AI failure produces honest saved-common basket body and canonical checkout footer.
+- [x] Trusted facts only; missing/oversized inputs handled without fabricated claims/truncation.
+- [x] Control/consent/window/stale/authorization/cancel exclusions remain fail closed.
+- [x] Existing idempotency/permit/usage/UNKNOWN/retry behavior preserved.
+- [x] Original AI failure and distinct fallback outcome remain observable without sensitive data.
 
 ## Validation
 
-- [ ] Focused classification/localization/body/footer/basket trust tests.
-- [ ] Actual processor failure path and negatives for controls/stale/cancel/window/unsafe context.
-- [ ] Disposable PG lifecycle: one fallback/usage; duplicate inbound, UNKNOWN no resend, missing common and revoked authority no send.
-- [ ] Declared types/build/scoped lint and exact remote checks.
+- [x] Focused classification/localization/body/footer/basket trust tests.
+- [x] Actual processor failure path and negatives for controls/stale/cancel/window/unsafe context.
+- [x] Disposable PG lifecycle: one fallback/usage; duplicate inbound, UNKNOWN no resend, missing common and revoked authority no send.
+- [x] Declared types/build/scoped lint and exact remote checks.
 
 ## Stop Condition
 
@@ -98,7 +98,7 @@ Normal launcher dedicated mirrored sibling worktrees only when Ready. Not alone;
 
 ### Status
 
-In Progress — immutable implementation checkpoint `6421c53b236872e3b62ecb6f847688cfdee4d3db`, draft Background PR236. Final exact-head build/lint/remote checks pending; no readiness or acceptance claim.
+Ready for Review — immutable implementation `ee3e61218f2446dbff629d7b92c207f28d8a4a93`, Background PR236. Implementation and validation complete; awaiting independent moda_architect review. No acceptance decision is made by this report.
 
 ### Files Changed
 
@@ -124,7 +124,11 @@ Normal launcher created/reused canonical mirrored `task/ARCH-070-BACKGROUND-011`
 - Final exact-head focused admission/processor/fallback/worker tests: **170 passed / four files** (`/tmp/bg011-exact-focused.log`). Actual callback, child timeout, original deadline, stale/control/cancel/denial/lost lease, unchanged common, unsafe basket, whole entry/locale and private-error-canary vectors included.
 - Disposable PostgreSQL/Redis: **four passed, 52 intentional name-filter skips**, 15.09 seconds (`/tmp/bg011-pg-2.log`): actual processor and normal delivery freeze the same root, canonical footer and saved snapshot; one logical usage; duplicate processing and engine continuation do not resend; UNKNOWN remains frozen; missing common/revoked ownership send nothing. Existing engine, permit, schema and timeouts unchanged. Final diagnostic-only/finite-input guard changes are covered by the affected unit rerun; normal lifecycle runtime is unchanged.
 - Initial unit call-shape assertion failed because an optional undefined second argument changed the old mock contract; retained original one-argument call when fallback is unconfigured. Initial PG run two failed/two passed: nullable Conversation tenant links were incorrectly required although the existing authoritative relationship is its Recovery. Corrected to require the real recovery shop/customer and reject every conflicting populated Conversation link; corresponding unit parity vector added. No policy/permit relaxation.
-- Final build/scoped lint and two exact-head remote unit checks pending at this checkpoint. No broad unchanged local full-suite repeat.
+- Build and eight-file scoped lint/diff completed successfully on `6421c53`; final privacy-only runtime diagnostic correction `c8efd3a` passed **41 focused cases**, types and both changed-file lint. It emits only finite fallback error classifications and finite allowlisted generation codes, never arbitrary Error.name/message/cause/model payload. Malicious name/message/model-cause canaries prove absence.
+- Final test-only auth-domain vectors on exact `ee3e612` passed **46 fallback cases** and test lint (`/tmp/bg011-auth-final.log`, `/tmp/bg011-auth-lint.log`). Typed OpenRouter 401/403 is nested under model.invoke and remains eligible; actual commerce-mcp/source 401/403 and tool authorization/stale failures remain ineligible. No classifier widening occurred. Original build, normal 170-case and PG evidence is retained; no unchanged broad local repeat.
+- Exact final head remote runs **43657987279** and **43657977999** both SUCCESS. Actual run 43657977999 logs show **4541 tests / 402 files passed**, 86.04 seconds.
+- Normal final source merge of actual accepted BG010 main `7a7a9f47eec2bc6d0323645f1694a4ffbf3d6668` succeeded (`75e2f52b3116f1cfe686fe0934c7921ac2e1a51b`), no source conflict/content changes. Main ancestry verified. Parent origin/main synchronization was already current; no parent gitlink staged.
+- Root independently reported read-only production `service.prepare` transaction dry-run at 00:27:31Z: prepared true, 162-character historical-basket body, existing active saved common/English locale selected. Protected receipt `production-fallback-readonly-receipt.json`; no model/provider/send/write and no live fallback-delivery claim. This is root evidence, not an agent live operation.
 
 ### Deviations
 
@@ -136,7 +140,7 @@ Basket copy is explicitly a saved snapshot: final permit validates current recov
 
 ### Unresolved Issues
 
-Genuine nonrecovery generation is unsupported by the existing `loadTurn` route and common checkout authority. No ad-hoc template/sender was invented. Missing authorization/current common still refuses. Final accepted BG010/main synchronization and remote checks remain before Review.
+Genuine nonrecovery generation is unsupported by the existing `loadTurn` route and common checkout authority. No ad-hoc template/sender was invented. Missing authorization/current common still refuses. Accepted BG010/main synchronization and real-registry remote checks are complete. Root owns integration/deployment and any genuine delivery verification.
 
 ### Architectural Concerns
 
