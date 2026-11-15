@@ -31,3 +31,5 @@ ARCH-070-BACKGROUND-011 Complete: exactee3e612 accepted after4541tests/PG4/priva
 ARCH-070-BACKGROUND-010 Ready(preparatory): appownedflatterminalselectionprotocol viaShared007raw/separatedecision, fullcontextproof/publicapprovalgate.
 
 ARCH-070-BACKGROUND-010 Complete: accepted exactcbcef46 real6.1 registry/bothCI4492PASS; genuinepostdeploycanary pending. BG011 fallback separate.
+
+ARCH-070-BACKGROUND-013 Ready: conservative400codepoint/8line verifiedcaption policy, independent012; finalsync required.
