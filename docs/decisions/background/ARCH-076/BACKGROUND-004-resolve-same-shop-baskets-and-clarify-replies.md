@@ -14,7 +14,7 @@ priority: 45
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: [ARCH-076-BACKGROUND-003, ARCH-076-ADMIN-002, ARCH-076-ADMIN-003]
+depends_on: [ARCH-076-BACKGROUND-003, ARCH-076-ADMIN-002, ARCH-076-ADMIN-003, ARCH-076-COMMERCE-001]
 enables: []
 created: 2026-11-13
 updated: 2026-11-15
@@ -203,3 +203,5 @@ Parent relationship correction: persist input before model/classification; bind 
 R15 positive resolution lifecycle correction: classifier routingDecision and later original-request resolution are separate. Add nullable resolutionInboundProviderMessageId TEXT self-FK NO ACTION DEFERRABLE INITIALLY DEFERRED (no global UNIQUE). Q1 frozen CLARIFY stays unchanged; confirmed prompt + Q2 frozen exact-parent SELECT_ONLY/SELECT_AND_QUESTION permits Q1's initial selectedConversationId+witness=Q2 bind atomically with original admission and terminal scrub. Direct NEW_QUESTION may use self witness and leaves older pending originals alone. Bound witness is immutable; a preexisting CLARIFY decision must not block valid first resolution. Validate same-thread/route original/prompt/candidate and current owner/control/moderation under lock. Required positive PostgreSQL original→CLARIFY→confirmed prompt→child selection→original admission case, plus simultaneous selections/replay/crash, forged witness, separate new question, exact additional clause and retention-cohort deletion. Do not rewrite classifier decisions or infer resolver by reverse-child lookup.
 
 The parent R15 explicit two-stage shop then basket clarification section is authoritative. Preserve Q1/Q2 CLARIFY decisions; Q3 exact role decision and Q1 resolution witness provide later admission evidence. Prior wording requiring promptTurnId equal originalTurnId is superseded by the direct-child star contract.
+
+Architecture dependency correction: ARCH-076-COMMERCE-001 must be Complete before BG004 acceptance/live routing activation. Studio normal prompt activation must reject routing-tagged revisions. This does not block ADMIN003 source acceptance. SYSTEM-TEST remains deferred.

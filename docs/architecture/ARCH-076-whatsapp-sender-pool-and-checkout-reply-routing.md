@@ -145,12 +145,13 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
 | ARCH-076-ADMIN-003 | moda_admin | Complete | None |
-| ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003 |
+| ARCH-076-BACKGROUND-004 | moda_background | Pending | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
 | ARCH-076-DATABASE-002 | moda_database | In progress, attempt1 | None |
 | ARCH-076-BACKGROUND-005 | moda_background | Pending | DATABASE-002 |
-| ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004 |
+| ARCH-076-COMMERCE-001 | moda_commerce | Ready | None |
+| ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
 
-All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are active attempt1; ADMIN002 is Complete; ADMIN003 has a canonical task-branch attempt1 claim at 2026-11-15T13:00:12Z (its merged-main definition remains Ready until that task branch is integrated). Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
+All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are active attempt1; ADMIN002 and ADMIN003 are Complete; actual merged Admin pin is e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2. Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
 
 ## Change history
 
@@ -186,7 +187,7 @@ Required positive PostgreSQL case: persist Q1, freeze CLARIFY, admit/confirm pro
 
 15 November ADMIN002 accepted and automatically Complete: tested Admin source4bfefc5 merged main5558daadd (identical Git tree). Parent gitlink records actual merged main. BG004 still waits for BG003 and ADMIN003; SYSTEM-TEST remains deferred.
 
-Completion frontier correction: D001 active implementation, D002 claimed attempt1 at 2026-11-15T12:59:02Z, ADMIN003 canonical branch claimed attempt1 at 2026-11-15T13:00:12Z. ADMIN002 clears active claim fields on automatic completion while retaining historical evidence. No other task claim metadata is changed by this reconciliation.
+Completion frontier correction: D001 active implementation, D002 claimed attempt1 at 2026-11-15T12:59:02Z; ADMIN003 is now accepted Complete with its historical attempt retained in its report. ADMIN002 clears active claim fields on automatic completion while retaining historical evidence. No other task claim metadata is changed by this reconciliation.
 
 ## R15 explicit two-stage shop then basket clarification
 
@@ -201,4 +202,7 @@ Prompt validation reads the explicitly named prompt ID only. Require promptTurnI
 
 Required positive disposable PostgreSQL/provider-fixture case: Q1 unknown-shop original→confirmed neutral prompt→Q2 verified shop selection→confirmed basket prompt on Q2→Q3 selection naming Q1/Q2 explicitly→exactly-once Q1 admission via Q3 witness. Include multiple simultaneous originals, Q3 additional exact question clause, duplicate/restart replay, forged Q2 from another root, wrong route/prompt scope, missing confirmation, expiry/control/template changes and concurrent resolution attempts. Keep SYSTEM-TEST deferred; these are owner task-local checks.
 
+## Commerce Studio routing-purpose isolation
+
+ARCH-076-COMMERCE-001 (moda_commerce, Ready, no dependencies) closes the existing Studio setPointer/read/seed gap for RECOVERY_ROUTING-tagged revisions. It preserves exact-scope/auth/CAS and actual shared-lineage revision numbering. ADMIN003 source remains independently acceptable; BG004 acceptance and live routing activation require this Commerce task Complete. No schema or Shared change. SYSTEM-TEST depends on this final owning implementation and remains user-deferred.
 15 November ADMIN003 accepted and automatically Complete: Admin PR103 main e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2 has the identical tested tree. All routing attributes are explicit Admin settings. The owning Commerce Studio routing-prompt isolation guard is required before routing activation. SYSTEM-TEST remains deferred.
