@@ -98,35 +98,49 @@ Normal launcher dedicated mirrored sibling worktrees only when Ready. Not alone;
 
 ### Status
 
-Not Started
+In Progress — immutable implementation checkpoint `6421c53b236872e3b62ecb6f847688cfdee4d3db`, draft Background PR236. Final exact-head build/lint/remote checks pending; no readiness or acceptance claim.
 
 ### Files Changed
 
-None
+- `src/services/ai-failure-fallback.ts`: application-owned typed failure classification, original-claim child timeout, twenty-locale honest copy, fresh recovery-linked saved basket and exact saved common reference.
+- `src/services/outbound-whatsapp-admission.service.ts`: optional typed recovery callback only around generation, before existing failed-preparation cleanup.
+- `src/services/conversation-turn-processor.service.ts`: tagged fallback outcome, original ownership/deadline/control/version checks, exact common reference comparison, no model language/product-context updates, distinct safe fallback diagnostics and normal send lifecycle.
+- `src/services/recovery-template-preparation/recovery-template-items-summary.ts`: opt-in whole-entry snapshot summary; existing native formatter unchanged.
+- `src/workers/whatsapp.worker.ts`: production fallback service and existing agent AbortSignal child-deadline wiring.
+- Unit fallback/admission and disposable common-layout lifecycle tests.
 
 ### Work Completed
 
-None
+The same admitted message/idempotency enters normal common composition, moderation, final permit and delivery. Eligible failures never create a second reservation. Saved snapshot facts are names/quantities only, explicitly labelled; invalid/absent rows produce inability-only through the same authorized recovery/common/footer. Complete entries and an honest omitted-entry count replace unsafe slicing. Optional media failure uses the existing full canonical TEXT path. Missing or changed common authority is refused; no raw passthrough.
+
+Generation receives an earlier child deadline (original processor claim end minus 15 seconds, intersected by the existing host cap/AbortSignal). At least ten seconds must remain before and after snapshot preparation for the existing bounded media preparation plus send allowance; no lease is renewed. Original processing version/start identity, inbound/control and final permit remain authoritative. Independent cancellation/denial/stale/expired/lost-lease paths do not recover.
+
+Normal launcher created/reused canonical mirrored `task/ARCH-070-BACKGROUND-011` worktrees and claimed attempt1/codex in parent `18a136bb06309f4adca4de61bf5f06b5b5d01eaf`, baseline Background `2352d814b23b0259c3d38bcf2e2fff522b665db0`, recursive Database `6f42b71112efe7ac63654d55f41cd74ca569b1ae`. Exact BG010 runtime `c1e2fb0ce0e8a85d59a9850902a7f353fdfa9cde`, real-registry dependency `1b57fa8d4d46169f25ff5895ff7adee599cff4d1` and its three version-only test updates `cbcef46e60b4e2d05ca6d8492c44597baa06241f` were merged normally; no terminal factory edits or source copying.
 
 ### Validation Results
 
-None
+- First source build/types passed against exact approved 6.1.0 archive `302b91f5ad24353ac3052c1e8c5d456b3c90d072d64665edff579eb56eb249d5`.
+- Real public-registry package/lock from BG010; clean `npm ci` succeeded. All 163 installed package files byte-equal that public archive; lock version 6.1.0 and normal registry URL verified.
+- Final exact-head focused admission/processor/fallback/worker tests: **170 passed / four files** (`/tmp/bg011-exact-focused.log`). Actual callback, child timeout, original deadline, stale/control/cancel/denial/lost lease, unchanged common, unsafe basket, whole entry/locale and private-error-canary vectors included.
+- Disposable PostgreSQL/Redis: **four passed, 52 intentional name-filter skips**, 15.09 seconds (`/tmp/bg011-pg-2.log`): actual processor and normal delivery freeze the same root, canonical footer and saved snapshot; one logical usage; duplicate processing and engine continuation do not resend; UNKNOWN remains frozen; missing common/revoked ownership send nothing. Existing engine, permit, schema and timeouts unchanged. Final diagnostic-only/finite-input guard changes are covered by the affected unit rerun; normal lifecycle runtime is unchanged.
+- Initial unit call-shape assertion failed because an optional undefined second argument changed the old mock contract; retained original one-argument call when fallback is unconfigured. Initial PG run two failed/two passed: nullable Conversation tenant links were incorrectly required although the existing authoritative relationship is its Recovery. Corrected to require the real recovery shop/customer and reject every conflicting populated Conversation link; corresponding unit parity vector added. No policy/permit relaxation.
+- Final build/scoped lint and two exact-head remote unit checks pending at this checkpoint. No broad unchanged local full-suite repeat.
 
 ### Deviations
 
-None
+No new Shared, database, queue, provider, model, template or rendering contract. No live/customer/model/provider calls, main merges or deployment changes. New semantic events use existing shared logging; no duplicate generic observability mechanism.
 
 ### Assumptions
 
-Current recovery basket and normal delivery machinery available; verify before Ready.
+Basket copy is explicitly a saved snapshot: final permit validates current recovery/control/consent/lifetime, not an unchanged basket generation. No current stock, price or total claim is made. Provider delivery is never guaranteed.
 
 ### Unresolved Issues
 
-Exact failure/admission seam review and BG010 dependency pending.
+Genuine nonrecovery generation is unsupported by the existing `loadTurn` route and common checkout authority. No ad-hoc template/sender was invented. Missing authorization/current common still refuses. Final accepted BG010/main synchronization and remote checks remain before Review.
 
 ### Architectural Concerns
 
-No fallback may bypass control or provider uncertain-outcome fencing.
+Prepared fallback is not a successful AI answer, does not fix the AI failure, and never catches send/UNKNOWN errors as new generation failures. Source/main merges and live verification remain root-owned.
 
 ## Architect Review
 
