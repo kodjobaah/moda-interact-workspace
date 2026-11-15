@@ -27,3 +27,7 @@ ARCH-070-BACKGROUND-011 Pending: trusted basket fallback after eligible AI failu
 BG011 Ready independent preparation: exact generation seam and snapshot-labelled basket policy agreed; finalBG010/publicregistry integration gate retained.
 
 ARCH-070-BACKGROUND-011 Complete: exactee3e612 accepted after4541tests/PG4/privacy/auth proof; realproductiondelivery rootpending.
+
+ARCH-070-BACKGROUND-010 Ready(preparatory): appownedflatterminalselectionprotocol viaShared007raw/separatedecision, fullcontextproof/publicapprovalgate.
+
+ARCH-070-BACKGROUND-010 Complete: accepted exactcbcef46 real6.1 registry/bothCI4492PASS; genuinepostdeploycanary pending. BG011 fallback separate.

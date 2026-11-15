@@ -204,3 +204,7 @@ Fallback reuses same admitted idempotent reservation/root and ordinary common co
 Reviewed170 affected tests and final46 privacy/auth tests, types/build/scopedlint, actualpublic6.1 all163bytes, disposablePG4 normal/UNKNOWN/missingcommon/revoked-control proof. Exact remote43657987279/43657977999 SUCCESS402files4541tests verified byroot. Sourceprivacy patch replaces arbitrary Error.name/raw errorcause logging with finite classifications and canaries. Typed model-account401/403 nested failure may recover, MCPsource401/403/grant/tenant/stale refuses; no classifier widening. Earlier fixture/PG corrections and targeted reruns retained truthfully. Root readonlyproductionprepare162chars only is not send proof.
 
 Complete implementation only. Existing Meta retry/UNKNOWN/no-resend/usage safety retained, physical delivery is not guaranteed. Root owns merge/deploy/drain/config/canary; real production failure fallback and allconsumer rollout still require verification. No mainmerge/liveoperation byarchitect.
+
+### Actual fallback implementation-main integration receipt
+
+Root merged PR236 exactee3e612 to actualBackground68fd52ca98ac6f94df871e2c4478f96460b7ee6e; tree equality independently verified. Parentgitlink records actual merged fallback plus prior atomic completion. Acceptedpredecessor/release history retained; root owns parentmainmerge/liveverification.
