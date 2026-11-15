@@ -180,3 +180,7 @@ No source finding remains after mandatory-adjunct correction: concise DETAIL ref
 Validation reviewed:118focused/typesbuild/7filescopedlint, actualPG9 plus DEFAULT HUMAN1, both independentlyverified exactheadCI43664260607/43664253381 SUCCESS4553tests/402files. Initialfixture falseprooftitle/missingreadonly/normalreservation expectation corrections disclosed and retained. Rootprotected actual offline516UTF16/513points→286points/6lines with exactcheckoutonce/end and firstpair/logo unchanged supports sizing/provenance only, not customer delivery. Rootgenuinecanary still outstanding.
 
 Complete implementation only; no Sharedpublication/provider/model/budget/settings change, no mainmerge/liveoperation byarchitect. Root source/parentmerge/deploy/drain and authorized genuinecheckout/message verification remain; architecture In Progress.
+
+### Actual merged-source integration receipt
+
+Root merged PR238 acceptedc4e87f9 to actualBackgroundb7cca487314eb0767e83f127e7e3affb0f862dd6; exact tree equality independently verified. Parent1058 records actualmergedgitlink and preserves currentmain/accepted012history. Root owns parentmerge/deployment/genuinecanary; no liveoperation/mainmerge byarchitect.
