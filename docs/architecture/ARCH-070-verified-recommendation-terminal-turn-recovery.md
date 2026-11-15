@@ -128,3 +128,27 @@ BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. Act
 ## Commerce preview transport consumer rollout addition
 
 ARCH-070-COMMERCE-001 (moda_commerce, Pending, depends ARCH-070-SHARED-008) adopts the corrected published OpenRouter SDK. Global saved provider configuration must be nested only after both Background and Commerce corrected deployments replace old consumers. This requires no topology/DB/observability change; root uses the existing audited configuration writer. No selection efficacy is inferred from transport compatibility.
+
+ARCH-070-SHARED-008 pending: Publish accepted native turn tool protocol; propernativeprotocolmechanics only, allbusinessguardsunchanged; rootproof/publicationapprovalgate.
+
+ARCH-070-SHARED-007 ready: Preserve ordered native current-turn tool protocol; propernativeprotocolmechanics only, allbusinessguardsunchanged; rootproof/publicationapprovalgate.
+
+Shared007 Ready reworkattempt2: genericrawtransport/separatehostterminaldecision, no businessmapping; native007negative/flat008capability only. AppBG010ownsflatprotocol; publicationheldnewapproval.
+
+## Shared007 source acceptance checkpoint
+
+Shared007 Complete at667a658: native transcript/terminal mechanics and optional parallel parameter omission accepted independently of application efficacy. Trial015 routes but still rejects empty selection. Shared008 publication remains held until root application evidence disposition and exact new public approval; architecture remains In Progress. Both Background and Commerce SDK consumers must deploy before saved routing nesting.
+
+## Shared terminal equivalent-batch correction
+
+Root016 returned three identical pure terminal decisions selecting observed pairs. Shared007 reopened Ready (attempt3 preserved) for whole-raw-batch identity/digest binding and exactly-once projection of proven equivalent calls. Any differing/ordinary/foreign batch remains rejected. No business guard, provider budget or raw transport rewrite; publication and incident verification remain held.
+
+Shared007 attempt4 sourcec1c1d2b accepted: exact-equivalent terminal raw batches bound and projected once; differing batches fail closed. Root017 zero-network exact captured replay passed. Natural application proof, consumer registry gates and public release approval remain pending.
+
+## Atomic identity batch correction after019
+
+019 distinct model-issued identity calls and oversized unused terminal prose remain a failure. Shared007 reopened for explicit generic immutable atomic-batch projection and terminal-only bounded journal; default equivalence/ordinary4096/canonical reply guards unchanged. BG010 owns exact all-call identity union/aggregate bounds and refreshed final render. Root private offline019 proof precedes further actual call; publication held.
+
+Shared007 attempt5 accepted4e0716e after024 exact offline actual019 batch proof. Shared008 metadata6.1.0 preparation eligible, publication/newregistry consumer gates remain. No natural delivery or incident completion claim.
+
+Shared008 Complete public6.1.0 exact302b/977151bytes verified00:03:39Z after explicit approval. Commerce001 actualregistryadoption promoted; BG consumers finalregistrychecks. Bothconsumer deployments/drain precede globalprovider nesting. No productionefficacy/delivery claim.
