@@ -152,3 +152,7 @@ Shared007 attempt4 sourcec1c1d2b accepted: exact-equivalent terminal raw batches
 Shared007 attempt5 accepted4e0716e after024 exact offline actual019 batch proof. Shared008 metadata6.1.0 preparation eligible, publication/newregistry consumer gates remain. No natural delivery or incident completion claim.
 
 Shared008 Complete public6.1.0 exact302b/977151bytes verified00:03:39Z after explicit approval. Commerce001 actualregistryadoption promoted; BG consumers finalregistrychecks. Bothconsumer deployments/drain precede globalprovider nesting. No productionefficacy/delivery claim.
+
+## Mandatory catalogue routing rollout gate
+
+Before nested global provider preferences are saved, root must verify corrected Shared6.1 consumers deployed and predecessor processes drained in BOTH recovery workers (including initial-outreach SDK usage) and messaging workers, plus Commerce preview, for each affected environment. Existing normal audited catalogue writer follows; then genuine production canary. Offline024/host tests support source acceptance only, never substitute for postdeployment delivery. Commerce001 full declared typecheck must pass after bounded five-test fixture corrections explicitly authorized byroot.

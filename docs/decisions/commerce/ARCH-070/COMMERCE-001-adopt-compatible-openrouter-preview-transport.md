@@ -149,3 +149,9 @@ Promote after Shared008 Complete.
 ### Actual registry promotion
 
 Shared008 architect Complete accepted683a5fce8. Execute normal launcher now against public6.1.0 exact approved archive302b91f5ad24353ac3052c1e8c5d456b3c90d072d64665edff579eb56eb249d5,977151bytes163members/SRIsha512-h4bQaLuufY4u2CF4X6oS/7BbRWvNnfVN8cFJvL/xrhcmS4lqnob2qAgSTm/r5q3NqEIUWxuPw9FpypndQT+qiA==. Registry receipt independently verified00:03:39Z/versionlatest6.1.0;6.0.1unchanged. Adopt realregistrylock/npmci, no unpublisheddependency. Existing5.13.0→6.1 migration must diagnose actual removedAPI failures; do not add compatibility machinery or broaden policies. All source/runtime ownership boundaries and finalrootdeploy-before-settings requirement unchanged.
+
+### Required full-typecheck test fixture correction (root authorized)
+
+Root explicitly requires full declared typecheck green, not a baseline waiver. Scope includes ONLY five existing ARCH066 test files with actual diagnostics: remove duplicate SubsetSchema imports and supply required local InitialOutreachHost.readBudgetDefaults mock fixtures using the current contract. Preserve requiredport semantics, existing auth/business assertions and production runtime. Do not weaken types/skip tests or add compatibility code. Record exact files/corrections, rerun full declared typecheck and affected tests plus productionbuild/scopedlint. This is a bounded test-maintenance extension; no new runtime capability.
+
+Saved global provider nesting rollout gate: BOTH recovery and messaging workers using the catalogue SDK, AND Commerce preview, must deploy the corrected dependency and drain predecessor processes before root updates configuration through audited normal writer. Apply per affected environment; preserve old catalogue until all consumers confirmed. No settings/deploy bytaskagent.
