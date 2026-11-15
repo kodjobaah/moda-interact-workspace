@@ -129,19 +129,27 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Not Started
+Implementation in progress in the prepared isolated task worktrees. Source draft PR243: https://github.com/kodjobaah/moda-interact-background/pull/243, head `1db5f785dec9eb1cdd4be4580261021bcaef2b96`. Final acceptance is held on the owning Database correction for canonical exact-clause moderation; no schema bypass is implemented.
 
 ### Files Changed
 
-None
+- New routing policy/classifier, durable neutral prompt, R15 store/runtime and role projection modules under `src/services/recovery-sender-pool`.
+- Actual inbound routing, existing repair tick, scalar provider status, Commerce history and moderation owner integrations.
+- Focused unit/provider fixtures and task-local disposable PostgreSQL R15 integration suite; no SYSTEM-TEST execution.
 
 ### Work Completed
 
-None
+- Configured policy/model/prompt revision snapshots with no hidden AI defaults; separate ROUTER selector and durable no-resend prompt permit.
+- Explicit original/shop-child/basket-child star relation, immutable structural role decisions, exact authentic message association and role projection before history/latest limits.
+- Sender/recipient/current owner/control/STOP/window/candidate/config/template/moderation rechecks; ephemeral payload scrub and retained role evidence while owned history survives.
+- Canonical full-current-message moderation plus independent clause moderation use the existing PENDING→CHECKING→ALLOW lease lifecycle.
+- Verified voice uses existing configured media/speech adapters under the routing lease, captures one immutable transcript/moderation snapshot, binds the Database-owned raw-input hash, and materializes authentic AUDIO/COMPLETED plus canonical TRANSCRIPT assessments at owned admission.
 
 ### Validation Results
 
-Not run; definition only.
+- Combined focused final unit/provider/history/moderation/inbound/media/speech command:20 files,322 tests passed (`/tmp/bg004-focused-final2.log`). Audio proof/helper focused36 tests and targeted lint also passed.
+- Full repository lint and explicit TypeScript noEmit passed (`/tmp/bg004-voice-final-lint.log`, `/tmp/bg004-voice-final-types.log`). Declared `npm run build` passed (`/tmp/bg004-build.log`, exit0). Final exact-head CI and accepted Database-pin PostgreSQL checks remain pending.
+- Actual PostgreSQL checkpoint:18/19 pass, including full runtime Q1→neutral shop Q2→basket Q3→exactly-once original admission and projection. Sole failure is PostgreSQL23514 `ARCH040 moderation message text digest mismatch` for the independently moderated new clause. The current27-case suite adds voice full/clause TRANSCRIPT admission, UTF-16 emoji/combining offsets, provenance refusal and replay; it is not claimed passed until rerun.
 
 ### Deviations
 
@@ -153,7 +161,7 @@ None
 
 ### Unresolved Issues
 
-Use owning task launcher at the accepted dependency frontier.
+Existing ARCH040 SQL subject integrity validates only the full stored message digest, whereas R15 retains that authentic message and independently assesses its exact clause. The coordinator is preparing the owning Database correction; Background does not alter triggers, omit canonical assessments or fake an ALLOW. The exact-clause positive test and all final gates must pass against the accepted Database pin before review return.
 
 ### Architectural Concerns
 
