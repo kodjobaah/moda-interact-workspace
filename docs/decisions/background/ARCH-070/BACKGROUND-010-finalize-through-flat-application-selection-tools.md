@@ -81,7 +81,7 @@ Root testedsource/publicreleaseapproval then integrateddeployment/genuineproduct
 - [ ] No rawproviderID/name/args changed or resent asprojected; canonicaldecision separate bound.
 - [ ] Everylegitimatecanonical branch retained, no grounded/nonproduct/referral/shipping escape.
 - [ ] Invalidprojectionterminal no extraSDK/MCP/send; validdecision unchangedcanonicalvalidation.
-- [ ] Rootnaturalactualfullcontext conformance pass, notjustisolatedassay.
+- [ ] Exact captured full-context prefix plus actual019 response offline024 proves unchanged raw binding, complete model-issued union and observed membership; actual host refresh/guard regressions pass. Genuine natural production delivery remains a separate root-owned postdeployment checkpoint, not claimed by this source task.
 - [ ] Actualapprovedpublicdependency/npmci/remote finalgates satisfied.
 
 ## Validation
@@ -258,3 +258,9 @@ Required tests: two different same-mode calls with overlap union correctly/all r
 ### Independent accepted source checkpoint — atomic candidate
 
 Exact sourcec1e2fb0ce0e8a85d59a9850902a7f353fdfa9cde reviewed with existing host bound-refresh path. No source finding: every minimal member individually schema/current-identity/title validated, aggregate exact-order union<=pinned3, no truncation/arbitrary firstcall, rich equivalent branches retained. Unit35/155uniquehost/type/build/scopedlint PASS with disclosed combined fixture rerun. Root024 receipt independently read: five requests checked, two differing actual calls/full6952 companion chars preserved, wholebinding true, one projection, all three explicit selections preserved, zero network, accepted true. This is an accepted preparatory SOURCE checkpoint, not final task completion/production efficacy. Task remains InProgress and final Architect Review Pending until actual approved public dependency/lock/npmci/remoteCI and required application disposition. This checkpoint permits metadata-only release preparation, not publication or merge.
+
+### Final source-validation criterion disposition (2026-11-15)
+
+Root explicitly accepted024 actual captured019 full-prefix/response offline replay as implementation/release prerequisite and requests source merge followed by production verification, with no further model experiment before release. Accordingly the earlier natural-atomic-source criterion is superseded by exact offline024 binding/union/current-membership proof plus real host/wire/refreshed-body/control regressions and actual public registry/exactCI checks. This does not claim a natural atomic model run, uninterrupted60s success or actual delivery. Those remain root-owned integrated postdeployment canary evidence. Do not fabricate or relabel018 cap/019 failure as success; preserve all historical failures. No canonical guard, authorization, budget or evidence requirement is relaxed.
+
+Rollout must replace/drain BOTH production messaging and recovery worker processes AND Commerce preview consumers before root uses the audited normal catalogue writer to nest global provider preferences. Initial-outreach runtime is also a catalogue SDK consumer in recovery worker; no unrelated application source change is needed.
