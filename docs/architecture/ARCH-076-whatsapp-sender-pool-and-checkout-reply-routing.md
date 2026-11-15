@@ -140,8 +140,8 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | --- | --- | --- | --- |
 | ARCH-076-DATABASE-001 | moda_database | Complete | None |
 | ARCH-076-ADMIN-001 | moda_admin | Ready | DATABASE-001 |
-| ARCH-076-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
-| ARCH-076-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
+| ARCH-076-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
+| ARCH-076-BACKGROUND-002 | moda_background | Ready | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-076-ADMIN-002 | moda_admin | Complete | None |
 | ARCH-076-ADMIN-003 | moda_admin | Complete | None |
@@ -151,7 +151,7 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | ARCH-076-COMMERCE-001 | moda_commerce | Complete | None |
 | ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
 
-All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are active attempt1; ADMIN002 and ADMIN003 are Complete; actual merged Admin pin is e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2. Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
+All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are Complete; ADMIN002 and ADMIN003 are Complete; actual merged Admin pin is e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2. Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
 
 ## Change history
 
@@ -246,3 +246,5 @@ This application protocol supersedes earlier wording that marked EXHAUSTED as so
 6. Definitive opening failure BEFORE activation cancels/releases/refunds the PENDING intent only with exact no-success/compensation proof; predecessor remains ACTIVE. After activation, a late opening failure follows existing exact compensation and the no-other-provider-consumption guard: retain cancelled lineage where cancellation/refund is eligible, retry with a fresh monotonic ordinal and exact source, never reopen an EXHAUSTED predecessor. If other successor messages already consumed its funding, preserve that funding and its evidence as previously required. Old-block late failure compensates only its own exact usage, not the completed successor renewal.
 
 Required owner checks: variable hard/reserve snapshots (including reserve0), provisional reserved/unknown slots versus compensated slots, advisory notice once, compensation before final permit cancels/releases successor and reuses old capacity, compensation after permit cannot rewind funding, unknown opening excludes parallel charge/resend, definitive preactivation opener failure, eligible late opener cancellation plus retained lineage/new ordinal retry, and ineligible late opener refund after other admitted consumption. Check actual provider calls, pins and canonical credit counts, not only block state. Existing service-window/STOP/HUMAN/routing exclusions remain; SYSTEM-TEST stays deferred.
+
+15 November BG001 accepted Complete: tested0f2685a and merged Background mainf6bbcc5 share exact tree840860af. BG002 alone promoted Ready. This partial source integration does not authorize pool activation or test/production consumer rollout; subsequent pinning/ownership and independent BG005 remain outstanding.
