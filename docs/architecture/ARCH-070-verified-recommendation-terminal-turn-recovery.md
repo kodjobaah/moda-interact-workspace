@@ -125,6 +125,10 @@ ARCH-070-BACKGROUND-008 Complete/Accepted: actual16:16 category finaldetails omi
 
 BG008 Accepted exactdea6f14a8ec7feae4bd43a12260a37db8d2cef34/reportc9b4cbd7. ActualSDK+bounded configured-model category conformance proven; root integrated genuine verification pending, no historicalreplay/intentcause claim.
 
+ARCH-070-BACKGROUND-010 Ready(preparatory): appownedflatterminalselectionprotocol viaShared007raw/separatedecision, fullcontextproof/publicapprovalgate.
+
+BG010 implementation Complete exactcbcef46 after actual6.1registry/all163 and bothCI4492PASS. Source024/hostproof is not genuineproductiondelivery. BG011, Commerceconsumerdeployment and recovery+messagingdrain/config/canary gates remain; architecture In Progress.
+
 ARCH-070-SHARED-008 pending: Publish accepted native turn tool protocol; propernativeprotocolmechanics only, allbusinessguardsunchanged; rootproof/publicationapprovalgate.
 
 ARCH-070-SHARED-007 ready: Preserve ordered native current-turn tool protocol; propernativeprotocolmechanics only, allbusinessguardsunchanged; rootproof/publicationapprovalgate.
