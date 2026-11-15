@@ -14,7 +14,7 @@ priority: 95
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: [ARCH-076-ADMIN-001, ARCH-076-ADMIN-002, ARCH-076-ADMIN-003, ARCH-076-BACKGROUND-004]
+depends_on: [ARCH-076-ADMIN-001, ARCH-076-ADMIN-002, ARCH-076-ADMIN-003, ARCH-076-BACKGROUND-004, ARCH-076-COMMERCE-001]
 enables: []
 created: 2026-11-13
 updated: 2026-11-15
@@ -140,3 +140,5 @@ Not claimed.
 ### Follow-up
 
 Later developer invocation required.
+
+Architecture dependency correction: ARCH-076-COMMERCE-001 must be Complete before BG004 acceptance/live routing activation. Studio normal prompt activation must reject routing-tagged revisions. This does not block ADMIN003 source acceptance. SYSTEM-TEST remains deferred.
