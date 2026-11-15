@@ -101,7 +101,7 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Ready for Review. All required owner-scope checks passed; source and report committed/pushed for architect review.
+Review submission held pending full unit-suite and final GitHub CI verification. Source and report are committed/pushed; PR239 is draft while broader orchestration-fixture corrections are validated.
 
 ### Files Changed
 
@@ -122,6 +122,8 @@ Ready for Review. All required owner-scope checks passed; source and report comm
 - Existing consent, STOP, mode, service-window and final permit checks remain authoritative. Allocation is not send permission or contacted-candidate proof. Exact provider dispatch sender/status, failed/unknown initial contact evidence are explicitly handed to BACKGROUND002/003 rather than duplicated here; root confirmed that scope division.
 
 ### Validation Results
+
+- Broader GitHub unit CI exposed partial-database orchestration fixtures in matured-candidate materialization and checkout refresh reaching the newly injected allocation boundary. Explicit assigned allocation-port mocks isolate those pre-existing orchestration fixtures; the actual PostgreSQL allocation/race tests remain unchanged. Full unit-suite revalidation and final CI are in progress; the prior affected-suite result below is not a claim that full CI passed.
 
 - Focused affected initial/expiry/Woo checks: 102 passed.
 - Expanded affected checkout-recovery/Woo suites plus new recipient serialization unit checks: 41 files, 564 tests passed.
