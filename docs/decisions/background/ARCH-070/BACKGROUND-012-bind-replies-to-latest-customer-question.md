@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-15T01:19:41Z
@@ -98,35 +98,37 @@ Normal launcher fresh siblings from primary root. Not alone; task013 owns concis
 
 ### Status
 
-Not Started
+Review Ready; implementation PR237, final source b8e6f92 (full SHA via Git). Root retains live verification ownership.
 
 ### Files Changed
 
-None
+Application history selection/bounding, recovery focus instructions, latest moderation authorization; focused history/current window/checkout-context/moderation tests, actual host request regression and disposable PostgreSQL moderation integration.
 
 ### Work Completed
 
-None
+Actual failure: an old categories question persisted since the previous afternoon in pendingTurnStartedAt. A later named-product question was appended to that same current array, so the model answered both. The newest raw server-ordered customer input is now the sole objective. All earlier fragments remain bounded moderated history, including merchant replies; no customer/audit rows deleted or pending timestamps rewritten. Audio uses transcript-ready chronology with createdAt/id ties. The latest raw identity is selected before ALLOW filtering; the gate requires its own ALLOW and retains any classification retry, never authorizing it from an older message. Same-time predecessors enter the bounded historical selection. Prior candidate window remains the existing20 rows ordered by creation/id, then merged/deduplicated/readiness ordered; this is not a global all-history scan.
 
 ### Validation Results
 
-None
+- Before fix, new targeted regressions against accepted source produced7 failures/19 passes; exact log preserved privately /tmp/bg012-baseline-regression.log.
+- Fixed initial history/moderation28 tests passed; final expanded focused76 tests passed; checkout-context24 tests passed.
+- Lifecycle/moderation158 tests passed; actual local HTTP/MCP model-host156 tests passed, including newest-only current request with categories history.
+- Actual disposable PostgreSQL13 tests passed, including eight-hour backlog/latest allowed and blocked, stable same-time outbound predecessor, content-specific persisted moderation and zero WhatsApp sends.
+- Type check, production build and scoped lint passed; final build after tie query also passed.
+- Full hosted initial CI exposed one stale checkout loader mock/query order and old multi-current expectation; updated to assert latest current and first fragment history. Final exact-head CI pending review gate.
+
+### Physical Worktree Isolation and Synchronization
+
+Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; launcher parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-070-BACKGROUND-012 and implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-070-BACKGROUND-012; both task/ARCH-070-BACKGROUND-012. Parent reused, implementation newly created. Parent and implementation origin/main already current at claim; no remote task fast-forward needed. Claim9920931cdfe11cc68b192f60dccffe4dcf9b3771, attempt1 codex. Implementation base68fd52ca98ac6f94df871e2c4478f96460b7ee6e; recursive database6f42b71112efe7ac63654d55f41cd74ca569b1ae synced/initialized. No shared/default checkout switched or mutated, no other task worktree reused.
 
 ### Deviations
 
-None
-
-### Assumptions
-
-Mechanism must be proved before choosing correction.
+None. No Shared publication, model/provider/token change, live send or quota reset.
 
 ### Unresolved Issues
 
-Root readonly trace pending.
+Root must await exact final CI and architect acceptance before authorized merge; live final canary after012+013 deployed. Existing test conversation has exhausted19 normal automated messages plus one terminal message, so root must use a genuine fresh authorized test checkout or request a scoped policy decision rather than reset usage.
 
-### Architectural Concerns
-
-Do not conflate historical context with current objective.
 
 ## Architect Review
 
