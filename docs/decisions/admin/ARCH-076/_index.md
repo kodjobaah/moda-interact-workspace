@@ -6,4 +6,4 @@ Implementation authorized at the dependency frontier. Sender routing and allowan
 | --- | --- | --- |
 | [ARCH-076-ADMIN-001](ADMIN-001-manage-verified-whatsapp-pool-senders.md) | pending | ["ARCH-076-DATABASE-001"] |
 | [ARCH-076-ADMIN-002](ADMIN-002-publish-neutral-router-template.md) | complete | [] |
-| [ARCH-076-ADMIN-003](ADMIN-003-configure-routing-agent.md) | ready | [] |
+| [ARCH-076-ADMIN-003](ADMIN-003-configure-routing-agent.md) | complete | [] |
