@@ -1,7 +1,8 @@
 # ARCH-076 database tasks
 
-Proposed preserved sender-pool design; all tasks Pending/unclaimed behind current-source compatibility review.
+Implementation authorized at the dependency frontier. Sender routing and allowance renewal remain independent. SYSTEM-TEST remains user-deferred.
 
 | Task | Status | Dependencies |
 | --- | --- | --- |
-| [ARCH-076-DATABASE-001](DATABASE-001-create-sender-pool-and-active-assignments.md) | Ready | See task metadata |
+| [ARCH-076-DATABASE-001](DATABASE-001-create-sender-pool-and-active-assignments.md) | in_progress | [] |
+| [ARCH-076-DATABASE-002](DATABASE-002-persist-conversation-allowance-blocks.md) | ready | [] |
