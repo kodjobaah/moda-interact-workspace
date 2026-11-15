@@ -194,3 +194,7 @@ Accepted exact implementationf0876d5afa3d54ab41398318983166d4d07781ab PR196 and 
 Normal launcher claim2aa345e87/new dedicated mirrored implementation sibling and parent, synchronization/recursive DB5329 evidence reviewed. Clean actualregistry npmci/all163files exactapproved302b/SRI;107 focused unique cases, full declared typecheck, productiontypes/build/scopedlint PASS. Final isolated unit/UI234files1880PASS+1existingconfiguredskip,17registereddisposable integrations explicitly excluded from unit partition. Earlier type/fixture/fullunit1877+3fail trace retained, all required failures corrected and final full gate green. Exact source has zero configured hosted checks; no remote success invented. Bothworktrees clean. No sourcefinding remains.
 
 Complete dependency consumer task only; previewtenant/credentials/cancel/error semantics unchanged. Root must deploy/drain Commerce plus BOTH recovery/messaging workers before global provider nesting and genuine canary. No settings/provider/model calls or mainmerge byreviewer; architecture In Progress.
+
+### Actual Commerce implementation-main integration receipt
+
+Root merged PR196 acceptedf0876d5 to actualCommerce9e355989f6b34f2eac4367143ab42ff659297ccd; exact tree equality independently verified. Parent1056 reconciled currentmaine9cd preservingbothappendhistories and now pins actualmergedCommerce. Root owns finalparentmerge and live deployment/drain/config/canary; no further source/test changes or liveoperation byarchitect.
