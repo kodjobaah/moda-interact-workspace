@@ -1089,3 +1089,7 @@ In Progress. Background-owned footer/divider coverage extends to human and eligi
 Preserved from local commit `59705bb589342f31054e6c1fd011dacf9d495ae6`, resolving its collision with existing Implemented ARCH-069 without changing accepted history. Seven portable tasks remain Pending/unclaimed behind current-source compatibility review; no implementation launch is authorized.
 
 [Proposed architecture and task definitions](ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md)
+
+ARCH-076 reconciliation draft (15 November 2026): preserved chronological ARCH-069 unchanged; current sender-pool definition includes shared-number overflow, durable questions and exhausted automated allowance. The independently reviewed sender-pool DATABASE-001 is Ready; downstream tasks remain Pending; no rollout claimed.
+
+ARCH-076 product-owner correction (15 November 2026): allowance renewal consumes an additional eligible credit for the next automated continuation within the same Conversation, with a merchant notice at exhaustion. Supersedes exclusion-only handling in draft PR1059; accounting and task-scope review remain pending.

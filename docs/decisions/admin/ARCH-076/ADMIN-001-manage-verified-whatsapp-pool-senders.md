@@ -34,7 +34,7 @@ Expose verified operator enrolment, priority and eligibility for the registered 
 
 Preserved from original local commit `59705bb589342f31054e6c1fd011dacf9d495ae6` under root-authorized ARCH-076 collision correction. Defined portable design only; Pending/unclaimed until current-main compatibility review and explicit architect promotion. No runtime implementation or launch is authorized by preservation.
 
-Implement the operator inventory in [ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md). A server-authenticated SUPER_ADMIN enrols already registered Meta phone-number IDs under Moda's current WhatsApp Business Account (WABA), assigns priority and can disable allocation to a number. Admin never assigns numbers to checkouts. The single existing encrypted sender configuration supplies the server-side account and token. The inventory contains only non-secret IDs, status, priority and timestamps. Storefront and merchant checkout policy governs how many distinct baskets can coexist. When several recoveries share one shop and customer, Background attaches them to their existing sender route. A different shop still needs a separate active route for that customer. Closing the final active member ends that route. Admin only manages the available number inventory and never imposes a per-shop basket limit.
+Implement the operator inventory in [ARCH-076](../../../architecture/ARCH-076-whatsapp-sender-pool-and-checkout-reply-routing.md). A server-authenticated SUPER_ADMIN enrols already registered Meta phone-number IDs under Moda's current WhatsApp Business Account (WABA), assigns priority and can disable allocation to a number. Admin never assigns numbers to checkouts. The single existing encrypted sender configuration supplies the server-side account and token. The inventory contains only non-secret IDs, status, priority and timestamps. Storefront and merchant checkout policy governs how many distinct baskets can coexist. When several recoveries share one shop and customer, Background attaches them to their existing sender route. A different shop receives an independent route; when every enabled sender is occupied, Background shares the sender serving the fewest active shops for that recipient, under the canonical architecture ranking. Admin does not enforce one shop per physical sender. Closing the final active member ends that route. Admin only manages the available number inventory and never imposes a per-shop basket limit.
 
 ## Scope
 
@@ -188,3 +188,7 @@ Pending.
 ### Follow-up
 
 Pending.
+
+## Reconciled active-pool configuration invariant
+
+For the current canonical shared-number design, sender occupancy is not exhaustion. Admin must reject disabling the last enabled verified sender of an active WABA and switching active messaging configuration to a WABA with no enabled verified sender. Serialize these checks with competing inventory/configuration writes; test concurrent disables and WABA switch against inventory enable/drain. Preserve the existing credential format and authenticated server-only boundary. An empty inventory is permitted before coordinated activation. A drained sender retains its original live and historical routes. Complete this amendment's compatibility review before promoting the task.
