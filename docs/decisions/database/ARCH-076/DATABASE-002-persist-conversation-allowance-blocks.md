@@ -97,35 +97,43 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Not Started
+In Progress — initial implementation and PostgreSQL checks passed; final client-path checks and integration with the separately owned sender migration remain pending.
 
 ### Files Changed
 
-None
+Implementation commit `20eea0a` on mirrored task branch: `prisma/schema.prisma`, additive `prisma/migrations/20261115130322_conversation_allowance_blocks/migration.sql`, `package.json`, allowance schema validator and disposable PostgreSQL runner, scoped full-ERD PUML additions, and focused `docs/generated/conversation-allowance.puml`/PNG.
 
 ### Work Completed
 
-None
+Implemented the 16-field block model, nullable insert-only message pin, same-owner/deferred reservation/predecessor/message FKs, per-conversation ACTIVE/PENDING uniqueness, monotonic retained ordinals, immutable funding/policy identity and independent repair evidence. Parent ownership edits cannot invalidate a funded block. Existing reservation/provider records remain authoritative; no sender dependency, historical reset or hosted mutation.
+
+Prepared packet: canonical root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-DATABASE-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-DATABASE-002`; both branches `task/ARCH-076-DATABASE-002`. Parent reused/synchronized through main `41d383094`; source created from main `2e14f866`; recursive source submodules ready (none). Prepared attempt 1 claim `2467fd896` pushed at 2026-11-15T12:59:02Z. No startup re-claim, shared-checkout switch, gitlink or main merge.
 
 ### Validation Results
 
-Not run; definition only.
+- Node bootstrap selected workspace Node 24.19.0; `npm ci --ignore-scripts` completed (existing audit reports 8 dependency vulnerabilities; no dependency changes).
+- `npm run validate`, `npm run prisma:generate`, `npm run lint`, `npm run test:conversation-allowance` passed.
+- Prisma `migrate dev --create-only --name conversation_allowance_blocks` authored the migration against an invocation-owned localhost PostgreSQL fixture after all 80 predecessors; task-only SQL retained, unrelated generated naming/default drift excluded.
+- `npm run test:conversation-allowance:postgres` passed fresh/full-history upgrade with 111 assertions, including concurrent pending intents/repair CAS, owner mismatch and edits, reservation reuse constraints, immutable pins, retained cancelled lineage, preserved old messages/usage/reservations, deferred owner cascades and old writers. Fixture setup bugs (reservation lacked required counter, Decimal string precision expectation) were corrected before the passing run.
+- Scoped PUML generated from Prisma; focused PNG rendered and visually checked. Existing full PNG retained because its default 4096-pixel render clips the large diagram.
+- Final expanded generated Prisma Client path checks are running; accepted sender migration will be merged into this task branch and relevant checks rerun before review submission.
+- All authoring/test databases are disposable invocation-owned local Docker resources. Authoring container removed; test runner cleans its resources. No SYSTEM-TEST task, hosted database or provider calls.
 
 ### Deviations
 
-None
+Prisma models the inverse composite optional reservation relation as a list; the unique creditReservationId index still enforces at most one block per reservation without a redundant composite unique index. Scoped ERD PNG is a dedicated readable artifact rather than a cropped regeneration of the repository-wide PNG.
 
 ### Assumptions
 
-None
+The application validates actual funding state, dispatch evidence and lease-token CAS. ACTIVE→CANCELLED remains legal for application-proven definitive late opening failure; SQL does not decide compensation eligibility.
 
 ### Unresolved Issues
 
-Use owning task launcher at the accepted dependency frontier.
+Final sender-migration integration and expanded PostgreSQL/client validation pending before review.
 
 ### Architectural Concerns
 
-None
+None requiring cross-repository schema change. Sender and renewal task streams remain independent.
 
 ## Architect Review
 
