@@ -26,3 +26,5 @@ Shared007 Complete attempt4: exactc1c1d2b whole-batch equivalence accepted; root
 Shared007 Ready next attempt: explicit atomic terminal batch admission and scoped unused companiontext; attempt4 acceptance historical, release held.
 
 Shared007 Complete attempt5 exact4e0716e: atomic terminal source and root024 offline replay accepted. Shared008 preparation eligible; publication requires new exactapproval.
+
+Shared008 Complete: public6.1.0 exact302b registry/latest accepted; consumer actualregistry gates now executable.
