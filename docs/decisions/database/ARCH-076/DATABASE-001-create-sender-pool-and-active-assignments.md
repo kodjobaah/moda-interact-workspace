@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-15T19:56:51Z
@@ -259,12 +259,12 @@ The existing ARCH040 moderation subject trigger requires a CUSTOMER_MESSAGE asse
 
 ### Attempt-2 work and acceptance checks
 
-- [ ] Add an additive, safely ordered forward migration replacing only the owning moderation digest guard behavior; do not modify already deployed ARCH040/D001/D002 migration bytes.
-- [ ] Positive actual transaction: Q1 original → confirmed clarification → authentic Q3 SELECT_AND_QUESTION full text, frozen decision/resolution association, full-current ALLOW plus independently moderated exact clause, all same owner. Verify persisted full text and two distinct exact digest assessments; Q1 remains separately proven.
-- [ ] Positive two-stage Q1/Q2/Q3 star, ASCII and emoji/astral-prefix UTF-16 offsets, fresh database and upgrade from full current accepted migration history.
-- [ ] Negative wrong message/provider ID/Conversation/shop/thread/parent/resolution witness/prompt receipt/route scope; mutable or unconfirmed decision; wrong role; missing/disallowed full-current moderation; forged hash, malformed/noninteger/out-of-range/split-surrogate offsets; unverified transcript/AGENT/AUTOMATION/HUMAN alternatives; foreign assessment and replay/tamper. No blanket exception.
-- [ ] Existing moderation subject/lifecycle regressions and sender evidence/privacy invariants continue passing. Run task-local disposable PostgreSQL checks, owning schema/client validation and required repository lint/build checks; inspect actual package scripts. SYSTEM-TEST remains explicitly deferred.
-- [ ] Record new migration identity/checksum, exact tested source, physical prepared attempt-2 isolation/synchronization and complete test evidence. Return Review and stop; no hosted migration or live activation.
+- [x] Add an additive, safely ordered forward migration replacing only the owning moderation digest guard behavior; do not modify already deployed ARCH040/D001/D002 migration bytes.
+- [x] Positive actual transaction: Q1 original → confirmed clarification → authentic Q3 SELECT_AND_QUESTION full text, frozen decision/resolution association, full-current ALLOW plus independently moderated exact clause, all same owner. Verify persisted full text and two distinct exact digest assessments; Q1 remains separately proven.
+- [x] Positive two-stage Q1/Q2/Q3 star, ASCII and emoji/astral-prefix UTF-16 offsets, fresh database and upgrade from full current accepted migration history.
+- [x] Negative wrong message/provider ID/Conversation/shop/thread/parent/resolution witness/prompt receipt/route scope; mutable or unconfirmed decision; wrong role; missing/disallowed full-current moderation; forged hash, malformed/noninteger/out-of-range/split-surrogate offsets; unverified transcript/AGENT/AUTOMATION/HUMAN alternatives; foreign assessment and replay/tamper. No blanket exception.
+- [x] Existing moderation subject/lifecycle regressions and sender evidence/privacy invariants continue passing. Run task-local disposable PostgreSQL checks, owning schema/client validation and required repository lint/build checks; inspect actual package scripts. SYSTEM-TEST remains explicitly deferred.
+- [x] Record new migration identity/checksum, exact tested source, physical prepared attempt-2 isolation/synchronization and complete test evidence. Return Review and stop; no hosted migration or live activation.
 
 BG004 may continue its independent implementation under its existing active claim, but clause-path acceptance/rollout is held until this correction is architect-accepted and its migration is present in the tested environment. Completed downstream tasks retain their historical acceptance; they are not silently reopened. No new unrelated task is introduced.
 
@@ -277,3 +277,39 @@ Background reuses the existing configured speech/download/validation primitives 
 This clarification preserves the active prepared attempt-2 claim and report. Database and Background owners must agree the precise existing JSON proof shape before freezing the SQL guard; no broad AUDIO/TRANSCRIPT digest exemption is authorized.
 
 Because moderationJson is scrubbed at terminal association, the immutable routingDecision must retain the bounded **nonplaintext transcript attestation** required to validate later canonical assessment lifecycle operations: authentic provider/media identity and source digests, exact full-transcript hash, speech operation/configuration revision proof and full-current assessment ID/hash with inputKind TRANSCRIPT. Match this attestation to the actual AUDIO/COMPLETED message, full content and canonical assessment. Do not depend on scrubbed plaintext to authorize later updates, and do not retain transcript/clause text in this attestation.
+
+## Attempt-2 Completion Report — R15 clause moderation correction
+
+### Status
+
+Ready for Review. The accepted attempt-1 implementation and Architect Review above remain unchanged history. This prepared attempt implements only the explicitly reopened moderation correction.
+
+### Correction checklist and implementation
+
+- **Implemented — additive owning guard correction:** `prisma/migrations/20261115201000_arch076_r15_clause_moderation/migration.sql` preserves ordinary full-content validation and adds only the exact CUSTOMER_MESSAGE TEXT/verified TRANSCRIPT R15 alternative. No deployed migration bytes, Prisma model, table, column or index changed; ERD remains unchanged.
+- **Implemented — authoritative resolved evidence:** exact current provider/message identity, self resolver witness, original root/parent, confirmed original-or-direct-child prompt receipt, same thread/route/Conversation/shop and frozen role are required. Canonical original and full-current ALLOW assessments under the same policy/model precede the independent clause assessment. Historical proof does not depend on active assignment, control revision, window or scrubbed payloads.
+- **Implemented — exact UTF-16 and authentic history:** the slice helper rejects malformed bounds and split surrogate pairs, hashes the exact UTF-8 encoding without normalization, and leaves the complete authentic customer text/transcript untouched. Clause and full-current canonical assessment rows remain distinct.
+- **Implemented — verified voice and privacy:** initial decision freeze binds bounded nonplaintext audioCurrent/audioOriginal attestations to single-fill verified speech metadata, exact raw media/provider identity and transcript hash. Raw-source SHA-256 is independently recomputed using the versioned `whatsapp.arch076_r15_audio_source_sha256(inputJson)` SQL recipe; Background reads that same helper, with no Shared canonicalJson fallback. Final AUDIO/COMPLETED records must match retained media/transcription identity and full content after terminal scrub. Exact nested metadata allowlists reject plaintext; transcript proof must be a nonblank JSON string using the JavaScript trim whitespace set.
+- **Implemented — direct voice integration:** self audioOriginal is permitted only with actual NULL parent, NEW_QUESTION/CLARIFY, NULL original IDs, exact current provider and equal nonempty associated message IDs. Positive both-role freezes and invalid self-selection/self-ID shortcut cases pass; selection-parent clause authorization is unchanged.
+- **Implemented — review corrections:** consistent forgery of both metadata and frozen attestation is tested (source/transcript hash and nested plaintext), alongside missing/numeric/ASCII-blank/Unicode-blank transcript proof. The prior equality-only source-hash gap and NULL/NULL or numeric transcript-proof gaps are closed.
+
+### Final source and validation
+
+Final tested source: `4372d0a06c905a27fcfd1a14a38e17f907ae9bfb`; source PR [Database #80](https://github.com/kodjobaah/moda-interact-database/pull/80).
+
+Migration SHA-256: `4498000f9882c8a5404fe4d8e8b87359baa1b0f6724e3b8192fb193ae622fb68`.
+
+- `npm run test:arch076-r15-clause:postgres` — PASS, **684 assertions**, complete fresh 83-migration deploy, seeded upgrade from all 82 accepted predecessors and no-op redeploy. Historical messages/usage/reservations/delivery evidence preserved. Tests cover exact one/two-stage routing, authentic full message plus independent canonical clause moderation, text and verified current/original voice, astral/combining/CRLF Unicode slicing, malformed/foreign role/identity/prompt/hash/offset proof, missing/disallowed full-current proof, voice source/media/provenance tampering and historical reads after release.
+- `npm run test:arch040-moderation:postgres:fresh` — PASS against the complete **83-migration chain**, including ordinary text/transcript/template actor/digest/tenant validation, idempotency, immutable bindings, lease/token-CAS completion, terminal outcomes and attributed review.
+- `npm run lint`, `npm run validate`, `npm run prisma:generate`, `git diff --check` — PASS. This repository declares no build script; schema/client checks are its owning validation.
+- All task-local PostgreSQL instances were invocation-owned local Docker fixtures. No hosted database, customer/provider call, live setting, SYSTEM-TEST task or main merge was performed.
+
+### Prepared execution and publication
+
+Prepared packet `/tmp/arch076-database001-attempt2-prepared.json` supplied the exact canonical workspace and reused physical D001 worktrees. Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-076-DATABASE-001`; implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-076-DATABASE-001`; both branches `task/ARCH-076-DATABASE-001`. Launcher incorporated origin/main in both, with no remote task fast-forward needed, source baseline `0a965c549b4916085acd8a806d5ecf376eda0e47`, recursive submodule synchronization passed (none). Durable prepared attempt-2 claim `a70dd7f10cafd67327fd5ce1f656d630db3f72ec`, executor codex, claimed_at `2026-11-15T19:56:51Z`; no re-claim or startup redo. Architect voice clarification was preserved on the same parent task branch.
+
+Source and this parent task report are committed/pushed on the mirrored branches. No shared checkout switch, other task write or unmerged gitlink staging. Root owns source acceptance/main merge, final parent gitlink and rollout.
+
+### Rollout and unresolved issues
+
+No unresolved implementation issue. Apply the accepted forward Database migration before corrected Background voice/clause admission uses its helper/guard. Background owns actual protected speech/configuration verification and full-current-before-clause admission; SQL retains structural authoritative proof and existing moderation lifecycle. Sender routing and credit renewal remain separate. Production activation and deferred SYSTEM-TEST execution are not claimed.
