@@ -139,7 +139,7 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 | Task | Owner | State | Direct dependencies |
 | --- | --- | --- | --- |
 | ARCH-076-DATABASE-001 | moda_database | Complete | None |
-| ARCH-076-ADMIN-001 | moda_admin | Ready | DATABASE-001 |
+| ARCH-076-ADMIN-001 | moda_admin | Complete | DATABASE-001 |
 | ARCH-076-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
 | ARCH-076-BACKGROUND-002 | moda_background | Ready | BACKGROUND-001 |
 | ARCH-076-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
@@ -258,3 +258,5 @@ Accepted proof sources are (a) a confirmed prior outbound root with its immutabl
 At each NEW reply permit, take the existing exact-phone non-pooled membership advisory fence, verify no inventory row exists for that phone (even disabled rows forbid this path), and hold current credential row FOR SHARE while checking its WABA/phone against the durable proof. Freeze exact sender pair on the new root/parts and use the proved recipient. Existing consent, STOP, window, moderation, control revision, quota and billing admission checks remain mandatory. Assigned recovery always uses assignment and never this path, even on missing credentials or drained inventory; all new initial recoveries require assignment.
 
 A prior admitted/UNKNOWN provider operation is never retransmitted through this continuation path. Each new customer/human reply has its own existing idempotent message/command identity. Status callbacks and quoted history continue against original exact evidence, never a new route generation. Test successful AI and human continuation with both approved proof forms, NULL/no-witness refusal, changed sender/recipient refusal, inventory-disabled fence, concurrent enrollment versus permit, assigned-recovery refusal, initial/proactive-followup exclusion, and duplicate/unknown replay with no second provider send. This preserves a legitimate old conversation, not an obsolete schema-format adapter.
+
+15 November ADMIN001 accepted Complete: tested `2c48d70449b1ce1fb8c9f0d8a8645e988da10616` and merged Admin main `ed0036eaf25efce71e8eb77435b8b04d8078084d` share exact tree `48dc8435fe9742c220c1aae1f4e51105d89a4b86`. Inventory provider/authentication/concurrency checks passed, including 10 disposable PostgreSQL scenarios. No dependent task becomes newly Ready: BG003 still requires BG002; BG004 still requires BG003; SYSTEM-TEST remains Pending and user-deferred. This is source acceptance, not inventory activation or production verification.
