@@ -9,16 +9,16 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-15T00:07:00Z
+attempt: 1
 depends_on:
   - ARCH-070-SHARED-008
 enables: []
 created: 2026-11-14
-updated: 2026-11-14
+updated: 2026-11-15
 ---
 
 # Adopt compatible OpenRouter preview transport
