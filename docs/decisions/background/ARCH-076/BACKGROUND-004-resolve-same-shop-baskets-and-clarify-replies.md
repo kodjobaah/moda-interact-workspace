@@ -44,6 +44,9 @@ Other repository implementation, live settings, production migration and activat
 
 ## Requirements
 
+- [ ] Follow the parent R15 evidence privacy amendment: routingDecision contains only message IDs, clause offsets/hashes and structural evidence, no exact clause plaintext. Preserve exact wording through pending inputJson then atomic existing ConversationMessage association.
+- [ ] Freeze input/candidate/config/parent scope; permit only explicit destructive terminal value→NULL scrub and real FK SET NULL cleanup, never rebind or payload resurrection. Terminal scrub removes ephemeral customer/candidate/prompt payloads without deleting authentic owned Conversation history.
+
 - [ ] Implement the parent R15 four-role decision contract: SELECT_ONLY, NEW_QUESTION, SELECT_AND_QUESTION, CLARIFY; persist routingDecision independently of configurationSnapshot.
 - [ ] A uniquely evidenced “running shoes” selection resumes the pending Friday question; “Do the shoes come in black?” is independent and leaves it pending.
 - [ ] Verified “2. Can I collect on Saturday?” preserves original plus exact independently moderated new clause; ambiguous “2” clarifies, ordinary numeric input stays authentic input.
@@ -98,6 +101,8 @@ Recalculate from dependent task metadata after architect acceptance; no implicit
 - [ ] Resolve original once with authentic question/selection transcript; selection-only reply never replaces substantive original question.
 
 ## Validation
+
+- [ ] Verify exact clause survives association/retry through authentic message IDs and offsets/hash; routingDecision contains no customer plaintext. Test frozen payload replacement rejection, terminal destructive scrub, FK cleanup and resurrection/rebinding rejection.
 
 - [ ] Unit fixtures cover every R15 table row, ordinary numeric input, multiple matching prompts, unavailable receipt, distinct simultaneous originals and exact clause preservation/moderation.
 - [ ] Disposable PostgreSQL crash/retry tests prove decision freeze plus atomic original admission, duplicate delivery, changed configuration/template/control/assignment between decision and admission, human→AI transition and terminal replay.
@@ -188,3 +193,5 @@ Historical renewal amendment is superseded for this sender task: allowance work 
 ### 15 November definition amendment
 
 Historical fixed SQL must be regenerated for the restored five-entity contract plus R15 evidence; hardcoded router policy remains superseded. Historical claim/review evidence above is retained as history, not approval of the replacement implementation. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.
+
+Parent relationship correction: persist input before model/classification; bind parentProviderMessageId NULL→exact ID once after role classification, then never clear/rebind. Selected Conversation and frozen decision associate atomically. Retention operates on eligible request cohorts under deferred parent FK, never orphaning a pending original/child.
