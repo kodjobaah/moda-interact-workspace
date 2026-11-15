@@ -90,7 +90,7 @@ Use normal launcher dedicated mirrored worktrees. Not alone: preserve others cha
 
 ### Status
 
-Ready for Review. Exact source `5901420c41f6a9a60fdef283e55cd8829c815dd8`, https://github.com/kodjobaah/moda-interact-commerce/pull/196. Published6.1.0 dependency and focused preview transport adoption complete. No native opt-in, runtime business-code, model/configuration, database or live changes.
+Review checkpoint — root additionally requires the full isolated unit/UI suite before merge; that exact command is running and not yet claimed green. Exact source `5901420c41f6a9a60fdef283e55cd8829c815dd8`, https://github.com/kodjobaah/moda-interact-commerce/pull/196. Published6.1.0 dependency and focused preview transport adoption complete. No native opt-in, runtime business-code, model/configuration, database or live changes.
 
 ### Files Changed
 
@@ -105,6 +105,7 @@ Adopted real registry URL and SRI through normal npm install; clean npm ci then 
 
 ### Validation Results
 
+- Additional root-required gate: `npm run test:arch044:unit` launched at exact5901420 through existing isolated env/unit inventory runner; outcome pending. No full-suite claim from focused107 cases. Registered disposable PG/integration suites remain excluded, no live validation authorized.
 - Normal registry install and `npm ci --registry=https://registry.npmjs.org`: PASS. Approved archive SHA256302b91f5ad24353ac3052c1e8c5d456b3c90d072d64665edff579eb56eb249d5/SRI/version6.1.0 and163/163 installed members PASS.
 - Focused preview commands: `npm test -- tests/preview-openrouter-transport.test.ts tests/preview-openrouter-runtime.test.ts tests/arch067-model-context.test.ts tests/preview-service.test.ts tests/preview-integration.test.ts tests/preview-routes.test.ts`; five suites56PASS initially, routes import initially lacked fresh generated Prisma enum. Declared `npm run prisma:generate` PASS; exact routes rerun7PASS. Combined63 unique tests/six files PASS, not one all-green original invocation.
 - Authorized five ARCH066 fixture suites: initial44 tests yielded40PASS/4FAIL (missing existing policy mock caused503). Mock completion exposed three synthetic production parity PROVIDER_DRIFT failures; diagnostic confirmed wrong observed hash domain. Corrected nonnull raw components-only hash while authored submitted hash remains locale.contentHash; final exact host rerun5/5PASS. Retained39 other unique passing cases →44 unique outreach cases PASS. No assertion/guard weakening. Total focused107 unique cases across11 files; traces retained under /tmp/arch070-commerce001-*.log.
