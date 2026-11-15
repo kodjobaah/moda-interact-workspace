@@ -138,7 +138,7 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 
 | Task | Owner | State | Direct dependencies |
 | --- | --- | --- | --- |
-| ARCH-076-DATABASE-001 | moda_database | Complete | None |
+| ARCH-076-DATABASE-001 | moda_database | Ready — explicit bounded reopen | None |
 | ARCH-076-ADMIN-001 | moda_admin | Complete | DATABASE-001 |
 | ARCH-076-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
 | ARCH-076-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001 |
@@ -266,3 +266,7 @@ A prior admitted/UNKNOWN provider operation is never retransmitted through this 
 15 November BG002 accepted Complete: tested `fbab80f41b2b9e69234124df47fd05c5a613d939` and merged Background main `cb625e626bebba337c1dda3ce4190bd00f3ad7f1` share exact tree `ebd71d2e89d1b91f355420c7b93b813d5883e875`. Sender/funding union passed 16 PostgreSQL scenarios and exact-head full unit/type/build checks. BG003 alone becomes Ready; BG004 remains gated by BG003. Neutral guidance's temporary precheck remains insufficient for activation until BG004 replaces it with durable RoutingTurn admission; test-first rollout and deferred SYSTEM-TEST remain unchanged.
 
 15 November BG003 accepted Complete: cleaned tested `f09b1471d5ba1445d6dc2c4396b85b568c962a1b` and actual merged Background main `61cbc9cd8fc1661e9ca17b774f6d338517cdb58b` share exact tree `43a9f786787f0a4877af02a2b09acb6472e123fe`. Actual ownership/quote/STOP/status tests passed, including 24 PostgreSQL scenarios and full quote-before-callback enqueue. BG004 alone becomes Ready because all four explicit prerequisites are Complete. Its configured routing policy, R15 classifier/association and durable neutral prompt execution remain required before pool activation. SYSTEM-TEST remains user-deferred; test-first/manual verification and production holds remain.
+
+## R15 moderation integrity correction — explicit user reopen
+
+On 15 November the user explicitly authorized “Reopen DATABASE-001 for this correction.” Accepted attempt 1 is preserved. D001 Ready/unclaimed attempt 1 now authorizes only an additive forward migration for exact resolved SELECT_AND_QUESTION clause moderation alongside authentic full-current ALLOW proof. Existing ARCH040 full-content digest guard otherwise remains unchanged. Frozen same-owner message/parent/prompt/resolution evidence and exact JavaScript UTF-16 clause boundaries/digest authorize the narrow alternative; no new storage or Shared release. See D001's bounded attempt-2 acceptance matrix. BG004's active execution is preserved, with its clause-path acceptance and rollout held until corrected Database acceptance/migration; completed downstream acceptance remains historical. SYSTEM-TEST remains user-deferred and no live migration is implied.
