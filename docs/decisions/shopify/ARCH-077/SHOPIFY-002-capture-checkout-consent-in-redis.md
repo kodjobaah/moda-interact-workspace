@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-11-17T17:53:01Z
@@ -84,3 +84,34 @@ The prior agent reported 173 webhook tests, 9 Redis webhook integrations, 4 cons
 ### Rework Handoff and Stop
 
 `assigned_agent: moda_app`, repository `moda-interact`, task `ARCH-077-SHOPIFY-002`, `attempt: 1` preserved until the launcher claims Attempt 2. `executor` and `claimed_at` are cleared. Dependencies S001 and SHARED-001 remain `complete`. S003, S004, S005 and B001 remain gated until SHOPIFY-002 passes architect acceptance and reaches `complete`. The implementation agent must read this entire latest Architect Review before changing code; after correction and validation it must set the task to `review`, submit the updated Completion Report and stop. Do not modify task indexes, advance dependent tasks, merge branches or mark S002 `complete` during this rework.
+
+## Completion Report
+
+### Attempt 2 result
+
+Replaced the superseded Redis consent choice and `m1_` marker path with a stateless, HMAC-signed `moda_wa_consent_v1` receipt issuer/verifier, read-only returning-shopper status lookup, authenticated App Proxy endpoints, and a separate authenticated Plus checkout receipt endpoint. Removed the S002 webhook-marker projection and obsolete Redis consent integration test. No consent state, receipt TTL, SQL consent write, or queue change was added.
+
+The implementation branch is `task/ARCH-077-SHOPIFY-002`, commit `4d8b08806cf48e534d11367ca4e3b85f5146253c`.
+
+### Changed files
+
+- Added: `app/services/shopify-consent/consent-receipt.server.ts`, `app/services/shopify-consent/receipt-request.server.ts`, `app/routes/shopify/checkout-receipt/route.ts`, `tests/unit/services/shopify-consent-receipt.service.test.ts`.
+- Updated: `app/routes.ts`, `app/routes/shopify/consent/route.ts`, `app/services/observability/shopify-runtime-observability.server.ts`, `app/services/webhooks/checkout-normalization.ts`, `app/shopify.server.js`, `package.json`, `package-lock.json`, `tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts`, `tests/unit/routes/shopify-consent-route.test.ts`, `tests/unit/server-error-privacy.test.ts`, `tests/unit/webhooks/shopify-normalization.test.js`, `tests/unit/webhooks/shopify-webhook-ingress.service.test.js`.
+- Deleted: `app/services/shopify-consent/marker.ts`, `app/services/shopify-consent/shopify-consent.server.ts`, `tests/integration/shopify-consent.redis.integration.test.ts`.
+
+The `@modainteract/moda-interact-shared` dependency remains pinned at `5.3.0`; no new dependency was added.
+
+### Validation evidence
+
+- Receipt and route-focused Vitest selection: 6 files, 98 tests passed.
+- Shopify webhook unit regression suite: 15 files, 168 tests passed.
+- `npm run test:shopify-webhooks:redis`: 2 files, 9 tests passed, including publication and queue telemetry regressions.
+- Targeted ESLint on changed app and unit-test files passed.
+- `npm run build` passed with a locally generated ephemeral receipt key; no key was persisted. Existing dependency/chunk warnings remain.
+- `npm run typecheck` still reports five implicit-`any` errors in unchanged `app/routes/webhooks/root/route.jsx`; no changed file was reported.
+
+### Configuration and limits
+
+Deployment must configure the same `SHOPIFY_CONSENT_RECEIPT_KEY_V1` value in the Shopify app and Background services. It must be canonical unpadded base64url for 32 random bytes; app startup fails closed if invalid or missing. No production key was generated or committed. Valid receipts can be replayed into the same checkout attribute; this is the approved limitation, not replay prevention.
+
+No live Shopify store or Plus checkout was available. Checkout authentication tests use explicit SDK-boundary mocks; no live Plus functionality is claimed. No live provider error occurred, so no provider error evidence is reported; tests verify session-token redaction in SDK error output. The `cart/update.js`, checkout-note, and authoritative GraphQL `customAttributes` readback fixtures were not exercised in S002 because those browser/checkout writers and webhook recovery readers are owned by S003/S004/B001 and are not implemented here. Architect review should confirm whether those cross-task fixtures are required before S002 acceptance.
