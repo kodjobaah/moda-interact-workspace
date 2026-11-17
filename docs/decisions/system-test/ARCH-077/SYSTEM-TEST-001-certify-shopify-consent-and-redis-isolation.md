@@ -26,14 +26,14 @@ updated: 2026-11-17
 
 ## A. Shopify transport, exact plan placement and signed receipt
 
-- Real **non-Plus** Shopify test: S003 cart App Block active in published cart template, exact 20-locale copy, explicit GRANT and later REVOKE overwrite the one `moda_wa_consent_v1` attribute, observed in authenticated checkout create/update then in GraphQL `AbandonedCheckout.customAttributes` from the **already-used** authoritative fetch. Compare redacted HMAC verifications, never print raw checkout tokens/receipts.
+- Real **non-Plus** Shopify test: S003 cart App Block active in published cart template, exact 20-locale copy, explicit GRANT and later REVOKE overwrite the one `moda_wa_consent_v1` attribute, observed in authenticated checkout create/update then in GraphQL `AbandonedCheckout.customAttributes` from the **already-used** authoritative fetch. Compare bounded redacted Shared AEAD verification outcomes, never print raw checkout tokens/receipts.
 - Real **Plus** store test: only S004 checkout UI Extension at `purchase.checkout.contact.render-after`, with a verified signed checkout JWT/token, `instructions.attributes.canUpdateAttributes`, `applyAttributeChange` success/readback and same GraphQL attribute. Cart App Block must not run on Plus. Accelerated/unsupported checkout fails silently without a fabricated consent choice.
 - Existing 17 November SHA prefix `ef5dbf7582291225` proves historical non-Plus *probe* propagation only; never claim it proves signed receipts or Plus implementation. Live proof needed for final acceptance.
 - One attribute only; no `moda_cart_correlation_v1`, `moda_s001_probe`, GRANT/REVOKE Redis keys or additional event payload. SHARED-001 optional marker fields remain unused/compatible and existing queue schemas accept old events.
 
 ## B. Signature, identity and minimal-stateless limitation
 
-- Known HMAC vectors, invalid/wrong/duplicate signatures/keys, wrong shop, mismatched event checkout/cart token, different guest/customer, invalid source kind/locale, oversized payload, missing customer attribution, future timestamp, Redis outage and missing Shopify attribute. No forged plain `GRANT` authorises outreach.
+- Canonical plaintext/AAD bytes and Shared AEAD encrypted-receipt round-trip, wrong/missing/rotated keys, incorrect/duplicate envelope fields, tag/ciphertext tampering, wrong shop/AAD, mismatched event checkout/cart token, different guest/customer, invalid source kind/locale, oversized payload, missing customer attribution, future timestamp, Redis outage and missing Shopify attribute. No forged plain `GRANT` authorises outreach.
 - Demonstrate that a receipt copied to another shop or checkout **fails**; demonstrate and explicitly document that a previously valid receipt restored to the **same** checkout can be accepted by this stateless model (accepted tradeoff). Do **not** misreport this as replay prevention or silently introduce Redis customer preference to make the test pass.
 - Guest accepted only with trusted event token correlation and attributable recipient; an earlier observed cart-token mismatch fails closed. Signed customer ID mismatch denies. Unverified/missing checkout or SDK context must never be replaced by phone/email/item matching.
 

@@ -32,6 +32,6 @@ updated: 2026-11-17
 
 ## New frozen downstream handoff
 
-- Standard Shopify non-Plus: one cart checkbox, server-issued HMAC receipt, one Shopify cart attribute. Plus: one checkout checkbox, same attribute and signed receipt format, checkout-token binding. Neither placement runs simultaneously for one merchant.
+- Standard Shopify non-Plus: one cart checkbox, server-issued Shared-authenticated receipt, one Shopify cart attribute. Plus: one checkout checkbox, same attribute and signed receipt format, checkout-token binding. Neither placement runs simultaneously for one merchant.
 - Background uses the authoritative checkout's `customAttributes` with independently validated source/event token and customer/recipient. No new marker index, consent Redis TTL, cart-to-checkout Redis lookup, Shared event-version change, or independent consent API call.
 - The exact v1 issuer/verifier, key, wire format, plan gating and fail-closed outcome rules are in the linked specification. S002 and B001/B002 accept that contract; implementing agents may not invent a different one.

@@ -24,12 +24,12 @@ The original Shopify production regression was that abandoned checkout had a ver
 - Background reads the unique attribute through the **existing** authoritative Shopify `AbandonedCheckout.customAttributes` lookup, validates signature and independent shop/checkout/customer/recipient binding, then **only if checkout is independently recoverable** persists GRANT/REVOKE to existing PostgreSQL `CustomerPhone` under `SHOPIFY_NATIVE`, `WHATSAPP_CHECKOUT_RECOVERY`, STOP and revision constraints. Ineligible or paid checkout never changes SQL; missing/invalid attribute never manufactures consent.
 - Current PostgreSQL permission determines future **proactive** sends, retries and unsent follow-ups. A later materialised Cart B REVOKE blocks unsent Cart A proactive messages, but not valid customer-initiated AI/human replies within WhatsApp 24-hour service conditions; STOP remains immediate and independent. No click-time SQL change or Redis suppression.
 - No new SQL migration, table, enum, separate API app, queue, scheduler, Redis preference store or mandatory Shared package change. The completed SHARED-001 marker fields stay optional/unused until separately retired; no rollback of completed Shared work in this task branch.
-- **Limit of stateless design:** an old legitimately signed receipt can be restored within the **same** checkout. HMAC prevents modification but not this replay; do not falsely assert otherwise. Cross-shop/checkout copying is denied by binding checks. The user's requested minimalist approach explicitly keeps no new action-history store; any decision to require strict same-checkout replay prevention must return to the architect.
+- **Limit of stateless design:** an old legitimately signed receipt can be restored within the **same** checkout. Shared authenticated encryption prevents modification but not this replay; do not falsely assert otherwise. Cross-shop/checkout copying is denied by binding checks. The user's requested minimalist approach explicitly keeps no new action-history store; any decision to require strict same-checkout replay prevention must return to the architect.
 
 ## Actual proof and source status
 
 - 17 November 2026: non-Plus cart test marker survived into authenticated `CHECKOUTS_CREATE`/`CHECKOUTS_UPDATE` and authoritative `AbandonedCheckout.customAttributes`. The marker SHA-256 prefix was `ef5dbf7582291225` across both; the checkout GraphQL result was `gid://shopify/AbandonedCheckout/67330154594377`. This proves **transport**, not signed receipt issuance or live Plus support.
-- In the uploaded **ARCH-077-SHOPIFY-002** task-worktree snapshot, `app/services/shopify-consent/shopify-consent.server.ts` still contains Redis prepare/choice logic and `app/routes/shopify/consent/route.ts` still implements temporary marker endpoints. Both must be rewritten by S002 before its existing review is accepted. S002's previous Redis-focused tests cannot stand as evidence for the new receipt architecture.
+- The earlier Attempt 1 S002 snapshot retained Redis prepare/choice and temporary marker endpoints; Attempt 2 removed those mechanisms and implemented an unreleased standalone HMAC receipt signer (`4d8b08806cf48e534d11367ca4e3b85f5146253c`, agent-reported). The **latest** architect review requires replacing that separate signing key with existing Shared AES-256-GCM credential APIs and correcting the remaining App Proxy/source checks before runtime acceptance. Previous Redis and HMAC test reports are historical; no live Plus or authoritative receipt readback has been certified.
 - Deployment remains gated on real Plus extension verification, Shopify signed App Proxy/checkout authentication, matching event token, Background idempotency and actual published app/Shared versions. A document patch alone changes none of those.
 
 ## Task ownership and ordering
@@ -38,7 +38,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | --- | --- |
 | SHOPIFY-001 | `complete`, accepted historical cart-to-checkout marker experiment; not re-run |
 | SHARED-001 | `complete`, backward-compatible optional marker fields remain unused |
-| **SHOPIFY-002** | `ready` / **Changes Requested; unclaimed Attempt 2 rework**: stateless receipt issuance, verification contract and returning shopper SQL read |
+| **SHOPIFY-002** | `ready` / **Changes Requested; unclaimed Attempt 3 correction**: replace separate HMAC secret with existing Shared encryption-keyring/AEAD and correct authenticated proxy/source checks |
 | SHOPIFY-003 | `pending`: non-Plus cart App Block writes the **single signed attribute** |
 | SHOPIFY-004 | `pending`: Plus checkout UI Extension writes the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
@@ -47,7 +47,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
-**Dependency rule:** S002 is `ready` only for its own correction attempt; its dependencies remain accepted. S002 corrections must be reviewed/accepted before S003, S004 and B001 implementation proceeds. B002 follows accepted B001; S006 and final system-test follow existing prerequisites. This architect transition from `review` to `ready` clears S002 claim metadata while preserving `attempt: 1`; only the launcher may claim Attempt 2. Downstream tasks remain gated and agents must not promote them. Task paths are stable for the existing launcher; filenames mentioning Redis are legacy paths, **not** permission to restore Redis consent storage.
+**Dependency rule:** S002 is `ready` only for its own correction attempt; its dependencies remain accepted. S002 corrections must be reviewed/accepted before S003, S004 and B001 implementation proceeds. B002 follows accepted B001; S006 and final system-test follow existing prerequisites. The latest architect transition from `review` to `ready` clears S002 claim metadata while preserving `attempt: 2`; only the launcher may claim Attempt 3. Downstream tasks remain gated and agents must not promote them. Task paths are stable for the existing launcher; filenames mentioning Redis are legacy paths, **not** permission to restore Redis consent storage.
 
 ## Execution/validation protocol
 
@@ -59,3 +59,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 ## Architect rework disposition — 17 November 2026
 
 The SHOPIFY-002 Attempt 1 runtime submission is **Changes Requested**, not accepted. Architect has returned this same task to `ready` and cleared its prior claim to enable the standard task launcher to claim Attempt 2. The accepted signed-checkout-attribute v1 specification is the mandatory implementation contract. S001 and SHARED-001 remain `complete`; none of S003/S004/S005/B001 is unblocked by this rework transition. After the agent implements and validates the correction it must set SHOPIFY-002 back to `review` for a fresh architect inspection.
+
+## Latest architect disposition — SHOPIFY-002 Attempt 2 (17 November 2026)
+
+The uploaded Attempt 2 implementation is **Changes Requested**, not yet accepted. It introduced a separate `SHOPIFY_CONSENT_RECEIPT_KEY_V1` and local HMAC receipt logic, inconsistent with the already-approved Shared credential keyring and AEAD (`MODA_ENCRYPTION_KEYS_JSON`, `MODA_ENCRYPTION_ACTIVE_KEY_ID`). The immutable, unreleased v1 wire contract is now reconciled in `ARCH-077/checkout-attribute-consent-v1.md` to reuse Shared's existing `CredentialEnvelope`, encrypt/decrypt and key-ID rotation. No additional key/rotation system, Redis consent state, DB schema, job or mandatory Shared publication is authorised. S002 returns to `ready`, clear claim, `attempt: 2` preserved for launcher Attempt 3. S003/S004/B001 still wait for S002 `complete`; B002 consumes the exact updated receipt format. Existing release/Plus/GraphQL verification gates remain unchanged.
