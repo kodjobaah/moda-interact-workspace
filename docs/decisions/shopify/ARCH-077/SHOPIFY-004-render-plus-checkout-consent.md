@@ -46,7 +46,7 @@ updated: 2026-11-17
 Task: `ARCH-077-SHOPIFY-004`
 Status: Blocked — live Plus checkout verification remains outstanding.
 
-Implemented in `moda-interact` commit `028086d`:
+Implemented in `moda-interact` commits `028086d` and `85ce24f`:
 
 - Added the CLI-scaffolded Checkout UI Extension at
   `extensions/moda-whatsapp-checkout-consent/`, targeting
@@ -74,10 +74,18 @@ Validation:
   `purchase.checkout.contact.render-after`, API `2026-10`.
 - PASS — after correcting the Chinese locale filenames, `shopify app build
   --config moda-interact` succeeded.
-- BLOCKED — the approved `shopify app dev` run against the user-supplied Plus
-  development-store target built the extension but exited with `read_brand`
-  before starting the live preview. The CLI account/app authorization issue
-  must be resolved before live validation can proceed.
+- PASS — after `read_brand` was removed from the local app config and its handle
+  was restored to a valid value, `shopify app dev` reached its ready state on
+  the Plus development store and built the extension through a temporary local
+  tunnel.
+- BLOCKED — the preview page failed during Shopify OAuth bootstrap with
+  `shopify.oauth: DATABASE_UNAVAILABLE`. A local pgvector-enabled PostgreSQL
+  container is running and all 83 existing migrations were applied to the
+  local `moda_interact` database, but that fresh database has no
+  `PlatformConfiguration` records, including no development `shopify.oauth`
+  record. A local test-only OAuth configuration and matching unseal keyring
+  must be provisioned before the app can start. No managed database URL or
+  production credentials were used.
   Therefore this task has not verified a real signed checkout session, actual
   checkout token, Shopify attribute write/readback and subsequent
   `AbandonedCheckout.customAttributes` propagation, copied/malformed/replay
@@ -88,9 +96,10 @@ Validation:
   `app/routes/auth/login/route.jsx` and `app/routes/webhooks/root/route.jsx`;
   no changed task file is named in the diagnostics.
 
-Unresolved blocker: provide/select an eligible Plus development store and run
-the required end-to-end checkout propagation scenarios before unblocking this
-task. No cart checkbox or alternate consent store was substituted.
+Unresolved blocker: provision non-production Shopify OAuth configuration in
+the local development database, then run the required end-to-end checkout
+propagation scenarios before unblocking this task. No cart checkbox or
+alternate consent store was substituted.
 
 Physical worktree isolation:
 
