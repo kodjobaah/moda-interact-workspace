@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
 executor: copilot
 claimed_at: 2026-11-17T13:15:00Z
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Authorisation
 
-**Ready for implementation now.** S001 marker propagation has been verified and the v1 transport field contract has been frozen. Implement exactly the two optional fields below; no repeat browser diagnostic or unapproved auth scheme is required. Do not claim real Shopify/Redis integration from schema unit tests.
+**Architect acceptance — 17 November 2026 (Shared contract scope only).** SHARED-001 is `complete`: implementation commit `3245489f8cf4b6e03b90bca3eedae54497ee093e` was inspected from the supplied worktree and its two optional marker fields conform to this contract. The completion report below distinguishes agent-reported tests from architect-inspected source. Shared package `6.2.0` is **prepared, not verified published**. Shopify and Background must both pin a compatible published build before marker-producing/consuming deployment. Do not mistake this schema acceptance for runtime webhook, Redis, consent or release acceptance.
 
 ## Scope and verified source boundary
 
@@ -48,59 +48,33 @@ The 13 November workspace snapshot has `moda-interact/app/services/webhooks/chec
 
 Run Shared schema round-trip/type checks and test fixtures for existing V2 create, V3 update, old queued events and new optional marker states. Confirm the Shopify and Background dependency lockfiles resolve the **same** new Shared export and no cross-service strict schema rejects a valid event. Return exact commands, SHA, package version and green/red evidence. Stop for architect review if adding fields requires a breaking schema version, touches unrelated app/queue behavior, or invalid/ambiguous states cannot be transported without discarding checkout events. No edits to any `docs/decisions/**/_index.md`.
 
-## Completion Report
+## Completion report — architect accepted 17 November 2026
 
-### Status
+### Decision and inspected evidence
 
-Ready for Review. Bounded Shared-only change complete: the two optional ARCH-077 marker transport fields exist on the existing strict V2 checkout-created and V3 checkout-updated payloads, with contract tests and a compatible 6.2.0 version prepared. No real Shopify/Redis integration is claimed from these schema unit tests. No producer/consumer code, queue, event name, version constant or envelope was changed.
+**ACCEPT SHARED-001** within its defined Shared schema/contract scope. The supplied `moda-interact-workspace-ARCH-077-SHARED-001.zip` contains the task worktree and Shared package source. Reported implementation commit: `3245489f8cf4b6e03b90bca3eedae54497ee093e` on `task/ARCH-077-SHARED-001`, based on `8bb6ca5ec0ce28540e99c92084885fae8ebb1af9`. This ZIP does not contain Git history, so the commit's association with those exact bytes was not independently verified against the remote Git object; source was reviewed directly from the archive.
 
-### Exact repository changes
+Reviewed source and contract tests:
 
-Implementation commit `3245489f8cf4b6e03b90bca3eedae54497ee093e` on `task/ARCH-077-SHARED-001` of `moda-interact-shared` (pushed), on top of main `8bb6ca5ec0ce28540e99c92084885fae8ebb1af9`:
+- `moda-interact-shared/src/shopify/v2/checkout-created.schema.ts`: exactly two optional properties added to strict `CheckoutCreatedPayloadV2Schema` — `cartCorrelationMarker` (`^m1_[A-Za-z0-9_-]{43}$`) and `cartCorrelationMarkerStatus` (`PRESENT | ABSENT | INVALID | AMBIGUOUS`).
+- `moda-interact-shared/src/shopify/v3/checkout-updated.schema.ts`: same two properties on strict `CheckoutUpdatedPayloadV3Schema`.
+- `src/shopify/v2/recovery-event.test.ts` and `src/shopify/recovery-event.schema.test.ts`: tests cover marker round-trip, all status values, invalid marker/status rejection, legacy omission and strict extra-field rejection. V2 checkout-updated is intentionally unchanged.
+- `moda-interact-shared/package.json` and `package-lock.json`: package and root lockfile version fields consistently read `6.2.0`; this is release metadata, not independent proof of npm publication.
 
-- `src/shopify/v2/checkout-created.schema.ts` — added precisely `cartCorrelationMarker: z.string().regex(/^m1_[A-Za-z0-9_-]{43}$/).optional()` and `cartCorrelationMarkerStatus: z.enum(["PRESENT", "ABSENT", "INVALID", "AMBIGUOUS"]).optional()` inside the existing strict `CheckoutCreatedPayloadV2Schema` object.
-- `src/shopify/v3/checkout-updated.schema.ts` — same two optional fields inside the existing strict `CheckoutUpdatedPayloadV3Schema` object.
-- `src/shopify/v2/recovery-event.test.ts` and `src/shopify/recovery-event.schema.test.ts` — new contract tests: exact marker round-trip (`m1_` + 43 chars), all non-present status variants without marker, strict-parse rejection of malformed markers/statuses before publication (wrong prefix, 42/44 length, invalid chars, empty, null, lowercase/unknown status), legacy omission (both fields absent ⇒ unchanged payload, `undefined` on parse), unchanged strict top-level/envelope behaviour (unknown fields still rejected; V2 checkout-updated does not transport the marker fields).
-- `package.json` / `package-lock.json` — prepared shared `6.2.0` metadata (three version strings only), following the established release-metadata pattern. `SHOPIFY_COMMERCE_EVENT_SCHEMA_VERSION_V2/V3`, event names, queue names, job IDs, ordering keys, cart/order event contracts and WooCommerce contracts are untouched.
+No new queue, event type, HMAC key, envelope, SQL schema, consent decision or unrelated provider contract was observed in the inspected files. The strict schema deliberately permits optional fields independently: the S002 producer and B001 consumer **must** enforce `PRESENT` iff exactly one valid marker, and all other explicit statuses with no marker. Omitted fields mean legacy `NOT_OBSERVED`, not verified `ABSENT`. Do not move those business rules into Zod without new architect approval.
 
-Pair semantics (`PRESENT` requires exactly one validated 46-character marker; other statuses omit it) are intentionally **not** encoded in Zod, per the task: they belong to the S002 producer and B001 consumer. Missing fields on legacy events parse as `undefined` for B001 `NOT_OBSERVED` handling. The schema transports `INVALID`/`AMBIGUOUS` without discarding checkout events.
+### Test evidence and limitations
 
-### Validation evidence
+Agent completion report (not independently rerun in this review environment): `npm run typecheck` passed; focused tests passed 35/35; full `npm test` reported 849 tests (846 pass, 3 pre-existing skipped); `npm run build` passed. The ZIP has source and tests but no `node_modules` or complete raw test logs. Tests do not establish successful Shopify provider delivery, Redis correlation, final outbound eligibility or publishing the package.
 
-In `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-SHARED-001` (Node v24.19.0 via workspace bootstrap, `npm ci` clean install):
+### Required integration handoff / release gates
 
-- `npm run typecheck` (`tsc --noEmit`) — green, exit 0.
-- `npx tsx --test src/shopify/v2/recovery-event.test.ts src/shopify/recovery-event.schema.test.ts` — 35 tests, 35 pass, 0 fail.
-- `npm test` (full `tsx --test "src/**/*.test.ts"`) — 849 tests: 846 pass, 0 fail, 3 skipped (pre-existing skips).
-- `npm run build` (tsup) — green, exit 0; dist entrypoints built.
+1. Publish and verify `@modainteract/moda-interact-shared@6.2.0` from the inspected commit, or a documented equivalent build with exactly these exports. Do not assume `package.json` version equals publication.
+2. In `ARCH-077-SHOPIFY-002`, pin the actual published Shared version in `moda-interact` package and lockfile, classify authenticated checkout `note_attributes`, construct the pair **before** strict event parsing/enqueue, and verify full producer serialization. Never log the raw marker.
+3. In `ARCH-077-BACKGROUND-001`, pin the **same compatible Shared build** in `moda-interact-background` and verify dequeue/parse, missing-legacy fields, invalid/ambiguous status, shop-scoped Redis resolution and old queue-event compatibility. If the pinned consumer strips/rejects these fields, stop rather than add a second queue or side channel.
+4. Preserve the agreed deferred GRANT/REVOKE materialisation: marker propagation alone is never consent. STOP, existing `CheckoutRecovery` admission, credit and outbound fences remain under their owning tasks.
+5. No changes to any `docs/decisions/**/_index.md`, repository Git links or task branches are made by this acceptance patch.
 
-### Cross-service pin status (coordination required before production)
+### Task orchestration
 
-Lockfile coherence cannot be satisfied from this repository alone: at the primary-workspace snapshot, `moda-interact` pins `@modainteract/moda-interact-shared` **5.3.0** and `moda-interact-background` pins **6.1.0** — they do not currently resolve the same Shared export. This task prepares compatible `6.2.0`; per the task contract, Shopify (S002) and Background (B001) must publish/pin this coherent version **before** production of the new optional fields. No strict parser in this package rejects a valid legacy or marker-bearing event; if a consumer's pinned version drops the fields, stop for a coordinated Shared pin, not a Redis side-channel.
-
-### Launcher evidence
-
-Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-SHARED-001
-  parent branch: task/ARCH-077-SHARED-001
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-SHARED-001
-  implementation branch: task/ARCH-077-SHARED-001
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
-
-Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
-
-Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded submodule commits: none (no submodule entries)
-
-Dependency gate: ARCH-077-SHOPIFY-001 `complete` — passed. Note: the first `--prepare` run blocked because the architect-accepted dependency carried non-canonical `status: completed`; normalized to canonical `complete` on this parent task branch in `923f67bb7eaf9ea789d0314f732f725da3917206` (workspace `main` still carries the typo and `task/ARCH-077-SHOPIFY-001` carries `status: reaady`; both are developer/architect-owned to correct). Attempt 1 claim `e6883d5d73f890a410161fa5a6c8fa75bed5fb83` (executor copilot, 2026-11-17T13:15:00Z) committed and pushed by the launcher.
-
-No merges to main, no force-push, no `_index.md` edits, no implementation submodule gitlink staged. Return Review and STOP.
+This acceptance changes SHARED-001 to canonical `complete`, normalises the already architect-accepted S001 dependency to `complete`, and makes SHOPIFY-002 `ready` in the parent task register. Downstream tasks must still pass their own named dependency and runtime acceptance gates. Reported task branch correction commit `923f67bb7eaf9ea789d0314f732f725da3917206` and launcher claim `e6883d5d73f890a410161fa5a6c8fa75bed5fb83` are provenance from the agent report; this patch does not merge those branches or move the Shared submodule pin.
