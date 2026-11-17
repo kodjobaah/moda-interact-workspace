@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
 executor: copilot
 claimed_at: 2026-11-17T20:27:28Z
@@ -81,3 +81,38 @@ Recursive implementation submodules, from the prepared launcher packet:
 - Recorded submodule commit: `database` at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`.
 
 Task status: review. Awaiting `moda_architect` review; no architect acceptance decision has been made by this agent.
+
+## Architect Review
+
+### Review Status
+
+**Accepted — 17 November 2026 (Attempt 1, B001 scope only).** Task status is `complete`. Implementation commit `0294ae1` and parent Completion Report commit `4f122f6` are agent-reported pushed references. This acceptance does not merge either task branch or certify runtime deployment.
+
+### Reviewed Files
+
+- `moda-interact-background/src/domain/abandoned-checkout.ts`
+- `moda-interact-background/src/services/abandoned-checkout-lookup.service.ts`
+- `moda-interact-background/tests/unit/services/abandoned-checkout-lookup.service.test.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-snapshot-builder.service.test.ts`
+- The submitted parent task Completion Report and the accepted ARCH-077 receipt-v1 contract.
+
+### Review Notes and Architecture Conformance
+
+1. The existing bounded `AbandonedCheckouts` GraphQL query now requests `customAttributes { key value }` **on the same lookup** already required to establish recoverability. Its existing count precheck, exact abandoned-checkout URL match and bounded candidate limit remain. No additional consent-only Shopify request is introduced.
+2. The `AuthoritativeCheckoutAttributes` result distinguishes `available` (including an empty array) from `malformed`. It preserves original key/value pairs and duplicate consent-attribute names for BACKGROUND-002 to deny rather than silently choosing one. Missing/non-array or malformed provider data never becomes a synthetic GRANT.
+3. The original authenticated `PendingRecoveryCandidate` retains its checkout token and optional cart token; `toLookupInput` preserves both, and the existing maturity flow passes the matched checkout alongside the candidate. BACKGROUND-002 must verify their binding against the signed receipt; B001 does not make a consent decision or persist the receipt to a queue, Redis or PostgreSQL.
+4. Source review found no new Redis consent storage/TTL, marker association, scheduler, queue, separate consent query or change to existing BullMQ/pending-recovery ownership. Existing checkout, order, billing, sender and consent-final-send behaviour remains the responsibility of the existing pipeline and later tasks.
+5. The supplied task report records a dedicated parent and implementation worktree, launcher start-of-attempt synchronization and recursive submodule initialization (`database` at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`). These are **reported worktree/launcher facts**, not independently verified against the developer's live Git worktrees.
+
+### Validation Reviewed
+
+The agent reports 39 focused Vitest tests (three test files), `tsc --noEmit` and focused ESLint passed. The architect inspected the test fixtures and assertions in the supplied ZIP but did **not** independently execute the suite or verify the remote commits. Keep reported results distinct from independently executed validations.
+
+### Follow-up and Acceptance Boundary
+
+- **BACKGROUND-002 may become `ready`.** It owns the unique `moda_wa_consent_v1` selection, Shared AEAD decryption, tenant/checkout/customer/recipient binding, malformed/duplicate rejection, recoverable-only PostgreSQL GRANT/REVOKE materialisation, idempotency, STOP and final proactive-send consent gate. It must not assume GraphQL contains an authenticated `cartToken`: the candidate supplies the token, while the abandoned-checkout lookup supplies the matching authoritative checkout.
+- The non-Plus prior live probe proves attribute transport, not a real signed receipt's integrity or recipient binding. Actual signed-receipt readback, live Plus issuance, Background independent verification and integrated system-test evidence remain outstanding under their respective tasks.
+- Do not restore Redis consent state/cleanup, add a consent-only GraphQL query, create a new queue or change the published Shared contract solely to pass B002. If B002 cannot implement the approved existing-schema materialisation/idempotency contract, it must report the precise architect blocker rather than invent schema changes.
+
+**Decision:** Accept ARCH-077-BACKGROUND-001 as a bounded authoritative attribute-lookup integration. Only the task status and its explicitly dependent Background-002 readiness are advanced; no deployment or end-to-end certification is implied.
