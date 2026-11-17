@@ -1,7 +1,7 @@
 ---
 id: ARCH-077-SHOPIFY-002
 architecture_id: ARCH-077
-title: Capture temporary Shopify checkout consent and read existing customer permission
+title: Issue Shopify signed checkout-attribute consent receipts and read returning consent
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -20,150 +20,30 @@ created: 2026-11-17
 updated: 2026-11-17
 ---
 
-# Capture temporary Shopify checkout consent and read existing customer permission
+# Shopify consent receipt service — architect-directed rework of S002
 
-## Architecture / status
+**Task status remains `review`, not `complete`.** The submitted implementation commit (`c0c2cca` per agent report) still creates `m1_` markers and GRANT/REVOKE in temporary Redis. **Do not merge that implementation as the final ARCH-077 consent path.** The accepted [checkout-attribute receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md) supersedes all Redis choices, marker preparation, marker forwarding and TTL work from the earlier task definition. S001 and SHARED-001 stay historically complete. No reimplementation or promotion of the submitted tests is implied by this document patch.
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Ready for implementation after architect acceptance of SHARED-001 (17 November 2026).** S001's cart-to-checkout proof and identity contract are accepted; Shared's optional V2/V3 event fields are implemented and contract-reviewed. The agent must verify that Shared `6.2.0` is published and pin the same compatible build expected by BACKGROUND-001 before emitting new fields. Runtime cart ownership, marker issuance and consent capture still require this task's tests. Do not repeat the browser-only propagation experiment or invent an alternative authentication contract.
+## Objective and file-by-file implementation instructions
 
-## Objective and scope
+Implement **one server-owned, stateless receipt issuer** and returning-customer SQL status reader in `moda-interact`. The Shopify checkbox will write the returned receipt into the single Shopify attribute `moda_wa_consent_v1` under S003/S004. S002 does not itself touch the customer's cart, write PostgreSQL consent, create a recovery, or enqueue a consent job.
 
-The Shopify application captures explicit checkbox selections temporarily against the *current cart/checkout* in Redis. It reads an existing, verified customer's permission from the **existing PostgreSQL `commerce.Customer` and `commerce.CustomerPhone` records** to initialise the checkbox on a new cart. **It does not persist a checkbox GRANT or REVOKE to PostgreSQL when the customer clicks.** When the checkout is independently determined to be recoverable, Background consumes the latest relevant temporary choice and applies it to existing customer consent records during its normal recovery processing.
+1. **Replace** `app/services/shopify-consent/shopify-consent.server.ts` Redis-heavy implementations `prepareCartMarker`, `recordCartChoice`, `readCartConsentStatus`, marker index, revisions, cart key/TTL and Redis errors with `app/services/shopify-consent/consent-receipt.server.ts`, implementing `issueConsentReceipt`, `verifyConsentReceipt`, and a focused `readReturningShopperConsentStatus`. Preserve only applicable provider-error logging and the exact English disclosure constant. Preserve the already-approved `ShopifyConsentServiceError` style as a typed server error where useful; do not keep unused Redis code or a compatibility path.
+2. **Delete** `app/services/shopify-consent/marker.ts` if it becomes unused. Do not write `m1_`, `moda_cart_correlation_v1`, `shopify:consent:*` Redis keys or alter BullMQ indexes. The permanent Shopify webhook processing remains unaffected.
+3. **Refactor** `app/routes/shopify/consent/route.ts`: remove old `cart/prepare`, `cart/choice` and marker status; implement signed App Proxy `GET cart/status` (verified shop+optional Shopify customer, SQL read only) and `POST cart/receipt` (explicit action choice; issue kind `c` receipt). Keep independent React Router registration `route('shopify/consent/*', ...)`. Existing `[app_proxy]` can remain once verified live; avoid duplicate Shopify proxy routes. Verify Shopify signed `timestamp` within ±300 seconds, the rule that browser Origin, if present, must be well-formed HTTPS but **must not** be compared to the `.myshopify.com` shop identity (Shopify SDK signature and bounded timestamp are the authentication boundary), approved `path_prefix`, max request body, JSON and a valid base Ajax cart token; do not treat a signed shop as proof of an anonymous shopper or trust body customer IDs.
+4. **Add** a separate authenticated Plus Checkout UI Extension issuer route in `app/routes.ts` and a narrowly focused new route under `app/routes/shopify/consent/checkout-receipt/route.ts` (distinct from App Proxy and embedded UI). Authenticate `Authorization: Bearer <Shopify checkout session token>` with the installed SDK checkout authentication, require verified shop/audience/session claims, supplied current checkout token, explicit action and locale, then issue kind `x` receipt. If installed SDK/target cannot provide verified shop/checkout context, stop and report a concrete SDK blocker; do not invent new claims or bypass authentication. S004 owns writing this receipt through `applyAttributeChange` and proving capability/readback.
+5. **Revert only S002-specific marker projection** in `app/services/webhooks/checkout-normalization.ts` and related S002 ingestion changes: authenticated `CHECKOUTS_CREATE`/`CHECKOUTS_UPDATE` remain unchanged, but no new `cartCorrelationMarker` producer data is needed. Do not remove the accepted optional SHARED-001 fields from the Shared package; they remain optional/unused. Preserve all existing queue names/IDs and original checkout metadata.
+6. **Key configuration:** require only `SHOPIFY_CONSENT_RECEIPT_KEY_V1` (32 random bytes unpadded base64url) to sign and verify receipts in Shopify and Background. No marker HMAC secret, Redis consent storage, new secret per merchant, distributed lock, expiry scheduler, migration or additional service. The receipt has **no independent TTL**; it remains a Shopify checkout attribute until Shopify's normal checkout lifecycle.
+7. **Existing PostgreSQL status:** read only an unambiguous current shop+verified Shopify customer `CustomerPhone` decision/STOP/recipient association; checked only for verified current GRANTED. A guest starts unchecked unless the current cart already contains a **verified** receipt. An initial render or status read never mints a new selection. A returning customer's explicit REVOKE is only a receipt in Shopify until the checkout is recoverable.
+8. **Wire contract:** implement exact dot-separated v1 payload, field regexes, SHA-256 token binding, HMAC-SHA256 base64url signature and `timingSafeEqual` verification as defined in the linked spec. Include deterministic known key/payload/MAC vectors in tests, valid/invalid MAC tests, wrong shop, copied checkout token, malformed/duplicate attribute, wrong kind, unsafe future clock, locale and server-log redaction. Document same-checkout valid-receipt replay as an accepted **limitation**, not a passed replay-security property.
+9. **No shopper-facing errors:** on SDK, signing, status or network failure, return typed non-sensitive failure; the S003/S004 control hides/restores unacknowledged selection and checkout always remains functional. Server preserves original useful SDK/Shopify/Prisma error details with redaction; never print raw tokens/receipts/customer data.
 
-The checked/unchecked wording must remain exactly the existing WooCommerce wording: **“Send me WhatsApp shopping updates, reminders and offers.”** No additional consent language, second phone input, Shopify native WhatsApp marketing consent, Shopify Messaging, WooCommerce code or WooCommerce-facing API is part of this task.
+## Precise acceptance and tests
 
-## Owning touchpoints
+- Replace old `tests/integration/shopify-consent.redis.integration.test.ts` with receipt-focused deterministic tests, and update `tests/unit/routes/shopify-consent-route.test.ts`; do not delete independent `tests/integration/shopify-webhook-publication.redis.integration.test.ts` or queue regression coverage.
+- Test signed custom-storefront-domain POST and each supported signed App Proxy prefix (do not hardcode `myshopify.com` as origin), fresh/stale/future signed timestamps, invalid/replayed signature, Shop A versus B, signed customer versus guest, changed cart token and Plus session token rejection; use the installed SDK or label mocks explicitly.
+- Unit-test a real `cart/update.js` receipt readback fixture, checkout note attribute fixture and authoritative GraphQL `customAttributes` fixture. Tests must distinguish the previously verified marker experiment from **new** real receipt behavior, and must not claim Plus live functionality without a Plus checkout test.
+- Verify no `redis` import or consent TTL in reworked issuer; no SQL consent writes from any S002 action; optional Shared marker fields unused; no queue naming changes; existing Shopify webhook integration tests pass.
+- Execute actual `npm run build`, targeted lint/typecheck and source-controlled tests; report the five known pre-existing webhook-root implicit-any type errors separately if still present. Provide exact changed files, SHA, package pins and meaningful redacted original provider errors.
 
-- New Shopify-only `app/services/shopify-consent/` module and authenticated request handlers selected in accepted SHOPIFY-001 (do not invent routes before contract approval).
-- Existing Shopify authentication and Prisma access; resolve a returning customer using the authenticated shop + verified Shopify customer ID, never a browser-asserted customer ID.
-- `app/services/webhooks/shopify-webhook-queue.server.ts` is **reference-only** for Redis configuration. Do not change its connection or BullMQ settings. The **only** approved event payload change is the two optional checkout marker/status fields specified in SHARED-001; do not alter unrelated schemas, publication or queue behaviour.
-- Background's `src/domain/pending-recovery-candidate.ts` and `src/services/pending-recovery-candidate/candidate-index.store.ts` are **reference-only** for Redis key ownership. Background association, recovery admission and SQL writes belong to BACKGROUND-001/002.
-
-## Cart correlation marker — S002 producer responsibilities
-
-- [ ] Use S001's **one** versioned marker contract, not a second token alias or shopper-preference store. Implement `prepareCartMarker` and the associated current-cart lookup in `app/services/shopify-consent/` with Node CSPRNG `randomBytes(32)`, the exact `m1_` marker format and the three temporary Redis record families; duplicate preparation returns the persisted winner atomically. Do not mint a new marker from a checkbox click or webhook. Keep existing explicit-decision fields and revision ordering on the same cart record.
-- [ ] Use the existing React Router explicit route registry `app/routes.ts` to expose an independent Shopify App Proxy resource route under `/shopify/consent/*` (handler under `app/routes/shopify/consent/`, not the embedded `/app` UI route). Configure `[app_proxy]` in `shopify.app.moda-interact.toml` with `url = "/shopify/consent"`, `prefix = "apps"`, `subpath = "moda-consent"` and Shopify's required `write_app_proxy` authorization; check actual app/proxy availability, merchant authorization and configurable `path_prefix` rather than presuming the example `/apps/moda-consent` path is already live. If an existing proxy is found in the implementation checkout, reuse its root; Shopify supports only one app-proxy route. Stop for architect review if this path cannot be authenticated and deployed without altering unrelated Shopify functionality.
-- [ ] Freeze three authenticated operations beneath that single proxy: POST `cart/prepare` (verified shop, current cart token; returns marker, record version and owner revision), GET `cart/status` (verified shop/current cart, and signed returning customer where present; returns latest active selection over permitted SQL status), POST `cart/choice` (explicit action ID, GRANT/REVOKE, disclosure text/version/locale and verified current cart+issued marker). Do not accept a caller-supplied shop ID, customer ID or previously unknown marker as authority. All app-proxy requests must verify Shopify signature and fresh timestamp through Shopify's authenticated server route, with this fixed request policy: require Shopify server signature verification, a non-stale Shopify request timestamp under the existing SDK rules, JSON Content-Type for POST, exact authenticated shop-scoped origin on browser POST (or fail closed if missing), unique `actionId` bound to cart/marker, atomic expected-revision compare-and-set and same-ID/same-payload idempotent replay only. Deny mismatched origins, cross-shop marker use, missing/malformed proofs and changed-payload action-ID reuse. Do not add a new cookie/JWT/session auth service.
-- [ ] Signed App Proxy verifies the shop only. `prepare` accepts a temporary cart locator and creates no customer permission; `choice` requires the existing reciprocal Redis marker/cart reference plus an atomic expected-revision/action-ID write and acknowledges only a **temporary** selection. There is no separate guest session-proof discovery task. B002, **only after recoverability**, requires guest checkout `cart_token` digest equality or verified signed-logged-in customer-ID equality, as frozen in S001 item 11. A malformed/unknown marker, conflicting action revision or cross-shop request fails closed; missing checkout binding fails closed at B002, not by writing early SQL. No client-side cart/status assertion is trusted as consent proof.
-- [ ] In `app/services/webhooks/checkout-normalization.ts`, after authenticated ingestion through existing `app/services/webhooks/shopify-webhook-ingress.service.ts`, extract **only** `moda_cart_correlation_v1` from `payload.note_attributes` on checkout-create/update and set the optional Shared fields `cartCorrelationMarker` and `cartCorrelationMarkerStatus` per SHARED-001, using the authenticated shop ID already resolved inside `ingestShopifyWebhook` (never from client input). Preserve all current checkout metadata and existing queue names, job IDs and ordering. `PRESENT` requires exactly one validated 46-character `m1_` marker; `ABSENT` is verified absence; `INVALID` captures malformed value; `AMBIGUOUS` captures duplicate/conflicting attribute names. The single temporary PII-free marker **may be carried only in the existing checkout event**, never in logs; compute classification after authenticated ingress, then merge the optional fields into normalized V2 create/V3 update payloads before `.strict()` validation. Do not silently discard an invalid/duplicated observed marker as absent, and do not log raw marker/webhook body.
-- [ ] `prepare` records the exact S001 cart+reverse marker keys atomically with bounded TTL; returns an existing same-owner marker on retry; rejects collisions, partial versions and conflicting owners. A successful `choice` validates that marker, shop and canonical cart digest correspond to the current verified cart and records the explicit decision atomically; it does not mutate PostgreSQL. Preserve original provider error messages/details in server-side redacted logs without leaking keys to shoppers.
-
-## Required behaviour
-
-### 1. Initialise checkbox from the correct source
-
-- [ ] For a verified returning Shopify customer opening a **new cart**, query existing PostgreSQL records scoped by shop and Shopify customer ID. Read their existing active/current consent decision and STOP/no-contact state using the existing schema. When a verified current grant is present and the customer/phone association is unambiguous, report checked; otherwise do not claim a verified grant.
-- [ ] When the *current* cart/checkout already has a later accepted temporary selection, display that latest Redis selection over the prior database state **for this current cart/checkout only**. A read must not itself create a grant, revocation or database write.
-- [ ] For a guest without verified returning customer identity, initialise from the verified current cart/checkout's temporary selection, if any; otherwise unchecked. A different guest cart cannot inherit prior permission by phone, email or basket similarity.
-- [ ] No Redis customer-preference key or long-lived Redis consent mirror is permitted. PostgreSQL remains the source for **previously materialised customer consent**; Redis is only the active cart/checkout choice and correlation surface.
-
-### 2. Record explicit cart/checkout actions in Redis only
-
-- [ ] Verify the Shopify signed App Proxy **shop** at `prepare`, `status` and `choice`; reject client-selected shop/customer identity. Treat the browser Ajax cart token as an untrusted **cart locator** only. An accepted cart choice is a temporary Redis action tied to `{shopId, cartDigest, marker, actionId, revision}`, never proof of a guest identity or permission to send. If the signed proxy supplies a verified `logged_in_customer_id`, capture it at accepted action time to allow B002's authenticated-customer matching rule; never accept a client-supplied Shopify customer ID. Plus verifies its signed extension checkout context. **Do not add a new guest session/JWT/cookie scheme.**
-- [ ] Record a deliberate check as `GRANT` and a deliberate uncheck as `REVOKE` against the current cart or checkout. Preserve the exact displayed disclosure text, Shopify-owned version, locale, action identity and accepted time in that temporary record.
-- [ ] A new cart event, checkbox render, server read, checkout-created webhook, refresh or absence of a choice is neutral: it must not manufacture a GRANT or REVOKE.
-- [ ] On each accepted checkbox action, **do not update `Customer`, `CustomerPhone`, consent revisions, STOP/no-contact fields, or SQL evidence**. This rule applies equally to an authenticated returning customer's withdrawal and regrant. S002 must not schedule recoveries or reserve credits.
-- [ ] Use the versioned Redis-only namespace and exact payload/identity encoding frozen in SHOPIFY-001. Record the latest accepted explicit choice with idempotent action IDs and bounded revision ordering; identical retries are no-ops, conflicting action replays fail, and an older request may not overwrite a newer accepted choice. This must not require an additional distributed-lock framework.
-- [ ] A successful checkbox action is acknowledged only after the Redis write succeeds. If Redis is unavailable, do not claim acceptance and never block the merchant's cart/checkout flow. Redact tokens, phone numbers, credentials and proofs in browser responses/logs while preserving safe original provider failure diagnostics server-side.
-
-### 3. Deferred recovery materialisation — Background ownership
-
-- [ ] S002 exposes the SHOPIFY-001-approved read contract for Background to obtain the latest cart/checkout choice and validated identity/correlation evidence. **S002 does not itself decide recoverability, fetch abandoned checkout phone numbers, materialise SQL consent or send messages.**
-- [ ] BACKGROUND-001 associates cart consent with checkout using the authenticated event shop, checkout token and verified `cartCorrelationMarker` from the existing checkout event schema; it does not change BullMQ job IDs, queue names or candidate indexes. BACKGROUND-002, and **only when the checkout becomes recoverable**, resolves customer/recipient and applies the applicable `GRANT` or `REVOKE` to existing PostgreSQL consent state under the existing database constraints.
-- [ ] If a recoverable checkout has no new temporary choice, Background may use the current previously materialised verified database permission for the correct shop/customer under its approved admission policy. An unchecked default is not a new withdrawal.
-- [ ] For a returning customer whose existing SQL permission is `GRANTED`, an explicit `REVOKE` on a new checkout is **temporary until that checkout becomes recoverable**. If the checkout completes or otherwise never becomes eligible, do not persist that choice to PostgreSQL; discard it during normal cleanup. On a later new cart the checkbox again reflects the current database decision. This is the deliberately selected recovery-lifecycle policy; do not add an immediate SQL withdrawal/regrant path.
-- [ ] Once an eligible checkout's choice has been successfully materialised, or the cart/checkout is terminal/ineligible, let the Background-owned recovery lifecycle remove the associated temporary Redis records. Do not delete a pending choice while materialisation/retry is unfinished or because a candidate index was removed prematurely.
-
-### 4. Redis ownership and cleanup
-
-- [ ] Store **only** temporary cart/checkout choice and correlation records in the dedicated versioned Shopify consent prefix. No permanent customer-preference index or standalone long-lived Redis consent history is in S002's scope.
-- [ ] Define TTL and cleanup hooks according to the existing cart/checkout recovery lifecycle, while retaining state throughout configured maturity and bounded Shopify visibility retries. Never inherit an index TTL blindly; expiry must not permit outreach using an assumed GRANT.
-- [ ] Do not write, delete, rename, change value, or extend TTL of `pending-recovery:index:*`, `pending-recovery:lock:*`, `pending-recovery:order-completed:*` or any BullMQ-owned key. No `KEYS` scan, database-wide `FLUSH*`, unrelated queue payload modification or global Redis policy change; the two optional Shared checkout marker/status fields remain explicitly allowed.
-- [ ] Shopify uninstall and permitted privacy erasure must remove only keys proven to belong to the correct shop/identity; avoid broad tenant-unsafe scans. Existing PostgreSQL deletion/privacy behaviour is not modified by this task.
-
-## Mandatory zero-effect selection boundary
-
-- [ ] The only writes at `prepare`, `status`, `choice`, cart/checkout app block, and Plus selection events are the approved temporary scoped Redis keys; **zero** `Customer`, `CustomerPhone`, consent revision/sequence, no-contact or STOP writes and **zero** new outreach gating/suppression writes. Deliberate REVOKE on Cart B while Cart A has already sent an initial message does not change A's SQL permission or queued proactive follow-up until B independently becomes recoverable.
-- [ ] If Cart B is paid/completed/otherwise ineligible, B's acknowledged Redis REVOKE is removed by Background terminal cleanup and A's existing SQL GRANTED permission stays unchanged. If B becomes recoverable, B002—not S002—persists REVOKED. Do not add user-click SQL callbacks, Redis pending-revoke suppression reads to final-send, STOP side effects, alternative opt-out widgets or customer-level Redis history.
-- [ ] **Frozen guest contract:** Permit an explicitly acknowledged, temporary guest `choice` under signed-shop context and the existing reciprocal cart/marker/revision checks; the action creates **no** effective consent. B002 can materialise it only if the authenticated checkout has **both** matching marker and exact canonical `cart_token` digest, a verified eligible recipient and all existing safety guards. A checkout cart-token mismatch with no verified same-customer identity is a typed fail-closed outcome; no extra guest authentication technology or alternate matching path is permitted. Never infer valid consent from a marker or address phone alone.
-
-## Tests and acceptance
-
-- [ ] Authenticated returning Shopify customer opens a **new** cart: status reads PostgreSQL, not a persistent Redis customer key; GRANTED yields checked, UNKNOWN/REVOKED/unverified does not imply permission.
-- [ ] An acknowledged cart or Plus checkbox change is stored in Redis and **produces zero PostgreSQL consent writes**, including a returning customer unchecking an already-checked box.
-- [ ] For the *same* cart/checkout, Redis's latest accepted explicit choice overrides the older database snapshot for display; new unrelated carts do not inherit another temporary selection.
-- [ ] A checkout that **never becomes recoverable** leaves `CustomerPhone` unchanged after temporary-key cleanup; a recoverable checkout delegates SQL materialisation to BACKGROUND-002.
-- [ ] Guest scope, forged shop/customer/cart identity, cross-shop access, replay, two tabs, stale writes, changed-action-payload conflict and unverified checkout token are denied as prescribed by S001.
-- [ ] Redis outage or eviction never becomes a grant and never blocks checkout. No background candidate index, job ID, job delay, lock, order tombstone or BullMQ key changes from an S002 operation.
-- [ ] Tests distinguish a verified SQL consent read from the old Shopify-native provider API. No Shopify native consent API is invoked. Report exact test command, affected files and original provider errors with sensitive-data redaction.
-
-## Reconciled downstream contract
-
-SHOPIFY-001 now defines temporary Redis choice/correlation storage only. BACKGROUND-001 owns checkout association/cleanup, while BACKGROUND-002 applies any verified explicit decision **only at eligible recovery** to the existing PostgreSQL `CustomerPhone` under its normal revisions, purpose, source and STOP constraints. In this Shopify initiative the existing `SHOPIFY_NATIVE` enum value identifies **Moda-verified Shopify checkbox consent**, not a native Shopify marketing-consent API observation. S002 does not write SQL on customer interaction or query that retired provider. If the accepted S001/B002 read/write contract cannot be implemented without weakening these invariants, stop for architect review.
-
-**Stop:** if the SHOPIFY-001 identity/Redis contract is unapproved, the SQL source/consent constraints cannot be honoured without a schema change, a returning customer cannot be unambiguously resolved, or S002 would require changes to Background/BullMQ-owned keys. Report the precise blocker, do not invent a fallback.
-
-## Completion Report
-
-### Implementation
-
-- Added the signed Shopify App Proxy `prepare`, `status`, and `choice` handlers; current-cart and reciprocal marker records are prepared atomically, choices use bounded TTL/revision/action replay checks, and status falls back to existing verified PostgreSQL consent only when Redis confirms no current-cart choice.
-- Added checkout marker classification for create/update payloads and verified that the optional marker/status fields pass the published strict Shared v2/v3 event schemas after authenticated shop resolution.
-- Pinned `@modainteract/moda-interact-shared` to `6.2.0` and configured the intended App Proxy path and `write_app_proxy` scope.
-- No SQL consent writes, Background changes, queue changes, or Shopify deployment were made.
-
-### Validation
-
-- Passed: `npm run prisma:generate`.
-- Passed: `npm run test:shopify-webhooks` — 15 files, 173 tests.
-- Passed: `npm run test:shopify-webhooks:redis` — 2 files, 9 tests.
-- Passed: `MODA_SHOPIFY_CONSENT_REDIS=1 npx vitest run tests/integration/shopify-consent.redis.integration.test.ts` — 1 file, 4 tests.
-- Passed: focused App Proxy route and strict ingress/schema tests — 4 files, 72 tests.
-- Passed: targeted ESLint on all changed implementation and test files.
-- Passed: `npx react-router build`.
-- `npm run typecheck` remains blocked by five implicit-`any` diagnostics in the untouched `app/routes/webhooks/root/route.jsx`; no task implementation or task test files appear in the final diagnostics.
-- Shopify CLI config validation, live App Proxy availability, and deployment were not verified; no authenticated Shopify CLI action was run.
-
-### Coordination
-
-The Shopify producer now pins Shared `6.2.0`, as required by this task. The separately owned Background checkout was observed pinned to `6.1.0`; its owner must align the consumer before deployment. No other repository was modified.
-
-### Git / VCS
-
-Task branch: `task/ARCH-077-SHOPIFY-002`
-
-Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-SHOPIFY-002`
-  parent branch: `task/ARCH-077-SHOPIFY-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-SHOPIFY-002`
-  implementation branch: `task/ARCH-077-SHOPIFY-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
-
-Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed (launcher prepared the synchronized task branch before claiming Attempt 1)
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed (the task push created the remote implementation branch)
-  implementation origin/main incorporated: already-current
-
-Recursive implementation submodules:
-  `git submodule sync --recursive`: passed by launcher
-  `git submodule update --init --recursive`: passed by launcher
-  recorded submodule commits: `database` `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
-
-Implementation repository:
-  repository: `moda-interact`
-  commit: `c0c2cca0405de9f1309ba70076232842ba4d4319`
-  remote branch: `origin/task/ARCH-077-SHOPIFY-002`
-  pushed: yes
-
-Parent workspace:
-  task file: `docs/decisions/shopify/ARCH-077/SHOPIFY-002-capture-checkout-consent-in-redis.md`
-  commit: this report's task-file submission commit (SHA is recorded in the task-branch handoff)
-  remote branch: `origin/task/ARCH-077-SHOPIFY-002`
-  pushed: yes
-  submodule gitlink staged: no
-
-Merged to implementation main: no
+**STOP conditions:** the verified Shopify checkout token cannot be bound to Plus receipt issuance, signed App Proxy origin/shop cannot be verified, the receipt attribute cannot round-trip intact, a newly added route weakens authentication, or the agent would need a new DB/Redis consent state to complete the task. Return the specific blocker; do not silently reintroduce the abandoned Redis design. This task remains `review` until amended implementation and validation are submitted and accepted.
