@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHOPIFY-002]
-enables: []
+enables: [ARCH-077-SHOPIFY-005, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
 updated: 2026-11-17
 ---
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Pending architectural review. Do not implement before S001's Plus checkout token/session proof and S002's temporary Redis/PostgreSQL-read contract are accepted.** Where earlier architecture/task drafts describe permanent customer preference in Redis, follow accepted S002: **Redis stores only temporary cart/checkout choices; returning-customer state is read from existing PostgreSQL records.** This amendment is S004-specific except for the explicitly requested S003 silent-failure companion amendment.
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** Implement only after S001 Plus checkout token/session proof and S002 temporary Redis choice/returning-customer PostgreSQL read contract are accepted. S004 uses the same Shopify-owned S002 backend as the cart block, and requires the already-approved silent failure for all shopper-facing consent operations.
 
 ## Objective
 

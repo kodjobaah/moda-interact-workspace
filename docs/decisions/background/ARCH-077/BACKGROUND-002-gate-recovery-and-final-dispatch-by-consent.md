@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: [ARCH-077-BACKGROUND-001]
-enables: []
+enables: [ARCH-077-SHOPIFY-006, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
 updated: 2026-11-17
 ---
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Draft amendment, pending architect acceptance.** Interpret this task together with the accepted SHOPIFY-001, SHOPIFY-002 and BACKGROUND-001 consent contracts. Earlier draft language making Redis the permanent consent authority or requiring Redis checks at every send is superseded by this task. The parent architecture and remaining drafts require final reconciliation before implementation.
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** Implement only after accepted SHOPIFY-001, SHOPIFY-002 and BACKGROUND-001 contracts; consent is a temporary Redis choice until eligible recovery materialisation, then PostgreSQL is authoritative. Preserve existing PostgreSQL final-send checks; no per-send Redis consent reads.
 
 ## Objective and fixed ownership
 
@@ -65,7 +65,7 @@ Only **when an authoritative Shopify abandoned checkout becomes recoverable**, a
 - Update the Shopify consent admission and materialisation callers so `SHOPIFY_NATIVE` rows are written from Moda-verified Shopify checkbox decisions **without querying** `defaultPhoneNumber.whatsAppMarketingConsent`. Do not simply remove or bypass a final stored-consent fence.
 - A current PostgreSQL REVOKED/UNKNOWN decision, a newer materialised withdrawal or any local STOP prevents future proactive sends. Customer-originated replies, merchant human handover and WhatsApp 24-hour policies must not accidentally inherit a new proactive-only requirement.
 - Existing order-completion fences, suppression, credit reservation/release and ARCH-076 sender assignment/idempotency remain unchanged. A send already accepted by the provider is not recallable. Never claim a transient unmaterialised Redis selection has changed the persistent state of earlier recoveries.
-- Shopify-native provider-sync jobs already queued before S006 must not re-grant, rewrite or invalidate Moda's new checkbox decisions. Coordinate that retirement with S006, without changing the database schema or reinterpreting Woo evidence.
+- **Preproduction retirement:** Remove the obsolete native Shopify provider-sync processing in B002, coordinated with S006 removal of the Shopify webhook producer. No legacy-job compatibility, replay or data migration is required. Keep existing cart/checkout/order worker queue and unrelated job processing unchanged; any preproduction cleanup is a separate scoped environment operation.
 
 ## Redis and database boundaries
 
@@ -86,4 +86,4 @@ Only **when an authoritative Shopify abandoned checkout becomes recoverable**, a
 - Order completion, merchant-configured maturity, bounded Shopify retries, credit compensation, ARCH-076 sender allocation and WooCommerce regression stay unchanged.
 - Execute disposable PostgreSQL + Redis integration tests with real concurrent accepted decisions and rejected stale replay, plus Shopify/Meta mocked boundary tests; verify exact task worktree/commit/submodule pin and container cleanup. Do not present mocked tests as real provider evidence.
 
-**Stop conditions:** Abort implementation and report an architect blocker if the S001 guest/session binding cannot identify the intended recipient, if a newly accepted consent decision cannot be persisted under the existing `SHOPIFY_NATIVE` constraints without database changes, if an old/native provider sync job can overwrite checkbox materialisation, if old grants supersede newer withdrawals, or if any proactive final-send path can bypass the current stored-consent/STOP fence. Do not weaken the existing SQL constraints or WooCommerce policy to make tests pass.
+**Stop conditions:** Abort implementation and report an architect blocker if the S001 guest/session binding cannot identify the intended recipient, if a newly accepted consent decision cannot be persisted under the existing `SHOPIFY_NATIVE` constraints without database changes, if obsolete native provider sync processing remains active at new checkbox activation, if old grants supersede newer withdrawals, or if any proactive final-send path can bypass the current stored-consent/STOP fence. Do not weaken the existing SQL constraints or WooCommerce policy to make tests pass.

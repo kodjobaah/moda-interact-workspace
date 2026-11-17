@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: [ARCH-077-SHOPIFY-002, ARCH-077-SHOPIFY-003, ARCH-077-SHOPIFY-004]
-enables: []
+enables: [ARCH-077-SHOPIFY-006, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
 updated: 2026-11-17
 ---
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Pending architectural review.** Follow the accepted S002 recovery-only persistence decision and the S003/S004 silent-failure and extension activation contracts. S001 and downstream Background task descriptions containing older Redis-resident customer preference/immediate-withdrawal assumptions require separate architect reconciliation. Do not modify those documents in this task.
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** Follow S001/S002 recovery-only SQL persistence, and S003/S004 silent-failure, returning-customer presentation and merchant activation contracts. No permanent Redis customer preference or immediate SQL withdrawal is authorised.
 
 ## Objective
 

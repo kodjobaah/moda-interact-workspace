@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: [ARCH-077-SHOPIFY-002]
-enables: []
+enables: [ARCH-077-SHOPIFY-005, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
 updated: 2026-11-17
 ---
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Pending architecture review; do not implement before accepted SHOPIFY-001 cart-identity and SHOPIFY-002 consent contracts.** This amendment concerns only S003. Where older architecture or task text describes a permanent Redis customer preference, follow accepted S002's PostgreSQL-read / temporary-Redis-choice lifecycle; defer document reconciliation to architect review.
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** Implement only after S001 identity and S002 temporary Redis choice/returning-customer PostgreSQL read contracts have been accepted. No permanent Redis customer preference or click-time PostgreSQL consent write is part of S003.
 
 ## Objective
 

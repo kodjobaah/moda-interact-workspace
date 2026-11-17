@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Pending architect review.** This task is a preproduction cleanup, performed after BACKGROUND-002 has replaced native-provider consent reads and before final SYSTEM-TEST-001 certification. No application source change is authorised merely by applying this task definition.
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** This task is a preproduction cleanup, performed after BACKGROUND-002 has replaced native-provider consent reads and before final SYSTEM-TEST-001 certification. No application source change is authorised merely by applying this task definition.
 
 ## Objective and fixed decisions
 

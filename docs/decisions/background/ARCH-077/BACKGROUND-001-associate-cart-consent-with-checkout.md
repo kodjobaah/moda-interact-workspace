@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHOPIFY-002]
-enables: []
+enables: [ARCH-077-BACKGROUND-002, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
 updated: 2026-11-17
 ---

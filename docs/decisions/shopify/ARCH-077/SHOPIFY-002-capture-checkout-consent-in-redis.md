@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: [ARCH-077-SHOPIFY-001]
-enables: []
+enables: [ARCH-077-BACKGROUND-001, ARCH-077-SHOPIFY-003, ARCH-077-SHOPIFY-004, ARCH-077-SHOPIFY-005]
 created: 2026-11-17
 updated: 2026-11-17
 ---
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Pending architecture review. Do not implement until SHOPIFY-001's Redis and identity contract has been reconciled with this task and accepted.**
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`. Implement only after SHOPIFY-001 has frozen the verified Redis and identity contract and received architect acceptance.**
 
 ## Objective and scope
 
@@ -82,8 +82,8 @@ The checked/unchecked wording must remain exactly the existing WooCommerce wordi
 - [ ] Redis outage or eviction never becomes a grant and never blocks checkout. No background candidate index, job ID, job delay, lock, order tombstone or BullMQ key changes from an S002 operation.
 - [ ] Tests distinguish a verified SQL consent read from the old Shopify-native provider API. No Shopify native consent API is invoked. Report exact test command, affected files and original provider errors with sensitive-data redaction.
 
-## Architectural reconciliation required before implementation
+## Reconciled downstream contract
 
-The **previous S001 amendment** still describes a Redis-resident customer preference/history and a current customer-level withdrawal effect. **The approved S002 direction supersedes those Redis persistence and immediate-withdrawal assumptions:** returning preference comes from PostgreSQL, checkbox actions remain cart/checkout-scoped Redis state, and SQL GRANT/REVOKE happens only when the checkout becomes recoverable. Do not modify S001 or other tasks in this one-file patch; return the conflict for a targeted S001/Background reconciliation before implementation. The existing `CustomerPhone` source enum/SQL guards and `SHOPIFY_NATIVE` final-send check also require a separately reviewed, schema-neutral Background resolution; S002 must not bypass them or mislabel a Moda checkbox event as a native Shopify observation.
+SHOPIFY-001 now defines temporary Redis choice/correlation storage only. BACKGROUND-001 owns checkout association/cleanup, while BACKGROUND-002 applies any verified explicit decision **only at eligible recovery** to the existing PostgreSQL `CustomerPhone` under its normal revisions, purpose, source and STOP constraints. In this Shopify initiative the existing `SHOPIFY_NATIVE` enum value identifies **Moda-verified Shopify checkbox consent**, not a native Shopify marketing-consent API observation. S002 does not write SQL on customer interaction or query that retired provider. If the accepted S001/B002 read/write contract cannot be implemented without weakening these invariants, stop for architect review.
 
 **Stop:** if the SHOPIFY-001 identity/Redis contract is unapproved, the SQL source/consent constraints cannot be honoured without a schema change, a returning customer cannot be unambiguously resolved, or S002 would require changes to Background/BullMQ-owned keys. Report the precise blocker, do not invent a fallback.
