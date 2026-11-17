@@ -53,6 +53,8 @@ Implemented in `moda-interact` commit `028086d`:
   `purchase.checkout.contact.render-after` on API `2026-10` with
   `network_access`.
 - Added the localized consent checkbox in the 20 supported Shopify locales.
+  Chinese translations use the CLI-accepted regional locale filenames
+  `zh-CN.json` and `zh-TW.json`.
   The extension hides the control unless the correct target, checkout token,
   attribute mutation instruction and authenticated server status are available.
   It issues a receipt only after an explicit choice, writes only
@@ -70,9 +72,12 @@ Validation:
 - PASS — `shopify app build --config moda-interact`.
 - PASS — Shopify Checkout UI validator for
   `purchase.checkout.contact.render-after`, API `2026-10`.
-- BLOCKED — `shopify app dev --config moda-interact
-  --skip-dependencies-installation --no-update` exited because no development
-  store was specified. No eligible Plus development-store domain was supplied.
+- PASS — after correcting the Chinese locale filenames, `shopify app build
+  --config moda-interact` succeeded.
+- BLOCKED — the approved `shopify app dev` run against the user-supplied Plus
+  development-store target built the extension but exited with `read_brand`
+  before starting the live preview. The CLI account/app authorization issue
+  must be resolved before live validation can proceed.
   Therefore this task has not verified a real signed checkout session, actual
   checkout token, Shopify attribute write/readback and subsequent
   `AbandonedCheckout.customAttributes` propagation, copied/malformed/replay
