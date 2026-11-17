@@ -1,7 +1,7 @@
 ---
 id: ARCH-077-SYSTEM-TEST-001
 architecture_id: ARCH-077
-title: Certify Shopify checkout consent and Redis worker isolation
+title: Certify signed Shopify checkout-attribute consent and worker isolation
 task_kind: verification
 domain: system-test
 repository: moda-interact-system-test
@@ -20,88 +20,31 @@ created: 2026-11-17
 updated: 2026-11-17
 ---
 
-# Certify Shopify checkout consent and Redis worker isolation
+# Certify ARCH-077 Shopify checkout-attribute consent and worker isolation
 
-## Architecture / status
+**Pending last, after S002-S006 and B001/B002.** This replaces former Redis consent-retention certification with [one Shopify attribute receipt contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). Preserve existing BullMQ/Redis **checkout processing**, but do not demand a new Redis consent store or marker cleanup.
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Pending; this definition is not evidence that any test has run.** Execute against the finally reconciled ARCH-077 contracts **after** obsolete Shopify-native marketing-consent ingress and processing have been removed by S006. Do not reinstate legacy job compatibility for preproduction.
+## A. Shopify transport, exact plan placement and signed receipt
 
-## Objective and invariant
+- Real **non-Plus** Shopify test: S003 cart App Block active in published cart template, exact 20-locale copy, explicit GRANT and later REVOKE overwrite the one `moda_wa_consent_v1` attribute, observed in authenticated checkout create/update then in GraphQL `AbandonedCheckout.customAttributes` from the **already-used** authoritative fetch. Compare bounded redacted Shared AEAD verification outcomes, never print raw checkout tokens/receipts.
+- Real **Plus** store test: only S004 checkout UI Extension at `purchase.checkout.contact.render-after`, with a verified signed checkout JWT/token, `instructions.attributes.canUpdateAttributes`, `applyAttributeChange` success/readback and same GraphQL attribute. Cart App Block must not run on Plus. Accelerated/unsupported checkout fails silently without a fabricated consent choice.
+- Existing 17 November SHA prefix `ef5dbf7582291225` proves historical non-Plus *probe* propagation only; never claim it proves signed receipts or Plus implementation. Live proof needed for final acceptance.
+- One attribute only; no `moda_cart_correlation_v1`, `moda_s001_probe`, GRANT/REVOKE Redis keys or additional event payload. SHARED-001 optional marker fields remain unused/compatible and existing queue schemas accept old events.
 
-Certify the Shopify application and Background worker implementation using the approved **deferred consent materialisation** lifecycle. The application records explicit checkbox changes temporarily in **checkout/cart-scoped Redis**; it reads a returning authenticated customer's existing consent from **PostgreSQL**. Background applies a pending grant or withdrawal to existing `Customer`/`CustomerPhone` records **only when that checkout becomes recoverable**. Completed or otherwise ineligible checkouts produce no consent database update. Once materialised, PostgreSQL is authoritative for initial outreach, follow-ups and final proactive send admission; Redis is not a permanent customer preference store or a mandatory per-message read.
+## B. Signature, identity and minimal-stateless limitation
 
-For this Shopify-only flow, the existing PostgreSQL `SHOPIFY_NATIVE` source value denotes **Moda's Shopify checkout-checkbox evidence**, not Shopify Messaging or Shopify's marketing-consent GraphQL API. There is no new enum, table or migration. Keep the WooCommerce application and `moda-interact-api` unchanged.
+- Canonical plaintext/AAD bytes and Shared AEAD encrypted-receipt round-trip, wrong/missing/rotated keys, incorrect/duplicate envelope fields, tag/ciphertext tampering, wrong shop/AAD, mismatched event checkout/cart token, different guest/customer, invalid source kind/locale, oversized payload, missing customer attribution, future timestamp, Redis outage and missing Shopify attribute. No forged plain `GRANT` authorises outreach.
+- Demonstrate that a receipt copied to another shop or checkout **fails**; demonstrate and explicitly document that a previously valid receipt restored to the **same** checkout can be accepted by this stateless model (accepted tradeoff). Do **not** misreport this as replay prevention or silently introduce Redis customer preference to make the test pass.
+- Guest accepted only with trusted event token correlation and attributable recipient; an earlier observed cart-token mismatch fails closed. Signed customer ID mismatch denies. Unverified/missing checkout or SDK context must never be replaced by phone/email/item matching.
 
-## Execution environment and ownership
+## C. Deferred consent, two checkouts, STOP and outreach
 
-- Use disposable, isolated Redis and PostgreSQL 17/pgvector for queue, consent, recovery and outbound tests. Never mutate production Redis, customer records or send live unsolicited WhatsApp messages.
-- Run the installed Shopify application and Background integration paths with their actual compatible package pins and Redis key contracts. Use a Meta provider emulator/fixtures for sends. Include real Shopify development-store/browser evidence for the supported cart App Block and (separately) a Shopify Plus checkout environment. Mark Plus **uncertified** if no eligible Plus test store is available; do not substitute a mocked extension result for real storefront certification.
-- Capture repository/worktree paths, exact SHAs, submodule pins, deployed/test Shopify app configuration and selected storefront/checkout extension targets, disposable infrastructure identifiers and cleanup outcomes.
-- Preserve existing ARCH-076 sender-pool tests, BullMQ worker tests, WooCommerce/API regressions and the checkout/consent version contracts. Do not create new queues, schema migrations or legacy compatibility code as part of testing.
+- A GRANT click -> only signed Shopify attribute, no PostgreSQL write; A recoverable -> SQL GRANTED then legitimate first outreach. B REVOKE click -> SQL still GRANTED and A proactive follow-up still evaluated under current SQL; B paid -> no SQL change; B recoverable -> SQL REVOKED before denying B outreach, A's unsent proactive follow-up denied, earlier delivered A outreach preserved. Future C with no choice uses stored SQL decision; future recoverable C GRANT may reauthorise unless STOP. STOP follows independent immediate suppression at any stage.
+- Existing customer replies to Cart A after B's REVOKE can receive AI/human service responses if allowed by real inbound, WhatsApp 24h window, moderation and STOP; unsolicited retry/follow-up is **not** converted into a service reply just because a window is open.
+- Crash/retry and competing workers: same checkout materialises at most once; old A replay after B cannot regrant. If current schema cannot do this, fail with `MATERIALISATION_IDEMPOTENCY_BLOCKER` and obtain architect decision before release. Preserve existing one conversation per recovery, credit reserve/commit/release, 2 proactive cap and sender assignment.
 
-## Mandatory acceptance scenarios
+## D. Worker/database isolation and regression
 
-### A. Shopify identity, UI and read precedence
-
-- [ ] Cart-page `/cart.js` cart identity correlates with a verified Shopify checkout webhook `cart_token` under S001; capture an actual token example in redacted form. Check cart-created webhook before/after explicit selection, checkout-created before/after selection, duplicate or delayed webhooks, changed/null token, cart reused for conflicting checkouts and a cart that never reaches checkout. Never infer association by phone, email, products or timestamps.
-- [ ] Shopify Plus checkout extension uses its verified checkout identity/session token, writes directly to checkout-scoped Redis without a cart alias, and handles guest identity, missing token, reload and accelerated-checkout unsupported paths.
-- [ ] New customer: no verified existing consent and no pending choice => checkbox unchecked. Authenticated returning customer on a **new cart**: S002 reads the matching merchant/customer's existing `CustomerPhone` decision from PostgreSQL; `GRANTED` displays checked, `REVOKED`/`UNKNOWN` displays unchecked. No checkbox-render/status-read side effect creates a new grant or a Redis choice.
-- [ ] Same cart or checkout with an accepted, pending Redis choice displays that choice ahead of an older database value. Distinct anonymous carts never inherit a previous guest's consent; never expose cross-merchant or cross-customer state.
-- [ ] Both S003 and S004 enabled on a Plus store: latest accepted explicit cart/checkout action determines checkout display; a read or prechecked display does not generate a new action.
-
-### B. Consent writes and deferred database materialisation
-
-- [ ] Deliberate checkbox GRANT or REVOKE only writes the **temporary** cart/checkout Redis selection. Verify `Customer`, `CustomerPhone` and consent revision fields in PostgreSQL remain unchanged immediately after each action, whether the user is new or returning.
-- [ ] Grant, withdraw, regrant and duplicate/reordered actions from multiple tabs use the S001/S002 accepted action and revision contract; the latest accepted **explicit decision** wins. An old grant must not overwrite a newer withdrawal; a subsequent new explicit grant can restore permission. STOP suppression remains authoritative independently of checkbox state.
-- [ ] An abandoned checkout passes existing Shopify recoverability, merchant delay, bounded verification and ownership checks. Background reads the latest applicable pending selection; GRANT materialises `GRANTED`, REVOKE materialises `REVOKED`, and the resulting PostgreSQL state governs recovery admission. Verify the latest accepted action **within one checkout** is selected; **across checkouts**, only distinct successfully materialised eligible selections update SQL and a replay of an older successful materialisation must not undo a later one.
-- [ ] No new Redis selection + previously verified PostgreSQL `GRANTED` => eligible recovery can reuse existing consent without fabricating a new checkbox action. No selection + PostgreSQL `UNKNOWN`/`REVOKED` => no permission or proactive outreach. A missing Redis record is not an explicit withdrawal.
-- [ ] Checkout paid/completed or definitively ineligible before becoming recoverable => **no PostgreSQL consent materialisation**, including if the customer explicitly unchecked a pre-existing grant; temporary Redis cleanup follows the agreed lifecycle. A subsequent new cart reads whatever PostgreSQL decision remains. Do not impose an additional immediate-SQL withdrawal workflow contrary to S002.
-- [ ] Consent action itself must never enqueue recovery, reserve billing credits or send WhatsApp messages. Recovery creation and first outreach happen only after verified eligibility and final permissions.
-
-### B2. Mandatory A-then-B deferred decisions, outreach and conversation continuation
-
-- [ ] **A checkbox GRANT** while A is active: assert only temporary Redis writes, no `CustomerPhone` changes, no outreach. **A independently recoverable:** one SQL GRANTED materialisation followed by one permitted initial outbound. The SQL final-send path remains authoritative.
-- [ ] **B checkbox REVOKE** while A previously GRANTED/sent: assert only B-scoped Redis REVOKE, no SQL change, no new immediate suppression, and A's not-yet-sent proactive follow-up remains governed by current GRANTED/STOP until B recoverability. **B completes payment:** assert B choice discarded and SQL still GRANTED; no B outreach/consent write. No test may substitute immediate SQL opt-out or Redis send suppression for the chosen rule.
-- [ ] **B independently recoverable** with verified customer/recipient: assert SQL REVOKED commits **before** message-admission denial, with zero initial outreach for B even if no `CheckoutRecovery` is created, and A's not-yet-provider-accepted follow-up or proactive retry is blocked by the existing SQL fence. A's delivered initial message and conversation history are preserved; no retroactive recall/credit invention.
-- [ ] **Customer replies to Cart A** after B REVOKE: existing AI and human replies can proceed if admitted by normal WhatsApp 24-hour service window, moderation, STOP and routing. An unsolicited scheduled follow-up cannot piggyback on the 24-hour window. Revoke never closes A's conversation or turns a customer-originated response into a new initial outreach.
-- [ ] **C future recoverable, no explicit selection** uses current REVOKED and sends nothing; **C explicit GRANT materialises at independent recoverability** and permits outreach only if all other guards pass. Active STOP blocks everything it already blocks, regardless of any checkbox GRANT or REVOKE.
-- [ ] Duplicate webhook/recovery materialisation for A after B, forced crash after A SQL commit before Redis acknowledgement, two concurrent materialisation transactions for same `CustomerPhone`, and retry of B REVOKE must show **no replay regrant or double revision**. On inability to guarantee one-time durable ordering using existing schema, fail certification with `MATERIALISATION_IDEMPOTENCY_BLOCKER`; do not guess or add an unapproved migration.
-- [ ] Provider-accepted message before B REVOKE is not recalled. Proactive message requiring a final SQL gate **after** B REVOKE must not be initiated. Verify no credit double-commit/refund and existing ARCH-076 sender routing unchanged.
-
-
-### C. Recipient resolution and database enforcement
-
-- [ ] Retrieve current contact details from the authoritative Shopify abandoned checkout. Test customer phone -> billing phone -> shipping phone precedence, null/invalid higher-priority values, differing valid values, all absent, customer identity mismatch, and the production regression `customer.phone=null` with matching billing/shipping numbers. A phone in an address alone does not create consent; a shipping recipient demonstrably unrelated to the consenting customer must not be authorised.
-- [ ] Persist only shop-scoped, validated customer/phone relationships; preserve an active STOP record through a formatting-only phone change. Assert database `SHOPIFY_NATIVE` source is used **for Moda Shopify checkbox consent** without any Shopify `defaultPhoneNumber.whatsAppMarketingConsent` reads. Keep existing PostgreSQL decision/revision/no-contact guards and explicit customer identity links.
-- [ ] After materialisation, verify initial send, re-entry, follow-up, retry, multipart and proactive SQL final-dispatch checks use current **PostgreSQL** consent and STOP; no new Redis network call is required on every outbound send. Materialised REVOKE, invalid/moved recipient, changed revision or STOP suppresses subsequent proactive sends. Human/customer-initiated conversation paths retain their separate existing eligibility rules.
-- [ ] Existing outbound billing reservation/compensation, checkout cancellation, no-response follow-up cap and ARCH-076 sender assignment are unchanged; a blocked outreach must not leak credits or duplicate sender allocation.
-
-### D. Redis lifecycle and worker isolation
-
-- [ ] Temporary consent keys use only the approved, separate versioned namespace. Snapshot values and TTLs for existing `pending-recovery:index:cart:*`, `pending-recovery:index:checkout:*`, `pending-recovery:index:shop:*`, checkout/order locks, order-completion tombstones and BullMQ-managed queue metadata before/after consent actions and cleanup. Assert job IDs, due times, retry/verification state, indexes, memberships and existing TTL semantics remain unchanged.
-- [ ] Cart-to-checkout association is idempotent and never writes consent into pending-candidate BullMQ payloads or replaces a job ID in a worker-owned index. Test webhook/checkbox ordering and conflicting associations without global Redis `KEYS` scans or unbounded operations.
-- [ ] Temporary selection survives existing checkout maturity and bounded Shopify visibility retries until it can be applied. On database write failure, do not acknowledge materialisation or delete the pending consent prematurely; use the existing bounded retry mechanism if still eligible.
-- [ ] After successful recoverable materialisation, clean up no-longer-needed temporary consent. On paid/completed, cancelled or definitively ineligible checkout, remove temporary records without updating PostgreSQL. An abandoned cart with no checkout receives bounded expiry. Candidate-index removal alone must never delete consent before materialisation succeeds.
-- [ ] Redis read/write timeout, restart, missing key, malformed record, TTL expiry and eviction do not manufacture a new grant or corrupt other worker state. When Redis is unavailable at recovery maturity, do not reinterpret an unread pending choice as absent; fail closed/defer under the approved lifecycle. Verify Redis memory isolation and no global configuration change affecting worker queues.
-
-### E. Silent failure and retirement
-
-- [ ] S003/S004 initial consent read failure hides only Moda's checkbox; failed GRANT/REVOKE does not appear saved. Test network timeout, invalid response, unreachable Moda backend, Redis unavailable and PostgreSQL status-read failure. No customer-facing error, retry banner, blocked cart, delayed payment or merchant-site technical exception. Preserve original provider/Redis diagnostic message server-side **with sensitive-data redaction**.
-- [ ] Exact English checkbox text is `Send me WhatsApp shopping updates, reminders and offers.`; all 20 Shopify locales preserve its meaning. Verify disclosure text/version/locale accompany each accepted temporary action; no WooCommerce catalogue changes.
-- [ ] After S006, no Shopify native marketing-consent webhook subscription, publisher, synchroniser, provider read or handler remains. No test requires draining/compatibly processing obsolete preproduction jobs. Confirm the **shared checkout-events queue** still processes all cart, checkout and order work normally, and that Shopify privacy webhooks remain functional.
-- [ ] Merchant activation guidance/verified status works for cart-page App Blocks and Plus checkout extensions; unsupported themes and unavailable extension state are not falsely reported as enabled.
-
-### F. Required guest versus authenticated cart-binding proof (newly frozen)
-
-- [ ] Signed App Proxy shop authentication alone is not asserted as guest identity. A guest checkbox action creates only a temporary choice. For a verified marker + matching authenticated checkout `cart_token` digest + attributable customer/recipient, recovery-time materialisation follows the explicit choice; no earlier SQL/proactive effect occurs.
-- [ ] For a guest with a valid but copied marker where the authenticated checkout `cart_token` differs (or is missing), B002 returns `DEFER_IDENTITY_OR_RECIPIENT`, writes no consent and sends nothing. Do not treat the marker as a bearer authorisation or fall back to basket/email/time matching.
-- [ ] For a logged-in customer, capture the Shopify customer ID **only** from verified signed App Proxy context at the accepted action. The checkout may have a different/missing cart token only if the authoritative checkout customer ID exactly matches the saved verified action customer ID. Mismatch, absent ID, cross-shop and client-injected ID fail closed.
-- [ ] Demonstrate the no-SQL-at-click rule and A-GRANT/B-REVOKE deferred lifecycle in both permitted binding paths; also assert out-of-order CREATE/UPDATE, Redis outage and post-commit retry invariants. Test server-issued 256-bit markers separately; the 17 November browser marker was a feasibility experiment, not a production implementation test.
-
-## Reporting and release acceptance
-
-Provide a scenario-by-scenario matrix with **actual command, observed result, test type (unit/integration/real Shopify), evidence reference, and pass/fail**. Report repository trees/SHAs, Shared/Prisma pins, Redis namespace/configuration and memory observations, disposable PostgreSQL/Redis identities, exact setup/teardown commands, and proof all test containers and keys were removed. Do not claim measured worker performance or a Plus browser pass from static inspection or mocks.
-
-**Acceptance:** Consent is captured temporarily, materialised only for a recoverable checkout, then enforced in existing PostgreSQL outbound guards; checkout completion causes neither consent DB update nor recovery. Redis consent lifecycle does not interfere with existing Background worker indexes/jobs, STOP always wins, and Shopify/WooCommerce/ARCH-076 regressions pass. Final certification is performed on the **post-S006** implementation.
-
-**Stop conditions:** Any unverified customer/checkout association authorising a message, incorrect consent decision ordering at materialisation, failed STOP or PostgreSQL final-send protection, temporary Redis consent removed before a required retry, consent operation mutating worker-owned Redis structures, unsolicited live send, or missing real-browser certification for a claimed supported extension blocks the relevant production activation. Record the precise evidence and return to the architect instead of changing these rules in the test task.
+- Assert no new Redis consent/marker/TTL storage, queue or lifecycle cleanup; existing `pending-recovery:index:*`, locks, completion tombstones, BullMQ queue metadata and job IDs/delays are identical before/after consent feature. Confirm no additional Shopify API request for attributes: inspect the existing abandoned-checkout query's response.
+- Test Shopify native marketing-consent read and webhook removal; WooCommerce consent/regressions remain unchanged; original server errors logged with sensitive-data redaction; no new schema or migrations.
+- Run focused + full test suites in correct repo worktrees and real disposable PostgreSQL/Redis, report actual commit SHAs, Shared pins, exact plan/theme/extension configuration and real vs mock verification. Container cleanup required. Do not mark runtime accepted from documentation-only checks.

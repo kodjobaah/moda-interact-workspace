@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -22,79 +22,21 @@ updated: 2026-11-17
 
 # Render Shopify Plus checkout WhatsApp consent checkbox
 
-## Architecture / status
+**Pending; depends on accepted S002.** Plus uses **only this checkout checkbox**, while non-Plus uses S003 cart checkbox. Do not run both, and do not implement old S003 cart-selection precedence. The shared temporary choice is one signed `moda_wa_consent_v1` **Shopify checkout attribute**; see [receipt contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md).
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** Implement after S002 has been accepted. S004 owns execution-time verification of the signed Plus checkout extension session and checkout-token identity; the completed S001 cart marker experiment is not a Plus-runtime test. S004 uses the same Shopify-owned S002 backend as the cart block, and requires the already-approved silent failure for all shopper-facing consent operations.
+## Source, extension and authentication
 
-## Objective
+- Create separate Checkout UI Extension at `extensions/moda-whatsapp-checkout-consent/` with supported Shopify CLI manifest, supported `purchase.checkout.contact.render-after` target and `network_access` capability, Shopify-owned 20 locales and tests. Never use theme script injection, Shopify native marketing checkbox or a second phone field.
+- Use Shopify checkout extension's **signed session token** obtained from `shopify.sessionToken.get()` to call S002 `POST checkout/receipt`; verify by SDK `authenticate.public.checkout` or installed equivalent on server. The extension's `checkoutToken` is a stable checkout locator and may be undefined: do not offer an actionable Moda checkbox if unavailable or if app verification fails. Do not invent verified JWT claims or use unauthenticated checkoutToken alone as authority.
+- Only after verifying `instructions.attributes.canUpdateAttributes`, supported plan/target and signed server response, call `shopify.applyAttributeChange({type:'updateAttribute',key:'moda_wa_consent_v1',value:receipt})`. Confirm `type:'success'` and read the current checkout attribute. Accelerated checkouts or unavailable attribute mutations hide Moda control and do not block payment.
 
-For supported **Shopify Plus** stores, display Moda's optional consent control **inside the Shopify-hosted checkout**, immediately following the contact section. Record deliberate consent changes against the existing, verified checkout token using S002's Shopify backend/temporary Redis service. Do not create a second phone input, depend on Shopify Messaging/native WhatsApp marketing consent, or write the checkbox choice to PostgreSQL at click time. Consent is applied to existing customer records **only if Background determines the checkout is recoverable**, as agreed in S002.
+## Explicit action and status
 
-**Exact customer-facing disclosure (English):** `Send me WhatsApp shopping updates, reminders and offers.` Use the independently maintained Shopify locale/version contract; do not edit or import WooCommerce locale files.
+- Show exact English wording `Send me WhatsApp shopping updates, reminders and offers.` with Shopify locale meaning. On verified returning customer, S002 reads current PostgreSQL consent for display; for current checkout read/verify current signed receipt and show its decision. No auto-GRANT on render/default, no write without explicit check/uncheck.
+- Each deliberate GRANT/REVOKE obtains a fresh `kind=x` receipt bound to current checkout token and replaces the **same attribute key**; no Redis, cart marker or SQL consent write at click time. A failed issuer or Shopify mutation does not show saved state; hide or restore control silently.
+- A Plus merchant's cart App Block is disabled by the merchant installation/plan configuration in S005; no precedence between cart and checkout choices exists for Plus. Unsupported express routes are uncovered, not auto-granted.
 
-## Repository ownership and touchpoints
+## Tests/stop
 
-**S004 implementation-owned:**
-
-- Create a **separate** Shopify Checkout UI Extension at `extensions/moda-whatsapp-checkout-consent/` using the supported Shopify CLI checkout-extension scaffold, with its `shopify.extension.toml`, supported entrypoint/assets, and checkout extension tests. Do not reuse the S003 theme-extension directory (`extensions/moda-whatsapp-consent/`) as a checkout extension.
-- Declare the supported checkout static target `purchase.checkout.contact.render-after` and the network-access capability required to call the authenticated Moda Shopify backend, if required by the selected Checkout UI API version. Use the supported checkout extension UI APIs/components for that version; do not use unsupported theme Liquid, script tags, DOM scraping or Shopify's built-in SMS marketing consent checkbox.
-- Add the narrow Shopify-only checkout consent client adapter under `app/services/shopify-consent/` only where S002's published contract requires it; reuse S002's existing authenticated consent endpoint/read and Redis writer. Do not implement a second independent permission service or duplicate consent validation in the browser.
-- Add focused tests under `tests/unit/shopify-consent/` and extension-owned test files, following the repository's test conventions.
-
-**Dependencies/reference-only:**
-
-- S004 implements and tests the specified signed Shopify Checkout UI Extension session-token verification and immutable checkout identity against the installed API version. A missing/unsupported claim or unverified checkout token must fail closed and be reported, not replaced by an invented browser proof or guessed claim.
-- S002 owns PostgreSQL read for verified returning customers, temporary Redis action storage, idempotency/revisions and server error logging. S004 never writes `CustomerPhone` or `Customer` on checkbox interaction.
-- S003's theme App Block may be active on the same Plus store. BACKGROUND-001 associates prior cart choices with the checkout; BACKGROUND-002 alone owns recovery maturity, contact-number selection, final consent admission and cleanup.
-- S005 owns merchant-facing checkout-extension activation guidance and translated status in `app/routes/app/recovery-settings/WhatsAppCustomerConsent.tsx`. S004 supplies extension identity/target and verified activation prerequisites; do not change S005's task in this patch.
-
-## Rendering and checkout identity
-
-1. **Supported placement:** Use the supported `purchase.checkout.contact.render-after` checkout target for Shopify Plus. The control appears below the buyer contact section and is optional. Do not assert this target can be mounted on non-Plus information/shipping/payment checkout steps. Confirm target/API support on a real eligible Plus development store before claiming completion.
-2. **Verified checkout:** Obtain the current checkout token through the supported Checkout UI Extension API and the session token through Shopify's extension session-token API; the Shopify backend validates the signed request context, shop and checkout association according to S001. If either identity is missing/unverifiable, no GRANT/REVOKE is recorded and only the Moda control is omitted. An extension session token alone must not authorise changes to an unrelated checkout ID.
-3. **Recipient:** Do not add a WhatsApp phone field, fetch Shopify's `defaultPhoneNumber.whatsAppMarketingConsent`, or infer recipient ownership from a checkout address. BACKGROUND-002 chooses an eligible recipient at maturity under the frozen customer phone → billing phone → shipping phone rule.
-4. **Payment independence:** No mandatory consent control, Checkout Blocking API validation, forced Continue/Pay interception, storefront theme alteration, or additional required checkout input. Shop Pay/accelerated routes that do not render the target remain uncovered by S004; do not invent fallback injection.
-
-## Initial state, cart compatibility and explicit actions
-
-1. **Display precedence for the same verified checkout:**
-   - The latest *accepted* explicit checkout choice in S002 Redis.
-   - Otherwise, the latest accepted cart choice authoritatively associated with this checkout by BACKGROUND-001.
-   - Otherwise, the existing materialised consent decision read from PostgreSQL by S002 for a **verified returning Shopify customer**, scoped to that merchant and customer identity.
-   - Otherwise, an unchecked checkbox.
-   These are display precedence rules, not automatic permission writes. An unchecked default or checkbox render is neutral.
-2. **Both extensions present:** A Plus merchant may activate S003 on the cart and S004 during checkout. S004 displays the verified prior cart selection if the checkout has no later explicit choice; an explicit checkout selection supersedes the cart selection for that checkout. Do not create another cart record merely because checkout starts. Re-rendering the already checked state must never emit GRANT again.
-3. **Returning customer with a new cart:** Use S002's authenticated Shopify customer identity and PostgreSQL `Customer`/`CustomerPhone` current consent read, **not a long-lived Redis customer preference key**. GRANTED displays checked where verified; UNKNOWN, REVOKED, ambiguous and absent do not claim current permission. An existing current-checkout/cart choice has precedence for that checkout.
-4. **Guest checkout:** A guest may check/uncheck only for the current verified checkout and may later return to that checkout. Do not restore another guest's prior grant from matching phone/email/address or a different cart.
-5. **Deliberate changes only:** An explicit check calls S002 `GRANT`, an explicit uncheck calls S002 `REVOKE` for the verified checkout, with S002's idempotent action identity/revision handling. No write on render, reload, buyer data change, failed status read or checkout-created webhook. **Neither action updates PostgreSQL immediately.** S002 stores changes temporarily in Redis, and Background applies the most recent applicable decision only at eligible recovery maturity. An ordinary completed checkout generates no consent materialisation.
-6. **Reload and identity changes:** A reload displays the latest accepted state. New checkout token, changed verified shopper identity, cart association change, stale response or two open checkout tabs must not transfer an unverified consent choice or roll back a newer accepted revision. A read failure must never be interpreted as a verified GRANT or REVOKE.
-
-## Silent failure and checkout availability — mandatory
-
-- **Fail silently:** If the Moda **Shopify-owned** consent endpoint cannot be contacted, times out, returns an HTTP error, rejects session authentication, or Redis/PostgreSQL consent reads are unavailable, show **no customer-facing error, toast, banner, modal, blocking spinner, retry prompt or diagnostic text**. This does not mean the request succeeded. Checkout navigation, address entry, shipping selection and payment must continue normally. Do not invoke the separate WooCommerce-facing `moda-interact-api` service.
-- **Initial read failure:** Omit/hide **only the Moda extension control** instead of guessing a checked/unchecked state. Other checkout UI must be unaffected. Do not auto-check on an unavailable response.
-- **Write failure:** A changed checkbox is committed only after S002 confirms its temporary Redis write. If the write fails, quietly restore the last acknowledged displayed state or hide the Moda control until a verified status can be obtained. Do not leave the attempted selection displayed as saved, silently create an action on retry, or update SQL permission.
-- **Bounded requests:** Use a bounded timeout and no unbounded retries/polling. Browser output must not expose internal errors, raw cart/checkout tokens, recipient numbers, customer IDs or credentials. The **Shopify server** must log redacted structured failures while retaining the original underlying SDK/transport message and safe response details for diagnosis.
-
-## Merchant activation boundary
-
-- [ ] Shopify merchants must enable this **Checkout UI Extension** in Shopify's checkout editor and save/publish as the platform requires. It is **not** activated by placing S003's Theme App Block in Online Store → Themes.
-- [ ] S004 identifies its actual extension handle and declared target and supplies documented setup/activation evidence for S005. S005 provides merchant-facing activation instructions/status; no speculative theme-editor App Block deep link may be reused for the Plus checkout editor.
-- [ ] Report unavailable/unsupported placement accurately rather than claiming the extension runs on every Shopify plan or accelerated checkout path.
-
-## Deferred-choice boundary for Plus checkout
-
-- [ ] Plus explicit GRANT and REVOKE remain temporary in checkout-scoped Redis until **that** checkout independently passes the same B002 recoverability check. They do not change current PostgreSQL consent, another checkout's scheduled proactive outreach, or customer-level suppression on click. If checkout completes normally, discard the choice with zero consent SQL writes. Keep S004's signed checkout identity verification and explicit-cart/checkout UI precedence rules unchanged.
-
-## Tests and acceptance
-
-- [ ] Shopify CLI validates/packages the checkout extension and its selected API target/capability; confirm the static contact target in a **real Plus** checkout, including published checkout activation.
-- [ ] New guest: unchecked, no write on render. Verified returning customer: read current SQL decision via S002; GRANTED checked, REVOKED/UNKNOWN unchecked; do not persist a new decision from display.
-- [ ] Both S003 and S004 activated: accepted cart GRANT displays checked in checkout; later explicit checkout REVOKE displays unchecked and supersedes cart choice. Cart REVOKE followed by explicit checkout GRANT becomes the latest accepted choice. Duplicate/late webhook does not restore a stale choice.
-- [ ] Checkout identity/session-token validation, token temporarily undefined, token refresh, changed authenticated identity, same-checkout reload, anonymous checkout, stale responses/two tabs and express/Shop Pay bypass cases are covered.
-- [ ] Check/uncheck writes only to temporary S002 Redis records; verify **zero SQL consent writes** before recovery maturity and unchanged Redis candidate indexes, BullMQ jobs, queue TTLs, checkout locks and order tombstones.
-- [ ] Moda backend unreachable/timeout/5xx, signed-session rejection, Redis unavailable and PostgreSQL status read failure: assert no shopper-visible error or blocking checkout UI; read failure hides only Moda control; failed write is not shown as acknowledged. Original safe server-side failure details remain diagnosable.
-- [ ] Verify keyboard/screen-reader accessibility, applicable Shopify locale presentation and exact English wording. Do not add an extra phone field, WooCommerce API call, Shopify-native consent call or DOM/script fallback.
-- [ ] Record repository SHA, extension ID/handle, API version, test Shopify shop/plan, checkout editor activation evidence, redacted checkout/session test evidence, commands and outcomes. Distinguish mocks from real checkout tests.
-
-**Stop conditions:** If the supported Plus checkout target, authenticated checkout identity or S002's server association cannot be verified, do not accept consent for that checkout. Do not fall back to a hidden field, browser-supplied identity, Shopify Messaging, theme injection, a guessed database grant or a customer-visible error flow. Return the precise limitation for architect review. **No changes to S001/S002/S005, Background workers, PostgreSQL schema, WooCommerce or `moda-interact-api` are authorised by S004.**
+- Real eligible Plus development-store test: verified session JWT/shop/customer, actual checkoutToken, attribute write, authoritative `AbandonedCheckout.customAttributes` retrieved later, malformed/copy/replay scenarios, GRANT->REVOKE replacement, Plus-only placement, readback, 20 locales, accessibility and silent failure.
+- SDK mocks are not proof of a working Plus checkout extension. If supported checkout token cannot be established/verified, attribute mutation denied, or extension unavailable under merchant plan, stop with evidence. Never substitute a cart checkbox on Plus or add a new Redis/SQL consent store.
