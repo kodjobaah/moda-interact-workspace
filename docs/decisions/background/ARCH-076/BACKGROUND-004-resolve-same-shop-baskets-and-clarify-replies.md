@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 45
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-15T19:19:04Z
+attempt: 1
 depends_on: [ARCH-076-BACKGROUND-003, ARCH-076-ADMIN-002, ARCH-076-ADMIN-003, ARCH-076-COMMERCE-001]
 enables: []
 created: 2026-11-13
@@ -129,19 +129,27 @@ Existing published Shared remains reusable structural machinery. Applications ow
 
 ### Status
 
-Not Started
+Implementation in progress in the prepared isolated task worktrees. Source draft PR243: https://github.com/kodjobaah/moda-interact-background/pull/243, head `1db5f785dec9eb1cdd4be4580261021bcaef2b96`. Final acceptance is held on the owning Database correction for canonical exact-clause moderation; no schema bypass is implemented.
 
 ### Files Changed
 
-None
+- New routing policy/classifier, durable neutral prompt, R15 store/runtime and role projection modules under `src/services/recovery-sender-pool`.
+- Actual inbound routing, existing repair tick, scalar provider status, Commerce history and moderation owner integrations.
+- Focused unit/provider fixtures and task-local disposable PostgreSQL R15 integration suite; no SYSTEM-TEST execution.
 
 ### Work Completed
 
-None
+- Configured policy/model/prompt revision snapshots with no hidden AI defaults; separate ROUTER selector and durable no-resend prompt permit.
+- Explicit original/shop-child/basket-child star relation, immutable structural role decisions, exact authentic message association and role projection before history/latest limits.
+- Sender/recipient/current owner/control/STOP/window/candidate/config/template/moderation rechecks; ephemeral payload scrub and retained role evidence while owned history survives.
+- Canonical full-current-message moderation plus independent clause moderation use the existing PENDING→CHECKING→ALLOW lease lifecycle.
+- Verified voice uses existing configured media/speech adapters under the routing lease, captures one immutable transcript/moderation snapshot, binds the Database-owned raw-input hash, and materializes authentic AUDIO/COMPLETED plus canonical TRANSCRIPT assessments at owned admission.
 
 ### Validation Results
 
-Not run; definition only.
+- Combined focused final unit/provider/history/moderation/inbound/media/speech command:20 files,322 tests passed (`/tmp/bg004-focused-final2.log`). Audio proof/helper focused36 tests and targeted lint also passed.
+- Full repository lint and explicit TypeScript noEmit passed (`/tmp/bg004-voice-final-lint.log`, `/tmp/bg004-voice-final-types.log`). Declared `npm run build` passed (`/tmp/bg004-build.log`, exit0). Final exact-head CI and accepted Database-pin PostgreSQL checks remain pending.
+- Actual PostgreSQL checkpoint:18/19 pass, including full runtime Q1→neutral shop Q2→basket Q3→exactly-once original admission and projection. Sole failure is PostgreSQL23514 `ARCH040 moderation message text digest mismatch` for the independently moderated new clause. The current27-case suite adds voice full/clause TRANSCRIPT admission, UTF-16 emoji/combining offsets, provenance refusal and replay; it is not claimed passed until rerun.
 
 ### Deviations
 
@@ -153,37 +161,50 @@ None
 
 ### Unresolved Issues
 
-Use owning task launcher at the accepted dependency frontier.
+Existing ARCH040 SQL subject integrity validates only the full stored message digest, whereas R15 retains that authentic message and independently assesses its exact clause. The coordinator is preparing the owning Database correction; Background does not alter triggers, omit canonical assessments or fake an ALLOW. The exact-clause positive test and all final gates must pass against the accepted Database pin before review return.
 
 ### Architectural Concerns
 
 None
 
+### Final acceptance reconciliation — 15 November 2026
+
+This addendum supersedes the in-progress status, pending-gate statements and 18/19 PostgreSQL checkpoint above; those paragraphs are retained as historical execution evidence, not current blockers.
+
+- Accepted Background source: [PR #243](https://github.com/kodjobaah/moda-interact-background/pull/243), exact head `4834efde0e0e1ccc5919e97189d582b0d2eea251`. The PR remained **open and Draft** when reviewed; this is source acceptance, not a claim of merge or deployment.
+- Accepted Database R15 migration: [Database PR #80](https://github.com/kodjobaah/moda-interact-database/pull/80), merged Database pin `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`. The user's disposable PostgreSQL run passed 684 assertions across fresh installation and upgrade; no hosted migration was claimed.
+- Focused corrective regression tests: 62/62 passed locally. Task-local disposable PostgreSQL routing-resolution integration: 28/28 passed locally, including text/audio clarification, separate clause moderation, exact original Q1 admission, UTF-16 offsets, ownership isolation, concurrency, replay and retention.
+- The supplied terminal log reported successful lint, `tsc --noEmit`, Prisma generation and `npm run build`; those checks were not independently executed by the architect.
+- [Exact-head GitHub Actions Unit tests #1094](https://github.com/kodjobaah/moda-interact-background/actions/runs/43773500532) completed successfully on commit `4834efde0e0e1ccc5919e97189d582b0d2eea251`.
+- Architectural correction review checked prompt/original scope before model history, authorized neutral Q1 → shop Q2 → basket Q3, understandable overflow clarification and redaction-aware original error diagnostics. No further source changes were requested for those reviewed findings.
+
+The prior SQL clause digest blocker is resolved by the merged R15 migration. This review does **not** execute or waive ARCH-076-SYSTEM-TEST-001, authorize live routing activation, apply a hosted migration, or change independent allowance funding. The coordinator must separately reconcile the Background source merge and parent workspace gitlink.
+
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Background source implementation only (15 November 2026).
 
 ### Review Notes
 
-Awaiting implementation.
+Accepted the exact BG004 correction head `4834efde0e0e1ccc5919e97189d582b0d2eea251`, subject to normal PR merge safeguards. The prior cross-shop quoted-prompt, overflow clarification and original diagnostic logging findings were addressed in the reviewed source and focused tests.
 
 ### Reviewed Files
 
-None.
+BG004 routing runtime, policy, prompt, classifier, store, Commerce history/projection, moderation integration, inbound/sender ownership wiring, affected unit tests and the task-local routing-resolution PostgreSQL suite on PR #243.
 
 ### Validation Reviewed
 
-None.
+62/62 focused correction tests; 28/28 task-local PostgreSQL integration cases; local lint, TypeScript and build evidence; accepted Database R15 pin; exact-head GitHub Actions Unit tests #1094 (success). Earlier 18/19 test results above are superseded.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Accepted for source implementation: original-question fidelity, sender/shop isolation, frozen R15 evidence, separate clause moderation, bounded safe clarification and replay safety. No production activation is approved.
 
 ### Follow-up
 
-None.
+Merge Background PR #243 through normal checks, reconcile its accepted main gitlink in the parent workspace, and keep the separately deferred ARCH-076-SYSTEM-TEST-001 and production rollout on their own authorization paths.
 
 ## Reconciliation provenance — 15 November 2026
 
