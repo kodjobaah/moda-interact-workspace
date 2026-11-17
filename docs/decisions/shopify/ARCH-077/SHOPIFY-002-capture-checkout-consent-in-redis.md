@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 45
-executor: copilot
-claimed_at: 2026-11-17T15:11:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHARED-001]
 enables: [ARCH-077-BACKGROUND-001, ARCH-077-SHOPIFY-003, ARCH-077-SHOPIFY-004, ARCH-077-SHOPIFY-005]
@@ -22,7 +22,7 @@ updated: 2026-11-17
 
 # Shopify consent receipt service — architect-directed rework of S002
 
-**Task status remains `review`, not `complete`.** The submitted implementation commit (`c0c2cca` per agent report) still creates `m1_` markers and GRANT/REVOKE in temporary Redis. **Do not merge that implementation as the final ARCH-077 consent path.** The accepted [checkout-attribute receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md) supersedes all Redis choices, marker preparation, marker forwarding and TTL work from the earlier task definition. S001 and SHARED-001 stay historically complete. No reimplementation or promotion of the submitted tests is implied by this document patch.
+**Architect review outcome: Changes Requested; task returned to `ready` for Attempt 2.** The submitted implementation commit (`c0c2cca` per agent report) still creates `m1_` markers and GRANT/REVOKE in temporary Redis. **Do not merge that implementation as the final ARCH-077 consent path.** The accepted [checkout-attribute receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md) supersedes all Redis choices, marker preparation, marker forwarding and TTL work from the earlier task definition. S001 and SHARED-001 stay historically complete. No reimplementation or promotion of the submitted tests is implied by this document patch.
 
 ## Objective and file-by-file implementation instructions
 
@@ -46,4 +46,41 @@ Implement **one server-owned, stateless receipt issuer** and returning-customer 
 - Verify no `redis` import or consent TTL in reworked issuer; no SQL consent writes from any S002 action; optional Shared marker fields unused; no queue naming changes; existing Shopify webhook integration tests pass.
 - Execute actual `npm run build`, targeted lint/typecheck and source-controlled tests; report the five known pre-existing webhook-root implicit-any type errors separately if still present. Provide exact changed files, SHA, package pins and meaningful redacted original provider errors.
 
-**STOP conditions:** the verified Shopify checkout token cannot be bound to Plus receipt issuance, signed App Proxy origin/shop cannot be verified, the receipt attribute cannot round-trip intact, a newly added route weakens authentication, or the agent would need a new DB/Redis consent state to complete the task. Return the specific blocker; do not silently reintroduce the abandoned Redis design. This task remains `review` until amended implementation and validation are submitted and accepted.
+**STOP conditions:** the verified Shopify checkout token cannot be bound to Plus receipt issuance, signed App Proxy origin/shop cannot be verified, the receipt attribute cannot round-trip intact, a newly added route weakens authentication, or the agent would need a new DB/Redis consent state to complete the task. Return the specific blocker; do not silently reintroduce the abandoned Redis design. The architect has returned this task to `ready` for an unclaimed correction attempt. After implementation and validation, the implementing agent must set it to `review` and stop for architect acceptance.
+
+
+## Architect Review
+
+### Review Status
+
+**Changes Requested — 17 November 2026.** Architect-approved attribute-based reconciliation is complete as a *document decision*, not as a verified runtime implementation. The submitted Attempt 1 Shopify implementation is not accepted under the new contract. The task is returned from `review` to `ready` for the same `moda_app` agent to claim Attempt 2 through the normal launcher. Do not manually mark this task `in_progress` or increment `attempt` before the launcher claims it.
+
+### Review Notes and precise correction contract
+
+The accepted `docs/architecture/ARCH-077/checkout-attribute-consent-v1.md` replaces the Redis cart/checkout choice, marker preparation and TTL architecture. The existing code still implements those obsolete mechanisms. Rework the **same** SHOPIFY-002 implementation rather than launching a separate feature or merging the obsolete code. The numbered instructions and tests above are mandatory, not suggestions. In particular:
+
+1. Replace Redis choice/marker issuer with the stateless signed `moda_wa_consent_v1` receipt issuer and verifier, using the *exact* approved versioned wire contract. No additional Redis consent retention or cleanup task.
+2. Change the authenticated cart App Proxy endpoints to `GET cart/status` and `POST cart/receipt` with the approved shop, request-freshness, input and storefront-domain handling. No client-supplied merchant identity or guest identity is authoritative.
+3. Introduce the separate authenticated Plus checkout receipt-issuance boundary specified above. Do not implement S004's checkout checkbox/attribute writer inside S002.
+4. Remove obsolete `m1_` marker preparation, Redis GRANT/REVOKE keys, TTL/revision scripts and S002 webhook-marker projection. Do not alter the accepted optional Shared schema fields, existing checkout-event queues or unrelated BullMQ processing.
+5. Preserve returning-customer PostgreSQL **read-only** status, with no GRANT/REVOKE materialisation until Background independently verifies recoverability; preserve STOP and existing reactive-message semantics.
+6. Replace Redis-specific task tests with receipt/signature, signed App Proxy, isolation, token binding, webhook regression and failure-path tests listed above. Preserve unrelated passing tests. Report real SDK/Plus test constraints; no fabricated provider evidence.
+
+### Reviewed Files / Evidence
+
+- Submitted SHOPIFY-002 implementation worktree and earlier completion report: implementation commit `c0c2cca` (reported); parent report `c4f2e158` (reported)
+- `app/services/shopify-consent/shopify-consent.server.ts` and `app/routes/shopify/consent/route.ts` from prior architect inspection, containing the superseded Redis path
+- Accepted non-Plus cart attribute propagation evidence and authoritative `AbandonedCheckout.customAttributes` query
+- Reconciled ARCH-077 parent and `docs/architecture/ARCH-077/checkout-attribute-consent-v1.md`
+
+### Validation Reviewed
+
+The prior agent reported 173 webhook tests, 9 Redis webhook integrations, 4 consent Redis tests and a successful production build. Those runs demonstrate the **previous Redis implementation**, not the new receipt contract; they cannot be carried forward as acceptance for Attempt 2. This document/status correction has no runtime changes. No receipt runtime tests were executed by this architect amendment.
+
+### Architecture Conformance
+
+**Not yet conformant:** current submitted runtime uses Redis consent choice/marker lifecycle, now superseded. The new single Shopify attribute receipt contract is approved at the document level. Preserve unchanged merchant plan placement (cart for non-Plus, checkout for Plus), delayed consent materialisation, proactive vs reactive conversation rules and no new database/queue.
+
+### Rework Handoff and Stop
+
+`assigned_agent: moda_app`, repository `moda-interact`, task `ARCH-077-SHOPIFY-002`, `attempt: 1` preserved until the launcher claims Attempt 2. `executor` and `claimed_at` are cleared. Dependencies S001 and SHARED-001 remain `complete`. S003, S004, S005 and B001 remain gated until SHOPIFY-002 passes architect acceptance and reaches `complete`. The implementation agent must read this entire latest Architect Review before changing code; after correction and validation it must set the task to `review`, submit the updated Completion Report and stop. Do not modify task indexes, advance dependent tasks, merge branches or mark S002 `complete` during this rework.

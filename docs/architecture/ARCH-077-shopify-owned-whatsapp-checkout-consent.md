@@ -38,7 +38,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | --- | --- |
 | SHOPIFY-001 | `complete`, accepted historical cart-to-checkout marker experiment; not re-run |
 | SHARED-001 | `complete`, backward-compatible optional marker fields remain unused |
-| **SHOPIFY-002** | `review` / architect-directed **implementation rework**: stateless receipt issuance, verification contract and returning shopper SQL read |
+| **SHOPIFY-002** | `ready` / **Changes Requested; unclaimed Attempt 2 rework**: stateless receipt issuance, verification contract and returning shopper SQL read |
 | SHOPIFY-003 | `pending`: non-Plus cart App Block writes the **single signed attribute** |
 | SHOPIFY-004 | `pending`: Plus checkout UI Extension writes the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
@@ -47,10 +47,15 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
-**Dependency rule:** S002 corrections must be reviewed/accepted before S003, S004 and B001 implementation proceeds. B002 follows accepted B001; S006 and final system-test follow existing prerequisites. Agents do not alter status fields merely because this architect documentation patch is applied. Task paths are stable for the existing launcher; filenames mentioning Redis are legacy paths, **not** permission to restore Redis consent storage.
+**Dependency rule:** S002 is `ready` only for its own correction attempt; its dependencies remain accepted. S002 corrections must be reviewed/accepted before S003, S004 and B001 implementation proceeds. B002 follows accepted B001; S006 and final system-test follow existing prerequisites. This architect transition from `review` to `ready` clears S002 claim metadata while preserving `attempt: 1`; only the launcher may claim Attempt 2. Downstream tasks remain gated and agents must not promote them. Task paths are stable for the existing launcher; filenames mentioning Redis are legacy paths, **not** permission to restore Redis consent storage.
 
 ## Execution/validation protocol
 
 - Work in the existing S002 task branch/submodule; preserve original task reports and SHAs. Code rework must be separately committed and tested. Parent workspace documentation changes only become `main` changes after the intended worktree merge.
 - Report exact changed paths, source commit SHAs, Shared version pins, scripts and environment, `git diff --check`, unit/integration results, real Shopify plan/browser observations and actual error messages with sensitive redaction. No unsupported claims of executed tests.
 - Never modify `docs/decisions/**/_index.md`, old migrations or unrelated Woo/API. Do not merge or deploy a stale Redis-based SHOPIFY-002 implementation under the revised contract.
+
+
+## Architect rework disposition — 17 November 2026
+
+The SHOPIFY-002 Attempt 1 runtime submission is **Changes Requested**, not accepted. Architect has returned this same task to `ready` and cleared its prior claim to enable the standard task launcher to claim Attempt 2. The accepted signed-checkout-attribute v1 specification is the mandatory implementation contract. S001 and SHARED-001 remain `complete`; none of S003/S004/S005/B001 is unblocked by this rework transition. After the agent implements and validates the correction it must set SHOPIFY-002 back to `review` for a fresh architect inspection.
