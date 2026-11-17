@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-11-17T19:22:48Z
@@ -132,3 +132,32 @@ The `@modainteract/moda-interact-shared` dependency remains pinned at `5.3.0`; n
 Deployment must configure the same `SHOPIFY_CONSENT_RECEIPT_KEY_V1` value in the Shopify app and Background services. It must be canonical unpadded base64url for 32 random bytes; app startup fails closed if invalid or missing. No production key was generated or committed. Valid receipts can be replayed into the same checkout attribute; this is the approved limitation, not replay prevention.
 
 No live Shopify store or Plus checkout was available. Checkout authentication tests use explicit SDK-boundary mocks; no live Plus functionality is claimed. No live provider error occurred, so no provider error evidence is reported; tests verify session-token redaction in SDK error output. The `cart/update.js`, checkout-note, and authoritative GraphQL `customAttributes` readback fixtures were not exercised in S002 because those browser/checkout writers and webhook recovery readers are owned by S003/S004/B001 and are not implemented here. Architect review should confirm whether those cross-task fixtures are required before S002 acceptance.
+
+### Attempt 3 result
+
+Replaced Attempt 2's unapproved HMAC receipt/key design with the approved `@modainteract/moda-interact-shared` credential AEAD and existing keyring. Receipts use the contract's `v1.<keyId>.<nonce>.<ciphertext>.<authTag>` envelope, canonical plaintext and AAD, strict framing/base64url validation, a 512-byte attribute limit, and customer/shop/kind/token binding. Issuance uses the configured active key; verification resolves the envelope key ID from the configured keyring so retained keys support rotation, while malformed configuration or removed keys fail closed. No dedicated receipt secret, local AES implementation, Redis state, database state, TTL, or dependency was added.
+
+Updated the signed App Proxy boundary to accept safe merchant-configured `path_prefix` values under `/a`, `/apps`, `/community`, or `/tools`, with a nonempty safe subpath, instead of assuming one fixed prefix. Returning-shopper status requires current native Shopify consent evidence and continues to honor STOP/no-contact fences; it does not infer a new enum or grant consent from legacy records with insufficient source evidence.
+
+The implementation branch is `task/ARCH-077-SHOPIFY-002`, commit `96ad35f`. The launcher claimed Attempt 3 and pushed the parent task claim as `768d8984ae605880b2f3dc8ba4a688259a77356b`.
+
+### Changed files
+
+- Updated: `app/services/shopify-consent/consent-receipt.server.ts`, `app/routes/shopify/consent/route.ts`, `app/routes/shopify/checkout-receipt/route.ts`, `app/shopify.server.js`, `tests/unit/services/shopify-consent-receipt.service.test.ts`, `tests/unit/routes/shopify-consent-route.test.ts`, `tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts`, `tests/unit/server-error-privacy.test.ts`.
+- `@modainteract/moda-interact-shared` remains pinned at `5.3.0`; its published Node keyring and credential AEAD APIs are used.
+
+### Validation evidence
+
+- Focused consent, route, OAuth bootstrap, and privacy Vitest selection: 4 files, 46 tests passed.
+- Shopify webhook unit regression suite: 15 files, 168 tests passed.
+- `npm run test:shopify-webhooks:redis`: 2 files, 9 tests passed.
+- Targeted ESLint on changed app and unit-test files passed.
+- `npm run build` passed; existing dependency/chunk warnings remain.
+- `npm run typecheck` still reports five implicit-`any` errors in unchanged `app/routes/webhooks/root/route.jsx`; no changed file was reported.
+- `git diff --check` passed.
+
+### Configuration and limits
+
+The app uses the existing `MODA_ENCRYPTION_ACTIVE_KEY_ID` and `MODA_ENCRYPTION_KEYS_JSON` configuration. During rotation, old key IDs must remain in the keyring until receipts issued with them are no longer relevant. No new secret or receipt-specific startup gate is required.
+
+Producer-side tests cover the Shared AEAD contract, binding, key rotation, malformed/corrupt envelopes, the size bound, duplicate matching attributes, status-source checks, safe prefixes, and stale/future App Proxy timestamps. The Background consumer task's independent contract test was not changed or run from this repository. No live Shopify store, Plus checkout, or authoritative Shopify GraphQL `customAttributes` readback was available; the producer fixture does not establish deployed cross-service transport compatibility. S003/S004/B001 remain responsible for their owned writers/readback paths, and architect acceptance should confirm consumer-side parity before dependent work proceeds. No live provider error occurred; the privacy test verifies session-token redaction in SDK error output.
