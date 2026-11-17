@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
 executor: copilot
 claimed_at: 2026-11-17T20:27:28Z
@@ -42,3 +42,42 @@ updated: 2026-11-17
 - The prior live non-Plus probe was present in GraphQL `customAttributes`. New tests must prove **signed consent receipt** survives from S003 cart into the same authoritative query; Plus S004 is tested separately.
 - Mocked and disposable Redis worker tests: created/updated before/after maturity, duplicate/out-of-order events, missing/duplicate attribute, delayed provider visibility, completion and cancellation, no change to existing BullMQ job identities, indexes/TTL, billing, STOP or sender routing. Validate no extra GraphQL query solely for consent.
 - If candidate lacks authenticated checkout/cart token needed by the receipt binding rules, return the exact blocker to architect; do not add back a marker correlation service or alter Shared schema unilaterally.
+
+## Completion Report
+
+Implemented in the Background worker:
+
+- The existing bounded `AbandonedCheckouts` GraphQL query now selects `customAttributes { key value }`; no consent-only Shopify query was added.
+- The matched checkout exposes typed `authoritativeCheckoutAttributes`. Valid entries and duplicates are preserved for downstream verification; malformed provider shapes are tagged rather than treated as an absent choice.
+- The existing maturity path retains the candidate's authenticated checkout/cart tokens alongside the authoritative checkout result for B002's verifier. Receipt data is not added to a BullMQ payload, recovery seed, database record, or Redis state.
+- Added lookup and maturity-path tests for receipt propagation, duplicates, malformed attributes, the existing checkout/cart token input, and the single authoritative query.
+
+Validation:
+
+- Focused Vitest: 3 files passed, 39 tests passed (`REDIS_URL=redis://localhost:6379 pnpm exec vitest run tests/unit/services/abandoned-checkout-lookup.service.test.ts tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts tests/unit/services/checkout-recovery/recovery-snapshot-builder.service.test.ts`).
+- TypeScript: `tsc --noEmit` passed.
+- Focused ESLint on all changed TypeScript files passed.
+
+Implementation commit: `0294ae1` (`feat(background): expose authoritative checkout attributes`), pushed to `task/ARCH-077-BACKGROUND-001`.
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-BACKGROUND-001` on `task/ARCH-077-BACKGROUND-001`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-BACKGROUND-001` on `task/ARCH-077-BACKGROUND-001`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+Start-of-attempt synchronization, from the prepared launcher packet:
+
+- Parent remote task branch fast-forwarded: not-needed; parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed; implementation `origin/main` incorporated: already-current.
+
+Recursive implementation submodules, from the prepared launcher packet:
+
+- `git submodule sync --recursive`: passed.
+- `git submodule update --init --recursive`: passed.
+- Recorded submodule commit: `database` at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`.
+
+Task status: review. Awaiting `moda_architect` review; no architect acceptance decision has been made by this agent.
