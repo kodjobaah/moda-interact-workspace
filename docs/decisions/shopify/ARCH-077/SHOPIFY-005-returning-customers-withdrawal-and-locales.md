@@ -71,6 +71,10 @@ Complete the **Shopify application** merchant experience and verify returning-cu
 - [ ] Merchant settings may show a neutral **Status unavailable** or **Placement unverified** state rather than a false green/enabled claim. Do not display raw provider errors or sensitive identities in merchant or customer UI.
 - [ ] Keep bounded requests. The **server** logs the original Shopify/Redis/provider/SDK error message and relevant safe response details for debugging, with credentials, cart/checkout tokens, contact details, customer identifiers and proofs redacted. Do not swallow server exceptions without diagnostics; do not expose them to shoppers.
 
+## Returning customers — explicit deferred withdrawal policy
+
+- [ ] A verified returning customer's SQL GRANTED status displays checked in a new cart, unless that cart has an acknowledged temporary REVOKE; unchecking changes only the current cart display and Redis choice. **No immediate SQL withdrawal and no temporary Redis suppression of another recovery's proactive follow-up.** If this cart completes, delete its choice and leave existing SQL GRANTED. Only a recoverable abandoned checkout may materialise REVOKED through B002; it then blocks future unsolicited outreach while preserving customer-initiated replies in earlier conversations. Keep the exact approved checkbox wording.
+
 ## 5. Tests, evidence, acceptance and stop
 
 **Required tests:**

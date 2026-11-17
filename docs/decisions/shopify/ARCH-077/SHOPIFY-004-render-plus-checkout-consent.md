@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** Implement only after S001 Plus checkout token/session proof and S002 temporary Redis choice/returning-customer PostgreSQL read contract are accepted. S004 uses the same Shopify-owned S002 backend as the cart block, and requires the already-approved silent failure for all shopper-facing consent operations.
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`.** Implement after S002 has been accepted. S004 owns execution-time verification of the signed Plus checkout extension session and checkout-token identity; the completed S001 cart marker experiment is not a Plus-runtime test. S004 uses the same Shopify-owned S002 backend as the cart block, and requires the already-approved silent failure for all shopper-facing consent operations.
 
 ## Objective
 
@@ -43,7 +43,7 @@ For supported **Shopify Plus** stores, display Moda's optional consent control *
 
 **Dependencies/reference-only:**
 
-- S001 owns verification of the checkout identity, session-token claim and signed-token request proof; no acceptance of an arbitrary browser-supplied checkout token.
+- S004 implements and tests the specified signed Shopify Checkout UI Extension session-token verification and immutable checkout identity against the installed API version. A missing/unsupported claim or unverified checkout token must fail closed and be reported, not replaced by an invented browser proof or guessed claim.
 - S002 owns PostgreSQL read for verified returning customers, temporary Redis action storage, idempotency/revisions and server error logging. S004 never writes `CustomerPhone` or `Customer` on checkbox interaction.
 - S003's theme App Block may be active on the same Plus store. BACKGROUND-001 associates prior cart choices with the checkout; BACKGROUND-002 alone owns recovery maturity, contact-number selection, final consent admission and cleanup.
 - S005 owns merchant-facing checkout-extension activation guidance and translated status in `app/routes/app/recovery-settings/WhatsAppCustomerConsent.tsx`. S004 supplies extension identity/target and verified activation prerequisites; do not change S005's task in this patch.
@@ -81,6 +81,10 @@ For supported **Shopify Plus** stores, display Moda's optional consent control *
 - [ ] Shopify merchants must enable this **Checkout UI Extension** in Shopify's checkout editor and save/publish as the platform requires. It is **not** activated by placing S003's Theme App Block in Online Store → Themes.
 - [ ] S004 identifies its actual extension handle and declared target and supplies documented setup/activation evidence for S005. S005 provides merchant-facing activation instructions/status; no speculative theme-editor App Block deep link may be reused for the Plus checkout editor.
 - [ ] Report unavailable/unsupported placement accurately rather than claiming the extension runs on every Shopify plan or accelerated checkout path.
+
+## Deferred-choice boundary for Plus checkout
+
+- [ ] Plus explicit GRANT and REVOKE remain temporary in checkout-scoped Redis until **that** checkout independently passes the same B002 recoverability check. They do not change current PostgreSQL consent, another checkout's scheduled proactive outreach, or customer-level suppression on click. If checkout completes normally, discard the choice with zero consent SQL writes. Keep S004's signed checkout identity verification and explicit-cart/checkout UI precedence rules unchanged.
 
 ## Tests and acceptance
 

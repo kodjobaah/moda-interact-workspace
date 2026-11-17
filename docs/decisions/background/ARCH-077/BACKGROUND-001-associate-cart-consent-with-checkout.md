@@ -14,7 +14,7 @@ priority: 55
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHOPIFY-002]
+depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHARED-001, ARCH-077-SHOPIFY-002]
 enables: [ARCH-077-BACKGROUND-002, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
 updated: 2026-11-17
@@ -47,13 +47,31 @@ Associate the latest explicit, temporary consent selection made in the Shopify c
 
 ## Association requirements
 
-- [ ] Read authenticated `shopId`, `cartToken` and `checkoutToken` from the existing checkout-created event; require S001-verified cart-token equivalence. Scope every lookup and write to that shop. Do not infer identity from email, phone, items or creation time.
-- [ ] Record the **association** between cart and checkout using the versioned, separate consent Redis namespace from S001. The checkout-created webhook itself never creates a GRANT or REVOKE; absent cart choice remains absent.
+- [ ] Consume **both** authenticated checkout-create and checkout-update events through existing `parseRuntimeShopifyEvent` and `mapCheckoutCreatedContractInput` / `mapCheckoutUpdatedContractInput` in `src/events/shopify-contract-adapter.ts` and existing worker dispatch. The 13 November source snapshot confirms that queued Shared V2/V3 checkout events do **not** contain raw `note_attributes`. SHARED-001 and S002 must explicitly add and populate `event.payload.cartCorrelationMarker` and `event.payload.cartCorrelationMarkerStatus` in the existing strictly typed queue contracts before B001 can consume them. Do **not** invent direct access to the original webhook payload, poll Shopify merely for markers, or introduce a new queue/Redis side-channel.
+- [ ] Interpret `cartCorrelationMarkerStatus` as follows: `PRESENT` means B001 must validate a 46-character `m1_` `cartCorrelationMarker` against its shop-scoped marker-index key; `ABSENT` means the authenticated webhook did not contain the attribute; `INVALID` and `AMBIGUOUS` are typed rejection, **not absent**; missing field on an older queued event means `NOT_OBSERVED` and never proves absent. Update both checkout-created/updated mapped input types to carry these optional fields without modifying unrelated event handling. A checked customer preference may not be silently reused if an unmaterialised newer withdrawal is indeterminate.
+- [ ] Use the signed/authenticated Shopify event's `shopId` and checkout `token`. Read the **already verified** full `cartCorrelationMarker` from the authenticated strict checkout event (S002 validated the original `m1_` marker shape) and read `shopify:consent:v1:marker:<shopId>:<marker>` and corresponding cart owner. Validate version, shop, cart digest, TTL and reciprocal binding. Never trust `cart_token`, `note_attributes`, client-provided shop ID, email, phone, items or timestamps as independent consent evidence.
+- [ ] Atomically create or verify `shopify:consent:v1:cart-link:<shopId>:<checkoutDigest>`, and mark the reverse marker's checkout owner. Duplicate CREATE/UPDATE deliveries for the *same checkout token* are idempotent. Distinct checkout tokens claiming the same marker produce an explicit `AMBIGUOUS` result and cannot both inherit the cart choice; cross-shop, expired, absent, malformed, mismatched or conflicting records yield typed fail-closed outcomes. No synthetic GRANT/REVOKE is written by a webhook.
+- [ ] Compute `checkoutCartBinding = MATCH|MISMATCH|MISSING` by comparing the authenticated checkout webhook `cart_token` canonical digest with the recorded cart digest. **Do not require equality for association only**: real trials showed two mismatches and one equality. Return this typed binding to B002 along with the verified marker/checkout link. **For a guest choice B002 must require `MATCH` before SQL materialisation; `MISMATCH` or `MISSING` cannot grant or revoke.** For a signed-proxy verified logged-in customer, B002 may accept `MISMATCH`/`MISSING` only if the action's authenticated Shopify customer ID exactly matches the authoritative checkout customer ID at the same shop. Never infer owner from an address phone, basket or timestamp.
+- [ ] Support update-before-create and cart-choice-before/after-checkout-webhook. The checkout link resolves the latest explicitly acknowledged cart choice at B002 consumption time (not a stale snapshot captured by a webhook). The checkout-created webhook itself never creates a GRANT or REVOKE; absent cart choice remains absent.
 - [ ] Support choice-before-checkout-event and checkout-event-before-choice; also handle duplicate/replayed events, checkout-updated delivery, cart alias changes and missing/conflicting cart tokens. Do not assume the `carts/create` webhook preceded the S002 choice.
 - [ ] Resolve the latest accepted, explicit choice at the time B002 reads the checkout. A checkout reference to cart consent is acceptable if S001 freezes that representation; do **not** introduce independently mutable, conflicting copies of permission.
 - [ ] A newer explicit checkout selection from S004 must take precedence over an older cart selection under S001's accepted action-ordering contract. A delayed GRANT must not overwrite a later REVOKE. Reconciliation is idempotent and uses bounded, atomic Redis operations.
 - [ ] One cart mapping to conflicting checkouts, a mismatched shop or an unverifiable link must not authorise either checkout by guessing. Report a typed denial/ambiguity for B002 to consume.
 - [ ] Missing Redis records or transient Redis errors do not convert to consent. Preserve normal checkout and existing worker execution as far as possible; B002 fails closed on missing or unverified permission. Log the original safe Redis/provider error and reason code server-side.
+
+## Typed interface to B002 — no new consent authority
+
+- `ASSOCIATED({ shopId, checkoutDigest, cartDigest, checkoutCartBinding: "MATCH"|"MISMATCH"|"MISSING", verifiedActionRef?, verifiedShopifyCustomerIdAtAction? })`: validated server-issued marker and authenticated checkout association, **not** consent. B002 loads the latest temporary explicit action; guest actions need `checkoutCartBinding="MATCH"`, while mismatches can proceed only with a signed-proxy verified customer ID recorded at action and an equal authoritative checkout customer ID. B002 still independently verifies the customer/recipient and STOP/SQL admission.
+- `NO_MARKER`: authenticated checkout event explicitly reports `ABSENT`; there is **no newly demonstrated cart selection**. B002 may consider a separately verified existing PostgreSQL permission only under its existing verified-absence contract. Do not turn missing into an explicit REVOKE or GRANT.
+- `INVALID_OR_UNKNOWN_MARKER`, `AMBIGUOUS`, `NOT_OBSERVED`, `SHOP_MISMATCH`, `EXPIRED` or `REDIS_UNAVAILABLE`: these are not equivalent to `NO_MARKER`. An indeterminate choice must defer/deny new outreach as approved by B002, not silently fall back to an older stored grant if an unmaterialised withdrawal may exist.
+- `NO_EXPLICIT_CHOICE`: marker association succeeded, but its cart action is absent; this is distinct from an explicitly unchecked `REVOKE` and does not create a new SQL decision.
+- The marker/cart association is a locator only. Even a matching marker and checkout token do **not** establish a guest's ownership of the consenting action or a number's ownership. S001 and B002 are separate verification gates. The temporary PII-free marker is allowed in the **existing** checkout BullMQ event solely for association; it is never logged and never a grant. No raw Shopify cart/checkout token, private cart key, phone, customer PII or consent choice is added to checkout queue events.
+
+## B002 decision boundary and duplicate safety
+
+- [ ] B001's `ASSOCIATED` result supplies only a verified cart/checkout locator and the latest **temporary** explicit choice; no decision becomes a merchant/customer SQL grant or revoke at webhook association, marker appearance, cart update, expiry, consent read or checkout creation. Confirmed completion deletes temporary choice with zero PostgreSQL writes.
+- [ ] B001 must not consume/discard the last pending choice until B002 has confirmed both *independent* recoverability and successful SQL materialisation (or confirmed terminal ineligibility). A recoverable REVOKE must be handed to B002 even though the checkout is prohibited from sending proactive outreach. Distinguish `REVOKE` from `NO_EXPLICIT_CHOICE`, from `NO_MARKER`, and from an indeterminate Redis read.
+- [ ] A linked checkout receiving duplicate or out-of-order CREATE/UPDATE events is the same decision opportunity, **not** an additional materialisation. Preserve a bounded consumed/materialised Redis state through retries; B002 independently implements the frozen SQL row-lock/accepted-action timestamp guard and must pass crash/retry tests before activation. Late A replay after B REVOKE may never regrant; if existing schema cannot prove this, stop for architect review rather than choose an undocumented fallback.
 
 ## Temporary retention and lifecycle cleanup
 
@@ -73,6 +91,13 @@ Associate the latest explicit, temporary consent selection made in the Shopify c
 - [ ] No global Redis `FLUSH*`, `KEYS` scan, eviction-policy/connection change, shared-namespace deletion or new persistent background process. Use bounded key lookups and atomic updates approved in S001.
 - [ ] Version the new keys/contracts so the Shopify writer and Background reader can detect incompatible deployments and fail closed; do not reinterpret existing worker keys as consent data.
 - [ ] No changes to database schema/migrations, `moda-interact-woocommerce`, `moda-interact-api` or Shopify-native WhatsApp consent. Do not edit `docs/decisions/**/_index.md`.
+
+## Marker-specific acceptance and regression requirements
+
+- [ ] Verify trial-3 fixture: checkout-create/update marker fingerprint `ef5dbf7582291225` linked consistently; cart/checkout-cart fingerprint `211c7a386b3e2581` matched. Verify trial-1/2 mismatch fixtures (`849c6baf6d2ee352` vs `aeb0611cb90efe17`; `75a15a4839ae924c` vs `0a4a76f4680b66a3`) do not require token equality and cannot create a synthetic link without a valid separately bound marker.
+- [ ] Mock real authenticated CHECKOUTS_UPDATE arriving before CHECKOUTS_CREATE with one valid marker; repeat both events and assert exactly one link and no duplicate recovery/sends. Missing marker on CREATE but subsequently present on UPDATE may associate only after verified UPDATE; do not rewrite a previously immutable conflicting association.
+- [ ] Distinct checkout tokens reusing one marker, changed cart token, replayed marker from another shop, deliberately copied marker into a second checkout, invalid versions, malformed `note_attributes` (including duplicate names), missing record and Redis read failures never authorise an incorrect cart selection; verify typed outcomes and B002 admission behaviour.
+- [ ] Verify atomic key creation, TTL refresh under legitimate maturity, safe compare-and-delete after B002 confirmation, no cleanup on failed SQL write, and no mutation of candidate-index/BullMQ keys. Test all with a disposable Redis instance and actual relevant worker entry points.
 
 ## Acceptance evidence
 
