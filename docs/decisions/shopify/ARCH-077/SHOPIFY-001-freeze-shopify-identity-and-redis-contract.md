@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: completed
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **S001 definition and cart-to-checkout correlation proof accepted by architect (17 November 2026); `completed` refers to contract/evidence, not application implementation.** SHARED-001 may start now; downstream tasks still execute their stated acceptance tests before activation. No runtime changes are included here.
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **S001 definition and cart-to-checkout correlation proof accepted by architect (17 November 2026); `complete` refers to contract/evidence, not application implementation.** SHARED-001 may start now; downstream tasks still execute their stated acceptance tests before activation. No runtime changes are included here.
 
 ## Objective
 

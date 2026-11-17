@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ updated: 2026-11-17
 
 ## Architecture / status
 
-[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Definition reconciled; task remains `pending`. Implement only after SHOPIFY-001 has frozen the verified Redis and identity contract and received architect acceptance.**
+[ARCH-077](../../../architecture/ARCH-077-shopify-owned-whatsapp-checkout-consent.md). **Ready for implementation after architect acceptance of SHARED-001 (17 November 2026).** S001's cart-to-checkout proof and identity contract are accepted; Shared's optional V2/V3 event fields are implemented and contract-reviewed. The agent must verify that Shared `6.2.0` is published and pin the same compatible build expected by BACKGROUND-001 before emitting new fields. Runtime cart ownership, marker issuance and consent capture still require this task's tests. Do not repeat the browser-only propagation experiment or invent an alternative authentication contract.
 
 ## Objective and scope
 
