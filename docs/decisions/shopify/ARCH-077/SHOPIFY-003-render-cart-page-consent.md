@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-11-17T20:11:24Z
@@ -44,3 +44,11 @@ updated: 2026-11-17
 - New cart unchecked with **zero receipt issued**; returning verified SQL GRANTED checked but no new receipt until deliberate change; real browser choice -> signed attribute -> `CHECKOUTS_CREATE/UPDATE` and `AbandonedCheckout.customAttributes`, preserving one exact receipt.
 - GRANT then REVOKE same cart replaces key; reading last valid receipt returns REVOKE; copied signed receipt to another cart denied by binding at B002. Missing/broken issuer/readback, cart replacement, two tabs, custom domain, locale and express checkout fail silently, no checkout block.
 - Do not modify S002 route, Background, Shared, Woo/API, existing BullMQ or `_index.md` from S003. Stop if the receipt cannot be written/read or the approved app-proxy path cannot be deployed; report exact blocker.
+
+## Completion Report
+
+- Implemented the cart-only `target: section` Theme App Block, 20 storefront locales, explicit-only receipt issuance, locale-aware Ajax cart requests, exact receipt/cart-token confirmation, and fail-closed theme activation helpers.
+- The block is gated by the boolean app-data metafield `moda_interact.cart_consent_enabled`; S005 must set it only for non-Plus plan placement and keep it false for Plus. The block remains unavailable until that plan gate is configured.
+- The current S002 route does not expose `verifyConsentReceipt`. A nonempty receipt already on the cart is therefore treated as unverified and displayed neutrally (unchecked); raw cart attribute text is never trusted as a grant.
+- Validation passed: 12 focused Vitest cases, targeted ESLint, all 20 locale JSON labels, `shopify app build --config moda-interact` including Theme Check, and `npm run build`.
+- `npm run typecheck` still reports five implicit-`any` errors in the unchanged `app/routes/webhooks/root/route.jsx`. No live dev-store operation was run; published-theme activation and Shopify cart-to-checkout receipt propagation remain unverified and require a separately confirmed remote validation.
