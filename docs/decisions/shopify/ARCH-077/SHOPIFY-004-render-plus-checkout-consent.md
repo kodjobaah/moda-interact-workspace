@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 50
 executor: copilot
 claimed_at: 2026-11-17T20:15:17Z
@@ -40,3 +40,74 @@ updated: 2026-11-17
 
 - Real eligible Plus development-store test: verified session JWT/shop/customer, actual checkoutToken, attribute write, authoritative `AbandonedCheckout.customAttributes` retrieved later, malformed/copy/replay scenarios, GRANT->REVOKE replacement, Plus-only placement, readback, 20 locales, accessibility and silent failure.
 - SDK mocks are not proof of a working Plus checkout extension. If supported checkout token cannot be established/verified, attribute mutation denied, or extension unavailable under merchant plan, stop with evidence. Never substitute a cart checkbox on Plus or add a new Redis/SQL consent store.
+
+## Completion Report
+
+Task: `ARCH-077-SHOPIFY-004`
+Status: Blocked — live Plus checkout verification remains outstanding.
+
+Implemented in `moda-interact` commit `028086d`:
+
+- Added the CLI-scaffolded Checkout UI Extension at
+  `extensions/moda-whatsapp-checkout-consent/`, targeting
+  `purchase.checkout.contact.render-after` on API `2026-10` with
+  `network_access`.
+- Added the localized consent checkbox in the 20 supported Shopify locales.
+  The extension hides the control unless the correct target, checkout token,
+  attribute mutation instruction and authenticated server status are available.
+  It issues a receipt only after an explicit choice, writes only
+  `moda_wa_consent_v1`, and confirms Shopify attribute readback before reflecting
+  the new state.
+- Extended `POST shopify/checkout/receipt` to return a verified current-checkout
+  receipt decision or read-only returning-customer SQL status for display.
+- Added route and extension-helper tests.
+
+Validation:
+
+- PASS — focused Vitest: 3 files, 22 tests.
+- PASS — focused ESLint for changed application, extension and test files.
+- PASS — `npm run build`.
+- PASS — `shopify app build --config moda-interact`.
+- PASS — Shopify Checkout UI validator for
+  `purchase.checkout.contact.render-after`, API `2026-10`.
+- BLOCKED — `shopify app dev --config moda-interact
+  --skip-dependencies-installation --no-update` exited because no development
+  store was specified. No eligible Plus development-store domain was supplied.
+  Therefore this task has not verified a real signed checkout session, actual
+  checkout token, Shopify attribute write/readback and subsequent
+  `AbandonedCheckout.customAttributes` propagation, copied/malformed/replay
+  cases, GRANT-to-REVOKE replacement, plan-specific placement, accessibility or
+  live silent-failure behavior. CLI build and SDK mocks are not evidence of
+  those live behaviors.
+- FAIL (unrelated errors) — `npm run typecheck` reports errors only in untouched
+  `app/routes/auth/login/route.jsx` and `app/routes/webhooks/root/route.jsx`;
+  no changed task file is named in the diagnostics.
+
+Unresolved blocker: provide/select an eligible Plus development store and run
+the required end-to-end checkout propagation scenarios before unblocking this
+task. No cart checkbox or alternate consent store was substituted.
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-SHOPIFY-004`
+- Parent branch: `task/ARCH-077-SHOPIFY-004`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-SHOPIFY-004`
+- Implementation branch: `task/ARCH-077-SHOPIFY-004`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+Start-of-attempt synchronization from the launcher packet:
+
+- Parent remote task branch fast-forwarded: not needed
+- Parent `origin/main` incorporated: already current
+- Implementation remote task branch fast-forwarded: not needed
+- Implementation `origin/main` incorporated: already current
+
+Recursive implementation submodules:
+
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- Recorded submodule commit: `database` at
+  `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
