@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-11-17T15:11:17Z
@@ -102,3 +102,68 @@ The checked/unchecked wording must remain exactly the existing WooCommerce wordi
 SHOPIFY-001 now defines temporary Redis choice/correlation storage only. BACKGROUND-001 owns checkout association/cleanup, while BACKGROUND-002 applies any verified explicit decision **only at eligible recovery** to the existing PostgreSQL `CustomerPhone` under its normal revisions, purpose, source and STOP constraints. In this Shopify initiative the existing `SHOPIFY_NATIVE` enum value identifies **Moda-verified Shopify checkbox consent**, not a native Shopify marketing-consent API observation. S002 does not write SQL on customer interaction or query that retired provider. If the accepted S001/B002 read/write contract cannot be implemented without weakening these invariants, stop for architect review.
 
 **Stop:** if the SHOPIFY-001 identity/Redis contract is unapproved, the SQL source/consent constraints cannot be honoured without a schema change, a returning customer cannot be unambiguously resolved, or S002 would require changes to Background/BullMQ-owned keys. Report the precise blocker, do not invent a fallback.
+
+## Completion Report
+
+### Implementation
+
+- Added the signed Shopify App Proxy `prepare`, `status`, and `choice` handlers; current-cart and reciprocal marker records are prepared atomically, choices use bounded TTL/revision/action replay checks, and status falls back to existing verified PostgreSQL consent only when Redis confirms no current-cart choice.
+- Added checkout marker classification for create/update payloads and verified that the optional marker/status fields pass the published strict Shared v2/v3 event schemas after authenticated shop resolution.
+- Pinned `@modainteract/moda-interact-shared` to `6.2.0` and configured the intended App Proxy path and `write_app_proxy` scope.
+- No SQL consent writes, Background changes, queue changes, or Shopify deployment were made.
+
+### Validation
+
+- Passed: `npm run prisma:generate`.
+- Passed: `npm run test:shopify-webhooks` — 15 files, 173 tests.
+- Passed: `npm run test:shopify-webhooks:redis` — 2 files, 9 tests.
+- Passed: `MODA_SHOPIFY_CONSENT_REDIS=1 npx vitest run tests/integration/shopify-consent.redis.integration.test.ts` — 1 file, 4 tests.
+- Passed: focused App Proxy route and strict ingress/schema tests — 4 files, 72 tests.
+- Passed: targeted ESLint on all changed implementation and test files.
+- Passed: `npx react-router build`.
+- `npm run typecheck` remains blocked by five implicit-`any` diagnostics in the untouched `app/routes/webhooks/root/route.jsx`; no task implementation or task test files appear in the final diagnostics.
+- Shopify CLI config validation, live App Proxy availability, and deployment were not verified; no authenticated Shopify CLI action was run.
+
+### Coordination
+
+The Shopify producer now pins Shared `6.2.0`, as required by this task. The separately owned Background checkout was observed pinned to `6.1.0`; its owner must align the consumer before deployment. No other repository was modified.
+
+### Git / VCS
+
+Task branch: `task/ARCH-077-SHOPIFY-002`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-SHOPIFY-002`
+  parent branch: `task/ARCH-077-SHOPIFY-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-SHOPIFY-002`
+  implementation branch: `task/ARCH-077-SHOPIFY-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed (launcher prepared the synchronized task branch before claiming Attempt 1)
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed (the task push created the remote implementation branch)
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  `git submodule sync --recursive`: passed by launcher
+  `git submodule update --init --recursive`: passed by launcher
+  recorded submodule commits: `database` `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
+
+Implementation repository:
+  repository: `moda-interact`
+  commit: `c0c2cca0405de9f1309ba70076232842ba4d4319`
+  remote branch: `origin/task/ARCH-077-SHOPIFY-002`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/shopify/ARCH-077/SHOPIFY-002-capture-checkout-consent-in-redis.md`
+  commit: this report's task-file submission commit (SHA is recorded in the task-branch handoff)
+  remote branch: `origin/task/ARCH-077-SHOPIFY-002`
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
