@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: copilot
 claimed_at: 2026-11-18T02:01:40Z
@@ -22,7 +22,7 @@ updated: 2026-11-18
 
 # Render and activate Shopify cart-page WhatsApp consent App Block
 
-**Architect Changes Requested (18 November 2026); returning for Attempt 2.** The S002 stateless issuer is accepted. This task must correct verified current-cart display before acceptance. Follow the [ARCH-077 checkout-attribute receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). This task **does not** request Redis marker preparation, Redis GRANT/REVOKE writes, or checkout correlation. Non-Plus merchants get this cart checkbox, Plus merchants get **only S004** checkout checkbox.
+**Architect acceptance (18 November 2026), Attempt 3.** The cart App Block and its configurable, validated storefront App Proxy root satisfy the bounded SHOPIFY-003 implementation contract. Prior Changes Requested reviews remain below as historical evidence; live Shopify activation and signed-receipt checkout transport remain downstream validation. The S002 stateless issuer is accepted. This task must correct verified current-cart display before acceptance. Follow the [ARCH-077 checkout-attribute receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). This task **does not** request Redis marker preparation, Redis GRANT/REVOKE writes, or checkout correlation. Non-Plus merchants get this cart checkbox, Plus merchants get **only S004** checkout checkbox.
 
 ## Owning source touchpoints
 
@@ -214,3 +214,29 @@ No receipt-issuance semantics, App Proxy server routing/authentication, Redis/qu
 ### Required re-submission and ownership
 
 Return the same SHOPIFY-003 task to its `moda_app` agent. Reuse the current implementation worktree and branch; do not reset implementation history. The agent must read this newest Architect Review, claim Attempt 3 through `/moda-task`, implement the bounded source/test correction and report exact paths, SHAs, tests, `git diff --check`, targeted lint, Shopify Theme Check/build, app build and baseline-separated typecheck errors. The agent then sets status to `review`, reports and **stops**. Dependants remain gated until architect acceptance. No `docs/decisions/**/_index.md` changes.
+
+
+## Architect Review — Attempt 3 (18 November 2026)
+
+### Review Status
+
+**Accepted.** Task status `complete`, accepted implementation Attempt 3. Retain executor, claim, previous attempt reports and review history as execution evidence. No new attempt is required. Acceptance is limited to SHOPIFY-003 implementation scope; it is not release or live-Shopify certification.
+
+### Reviewed source and evidence
+
+- Inspected supplied `moda-interact-workspace-ARCH-077-SHOPIFY-003(2).zip`, including `moda-interact/extensions/moda-whatsapp-consent/blocks/cart-consent.liquid`, `assets/cart-consent.js`, `tests/unit/extensions/moda-whatsapp-consent.test.js`, Shopify consent App Proxy route, theme-activation helpers, linked receipt v1 contract, and Attempt 3 Completion Report.
+- Agent-reported implementation commits `fe1dbf9` and `e774fa7`; parent-task report commit `87f715f62`. They were not independently fetched from the remote or compared against a fresh Git checkout. Worktree-isolation evidence and pinned database submodule `0a9edc7c0c30e0a405d89efec624bc9338b4ac17` are reported in the Completion Report, not independently reconstructed from Git metadata in the archive.
+- The App Block supplies one merchant-configurable `app_proxy_root` text setting, default `/apps/moda-consent`, and derives `cart/status`, `cart/receipt`, and `cart/verify` from the same escaped root. The browser validates exactly one Shopify-supported prefix (`a`, `apps`, `community`, `tools`) and one bounded subpath before making a request; rejects invalid, reserved, absolute, query/fragment and cross-origin forms; and hides only Moda's control on configuration failure. This resolves the Attempt 2 blocker without new endpoints or infrastructure.
+- Preserves S002's authenticated `cart/verify` integration and Shared AEAD receipt verification, verified current-cart GRANT/REVOKE display on reload, explicit-only receipt issuance, cart replacement guard before writing, readback confirmation, `shopify:section:load` reinitialisation, and unchanged cart checkout/payment behaviour. No Redis consent lifecycle, SQL consent materialisation, new queue, separate encryption key, or duplicated checkout checkbox was introduced.
+
+### Validation reviewed
+
+- Agent reported **57 passing focused tests** across the cart-extension, consent route, and receipt-service suites; targeted ESLint, Shopify Theme Check/app build, Liquid validation, `npm run build`, `git diff --check`, and 20 locale JSON checks passed. Test source assertions and implementation were inspected, but the complete test suite, Theme Check and build were **not independently rerun** by the architect.
+- Agent reported five existing TS7006 errors in unchanged `app/routes/webhooks/root/route.jsx`; full `npm run typecheck` remains **not green**. This baseline is documented separately and must not be represented as a successful typecheck.
+- No live signed App Proxy, published-theme activation, cart-to-checkout signed-receipt readback via `AbandonedCheckout.customAttributes`, or Plus checkout testing was executed by this task. These are **not evidence of a failed S003 implementation**; retain S005 / SYSTEM-TEST-001 and S004 for their respective integration and Plus-path checks.
+
+### Acceptance and handoff
+
+- **Accept SHOPIFY-003 at Attempt 3** and mark this task `complete`. S005 remains `pending` until its other dependency SHOPIFY-004 is accepted `complete`; do not start or release S005 on S003 acceptance alone.
+- S005 must instruct merchants who customise the Shopify App Proxy prefix/subpath to set the App Block's **Moda app proxy path** to the identical full root; validate published-theme activation rather than assuming the configuration is live.
+- No modifications to `docs/decisions/**/_index.md`, Background, Shared, database schema, Redis/BullMQ, Shopify Plus implementation, or runtime source are authorised by this architect acceptance patch. The architect does not merge or deploy branches.
