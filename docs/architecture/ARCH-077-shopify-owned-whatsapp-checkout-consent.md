@@ -42,12 +42,12 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-003 | `complete`: Attempt 3 architect-accepted non-Plus cart App Block, verified-receipt display, theme editor, cart-change guard and configurable App Proxy root (not live activated/certified) |
 | SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
-| BACKGROUND-001 | `ready`: thin authoritative checkout candidate / attribute-read integration, **no Redis consent correlation or cleanup** |
-| BACKGROUND-002 | `pending`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
+| BACKGROUND-001 | `complete`: Attempt 1 architect-accepted authoritative checkout-attribute read on existing bounded lookup; no Redis consent correlation or cleanup |
+| BACKGROUND-002 | `ready`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
-**Dependency rule:** S002 is now `complete` after architect acceptance of Attempt 3, enabling S003, S004 and B001 independently. B002 follows accepted B001; S005 retains its S003/S004 dependencies; S006 and terminal system test retain their prerequisites. Do not start tasks before their own launcher claims; do not treat S002 acceptance as live Plus/Background integration evidence. Filenames mentioning Redis are legacy task paths, **not** permission to restore Redis consent storage.
+**Dependency rule:** S002 is `complete` after architect acceptance of Attempt 3, enabling S003, S004 and B001 independently. B001 is now architect-accepted `complete` (Attempt 1), so B002 is `ready`. S005 retains its S003/S004 dependencies; S006 and terminal system test retain their prerequisites. Do not start tasks before their own launcher claims; do not treat S002 acceptance as live Plus/Background integration evidence. Filenames mentioning Redis are legacy task paths, **not** permission to restore Redis consent storage.
 
 ## Execution/validation protocol
 

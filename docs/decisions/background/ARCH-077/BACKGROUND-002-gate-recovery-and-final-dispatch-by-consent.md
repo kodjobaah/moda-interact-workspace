@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ updated: 2026-11-17
 
 # Gate Shopify recovery and final proactive sends using signed checkout consent
 
-**Pending; after accepted B001.** Follow the [ARCH-077 signed receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). This **replaces** Redis consent read/materialisation while preserving existing PostgreSQL `CustomerPhone` and final-SQL permission guards.
+**Ready after architect-accepted B001 (17 November 2026).** Follow the [ARCH-077 signed receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). This **replaces** Redis consent read/materialisation while preserving existing PostgreSQL `CustomerPhone` and final-SQL permission guards.
 
 ## Ownership and exact sequence
 
