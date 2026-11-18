@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-11-18T02:24:07Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHOPIFY-002]
 enables: [ARCH-077-SHOPIFY-005, ARCH-077-SYSTEM-TEST-001]
@@ -22,7 +22,7 @@ updated: 2026-11-18
 
 # Render Shopify Plus checkout WhatsApp consent checkbox
 
-**Pending; depends on accepted S002.** Plus uses **only this checkout checkbox**, while non-Plus uses S003 cart checkbox. Do not run both, and do not implement old S003 cart-selection precedence. The shared temporary choice is one signed `moda_wa_consent_v1` **Shopify checkout attribute**; see [receipt contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md).
+**Architect accepted — Attempt 2, 18 November 2026.** Plus uses **only this checkout checkbox**, while non-Plus uses S003 cart checkbox. Do not run both, and do not implement old S003 cart-selection precedence. The shared temporary choice is one signed `moda_wa_consent_v1` **Shopify checkout attribute**; see [receipt contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md).
 
 ## Source, extension and authentication
 
@@ -215,3 +215,18 @@ Not live-verified, with reason:
 - `git submodule update --init --recursive`: passed
 - Recorded submodule commit: `database` at
   `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
+
+
+## Architect Review — 18 November 2026 — ACCEPTED (Attempt 2)
+
+**Decision: Accepted; task `complete`.** Review of the exact uploaded Attempt 2 Shopify implementation and report, cross-checked with pushed implementation commits `3d13eb2` and `907339c` on `task/ARCH-077-SHOPIFY-004`. No additional implementation attempt is required.
+
+**Accepted source and live evidence:** The separate `moda-whatsapp-checkout-consent` Checkout UI Extension targets `purchase.checkout.contact.render-after`, uses `shopify.sessionToken.get()` with authenticated `POST /shopify/checkout/receipt`, requires current checkout token and attribute-mutation capability, and writes only the single `moda_wa_consent_v1` attribute after explicit customer interaction. Issuer uses the accepted Shared AEAD receipt contract. Live Plus dev-store report records successful GRANT, REVOKE replacement, readback/persistent verified display, `AbandonedCheckout.customAttributes` signed-receipt propagation, tampered receipt refusal, silent failure without checkout blockage, and keyboard accessibility. Exactly 20 locale JSON files and unchanged required English wording were inspected.
+
+**Validation evidence:** Agent reports 37 focused Vitest tests, targeted ESLint and Shopify app build passed; TypeScript baseline errors remain in untouched `app/routes/auth/login/route.jsx` and `app/routes/webhooks/root/route.jsx`, while the task-owned TS1117 test error was corrected. The architect inspected uploaded source and reviewed pushed commits; the live browser/shop/GraphQL session and tests were not independently re-executed by the architect.
+
+**Remaining gates, not S004 defects:** Live cross-checkout replay denial was inconclusive; signed receipt binding is exercised by the Shared receipt-service tests and must receive end-to-end certification in ARCH-077-SYSTEM-TEST-001. The verified returning-customer PostgreSQL initial display has route-test coverage but was not exercised live with a logged-in Plus customer; S005 owns merchant activation and returning-customer demonstration. Only English was exercised in the single-locale dev store; the other 19 locale files have test/build evidence, with live coverage in downstream certification as feasible.
+
+**Required deployment handoff to S005:** `MODA_CHECKOUT_RECEIPT_ORIGIN` is resolved at extension build time and defaults to `https://app-test.modainteract.com`. Before a production extension build/deploy, set it to the actual published app origin and validate the emitted bundle uses that host. The default test host must not be silently deployed into production. This is a deployment configuration/certification gate, not permission to create another endpoint or receipt scheme. Non-Plus S003 and Plus S004 remain mutually exclusive; S005 must verify placement against the merchant's plan.
+
+**No new consent database/Redis state:** S004 makes no click-time SQL consent write, does not create a Redis consent ledger/queue, and does not override BACKGROUND-002's recoverability-only materialisation contract.

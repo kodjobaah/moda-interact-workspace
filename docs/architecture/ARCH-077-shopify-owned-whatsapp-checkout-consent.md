@@ -4,7 +4,7 @@ title: Shopify-owned WhatsApp consent via signed checkout attribute and deferred
 status: proposed
 coordinator: moda_architect
 created: 2026-11-17
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # ARCH-077 — Shopify-owned WhatsApp checkout consent
@@ -39,9 +39,9 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-001 | `complete`, accepted historical cart-to-checkout marker experiment; not re-run |
 | SHARED-001 | `complete`, backward-compatible optional marker fields remain unused |
 | **SHOPIFY-002** | `complete`, Attempt 3 architect-accepted stateless signed receipt producer and returning-customer SQL status (not live transport certification) |
-| SHOPIFY-003 | `ready`: non-Plus cart App Block writes/reads back the **single signed attribute** |
-| SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
-| SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
+| SHOPIFY-003 | `complete`: architect-accepted non-Plus cart App Block and configured App Proxy root |
+| SHOPIFY-004 | `complete`: Attempt 2 architect-accepted Plus checkout UI Extension with reported live receipt issuance and GraphQL propagation |
+| SHOPIFY-005 | `ready`: merchant plan-exclusive activation/placement, returning-customer SQL display and production receipt-origin configuration |
 | BACKGROUND-001 | `ready`: thin authoritative checkout candidate / attribute-read integration, **no Redis consent correlation or cleanup** |
 | BACKGROUND-002 | `pending`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
@@ -67,3 +67,10 @@ The uploaded Attempt 2 implementation is **Changes Requested**, not yet accepted
 ## Latest architect disposition — SHOPIFY-002 Attempt 3 (17 November 2026)
 
 Architect accepted the inspected stateless Shopify receipt producer using Shared keyring/AEAD, canonical v1 envelope/AAD and corrected signed App Proxy route. Task `ARCH-077-SHOPIFY-002` is `complete`. S003, S004 and B001 are `ready`; S005/B002 remain gated. Live cart/Plus receipt propagation, consumer parity and recoverable-only SQL materialisation are expressly *not* certified by this producer acceptance; see the SHOPIFY-002 Architect Review for evidence and follow-up ownership.
+
+
+## Architect acceptance — 18 November 2026 — SHOPIFY-004 Attempt 2
+
+SHOPIFY-004 is **complete** after source review and inspection of the live Plus dev-store Completion Report. Verified session-token authentication, explicit single-attribute GRANT/REVOKE and replacement, server-readback, signed receipt persistence on reload and authoritative `AbandonedCheckout.customAttributes` transport are reported live. Pushed implementation changes `3d13eb2` and `907339c` were reviewed; 37 focused tests, ESLint and Shopify extension build were agent-reported passed. This accepts the S004 implementation, not an independently repeated live checkout session or terminal ARCH-077 certification.
+
+SHOPIFY-002 and SHOPIFY-003 are already marked complete on the workspace main task records; with S004 accepted, **SHOPIFY-005 is ready**, subject to the ordinary launcher/branch process. S005 must validate the production `MODA_CHECKOUT_RECEIPT_ORIGIN` at Shopify extension build/deploy and mutually exclusive Plus/non-Plus activation, and exercise verified returning-customer SQL display. Cross-checkout replay and unsupported checkout paths remain system-test coverage. This acceptance makes no claim that S005/S006, Background integration or SYSTEM-TEST-001 are complete.
