@@ -42,12 +42,22 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-003 | `complete`: architect-accepted non-Plus cart App Block and configured App Proxy root |
 | SHOPIFY-004 | `complete`: Attempt 2 architect-accepted Plus checkout UI Extension with reported live receipt issuance and GraphQL propagation |
 | SHOPIFY-005 | `ready`: merchant plan-exclusive activation/placement, returning-customer SQL display and production receipt-origin configuration |
-| BACKGROUND-001 | `ready`: thin authoritative checkout candidate / attribute-read integration, **no Redis consent correlation or cleanup** |
-| BACKGROUND-002 | `pending`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
+| BACKGROUND-001 | `complete`: thin authoritative checkout candidate / attribute-read integration, **no Redis consent correlation or cleanup** |
+| BACKGROUND-002 | `ready`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
-**Dependency rule:** S002 is now `complete` after architect acceptance of Attempt 3, enabling S003, S004 and B001 independently. B002 follows accepted B001; S005 retains its S003/S004 dependencies; S006 and terminal system test retain their prerequisites. Do not start tasks before their own launcher claims; do not treat S002 acceptance as live Plus/Background integration evidence. Filenames mentioning Redis are legacy task paths, **not** permission to restore Redis consent storage.
+**Dependency rule:** S002 is `complete` after architect acceptance of Attempt 3, enabling S003, S004 and B001 independently. B001 is now architect-accepted `complete` (Attempt 1), so B002 is `ready`. S005 retains its S003/S004 dependencies; S006 and terminal system test retain their prerequisites. Do not start tasks before their own launcher claims; do not treat S002 acceptance as live Plus/Background integration evidence. Filenames mentioning Redis are legacy task paths, **not** permission to restore Redis consent storage.
+
+## Architect decision — 18 November 2026: B002 minimal idempotency, no new schema
+
+The original B002 `MATERIALISATION_IDEMPOTENCY_BLOCKER` was correct under its prior absolute replay-prevention contract. Following developer review, that **absolute cross-checkout requirement is withdrawn**. B002 is returned to `ready` for the next attempt with the earlier blocker reports preserved. Reuse the actual current checkout/recovery guards and PostgreSQL consent transaction, but do not introduce a durable per-checkout consent checkpoint, consent history table, Redis ledger, new queue, or distributed lock.
+
+A successful ordinary A GRANT followed by recoverable B REVOKE blocks new proactive messages under the current SQL final-send gate; existing customer-initiated conversations remain governed by their independent service admission. **Residual risk accepted:** an exceptionally late first-time A materialisation/replay may overwrite B without a per-checkout durable history. The existing schema cannot prove otherwise; do not claim that it can. Duplicate suppression applies only where existing durable state genuinely establishes previous application. Normal completion never materialises either decision. STOP and all other outbound admission invariants remain mandatory.
+
+B002's `review` must be based on newly implemented code and executed tests. SHOPIFY-006 and SYSTEM-TEST-001 remain pending until architect acceptance of B002. See the updated [v1 receipt contract](ARCH-077/checkout-attribute-consent-v1.md) and B002's latest Architect Review.
+
+**Architect reaffirmation (18 November 2026, after Attempt 2 re-block):** The B002 task was re-blocked by a subsequent review demanding a checkout-level persistence and ordering contract despite the already-updated v1 architecture above. That review is historical, not the controlling requirement. The developer-approved accepted-risk design remains authoritative; the parent task is again `ready` (attempt counter 2, next claim Attempt 3). Protect and reconcile uncommitted implementation-worktree changes before restarting. This is documentation-only readiness, not B002 source acceptance or a waiver of recoverability, STOP or final-send consent guards.
 
 ## Execution/validation protocol
 
@@ -69,8 +79,28 @@ The uploaded Attempt 2 implementation is **Changes Requested**, not yet accepted
 Architect accepted the inspected stateless Shopify receipt producer using Shared keyring/AEAD, canonical v1 envelope/AAD and corrected signed App Proxy route. Task `ARCH-077-SHOPIFY-002` is `complete`. S003, S004 and B001 are `ready`; S005/B002 remain gated. Live cart/Plus receipt propagation, consumer parity and recoverable-only SQL materialisation are expressly *not* certified by this producer acceptance; see the SHOPIFY-002 Architect Review for evidence and follow-up ownership.
 
 
-## Architect acceptance — 18 November 2026 — SHOPIFY-004 Attempt 2
+## ARCH-077-SHOPIFY-003 Attempt 1 review — 18 November 2026
 
-SHOPIFY-004 is **complete** after source review and inspection of the live Plus dev-store Completion Report. Verified session-token authentication, explicit single-attribute GRANT/REVOKE and replacement, server-readback, signed receipt persistence on reload and authoritative `AbandonedCheckout.customAttributes` transport are reported live. Pushed implementation changes `3d13eb2` and `907339c` were reviewed; 37 focused tests, ESLint and Shopify extension build were agent-reported passed. This accepts the S004 implementation, not an independently repeated live checkout session or terminal ARCH-077 certification.
+The non-Plus Theme App Block implementation is submitted but **Changes Requested**: its current-cart display assumes every existing receipt is unchecked, rather than verifying the already-saved GRANT/REVOKE. S003 now owns one narrow authenticated `POST cart/verify` integration using existing S002 AEAD verification, with no new state/storage or cryptography. The task returns to `ready` with `attempt: 1`, cleared claim, and dependent SHOPIFY-005 remains gated. Published-theme activation is still S005-owned; live cart/checkout GraphQL transport remains terminal system-test evidence.
 
-SHOPIFY-002 and SHOPIFY-003 are already marked complete on the workspace main task records; with S004 accepted, **SHOPIFY-005 is ready**, subject to the ordinary launcher/branch process. S005 must validate the production `MODA_CHECKOUT_RECEIPT_ORIGIN` at Shopify extension build/deploy and mutually exclusive Plus/non-Plus activation, and exercise verified returning-customer SQL display. Cross-checkout replay and unsupported checkout paths remain system-test coverage. This acceptance makes no claim that S005/S006, Background integration or SYSTEM-TEST-001 are complete.
+
+## ARCH-077-SHOPIFY-003 Attempt 2 architect review — 18 November 2026
+
+Attempt 2 correctly implements server-verified saved receipt display (`GRANT` checked, `REVOKE` unchecked, no automatic write), authenticated read-only `cart/verify` and theme-editor section reinitialisation. **Changes Requested** remains necessary for one bounded inconsistency: the cart App Block hard-codes `/apps/moda-consent`, although Shopify permits merchant-customised App Proxy prefix/subpath and S002 validates those signed configurations. S003 now owns one validated `app_proxy_root` App Block text setting (default `/apps/moda-consent`) from which its three existing endpoint URLs are derived; S005 later explains merchant configuration. Task returns to `ready`, prior claim cleared, attempt 2 preserved for launcher Attempt 3. No new credential, server endpoint, Redis/SQL state, queue or cryptography. S004 and B001 retain their independent statuses; S005 remains `pending` until S003 **and** S004 are complete. Live Shopify publication/GraphQL and Background verification remain downstream certification.
+
+
+## Latest architect disposition — SHOPIFY-003 Attempt 3 (18 November 2026)
+
+Architect accepted the inspected non-Plus cart App Block after the remaining proxy-root correction. One configurable `app_proxy_root` supplies the three authenticated receipt/status/verify paths, with bounded same-origin validation; existing receipt state, explicit-only writes and theme-section handling remain correct. Task `ARCH-077-SHOPIFY-003` is now `complete` (Attempt 3). Agent-reported 57 focused tests and Shopify app/Theme Check/build passed; unchanged webhook-route TS7006 baseline errors remain. This is source/test acceptance, **not** live published-theme, signed-App-Proxy or GraphQL readback certification. SHOPIFY-005 stays `pending` until SHOPIFY-004 also becomes `complete`, and must document matching merchant App Proxy path settings. The architect review does not merge source or parent worktrees.
+
+
+## ARCH-077-BACKGROUND-002 Attempt 3 architect review — 18 November 2026
+
+The source implementation of the signed Shopify receipt verifier, recoverable-only SQL GRANT/REVOKE materialisation, and existing proactive STOP/final-send fence was inspected. The existing-schema idempotency policy and accepted rare delayed cross-checkout replay risk remain authoritative and are **not** reopened. **Changes Requested**: operational missing/invalid Shared keyring configuration is currently misclassified as a terminal invalid receipt; require independently classified, server-side structured logs for receipt parsing/decryption/identity/SQL/STOP with original exception messages and checkout correlation, and the STOP PostgreSQL integration lacks a passing run (one attempt failed container startup and an earlier attempt reported a quoted-STOP assertion). Return B002 to `ready` with `attempt: 3` preserved for launcher Attempt 4, limited to those corrections, full pre-production Shopify GraphQL count/detail response logging, including complete consent attributes and original error payloads and supporting tests; the detail query already supplies basket plus signed consent attribute, so no new GraphQL request is authorised. Downstream SHOPIFY-006 and SYSTEM-TEST-001 stay gated; no deployment or source acceptance is implied.
+
+
+## Architect reconciliation — 18 November 2026: B002 Attempt 4 logging-contract conflict
+
+The Attempt 4 agent correctly stopped rather than violate the existing Shared structured logging and v1 receipt policies. Keyring/decryption error classification and the quoted-STOP PostgreSQL regression were corrected (Background implementation `6e26516`; parent task report commits `a87c05b45` and `5fef826d0`, as reported). B002 is returned to `ready` for focused Attempt 5 logging work, **not yet accepted**.
+
+The controlling policy is the explicitly scoped **synthetic data / test or development environment** diagnostic exception in `docs/observability/shared-logging.md` and `ARCH-077/checkout-attribute-consent-v1.md`; it does not relax live-customer or production logging. The existing logger redacts and bounds nested fields, so the approved test-only, ordered small response-text chunks are necessary for useful GraphQL diagnostics without changing Shared runtime or introducing another logging system. Preserve source original errors, checkout correlation, no additional Shopify API call and the already accepted delayed replay limitation.
