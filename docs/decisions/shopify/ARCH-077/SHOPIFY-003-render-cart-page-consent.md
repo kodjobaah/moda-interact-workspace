@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-11-18T01:22:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: [ARCH-077-SHOPIFY-002]
 enables: [ARCH-077-SHOPIFY-005, ARCH-077-SYSTEM-TEST-001]
@@ -140,3 +140,31 @@ No live dev-store, published-theme activation, Shopify SDK signed App Proxy requ
 - Correct only the specified UI/display, read-only Shopify App Proxy verification integration, theme-editor reinit and their focused tests. Keep receipt issuance and Shared AEAD untouched; do not modify other repositories or `docs/decisions/**/_index.md`.
 - Provide exact modified paths, current task worktree/branch SHA and implementation commit, `git diff --check`, focused App Proxy/cart reload tests, targeted lint, relevant Shopify build/Theme Check, `npm run build`, and `npm run typecheck` with baseline-vs-new error classification. Report real test results without calling mocked tests live Shopify proof.
 - On success, agent sets SHOPIFY-003 back to `review`, completes its report and stops. Architect independently re-reviews before marking `complete` or promoting SHOPIFY-005. Retain downstream gates until then.
+
+
+## Architect Review — Attempt 2 (18 November 2026)
+
+### Review Status
+
+**Changes Requested — one remaining storefront integration defect.** Return this SAME task to `ready`, clear `executor` and `claimed_at`, retain `attempt: 2`; the launcher alone claims Attempt 3. Preserve all previous implementation commits, tests, Completion Reports and Architect Review history. S005 remains `pending` because S004 is also incomplete. Do not mark S003 `complete` or merge yet.
+
+### Reviewed implementation and positive findings
+
+- Reviewed `moda-interact/app/routes/shopify/consent/route.ts`, `app/services/shopify-consent/consent-receipt.server.ts`, `extensions/moda-whatsapp-consent/assets/cart-consent.js`, `blocks/cart-consent.liquid`, the extension manifest, `tests/unit/extensions/moda-whatsapp-consent.test.js`, `tests/unit/routes/shopify-consent-route.test.ts`, and the preserved Attempt 2 report in the supplied task-worktree ZIP. Agent-reported implementation commit `370f54828b856e7f5055579e154c55b7331b7dbf` and parent-report commit `b988b9d8febb08c7b4e7e69f1d56f12210479202` are not independently verified against Git remotes.
+- **Attempt 1 corrections satisfied in inspected source:** current-cart GRANT renders checked and REVOKE unchecked after authenticated `POST cart/verify`, without a render-time receipt write; invalid/unverifiable receipt hides only the Moda control without SQL-status fallback; Shopify `shopify:section:load` reinitialises replaced blocks and WeakSet prevents duplicate handlers. The read-only verification route reuses S002 authentication and Shared-AEAD receipt verification without new storage or cryptography. Keep these changes.
+- Agent reports **36 focused tests**, targeted ESLint, Theme Check/Shopify build, production build and Git whitespace validation passed; these were not independently run. Five TypeScript implicit-any errors are reported in unchanged `app/routes/webhooks/root/route.jsx`; preserve baseline attribution and do not edit that unrelated route here. Live signed App Proxy and checkout-to-GraphQL propagation were **not** tested; these remain S005/terminal SYSTEM-TEST-001 gates, not grounds for inventing new S003 infrastructure.
+
+### One verified defect — hard-coded storefront App Proxy root
+
+`extensions/moda-whatsapp-consent/blocks/cart-consent.liquid` hard-codes `/apps/moda-consent` in `data-status-url`, `data-receipt-url` and `data-verify-url`. Shopify allows each merchant to change the proxy `prefix` and `subpath` after installation, while the approved S002 route already accepts signed safe custom prefixes. A merchant with e.g. `/tools/moda-consent` cannot use the current cart checkbox: all three frontend calls would target the obsolete path and hide the control. The fixed default is insufficient for the supported multi-merchant integration.
+
+### Required correction — exact bounded implementation contract
+
+1. **One App Block setting, not three URLs:** add precisely one `type: text` setting with `id: app_proxy_root`, merchant-visible label `Moda app proxy path`, and `default: /apps/moda-consent` to `extensions/moda-whatsapp-consent/blocks/cart-consent.liquid` schema. Use this value (escaped for HTML) to derive the three existing `data-*-url` attributes with suffixes `/cart/status`, `/cart/receipt` and `/cart/verify`. Keep their same backend route mapping; do **not** create new app endpoints, proxy services or store-wide preferences. An empty setting falls back to the default. Do not permit a query, fragment, absolute URL or path outside Shopify's supported proxy prefixes.
+2. **Bounded storefront validation:** before any request, validate the configured proxy root as exactly `/(a|apps|community|tools)/<subpath>` with a single nonempty Shopify-valid subpath of at most 30 characters (`[A-Za-z0-9_-]`), no trailing slash, dot segments, backslashes, whitespace, query or fragment. Reject reserved subpaths `admin`, `services`, `password`, `login`. Build three same-origin paths from the validated root; retain existing `sameOriginUrl` protection. Any invalid/unreachable configuration hides only Moda's checkbox, never sends a consent receipt to another origin, never auto-GRANTs and never blocks checkout. Do not attempt to discover Shopify's custom proxy path via unverified assumptions or a new API.
+3. **Agent tests:** assert all three URLs are derived from default `/apps/moda-consent` and custom `/tools/custom-consent`, `/a/custom-consent` (and optionally `/community/...`); reject malicious/full-URL/invalid/empty-reserved path input except empty setting's documented default. Verify that current-cart receipt verification, GRANT/REVOKE reloads, explicit-only issuance, silent failures, section-load reinitialisation and all 20 shopper locales remain unchanged. Do not duplicate receipt verification or alter S002 encryption/App Proxy routing.
+4. **S005 handoff:** update the merchant-facing activation guidance in **S005 later**, explaining that a merchant who changes Shopify's proxy URL must set the same path in this existing App Block setting. S003 only supplies the validated setting; do not implement S005 settings or live store activation.
+
+### Required re-submission and ownership
+
+Return the same SHOPIFY-003 task to its `moda_app` agent. Reuse the current implementation worktree and branch; do not reset implementation history. The agent must read this newest Architect Review, claim Attempt 3 through `/moda-task`, implement the bounded source/test correction and report exact paths, SHAs, tests, `git diff --check`, targeted lint, Shopify Theme Check/build, app build and baseline-separated typecheck errors. The agent then sets status to `review`, reports and **stops**. Dependants remain gated until architect acceptance. No `docs/decisions/**/_index.md` changes.
