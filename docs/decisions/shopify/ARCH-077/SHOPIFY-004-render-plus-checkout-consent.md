@@ -17,7 +17,7 @@ attempt: 1
 depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHOPIFY-002]
 enables: [ARCH-077-SHOPIFY-005, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Render Shopify Plus checkout WhatsApp consent checkbox
@@ -78,14 +78,17 @@ Validation:
   was restored to a valid value, `shopify app dev` reached its ready state on
   the Plus development store and built the extension through a temporary local
   tunnel.
-- BLOCKED — the preview page failed during Shopify OAuth bootstrap with
-  `shopify.oauth: DATABASE_UNAVAILABLE`. A local pgvector-enabled PostgreSQL
-  container is running and all 83 existing migrations were applied to the
-  local `moda_interact` database, but that fresh database has no
-  `PlatformConfiguration` records, including no development `shopify.oauth`
-  record. A local test-only OAuth configuration and matching unseal keyring
-  must be provisioned before the app can start. No managed database URL or
-  production credentials were used.
+- RESOLVED LOCALLY (configuration only) — after the `DATABASE_UNAVAILABLE`
+  preview failure, a dedicated env file outside the repository was used to
+  create sealed `shopify.oauth` records for `development` and `test` in the
+  local `moda_interact` database. The importer was first run in dry-run mode,
+  then applied only after approval with an explicit localhost `DATABASE_URL`;
+  a follow-up dry run confirms both records exist. No production database or
+  production configuration was targeted, and secret values were not logged.
+- BLOCKED — the app has not yet been restarted against the new local
+  configuration. This turn did not have an approved target Plus development
+  store domain and confirmation for the exact Shopify CLI preview invocation,
+  so no preview or store changes were initiated.
   Therefore this task has not verified a real signed checkout session, actual
   checkout token, Shopify attribute write/readback and subsequent
   `AbandonedCheckout.customAttributes` propagation, copied/malformed/replay
@@ -96,10 +99,10 @@ Validation:
   `app/routes/auth/login/route.jsx` and `app/routes/webhooks/root/route.jsx`;
   no changed task file is named in the diagnostics.
 
-Unresolved blocker: provision non-production Shopify OAuth configuration in
-the local development database, then run the required end-to-end checkout
-propagation scenarios before unblocking this task. No cart checkbox or
-alternate consent store was substituted.
+Unresolved blocker: rerun the app preview against an explicitly approved Plus
+development store using the local database and matching keyring, then run the
+required end-to-end checkout propagation scenarios before unblocking this
+task. No cart checkbox or alternate consent store was substituted.
 
 Physical worktree isolation:
 
