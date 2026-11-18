@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 60
-executor: copilot
-claimed_at: 2026-11-18T07:20:17Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on: [ARCH-077-BACKGROUND-001]
 enables: [ARCH-077-SHOPIFY-006, ARCH-077-SYSTEM-TEST-001]
@@ -323,3 +323,133 @@ The current service deliberately defers `customerId:"-"` guest receipts without 
 - Record whether the broader ARCH-052 `PROMPT_CONFIGURATION_DUPLICATE_OR_MISSING` failure is unchanged baseline; do not silently attribute that issue to B002 or expand this task without causal evidence.
 - Preserve current source changes, successful tests, parent Attempt 3 report and prior architect reviews. Do not change existing migrations, Woo/API/Shared, `_index.md`, or create consent Redis state.
 - Task metadata becomes `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 3`; the launcher may claim **Attempt 4**. SHOPIFY-006 and SYSTEM-TEST-001 remain gated until a later architect acceptance. Stop and report a concrete unsupported requirement rather than making new architecture decisions.
+
+
+## Completion Report — Attempt 4
+
+**Status: Blocked — `FULL_GRAPHQL_RESPONSE_LOGGING_CONFLICT`.** The operational
+keyring classification, consent failure propagation/diagnostics and STOP
+integration gap were addressed and validated. The required complete Shopify
+GraphQL response logging cannot safely be implemented under the still-current
+shared logging and ARCH-077 receipt contracts; that conflict requires
+`moda_architect` resolution before this task can return for review.
+
+### Architect Review correction checklist
+
+1. **Operational verifier failure and consent/STOP diagnostics — partially
+   implemented.**
+   - Missing `MODA_ENCRYPTION_KEYS_JSON` or a Shared
+     `parseCredentialKeyring` failure now returns
+     `KEYRING_CONFIGURATION_FAILURE`, logs distinct `keyring_missing` /
+     `keyring_invalid` events with the original exception, and maps to
+     `MATERIALISATION_FAILURE` with the original cause. Recovery materialisation
+     rethrows that cause so BullMQ can retry; no SQL write or outreach is
+     attempted.
+   - Unknown/retired receipt key, malformed/tampered envelope and wrong binding
+     remain invalid evidence. Decrypt, claim-JSON, claim-validation, identity,
+     SQL-write, proactive preflight/final-fence and STOP write failures use the
+     Shared structured logger with operation/stage, checkout/recovery
+     correlation where available and original errors. Grant/revoke, identity
+     deferral, STOP suppression and proactive send blocks have semantic events.
+   - Focused tests cover missing and malformed keyring as operational failures,
+     terminal unknown-key/tag evidence, retry propagation, no SQL/outreach on
+     configuration failure, and preservation of the original preflight error.
+   - **Still blocked:** complete count/detail GraphQL response-body logging and
+     the associated payload/provider-error assertions in correction 1A were not
+     implemented. See item 2 below.
+
+2. **Complete Shopify GraphQL response logging — blocked by policy conflict.**
+   - The latest Architect Review requires logging complete count/detail response
+     bodies containing customer name/email/phone/address, checkout/recovery URL,
+     basket data and the full signed receipt value.
+   - `docs/observability/shared-logging.md` expressly prohibits passing complete
+     provider response bodies and customer email/phone/address to the logger,
+     and requires provider data to be filtered before Shared logger emission.
+     `docs/architecture/ARCH-077/checkout-attribute-consent-v1.md` separately
+     says never to emit a complete receipt to logs. These are direct
+     contradictions, not a missing implementation detail.
+   - No raw response body, complete consent receipt, customer PII, access token,
+     auth header or key material was added to logs; the shared logger's
+     redaction/bounds were not bypassed. The requested full-payload logging
+     tests are consequently not claimed.
+   - **Requested architect action:** reconcile the current task review with the
+     shared logging and ARCH-077 receipt contracts, defining a compliant
+     field-level diagnostic contract. Until then, correction 1A cannot be
+     completed safely.
+
+3. **STOP PostgreSQL integration gap — implemented.**
+   - The first rerun exposed a real quoted-STOP fixture failure (expected
+     unrelated shop B to remain `false`, received `true`). The fixture lacked
+     the required durable provider-dispatch identity and linked initial
+     `RecoveryOutreachAttempt`, so the production verifier correctly used the
+     standalone global-STOP fallback. The fixture now represents a confirmed
+     outbound with provider dispatch key/admission/control revision, numeric
+     sender IDs, and a sent initial recovery attempt. A structured
+     `whatsapp.stop.quote_resolution` event records verified-shop scoping versus
+     global fallback; STOP errors preserve their original exception.
+   - Final focused PostgreSQL run passed all 8 tests, including verified
+     quoted-shop scope and unresolvable-quote global fallback. Docker/Testcontainers
+     started successfully; no container-start failure remains.
+
+### Changed files
+
+- Consent verifier/materialisation, SQL projection writer and types:
+  `src/services/shopify-consent-receipt-verifier.ts`,
+  `src/services/shopify-checkout-consent-materialization.service.ts`,
+  `src/services/shopify-whatsapp-consent.service.ts`,
+  `src/services/shopify-whatsapp-consent/projection-writer.ts`,
+  `src/services/shopify-whatsapp-consent/types.ts`,
+  `src/services/checkout-recovery/recovery-materialization.service.ts`.
+- Outbound and STOP diagnostics:
+  `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`,
+  `src/services/recovery-conversation/recovery-stored-consent.service.ts`,
+  `src/services/whatsapp-contact-opt-out.service.ts`.
+- Focused verifier, materialisation, retry, final-consent and STOP tests:
+  `tests/unit/services/shopify-consent-receipt-verifier.test.ts`,
+  `tests/unit/services/shopify-checkout-consent-materialization.service.test.ts`,
+  `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`,
+  `tests/unit/services/recovery-conversation/recovery-stored-consent.test.ts`,
+  `tests/integration/whatsapp-contact-opt-out.integration.test.ts`.
+
+### Validation
+
+- Passed: focused consent/recovery/outbound unit suites — 5 files, 107 tests.
+- Passed: bounded abandoned-checkout lookup unit suite — 1 file, 13 tests.
+  These validate existing lookup behavior only; they do not prove the
+  unimplemented full-response logging assertions.
+- Passed: disposable PostgreSQL consent integration —
+  `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts`
+  — 1 file, 2 tests.
+- Passed: disposable PostgreSQL STOP integration —
+  `npm run test:integration -- tests/integration/whatsapp-contact-opt-out.integration.test.ts`
+  — 1 file, 8 tests.
+- Passed: ARCH-076 sender dispatch regression —
+  `npm run test:arch076-sender-dispatch:postgres` — 1 file, 12 tests.
+- Passed: targeted ESLint over all changed source/test files after the final
+  edits; full `npm run lint` also passed earlier in Attempt 4, before the final
+  outbound/STOP diagnostic additions. `npm run build` and `git diff --check`
+  passed after the final edits.
+- Not run in Attempt 4: broader ARCH-052 validation. Its earlier
+  `PROMPT_CONFIGURATION_DUPLICATE_OR_MISSING` failure is not reclassified or
+  claimed as an unchanged baseline by this attempt.
+
+### VCS and worktree evidence
+
+- Implementation commit `6e26516` (`fix(background): distinguish consent configuration failures`) is pushed to `origin/task/ARCH-077-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-BACKGROUND-002`;
+  branch `task/ARCH-077-BACKGROUND-002`.
+- Parent task worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-BACKGROUND-002`;
+  branch `task/ARCH-077-BACKGROUND-002`.
+- Canonical workspace root:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Launcher synchronization evidence: both task branches were already current
+  with their remote task branches and `origin/main`; recursive submodule sync
+  and initialization passed; `database` remained pinned at
+  `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`.
+- Shared checkouts and other task worktrees were not switched or mutated. No
+  implementation submodule gitlink was staged. The parent task report is the
+  only parent-worktree file changed in this attempt.
+
+Task remains blocked pending architect reconciliation of the logging contract;
+this report makes no architect acceptance decision.
