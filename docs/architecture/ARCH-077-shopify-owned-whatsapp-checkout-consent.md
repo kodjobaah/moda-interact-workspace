@@ -43,7 +43,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
 | BACKGROUND-001 | `complete`: Attempt 1 architect-accepted authoritative checkout-attribute read on existing bounded lookup; no Redis consent correlation or cleanup |
-| BACKGROUND-002 | `ready`: Attempt 1 blocker architect-resolved; Attempt 2 may implement signed receipt verification and recoverable-only existing-SQL consent/final-send under accepted rare delayed-replay limitation |
+| BACKGROUND-002 | `ready`: final architect reconciliation supersedes later replay-blocker review; Attempt 3 may resume signed receipt verification and recoverable-only existing-SQL consent/final-send under accepted rare delayed-replay limitation, after preserving/reconciling unfinished Attempt 2 work |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
@@ -51,11 +51,13 @@ The original Shopify production regression was that abandoned checkout had a ver
 
 ## Architect decision — 18 November 2026: B002 minimal idempotency, no new schema
 
-The original B002 `MATERIALISATION_IDEMPOTENCY_BLOCKER` was correct under its prior absolute replay-prevention contract. Following developer review, that **absolute cross-checkout requirement is withdrawn**. B002 is returned to `ready` for Attempt 2 with its old blocker report preserved. Reuse the actual current checkout/recovery guards and PostgreSQL consent transaction, but do not introduce a durable per-checkout consent checkpoint, consent history table, Redis ledger, new queue, or distributed lock.
+The original B002 `MATERIALISATION_IDEMPOTENCY_BLOCKER` was correct under its prior absolute replay-prevention contract. Following developer review, that **absolute cross-checkout requirement is withdrawn**. B002 is returned to `ready` for the next attempt with the earlier blocker reports preserved. Reuse the actual current checkout/recovery guards and PostgreSQL consent transaction, but do not introduce a durable per-checkout consent checkpoint, consent history table, Redis ledger, new queue, or distributed lock.
 
 A successful ordinary A GRANT followed by recoverable B REVOKE blocks new proactive messages under the current SQL final-send gate; existing customer-initiated conversations remain governed by their independent service admission. **Residual risk accepted:** an exceptionally late first-time A materialisation/replay may overwrite B without a per-checkout durable history. The existing schema cannot prove otherwise; do not claim that it can. Duplicate suppression applies only where existing durable state genuinely establishes previous application. Normal completion never materialises either decision. STOP and all other outbound admission invariants remain mandatory.
 
 B002's `review` must be based on newly implemented code and executed tests. SHOPIFY-006 and SYSTEM-TEST-001 remain pending until architect acceptance of B002. See the updated [v1 receipt contract](ARCH-077/checkout-attribute-consent-v1.md) and B002's latest Architect Review.
+
+**Architect reaffirmation (18 November 2026, after Attempt 2 re-block):** The B002 task was re-blocked by a subsequent review demanding a checkout-level persistence and ordering contract despite the already-updated v1 architecture above. That review is historical, not the controlling requirement. The developer-approved accepted-risk design remains authoritative; the parent task is again `ready` (attempt counter 2, next claim Attempt 3). Protect and reconcile uncommitted implementation-worktree changes before restarting. This is documentation-only readiness, not B002 source acceptance or a waiver of recoverability, STOP or final-send consent guards.
 
 ## Execution/validation protocol
 
