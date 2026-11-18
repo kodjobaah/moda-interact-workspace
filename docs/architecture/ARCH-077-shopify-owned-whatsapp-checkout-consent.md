@@ -41,7 +41,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | **SHOPIFY-002** | `complete`, Attempt 3 architect-accepted stateless signed receipt producer and returning-customer SQL status (not live transport certification) |
 | SHOPIFY-003 | `complete`: architect-accepted non-Plus cart App Block and configured App Proxy root |
 | SHOPIFY-004 | `complete`: Attempt 2 architect-accepted Plus checkout UI Extension with reported live receipt issuance and GraphQL propagation |
-| SHOPIFY-005 | `ready`: merchant plan-exclusive activation/placement, returning-customer SQL display and production receipt-origin configuration |
+| SHOPIFY-005 | `ready` (paused Attempt 1; next claim Attempt 2): automated merchant activation, gated cart App Block, verified published Plus/cart placement, returning-customer display and production receipt-origin validation |
 | BACKGROUND-001 | `complete`: thin authoritative checkout candidate / attribute-read integration, **no Redis consent correlation or cleanup** |
 | BACKGROUND-002 | `ready`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
@@ -104,3 +104,13 @@ The source implementation of the signed Shopify receipt verifier, recoverable-on
 The Attempt 4 agent correctly stopped rather than violate the existing Shared structured logging and v1 receipt policies. Keyring/decryption error classification and the quoted-STOP PostgreSQL regression were corrected (Background implementation `6e26516`; parent task report commits `a87c05b45` and `5fef826d0`, as reported). B002 is returned to `ready` for focused Attempt 5 logging work, **not yet accepted**.
 
 The controlling policy is the explicitly scoped **synthetic data / test or development environment** diagnostic exception in `docs/observability/shared-logging.md` and `ARCH-077/checkout-attribute-consent-v1.md`; it does not relax live-customer or production logging. The existing logger redacts and bounds nested fields, so the approved test-only, ordered small response-text chunks are necessary for useful GraphQL diagnostics without changing Shared runtime or introducing another logging system. Preserve source original errors, checkout correlation, no additional Shopify API call and the already accepted delayed replay limitation.
+
+## Architect revision — 18 November 2026 — SHOPIFY-005 guided activation
+
+The developer stopped SHOPIFY-005 Attempt 1 to simplify merchant onboarding. Preserve its uncommitted Recovery Settings, consent-activation, theme-editor link, tests and 20 locale changes. The parent task is reset from `in_progress` to `ready`, with `attempt: 1`, `executor: null`, `claimed_at: null`; the next claim is Attempt 2. No prior Completion Report or S005 acceptance is implied.
+
+**Revised scope:** Shopify plan is detected automatically; Moda verifies the published placement, writes the existing `moda_interact.cart_consent_enabled` AppInstallation boolean **only on authenticated merchant activation/plan reconciliation**, deep-links non-Plus to the cart App Block editor, and gives Plus a checkout-editor action. Shopify retains the final merchant Save. Use Shopify App Bridge `shopify.app.extensions()` to verify published Plus handle/target and, where appropriate, published theme placement; do not claim the extension is active because it is deployed or the merchant clicked Activate. No new installation table, Redis store, queue, permission expansion or theme-file write. Returning-customer display and 20 merchant locales remain in S005.
+
+**Shopify limitations:** A cart App Block can be preselected using the documented theme-editor `addAppBlockId` deep link; published theme changes still require merchant Save. Checkout UI Extension activation likewise requires merchant editor Save. Per-store customised App Proxy prefix/subpath is not available through Shopify's Admin API; default path is automatic, and custom proxy correction remains an exceptional merchant step. The S004 receipt endpoint origin is a deployment concern, never a merchant setup parameter.
+
+Source-of-truth task: `docs/decisions/shopify/ARCH-077/SHOPIFY-005-returning-customers-withdrawal-and-locales.md` as revised. S006 and SYSTEM-TEST-001 retain their S005 acceptance dependency.
