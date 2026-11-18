@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 60
-executor: copilot
-claimed_at: 2026-11-18T03:09:53Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: [ARCH-077-BACKGROUND-001]
 enables: [ARCH-077-SHOPIFY-006, ARCH-077-SYSTEM-TEST-001]
@@ -22,7 +22,7 @@ updated: 2026-11-18
 
 # Gate Shopify recovery and final proactive sends using signed checkout consent
 
-**Ready for Attempt 2 after architect resolution of the reported blocker (18 November 2026).** The previous blocked Completion Report is preserved below as historical evidence; the latest Architect Review is the binding rework contract. Follow the [ARCH-077 signed receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). This **replaces** Redis consent read/materialisation while preserving existing PostgreSQL `CustomerPhone` and final-SQL permission guards.
+**Blocked before Attempt 2 implementation pending an ARCH-077 durable materialisation contract (18 November 2026).** The previous Completion Report and both earlier Architect Reviews are preserved as history; the latest Architect Review below supersedes their readiness decision. Follow the [ARCH-077 signed receipt v1 contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md), including its strict older-decision replay invariant. This **replaces** Redis consent read/materialisation while preserving existing PostgreSQL `CustomerPhone` and final-SQL permission guards.
 
 ## Ownership and exact sequence
 
@@ -31,7 +31,7 @@ updated: 2026-11-18
 3. Resolve the correct shop, verified Shopify customer and attributable recipient: valid customer phone, else billing, else shipping; a shipping recipient known unrelated is ineligible, and differing phone fields are not inherently ambiguous. Signed `customerId` must exactly match verified customer where present. Signed guest `-` still requires trusted token match and attributable recipient; never infer identity solely from phone/email or cart items. Preserve existing STOP/no-contact and canonical phone revision checks.
 4. Only when checkout is **recoverable** and a verified explicit receipt exists, materialise `G`/`R` via existing `Customer`/`CustomerPhone` SQL transaction using `SHOPIFY_NATIVE`, `WHATSAPP_CHECKOUT_RECOVERY`, verified time and revision/decision sequence. A recoverable REVOKE must persist **before** B outreach is denied even if no `CheckoutRecovery` is created. A nonrecoverable/paid/completed checkout does not write consent; its signed receipt is ignored at materialisation time. Missing attribute means no *new* decision; reuse previously verified PostgreSQL GRANTED only under existing customer/recipient/STOP checks.
 5. **Cart A / Cart B:** A first recoverable GRANT persists GRANTED and may send initial outreach; B later recoverable REVOKE persists REVOKED and blocks B outreach and A's future unsolicited follow-up. B paid normally => no SQL change; A's already delivered initial message and customer-initiated AI/human service replies remain valid if allowed under 24-hour WhatsApp/moderation/STOP. A subsequent independent recoverable GRANT can reauthorise new proactive sends absent STOP.
-6. **Approved minimal idempotency, with explicit residual risk:** Preserve the existing per-checkout worker identity, BullMQ retry/idempotency, checkout/recovery-generation guards, SQL transaction/row-lock and consent revision/STOP safeguards. Before updating `CustomerPhone`, use already-loaded, durable recovery/checkout state **only where that state actually proves the same checkout's choice was processed**; if proved, return `ALREADY_MATERIALISED` without a new consent write. Do **not** assume a `CheckoutRecovery` row always exists (a recoverable REVOKE may produce no recovery), or treat an incrementing phone revision as a checkout identifier. Where the existing schema cannot prove prior application, perform the normal recoverable-only consent write using the existing transaction and current SQL guards. The architect explicitly accepts that an exceptionally late, first-time materialisation or replay of an older checkout could then overwrite a newer materialised decision; no absolute cross-checkout ordering/exactly-once promise is made. Do not introduce a checkout ledger, CustomerPhone columns, Woo evidence, Redis consent state, global lock, timestamp-based checkout sorting, or migration to close that accepted gap. A failure in the ordinary SQL/STOP/final-send invariants remains a genuine blocker.
+6. **Durable idempotency/order is a release blocker.** A verified receipt may update `CustomerPhone` only in a transaction that also records durable evidence identifying the shop, authenticated checkout binding, exact signed decision/receipt, and resolved customer/recipient. A unique durable key must make a duplicate/replay of the same applied decision a no-op, including when no `CheckoutRecovery` row exists. The same durable contract must carry a trustworthy decision-order value so that an older Cart A GRANT cannot overwrite a later Cart B REVOKE, including when A is first processed after B. `CustomerPhone.revision`, BullMQ acknowledgement/retry state, `CheckoutRecovery` existence alone, and receipt `acceptedAt` alone do not satisfy this contract. The current v1 receipt provides no durable per-checkout application evidence or decision sequence, and the current schema evidence in the Completion Report does not establish one. B002 must not invent or implement a schema workaround: it remains blocked until moda_architect records and materialises the required ARCH-077 contract and prerequisite repository task(s), then adds those completed tasks as dependencies. Preserve recoverable-only application, no SQL mutation for paid/completed/ineligible checkouts, STOP independence, and the final proactive-send guard.
 7. For all future proactive outbound initial/retry/follow-up/multipart, retain the short current PostgreSQL final-send guard and STOP. Never check Redis consent or the old Shopify `defaultPhoneNumber.whatsAppMarketingConsent`; do not accidentally apply proactive rules to legitimate customer-initiated service replies or alter billing/ARCH-076 sender assignment.
 
 ## Typed outcomes
@@ -42,7 +42,7 @@ updated: 2026-11-18
 
 - Disposable PostgreSQL with real current `CustomerPhone` constraints, unit tests for Shared-authenticated receipt verifier, key-ID rotation with old key retained, token/AAD binding, guest/new customer, tampering/copy/wrong tag, missing/duplicate attr, provider errors and identical/no-choice.
 - Recoverable A GRANT -> one initial outreach; B pre-recoverability REVOKE -> SQL unchanged; B paid -> SQL unchanged; B recoverable -> SQL REVOKED even when B has no outreach; A unsent proactive follow-up denied; legitimate inbound A reply/AI-human response remains eligible under service window; independent STOP remains immediate.
-- Test ordinary duplicate delivery, retries and worker crash after SQL commit, recording which cases existing durable checkout/recovery guards truly suppress. Do not assert exactly-once consent materialisation where no durable per-checkout checkpoint exists. Test sequential A GRANT then B REVOKE, B duplicate, existing SQL/STOP and final-send fences, and document the accepted possibility of exceptionally late first-time A after B. A failed transaction must not claim success; provider sends still use existing outreach idempotency. Do not reintroduce `MATERIALISATION_IDEMPOTENCY_BLOCKER` solely because strict cross-checkout ordering is unprovable under the unchanged schema.
+- After the prerequisite evidence/order contract is implemented, test duplicate delivery and worker crash after SQL commit; replay the same checkout receipt and verify it is a no-op; process Cart A GRANT then Cart B REVOKE and replay/first-process A after B, verifying that stored permission cannot regress; verify recoverable REVOKE without a `CheckoutRecovery` row; and test no SQL write for paid/completed checkouts, existing STOP and final-send fences. A failed transaction must not claim success; provider sends retain existing outreach idempotency. If the evidence/order contract is absent or unprovable, remain blocked with `MATERIALISATION_IDEMPOTENCY_BLOCKER`.
 - Preserve order completion, existing BullMQ retry/idempotency and provider error logs, billing credit compensation, 2 proactive cap, Woo regression and ARCH-076 sender route. Do not modify migrations, Woo/API, `_index.md` or create Redis consent infrastructure.
 
 ## Completion Report
@@ -135,3 +135,29 @@ release blocker before implementation.
 - Preserve `attempt: 1` and historical Completion Report; set `status: ready`, `executor: null`, `claimed_at: null`. The standard `/moda-task ARCH-077-BACKGROUND-002` launcher must claim Attempt 2 and later submit `review`.
 - Do not mark B002 `complete` or unblock SHOPIFY-006/SYSTEM-TEST-001 until a subsequent architect implementation review accepts the actual code and evidence.
 - No `docs/decisions/**/_index.md`, legacy migrations or other agent-owned task files are changed by this handoff.
+
+
+## Architect Review — 18 November 2026 (Attempt 2 blocked: evidence contract unresolved)
+
+### Review Status
+
+**Blocked.** The previous review did not define a durable per-checkout evidence contract sufficient to satisfy this task. It explicitly allowed materialisation without evidence when the current schema cannot prove prior application and accepted that a delayed first-time Cart A GRANT may overwrite a later Cart B REVOKE. That is not an evidence contract; it is a relaxation of the invariant. It also conflicts with the still-current ARCH-077 v1 architecture statement that an already-applied older checkout decision must never reapply after a newer decision.
+
+### Review Notes
+
+1. The Attempt 1 report identifies the missing durable facts: `CustomerPhone` has no checkout identity; `CheckoutRecovery` is optional and does not record an applied consent decision; WooCommerce `WhatsAppConsentEvidence` cannot represent Shopify evidence; and signed `acceptedAt` is audit data, not a durable ordering key.
+2. The Attempt 2 resolution text proposed opportunistic reuse of existing state, but it does not establish (a) a unique durable identity for an applied checkout receipt, (b) an atomic evidence-plus-permission transaction for a REVOKE even without a recovery row, or (c) a trustworthy total ordering across distinct checkouts. In particular, accepting the late-A-after-B overwrite does not meet the parent architecture contract.
+3. The task therefore cannot resume under the unchanged v1 contract. Before B002 implementation resumes, moda_architect must define and record an ARCH-077 contract that:
+   - identifies each authenticated decision by shop, checkout binding, and exact receipt/decision identity, with durable uniqueness/idempotency;
+   - stores proof of application in PostgreSQL atomically with the `CustomerPhone` update, including recoverable REVOKEs that create no `CheckoutRecovery`;
+   - defines an authenticated, trustworthy ordering value across independent checkouts, and a transaction rule that rejects/supersedes an older decision rather than allowing it to overwrite newer permission;
+   - specifies the issuer, persistence owner, schema owner, receipt version/compatibility, and required rollout/dependency order;
+   - keeps paid/completed/ineligible checkouts from mutating permission, preserves STOP as independent and immediate, and retains final proactive-send SQL/STOP checks.
+4. `acceptedAt`, a phone revision counter, queue-job state, or an optional recovery row must not be presented as satisfying those invariants unless a new reviewed contract proves how it does so. Do not implement a local workaround, use Redis as the consent ledger, or weaken the replay invariant in B002.
+5. The canonical implementation worktree currently contains uncommitted Attempt 2 source/test changes. They were not reviewed or modified in this architecture-only review. Stop further B002 implementation; do not discard or commit those changes under this blocked task. The developer must preserve/reconcile that worktree state before any later prepared attempt, because the next launcher preparation requires a clean synchronized worktree.
+
+### Handoff / Workflow
+
+- Task status is `blocked`; `executor` and `claimed_at` are cleared. `attempt: 2` is preserved. No new claim is authorized.
+- No dependent task is unblocked. After the architecture and prerequisite implementation/publication tasks are complete and architect-accepted, update this task's `depends_on`, then return B002 to `ready` through the canonical task workflow.
+- This review changes only the ARCH-077 task report. No Background source, tests, schema, or migration files were changed or reviewed.
