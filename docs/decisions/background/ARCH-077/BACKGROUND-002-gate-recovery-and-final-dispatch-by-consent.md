@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -455,3 +455,31 @@ shared logging and ARCH-077 receipt contracts; that conflict requires
 
 Task remains blocked pending architect reconciliation of the logging contract;
 this report makes no architect acceptance decision.
+
+
+## Architect Review — 18 November 2026 (Attempt 4: reconcile pre-production GraphQL diagnostics)
+
+**Decision: Changes Requested; previous `FULL_GRAPHQL_RESPONSE_LOGGING_CONFLICT` resolved by a narrow, synthetic-data-only test-environment exception.** This review supersedes the conflicting diagnostic requirements in the Attempt 3 review above *only where specifically stated*; preserve all prior reviews and Attempt 4 Completion Report. The previously accepted cross-checkout replay limitation remains unchanged.
+
+### Accepted Attempt 4 implementation — no repeat work
+
+- Accept the source/test corrections for missing and malformed Shared keyring handling, error propagation with original causes, receipt failure classification, verified/failed consent outcome diagnostics, STOP/final-send gates and the quoted-STOP fixture. Preserve commit `6e26516`. The reported disposable PostgreSQL consent suite (2 tests), STOP suite (8 tests), ARCH-076 sender suite (12 tests), focused unit tests, and targeted ESLint/build are evidence for those corrections. These are architect source findings, **not final B002 acceptance**.
+- The developer continues to accept the rare delayed A-after-B materialisation risk. Do not request new schema, history records, Redis state or queues to address it. Do not modify `docs/decisions/**/_index.md`.
+
+### Binding logging reconciliation: full diagnostic data for controlled Shopify test checkouts
+
+The developer needs to inspect what Shopify actually returned from the existing `AbandonedCheckoutsCount` and `AbandonedCheckouts` queries, including complete `customAttributes` and the **opaque encrypted** `moda_wa_consent_v1` value, alongside the original failure messages. The general Shared logging contract intentionally rejects full provider payloads, customer PII and long values. This review and the linked Shared/ARCH-077 documentation therefore authorise a **narrow exception for synthetic checkout/customer test data only in `test` or `development` deployment environments**. This is *not* permission to record genuine customers' personal data or to turn off generic Shared redaction across services. No new environment switch, opt-in option, provider request, log sink or logging framework is authorised. Render test can have `NODE_ENV=production`, so use the existing `resolveDeploymentEnvironmentName()` (`DEPLOYMENT_ENVIRONMENT_NAME` / `OTEL_DEPLOYMENT_ENVIRONMENT` precedence), **not `NODE_ENV` alone**, to determine the deployment group. Never emit raw-payload chunks when the group is `production`, unknown or anything other than `test`/`development`. The owner of the Shopify test store must use synthetic customer/phone/address data for these raw-payload diagnostics.
+
+- In `src/services/abandoned-checkout-lookup.service.ts`, instrument the *existing* single GraphQL POST helper, not an extra fetch. Determine operation explicitly from the supplied named operation (`AbandonedCheckoutsCount` / `AbandonedCheckouts`); record start/completion, HTTP status, query bounds and safe shop/checkout correlation. Read the HTTP response **once** as text and parse that same text without changing error propagation, bounded candidate guards or normalisation. Preserve Shopify's actual JSON fields, missing/null distinctions and original `errors[]` in test-environment diagnostics. Do not log request headers or GraphQL authorization credentials.
+- A nested `logger.info({response})` cannot satisfy this contract: Shared sanitises keys such as `phone`, `email`, `address`, caps strings at 4,096 and arrays at 50. For the approved **synthetic-data-only** exception, serialise the captured response text into deterministic, ordered string chunks of at most **1,024 Unicode code points per chunk**, log each chunk as a plain `responseChunk` **through the existing `lookupLogger`** with a common request/correlation ID, `operation`, `chunkIndex` (zero-based), `chunkCount`, HTTP status, and an explicit `syntheticTestData: true` marker. Keep chunks in order, never duplicate or omit; a chunk containing a private query credential may be modified by the Shared sanitiser, so flag `redactionApplied` rather than claim it was byte-for-byte preserved. This purpose-specific exception is for synthetic development/test data, not a general strategy for circumventing logger redaction. Do not alter Shared runtime code, its redactor, sinks, global field limits or production behaviour.
+- Emit clear separate structured events for parsed count, detail node count, raw-attribute present/missing/duplicate status, receipt verification result and GRANT/REVOKE decision, recoverability decision, SQL mutation/rejection, STOP and final-send outcome. Do not present an unverified ciphertext as accepted consent. Preserve all original Shopify transport, HTTP, JSON parse and GraphQL `errors[].message`, `extensions` and paths via the existing original-error logger contract and typed exception cause chain. Log the precise original exception message when present. An ordinary valid lookup still performs at most one count query and one detail query; no new consent query.
+- For **non-synthetic or production** data, use the existing structured field-level diagnostics and Shared redaction; no complete raw response, email/phone/address, signed receipt or private checkout URL is authorised. Do not log tokens, authorization headers, credential keyrings or AEAD plaintext in any environment. Retain the existing production policy; pre-launch removal of this synthetic-data-only exception can be a separate explicit decision.
+
+### Tests and completion
+
+- Test exact reconstruction of a synthetic Shopify count response and detail response from the **emitted Shared-logger records after sanitisation**, across more than one chunk. The fixture must cover a multi-node basket, synthetic name/phone/email/address, a full `v1.` receipt value, null/missing attributes, and an `errors[]` response; prove request credentials are absent. Assert that `production` and unknown environment names do not emit raw chunks, including when `NODE_ENV=production` but the deployment group is `test` (Render test case).
+- Assert a response with a private query credential is visibly redacted and not misleadingly asserted to be raw-identical; do not assert arbitrary literal bytes survive existing Shared redaction. Test invalid-JSON original message, original GraphQL message/extensions and one-count/one-detail / early-exit behaviour. Use existing unit-test logger injection/mocks without bypassing Shared when checking emitted records.
+- Rerun focused GraphQL lookup, receipt verifier, materialisation, STOP, consent PostgreSQL and ARCH-076 sender regressions plus lint/build/`git diff --check`; report exact counts and any failures. The passing Attempt 4 STOP and keyring work should be preserved, not redesigned.
+- Return to `review` on completion; keep downstream SHOPIFY-006/SYSTEM-TEST-001 gated. No claim of live Shopify checkout propagation is made by these tests.
+
+**Task metadata:** `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 4`; the launcher may claim Attempt 5.

@@ -43,7 +43,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
 | BACKGROUND-001 | `complete`: Attempt 1 architect-accepted authoritative checkout-attribute read on existing bounded lookup; no Redis consent correlation or cleanup |
-| BACKGROUND-002 | `ready` after **Attempt 3 Changes Requested**: preserve accepted existing-schema consent and replay limitation; correct operational keyring failure classification and close the STOP PostgreSQL regression gap in Attempt 4, with no new migration, ledger or Redis consent state |
+| BACKGROUND-002 | `ready` after **Attempt 4 Changes Requested**: keyring, STOP and original-error logging corrections preserved; implement narrowly scoped synthetic test-environment Shopify GraphQL response diagnostics in Attempt 5. No new schema, Redis state, Shared runtime modification or GraphQL call |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
@@ -97,3 +97,10 @@ Architect accepted the inspected non-Plus cart App Block after the remaining pro
 ## ARCH-077-BACKGROUND-002 Attempt 3 architect review — 18 November 2026
 
 The source implementation of the signed Shopify receipt verifier, recoverable-only SQL GRANT/REVOKE materialisation, and existing proactive STOP/final-send fence was inspected. The existing-schema idempotency policy and accepted rare delayed cross-checkout replay risk remain authoritative and are **not** reopened. **Changes Requested**: operational missing/invalid Shared keyring configuration is currently misclassified as a terminal invalid receipt; require independently classified, server-side structured logs for receipt parsing/decryption/identity/SQL/STOP with original exception messages and checkout correlation, and the STOP PostgreSQL integration lacks a passing run (one attempt failed container startup and an earlier attempt reported a quoted-STOP assertion). Return B002 to `ready` with `attempt: 3` preserved for launcher Attempt 4, limited to those corrections, full pre-production Shopify GraphQL count/detail response logging, including complete consent attributes and original error payloads and supporting tests; the detail query already supplies basket plus signed consent attribute, so no new GraphQL request is authorised. Downstream SHOPIFY-006 and SYSTEM-TEST-001 stay gated; no deployment or source acceptance is implied.
+
+
+## Architect reconciliation — 18 November 2026: B002 Attempt 4 logging-contract conflict
+
+The Attempt 4 agent correctly stopped rather than violate the existing Shared structured logging and v1 receipt policies. Keyring/decryption error classification and the quoted-STOP PostgreSQL regression were corrected (Background implementation `6e26516`; parent task report commits `a87c05b45` and `5fef826d0`, as reported). B002 is returned to `ready` for focused Attempt 5 logging work, **not yet accepted**.
+
+The controlling policy is the explicitly scoped **synthetic data / test or development environment** diagnostic exception in `docs/observability/shared-logging.md` and `ARCH-077/checkout-attribute-consent-v1.md`; it does not relax live-customer or production logging. The existing logger redacts and bounds nested fields, so the approved test-only, ordered small response-text chunks are necessary for useful GraphQL diagnostics without changing Shared runtime or introducing another logging system. Preserve source original errors, checkout correlation, no additional Shopify API call and the already accepted delayed replay limitation.
