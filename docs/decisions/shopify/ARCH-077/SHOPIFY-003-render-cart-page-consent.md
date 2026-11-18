@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-11-18T01:22:58Z
@@ -56,11 +56,55 @@ updated: 2026-11-18
 
 ## Completion Report
 
+### Attempt 1 report (preserved)
+
 - Implemented the cart-only `target: section` Theme App Block, 20 storefront locales, explicit-only receipt issuance, locale-aware Ajax cart requests, exact receipt/cart-token confirmation, and fail-closed theme activation helpers.
 - The block is gated by the boolean app-data metafield `moda_interact.cart_consent_enabled`; S005 must set it only for non-Plus plan placement and keep it false for Plus. The block remains unavailable until that plan gate is configured.
 - The current S002 route does not expose `verifyConsentReceipt`. A nonempty receipt already on the cart is therefore treated as unverified and displayed neutrally (unchecked); raw cart attribute text is never trusted as a grant.
 - Validation passed: 12 focused Vitest cases, targeted ESLint, all 20 locale JSON labels, `shopify app build --config moda-interact` including Theme Check, and `npm run build`.
 - `npm run typecheck` still reports five implicit-`any` errors in the unchanged `app/routes/webhooks/root/route.jsx`. No live dev-store operation was run; published-theme activation and Shopify cart-to-checkout receipt propagation remain unverified and require a separately confirmed remote validation.
+
+### Attempt 2 report
+
+**Status: Ready for Review.** The Attempt 1 implementation commit and report are retained in history.
+
+#### Architect Review correction disposition
+
+1. **Verified current-cart display — implemented.** The block now reads the receipt only from the current locale-aware `/cart.js` response, POSTs that receipt and cart token to the verification endpoint, maps verified `G`/`R` to checked/unchecked, and issues no receipt on render. A present receipt that cannot be verified hides the block without falling back to SQL status. Tests cover verified GRANT and REVOKE reloads, tampered/failed verification, no render-time issuance, and explicit same-cart GRANT then REVOKE replacement.
+2. **Authenticated read-only App Proxy verification — implemented.** Added the narrowly scoped `POST /shopify/consent/cart/verify` action to the existing route. It accepts exactly `cartToken` and `receipt`, uses the existing authenticated shop/customer context and `verifyConsentReceipt`, returns only the frozen response with `Cache-Control: no-store`, and preserves redacted service error logging. Route tests cover guest and customer contexts, custom HTTPS Origin, timestamp/prefix checks, rejected extra identities, and bounded failure responses. Shopify SDK signature authentication is mocked in unit tests; no live signed-proxy call is claimed.
+3. **Theme-editor section lifecycle — implemented.** Added `shopify:section:load` initialization with the existing per-root WeakSet guard. A focused test confirms a new section initializes and repeated section-load events do not duplicate initialization.
+
+#### Changed implementation files
+
+- `app/routes/shopify/consent/route.ts`
+- `app/services/shopify-consent/consent-receipt.server.ts`
+- `extensions/moda-whatsapp-consent/assets/cart-consent.js`
+- `extensions/moda-whatsapp-consent/blocks/cart-consent.liquid`
+- `tests/unit/extensions/moda-whatsapp-consent.test.js`
+- `tests/unit/routes/shopify-consent-route.test.ts`
+
+Receipt issuance semantics, Shared AEAD implementation, Redis/queue behavior, other repositories, and `_index.md` files were not changed.
+
+#### Validation
+
+- `npm test -- tests/unit/extensions/moda-whatsapp-consent.test.js tests/unit/routes/shopify-consent-route.test.ts tests/unit/services/shopify-consent-receipt.service.test.ts` — passed, 36 tests across 3 files.
+- Targeted ESLint on all changed JavaScript/TypeScript source and test files — passed.
+- `shopify app build --config moda-interact` — passed, including Theme Check for the Theme App Extension.
+- `npm run build` — passed.
+- `git diff --check` — passed.
+- `npm run typecheck` — still reports five TS7006 implicit-`any` errors in unchanged `app/routes/webhooks/root/route.jsx` (parameters `topic`, `payload`, `token` twice, and `attributes`); these match the Attempt 1 finding and are not in files changed by this attempt.
+
+#### Git and execution evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-SHOPIFY-003`, branch `task/ARCH-077-SHOPIFY-003`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-SHOPIFY-003`, branch `task/ARCH-077-SHOPIFY-003`.
+- Implementation commit pushed to `origin/task/ARCH-077-SHOPIFY-003`: `370f54828b856e7f5055579e154c55b7331b7dbf`.
+- Launcher evidence: both worktrees reused at their canonical paths; remote task-branch fast-forward was not needed; `origin/main` was already incorporated; no shared checkout mutation or other-task worktree reuse; recursive submodule sync/update passed; database submodule remained at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`.
+
+#### Remaining validation gates
+
+No live dev-store, published-theme activation, Shopify SDK signed App Proxy request, or cart-to-checkout `AbandonedCheckout.customAttributes` propagation was run. Those remain S005 / terminal SYSTEM-TEST-001 integration gates; the cart block still depends on S005 configuring `moda_interact.cart_consent_enabled` exclusively for non-Plus placement. No live Shopify behavior is claimed by mocked tests.
 
 ## Architect Review — Attempt 1 (18 November 2026)
 
