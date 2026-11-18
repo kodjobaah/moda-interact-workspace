@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-11-18T09:09:33Z
@@ -483,3 +483,105 @@ The developer needs to inspect what Shopify actually returned from the existing 
 - Return to `review` on completion; keep downstream SHOPIFY-006/SYSTEM-TEST-001 gated. No claim of live Shopify checkout propagation is made by these tests.
 
 **Task metadata:** `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 4`; the launcher may claim Attempt 5.
+
+
+## Completion Report — Attempt 5
+
+**Status: Ready for Review.** Implemented the Attempt 4 synthetic-data-only
+Shopify GraphQL diagnostics contract through the existing Shared structured
+logger. The accepted existing-schema consent behavior, STOP and final-send
+fences, and the documented delayed cross-checkout replay limitation remain
+unchanged.
+
+### Architect Review correction checklist
+
+1. **Preserve accepted consent/keyring/STOP implementation — implemented and
+   preserved.** Attempt 4's keyring classification, consent materialisation,
+   STOP, final proactive-send and ARCH-076 sender changes were not modified.
+   The verifier/materialisation/outbound unit regressions, consent and STOP
+   PostgreSQL suites, and ARCH-076 sender regression were rerun successfully.
+2. **Synthetic GraphQL count/detail diagnostics — implemented.**
+   `src/services/abandoned-checkout-lookup.service.ts` now logs request start
+   and completion for the existing named count/detail operations, including
+   request ID, shop/checkout correlation, actual HTTP status, query bounds and
+   duration. It reads each response body once as text, parses the same text,
+   and emits ordered <=1,024-Unicode-code-point `responseChunk` records through
+   the existing Shared logger only when
+   `resolveDeploymentEnvironmentName()` is `test` or `development`. Each chunk
+   carries `syntheticTestData: true` and a `redactionApplied` flag derived from
+   Shared sanitization. No raw chunks are emitted for `production` or unknown
+   environments; `NODE_ENV=production` with deployment group `test` is covered.
+3. **Parsed lookup/consent diagnostics — implemented.** Separate events report
+   parsed candidate count, detail node count, consent-attribute present/missing/
+   duplicate/invalid totals, missing/zero/over-bound count results, and exact
+   match/no-match/ambiguity. Existing receipt-verification, GRANT/REVOKE,
+   recoverability/materialisation, STOP and final-send events remain intact.
+   No second GraphQL query or new provider call was introduced.
+4. **Provider failure diagnostics — implemented.** HTTP, transport, invalid
+   JSON and GraphQL error outcomes retain the original failure details, with
+   provider operation/status, GraphQL messages/extensions/paths and available
+   exception name/message/code/cause. Error text is bounded/redaction-aware;
+   the complete synthetic response remains reconstructable from permitted
+   test/development chunks. Request authorization headers, Shopify access
+   tokens, keyring material and decrypted receipt claims are not logged.
+5. **Focused assertions — implemented.** The updated lookup suite uses actual
+   Shared logger records after sanitization. It reconstructs exact multi-chunk
+   count and detail responses containing synthetic customer/recipient data,
+   basket fields, full opaque receipt, and null/missing/duplicate attributes;
+   verifies sensitive query-credential redaction is marked; checks original
+   GraphQL errors, HTTP status, invalid-JSON error, single body read, bounds,
+   correlation and early exit. No live Shopify propagation is claimed.
+
+### Changed files
+
+- `src/services/abandoned-checkout-lookup.service.ts`
+- `tests/unit/services/abandoned-checkout-lookup.service.test.ts`
+
+### Validation
+
+- Passed: six focused B002 unit suites — 6 files, 124 tests. This includes the
+  expanded abandoned-checkout GraphQL lookup suite — 17 tests.
+- Passed: disposable PostgreSQL consent integration — 1 file, 2 tests
+  (`node scripts/test-integration.mjs tests/integration/shopify-whatsapp-consent.integration.test.ts --testTimeout=30000`).
+- Passed: disposable PostgreSQL STOP integration — 1 file, 8 tests
+  (`node scripts/test-integration.mjs tests/integration/whatsapp-contact-opt-out.integration.test.ts --testTimeout=30000`).
+- Passed: ARCH-076 sender dispatch regression — 1 file, 12 tests
+  (`node scripts/test-integration.mjs tests/integration/arch076-dispatch-sender.integration.test.ts --testTimeout=30000`).
+- Passed: `npm run lint`; targeted ESLint for both changed files; `npm run build`
+  (Prisma generation, TypeScript builds and package sample generation);
+  `git diff --check`.
+- Transient integration infrastructure observations: one consent run with the
+  default 5-second test timeout timed out; a later disposable database run
+  lost its database connection during test cleanup. The final rerun above
+  passed both tests. No assertion failure remains.
+- Not run: broader ARCH-052 validation. The earlier
+  `PROMPT_CONFIGURATION_DUPLICATE_OR_MISSING` result is not reclassified.
+
+### VCS and worktree evidence
+
+- Implementation commit: `71ac6bf97b87a137d63d7afcdb1a202feae3c86d`,
+  pushed to `origin/task/ARCH-077-BACKGROUND-002`.
+- Physical worktree isolation:
+  - canonical workspace root:
+    `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  - parent worktree:
+    `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-BACKGROUND-002`
+  - parent branch: `task/ARCH-077-BACKGROUND-002`
+  - implementation worktree:
+    `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-BACKGROUND-002`
+  - implementation branch: `task/ARCH-077-BACKGROUND-002`
+  - shared workspace checkout switched/mutated for task work: no
+  - shared implementation checkout switched/mutated for task work: no
+  - another task worktree reused: no
+- Start-of-attempt synchronization, from the prepared launcher packet:
+  - parent remote task branch fast-forwarded: not-needed
+  - parent `origin/main` incorporated: already-current
+  - implementation remote task branch fast-forwarded: not-needed
+  - implementation `origin/main` incorporated: already-current
+- Recursive submodules: sync and init passed; `database` remained pinned at
+  `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`.
+- No implementation gitlink was staged. The parent task file is the only
+  parent-worktree file changed in this attempt.
+
+Implementation changes are committed and pushed on the mirrored task branch.
+The parent task report is ready to commit and push on its mirrored task branch.
