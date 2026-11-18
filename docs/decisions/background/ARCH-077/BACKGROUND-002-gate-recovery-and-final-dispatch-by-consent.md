@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-11-18T04:57:58Z
@@ -182,3 +182,78 @@ release blocker before implementation.
 - Set `status: ready`, `executor: null`, `claimed_at: null`, preserving `attempt: 2`. The next successful launcher claim will be Attempt 3. **This documentation-only unblocking is not implementation acceptance**; downstream tasks stay gated until B002 is reviewed and accepted.
 - The prior blocked review reports **uncommitted Attempt 2 source/test changes in the separate implementation worktree**. Preserve them; review `git status` and export a binary Git diff (including staged changes separately and any untracked files) before cleaning or preparing that worktree. Reconcile those changes explicitly into Attempt 3 or a separate safe branch. Do not blindly rerun the launcher against dirty state, discard code, or claim those changes have been reviewed from this parent ZIP.
 - Implementation must supply a new Completion Report with actual focused and disposable-PostgreSQL tests, exact changed paths/commits/submodule pin, lint/typecheck and clear evidence for the accepted limitations. No `_index.md` updates.
+
+
+## Completion Report — Attempt 3
+
+**Status: Ready for Review.** Implemented the recoverable-checkout consent gate and final proactive-send protections under the final accepted-risk contract. Attempt 2's preserved work was reconciled into this attempt. The task is submitted for `moda_architect` review; this report does not make an architect acceptance decision.
+
+### Architect Review correction checklist
+
+1. **Shared-AEAD receipt verification — implemented.** Added `src/services/shopify-consent-receipt-verifier.ts` using the Shared credential keyring/decrypt API, strict v1 envelope and claims validation, correct AAD, shop/plan/token/customer binding, and fail-closed outcomes. No duplicate cryptography, alternate key, provider lookup, or Redis consent state was added. Focused verifier tests passed.
+2. **Recoverability-only SQL materialisation and revoke-before-denial — implemented.** `src/services/checkout-recovery/recovery-materialization.service.ts` gates consent application after terminal/order/completion checks and the authoritative checkout lookup. A verified recoverable revoke is persisted before outreach is denied, including when no recovery row is created. The disposable-PostgreSQL integration passed for paid no-write, recoverable revoke, and no-recovery-row behavior.
+3. **Retry/duplicate behavior and accepted replay limitation — implemented and documented.** Existing checkout locking, recovery/admission behavior, SQL revisions/STOP checks and provider-send idempotency remain in use; no synthetic `ALREADY_MATERIALISED` result or new persistence/Redis mechanism was introduced. The PostgreSQL test simulates a crash after a grant commit but before recovery creation: retry has no durable per-checkout proof, re-verifies and writes normally (revision 1 to 2). A later recoverable B revoke persists and denies A's unsent proactive follow-up; a subsequent late A grant is explicitly tested as the accepted residual risk (revision 4), not represented as prevented.
+4. **STOP, reactive conversation, sender routing and adjacent behavior — implemented/preserved.** STOP remains independent; proactive final-send checks remain in SQL, while the added freeform customer-reply test verifies reactive replies do not invoke proactive consent preflight. The ARCH-076 sender dispatch integration passed. No migrations, WooCommerce source, API, or architecture indexes were changed.
+5. **Validation and evidence — recorded below.** Focused validation was run after the latest test edit. The STOP disposable integration could not start its ephemeral PostgreSQL container in the final isolated attempt; that limitation is recorded without claiming a pass.
+
+### Changed files
+
+- `src/domain/abandoned-checkout.ts`
+- `src/providers/shopify-whatsapp-consent.provider.ts` (removed)
+- `src/services/abandoned-checkout-lookup.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `src/services/shopify-checkout-consent-materialization.service.ts` (added)
+- `src/services/shopify-consent-receipt-verifier.ts` (added)
+- `src/services/shopify-whatsapp-consent.service.ts`
+- `src/services/shopify-whatsapp-consent/projection-writer.ts`
+- `src/services/shopify-whatsapp-consent/types.ts`
+- `tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts`
+- `tests/integration/shopify-whatsapp-consent.integration.test.ts`
+- `tests/integration/whatsapp-contact-opt-out.integration.test.ts`
+- `tests/unit/providers/shopify-whatsapp-consent-domain.test.ts` (removed)
+- `tests/unit/providers/shopify-whatsapp-consent.provider.test.ts` (removed)
+- `tests/unit/services/abandoned-checkout-lookup.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-snapshot-builder.service.test.ts`
+- `tests/unit/services/checkout-refresh.test.ts`
+- `tests/unit/services/matured-candidate.materialization.test.ts`
+- `tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts`
+- `tests/unit/services/shopify-checkout-consent-materialization.service.test.ts` (added)
+- `tests/unit/services/shopify-consent-receipt-verifier.test.ts` (added)
+- `tests/unit/services/shopify-whatsapp-consent.service.test.ts`
+
+### Validation
+
+- Passed: changed consent/recovery unit suites — 9 files, 170 tests.
+- Passed: `npm run lint`.
+- Passed: `npm run build` (Prisma client generation, TypeScript builds, package sample generation).
+- Passed: `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts` — 1 file, 2 tests, disposable PostgreSQL.
+- Passed: `npm run test:arch076-sender-dispatch:postgres` — 1 file, 12 tests.
+- Passed: `git diff --check`.
+- Not passed / environment blocked: isolated `tests/integration/whatsapp-contact-opt-out.integration.test.ts` invocation with `--testTimeout=30000` could not start `pgvector/pgvector:pg17`; `docker run` was killed with exit 143. Earlier combined execution also exposed a quoted-STOP assertion failure; the STOP integration therefore has no passing result claimed here.
+- Broader ARCH-052 integration validation remains failing at `PROMPT_CONFIGURATION_DUPLICATE_OR_MISSING`; it is not claimed as task validation success. No known baseline ID was identified for that failure.
+
+### VCS and worktree evidence
+
+- Implementation commit: `9c8a12d073376b9315c998394e31012daaef5571` (`feat(background): gate recovery by signed checkout consent`), pushed to `origin/task/ARCH-077-BACKGROUND-002`.
+- Parent task report is the only parent-worktree file changed in this completion update; no implementation submodule gitlink was staged.
+- Physical worktree isolation:
+  - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-BACKGROUND-002`
+  - parent branch: `task/ARCH-077-BACKGROUND-002`
+  - implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-BACKGROUND-002`
+  - implementation branch: `task/ARCH-077-BACKGROUND-002`
+  - shared workspace checkout switched/mutated for task work: no
+  - shared implementation checkout switched/mutated for task work: no
+  - another task worktree reused: no
+- Start-of-attempt synchronization, from the prepared launcher packet:
+  - parent remote task branch fast-forwarded: not-needed
+  - parent `origin/main` incorporated: already-current
+  - implementation remote task branch fast-forwarded: not-needed
+  - implementation `origin/main` incorporated: already-current
+- Recursive implementation submodules, from the prepared launcher packet:
+  - `git submodule sync --recursive`: passed
+  - `git submodule update --init --recursive`: passed
+  - recorded pin: `database` at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
+
+Implementation changes are committed and pushed on the mirrored task branch. The parent report is ready to commit and push on its mirrored task branch; the task awaits architect review.
