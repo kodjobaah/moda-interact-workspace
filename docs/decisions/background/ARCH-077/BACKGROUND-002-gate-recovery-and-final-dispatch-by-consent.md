@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 60
-executor: null
-claimed_at: null
-attempt: 4
+executor: copilot
+claimed_at: 2026-11-18T09:09:33Z
+attempt: 5
 depends_on: [ARCH-077-BACKGROUND-001]
 enables: [ARCH-077-SHOPIFY-006, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
