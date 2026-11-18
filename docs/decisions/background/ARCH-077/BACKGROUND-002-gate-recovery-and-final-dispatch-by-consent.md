@@ -436,6 +436,8 @@ shared logging and ARCH-077 receipt contracts; that conflict requires
 ### VCS and worktree evidence
 
 - Implementation commit `6e26516` (`fix(background): distinguish consent configuration failures`) is pushed to `origin/task/ARCH-077-BACKGROUND-002`.
+- Parent task report commit `a87c05b45` is pushed to
+  `origin/task/ARCH-077-BACKGROUND-002`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-BACKGROUND-002`;
   branch `task/ARCH-077-BACKGROUND-002`.
 - Parent task worktree:
