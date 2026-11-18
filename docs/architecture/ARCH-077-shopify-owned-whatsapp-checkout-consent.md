@@ -4,7 +4,7 @@ title: Shopify-owned WhatsApp consent via signed checkout attribute and deferred
 status: proposed
 coordinator: moda_architect
 created: 2026-11-17
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # ARCH-077 — Shopify-owned WhatsApp checkout consent
@@ -39,7 +39,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-001 | `complete`, accepted historical cart-to-checkout marker experiment; not re-run |
 | SHARED-001 | `complete`, backward-compatible optional marker fields remain unused |
 | **SHOPIFY-002** | `complete`, Attempt 3 architect-accepted stateless signed receipt producer and returning-customer SQL status (not live transport certification) |
-| SHOPIFY-003 | `ready`: non-Plus cart App Block writes/reads back the **single signed attribute** |
+| SHOPIFY-003 | `complete`: Attempt 3 architect-accepted non-Plus cart App Block, verified-receipt display, theme editor, cart-change guard and configurable App Proxy root (not live activated/certified) |
 | SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
 | BACKGROUND-001 | `complete`: Attempt 1 architect-accepted authoritative checkout-attribute read on existing bounded lookup; no Redis consent correlation or cleanup |
@@ -68,6 +68,17 @@ The uploaded Attempt 2 implementation is **Changes Requested**, not yet accepted
 
 Architect accepted the inspected stateless Shopify receipt producer using Shared keyring/AEAD, canonical v1 envelope/AAD and corrected signed App Proxy route. Task `ARCH-077-SHOPIFY-002` is `complete`. S003, S004 and B001 are `ready`; S005/B002 remain gated. Live cart/Plus receipt propagation, consumer parity and recoverable-only SQL materialisation are expressly *not* certified by this producer acceptance; see the SHOPIFY-002 Architect Review for evidence and follow-up ownership.
 
-## Latest architect disposition — BACKGROUND-001 Attempt 1 (17 November 2026)
 
-Architect accepted B001's bounded `AbandonedCheckout.customAttributes` integration from the submitted Background task worktree. The existing GraphQL fetch carries typed `available`/`malformed` attributes and preserves duplicate key/value entries without extra consent-only calls. The authenticated checkout/cart token input is retained in the maturity candidate, not fabricated from GraphQL; the existing bounded lookup matches on checkout URL. Agent reports 39 focused tests, `tsc --noEmit` and ESLint passed. The architect inspected source and tests from the ZIP, but did not rerun the suite or inspect remote Git SHAs. B001 is `complete`; B002 becomes `ready` for independent receipt verification, recoverable-only materialisation and final outbound checks. This is not live signed-receipt or Plus integration certification.
+## ARCH-077-SHOPIFY-003 Attempt 1 review — 18 November 2026
+
+The non-Plus Theme App Block implementation is submitted but **Changes Requested**: its current-cart display assumes every existing receipt is unchecked, rather than verifying the already-saved GRANT/REVOKE. S003 now owns one narrow authenticated `POST cart/verify` integration using existing S002 AEAD verification, with no new state/storage or cryptography. The task returns to `ready` with `attempt: 1`, cleared claim, and dependent SHOPIFY-005 remains gated. Published-theme activation is still S005-owned; live cart/checkout GraphQL transport remains terminal system-test evidence.
+
+
+## ARCH-077-SHOPIFY-003 Attempt 2 architect review — 18 November 2026
+
+Attempt 2 correctly implements server-verified saved receipt display (`GRANT` checked, `REVOKE` unchecked, no automatic write), authenticated read-only `cart/verify` and theme-editor section reinitialisation. **Changes Requested** remains necessary for one bounded inconsistency: the cart App Block hard-codes `/apps/moda-consent`, although Shopify permits merchant-customised App Proxy prefix/subpath and S002 validates those signed configurations. S003 now owns one validated `app_proxy_root` App Block text setting (default `/apps/moda-consent`) from which its three existing endpoint URLs are derived; S005 later explains merchant configuration. Task returns to `ready`, prior claim cleared, attempt 2 preserved for launcher Attempt 3. No new credential, server endpoint, Redis/SQL state, queue or cryptography. S004 and B001 retain their independent statuses; S005 remains `pending` until S003 **and** S004 are complete. Live Shopify publication/GraphQL and Background verification remain downstream certification.
+
+
+## Latest architect disposition — SHOPIFY-003 Attempt 3 (18 November 2026)
+
+Architect accepted the inspected non-Plus cart App Block after the remaining proxy-root correction. One configurable `app_proxy_root` supplies the three authenticated receipt/status/verify paths, with bounded same-origin validation; existing receipt state, explicit-only writes and theme-section handling remain correct. Task `ARCH-077-SHOPIFY-003` is now `complete` (Attempt 3). Agent-reported 57 focused tests and Shopify app/Theme Check/build passed; unchanged webhook-route TS7006 baseline errors remain. This is source/test acceptance, **not** live published-theme, signed-App-Proxy or GraphQL readback certification. SHOPIFY-005 stays `pending` until SHOPIFY-004 also becomes `complete`, and must document matching merchant App Proxy path settings. The architect review does not merge source or parent worktrees.
