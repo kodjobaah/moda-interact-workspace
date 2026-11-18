@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
-executor: copilot
-claimed_at: 2026-11-18T04:57:58Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: [ARCH-077-BACKGROUND-001]
 enables: [ARCH-077-SHOPIFY-006, ARCH-077-SYSTEM-TEST-001]
@@ -257,3 +257,69 @@ release blocker before implementation.
   - recorded pin: `database` at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
 
 Implementation changes are committed and pushed on the mirrored task branch. The parent report is ready to commit and push on its mirrored task branch; the task awaits architect review.
+
+
+## Architect Review — 18 November 2026 — Attempt 3: Changes Requested
+
+**Decision: CHANGES REQUESTED; return to `ready` for Attempt 4.** The submitted implementation commit is `9c8a12d073376b9315c998394e31012daaef5571`; the Attempt 3 parent report is preserved above. This is not acceptance. Architect review used the uploaded `moda-interact-workspace-ARCH-077-BACKGROUND-002(3).zip` source; the agent's test results are reported evidence, not independently rerun by the architect.
+
+### Accepted implementation findings — preserve intact
+
+- The existing bounded authoritative `AbandonedCheckout.customAttributes` lookup supplies one signed attribute; the verifier reuses Shared `decryptCredential`/`parseCredentialKeyring`, checks v1 envelope/AAD, shop, plan kind, candidate token and Shopify customer binding, and does not create Redis preference storage.
+- `RecoveryMaterializationService` checks existing terminal/order/completion and shop admission gates before applying a verified checkout decision; a recoverable REVOKE is persisted before outreach is denied, without requiring a recovery row.
+- Current `CustomerPhone` CAS/consent revisions, STOP and the separate proactive final-send SQL fence are retained; customer-initiated service responses are not incorrectly subjected to the proactive fence.
+- PostgreSQL consent integration documents A GRANT, B paid no-write, B recoverable REVOKE without a B recovery row, normal retry after interruption, and the **explicitly accepted** exceptional late A replay. Do **not** reinstate `MATERIALISATION_IDEMPOTENCY_BLOCKER`, impose cross-checkout total ordering, or add a migration, checkout ledger, Redis consent record, new queue or distributed lock.
+
+### Blocking correction 1 — operational verifier failure must not masquerade as invalid customer evidence
+
+**Source:** `moda-interact-background/src/services/shopify-consent-receipt-verifier.ts`, and its direct consumers `src/services/shopify-checkout-consent-materialization.service.ts` / `src/services/checkout-recovery/recovery-materialization.service.ts`.
+
+Today `parseCredentialKeyring(input.keyringJson)` is inside the same `try/catch` as `decryptCredential`. Any missing/malformed deployment keyring configuration is converted to `INVALID_OR_AMBIGUOUS_RECEIPT`, and the materialisation path maps it to `discarded-consent-invalid`. That silently turns a recoverable valid customer decision into a non-retryable invalid-receipt outcome while obscuring the real operational issue.
+
+- Distinguish **missing/invalid Shared keyring configuration** from **malformed/tampered receipt, unknown/retired receipt key ID or authentication-tag failure**. The latter remain invalid evidence and never grant outreach. Reuse the existing Shared parser and decryptor; do not introduce alternate crypto or a key service.
+- For keyring configuration unavailable, return an existing typed operational materialisation-failure outcome (or throw a bounded, typed error that the existing pending-candidate worker retries) rather than `INVALID_OR_AMBIGUOUS_RECEIPT`. Log the original parser/configuration exception message, name and available error code through the existing server structured logger. Do not log encryption-key contents or Shopify authentication credentials. Preserve the actual exception as the cause rather than substituting only an opaque reason code.
+- Add focused regression tests: absent keyring and invalid keyring are **operational failures**, not invalid receipts; unknown receipt key ID, tampered tag, malformed envelope and wrong binding remain invalid evidence; no SQL write/outreach occurs in either failure category. Test the end-to-end mapping to worker retry versus terminal invalid evidence. Keep code modular and avoid additional provider reads.
+
+### Required diagnostic logging contract — independent stages, original error messages (part of correction 1)
+
+**Pre-production priority: visibility into actual values and actual failures.** The implementing agent MUST use the existing server structured logger (`createLogger` / `StructuredLogger` from `@modainteract/moda-interact-shared/logging`) with the current Background logging conventions. Do not add an environment flag, opt-in debug mode, separate logger, new storage or configuration system. Do not create architecture/task-ID-prefixed runtime event names. Normal production logging restriction/hardening is a separate pre-launch concern; this task must not artificially reduce the detail available in pre-production. Exclude Shopify access tokens, authentication credentials and the encryption keyring/key material, which are not GraphQL response data and are not needed for debugging. Existing Shared logging-kernel behaviour remains in place; do not bypass its infrastructure to print directly to stdout.
+
+1. **Independent verifier failure boundaries:** separate missing `MODA_ENCRYPTION_KEYS_JSON` from `parseCredentialKeyring()` parser exceptions, and handle `decryptCredential()` errors in their own catch. Missing/malformed keyring is an operational error routed to the existing retry path; a valid keyring and rejected receipt (unknown key ID, tampered tag, malformed envelope, wrong binding) remains invalid evidence. Log a separate named event for each outcome, at the actual failure boundary. These must never manufacture a GRANT.
+2. **Preserve original errors:** for keyring parsing, receipt decryption, JSON claims, identity parsing, PostgreSQL consent writes, Shopify transport/HTTP/GraphQL responses and STOP regressions, log the original `error.message` (or non-Error string), `error.name`, available `code`, provider/Prisma response details, and the specific operation/stage. Preserve the original exception as `cause` when propagating. Do not invent or substitute generic messages for real exceptions. Where a validation guard does not throw, log a precise factual message and validation reason without fabricating an exception. Keep the error message intact under the existing structured logger rather than adding an ad-hoc redaction or allowlist that removes diagnostic details.
+3. **Discriminating events:** use stable events such as `shopify.consent.receipt.keyring_missing`, `.keyring_invalid`, `.decrypt_rejected`, `.claim_parse_failed`, `.claim_invalid`, `.identity_deferred`, `.verified`, `shopify.consent.materialization.failed`, `.granted`, `.revoked`, and `shopify.consent.outbound.blocked`. Record `shopId`, operation, stage, outcome, decision/reason code, existing recovery/job identifiers and checkout correlation; ensure the same checkout can be traced from Shopify lookup through SQL and final dispatch. Use `error` for configuration/SQL failures, `warn` for invalid evidence, and `info` for verified outcomes and suppression. `NO_EXPLICIT_CHOICE` is a normal outcome, not an exception.
+4. **What must be visible:** the initial Shopify GraphQL payload is logged in full in the subsection below (including the complete encrypted `moda_wa_consent_v1` value, checkout URL, basket, addresses and Shopify customer details exactly as returned), then a separate verification event records whether the receipt validated, what GRANT/REVOKE decision was extracted, and why it was admitted/deferred/denied. Record the durable PostgreSQL decision/write outcome and the later STOP/final-send gate. Do not misrepresent a GraphQL-received encrypted receipt as a verified decision. Do not log the keyring JSON, encryption secrets, Shopify access tokens or authentication headers; these are credentials, not returned basket data.
+5. **Tests:** spy on the existing logger. Assert distinct events and the *original* parser, decryptor, JSON, identity and Prisma error messages, not merely a `reasonCode`. Test missing/invalid keyring operational retry separately from invalid/tampered receipt terminal handling, no SQL grant in either failure case, verified GRANT/REVOKE and proactive STOP/final-send refusals. Assert real returned provider payload fields are retained, including the exact sample encrypted consent attribute and customer/basket values used in the GraphQL response fixture. Assert Shopify API access tokens and encryption key material are not emitted. No live Shopify merchant is required for these logger unit tests.
+6. **STOP regression diagnostics:** a failed Docker/Testcontainers start must include its exit code, original error and stderr in the report, distinguished from an actual STOP assertion failure. A quoted-STOP assertion failure must include the real assertion diff and corresponding structured STOP admission log. Do not relax existing merchant-scoped/standalone STOP rules or replace failure messages with generic reason strings.
+
+### Blocking correction 1A — Complete Shopify GraphQL response logging (same lookup, no new provider call)
+
+**Source:** `moda-interact-background/src/services/abandoned-checkout-lookup.service.ts` and `tests/unit/services/abandoned-checkout-lookup.service.test.ts`.
+
+The bounded authoritative lookup makes up to **two GraphQL HTTP POST calls per invocation**: `AbandonedCheckoutsCount` then, when `0 < count <= maxCandidates`, `AbandonedCheckouts`. The detail query already returns basket, customer, plan and `customAttributes { key value }` (including `moda_wa_consent_v1`). Do not add another query or change the existing bound. Subsequent retries may reissue these two calls.
+
+Using the existing `lookupLogger` and Shared structured logging kernel, record the **complete JSON response body as actually received from Shopify** for each successful count and detail call, rather than an allowlisted, redacted, flattened or debug-only field selection. Include all returned nodes and nested fields, all customer/phone/email/address information, full checkout/recovery URLs, all basket product/variant/price/currency fields, and every custom attribute with its exact `key` and `value`, including the complete encrypted signed consent receipt. Retain the distinction between missing fields, explicit `null`, empty arrays, malformed values and valid values. Preserve raw JSON semantics; do not fabricate default values in the response log. If parsing fails, log the actual received response text and the original JSON parse exception as separate diagnostic data.
+
+Log structured request/response event pairs for `AbandonedCheckoutsCount` and `AbandonedCheckouts` with the operation name, `shopId`, checkout/job correlation, actual HTTP status, query bounds and timing if available, plus the full provider response body. For non-2xx and GraphQL `errors[]`, log the **actual Shopify response body and the original error messages, extensions, paths and status**—not only `PROVIDER_ERROR` or a reason code. Log count-query bounds decisions (zero, over-bound, missing count) and exact match/ambiguity decisions separately so the developer can see both the raw data and the downstream Moda interpretation. For a verified receipt, log the materialisation decision after decryption; never infer a decision merely from the encrypted attribute.
+
+This is pre-production validation logging and should be emitted through the existing logger at a level enabled by the current non-production configuration; do not require a new environment variable, extra opt-in switch or a separate custom logger. Do not impose an artificial item count or response truncation in the logs: the GraphQL query already has existing candidate and line-item limits. Never log Shopify authentication headers, access tokens or encryption keys; do not build a second network request or change control flow solely for logging. Do not catch-and-continue when the provider or JSON parser fails.
+
+**Focused logging assertions:** mock count and detail responses and assert the full exact returned JSON is recorded for both calls, including phone/email/address, basket items, checkout URL, receipt attribute `key` and the **entire test receipt `value`**, and Shopify's full GraphQL `errors[]` structure. Assert missing/null fields are visibly different, and that original HTTP/parsing/provider exception messages are preserved. Assert the existing zero/over-bound branch skips the detail call; the normal success branch uses exactly one count and one detail query per lookup. Assert no Shopify access token, request authentication header or encryption key is logged. No live store is required.
+
+**Acceptance criterion:** from the logs, the developer can reconstruct exactly which values Shopify returned in the count and detail responses and correlate those payloads with signature verification, consent SQL state changes, STOP and the final outbound decision. Error logs must show the original failure message and relevant provider/SDK details. No new infrastructure or protective logging mode is part of BACKGROUND-002.
+
+### Blocking correction 2 — independently resolve the STOP integration gap
+
+**Test:** `moda-interact-background/tests/integration/whatsapp-contact-opt-out.integration.test.ts`.
+
+The Attempt 3 Completion Report explicitly says the isolated disposable PostgreSQL run could not start `pgvector/pgvector:pg17` (Docker exit 143), and an earlier combined run produced a quoted-STOP assertion failure. Neither is a passing STOP regression. Obtain a clean focused PostgreSQL run and record exact commands, test counts, and any error/failed assertion. If the quoted-STOP test still fails, diagnose the real cause and correct only the relevant source/test fixture without weakening merchant-scoped STOP or the standalone-STOP fallback. If environment/container setup fails, preserve full diagnostics and do not claim a functional pass. Do not change an unrelated service merely to make the test green.
+
+### Scope clarification (not an additional schema task)
+
+The current service deliberately defers `customerId:"-"` guest receipts without an independently verified Shopify-customer/CustomerPhone principal. That is an appropriate fail-closed result in the absence of attribution; document this observable v1 limitation rather than inferring customer identity from phone/email or manufacturing a guest principal. Terminal system-test coverage must distinguish actual guest non-support from a validated customer-linked flow. No new guest-identity system is authorised by this review.
+
+### Acceptance tests / stop conditions
+
+- Re-run the bounded abandoned-checkout GraphQL lookup tests including exact complete count/detail response payload logs and original provider-error assertions, along with focused Shared-AEAD verifier, checkout consent materialisation and recovery admission suites; re-run disposable PostgreSQL consent integration and **passing** STOP regression; re-run ARCH-076 sender tests, lint, build, and `git diff --check`. Report exact failures rather than claiming a pass when Docker cannot start.
+- Record whether the broader ARCH-052 `PROMPT_CONFIGURATION_DUPLICATE_OR_MISSING` failure is unchanged baseline; do not silently attribute that issue to B002 or expand this task without causal evidence.
+- Preserve current source changes, successful tests, parent Attempt 3 report and prior architect reviews. Do not change existing migrations, Woo/API/Shared, `_index.md`, or create consent Redis state.
+- Task metadata becomes `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 3`; the launcher may claim **Attempt 4**. SHOPIFY-006 and SYSTEM-TEST-001 remain gated until a later architect acceptance. Stop and report a concrete unsupported requirement rather than making new architecture decisions.
