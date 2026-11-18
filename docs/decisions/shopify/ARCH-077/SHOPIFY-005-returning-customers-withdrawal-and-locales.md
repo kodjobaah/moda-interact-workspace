@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -17,12 +17,12 @@ attempt: 0
 depends_on: [ARCH-077-SHOPIFY-002, ARCH-077-SHOPIFY-003, ARCH-077-SHOPIFY-004]
 enables: [ARCH-077-SHOPIFY-006, ARCH-077-SYSTEM-TEST-001]
 created: 2026-11-17
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Returning-customer consent display, merchant activation and locales
 
-**Pending; after accepted S002/S003/S004.** Follow the [one-attribute receipt contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). This task owns merchant-facing setup, plan-specific placement guidance, returning verified SQL consent display and Shopify-owned locales, **not** the receipt service or recovery admission.
+**Ready after architect acceptance of S002, S003 and S004.** Follow the [one-attribute receipt contract](../../../architecture/ARCH-077/checkout-attribute-consent-v1.md). This task owns merchant-facing setup, plan-specific placement guidance, returning verified SQL consent display and Shopify-owned locales, **not** the receipt service or recovery admission.
 
 ## Exact ownership
 

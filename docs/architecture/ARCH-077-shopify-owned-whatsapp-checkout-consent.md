@@ -39,11 +39,11 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-001 | `complete`, accepted historical cart-to-checkout marker experiment; not re-run |
 | SHARED-001 | `complete`, backward-compatible optional marker fields remain unused |
 | **SHOPIFY-002** | `complete`, Attempt 3 architect-accepted stateless signed receipt producer and returning-customer SQL status (not live transport certification) |
-| SHOPIFY-003 | `complete`: Attempt 3 architect-accepted non-Plus cart App Block, verified-receipt display, theme editor, cart-change guard and configurable App Proxy root (not live activated/certified) |
-| SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
-| SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
-| BACKGROUND-001 | `complete`: Attempt 1 architect-accepted authoritative checkout-attribute read on existing bounded lookup; no Redis consent correlation or cleanup |
-| BACKGROUND-002 | `ready` after **Attempt 4 Changes Requested**: keyring, STOP and original-error logging corrections preserved; implement narrowly scoped synthetic test-environment Shopify GraphQL response diagnostics in Attempt 5. No new schema, Redis state, Shared runtime modification or GraphQL call |
+| SHOPIFY-003 | `complete`: architect-accepted non-Plus cart App Block and configured App Proxy root |
+| SHOPIFY-004 | `complete`: Attempt 2 architect-accepted Plus checkout UI Extension with reported live receipt issuance and GraphQL propagation |
+| SHOPIFY-005 | `ready`: merchant plan-exclusive activation/placement, returning-customer SQL display and production receipt-origin configuration |
+| BACKGROUND-001 | `complete`: thin authoritative checkout candidate / attribute-read integration, **no Redis consent correlation or cleanup** |
+| BACKGROUND-002 | `ready`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
