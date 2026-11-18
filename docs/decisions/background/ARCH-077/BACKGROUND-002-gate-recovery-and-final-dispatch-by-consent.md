@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 60
 executor: copilot
 claimed_at: 2026-11-18T02:40:40Z
@@ -44,3 +44,65 @@ updated: 2026-11-18
 - Recoverable A GRANT -> one initial outreach; B pre-recoverability REVOKE -> SQL unchanged; B paid -> SQL unchanged; B recoverable -> SQL REVOKED even when B has no outreach; A unsent proactive follow-up denied; legitimate inbound A reply/AI-human response remains eligible under service window; independent STOP remains immediate.
 - Inject crash after SQL commit and before job acknowledgement; replay A after B and B duplicate, verify no newer stored permission regresses; include two overlapping recoveries and test preflight/final-send fences. If cannot prove idempotency using current schema, block acceptance instead of weakening enforcement.
 - Preserve order completion, existing BullMQ retry/idempotency and provider error logs, billing credit compensation, 2 proactive cap, Woo regression and ARCH-076 sender route. Do not modify migrations, Woo/API, `_index.md` or create Redis consent infrastructure.
+
+## Completion Report
+
+**Status: Blocked — `MATERIALISATION_IDEMPOTENCY_BLOCKER`.**
+
+Implementation stopped before source or test changes. The current schema does
+not provide a durable Shopify checkout-decision record that can enforce
+one-time materialisation and prevent a delayed Cart A replay from overwriting a
+later Cart B revoke:
+
+- `CustomerPhone` stores only the latest permission and monotonic revision /
+  decision-sequence counters; it has no checkout identity or per-checkout
+  idempotency key.
+- `WhatsAppConsentEvidence` is not a Shopify evidence store: its required
+  `installationId` foreign key targets `WooCommerceInstallation`. Reusing that
+  model for Shopify would require an invalid/fabricated installation or a
+  schema/ownership change.
+- `CheckoutRecovery` has a unique `(shopId, checkoutToken, generation)` key,
+  but a recovery row is not guaranteed for every eligible revoke and does not
+  persist the applied consent decision. It cannot prove a decision was already
+  materialised when no recovery row exists.
+- `acceptedAt` is receipt audit data only and cannot safely order competing
+  workers. The existing per-checkout Redis lock does not serialize distinct
+  carts for the same recipient.
+
+The existing SQL compare-and-set guards and final-send consent/STOP checks do
+not close the replay gap: after B's revoke commits, a delayed first-time A
+materialisation can still increment the phone sequence and grant permission
+again. No ordering workaround, new schema, Redis store, or fake Woo evidence
+was introduced. This blocks implementation and the required crash/replay and
+overlapping-recovery acceptance tests. `moda_architect` must resolve the
+durable per-checkout evidence contract and ownership before this task can
+continue.
+
+**Changes:** task report only; no implementation files changed.
+
+**Validation:** not run; stopped at the explicit materialisation-idempotency
+release blocker before implementation.
+
+**Physical worktree isolation**
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-BACKGROUND-002`
+- Parent branch: `task/ARCH-077-BACKGROUND-002`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-BACKGROUND-002`
+- Implementation branch: `task/ARCH-077-BACKGROUND-002`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+**Start-of-attempt synchronization**
+
+- Parent remote task branch fast-forwarded: not-needed
+- Parent `origin/main` incorporated: already-current
+- Implementation remote task branch fast-forwarded: not-needed
+- Implementation `origin/main` incorporated: already-current
+
+**Recursive implementation submodules**
+
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- Recorded submodule commit: `database` at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
