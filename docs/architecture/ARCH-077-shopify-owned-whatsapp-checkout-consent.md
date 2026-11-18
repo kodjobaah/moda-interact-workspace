@@ -43,11 +43,19 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
 | BACKGROUND-001 | `complete`: Attempt 1 architect-accepted authoritative checkout-attribute read on existing bounded lookup; no Redis consent correlation or cleanup |
-| BACKGROUND-002 | `ready`: verify receipt, recoverability and existing PostgreSQL consent materialisation/final-send |
+| BACKGROUND-002 | `ready`: Attempt 1 blocker architect-resolved; Attempt 2 may implement signed receipt verification and recoverable-only existing-SQL consent/final-send under accepted rare delayed-replay limitation |
 | SHOPIFY-006 | `pending`: retire old Shopify native consent publisher/sync; no compatibility layer |
 | SYSTEM-TEST-001 | `pending`: real browser/Shopify, disposable PostgreSQL/Redis worker isolation and final outbound certification |
 
 **Dependency rule:** S002 is `complete` after architect acceptance of Attempt 3, enabling S003, S004 and B001 independently. B001 is now architect-accepted `complete` (Attempt 1), so B002 is `ready`. S005 retains its S003/S004 dependencies; S006 and terminal system test retain their prerequisites. Do not start tasks before their own launcher claims; do not treat S002 acceptance as live Plus/Background integration evidence. Filenames mentioning Redis are legacy task paths, **not** permission to restore Redis consent storage.
+
+## Architect decision — 18 November 2026: B002 minimal idempotency, no new schema
+
+The original B002 `MATERIALISATION_IDEMPOTENCY_BLOCKER` was correct under its prior absolute replay-prevention contract. Following developer review, that **absolute cross-checkout requirement is withdrawn**. B002 is returned to `ready` for Attempt 2 with its old blocker report preserved. Reuse the actual current checkout/recovery guards and PostgreSQL consent transaction, but do not introduce a durable per-checkout consent checkpoint, consent history table, Redis ledger, new queue, or distributed lock.
+
+A successful ordinary A GRANT followed by recoverable B REVOKE blocks new proactive messages under the current SQL final-send gate; existing customer-initiated conversations remain governed by their independent service admission. **Residual risk accepted:** an exceptionally late first-time A materialisation/replay may overwrite B without a per-checkout durable history. The existing schema cannot prove otherwise; do not claim that it can. Duplicate suppression applies only where existing durable state genuinely establishes previous application. Normal completion never materialises either decision. STOP and all other outbound admission invariants remain mandatory.
+
+B002's `review` must be based on newly implemented code and executed tests. SHOPIFY-006 and SYSTEM-TEST-001 remain pending until architect acceptance of B002. See the updated [v1 receipt contract](ARCH-077/checkout-attribute-consent-v1.md) and B002's latest Architect Review.
 
 ## Execution/validation protocol
 
