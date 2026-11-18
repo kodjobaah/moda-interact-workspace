@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-11-18T02:01:40Z
@@ -105,6 +105,52 @@ Receipt issuance semantics, Shared AEAD implementation, Redis/queue behavior, ot
 #### Remaining validation gates
 
 No live dev-store, published-theme activation, Shopify SDK signed App Proxy request, or cart-to-checkout `AbandonedCheckout.customAttributes` propagation was run. Those remain S005 / terminal SYSTEM-TEST-001 integration gates; the cart block still depends on S005 configuring `moda_interact.cart_consent_enabled` exclusively for non-Plus placement. No live Shopify behavior is claimed by mocked tests.
+
+### Attempt 3 report
+
+**Status: Ready for Review.** Attempt 3 implements the remaining storefront App Proxy configuration correction from the latest Architect Review, preserves the earlier verified-receipt and lifecycle fixes, and prevents saving a newly issued receipt after a cart replacement.
+
+#### Rework correction disposition
+
+1. **Verified current-cart display — implemented.** The block reads the receipt from the current locale-aware `/cart.js` response, verifies it against that cart, maps verified GRANT/REVOKE to checked/unchecked, and does not issue a receipt on render. Present-but-unverifiable receipts still hide only the Moda control without SQL fallback. Covered by `tests/unit/extensions/moda-whatsapp-consent.test.js`.
+2. **Authenticated read-only App Proxy verification — implemented.** `app/routes/shopify/consent/route.ts` exposes the exact two-field `cart/verify` request through Shopify's authenticated App Proxy context, calls the existing receipt verifier, returns the bounded frozen response with `Cache-Control: no-store`, and preserves redacted error diagnostics. Route cases remain covered by `tests/unit/routes/shopify-consent-route.test.ts`.
+3. **Theme-editor section lifecycle — implemented.** New roots are initialized on `shopify:section:load` without duplicate initialization or duplicate handlers. Covered by `tests/unit/extensions/moda-whatsapp-consent.test.js`.
+4. **Merchant-configurable App Proxy root — implemented.** The block exposes exactly one text setting (`app_proxy_root`, label `Moda app proxy path`, default `/apps/moda-consent`) and derives the three escaped endpoint attributes from it. Before any request, the browser validates one supported prefix and one 1–30 character subpath, rejects reserved names and malformed paths, then constructs same-origin endpoint URLs. Empty configuration uses the default. Tests cover the default plus `/tools/custom-consent`, `/a/custom-consent`, and `/community/custom-consent`, and prove invalid paths hide the block without a request.
+5. **Cart changes while receipt issuance is pending — implemented.** Before writing, `cart-consent.js` rereads the locale-aware cart and compares its normalized token with the token used for issuance; a changed cart aborts the write and restores the last confirmed checkbox state. A focused regression test proves no update request is sent to the replacement cart.
+
+#### Changed implementation files in Attempt 3
+
+- `extensions/moda-whatsapp-consent/assets/cart-consent.js`
+- `extensions/moda-whatsapp-consent/blocks/cart-consent.liquid`
+- `tests/unit/extensions/moda-whatsapp-consent.test.js`
+
+No receipt-issuance semantics, App Proxy server routing/authentication, Redis/queue behavior, Shared cryptography, other repositories, or `_index.md` files were changed.
+
+#### Validation
+
+- `npm test -- tests/unit/extensions/moda-whatsapp-consent.test.js tests/unit/routes/shopify-consent-route.test.ts tests/unit/services/shopify-consent-receipt.service.test.ts` — passed, 57 tests across 3 files.
+- Targeted ESLint on the changed JavaScript source and test — passed.
+- `shopify app build --config moda-interact` — passed, including Theme Check and extension bundling; `cart-consent.js` is 9,855 bytes, below the configured 10,000-byte limit.
+- Shopify Liquid app-block validation (`--context app`) — passed.
+- `git diff --check` — passed.
+- `npm run build` — passed.
+- `npm run typecheck` — reports exactly five TS7006 implicit-`any` errors in unchanged `app/routes/webhooks/root/route.jsx` (`topic`, `payload`, `token` twice, `attributes`); these match the already documented baseline, and no new typecheck error was observed.
+- Existing shopper locale files were not changed; all 20 locale JSON files were validated.
+
+#### Git and execution evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-077-SHOPIFY-003`, branch `task/ARCH-077-SHOPIFY-003`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-077-SHOPIFY-003`, branch `task/ARCH-077-SHOPIFY-003`.
+- Implementation commits pushed to `origin/task/ARCH-077-SHOPIFY-003`: `fe1dbf9` (`fix(shopify): verify cart before saving consent receipt`) and `e774fa7` (`fix(shopify): support merchant app proxy paths`).
+- Launcher evidence: both canonical worktrees were reused; task-branch fast-forwards were not needed; `origin/main` was already incorporated in both; shared workspace and implementation checkouts were not switched or mutated; no other task worktree was reused; recursive submodule sync/update passed; the database submodule remained at `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`.
+
+#### Remaining validation gates and documentation note
+
+- No live dev-store, published-theme activation, live signed App Proxy request, or cart-to-checkout `AbandonedCheckout.customAttributes` propagation was run. These remain S005 / SYSTEM-TEST-001 integration gates; no live Shopify behavior is claimed.
+- No live dev-store, published-theme activation, live signed App Proxy request, or cart-to-checkout `AbandonedCheckout.customAttributes` propagation was run. These remain S005 / SYSTEM-TEST-001 integration gates; no live Shopify behavior is claimed.
+- S005 activation guidance must tell merchants to keep the App Block's `Moda app proxy path` setting aligned with Shopify's configured App Proxy URL when they customize that URL.
+- The task's linked `docs/architecture/ARCH-077/checkout-attribute-consent-v1.md` path is absent from the workspace. The implementation followed the complete frozen interface embedded in this task; no implementation blocker remains from the unavailable duplicate reference.
 
 ## Architect Review — Attempt 1 (18 November 2026)
 
