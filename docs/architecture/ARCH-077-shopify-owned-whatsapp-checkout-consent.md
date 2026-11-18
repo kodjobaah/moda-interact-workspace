@@ -39,7 +39,7 @@ The original Shopify production regression was that abandoned checkout had a ver
 | SHOPIFY-001 | `complete`, accepted historical cart-to-checkout marker experiment; not re-run |
 | SHARED-001 | `complete`, backward-compatible optional marker fields remain unused |
 | **SHOPIFY-002** | `complete`, Attempt 3 architect-accepted stateless signed receipt producer and returning-customer SQL status (not live transport certification) |
-| SHOPIFY-003 | `ready`: non-Plus cart App Block writes/reads back the **single signed attribute** |
+| SHOPIFY-003 | `ready` for Attempt 2 after architect Changes Requested: correct verified current-cart receipt display and read-only App Proxy verification; do not claim accepted |
 | SHOPIFY-004 | `ready`: Plus checkout UI Extension writes/reads back the **same attribute**, never cart+checkout controls together |
 | SHOPIFY-005 | `pending`: merchant activation/placement and 20 locales, returning SQL consent display |
 | BACKGROUND-001 | `ready`: thin authoritative checkout candidate / attribute-read integration, **no Redis consent correlation or cleanup** |
@@ -67,3 +67,8 @@ The uploaded Attempt 2 implementation is **Changes Requested**, not yet accepted
 ## Latest architect disposition — SHOPIFY-002 Attempt 3 (17 November 2026)
 
 Architect accepted the inspected stateless Shopify receipt producer using Shared keyring/AEAD, canonical v1 envelope/AAD and corrected signed App Proxy route. Task `ARCH-077-SHOPIFY-002` is `complete`. S003, S004 and B001 are `ready`; S005/B002 remain gated. Live cart/Plus receipt propagation, consumer parity and recoverable-only SQL materialisation are expressly *not* certified by this producer acceptance; see the SHOPIFY-002 Architect Review for evidence and follow-up ownership.
+
+
+## ARCH-077-SHOPIFY-003 Attempt 1 review — 18 November 2026
+
+The non-Plus Theme App Block implementation is submitted but **Changes Requested**: its current-cart display assumes every existing receipt is unchecked, rather than verifying the already-saved GRANT/REVOKE. S003 now owns one narrow authenticated `POST cart/verify` integration using existing S002 AEAD verification, with no new state/storage or cryptography. The task returns to `ready` with `attempt: 1`, cleared claim, and dependent SHOPIFY-005 remains gated. Published-theme activation is still S005-owned; live cart/checkout GraphQL transport remains terminal system-test evidence.
