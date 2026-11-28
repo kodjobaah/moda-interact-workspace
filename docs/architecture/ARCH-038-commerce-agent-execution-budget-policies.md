@@ -69,7 +69,7 @@ This is the independent `context=PREVIEW` namespace in the **same** `CommerceMod
 
 1. **Effective LIVE policy (read-only simulation):** explicitly resolve the selected Shop's current LIVE Merchant → Price Plan → Platform budget under the authorised Studio identity, copy only its effective numbers and per-field provenance into an isolated PREVIEW snapshot, and never edit LIVE rows, schedule live messaging, or fall back to LIVE implicitly. If the LIVE policy/current plan cannot be resolved, show an actionable error and prevent starting in this mode. This is a user-requested inspection mode, not an alternate PREVIEW inheritance layer.
 2. **Saved Studio Preview policy:** resolve the selected Shop's persisted `PREVIEW/SHOP` keys over `PREVIEW/PLATFORM` per field, retaining effective sources and versions; this remains the default mode.
-3. **Custom test budget:** allow the authorised Studio operator to enter `deadlineMs` and `outputTokens` directly and, under clearly labelled *advanced runner limits*, `modelSteps` and `remoteCalls`. The latter two are **temporary execution inputs**, not keys in `CommerceModelPolicy.budget` v1. Custom fields are positive safe integers and must be checked for provider, reservation and runner feasibility. Custom values are never written to `CommerceModelPolicy`, `CommerceAuditEvent` or LIVE configuration. They may be retained only in the isolated, bounded-lifetime Preview conversation/run snapshot for resume/retry.
+3. **Custom test budget:** allow the authorised Studio operator to enter `deadlineMs` and `outputTokens` directly and, under clearly labelled _advanced runner limits_, `modelSteps` and `remoteCalls`. The latter two are **temporary execution inputs**, not keys in `CommerceModelPolicy.budget` v1. Custom fields are positive safe integers and must be checked for provider, reservation and runner feasibility. Custom values are never written to `CommerceModelPolicy`, `CommerceAuditEvent` or LIVE configuration. They may be retained only in the isolated, bounded-lifetime Preview conversation/run snapshot for resume/retry.
 
 A dedicated Commerce React component, `src/studio/test-conversations/preview-execution-limits.tsx`, sits in the existing Test Conversations controls alongside — but separate from — `Status polling settings`. It presents the three authorised policy-source modes, read-only effective values and provenance, and the CUSTOM deadline/output-token inputs with advanced `modelSteps`/`remoteCalls`, reset and inline validation. Only the creation request carries the selected source or custom values; polling requests never carry budgets.
 
@@ -102,39 +102,39 @@ Admin presents budget fields as a **reusable, schema-driven editor**, not as a r
 - **Admin / System Controls / Platform Policy:** show a separate **CommerceAgent Execution Policy** section, not a billing-policy field. Choose the environment; both LIVE Platform budget fields are required. Show exact stored values, the friendly time equivalent, edit/schema versions, and a reasoned, version-checked Save action. Inherited mode is forbidden for required Platform defaults.
 - **Admin / Merchant Pricing Plan builder:** add a **CommerceAgent Policy** section within the existing plan editor (not a replacement plan builder). A per-field **Override / Inherit** control starts unset by default; Inherit shows the current LIVE Platform value and its source without copying it into the plan's sparse `budget`. Show the effective plan values and independent provenance.
 - **Admin / Tenant Directory / Merchant details:** add an internal-only **CommerceAgent Policy** section with the merchant's canonical current plan identity (or an explicit unresolved/no-current-plan state), a link to the existing plan editor where available, each field's **Override / Inherit** control, and a read-only effective-value/source comparison (**Merchant / Price Plan / Platform**). No merchant-facing Shopify/WooCommerce editor or mutation endpoint.
-- **Commerce Studio / Agent Configuration or Test Conversations:** use the same *interaction pattern*, but Commerce owns its own reusable form code, including the standalone `PreviewExecutionLimits` React component composed into the current Test Conversations controls beside the existing polling section. Preserve authorised, audited PREVIEW Platform/Shop editing, separate from a Test Conversations **policy-source selector** (saved PREVIEW, read-only LIVE simulation, temporary custom). Display descriptions, effective-value provenance, 2 editable custom budget fields plus 2 clearly labelled advanced test-runner limits, reset/defaults, and existing separate browser-only polling settings. Only the explicit LIVE simulation reads LIVE values, under privileged read-only authorisation; no Studio editor/action may write LIVE rows or silently fall back across contexts.
+- **Commerce Studio / Agent Configuration or Test Conversations:** use the same _interaction pattern_, but Commerce owns its own reusable form code, including the standalone `PreviewExecutionLimits` React component composed into the current Test Conversations controls beside the existing polling section. Preserve authorised, audited PREVIEW Platform/Shop editing, separate from a Test Conversations **policy-source selector** (saved PREVIEW, read-only LIVE simulation, temporary custom). Display descriptions, effective-value provenance, 2 editable custom budget fields plus 2 clearly labelled advanced test-runner limits, reset/defaults, and existing separate browser-only polling settings. Only the explicit LIVE simulation reads LIVE values, under privileged read-only authorisation; no Studio editor/action may write LIVE rows or silently fall back across contexts.
 
 For all editor scopes, explicit values must be validated before submission; clearing an override removes the JSON key (never persists `null` or a copied inherited value). Every modification requires a non-empty audit reason, server-side permission checks, transactional `CommerceAuditEvent`, CAS/edit-version check, and disable-while-saving single-flight submission. Surface field-level validation errors and a recoverable conflict/reload action, preserving unsaved user input where safe. Provide a **Policy History** section with timestamp, actor, audit reason and before/after changed keys from the existing `CommerceAuditEvent` (scope/environment/owner-filtered, paginated); show an empty state when no edits exist. Do not expose audit metadata for other merchants or contexts.
 
 ## Repository Responsibilities
 
-| Repository | Ownership |
-|---|---|
-| moda-interact-database | LIVE and PREVIEW durable policy schema, constraints, migrations and audit persistence requirements |
-| moda-interact-admin | LIVE Platform controls, Price Plan builder fields and Tenant Directory merchant overrides; exclusively privileged writes |
-| moda-interact-background | Resolve the current LIVE budget for each execution (including retries), hold it for that invocation, verify worker lifecycle compatibility, enforce through Shared |
-| moda-interact-commerce | Manage and consume the independent PREVIEW policy in authorised Studio |
-| moda-interact-system-test | Integrated precedence, isolation, tenancy, per-execution LIVE budget and separate Preview-snapshot/runtime certification |
-| moda-interact-shared | Existing generic runner and caller-budget enforcement; no new implementation task unless a specific contract gap is discovered |
-| moda-interact / moda-interact-woocommerce | **No merchant-facing configuration or implementation tasks** |
+| Repository                                | Ownership                                                                                                                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| moda-interact-database                    | LIVE and PREVIEW durable policy schema, constraints, migrations and audit persistence requirements                                                                 |
+| moda-interact-admin                       | LIVE Platform controls, Price Plan builder fields and Tenant Directory merchant overrides; exclusively privileged writes                                           |
+| moda-interact-background                  | Resolve the current LIVE budget for each execution (including retries), hold it for that invocation, verify worker lifecycle compatibility, enforce through Shared |
+| moda-interact-commerce                    | Manage and consume the independent PREVIEW policy in authorised Studio                                                                                             |
+| moda-interact-system-test                 | Integrated precedence, isolation, tenancy, per-execution LIVE budget and separate Preview-snapshot/runtime certification                                           |
+| moda-interact-shared                      | Existing generic runner and caller-budget enforcement; no new implementation task unless a specific contract gap is discovered                                     |
+| moda-interact / moda-interact-woocommerce | **No merchant-facing configuration or implementation tasks**                                                                                                       |
 
 ## Data Model
 
 Create **one new** Prisma model `CommerceModelPolicy` in PostgreSQL schema `commerce`; do not extend `CommerceModelAvailability`, `PlatformBillingPolicy`, `BillingPlan`, `CommerceAgentConfiguration` or create five near-identical scope tables. The table has:
 
-| Field | Contract |
-|---|---|
-| `id` | Stable policy identifier (e.g. Prisma CUID) |
-| `environment` | Existing `CommerceEnvironment`, required |
-| `context` | New enum `CommerceModelPolicyContext`: `LIVE`, `PREVIEW` |
-| `scope` | New enum `CommerceModelPolicyScope`: `PLATFORM`, `PRICE_PLAN`, `SHOP` |
-| `merchantPricingPlanId` | Nullable FK to existing `MerchantPricingPlan.id`, only for `PRICE_PLAN` |
-| `shopId` | Nullable FK to existing `Shop.id`, only for `SHOP` |
-| `budget` | Required PostgreSQL `jsonb` object (`Json @db.JsonB`) |
-| `budgetSchemaVersion` | Required positive integer, initially `1` |
-| `editVersion` | Required optimistic-concurrency counter, initially `1` |
+| Field                                  | Contract                                                                               |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `id`                                   | Stable policy identifier (e.g. Prisma CUID)                                            |
+| `environment`                          | Existing `CommerceEnvironment`, required                                               |
+| `context`                              | New enum `CommerceModelPolicyContext`: `LIVE`, `PREVIEW`                               |
+| `scope`                                | New enum `CommerceModelPolicyScope`: `PLATFORM`, `PRICE_PLAN`, `SHOP`                  |
+| `merchantPricingPlanId`                | Nullable FK to existing `MerchantPricingPlan.id`, only for `PRICE_PLAN`                |
+| `shopId`                               | Nullable FK to existing `Shop.id`, only for `SHOP`                                     |
+| `budget`                               | Required PostgreSQL `jsonb` object (`Json @db.JsonB`)                                  |
+| `budgetSchemaVersion`                  | Required positive integer, initially `1`                                               |
+| `editVersion`                          | Required optimistic-concurrency counter, initially `1`                                 |
 | `createdByAdminId`, `updatedByAdminId` | Nullable for migration-created Platform seeds; authorised Admin FK for later mutations |
-| `createdAt`, `updatedAt` | Required timestamps |
+| `createdAt`, `updatedAt`               | Required timestamps                                                                    |
 
 Ownership checks (enforced by PostgreSQL `CHECK` constraints):
 
@@ -199,19 +199,19 @@ Classification: **pre-production feature introduction**, subject to confirmation
 
 ## Decisions / Tasks
 
-| Task | Owner | Current status | Depends On |
-|---|---|---|---|
-| ARCH-038-DATABASE-001 | moda_database | Complete — developer completion recorded | - |
-| ARCH-038-DATABASE-002 | moda_database | Superseded | replaced by DATABASE-001 |
-| ARCH-038-ADMIN-001 | moda_admin | Complete — developer completion recorded | DATABASE-001 |
-| ARCH-038-ADMIN-002 | moda_admin | Complete — developer completion recorded | DATABASE-001, ADMIN-001 |
-| ARCH-038-ADMIN-003 | moda_admin | Complete — developer completion recorded | DATABASE-001, ADMIN-001 |
-| ARCH-038-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
-| ARCH-038-COMMERCE-001 | moda_commerce | Complete — developer completion recorded | DATABASE-001 |
-| ARCH-038-COMMERCE-002 | moda_commerce | Ready — Attempt 1 Changes Requested | DATABASE-001, COMMERCE-001 |
-| ARCH-038-COMMERCE-003 | moda_commerce | Pending | COMMERCE-002 |
-| ARCH-038-SYSTEM-TEST-001 | moda_system_test | Pending | DATABASE-001, ADMIN-001/002/003, BACKGROUND-001 |
-| ARCH-038-SYSTEM-TEST-002 | moda_system_test | Pending | DATABASE-001, COMMERCE-001/002/003 |
+| Task                     | Owner            | Current status                           | Depends On                                      |
+| ------------------------ | ---------------- | ---------------------------------------- | ----------------------------------------------- |
+| ARCH-038-DATABASE-001    | moda_database    | Complete — developer completion recorded | -                                               |
+| ARCH-038-DATABASE-002    | moda_database    | Superseded                               | replaced by DATABASE-001                        |
+| ARCH-038-ADMIN-001       | moda_admin       | Complete — developer completion recorded | DATABASE-001                                    |
+| ARCH-038-ADMIN-002       | moda_admin       | Complete — developer completion recorded | DATABASE-001, ADMIN-001                         |
+| ARCH-038-ADMIN-003       | moda_admin       | Complete — developer completion recorded | DATABASE-001, ADMIN-001                         |
+| ARCH-038-BACKGROUND-001  | moda_background  | Ready                                    | DATABASE-001                                    |
+| ARCH-038-COMMERCE-001    | moda_commerce    | Complete — developer completion recorded | DATABASE-001                                    |
+| ARCH-038-COMMERCE-002    | moda_commerce    | Ready — Attempt 1 Changes Requested      | DATABASE-001, COMMERCE-001                      |
+| ARCH-038-COMMERCE-003    | moda_commerce    | Pending                                  | COMMERCE-002                                    |
+| ARCH-038-SYSTEM-TEST-001 | moda_system_test | Pending                                  | DATABASE-001, ADMIN-001/002/003, BACKGROUND-001 |
+| ARCH-038-SYSTEM-TEST-002 | moda_system_test | Pending                                  | DATABASE-001, COMMERCE-001/002/003              |
 
 DATABASE-002 is preserved as a **superseded** historical task definition: no implementation, no dependency and no implementation worktree should be started for it. All downstream Preview work now depends on DATABASE-001. Full task IDs in YAML frontmatter are authoritative. System-test work is terminal: no implementation task depends on system tests. `docs/decisions/**/_index.md` must not be created or modified until the developer confirms this architecture session is complete.
 
@@ -232,7 +232,6 @@ DATABASE-002 is preserved as a **superseded** historical task definition: no imp
 - 2026-10-14: Superseded LIVE retry-wide snapshot requirement by explicit agreement: each Background execution (including retry) resolves the current policy once; an in-flight execution keeps those values. No new Redis or PostgreSQL budget-snapshot persistence. PREVIEW Test Conversation snapshot remains mandatory. Required local AI Mock HTTP orchestration via actual Shared/OpenRouter SDK, zero paid calls, and disposable `TEST` environment isolation.
 
 - 2026-10-17: COMMERCE-002 Attempt 1 returned to Ready after architect review; resolve authoritative UI policy projection, compare full-suite failures with the documented baseline, and complete build/VCS preparation evidence before resubmission. COMMERCE-003 remains gated.
-
 
 ### Preserved local functionality reconciliation — 2026-11-13
 

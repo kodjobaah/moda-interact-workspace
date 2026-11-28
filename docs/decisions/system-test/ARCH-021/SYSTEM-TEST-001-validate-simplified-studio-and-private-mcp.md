@@ -159,7 +159,6 @@ COMMERCE_MCP_SERVICE_TOKEN
 
 Historical docs may mention removed names only when clearly labelled historical; active runtime/deployment docs must not.
 
-
 ### R8. Dynamic Storefront schema builder uses the real pinned schema
 
 Prove the accepted schema-authoring flow against the real pinned Storefront `2026-07`
@@ -187,7 +186,6 @@ Prove all of the following:
 - generated schema identity equals the pinned artifact identity;
 - normal schema browsing/generation performs no Shopify/provider network request;
 - the obsolete hand-authored Storefront subset is not used.
-
 
 ### R9. Shopify documentation is readable and safely normalized
 

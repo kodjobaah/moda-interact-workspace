@@ -49,6 +49,7 @@ Architecture-level test fixtures/scenarios for Admin/merchant inbox, ownership, 
 ## Requirements
 
 Cover at least:
+
 - all authorised shop staff share one thread; cross-shop access denied;
 - all active Admins may read; only durable owner sends;
 - atomic take ownership and assignment persists across session/process boundary represented by test topology;

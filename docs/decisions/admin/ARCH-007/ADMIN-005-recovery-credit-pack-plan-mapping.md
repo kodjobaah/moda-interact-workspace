@@ -42,19 +42,23 @@ includedRecoveryConversationAllowance
 ## Server-side validation
 
 When `recoveryCreditPackEnabled=false`:
+
 - pack size and pack event handle must be null/empty.
 
 When `recoveryCreditPackEnabled=true`:
+
 - `recoveryCreditsPerPack` must be a positive integer;
 - `shopifyRecoveryCreditPackEventHandle` must be trimmed, non-empty;
 - it must differ from `shopifyUsageEventHandle`.
 
 FREE:
+
 - existing `freeLifetimeConversationAllowance` remains required;
 - existing normal `shopifyUsageEventHandle` remains null;
 - top-up meter is allowed.
 
 PAID_METERED:
+
 - existing normal `shopifyUsageEventHandle` remains required;
 - `includedRecoveryConversationAllowance` must be a non-negative integer when top-ups are enabled.
 
@@ -111,46 +115,59 @@ a behavioral i18n test helper available.
 ## Completion Report
 
 ### Status
+
 Pending
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
-None.
 
+None.

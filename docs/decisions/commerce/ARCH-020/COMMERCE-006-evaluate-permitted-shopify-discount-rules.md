@@ -76,7 +76,6 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 Own `src/commerce/discounts/reader/`. C19 DiscountRuleSnapshot is the sole input contract for016.016 owns calculation;013 connects discounts.getOptions to014. Provider schema evidence is an implementation deliverable, not permission to invent Shopify semantics.
 
-
 ## Dependencies
 
 - ARCH-020-COMMERCE-001
@@ -159,18 +158,18 @@ Agent-executed validation:
 
 Requirement-to-fixture matrix:
 
-| Requirement | Fixture/test | Expected side effects | Result |
-| --- | --- | --- | --- |
-| D01 NONE/FIXED | `returns no options...`; `permits only the configured FIXED offer...` | NONE makes zero provider requests; wrong fixed offer is `DENIED` before I/O | Passed |
-| D01 AI bound | `bounds AI listing at 50 offers...` | maximum 50 normalized offers and `truncated: true` | Passed |
-| D02 supported mapping | `normalizes percentage, all-target...` | percentage, target, minimum, dates and proven semantics map to C19 DTO | Passed |
-| D02 incomplete fields | `preserves incomplete targets...`; malformed native value fixture | no default target/value; explicit null and `UNKNOWN`/`UNSUPPORTED` condition | Passed |
-| D03 unsupported/unknown | `keeps unsupported discount families explicit`; incomplete target fixture | app/Function family and unknown target semantics remain explicit | Passed |
-| D04 scope/outage | `returns UNAVAILABLE for missing scope...`; `fails closed when provider adapter is unavailable` | zero provider requests for missing scope; bounded retryable unavailable result | Passed |
-| D04 stale catalogue | policy fixture uses `catalogueFresh: false` through the same guard | `UNAVAILABLE` before provider I/O | Covered by guard; no live provider claim |
-| D04 fingerprint | `does not include observation timestamps...` | same semantic fingerprint for different observation timestamps | Passed |
-| D05 pinned semantics | support matrix plus proven-semantics fixture | unsupported/unproven allocation and rounding cannot become supported | Passed |
-| Tenant/auth isolation | `rejects a wrong tenant...` plus wrong-offer fixture | `DENIED` and zero provider calls | Passed |
+| Requirement             | Fixture/test                                                                                    | Expected side effects                                                          | Result                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------- |
+| D01 NONE/FIXED          | `returns no options...`; `permits only the configured FIXED offer...`                           | NONE makes zero provider requests; wrong fixed offer is `DENIED` before I/O    | Passed                                   |
+| D01 AI bound            | `bounds AI listing at 50 offers...`                                                             | maximum 50 normalized offers and `truncated: true`                             | Passed                                   |
+| D02 supported mapping   | `normalizes percentage, all-target...`                                                          | percentage, target, minimum, dates and proven semantics map to C19 DTO         | Passed                                   |
+| D02 incomplete fields   | `preserves incomplete targets...`; malformed native value fixture                               | no default target/value; explicit null and `UNKNOWN`/`UNSUPPORTED` condition   | Passed                                   |
+| D03 unsupported/unknown | `keeps unsupported discount families explicit`; incomplete target fixture                       | app/Function family and unknown target semantics remain explicit               | Passed                                   |
+| D04 scope/outage        | `returns UNAVAILABLE for missing scope...`; `fails closed when provider adapter is unavailable` | zero provider requests for missing scope; bounded retryable unavailable result | Passed                                   |
+| D04 stale catalogue     | policy fixture uses `catalogueFresh: false` through the same guard                              | `UNAVAILABLE` before provider I/O                                              | Covered by guard; no live provider claim |
+| D04 fingerprint         | `does not include observation timestamps...`                                                    | same semantic fingerprint for different observation timestamps                 | Passed                                   |
+| D05 pinned semantics    | support matrix plus proven-semantics fixture                                                    | unsupported/unproven allocation and rounding cannot become supported           | Passed                                   |
+| Tenant/auth isolation   | `rejects a wrong tenant...` plus wrong-offer fixture                                            | `DENIED` and zero provider calls                                               | Passed                                   |
 
 Tests use injected deterministic policy/provider fixtures only. They do not claim
 live Shopify/provider behavior.
@@ -227,16 +226,16 @@ None newly reported.
 
 #### Validation Results
 
-| Check | Command | Result |
-| --- | --- | --- |
-| Focused correction suite | `npm exec vitest run tests/discount-reader.test.ts` | Passed, 1 file / 25 tests |
-| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed, 2 files / 27 tests |
-| Prisma generation | `npm run prisma:generate` | Passed; Prisma Client 6.19.3 generated from accepted schema |
-| Type safety | `npm run typecheck` | Passed; Next route type generation and `tsc --noEmit` |
-| Lint | `npm run lint` | Passed |
-| Production build | `npm run build` | Passed; Prisma generation, webpack compilation, TypeScript and static generation |
-| Full tests | `npm test` | 19 files / 168 tests passed; 2 unrelated baseline/environment failures remained |
-| Diff hygiene | `git diff --check` | Passed |
+| Check                     | Command                                                                            | Result                                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Focused correction suite  | `npm exec vitest run tests/discount-reader.test.ts`                                | Passed, 1 file / 25 tests                                                        |
+| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed, 2 files / 27 tests                                                       |
+| Prisma generation         | `npm run prisma:generate`                                                          | Passed; Prisma Client 6.19.3 generated from accepted schema                      |
+| Type safety               | `npm run typecheck`                                                                | Passed; Next route type generation and `tsc --noEmit`                            |
+| Lint                      | `npm run lint`                                                                     | Passed                                                                           |
+| Production build          | `npm run build`                                                                    | Passed; Prisma generation, webpack compilation, TypeScript and static generation |
+| Full tests                | `npm test`                                                                         | 19 files / 168 tests passed; 2 unrelated baseline/environment failures remained  |
+| Diff hygiene              | `git diff --check`                                                                 | Passed                                                                           |
 
 Full-suite failures were outside the changed discount files: the
 `tests/readiness-docker.test.ts` descendant signal-handler timing assertion and
@@ -245,15 +244,15 @@ after 30 seconds. No task-local discount test failed.
 
 #### Requirement-to-Fixture Effects
 
-| Correction | Fixture/test | Expected side effects | Result |
-| --- | --- | --- | --- |
-| A3-R1 legal connections | `keeps list and fixed-ID Shopify documents distinct` | All six nested literals are exactly 5 and <=250 | Passed |
+| Correction               | Fixture/test                                                                        | Expected side effects                                                                | Result |
+| ------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------ |
+| A3-R1 legal connections  | `keeps list and fixed-ID Shopify documents distinct`                                | All six nested literals are exactly 5 and <=250                                      | Passed |
 | A3-R1 incomplete targets | `maps a paginated target response to incomplete targets instead of supported facts` | `complete=false` yields null targets, `TARGETS_INCOMPLETE`, and non-supported status | Passed |
-| A3-R2 pre-abort | `returns DEADLINE without reserving or calling for a pre-aborted context` | 0 reservations and 0 provider calls | Passed |
-| A3-R2 late data | `rejects provider data that arrives after cancellation` | 1 reservation, 1 provider call, typed `DEADLINE`, no success | Passed |
-| A3-R2 transport abort | `converts a thrown AbortError to a typed deadline result` | AbortError does not escape the result union | Passed |
-| A3-R2 deadline | `returns a deadline when the clock expires during provider work` | Late provider facts are rejected as `DEADLINE` | Passed |
-| A3-R2 pagination | `does not request a second page after cancellation between pages` | 1 reservation, 1 provider call, no second page | Passed |
+| A3-R2 pre-abort          | `returns DEADLINE without reserving or calling for a pre-aborted context`           | 0 reservations and 0 provider calls                                                  | Passed |
+| A3-R2 late data          | `rejects provider data that arrives after cancellation`                             | 1 reservation, 1 provider call, typed `DEADLINE`, no success                         | Passed |
+| A3-R2 transport abort    | `converts a thrown AbortError to a typed deadline result`                           | AbortError does not escape the result union                                          | Passed |
+| A3-R2 deadline           | `returns a deadline when the clock expires during provider work`                    | Late provider facts are rejected as `DEADLINE`                                       | Passed |
+| A3-R2 pagination         | `does not request a second page after cancellation between pages`                   | 1 reservation, 1 provider call, no second page                                       | Passed |
 
 #### Database / Worktree Evidence
 
@@ -282,15 +281,15 @@ after 30 seconds. No task-local discount test failed.
 
 #### Validation Results
 
-| Check | Command | Result |
-| --- | --- | --- |
-| Focused correction suite | `npm exec vitest run tests/discount-reader.test.ts` | 1 file, 19 tests passed; includes parser and pinned Admin 2026-07 schema validation for both documents |
-| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 21 tests passed |
-| Type safety | `npm run typecheck` | Passed; Next route type generation and `tsc --noEmit` |
-| Lint | `npm run lint` | Passed |
-| Production build | `npm run build` | Passed; Prisma client 6.19.3 generated and Next webpack build completed |
-| Full tests | `npm test` | 19 files / 161 tests passed; 3 unrelated baseline/environment failures remained |
-| Diff hygiene | `git diff --check` | Passed |
+| Check                     | Command                                                                            | Result                                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Focused correction suite  | `npm exec vitest run tests/discount-reader.test.ts`                                | 1 file, 19 tests passed; includes parser and pinned Admin 2026-07 schema validation for both documents |
+| Focused reader/auth suite | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 21 tests passed                                                                               |
+| Type safety               | `npm run typecheck`                                                                | Passed; Next route type generation and `tsc --noEmit`                                                  |
+| Lint                      | `npm run lint`                                                                     | Passed                                                                                                 |
+| Production build          | `npm run build`                                                                    | Passed; Prisma client 6.19.3 generated and Next webpack build completed                                |
+| Full tests                | `npm test`                                                                         | 19 files / 161 tests passed; 3 unrelated baseline/environment failures remained                        |
+| Diff hygiene              | `git diff --check`                                                                 | Passed                                                                                                 |
 
 Full-suite failures were outside the changed discount files: two `tests/readiness-docker.test.ts` descendant signal-handler timing assertions failed before cancellation, and `tests/discovery-limits.test.ts` timed out after 30 seconds in the Redis-backed rolling-window case. No task-local discount test failed.
 
@@ -335,18 +334,18 @@ architecture/index file, or `main` branch was updated.
 
 #### Validation Results
 
-| Case | Fixture/test | Command | Result |
-| --- | --- | --- | --- |
-| R1 policy and identity | `allows AI reads and rejects an inconsistent fixed provider response` | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed; AI read succeeds, inconsistent fixed identity is `UNAVAILABLE`, and the provider is called once. |
-| R2 query and units | `keeps list and fixed-ID Shopify documents distinct`; supported percentage fixture | same focused command | Passed; no `ids:` list argument, nested money selection, product-variant field, and `0.1 -> 10` mapping are asserted. |
-| R3 incomplete/malformed facts | `keeps incomplete status and minimum facts unknown`; `rejects malformed fixed values as unknown` | same focused command | Passed; incomplete facts do not become `SUPPORTED`. |
-| R4 budget/pagination | `returns typed budget errors and discloses a short-result page ceiling` | same focused command | Passed; typed `DEADLINE` is returned and a short fourth page yields `truncated: true`. |
-| Focused suite | reader plus auth tests | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 18 tests passed. |
-| Full suite | all repository tests | `npm test` | 15 files, 111 tests passed. |
-| Type safety | repository TypeScript | `npm run typecheck` | Passed; Next route types and `tsc --noEmit`. |
-| Lint | repository ESLint | `npm run lint` | Passed. |
-| Build | production build and Prisma generation | `npm run build` | Passed; Prisma client `6.19.3` generated and Next webpack build completed. |
-| Diff hygiene | implementation diff | `git diff --check` | Passed. |
+| Case                          | Fixture/test                                                                                     | Command                                                                            | Result                                                                                                                |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| R1 policy and identity        | `allows AI reads and rejects an inconsistent fixed provider response`                            | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | Passed; AI read succeeds, inconsistent fixed identity is `UNAVAILABLE`, and the provider is called once.              |
+| R2 query and units            | `keeps list and fixed-ID Shopify documents distinct`; supported percentage fixture               | same focused command                                                               | Passed; no `ids:` list argument, nested money selection, product-variant field, and `0.1 -> 10` mapping are asserted. |
+| R3 incomplete/malformed facts | `keeps incomplete status and minimum facts unknown`; `rejects malformed fixed values as unknown` | same focused command                                                               | Passed; incomplete facts do not become `SUPPORTED`.                                                                   |
+| R4 budget/pagination          | `returns typed budget errors and discloses a short-result page ceiling`                          | same focused command                                                               | Passed; typed `DEADLINE` is returned and a short fourth page yields `truncated: true`.                                |
+| Focused suite                 | reader plus auth tests                                                                           | `npm exec vitest run tests/discount-reader.test.ts tests/auth-permissions.test.ts` | 2 files, 18 tests passed.                                                                                             |
+| Full suite                    | all repository tests                                                                             | `npm test`                                                                         | 15 files, 111 tests passed.                                                                                           |
+| Type safety                   | repository TypeScript                                                                            | `npm run typecheck`                                                                | Passed; Next route types and `tsc --noEmit`.                                                                          |
+| Lint                          | repository ESLint                                                                                | `npm run lint`                                                                     | Passed.                                                                                                               |
+| Build                         | production build and Prisma generation                                                           | `npm run build`                                                                    | Passed; Prisma client `6.19.3` generated and Next webpack build completed.                                            |
+| Diff hygiene                  | implementation diff                                                                              | `git diff --check`                                                                 | Passed.                                                                                                               |
 
 #### Database / Worktree Evidence
 
@@ -378,7 +377,6 @@ Live Shopify installation/scopes, actual provider response mapping and allocatio
 Dependency reconciliation:006 is now satisfied. COMMERCE-016 remains pending because COMMERCE-015 is not accepted; COMMERCE-012 and013 retain their other unfinished prerequisites, including015/016. SYSTEM-TEST-001 likewise retains unfinished implementation dependencies and the developer invocation gate. No downstream task is promoted or regressed. The architecture remains in implementation until all required components and system validation are accepted.
 
 Parent task/index/architecture/handoff/workspace rollup are reconciled and published on the parent task branch. No implementation commit, new claim, main merge/push or parent gitlink change. Developer final integration remains implementation merge first, then parent gitlink/report integration.
-
 
 ### Changes Requested — Attempt 3 — 2026-09-21
 
@@ -419,7 +417,6 @@ Permanent regressions for both read and listing: pre-abort=>ERROR DEADLINE with0
 ### Resubmission
 
 Correct A3-R1/A3-R2 on the same branch pair, retain working A2 regressions, run focused and required validation, and update the current Attempt report separately from historical evidence. Keep developer-owned live Shopify and unrelated environment failures explicit. Commit/push implementation and report, return to review. This parent review overlay is published before handoff; normal preparation owns the next claim. No dependent task is promoted.
-
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 

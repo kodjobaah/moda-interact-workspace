@@ -33,15 +33,15 @@ Shopify/WooCommerce brand ingestion or refresh
 
 ## Responsibilities to decide in the new architecture session
 
-| Boundary | Candidate owner | Decision still required |
-|---|---|---|
-| Shopify brand source and refresh | `moda_app` or existing Shopify owner | Identify actual existing ShopBrand writer and event/refresh triggers; do not assume it already exists |
-| WooCommerce brand source and refresh | `moda_woocommerce` through `moda_api` | Define equivalent brand-data availability without exposing merchant WordPress endpoints or credentials to Background |
-| Canonical brand media metadata | `moda_database` | Decide whether to extend the existing `shopify.ShopBrand` or use a new platform-neutral metadata model; do not force Woo records into an inappropriate Shopify-owned schema without review |
-| Queueing and processing | `moda_background` | Reuse current BullMQ and provider-safe worker structure; maintain retry, stale-source and idempotency semantics |
-| R2 configuration and public media delivery | `moda_gateway` and approved owners | Decide media bucket/prefix, service credentials, CDN/custom domain, access/retention and deployment configuration; do not reuse private Merchant Knowledge object URLs as if public |
-| Admin preview and image-header selection | `moda_admin` | Offer only READY processed assets as true `IMAGE` header bindings; differentiate them from text URL fields and original source dimensions |
-| Meta submission and runtime send | ARCH-047 BG003/BG001/BG006/BG007 | Use a suitable submitted **sample media asset/handle** for Meta approval and shop-specific READY runtime image when sending; do not replace approval content or author a template outside Moda Admin |
+| Boundary                                   | Candidate owner                       | Decision still required                                                                                                                                                                              |
+| ------------------------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shopify brand source and refresh           | `moda_app` or existing Shopify owner  | Identify actual existing ShopBrand writer and event/refresh triggers; do not assume it already exists                                                                                                |
+| WooCommerce brand source and refresh       | `moda_woocommerce` through `moda_api` | Define equivalent brand-data availability without exposing merchant WordPress endpoints or credentials to Background                                                                                 |
+| Canonical brand media metadata             | `moda_database`                       | Decide whether to extend the existing `shopify.ShopBrand` or use a new platform-neutral metadata model; do not force Woo records into an inappropriate Shopify-owned schema without review           |
+| Queueing and processing                    | `moda_background`                     | Reuse current BullMQ and provider-safe worker structure; maintain retry, stale-source and idempotency semantics                                                                                      |
+| R2 configuration and public media delivery | `moda_gateway` and approved owners    | Decide media bucket/prefix, service credentials, CDN/custom domain, access/retention and deployment configuration; do not reuse private Merchant Knowledge object URLs as if public                  |
+| Admin preview and image-header selection   | `moda_admin`                          | Offer only READY processed assets as true `IMAGE` header bindings; differentiate them from text URL fields and original source dimensions                                                            |
+| Meta submission and runtime send           | ARCH-047 BG003/BG001/BG006/BG007      | Use a suitable submitted **sample media asset/handle** for Meta approval and shop-specific READY runtime image when sending; do not replace approval content or author a template outside Moda Admin |
 
 ## Proposed media contract (illustrative, not a settled database schema)
 
@@ -69,7 +69,7 @@ The exact table/JSON shape, role enumeration, generation field, object-key polic
 - Initial roles: logo, square logo, cover image. Distinguish original URLs from processed output keys and from Meta submission sample assets.
 - For WhatsApp image media, use JPEG or PNG with the documented 5 MB maximum. Aim for a smaller internally verified output (for example below 1 MB when practical). A roughly 1125 × 600 canvas is a **design proposal**, not a mandatory Meta maximum.
 - Preserve aspect ratio: pad logos rather than stretching or destructively cropping; consider reviewed cover-image crop policy separately. Preserve transparency when needed with PNG; otherwise use suitable colour-managed JPEG.
-- Validate *decoded* pixel dimensions and output bytes. Strip EXIF/metadata; reject dangerous or malformed content. Bound source response size, redirects, decompression and decoded pixel counts. Protect against SSRF, DNS rebinding and private-network fetches. Do not trust file extensions or remote content-type headers alone.
+- Validate _decoded_ pixel dimensions and output bytes. Strip EXIF/metadata; reject dangerous or malformed content. Bound source response size, redirects, decompression and decoded pixel counts. Protect against SSRF, DNS rebinding and private-network fetches. Do not trust file extensions or remote content-type headers alone.
 - Store immutable content-addressed R2 derivative objects and update active metadata only on successful verification. Later stale jobs must not overwrite a newer source generation. Preserve last-known-good derivative as policy permits; do not silently serve it for a newly incompatible source without a decision.
 - Use HTTPS media delivery reachable by Meta; URL stability and cache TTL must cover provider fetch semantics. Never log access credentials or unnecessary image URLs.
 

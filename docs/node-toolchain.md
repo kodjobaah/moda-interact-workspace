@@ -143,11 +143,11 @@ Changing `.nvmrc` therefore does not require editing every agent.
 
 Three related mechanisms have different jobs:
 
-| Mechanism | Responsibility |
-| --- | --- |
-| `.nvmrc` | Select the workspace development/agent Node version |
-| `package.json` `engines.node` | Declare the Node versions a package/service supports |
-| Render/Docker/runtime configuration | Select and validate the deployed runtime |
+| Mechanism                           | Responsibility                                       |
+| ----------------------------------- | ---------------------------------------------------- |
+| `.nvmrc`                            | Select the workspace development/agent Node version  |
+| `package.json` `engines.node`       | Declare the Node versions a package/service supports |
+| Render/Docker/runtime configuration | Select and validate the deployed runtime             |
 
 They should be compatible, but they should not be conflated.
 

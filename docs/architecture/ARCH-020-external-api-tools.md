@@ -40,16 +40,20 @@ Add this strict member to CommerceExecutionSchema, retaining both current member
 
 ```ts
 type ExternalHttpExecution = {
-  kind: 'EXTERNAL_HTTP';
-  executorVersion: '1.0.0';
+  kind: "EXTERNAL_HTTP";
+  executorVersion: "1.0.0";
   connectionRevisionId: string; // existing IdSchema
-  method: 'GET';
-  path: string;                // fixed absolute path on approved origin
-  query: Record<string, {input: string; omitIfMissing?: true} | {literal: string | number | boolean}>;
-  responseFormat: {mode:'JSON'|'TEXT'; mediaTypes:string[]};
-  resultPath: string;          // visual JSON selection; empty required for JAVASCRIPT
+  method: "GET";
+  path: string; // fixed absolute path on approved origin
+  query: Record<
+    string,
+    | { input: string; omitIfMissing?: true }
+    | { literal: string | number | boolean }
+  >;
+  responseFormat: { mode: "JSON" | "TEXT"; mediaTypes: string[] };
+  resultPath: string; // visual JSON selection; empty required for JAVASCRIPT
   responseProcessing: ResponseProcessing; // visual rules OR versioned JavaScript
-  resultSchema: SubsetSchema;  // existing DetailsSchemaSchema, closed object root
+  resultSchema: SubsetSchema; // existing DetailsSchemaSchema, closed object root
 };
 ```
 
@@ -92,7 +96,7 @@ No inference of production schema from a single sample. Wrap a successful result
     "source": "EXTERNAL_HTTP",
     "connectionRevisionId": "opaque-revision-id",
     "observedAt": "2026-09-21T12:00:00.000Z",
-    "values": {"title": "Illustrative external item"}
+    "values": { "title": "Illustrative external item" }
   },
   "renderedText": "Illustrative external item"
 }
@@ -110,15 +114,23 @@ Example execution (connection revision is illustrative, not a seed):
 
 ```json
 {
-  "kind": "EXTERNAL_HTTP", "executorVersion": "1.0.0",
-  "connectionRevisionId": "connection_revision_example", "method": "GET",
-  "path": "/catalogue/item", "query": {"sku": {"input": "sku"}},
-  "responseFormat": {"mode":"JSON","mediaTypes":["application/json"]},
+  "kind": "EXTERNAL_HTTP",
+  "executorVersion": "1.0.0",
+  "connectionRevisionId": "connection_revision_example",
+  "method": "GET",
+  "path": "/catalogue/item",
+  "query": { "sku": { "input": "sku" } },
+  "responseFormat": { "mode": "JSON", "mediaTypes": ["application/json"] },
   "resultPath": "data",
-  "responseProcessing": {"kind":"OBJECT", "fields":{"title":{"path":"title"}}},
+  "responseProcessing": {
+    "kind": "OBJECT",
+    "fields": { "title": { "path": "title" } }
+  },
   "resultSchema": {
-    "type": "object", "properties": {"title": {"type": "string", "maxLength": 200}},
-    "required": ["title"], "additionalProperties": false
+    "type": "object",
+    "properties": { "title": { "type": "string", "maxLength": 200 } },
+    "required": ["title"],
+    "additionalProperties": false
   }
 }
 ```
@@ -131,17 +143,28 @@ Section2.2 defines the separate JAVASCRIPT branch. Visual rules are not converte
 into arbitrary code, and arbitrary code is never silently converted into visual rules.
 
 ```ts
-type FieldProjection = Record<string, {path:string; omitIfMissing?:true}>;
+type FieldProjection = Record<string, { path: string; omitIfMissing?: true }>;
 type Scalar = string | number | boolean | null;
 type ResponseFilter =
-  | {path:string; op:'EQ'|'NE'|'GT'|'GTE'|'LT'|'LTE'|'CONTAINS'|'STARTS_WITH'; value:Scalar}
-  | {path:string; op:'IN'; values:Scalar[]};
+  | {
+      path: string;
+      op:
+        "EQ" | "NE" | "GT" | "GTE" | "LT" | "LTE" | "CONTAINS" | "STARTS_WITH";
+      value: Scalar;
+    }
+  | { path: string; op: "IN"; values: Scalar[] };
 type VisualResponseProcessing =
-  | {kind:'OBJECT'; fields:FieldProjection}
-  | {kind:'LIST'; fields:FieldProjection; filters:ResponseFilter[];
-     sort:null|{path:string;direction:'ASC'|'DESC'}; limit:number};
-type ResponseProcessing = VisualResponseProcessing
-  | {kind:'JAVASCRIPT';runtimeVersion:'quickjs-sync.v1';source:string};
+  | { kind: "OBJECT"; fields: FieldProjection }
+  | {
+      kind: "LIST";
+      fields: FieldProjection;
+      filters: ResponseFilter[];
+      sort: null | { path: string; direction: "ASC" | "DESC" };
+      limit: number;
+    };
+type ResponseProcessing =
+  | VisualResponseProcessing
+  | { kind: "JAVASCRIPT"; runtimeVersion: "quickjs-sync.v1"; source: string };
 ```
 
 All objects strict; field names use safeName, source paths safePath, maximum32
@@ -191,8 +214,8 @@ and two simultaneous calls with different data. No shared mutable processing sta
 
 responseFormat is explicit, not guessed from endpoint or sample. mediaTypes is an
 array of1..8 unique lowercase exact MIME values, max128 chars each, no parameters or
-wildcards. JSON mode permits application/json and application/*+json concrete types;
-TEXT mode permits text/* concrete types, application/xml, application/*+xml and the
+wildcards. JSON mode permits application/json and application/_+json concrete types;
+TEXT mode permits text/_ concrete types, application/xml, application/*+xml and the
 JSON types. Match response Content-Type without parameters case-insensitively;
 missing/unapproved MIME fails. Only UTF-8/US-ASCII charsets supported initially;
 reject other declared encodings, invalid UTF-8 and NUL. No executable HTML rendering,
@@ -203,10 +226,10 @@ After021's bounded download/decompression, decode into this data-only input:
 
 ```ts
 type TransformResponse = {
-  status: number;             // successful 2xx only
-  contentType: string;        // normalized MIME, no other headers
-  bodyText: string;           // <=256KiB UTF-8
-  json: Json | null;          // parsed only in JSON mode; null in TEXT mode
+  status: number; // successful 2xx only
+  contentType: string; // normalized MIME, no other headers
+  bodyText: string; // <=256KiB UTF-8
+  json: Json | null; // parsed only in JSON mode; null in TEXT mode
 };
 ```
 
@@ -223,13 +246,19 @@ version and explicit republishing; no silent reinterpretation of published code.
 ```js
 function transform(response) {
   // Example provider body: "Stock: available\nDelivery: 2 days"
-  const facts = Object.fromEntries(response.bodyText.split(/\r?\n/)
-    .filter(line => line.includes(":"))
-    .map(line => {
-      const split = line.indexOf(":");
-      return [line.slice(0, split).trim(), line.slice(split + 1).trim()];
-    }));
-  return { availability: facts.Stock ?? "unknown", delivery: facts.Delivery ?? "unknown" };
+  const facts = Object.fromEntries(
+    response.bodyText
+      .split(/\r?\n/)
+      .filter((line) => line.includes(":"))
+      .map((line) => {
+        const split = line.indexOf(":");
+        return [line.slice(0, split).trim(), line.slice(split + 1).trim()];
+      }),
+  );
+  return {
+    availability: facts.Stock ?? "unknown",
+    delivery: facts.Delivery ?? "unknown",
+  };
 }
 ```
 
@@ -323,6 +352,7 @@ may be included in contentType for decoding; compare normalized MIME separately.
 Sample total serialized request <=512KiB; reject oversize request explicitly.
 
 Component ports (server resolves principal; browser cannot submit identity):
+
 - validateCode({source,runtimeVersion,contentHash}) -> {kind:'ok',contentHash} or
   {kind:'invalid',contentHash,issues:[{path,message,line,column}]} or unavailable.
   contentHash=SHA256 canonical {source,runtimeVersion}; server recomputes/compares.
@@ -379,12 +409,12 @@ Prisma schema or changes to capability/tool/grant tables. Normalized origins and
 connection cross-row checks belong to020; credential scope checks belong to028,
 not claimed as SQL checks.
 
-| Model | Required fields and defaults | Relations, indexes and constraints |
-|---|---|---|
-| CommerceExternalConnection | key String/varchar128 unique; displayName String/varchar255; description String/text default empty; enabled Boolean default true; editVersion Int default1; createdAt, updatedAt | CHECK editVersion>0, key regex `^[a-z][a-z0-9_]{0,127}$`; nonblank displayName, description <=4096 chars. No deletion API. |
-| CommerceExternalConnectionRevision | connectionId String/text; revisionNumber Int; origin String/varchar2048; scope enum PLATFORM/PER_SHOP; authMode enum NONE/BEARER/API_KEY; authHeader String?/varchar128; documentation String/text default empty; createdByAdminId String/text; createdAt | Connection and PlatformAdmin FKs RESTRICT; unique(connectionId,revisionNumber), unique(id,connectionId); CHECK revisionNumber>0; authHeader null unless API_KEY, required nonblank for API_KEY; documentation <=16000 chars; immutable after creation by SQL UPDATE/DELETE rejection trigger. |
-| CommerceExternalCredential | connectionRevisionId String/text; shopId String?/text; ciphertext Bytes/bytea; nonce Bytes/bytea; authTag Bytes/bytea; keyId String/varchar64; editVersion Int default1; updatedByAdminId String/text; createdAt, updatedAt | Revision, Shop, PlatformAdmin FKs RESTRICT. Partial unique index on revision WHERE shopId IS NULL, and unique(revision,shopId) WHERE shopId IS NOT NULL. CHECK nonce length12, tag length16, ciphertext length1..8192, nonblank keyId, editVersion>0. Null shop represents PLATFORM only;028 enforces scope and NONE prohibition transactionally. |
-| CommerceExternalConnectionAudit | actorAdminId String/text; operationId String/varchar128; action enum CREATE_CONNECTION/UPDATE_METADATA/CREATE_REVISION/SET_ENABLED/SET_CREDENTIAL/REMOVE_CREDENTIAL; requestDigest String/char64; connectionId String/text; connectionRevisionId String?/text; shopId String?/text; reason String/varchar1000; result Json/jsonb; createdAt | FK actor/connection/revision/shop RESTRICT; unique(actorAdminId,operationId); index(connectionId,createdAt,id); digest lowercase64hex; reason trimmed nonblank; result object <=16384 bytes; immutable UPDATE/DELETE trigger. No secret/ciphertext/raw request in result. |
+| Model                              | Required fields and defaults                                                                                                                                                                                                                                                                                                                | Relations, indexes and constraints                                                                                                                                                                                                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CommerceExternalConnection         | key String/varchar128 unique; displayName String/varchar255; description String/text default empty; enabled Boolean default true; editVersion Int default1; createdAt, updatedAt                                                                                                                                                            | CHECK editVersion>0, key regex `^[a-z][a-z0-9_]{0,127}$`; nonblank displayName, description <=4096 chars. No deletion API.                                                                                                                                                                                                                        |
+| CommerceExternalConnectionRevision | connectionId String/text; revisionNumber Int; origin String/varchar2048; scope enum PLATFORM/PER_SHOP; authMode enum NONE/BEARER/API_KEY; authHeader String?/varchar128; documentation String/text default empty; createdByAdminId String/text; createdAt                                                                                   | Connection and PlatformAdmin FKs RESTRICT; unique(connectionId,revisionNumber), unique(id,connectionId); CHECK revisionNumber>0; authHeader null unless API_KEY, required nonblank for API_KEY; documentation <=16000 chars; immutable after creation by SQL UPDATE/DELETE rejection trigger.                                                     |
+| CommerceExternalCredential         | connectionRevisionId String/text; shopId String?/text; ciphertext Bytes/bytea; nonce Bytes/bytea; authTag Bytes/bytea; keyId String/varchar64; editVersion Int default1; updatedByAdminId String/text; createdAt, updatedAt                                                                                                                 | Revision, Shop, PlatformAdmin FKs RESTRICT. Partial unique index on revision WHERE shopId IS NULL, and unique(revision,shopId) WHERE shopId IS NOT NULL. CHECK nonce length12, tag length16, ciphertext length1..8192, nonblank keyId, editVersion>0. Null shop represents PLATFORM only;028 enforces scope and NONE prohibition transactionally. |
+| CommerceExternalConnectionAudit    | actorAdminId String/text; operationId String/varchar128; action enum CREATE_CONNECTION/UPDATE_METADATA/CREATE_REVISION/SET_ENABLED/SET_CREDENTIAL/REMOVE_CREDENTIAL; requestDigest String/char64; connectionId String/text; connectionRevisionId String?/text; shopId String?/text; reason String/varchar1000; result Json/jsonb; createdAt | FK actor/connection/revision/shop RESTRICT; unique(actorAdminId,operationId); index(connectionId,createdAt,id); digest lowercase64hex; reason trimmed nonblank; result object <=16384 bytes; immutable UPDATE/DELETE trigger. No secret/ciphertext/raw request in result.                                                                         |
 
 All immutable triggers allow normal inserts only; isolated-test cleanup uses a fresh
 schema/database, not disabling protections in production. Exact Prisma enum names:
@@ -693,21 +723,21 @@ ARCH-020 acceptance. No circular dependency on012 or SYSTEM-TEST-001 in002.
 
 ## 8. Acceptance evidence and ownership
 
-| Case | Required evidence | Owner |
-|---|---|---|
-| X01 | Schema rejects methods/body/URL authority/invalid mapping; accepts example and retains existing two execution kinds | SHARED-002 |
-| X02 | PostgreSQL partial uniqueness, immutable revisions/audit, FK and rollback; no plaintext secret columns | DATABASE-003 |
-| X03 | Lifecycle concurrency/replay/CAS and staff authorization; encryption/credential isolation | COMMERCE-020 CL01–03; COMMERCE-028 CR01–03 |
-| X04 | Actual socket DNS pin, private/mapped IPv6/rebinding/redirect denial, timeout/cancel/decompressed bound and provider-error mapping | COMMERCE-021 |
-| X05 | XN01, role-aware controls, no reveal/storage leaks, double-click and unknown-operation recovery | COMMERCE-022 |
-| X06 | XN02 owned segments, schema/template chips and stale validation, zero live preview calls | COMMERCE-023 |
-| X07 | XN01–03 real service flow, immutable connection revision, per-shop missing-credential exclusion, platform/per-shop isolation, visual/code processing, XN04 and012 bypass | COMMERCE-024 |
-| X10 | Deterministic filtering/projection/sort/bounds/cancellation, zero side effects and no discarded fields exposed | COMMERCE-025 |
-| X11 | Real WASM/worker isolation, infinite loop/allocation/serialization attacks, abort, fixed memory and concurrent state isolation | COMMERCE-029 SB01–03; COMMERCE-026 CA01–03 |
-| X12 | XN04 editor/format/sample/errors/role/late-result guards with no browser execution or HTML injection | COMMERCE-027 |
-| X13 | Sample/publish/real-call output checks, stale receipt and changed-response rejection without raw fallback | SHARED-002 / COMMERCE-030 PV01–03 / COMMERCE-031 PR01–03 / SYSTEM-TEST-002 |
-| X08 | Runtime-only keys, private MCP preserved, configuration failure isolation and rotation/rollback runbook | GATEWAY-003 |
-| X09 | Existing Background tool discovery/call/final response works with external result and unchanged protocol, two shops/conversations concurrently, no new tools in old grants | SYSTEM-TEST-002 |
+| Case | Required evidence                                                                                                                                                          | Owner                                                                      |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| X01  | Schema rejects methods/body/URL authority/invalid mapping; accepts example and retains existing two execution kinds                                                        | SHARED-002                                                                 |
+| X02  | PostgreSQL partial uniqueness, immutable revisions/audit, FK and rollback; no plaintext secret columns                                                                     | DATABASE-003                                                               |
+| X03  | Lifecycle concurrency/replay/CAS and staff authorization; encryption/credential isolation                                                                                  | COMMERCE-020 CL01–03; COMMERCE-028 CR01–03                                 |
+| X04  | Actual socket DNS pin, private/mapped IPv6/rebinding/redirect denial, timeout/cancel/decompressed bound and provider-error mapping                                         | COMMERCE-021                                                               |
+| X05  | XN01, role-aware controls, no reveal/storage leaks, double-click and unknown-operation recovery                                                                            | COMMERCE-022                                                               |
+| X06  | XN02 owned segments, schema/template chips and stale validation, zero live preview calls                                                                                   | COMMERCE-023                                                               |
+| X07  | XN01–03 real service flow, immutable connection revision, per-shop missing-credential exclusion, platform/per-shop isolation, visual/code processing, XN04 and012 bypass   | COMMERCE-024                                                               |
+| X10  | Deterministic filtering/projection/sort/bounds/cancellation, zero side effects and no discarded fields exposed                                                             | COMMERCE-025                                                               |
+| X11  | Real WASM/worker isolation, infinite loop/allocation/serialization attacks, abort, fixed memory and concurrent state isolation                                             | COMMERCE-029 SB01–03; COMMERCE-026 CA01–03                                 |
+| X12  | XN04 editor/format/sample/errors/role/late-result guards with no browser execution or HTML injection                                                                       | COMMERCE-027                                                               |
+| X13  | Sample/publish/real-call output checks, stale receipt and changed-response rejection without raw fallback                                                                  | SHARED-002 / COMMERCE-030 PV01–03 / COMMERCE-031 PR01–03 / SYSTEM-TEST-002 |
+| X08  | Runtime-only keys, private MCP preserved, configuration failure isolation and rotation/rollback runbook                                                                    | GATEWAY-003                                                                |
+| X09  | Existing Background tool discovery/call/final response works with external result and unchanged protocol, two shops/conversations concurrently, no new tools in old grants | SYSTEM-TEST-002                                                            |
 
 Use isolated databases, controlled DNS/HTTPS fixtures and scripted model; never
 live third-party credentials or WhatsApp sends. Record actual commands/results and
@@ -731,18 +761,18 @@ prerequisites pass.
 
 ### 9.1. Exact producer ownership
 
-| Task | Owns | Does not own |
-|---|---|---|
-|020|connections/lifecycle/**; connections/command-kernel.ts; metadata/revision/enabled commands and shared command transaction kernel|credential encryption/resolution, HTTP, UI|
-|028|connections/credentials/**; status, encryption, rotation, credential mutation, resolveConnection and current credential availability|020 files, duplicate command ledger/auth, network|
-|021|external-http/**; actual DNS/TLS streaming transport and decoder plus explicit dispatcher extension|real credentials, processor implementations, receipt/preview rules|
-|025|external-response/** visual processing|code runtime, publication, UI|
-|029|code-response/runtime/**; pinned WASM artifact/build manifest; direct bounded worker kernel and proof tests|Shared contracts, output business schema, UI|
-|026|code-response/processor.ts and typed adapter tests|runtime/** edits, reimplemented sandbox, changed limits|
-|030|external-publication/**; definition/template validation and Redis sample receipt store/admission|preview lifecycle, UI or production factory|
-|031|external-preview/** plus explicit existing preview request/stored-state/lifecycle extensions|live HTTP, credentials, receipt algorithm, UI|
-|032|external-availability/**; shared status projection for inspection/current authorization|grant creation, provider calls, secret exposure, UI|
-|024|integration/external/** and minimal application entry bindings|new business rules or missing producer implementations|
+| Task | Owns                                                                                                                                 | Does not own                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| 020  | connections/lifecycle/**; connections/command-kernel.ts; metadata/revision/enabled commands and shared command transaction kernel    | credential encryption/resolution, HTTP, UI                         |
+| 028  | connections/credentials/**; status, encryption, rotation, credential mutation, resolveConnection and current credential availability | 020 files, duplicate command ledger/auth, network                  |
+| 021  | external-http/**; actual DNS/TLS streaming transport and decoder plus explicit dispatcher extension                                  | real credentials, processor implementations, receipt/preview rules |
+| 025  | external-response/** visual processing                                                                                               | code runtime, publication, UI                                      |
+| 029  | code-response/runtime/**; pinned WASM artifact/build manifest; direct bounded worker kernel and proof tests                          | Shared contracts, output business schema, UI                       |
+| 026  | code-response/processor.ts and typed adapter tests                                                                                   | runtime/** edits, reimplemented sandbox, changed limits            |
+| 030  | external-publication/**; definition/template validation and Redis sample receipt store/admission                                     | preview lifecycle, UI or production factory                        |
+| 031  | external-preview/** plus explicit existing preview request/stored-state/lifecycle extensions                                         | live HTTP, credentials, receipt algorithm, UI                      |
+| 032  | external-availability/**; shared status projection for inspection/current authorization                                              | grant creation, provider calls, secret exposure, UI                |
+| 024  | integration/external/** and minimal application entry bindings                                                                       | new business rules or missing producer implementations             |
 
 Paths above are beneath src/commerce. Existing022/023/027 UI ownership is retained.
 Package.json/lockfile/build-manifest edits must be narrowly reconciled on normal task
@@ -857,6 +887,7 @@ rewritten.026 verifies its adapter through that same accepted runtime.
 
 030 exports `createExternalPublicationValidation({connectionMetadata,compiler,
 visualProcessor,codeProcessor,receiptStore,staff,clock,digest})` with:
+
 - validateSampleAndRecord({principal,toolRevisionId,definition,sample,arguments,
   signal}): verifies saved current definition identity, runs the selected real
   processor, schema validation and rendering, then writes section2.3 receipt.
@@ -868,10 +899,10 @@ visualProcessor,codeProcessor,receiptStore,staff,clock,digest})` with:
   writes here; existing lifecycle commits only after success.
 - readReceipt({principal,toolRevisionId,definitionHash,runtimeVersion}): returns
   only section2.3 bounded receipt summary or missing/expired/unavailable.
-Receipt store has explicit Redis implementation owned by030. Connection metadata
-and saved-definition identity ports are injected from accepted lifecycle/read facade;
-no copying of source schema or permissive mocks in production. PV01 covers successful
-sample and publication admission through actual validator, not only syntax rejection.
+  Receipt store has explicit Redis implementation owned by030. Connection metadata
+  and saved-definition identity ports are injected from accepted lifecycle/read facade;
+  no copying of source schema or permissive mocks in production. PV01 covers successful
+  sample and publication admission through actual validator, not only syntax rejection.
 
 031 exports `createExternalPreviewService({previewService,publicationValidation,
 codeProcessor,staff,redis,clock})` returning validateCode and runSample with section2.3
@@ -899,8 +930,6 @@ field names/serialize dates/authenticate an entry point, but cannot invent recei
 quota, eligibility, transport, persistence or sandbox logic. A missing producer
 is returned with concrete reproduction to its owner; the architect adjusts its
 status/task scope explicitly. Do not hide it behind unavailable or expand024 silently.
-
-
 
 ### 9.5.1. COMMERCE-038 external preview fixture-runner correction
 
@@ -949,6 +978,7 @@ These gates reduce avoidable rework; they do not promise a fixed attempt count.
 ## SHARED-002 Attempt 4 architect review — 2026-09-21
 
 SHARED-002 remains **Ready / Changes Requested, Attempt 4**, claims null. The C21 schema/export corrections are substantially implemented, but visual LIST publication validation must reject result wrappers/cardinality that cannot be emitted by the defined `{items:[...]}` processor path. The package root README/export inventory and current Completion Report must also be reconciled, followed by the next immutable patch release and bounded fresh-consumer proof. No C21 dependent becomes executable from `0.14.1` publication alone.
+
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -985,6 +1015,7 @@ PostgreSQL modes pass. X02 is therefore established for migration preservation,
 partial credential uniqueness, byte bounds, RESTRICT FKs, immutable
 revision/audit rows and rollback; no plaintext credential storage was introduced.
 No broader test expansion or downstream automatic launch is required.
+
 ### COMMERCE-029 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1081,7 +1112,6 @@ nonretryable `DEADLINE` at this tool-result boundary; turn-runner cancellation r
 runner-level `CANCELLED`. No new Shared publication is required by COMMERCE-021.
 Downstream C21 tasks remain dependency-gated.
 
-
 ## COMMERCE-021 Attempt 2 architect review — 2026-09-22
 
 **Changes Requested; Ready, Attempt 2 retained; claims cleared.** The production DNS
@@ -1093,7 +1123,6 @@ and unsupported content-encoding), and the outer DefinitionExecutor must not cha
 external HTTP `DEADLINE` back to `retryable:true`. C21 continues to require
 nonretryable `DEADLINE` at the CommerceToolResult boundary. No Shared widening,
 provider retry or transport redesign.
-
 
 ## COMMERCE-021 Attempt 3 acceptance — 2026-09-22
 
@@ -1152,6 +1181,7 @@ the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
 credential resolution derives `Authorization`. The bounded producer correction is
 materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
 on it before final production composition. No task is started automatically.
+
 ## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
 
 ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
@@ -1197,6 +1227,7 @@ retain invalid IN text; and complete the exact XN02 proof/current Completion Rep
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
 automatically.
+
 ## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 3** (`d15d3f5`).
@@ -1212,6 +1243,7 @@ production renderer reuse and later real-provider runtime validation remain inta
 and executor/claimed_at null. Architect review is required before downstream
 promotion. COMMERCE-024 and COMMERCE-012 remain Pending behind their other
 authoritative prerequisites.
+
 ## COMMERCE-032 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
@@ -1225,6 +1257,7 @@ C21 now makes the intended boundary explicit and
 read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
 accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
 COMMERCE-012 remain gated. No task is started automatically.
+
 ## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
@@ -1246,6 +1279,7 @@ and CAS scoped to the exact revision/shop context with stale-read protection, an
 bounded terminal not-found/forbidden/unavailable detail states. Earlier Shared result,
 same-operation replay, authorized shop-selection and latest-vs-selected revision
 corrections remain intact. Production wiring remains COMMERCE-024 ownership.
+
 ## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
@@ -1342,6 +1376,7 @@ Complete. It is not automatically launched. COMMERCE-012 and system-test work re
 their remaining integration/gateway gates.
 
 <!-- Preserved task-branch record. -->
+
 ## COMMERCE-024 unblock reconciliation — 2026-09-22
 
 **Ready, Attempt 1 retained; claim cleared.**
@@ -1363,6 +1398,7 @@ A local untracked `typescript` artifact was present in the developer main worktr
 it is not part of the accepted source and should be moved/removed before launch rather
 than committed.
 <!-- Preserved mainline record. -->
+
 ## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 1** (`16972af`; parent report `f107b817`).

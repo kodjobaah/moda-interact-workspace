@@ -788,10 +788,13 @@ The ordinary `createRelease()` semantics remain useful for fresh composition bec
 ## Completion Report
 
 ### Status
+
 Ready for Review — Attempt 4 completed after consuming the architect-accepted DATABASE-004 migration at integrated database commit `6a8602e67d2308189af81ee0091e5189f1ffd71a`. Attempt 3 blocker history and validation evidence below are superseded by the Attempt 4 report.
 
 ### Files Changed
+
 Attempt 3 implementation worktree changes:
+
 - `package.json`
 - `src/commerce/bootstrap/merchant-knowledge.ts`
 - `src/commerce/publication/validation.ts`
@@ -803,11 +806,13 @@ Attempt 3 implementation worktree changes:
 - `tests/commerce-lifecycle.test.ts`
 
 ### Work Completed
+
 Attempt 1 and Attempt 2 history above remains unchanged. Attempt 3 continued on the launcher-prepared task branch without reclaiming. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; the implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`. The parent branch is `task/ARCH-023-COMMERCE-002` at claim commit `2e4daf54b0b588eaafa2c6d23d26355d6a7bb785`, following merge `3bb9c9accee303077a1ccbedeb3211f6988c757f`. The implementation branch is the same task branch with the preserved Attempt 2 checkpoint `3e5378ddf35ddfe762de37aa1369b3addd3abb40`; the recursive database submodule was prepared at `2eb17ee910491e8f9df82736fc0a843844415947`.
 
 Attempt 3 repaired the Feature prerequisite to require `MERCHANT_OPT_IN`, validates persisted Tool revision `definition` JSON and exact release revision pins, preserves later Studio Tool display metadata, and retains the canonical `nunjucks.v1`/`merchantKnowledge.lookup@1.0.0` contract. Unit tests cover clean/partial convergence, Studio-authored publication preservation, Feature Behaviour preservation, preference read/write neutrality, ambiguous no-pointer history, base snapshot copying, startup Promise memoization, and Node-only instrumentation. The disposable runner applies accepted migrations to one invocation-owned loopback-only `pgvector/pgvector:pg17` container, supplies database URLs only to its child, and verifies cleanup.
 
 ### Validation Results
+
 - Passed: focused Commerce tests: 5 files, 56 tests (`merchant-knowledge-bootstrap-startup`, `instrumentation-bootstrap`, `merchant-knowledge-bootstrap`, `commerce-lifecycle`, `feature-authoring`).
 - Passed: `npm run typecheck`.
 - Passed: changed-file ESLint; full `npm run lint` exited successfully with warnings, including five unrelated existing warnings. Three warnings in changed files were removed and the changed-file lint rerun passed.
@@ -816,31 +821,38 @@ Attempt 3 repaired the Feature prerequisite to require `MERCHANT_OPT_IN`, valida
 - PostgreSQL partial result: accepted migrations, clean bootstrap, durable replay/no-op and initial cleanup passed in an earlier runner execution. The expanded required successor-snapshot execution fails when `PrismaPublicationStorage` inserts the preserved historical Feature prompt after current Feature authoring advanced. PostgreSQL reports `ARCH021 release Feature snapshot must match current behaviour prompt`; the owned container was cleaned on failure. Therefore the mandatory final PostgreSQL suite does not pass.
 
 ### Deviations
+
 No retired Capability revision/binding model or database change was introduced. The final PostgreSQL successor-preservation proof remains failing pending the architect-authorized database-owned correction.
 
 ### Assumptions
+
 The implementation and validation evidence above is from Attempt 3 in the implementation worktree. No ambient or user-supplied database URL was used.
 
 ### Unresolved Issues
+
 1. Resolve the PostgreSQL guard conflict through the separate architect-authorized `ARCH-023-DATABASE-004` task, then rerun the disposable Commerce PostgreSQL suite.
 2. After that prerequisite, rerun the complete final validation set, synchronize and commit/push the implementation and this report, and only then request Architect review.
 
 ### Architectural Concerns
+
 The ARCH-021 `commerce.arch021_release_feature_guard` requires every inserted `CommerceReleaseFeature.behaviourPrompt` to equal the current `CommerceFeatureConfiguration.behaviourPrompt`. That rejects the required exact copy of an immutable base-release snapshot when unrelated Feature authoring has advanced. Commerce cannot resolve this by bypassing lifecycle storage, mutating frozen history, or weakening the exact-snapshot requirement.
 
 ### Attempt 4 — Current Completion Report
 
 #### Files Changed
+
 - `database` submodule pin: `2eb17ee910491e8f9df82736fc0a843844415947` -> `6a8602e67d2308189af81ee0091e5189f1ffd71a` (accepted DATABASE-004 integrated mainline revision).
 - `src/commerce/bootstrap/merchant-knowledge.ts`: make release activation operation IDs deterministic per environment, expected pointer edit version, and release ID, so successor activation does not collide with an earlier activation replay key.
 - `tests/merchant-knowledge-bootstrap-postgres.test.ts`: give the full production-adapter PostgreSQL scenario a bounded 60-second test timeout.
 
 #### Work Completed
+
 Preserved the Attempt 3 implementation and consumed the accepted DATABASE-004 migration through the authorized submodule pin update. The first rerun against the accepted pin exposed an activation operation-ID collision when bootstrap activated a successor release. The lifecycle correctly rejected reuse of an operation ID with different input; the bootstrap now derives a distinct deterministic operation ID from the pointer transition inputs. The disposable proof then passed, including clean bootstrap, replay no-op, exact unrelated Tool revision and Feature snapshot preservation after newer authoring, and successor activation. No Feature or ShopFeaturePreference state is changed by bootstrap.
 
 Launcher-prepared evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`; both task branches are `task/ARCH-023-COMMERCE-002`. The launcher reported current `origin/main` incorporated, dependency gate passed for COMMERCE-001, ADMIN-001, and DATABASE-004, recursive submodule synchronization and initialization passed, and the database was initially materialized at `2eb17ee910491e8f9df82736fc0a843844415947`. Attempt 4 claim commit: `84cfc0a6b49e5af885aca93d6b03b6683921bee5`; executor `copilot`; claimed at `2026-09-30T21:34:11Z`.
 
 #### Validation Results
+
 - Passed: focused bootstrap, startup instrumentation, lifecycle, and Feature-authoring tests: 5 files, 56 tests.
 - Passed: `npm run test:arch023-merchant-knowledge-bootstrap:postgres` against one invocation-owned disposable `pgvector/pgvector:pg17` instance after accepted migrations; successor snapshot proof passed and cleanup verified zero owned containers.
 - Passed: `npm run typecheck`.
@@ -850,12 +862,15 @@ Launcher-prepared evidence: canonical workspace `/Users/kwadwoadomafriyie/projec
 - Passed: `git diff --check`, staged diff whitespace check, and changed-file diagnostics for edited source/test/package files.
 
 #### Deviations and Unresolved Issues
+
 The initial PostgreSQL invocation used the launcher-recorded pre-DATABASE-004 gitlink and reproduced the historical guard rejection. After confirming DATABASE-004 commit `6a8602e` was integrated on database `main` and architect-accepted, the task-authorized Commerce submodule pin was advanced and the proof passed. The build script reset the nested checkout to the old recorded gitlink once; the accepted revision was restored and staged, and the final PostgreSQL proof passed with that pin. No unresolved implementation or architecture concerns remain.
 
 #### Publication
+
 Implementation commit `649037fce8a2aea7f321b1e6436920c90164dfbd` is pushed on `task/ARCH-023-COMMERCE-002`; the parent task report is being committed and pushed on its matching branch. This task is returned to `review`; no main branch was updated and no parent gitlink to the Commerce implementation was staged.
 
 ### Architect Adjudication — Attempt 3 Snapshot Guard
+
 The architect authorizes a narrowly scoped Database-owned `ARCH-023-DATABASE-004` task to define a forward migration and PostgreSQL regression coverage for this guard conflict. This supersedes the earlier “no Database task” restriction only for the demonstrated successor snapshot invariant; it does not authorize Commerce schema edits, trigger bypasses, mutation of existing releases, or restoration of retired Capability concepts. `ARCH-023-DATABASE-004` is the required Database-owned prerequisite. Its portable canonical definition is supplied by the architect with this adjudication and must be materialized through the normal `/moda-task ARCH-023-DATABASE-004 --definition ...` path. Keep this Commerce task `blocked` until DATABASE-004 is architect-accepted Complete.
 
 ## Architect Review
@@ -921,9 +936,11 @@ Accepted. The bootstrap is convergent and restart-safe, preserves later valid St
 The earlier transitional COMMERCE-004 wording that assigned the `MERCHANT_OPT_IN` bootstrap correction to COMMERCE-004 is now obsolete because COMMERCE-002 itself has been accepted with that guard. COMMERCE-004 is narrowed to request-time merchant-activation enforcement for `merchantKnowledge.lookup`; it must not redo the accepted bootstrap.
 
 ### Review Status
+
 Changes Requested
 
 ### Review Notes
+
 Attempt 1 correctly reported a blocker against the task as originally written. Architect review confirmed that the blocker was caused by stale ARCH-023 requirements, not by a missing ARCH-023 database capability. Accepted ARCH-021 DATABASE-003/COMMERCE-088/COMMERCE-089/COMMERCE-092 deliberately removed `CommerceCapabilityRevision`, `selectionBinding`, per-Capability prompt/configuration and `toolBindings[]` in favour of direct `Feature -> CommerceCapability -> CommerceTool` authoring plus immutable release-time Tool-revision and Feature-Behaviour snapshots.
 
 This task definition and the parent ARCH-023 architecture are therefore corrected in place. No Database task is required. The same task returns to Ready with Attempt 1 preserved so the next launcher claim becomes Attempt 2.
@@ -931,6 +948,7 @@ This task definition and the parent ARCH-023 architecture are therefore correcte
 The corrected task also makes restart semantics explicit: application startup may invoke bootstrap on every process start, but a usable state is a durable no-op. It must not create revision/release churn.
 
 ### Reviewed Files
+
 - `docs/architecture/ARCH-023-merchant-knowledge.md`
 - `docs/decisions/commerce/ARCH-023/COMMERCE-002-bootstrap-merchant-knowledge-publication.md`
 - `docs/decisions/database/ARCH-021/DATABASE-003-simplify-feature-capability-persistence.md`
@@ -944,12 +962,15 @@ The corrected task also makes restart semantics explicit: application startup ma
 - accepted ARCH-021/ARCH-023 Prisma schema pinned by the supplied workspace
 
 ### Validation Reviewed
+
 Attempt 1 made no implementation changes and correctly ran no implementation test suite. Its reported `git diff --check` passed. Architect inspection confirmed the current production release path consumes direct Capability identities and freezes exact Tool revision/Feature Behaviour inputs at release creation; no active Capability revision/selection-binding persistence exists to consume.
 
 ### Architecture Conformance
+
 The Attempt 1 stop was conformant with repository ownership because fabricating Capability revisions or editing the database schema would have reversed an accepted ARCH-021 architectural simplification. The corrected task now conforms to the canonical direct model and authorizes only the bounded generic successor-release lifecycle extension required to preserve immutable base-release snapshots during bootstrap.
 
 ### Follow-up
+
 Reclaim `ARCH-023-COMMERCE-002` through the normal `/moda-task` preparation path. The next claim is Attempt 2. Do not create Database work for `CommerceCapabilityRevision`, `selectionBinding`, per-Capability prompt/configuration or `toolBindings[]`.
 
 ### Architect Review Addendum — Attempt 2 R6 Contract Reconciliation
@@ -1039,7 +1060,6 @@ real implementation defects.
    branch synchronization evidence and recursive submodule preparation evidence in the
    Completion Report before returning to `review`.
 
-
 #### Activation-mode enhancement — authoritative for Attempt 3
 
 The Merchant Knowledge commercial Feature is `MERCHANT_OPT_IN`, not `ALWAYS_ENABLED`.
@@ -1114,7 +1134,6 @@ launcher should increment `attempt: 2 -> 3` exactly once. Keep request-time
 `ShopFeaturePreference` enforcement out of this bootstrap task. The accepted COMMERCE-001
 runtime boundary must be reconciled separately before terminal system testing. Do not begin
 COMMERCE-003 or any terminal system-test work from this task.
-
 
 ## Architect Adjudication — Attempt 3 Database prerequisite — 2026-09-30
 

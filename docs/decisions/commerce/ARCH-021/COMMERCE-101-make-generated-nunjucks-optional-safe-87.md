@@ -697,9 +697,7 @@ and, if permitted by the compiled contract:
 ```json
 {
   "values": {
-    "items": [
-      {}
-    ]
+    "items": [{}]
   }
 }
 ```

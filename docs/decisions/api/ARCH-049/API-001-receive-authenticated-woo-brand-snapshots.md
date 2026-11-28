@@ -57,8 +57,20 @@ WooCommerce runs on merchant-owned infrastructure. The current Moda API has an i
   "eventId": "stable-event-identifier",
   "observedAt": "2026-10-25T12:00:00Z",
   "brandName": "Example Store",
-  "logo": {"url":"https://store.example/wp-content/uploads/logo.png", "attachmentId":123, "altText":"Store logo", "width":1200, "height":400},
-  "siteIcon": {"url":"https://store.example/wp-content/uploads/icon.png", "attachmentId":456, "altText":null, "width":512, "height":512},
+  "logo": {
+    "url": "https://store.example/wp-content/uploads/logo.png",
+    "attachmentId": 123,
+    "altText": "Store logo",
+    "width": 1200,
+    "height": 400
+  },
+  "siteIcon": {
+    "url": "https://store.example/wp-content/uploads/icon.png",
+    "attachmentId": 456,
+    "altText": null,
+    "width": 512,
+    "height": 512
+  },
   "coverImage": null
 }
 ```
@@ -146,7 +158,7 @@ Task-owned implementation changes in `moda-interact-api` (14 entries including d
 - `tests/unit/woocommerce/shop-brand/routes.test.ts`.
 - `tests/unit/woocommerce/shop-brand/service.test.ts`.
 
-An **additional** merge from API `origin/main` occurred after the successful validation. Its log shows incoming changes to the *merchant recovery-policy* OpenAPI/source/tests and a database-submodule merge conflict, resolved by staging the database gitlink. These incoming upstream files are not claimed as features implemented under this task.
+An **additional** merge from API `origin/main` occurred after the successful validation. Its log shows incoming changes to the _merchant recovery-policy_ OpenAPI/source/tests and a database-submodule merge conflict, resolved by staging the database gitlink. These incoming upstream files are not claimed as features implemented under this task.
 
 ### Work Completed
 
@@ -161,14 +173,14 @@ An **additional** merge from API `origin/main` occurred after the successful val
 
 The original validation passed before the subsequent upstream merge (developer terminal capture `typescript(20261027-143455)`). The following post-merge checks were rerun from the canonical API implementation worktree during developer self-review:
 
-| Command/check | Result |
-| --- | --- |
-| `npm run test:arch049-shop-brand:postgres` | **PASS** — 3/3 real PostgreSQL integration tests (including actual Woo installation HTTP auth and concurrency), 65 migrations applied to disposable database. |
-| `npm run test:arch049-shop-brand:unit` | **PASS** — 9/9 unit, contract and HTTP tests. |
-| `npm run typecheck` | **PASS** — Prisma client generated successfully; `tsc --noEmit -p tsconfig.json` completed without errors. |
-| `npm run lint` | **PASS** — `eslint . --max-warnings=0`. |
-| `npm run build` | **PASS** — Prisma generation and `tsc -p tsconfig.build.json`. |
-| `git diff --check` and `git diff --cached --check` | **PASS** — no whitespace errors reported. |
+| Command/check                                      | Result                                                                                                                                                        |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch049-shop-brand:postgres`         | **PASS** — 3/3 real PostgreSQL integration tests (including actual Woo installation HTTP auth and concurrency), 65 migrations applied to disposable database. |
+| `npm run test:arch049-shop-brand:unit`             | **PASS** — 9/9 unit, contract and HTTP tests.                                                                                                                 |
+| `npm run typecheck`                                | **PASS** — Prisma client generated successfully; `tsc --noEmit -p tsconfig.json` completed without errors.                                                    |
+| `npm run lint`                                     | **PASS** — `eslint . --max-warnings=0`.                                                                                                                       |
+| `npm run build`                                    | **PASS** — Prisma generation and `tsc -p tsconfig.build.json`.                                                                                                |
+| `git diff --check` and `git diff --cached --check` | **PASS** — no whitespace errors reported.                                                                                                                     |
 
 Git/worktree and publication evidence:
 

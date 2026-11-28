@@ -114,8 +114,8 @@ Current-source facts from the `moda-interact-workspace(20261003-123430).zip` bas
    - `reservedQuantity`;
    - `forfeitedQuantity`;
    - `version`;
-   and the database enforces:
-   `committed + reserved + forfeited <= granted`.
+     and the database enforces:
+     `committed + reserved + forfeited <= granted`.
 
 6. `RecoveryCreditPurchase` is already the durable purchased-credit lot but currently requires Shopify-specific acquisition evidence:
    - `shopifyPlanHandleSnapshot`;
@@ -138,7 +138,7 @@ Current-source facts from the `moda-interact-workspace(20261003-123430).zip` bas
    - `commerce.Shop.onboardingCompleted`;
    - the `woocommerce` PostgreSQL schema;
    - `woocommerce.WooCommerceInstallation`.
-   `WooCommerceInstallation` remains the plugin installation/authentication identity only. Billing state MUST NOT be moved into it.
+     `WooCommerceInstallation` remains the plugin installation/authentication identity only. Billing state MUST NOT be moved into it.
 
 10. ARCH-026-DATABASE-002 is the serialization gate for this repository. ARCH-027-DATABASE-001 remains `pending` until ARCH-026-DATABASE-002 is architect-accepted `complete`, preventing concurrent schema/migration work against `commerce.Shop` / the same Prisma schema.
 
@@ -486,7 +486,6 @@ model WooCommerceBillingWebhookReceipt {
   @@schema("woocommerce")
 }
 ```
-
 
 `billingOperationId` is an optional correlation to the Shop-owned billing intent that a Woo receipt helps resolve. It is intentionally nullable because:
 
@@ -1332,7 +1331,6 @@ MerchantPricingUsageEvent belonging to the current Free plan
 ```
 
 The follow-on API owns current-plan membership and Woo-v1 bundle eligibility validation. It must require a directly priced `FIXED` event and read the authoritative stored `fixedUnitAmountMinor` / `currency`; it must not run tier arithmetic for Woo. The database owns only the durable operation/purchase shapes and MUST NOT introduce a recurring-contract prerequisite. A Woo one-time-charge contract UUID MUST remain operation/purchase evidence and MUST NOT populate `Subscription.providerSubscriptionId`.
-
 
 ### Woo webhook receipt contract
 

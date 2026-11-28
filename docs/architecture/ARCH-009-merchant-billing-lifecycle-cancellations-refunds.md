@@ -167,12 +167,12 @@ skipFinalUsageCharge
 
 Moda exposes exactly four cancellation modes:
 
-| Moda mode | deferCancellation | prorate | skipFinalUsageCharge |
-|---|---:|---:|---:|
-| END_OF_CYCLE | true | false | false |
-| IMMEDIATE_NO_PRORATION | false | false | false |
-| IMMEDIATE_PRORATED | false | true | false |
-| IMMEDIATE_SKIP_FINAL_USAGE | false | false | true |
+| Moda mode                  | deferCancellation | prorate | skipFinalUsageCharge |
+| -------------------------- | ----------------: | ------: | -------------------: |
+| END_OF_CYCLE               |              true |   false |                false |
+| IMMEDIATE_NO_PRORATION     |             false |   false |                false |
+| IMMEDIATE_PRORATED         |             false |    true |                false |
+| IMMEDIATE_SKIP_FINAL_USAGE |             false |   false |                 true |
 
 No other boolean combination is legal.
 

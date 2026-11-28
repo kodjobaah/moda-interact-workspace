@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T16:05:00Z
 ---
+
 # ARCH-006-BACKGROUND-004: Assemble pending translations into durable logical batches
 
 ## Architecture
@@ -108,7 +109,6 @@ Focused unit/integration/concurrency tests plus repository-declared validation a
 
 Luna stop condition: once READY-batch assembly and its deterministic submit hint are correct, stop. Do not “finish the pipeline” in the same task.
 
-
 ### Repository-agent workflow hard stop
 
 SHARED-004 is now architect-accepted Complete and `@modainteract/moda-interact-shared@0.7.1` has been registry/clean-consumer verified. `moda_architect` has returned BACKGROUND-004 to **Ready for Attempt 2**. Execute **only this task**, return it to `review`, and STOP. Do not mark it Complete, do not edit/promote `BACKGROUND-005`, do not update index/architecture readiness, and do not claim another task in the same invocation.
@@ -194,7 +194,6 @@ Not accepted yet. No downstream task is promoted. `ARCH-006-BACKGROUND-005` rema
 
 `ARCH-006-SHARED-003 -> ARCH-006-SHARED-004` must produce and publish the corrected shared package before BACKGROUND-004 Attempt 2 can be claimed.
 
-
 ### Architect Re-entry Decision — 2026-09-06
 
 SHARED-004 is accepted Complete and the corrected registry artifact `@modainteract/moda-interact-shared@0.7.1` has passed isolated consumer import/execution verification. BACKGROUND-004 is therefore returned from Blocked to Ready for **Attempt 2**. The previous Architect Review remains the historical Attempt 1 decision. The repository agent must claim this task normally (incrementing attempt from 1 to 2), perform only the bounded correction contract, return to `review`, and STOP.
@@ -244,7 +243,6 @@ The required disposable PostgreSQL concurrency evidence could not run in this en
 ### Architectural Concerns
 
 None introduced by Attempt 2. The task remains in `review` for architect evaluation and database-backed concurrency evidence.
-
 
 ## Architect Acceptance — 2026-09-06
 

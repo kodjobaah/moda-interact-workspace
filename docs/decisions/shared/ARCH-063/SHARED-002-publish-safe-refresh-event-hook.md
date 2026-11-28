@@ -15,39 +15,54 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on: ["ARCH-063-SHARED-001"]
-enables: ["ARCH-063-SHOPIFY-001", "ARCH-063-BACKGROUND-001", "ARCH-063-COMMERCE-002", "ARCH-063-MCP-001", "ARCH-063-SYSTEM-TEST-001"]
+enables:
+  [
+    "ARCH-063-SHOPIFY-001",
+    "ARCH-063-BACKGROUND-001",
+    "ARCH-063-COMMERCE-002",
+    "ARCH-063-MCP-001",
+    "ARCH-063-SYSTEM-TEST-001",
+  ]
 created: 2026-11-06
 updated: 2026-11-06
 ---
+
 # Publish safe refresh event hook
 
 ## Architecture
+
 ARCH-063; docs/architecture/ARCH-063-refreshable-shopify-status-and-safe-refresh-events.md. Coordinator moda_architect.
 
 ## Objective
+
 Publish safe refresh event hook using existing automatic coordinated refresh.
 
 ## Context
+
 Metadata EXPIRED blocks authoring despite usable refresh; no safe refresh lifecycle events. Parent includes cross-service source audit and selected solution.
 
 ## Scope
+
 moda-interact-shared implementation/tests at exact touchpoints below; stale shared checkout is not a deployed observation.
 
-| Existing file | Exact surface | Required change |
-|---|---|---|
+| Existing file                     | Exact surface                   | Required change                                                                                              |
+| --------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | moda-interact-shared/package.json | version/export release metadata | Publish accepted compatible version, record exact immutable receipt/exports; no implementation revalidation. |
 
-
 ## Out of Scope
+
 Page-render refresh, manual credential entry, lock/recovery redesign, schema, topology, generic logger/metric framework and automatic task execution.
 
 ## Requirements
+
 ## Problem and audited behavior
+
 Commerce src/studio/connections/provider-status.ts readProviderMetadata checks valid access then expired access and emits EXPIRED without checking usable refresh credentials. store-integration.tsx and provider-tool-handoff.ts permit AVAILABLE only, so users cannot reach the already automatic execution refresh. Selector components/studio-selected-shop-context.tsx renders an existence-only shopifyOfflineSessionAvailable boolean even for Woo. Existing expired-status tests encode this dead end. App shop.service.ts readiness near128–136 accepts refreshToken presence without refreshTokenExpires, giving the opposite false-positive. Shared offline-token-provider has coordinated refresh mechanics but no refresh events. These are local implementation observations, not deployed-state claims.
 
 Canonical ARCH-061-MCP-001 implementation worktree session-reader.ts calls provider.getSession(shopId) without a premature expiry gate; shared submodule checkout may show old direct reads and is not proof of deployed behavior. Background shopify-session.service.ts delegates Shared getAccessToken; no access-expiry admission gate found. Commerce execution composition/local-policy-providers already call Shared; App SDK wrapper handles token refresh inside transaction scope. Audit fixes below preserve existing accepted locking/identity/recovery rather than reimplementing it.
 
 ## Exact functional decision
+
 Add Commerce-local StoreIntegrationStatus REFRESHABLE. Keep EXPIRED for unusable refresh-required credentials, with label "Refresh or reconnection required" so a within-skew access token is not falsely described already expired. Both status and App readiness use the current helper's fixed 320000ms skew, test boundaries at exactly now+320000 and +320001; do not revert to an assumed five-minute constant. For an authorized ACTIVE Shopify shop with exactly one matching offline session, metadata AVAILABLE means nonempty access present with null expiry with no refresh token (the helper-supported nonexpiring state) or expires>now+320000ms. Access inside the helper's actual 320000ms refresh skew, including expired access, with refreshToken present/nonempty and refreshTokenExpires>now is REFRESHABLE. Access requiring refresh without usable refresh is EXPIRED; absent offline/access is MISSING, ambiguous or invalid mapping UNKNOWN/unavailable. Query refresh presence using DB predicates and explicit safe selects; never select/return token or decrypt. No page render/status read/network mutation. Readiness means credentials can be attempted, never live provider health. Display REFRESHABLE as "Ready to refresh automatically" and "Credentials refresh when a tool runs" with existing "Live connection not checked". No user refresh button, credential edit or reinstall requirement for REFRESHABLE.
 
 Allow both AVAILABLE and REFRESHABLE for Shopify tool-authoring link and native tool preselection; Woo retains AVAILABLE and existing grant checks. Use one local isStoreIntegrationUsableForAuthoring predicate in provider-tool-handoff.ts and reuse in StoreIntegration. Test/save/live-test actions MUST independently resolve current selected Shop and execute via Shared getSession/getAccessToken; do not authorize from stale browser status, skip scope checks or refresh on save if existing save is metadata-only. Refresh happens only at actual provider execution. A stale REFRESHABLE hint can fail safely if refresh is revoked; stale AVAILABLE can refresh at execution after expiry. Existing pending async shop-switch results must never reopen another shop's link.
@@ -57,6 +72,7 @@ Selector header must show provider-specific metadata state from the same safe cl
 App readiness function must use same logical credential viability: nonexpiring access with no refresh token OR access valid beyond now+320000ms OR access requiring refresh with nonempty refresh and refresh expiry strictly future; missing/expired refresh expiry is false. This remains metadata-only and does not replace actual Shared execution validation. Shared helper invalid-token semantics remain unchanged. MCP/Background direct helper callers require no new optimistic expiry precheck.
 
 ## Exact safe refresh-event contract
+
 Shared factory gains optional `onEvent?:(event:ShopifyOfflineRefreshEvent)=>void` hook, exported from ./shopify/node. Hook failure is swallowed synchronously; async return is ignored and rejection suppressed; telemetry never changes return/transaction outcome. Event is frozen plain bounded object `{event:'shopify.offline_refresh.started'|'shopify.offline_refresh.committed'|'shopify.offline_refresh.failed';operationId:string;shopId:string|null;source:'SHARED'|'SDK';durationMs:number;outcome:'STARTED'|'COMMITTED'|'REJECTED'|'UNKNOWN'|'CANCELLED'|'UNAVAILABLE';reasonCode:ShopifyOfflineTokenErrorCode|null}`. No domain, session ID, token, scope, error/cause/body, OAuth client key/secret, endpoint or customer fields. operationId is a fresh UUID per attempted refresh, not caller text; duration monotonic elapsed rounded/clamped 0..60000. shopId derives trusted context; SDK bootstrap uses null until resolved, never a guessed domain as identifier.
 
 For Shared getSession: emit started immediately before actual refresh dispatch after all eligibility checks; emit committed ONLY after interactive transaction commits successfully; emit failed once on rejection, cancellation, timeout, malformed response or persistence/commit ambiguity after start. Unknown after remote acceptance maps UNKNOWN/REFRESH_OUTCOME_UNKNOWN, never committed. Returning existing valid/nonexpiring credential emits no refresh event. Lock waiter rereading committed token emits none. Hook is not a competing logger: each service adapter forwards schema fields to existing @modainteract/moda-interact-shared/logging logger, info started/committed, warn failed. No raw Error attached. Exactly one terminal event per started attempt within a running process; process death can leave started without terminal, do not claim durable/exactly-once telemetry.
@@ -64,18 +80,23 @@ For Shared getSession: emit started immediately before actual refresh dispatch a
 SDK-managed refresh/token exchange is not observable solely from Shared getSession. App coordination wrapper tracks bounded OAuth request intent in its existing ALS context: grant_type refresh_token emits same SDK started event; successful SDK credential persistence does not yet emit committed. Emit SDK committed only after outer coordinated transaction commits (including authenticated redirect commit); rejection/rollback/deadline/commit failure emits SDK failed. Token exchange acquisition is a distinct operation and MUST NOT be mislabeled refresh: no refresh event unless grant_type refresh_token. If SDK delegates to Shared refresh, source SHARED owns events and wrapper emits no duplicate. App creates service-owned event adapter reusing same exported event shape; no generic logger fork. Tests cover SDK refresh/store-success/commit-failure and redirect handling.
 
 ## Package/dependency and rollout
+
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
+
 - [x] Publish accepted compatible version, record exact immutable receipt/exports; no implementation revalidation.
 
 ## Interfaces / Contracts
+
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
 
 ## Dependencies
+
 - ARCH-063-SHARED-001
 
 ## Enables
+
 - ARCH-063-SHOPIFY-001
 - ARCH-063-BACKGROUND-001
 - ARCH-063-COMMERCE-002
@@ -83,16 +104,20 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
 - [x] Prerequisite Complete/accepted, exact approved version visible in registry with event type/export; metadata-only release diff.
 
 ## Validation
+
 - [x] Verify accepted Complete prerequisite, approved version, successful release and exact registry visibility; do not rerun implementation tests/lint/build/typecheck.
 - [x] Confirm release-only diff.
 
 ## Stop Condition
+
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
+
 Execution ownership amendment (2026-11-06): developer explicitly requested agent implementation through `/moda-task ARCH-063-SHARED-002` and authorized task synchronization, claim, release-task changes and review publication. Delegate bounded publication to moda_shared through canonical launcher; retain completion_mode developer and all release-only constraints. No attempt, dependency or scope change.
 
 Dependency reconciliation (2026-11-06): ARCH-063-SHARED-001 Attempt 1 is architect Accepted and explicitly developer-completed; publication task is now Ready, unclaimed at Attempt 0. No publication or implementation is started by this promotion.
@@ -100,16 +125,24 @@ Dependency reconciliation (2026-11-06): ARCH-063-SHARED-001 Attempt 1 is archite
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
+
 ### Status
+
 Complete — published 5.3.0 verified, Accepted and explicitly developer-completed.
+
 ### Files Changed
+
 - package.json: version 5.2.0 -> 5.3.0
 - package-lock.json: root/package version 5.2.0 -> 5.3.0
+
 ### Work Completed
+
 Published architect-approved compatible minor `@modainteract/moda-interact-shared@5.3.0` to https://registry.npmjs.org/ with public access. Accepted prerequisite source commit 4097eb3662c11bf97989cd1012da914973ec7592 is present through implementation-main merge f5ebaf14f114994d9fba42a077a83fca56a08bf1, with an identical tracked tree before release metadata changes. Prerequisite task is Complete/Accepted. Registry before release listed versions through 5.2.0 and no 5.3.0 collision; moda_architect approved 5.3.0.
 
 Reused exact accepted SHARED-001 build output rather than rerunning implementation validation. Copied dist from canonical ARCH-063-SHARED-001 worktree; every copied file byte-matched. No generated declaration edits. No tests, lint, typecheck or build rerun. No consumer changes or main merges.
+
 ### Validation Results
+
 - `npm pack --ignore-scripts --json`: PASS, 134 files. Inspected actual archive manifest/version, `./shopify/node` JavaScript/declaration paths, exported ShopifyOfflineRefreshEvent and optional onEvent declaration, plus runtime committed event.
 - `npm publish ./modainteract-moda-interact-shared-5.3.0.tgz --access public --ignore-scripts --registry https://registry.npmjs.org/`: SUCCESS, npm printed `+ @modainteract/moda-interact-shared@5.3.0` and advised processing may take a few minutes.
 - Initial exact-version npm registry reads returned E404 during processing. At 2026-11-06T16:34:45Z uncached exact-version registry metadata became visible with matching immutable integrity and exports.
@@ -117,6 +150,7 @@ Reused exact accepted SHARED-001 build output rather than rerunning implementati
 - `git diff` against prepared implementation baseline: package.json/package-lock.json only, three version-line replacements; no runtime source changes.
 
 Immutable release receipt:
+
 - package/version: @modainteract/moda-interact-shared@5.3.0
 - registry: https://registry.npmjs.org/
 - tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.3.0.tgz
@@ -126,18 +160,29 @@ Immutable release receipt:
 - export: ./shopify/node -> ./dist/shopify/node.js; types ./dist/shopify/node.d.ts
 - local exact archive evidence: /private/tmp/arch063-shared002-release-5.3.0.tgz
 - exact registry receipt: /private/tmp/arch063-shared002-full-registry.json
+
 ### Deviations
+
 None. Initial registry distribution delay resolved by read-only verification.
+
 ### Assumptions
+
 Consumer deployment and version pinning remain independently owned tasks after explicit developer completion.
+
 ### Unresolved Issues
+
 None. Public tarball now available and verified; no repeated publication attempted.
+
 ### Architectural Concerns
+
 Do not promote consumer dependencies while task remains blocked or review awaiting explicit completion.
+
 ### Git / VCS
+
 Task branch: task/ARCH-063-SHARED-002
 
 Physical worktree isolation (launcher packet):
+
 - canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
 - parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-SHARED-002
 - parent branch: task/ARCH-063-SHARED-002
@@ -148,6 +193,7 @@ Physical worktree isolation (launcher packet):
 - another task worktree reused: no
 
 Start-of-attempt synchronization (launcher packet):
+
 - parent remote task branch fast-forwarded: not-needed
 - parent origin/main incorporated: already-current
 - implementation remote task branch fast-forwarded: not-needed
@@ -158,28 +204,43 @@ Start-of-attempt synchronization (launcher packet):
 Implementation release metadata commit: 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be; pushed yes; exact remote task hash verified. Parent report commit follows this edit in matching task history. Submodule gitlink staged: no. Merged to implementation main: no. Merged to workspace main: no.
 
 ## Architect Review
+
 ### Review Status
+
 Accepted — explicitly developer-completed.
+
 ### Review Notes
+
 2026-11-06 moda_architect reviewed actual release commit 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be: package.json/package-lock.json version changes only, 5.2.0 to approved compatible additive minor 5.3.0. Accepted prerequisite ARCH-063-SHARED-001 is Complete and included in release source. No runtime redesign or implementation validation rerun occurred. Reuse of byte-identical accepted build artifacts was approved; exact archive inspected for optional onEvent, event type and runtime lifecycle emission.
 
 Registry distribution blocker resolved: exact public tarball now HTTP 200 and immutable download hashes match registry receipt and developer-supplied npm publication email (2026-11-06T16:34:35.651Z). Release Accepted; completion remains developer-controlled.
+
 ### Reviewed Files
+
 - package.json and package-lock.json release diff.
 - Current Completion Report and /private/tmp/arch063-shared002-full-registry.json registry receipt.
 - Launcher physical worktree, synchronization, dependency and durable claim evidence.
+
 ### Validation Reviewed
+
 Release-only validation: prerequisite Accepted/Complete, approved available version, accepted-source equality, accepted build artifact byte equality, exact archive export inspection, successful npm publication, exact registry metadata/integrity match, published Git hash. Public archive download now passes SHA1/SHA512 integrity and required export/content verification. No tests/lint/typecheck/build rerun.
+
 ### Architecture Conformance
+
 Release scope conforms; safe export remains Node-only. Canonical isolated task worktrees preserved. Developer completion authority retained. Consumers and terminal/manual-gated System Test remain Pending because publication task is not Complete.
+
 ### Follow-up
+
 Explicit developer completion required via `/moda_developer_update ARCH-063-SHARED-002 complete`. Consumers remain Pending until actual completion; no follow-on execution.
 
 ## Developer Reconciliation — External Distribution Still Blocked
+
 2026-11-06T16:39:43.868938+00:00 — Requested `/moda_developer_update ARCH-063-SHARED-002` reconciliation performed. Fresh GET of exact registry dist.tarball again returned HTTP 404. Exact version metadata remains visible at 5.3.0 with unchanged SHA-512 integrity and shasum 032047617e506862c9c4b6b0cc183b752be46b6b. Therefore downloaded archive integrity/export checks cannot yet run, and no passing review is fabricated. Both canonical worktrees are clean; release HEAD/remote match 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be, prior report HEAD/remote match a96f110d9f777a9ba2f442d67035134ad462ec4f. Attempt 1, configured execution/completion modes and blocked status preserved. Existing exact local archive inspection remains valid; package consumability is the sole external blocker. No republish, new version, implementation validation rerun, main merge or consumer promotion. Resume only read-only artifact availability/integrity/export confirmation when registry distribution changes.
 
 ## Developer Self-Review — Accepted
+
 2026-11-06T16:42:25.161548+00:00 — Explicit reconciliation request reviewed existing agent release without transferring execution mode. Fresh canonical and percent-encoded public tarball GETs returned HTTP 200 (307845 bytes), with 5.2.0 control also HTTP 200. Download SHA1 032047617e506862c9c4b6b0cc183b752be46b6b matches developer-supplied npm email; SHA512 matches immutable receipt above. Inspected downloaded archive: 134 files, package version 5.3.0, ./shopify/node export paths, ShopifyOfflineRefreshEvent, optional onEvent and started/committed/failed runtime event strings. Clean release HEAD equals remote 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be; prior report HEAD equals remote 23de38ca128fcbbd942d21ba32dbf7fe0f2560e9. All release criteria satisfied; same Attempt 1 moved to review with executor/claimed_at null. No republish, new version, build/test rerun or main merge. Explicit developer completion pending.
 
 ## Developer Completion Decision
+
 2026-11-06T16:51:21.013726+00:00 — Developer explicitly invoked `/moda_developer_update ARCH-063-SHARED-002 complete`. Verified durable Accepted review at parent b1a872b065ae33df8993a32d4b7ed995e497f8e8 matching remote, all required checkboxes satisfied, clean canonical worktrees and release commit 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be matching remote. Registry 5.3.0 artifact availability, immutable hashes and Node exports verified in accepted review; supplied npm receipt matches downloaded shasum. Task completed at unchanged Attempt 1, executor/claimed_at null, execution/completion modes preserved. No main merge, repeat release or follow-on execution. Four publication consumers become Ready; System Test remains Pending on incomplete implementation dependencies and terminal/manual-gated.

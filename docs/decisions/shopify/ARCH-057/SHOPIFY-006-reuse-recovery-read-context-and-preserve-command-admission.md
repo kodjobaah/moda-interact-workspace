@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-001
 enables:
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -44,25 +44,25 @@ The same-request context from SHOPIFY-001 is suitable for read presentation only
 
 All paths are relative to `moda-interact`.
 
-| Existing path | Required edit |
-|---|---|
-| `app/services/recoveries/recovery-detail.server.ts` | Introduce the composed reader factory, private narrow section readers and independent narrow ownership resolver; preserve existing public readers/DTOs |
-| `app/routes/app/recovery-detail/loader.server.ts` | Pass framework context, use one composed reader, preserve independent section states/statuses and template fallback |
-| `app/routes/app/recovery-detail/state.ts` | Adjust type-only imports if required by the composed reader, without changing public DTO fields |
-| `app/routes/app/recoveries/loader.server.ts` | Pass context to the guard and log operational read failures while preserving existing invalid/empty/never-used/error states |
-| `app/routes/app/home/overview.server.ts` | Log overview read failures while retaining its existing safe error state and RepeatableRead reader |
-| `app/services/recoveries/recovery-human-commands.server.ts` | Retain the locked Shop row and reuse it in local admission/catalogue checks; no other command state-machine changes |
-| `app/services/recoveries/recovery-follow-up-catalogue.server.ts` | Accept the explicit trusted Shop snapshot below; retain independent fallback and every sender/publication/variant predicate |
-| `app/routes/app/recovery-detail/command-http.server.ts` | Pass framework context; retain HTTP/origin/body bounds; log actual original operational errors including classified retry conflicts |
-| `tests/unit/recovery-detail-readers.test.ts`, `tests/unit/recovery-detail-route.test.ts` | Verify one full owner projection, narrow standalone guards, section failures and unchanged DTOs |
-| `tests/unit/recovery-list-route.test.ts`, `tests/unit/recovery-overview.test.ts`, `tests/unit/recovery-cohort-readers.test.ts` | Retain list/overview semantics and assert their diagnostic owners |
-| `tests/unit/arch040-shopify-command.test.ts`, `tests/unit/arch040-shopify-http.test.ts`, `tests/unit/arch047-shopify-follow-up-catalogue.test.ts`, `tests/unit/arch047-shopify-follow-up-sender.test.ts` | Preserve admission/replay/CSRF/window/publication/private-claim contracts; assert locked-row reuse |
-| `tests/fixtures/arch047-shopify-follow-up.ts` | Add fields returned by the locked Shop query to deterministic fixtures, without changing provider eligibility |
-| `tests/integration/recovery-detail-query-plans.test.ts` | Extend actual-query composition/tenant cases; keep existing EXPLAIN and UNION limits |
-| `app/services/platform-configuration/contracts.server.ts` | Add an optional standard Error cause to the existing typed configuration error/helper while preserving existing constructor/helper callers, wrapper name, key, code and message |
-| `app/services/platform-configuration/repository.server.ts` | Retain the original database exception as the cause of the existing DATABASE_UNAVAILABLE wrapper; preserve all query, validation and failure classifications |
-| `tests/unit/platform-configuration/service.test.ts` | Assert original database cause identity and the existing configuration classifications/fallback contracts |
-| `package.json` | Add the exact unit/PostgreSQL scripts below |
+| Existing path                                                                                                                                                                                            | Required edit                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/recoveries/recovery-detail.server.ts`                                                                                                                                                      | Introduce the composed reader factory, private narrow section readers and independent narrow ownership resolver; preserve existing public readers/DTOs                          |
+| `app/routes/app/recovery-detail/loader.server.ts`                                                                                                                                                        | Pass framework context, use one composed reader, preserve independent section states/statuses and template fallback                                                             |
+| `app/routes/app/recovery-detail/state.ts`                                                                                                                                                                | Adjust type-only imports if required by the composed reader, without changing public DTO fields                                                                                 |
+| `app/routes/app/recoveries/loader.server.ts`                                                                                                                                                             | Pass context to the guard and log operational read failures while preserving existing invalid/empty/never-used/error states                                                     |
+| `app/routes/app/home/overview.server.ts`                                                                                                                                                                 | Log overview read failures while retaining its existing safe error state and RepeatableRead reader                                                                              |
+| `app/services/recoveries/recovery-human-commands.server.ts`                                                                                                                                              | Retain the locked Shop row and reuse it in local admission/catalogue checks; no other command state-machine changes                                                             |
+| `app/services/recoveries/recovery-follow-up-catalogue.server.ts`                                                                                                                                         | Accept the explicit trusted Shop snapshot below; retain independent fallback and every sender/publication/variant predicate                                                     |
+| `app/routes/app/recovery-detail/command-http.server.ts`                                                                                                                                                  | Pass framework context; retain HTTP/origin/body bounds; log actual original operational errors including classified retry conflicts                                             |
+| `tests/unit/recovery-detail-readers.test.ts`, `tests/unit/recovery-detail-route.test.ts`                                                                                                                 | Verify one full owner projection, narrow standalone guards, section failures and unchanged DTOs                                                                                 |
+| `tests/unit/recovery-list-route.test.ts`, `tests/unit/recovery-overview.test.ts`, `tests/unit/recovery-cohort-readers.test.ts`                                                                           | Retain list/overview semantics and assert their diagnostic owners                                                                                                               |
+| `tests/unit/arch040-shopify-command.test.ts`, `tests/unit/arch040-shopify-http.test.ts`, `tests/unit/arch047-shopify-follow-up-catalogue.test.ts`, `tests/unit/arch047-shopify-follow-up-sender.test.ts` | Preserve admission/replay/CSRF/window/publication/private-claim contracts; assert locked-row reuse                                                                              |
+| `tests/fixtures/arch047-shopify-follow-up.ts`                                                                                                                                                            | Add fields returned by the locked Shop query to deterministic fixtures, without changing provider eligibility                                                                   |
+| `tests/integration/recovery-detail-query-plans.test.ts`                                                                                                                                                  | Extend actual-query composition/tenant cases; keep existing EXPLAIN and UNION limits                                                                                            |
+| `app/services/platform-configuration/contracts.server.ts`                                                                                                                                                | Add an optional standard Error cause to the existing typed configuration error/helper while preserving existing constructor/helper callers, wrapper name, key, code and message |
+| `app/services/platform-configuration/repository.server.ts`                                                                                                                                               | Retain the original database exception as the cause of the existing DATABASE_UNAVAILABLE wrapper; preserve all query, validation and failure classifications                    |
+| `tests/unit/platform-configuration/service.test.ts`                                                                                                                                                      | Assert original database cause identity and the existing configuration classifications/fallback contracts                                                                       |
+| `package.json`                                                                                                                                                                                           | Add the exact unit/PostgreSQL scripts below                                                                                                                                     |
 
 New files:
 
@@ -99,17 +99,17 @@ No provider send, Background worker, moderation, recipient reachability, service
 11. Use `resolveDeploymentEnvironmentName()` with Shared logging in the new recovery semantic adapter. Retain original safe exception/cause and actual Prisma code rather than only `errorType` or `internal_error`. Do not log message/basket/customer content, recipient, idempotency payload, raw URL/header, sender credentials or template configuration body.
 12. Preserve existing Responses/redirects and invalid-query/business-denial behavior. A known P2002/P2034 retains the current 409 `conflict_retry` response but records the actual error at warn; an unexpected failure retains safe 503 and records error. No fabricated command success or automatic unbounded retry.
 
-| Failure/injection | Owner and log fields | Required behavior |
-|---|---|---|
-| Overview summary/preview DB error | Overview boundary; fixed operation, trusted shopId, original safe error/code/causes | Existing `state:error`; no fake zero totals |
-| List page/existence DB error | List loader | Existing error state/filters/embed retained |
-| Detail full ownership DB error | Detail loader | One original diagnostic, HTTP503/detail error |
-| Message/related page or edge error | Section wrapper with explicit section/identity context | Only affected section errors; standalone503; no swallowed source error |
-| Template config/variant/publication read failure | Detail template fallback | Log original failure; retain history and empty advisory templates, never guess a template |
-| Command/control/status DB exception, including P2002/P2034 | `handleFailure` via semantic adapter | Original safe message/code/cause once; existing409/503 contract |
-| Invalid configured app URL with actual URL-parser cause | Configuration/command boundary | Original internal cause, safe503, no configuration value or header leak |
-| Missing app URL, invalid JSON/cursor, foreign ID, permission or origin denial | Existing business/configuration classification | No invented provider error; original internal error only where one exists |
-| Throwing Shared sink | Shared isolation | Response, rollback, replay and admission decisions unchanged |
+| Failure/injection                                                             | Owner and log fields                                                                | Required behavior                                                                         |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Overview summary/preview DB error                                             | Overview boundary; fixed operation, trusted shopId, original safe error/code/causes | Existing `state:error`; no fake zero totals                                               |
+| List page/existence DB error                                                  | List loader                                                                         | Existing error state/filters/embed retained                                               |
+| Detail full ownership DB error                                                | Detail loader                                                                       | One original diagnostic, HTTP503/detail error                                             |
+| Message/related page or edge error                                            | Section wrapper with explicit section/identity context                              | Only affected section errors; standalone503; no swallowed source error                    |
+| Template config/variant/publication read failure                              | Detail template fallback                                                            | Log original failure; retain history and empty advisory templates, never guess a template |
+| Command/control/status DB exception, including P2002/P2034                    | `handleFailure` via semantic adapter                                                | Original safe message/code/cause once; existing409/503 contract                           |
+| Invalid configured app URL with actual URL-parser cause                       | Configuration/command boundary                                                      | Original internal cause, safe503, no configuration value or header leak                   |
+| Missing app URL, invalid JSON/cursor, foreign ID, permission or origin denial | Existing business/configuration classification                                      | No invented provider error; original internal error only where one exists                 |
+| Throwing Shared sink                                                          | Shared isolation                                                                    | Response, rollback, replay and admission decisions unchanged                              |
 
 ### Architect scope clarification — configuration database cause, 2026-11-04
 
@@ -239,18 +239,32 @@ Final amended-source checks passed:
 
 Same-fixture evidence:
 
-| Operation | Starting implementation | Final implementation | Evidence and outcome |
-|---|---|---|---|
+| Operation                   | Starting implementation                                        | Final implementation                                                      | Evidence and outcome                                                                                                                                                                               |
+| --------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Detail + messages + related | 3 public reader calls, 7 raw SELECTs, 3 full owner projections | 1 factory + 2 bound section calls, 5 raw SELECTs, 1 full owner projection | Starting commit executed in a temporary baseline probe on the same canonical migrated fixture; 50 messages/5 related rows; final DTO equality; no transaction-control statements or provider calls |
-| New text admission | 1 ORM Shop read plus 1 Shop lock | 0 ORM Shop reads plus 1 Shop lock | Same deterministic fixture and source-baseline command implementation; fresh subscription read remains 1; durable ACCEPTED outcome |
-| New follow-up admission | 2 ORM Shop reads plus 1 Shop lock | 0 ORM Shop reads plus 1 Shop lock | Same fixture; subscription remains 1, publication and sequence-two checks retained; durable ACCEPTED outcome |
+| New text admission          | 1 ORM Shop read plus 1 Shop lock                               | 0 ORM Shop reads plus 1 Shop lock                                         | Same deterministic fixture and source-baseline command implementation; fresh subscription read remains 1; durable ACCEPTED outcome                                                                 |
+| New follow-up admission     | 2 ORM Shop reads plus 1 Shop lock                              | 0 ORM Shop reads plus 1 Shop lock                                         | Same fixture; subscription remains 1, publication and sequence-two checks retained; durable ACCEPTED outcome                                                                                       |
 
 Command counts are mocked repository-method evidence, not emitted SQL or latency measurements. The separate real PostgreSQL composition case records seven compatibility-reader SELECTs versus five composed SELECTs and identical output. Each of the four message-page EXPLAIN cases retains the indexed ConversationMessage keyset scan and three LIMIT 51 clauses (two UNION sources and outer page). Full actual EXPLAIN JSON is retained in the PostgreSQL log.
 
 Representative fields from captured actual Shared output:
 
 ```json
-{"operation":"read_detail","stage":"read_detail","origin":"database","shopId":"shop-1","identities":{"recoveryId":"owned-recovery"},"error":{"name":"Error","message":"original recovery marker [REDACTED] [REDACTED]"},"causeChain":[{"name":"Error","message":"original cause [REDACTED]"}],"databaseCode":"P2010","redactionApplied":true,"truncated":false}
+{
+  "operation": "read_detail",
+  "stage": "read_detail",
+  "origin": "database",
+  "shopId": "shop-1",
+  "identities": { "recoveryId": "owned-recovery" },
+  "error": {
+    "name": "Error",
+    "message": "original recovery marker [REDACTED] [REDACTED]"
+  },
+  "causeChain": [{ "name": "Error", "message": "original cause [REDACTED]" }],
+  "databaseCode": "P2010",
+  "redactionApplied": true,
+  "truncated": false
+}
 ```
 
 Logs under `/tmp/arch057-shopify006-`: `amended-unit.log`, `postgres.log`, `ui.log`, `amended-config.log`, `amended-lint.log`, `amended-types.log`, `amended-build.log`, `baseline-command.log`, `baseline-postgres.log`. Baseline probes selected one proof case each; their filtered/skipped cases are not counted as completed suites. Temporary baseline source/test edits were restored and removed.

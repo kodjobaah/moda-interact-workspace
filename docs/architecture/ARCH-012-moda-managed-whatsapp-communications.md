@@ -686,14 +686,14 @@ System tests are terminal integrated validation tasks. No implementation task de
 
 ## Repository responsibilities
 
-| Repository | ARCH-012 responsibility |
-|---|---|
-| `moda-interact-shared` | canonical strict inbound customer-message contract + publication |
-| `moda-interact-database` | durable content/media/transcription lifecycle |
-| `moda-interact-messaging` | verified Meta -> canonical event normalization/publication |
-| `moda-interact-background` | reply routing, durable message handling, voice STT, outbound sender/transport |
-| `moda-interact-gateway` | WABA identity deployment wiring only |
-| `moda-interact-system-test` | deterministic integrated text/reply/link/template + voice acceptance |
+| Repository                  | ARCH-012 responsibility                                                       |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| `moda-interact-shared`      | canonical strict inbound customer-message contract + publication              |
+| `moda-interact-database`    | durable content/media/transcription lifecycle                                 |
+| `moda-interact-messaging`   | verified Meta -> canonical event normalization/publication                    |
+| `moda-interact-background`  | reply routing, durable message handling, voice STT, outbound sender/transport |
+| `moda-interact-gateway`     | WABA identity deployment wiring only                                          |
+| `moda-interact-system-test` | deterministic integrated text/reply/link/template + voice acceptance          |
 
 No `moda-interact` Shopify application implementation task is required by this communication architecture.
 

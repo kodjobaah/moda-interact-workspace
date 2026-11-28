@@ -13,13 +13,14 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-002-BACKGROUND-006
-- ARCH-002-SHARED-013
+  - ARCH-002-BACKGROUND-006
+  - ARCH-002-SHARED-013
 enables:
-- ARCH-002-BACKGROUND-009
+  - ARCH-002-BACKGROUND-009
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Integrate GenAI active spans in messaging worker
 
 ## Objective
@@ -149,12 +150,12 @@ Ready for Review
 - `npm install @modainteract/moda-interact-shared@0.5.0 --save-exact`: passed;
   package and lockfile updated.
 - `npm pkg get dependencies.@modainteract/moda-interact-shared && npm ls
-  @modainteract/moda-interact-shared --depth=0`: passed; both report exact
+@modainteract/moda-interact-shared --depth=0`: passed; both report exact
   `0.5.0`.
 - `npm test -- --run tests/unit/observability/genai-observability.test.ts`:
   passed, 1 file and 3 tests.
 - `npm test -- --run tests/unit/agent/commerce.agent.pipeline.test.ts
-  tests/unit/observability/genai-observability.test.ts`: passed, 2 files and 4
+tests/unit/observability/genai-observability.test.ts`: passed, 2 files and 4
   tests.
 - `npm test -- --run tests/unit/runtime/observability-startup.test.ts`: passed,
   1 file and 8 tests.
@@ -282,4 +283,3 @@ to BACKGROUND-008 and leaves operational GenAI metrics to BACKGROUND-009.
 
 Do not begin GATEWAY-006 or SYSTEM-TEST-002 solely from this transition; the
 remaining BACKGROUND-009 and other cross-domain prerequisites still apply.
-

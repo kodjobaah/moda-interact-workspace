@@ -69,18 +69,18 @@ The accepted public 5.13.5 artifact was published once after explicit user permi
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Dependencies |
-|---|---|---|---|
-| ARCH-070-SHARED-001 | moda_shared | Complete | None |
-| ARCH-070-SHARED-002 | moda_shared | Complete | ARCH-070-SHARED-001 |
+| Task                    | Owner           | Status   | Dependencies        |
+| ----------------------- | --------------- | -------- | ------------------- |
+| ARCH-070-SHARED-001     | moda_shared     | Complete | None                |
+| ARCH-070-SHARED-002     | moda_shared     | Complete | ARCH-070-SHARED-001 |
 | ARCH-070-BACKGROUND-001 | moda_background | Complete | ARCH-070-SHARED-002 |
-| ARCH-070-BACKGROUND-002 | moda_background | Complete | None |
-| ARCH-070-BACKGROUND-003 | moda_background | Complete | None |
-| ARCH-070-SHARED-003 | moda_shared | Complete | ARCH-070-SHARED-002 |
-| ARCH-070-SHARED-004 | moda_shared | Complete | ARCH-070-SHARED-003 |
+| ARCH-070-BACKGROUND-002 | moda_background | Complete | None                |
+| ARCH-070-BACKGROUND-003 | moda_background | Complete | None                |
+| ARCH-070-SHARED-003     | moda_shared     | Complete | ARCH-070-SHARED-002 |
+| ARCH-070-SHARED-004     | moda_shared     | Complete | ARCH-070-SHARED-003 |
 | ARCH-070-BACKGROUND-004 | moda_background | Complete | ARCH-070-SHARED-004 |
-| ARCH-070-SHARED-005 | moda_shared | Complete | ARCH-070-SHARED-004 |
-| ARCH-070-SHARED-006 | moda_shared | Complete | ARCH-070-SHARED-005 |
+| ARCH-070-SHARED-005     | moda_shared     | Complete | ARCH-070-SHARED-004 |
+| ARCH-070-SHARED-006     | moda_shared     | Complete | ARCH-070-SHARED-005 |
 | ARCH-070-BACKGROUND-005 | moda_background | Complete | ARCH-070-SHARED-006 |
 
 ## Validation

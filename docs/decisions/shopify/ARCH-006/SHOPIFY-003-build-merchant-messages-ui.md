@@ -21,6 +21,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
+
 # ARCH-006-SHOPIFY-003: Build the merchant Messages UI
 
 ## Architecture
@@ -211,7 +212,7 @@ Required correction:
 - Make the server history contract expose:
   - all MERCHANT messages; and
   - ADMINISTRATIVE/SYSTEM messages only when `state = 'AVAILABLE'`.
-  Hidden PROCESSING/FAILED outbound messages must not serialize `originalBody` or any other message payload to the browser. The paginated `total`/`totalPages` must use the same merchant-visible predicate. Unread remains AVAILABLE ADMINISTRATIVE/SYSTEM with `readAt IS NULL`.
+    Hidden PROCESSING/FAILED outbound messages must not serialize `originalBody` or any other message payload to the browser. The paginated `total`/`totalPages` must use the same merchant-visible predicate. Unread remains AVAILABLE ADMINISTRATIVE/SYSTEM with `readAt IS NULL`.
 - Preserve exact required-language selection: for an AVAILABLE non-English outbound message, return only the AVAILABLE translation whose target matches the snapshotted `displayLanguageTag`; never fall back to English or another translation. `View original` may expose immutable English source only after that merchant-visible translated message is AVAILABLE.
 - Make first-read update the app-shell unread badge. Use React Router mutation/revalidation semantics or explicitly call router revalidation after the bounded read-mark sequence completes. Do not continuously revalidate or create an effect loop. Failed read requests must not be treated as successfully read.
 - Import and use Shared `countUnicodeGraphemes` for the counter. Remove the independent local grapheme algorithm. `AuthoredSupportBodySchema` remains the authoritative client/server rejection contract and bodies are never truncated.
@@ -225,10 +226,11 @@ Required correction:
   The following existing explanatory-message lookup is a separate valid key and **must remain present and unchanged**:
 
   ```jsx
-  i18n.t("pending.unavailableMessage")
+  i18n.t("pending.unavailableMessage");
   ```
 
   Do not add an exact `pending.unavailable` key. Do not rename or remove `pending.unavailableMessage`. Do not modify any locale JSON file. The intended unavailable-state semantics are: short generic label = `common.unavailable`; longer recovery-specific explanation = `pending.unavailableMessage`.
+
 - Keep tenant/shop/language/kind/provenance decisions server-derived. Do not add client Redis/OpenAI access or translation orchestration.
 
 Required focused regressions:
@@ -244,11 +246,10 @@ Required focused regressions:
    - `PendingRecoveries.jsx` still contains `i18n.t("pending.unavailableMessage")`.
 
    A deterministic source-level assertion in `tests/unit/merchant-i18n.test.ts` is acceptable for the last two checks. If using a source assertion, match the full lookup string including the closing quote/parenthesis so `pending.unavailableMessage` cannot be mistaken for `pending.unavailable`. Do not use substring-only catalogue-key detection.
+
 6. Existing auth/tenant provenance, pagination, compose server error, merchant-i18n catalogue validation, build, Prisma validation, touched-file lint/diagnostics and `git diff --check` remain passing. Existing unrelated repository-wide baseline lint/typecheck diagnostics remain out of scope.
 
 Return this same task to `review` and STOP. Do not promote any system-test task.
-
-
 
 ### Architect Review — Attempt 2 — 2026-09-06
 
@@ -416,7 +417,6 @@ Do not solve this by adding timers, arbitrary flags, global mutable state, suppr
 
 Return this same task to `review` and STOP. Do not promote any system-test task.
 
-
 ### Architect Review — Attempt 3 — 2026-09-06
 
 **Review Status: Corrections required.**
@@ -511,7 +511,6 @@ Run at minimum:
 The touched service test must have **zero new lint warnings/errors**. Existing unrelated repository-wide lint/typecheck baseline diagnostics may remain only if unchanged.
 
 Return this same task to `review` and STOP. Do not modify or promote any system-test task.
-
 
 ### Architect Acceptance — Attempt 4 — 2026-09-06
 

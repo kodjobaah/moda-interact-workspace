@@ -32,6 +32,7 @@ updated: 2026-09-08
 Moda uses Shopify App Pricing.
 
 Do NOT call:
+
 ```text
 appPurchaseOneTimeCreate
 appSubscriptionCreate
@@ -39,6 +40,7 @@ billing.request
 ```
 
 A pack request is billed by creating a durable `UsageEvent` with:
+
 ```text
 metric = RECOVERY_CREDIT_PACK_PURCHASE
 quantity = 1
@@ -53,6 +55,7 @@ Credits are NOT granted by this Shopify task.
 ## Exact files to inspect/change
 
 Principally:
+
 ```text
 app/routes/app.billing.tsx
 app/services/billing/billing.service.ts
@@ -91,10 +94,12 @@ permission to embed that literal directly in the component.
 When the mapped current BillingPlan has `recoveryCreditPackEnabled=true`, current Shopify Active Subscription verification must require the configured `shopifyRecoveryCreditPackEventHandle` to appear as an active usage/TieredPrice item.
 
 For FREE:
+
 - normal recovery usage meter remains absent/null;
 - top-up usage meter may be present.
 
 For PAID_METERED:
+
 - normal recovery usage meter and top-up meter are both required and must be distinct.
 
 If the top-up meter cannot be verified, fail closed for TOP-UP PURCHASE only. Do not incorrectly mark the whole active subscription as Free/paid-unmapped if its normal plan mapping remains otherwise valid.
@@ -102,6 +107,7 @@ If the top-up meter cannot be verified, fail closed for TOP-UP PURCHASE only. Do
 ## Billing page presentation
 
 Show:
+
 ```text
 Purchased recovery credits:
   grantedQuantity - committedQuantity - reservedQuantity
@@ -112,6 +118,7 @@ Show pack quantity from `recoveryCreditsPerPack`.
 Do NOT invent/display a monetary pack price from Moda DB. Copy must say Shopify bills the pack according to the current plan's configured Recovery Credit Pack meter.
 
 Show Buy button only when:
+
 - subscription current status is safe/mapped;
 - plan has top-ups enabled;
 - pack size > 0;
@@ -124,17 +131,20 @@ A merchant may buy another pack whenever desired, including after a previous pac
 Loader generates one cryptographically random `purchaseId` for the rendered purchase form.
 
 Form submits:
+
 ```text
 intent = "BUY_RECOVERY_CREDIT_PACK"
 purchaseId = <loader supplied id>
 ```
 
 Server validation:
+
 - `purchaseId` must be a UUID/non-empty bounded identity according to the implementation's chosen generator;
 - ignore all client-supplied pack sizes, plan IDs, meter handles or prices;
 - reload current shop/subscription/plan from DB/provider state.
 
 In one Prisma transaction:
+
 1. if `RecoveryCreditPurchase(id=purchaseId)` already exists for this shop, return that existing purchase; create nothing;
 2. require current safe mapped plan/top-up config;
 3. create `UsageEvent` using the same stable `purchaseId` as the durable billing identity or another explicit stable ID derived from it;
@@ -154,6 +164,7 @@ Do not grant/increment credits here.
 ## UI state
 
 After request creation, show a translated pending message:
+
 ```text
 "Recovery credit purchase is being confirmed by Shopify."
 ```
@@ -190,46 +201,59 @@ ACTIVE balance appears only after Background activation.
 ## Completion Report
 
 ### Status
+
 Pending
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
-None.
 
+None.

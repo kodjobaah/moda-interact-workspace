@@ -415,24 +415,24 @@ can often only be determined after state correlation in this repository.
 For Shopify event processing, distinguish:
 
 HOT PATH
-    Work performed for nearly every queued event.
+Work performed for nearly every queued event.
 
 ACTION PATH
-    Additional work performed only when the event requires a durable business
-    state change, recovery action or messaging action.
+Additional work performed only when the event requires a durable business
+state change, recovery action or messaging action.
 
 Optimise the hot path first.
 
 The common irrelevant-event path should favour:
 
 dequeue
-    ->
+->
 minimal validation / contract parsing
-    ->
+->
 minimal indexed state lookup
-    ->
+->
 determine no action is required
-    ->
+->
 acknowledge job
 
 Avoid making the irrelevant-event path perform expensive Shopify API calls, LLM
@@ -564,7 +564,6 @@ When moda_architect assigns a task, the task file and its parent architecture
 document are authoritative for scope, dependencies, contracts and acceptance
 criteria.
 
-
 ===============================================================================
 PREPARED /MODA-TASK EXECUTION FAST PATH
 ===============================================================================
@@ -662,7 +661,7 @@ The repository agent MUST NOT edit `## Architect Review`; only
 
 If asked to execute architecture work without a specific task ID:
 
-1. inspect docs/decisions/background/*/*.md;
+1. inspect docs/decisions/background/_/_.md;
 2. ignore _index.md files;
 3. select only tasks where assigned_agent is moda_background;
 4. require status: ready;
@@ -686,9 +685,9 @@ Before claiming a task, normalize the current execution runtime to the canonical
 Moda executor vocabulary:
 
 GitHub Copilot / github-copilot / copilot -> copilot
-Codex                                  -> codex
-Claude Code / claude-code / claude     -> claude
-Continue                               -> continue
+Codex -> codex
+Claude Code / claude-code / claude -> claude
+Continue -> continue
 
 Then update the task YAML metadata together to:
 
@@ -758,7 +757,6 @@ If the task cannot be completed safely, set status to blocked and document why.
 Never mark your own architecture task Complete.
 
 Only moda_architect may change a reviewed task to status: complete.
-
 
 When changing code outside an architecture task:
 

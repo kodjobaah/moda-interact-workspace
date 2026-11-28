@@ -19,6 +19,7 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
+
 # Validate Production Blueprint and Readiness Configuration
 
 ## Current Execution State
@@ -376,7 +377,7 @@ repository declaration.
 
 ### 6. Bind capacity labelling to the 22,000/minute target
 
-The current validator succeeds when *any* `ASSUMED`, `ESTIMATED`, `UNKNOWN` or
+The current validator succeeds when _any_ `ASSUMED`, `ESTIMATED`, `UNKNOWN` or
 `unmeasured` word exists anywhere in the supplied documents.
 
 Instead prove that the documentation around the actual:
@@ -466,7 +467,7 @@ Preserve every attempt-2 change.
 The current implementation effectively checks:
 
 ```js
-service.envVars.some((variable) => variable.fromGroup === expectedGroup)
+service.envVars.some((variable) => variable.fromGroup === expectedGroup);
 ```
 
 This proves the expected group is present, but a production service can still

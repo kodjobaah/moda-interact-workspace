@@ -22,6 +22,7 @@ enables:
 created: 2026-10-13
 updated: 2026-10-14
 ---
+
 # Manage Merchant LIVE CommerceAgent overrides
 
 ## Architecture
@@ -199,7 +200,7 @@ Changes Requested — Attempt 1. Transition to `ready` with `executor: null` and
 
 1. Replace the browser-controlled `shopId` mutation target with a server-bound or otherwise verifiable selected-tenant scope. Add an action-level cross-Shop tampering test proving a different valid Shop ID cannot be written or audited.
 2. Reconcile the implementation worktree's `database` submodule with the completed DATABASE-001 task commit `40674aea91527d5645aa922c9627af673b487223`, regenerate Prisma Client, fix the `commerce-model-shop-policy-fields.test.ts` type error and any remaining task-local diagnostics, then rerun `tsc --noEmit` and `npm run build`.
-4. Commit and push task-owned implementation changes on `task/ARCH-038-ADMIN-003` after resolving the unexplained untracked `typescript` file's ownership; do not stage that file without confirming it belongs to this task.
+3. Commit and push task-owned implementation changes on `task/ARCH-038-ADMIN-003` after resolving the unexplained untracked `typescript` file's ownership; do not stage that file without confirming it belongs to this task.
 
 ### Evidence Reviewed
 

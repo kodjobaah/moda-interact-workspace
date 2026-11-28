@@ -108,7 +108,7 @@ Evidence from the 2026-10-27 terminal recordings and Attempt 2 focused runs:
 ### Deviations
 
 - **Architect-approved PHP runtime accommodation:** WordPress cannot import the Node-only `@modainteract/moda-interact-shared/logging` entrypoint. The 2026-10-27 task/architecture decision approves `wc_get_logger()` with bounded semantic reason codes, optional numeric status/attempt, and redacted `error_log` fallback. The updated tests exercise diagnostic failure isolation. This is not an outstanding logging design deviation; the reviewer should still verify the implementation and tests.
-- No other deviations from the *revised* explicit-only synchronisation task contract were identified in the inspected implementation and test evidence.
+- No other deviations from the _revised_ explicit-only synchronisation task contract were identified in the inspected implementation and test evidence.
 
 ### Assumptions
 
@@ -126,7 +126,9 @@ Evidence from the 2026-10-27 terminal recordings and Attempt 2 focused runs:
 - The implementation contains no new public WordPress endpoint, direct Moda database/R2 connection, or automatic brand-change polling. Idempotency and authoritative tenant selection on the hosted API are reserved for API-001 and system validation.
 
 ## Developer Self-Review - Corrected Submission
+
 ## Historical Developer Submission — Attempt 1
+
 ## Historical Developer Submission — Attempt 1
 
 ### Submission
@@ -159,7 +161,7 @@ scope deviations were introduced during Attempt 2.
 - `composer test -- --filter ShopBrandPublicationTest`: **17 tests / 139
   assertions passed**.
 - `node --test tests/integration/scenarios/shop-brand-runner.test.mjs
-  tests/integration/wordpress-api-fixture.test.mjs`: **6/6 passed**.
+tests/integration/wordpress-api-fixture.test.mjs`: **6/6 passed**.
 - `git show --check HEAD` and parent task `git diff --check` passed.
 - The parent worktree's unrelated untracked `typescript` file was preserved and
   not staged. Existing Docker-backed WordPress/Action Scheduler integration

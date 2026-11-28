@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-BACKGROUND-011
+  - ARCH-052-BACKGROUND-011
 enables:
-- ARCH-052-MCP-002
-- ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-MCP-002
+  - ARCH-052-SYSTEM-TEST-001
 created: 2026-10-30
 updated: 2026-11-02
 ---

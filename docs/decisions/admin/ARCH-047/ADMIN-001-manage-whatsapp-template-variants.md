@@ -109,7 +109,6 @@ After completing the defined Work Items, Acceptance Criteria and required Valida
 
 Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md` and `docs/developer-task-workflow.md`. `/moda-task` owns preparation and the canonical claim; never infer worktrees from a previous task or operate in shared/default checkouts. Existing application code has evolved: inspect current implementation immediately before claiming and return cross-domain contract gaps to `moda_architect`. Use the shared structured logger where new runtime domain logging is needed, not a duplicate generic logger. All tasks are portable definitions until materialised in the developer's real workspace.
 
-
 Additional task-specific guidance:
 
 Prefer existing `src/app/(protected)/system-controls/store-categories`, `src/lib/admin/store-categories.ts` and `src/app/actions/store-categories.ts` conventions. Use approved server-side platform configuration reading for Meta token/WABA; if no safe Admin reader is available, report a narrowly scoped dependency gap instead of calling Meta from the browser or copying secrets. Avoid 300+ line catch-all components: split read, form, mutation and view components as existing Admin UX does. Do not use irreversible delete to disable a template that may be referenced by past messages.

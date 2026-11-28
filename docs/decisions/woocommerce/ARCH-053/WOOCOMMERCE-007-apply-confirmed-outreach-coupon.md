@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-SHARED-012
-- ARCH-053-API-003
-- ARCH-053-WOOCOMMERCE-005
-- ARCH-053-WOOCOMMERCE-006
+  - ARCH-052-SHARED-012
+  - ARCH-053-API-003
+  - ARCH-053-WOOCOMMERCE-005
+  - ARCH-053-WOOCOMMERCE-006
 enables:
-- ARCH-053-WOOCOMMERCE-008
+  - ARCH-053-WOOCOMMERCE-008
 created: 2026-10-30
 updated: 2026-11-01
 ---
@@ -46,7 +46,7 @@ In `moda-interact-woocommerce`, update only:
 - `includes/Api/ModaApiClient.php`: extend the existing server-side `resolveWooRecoveryLink` operation to submit `schemaVersion:'woo.restore.resolve.v1'`; make exactly one server-side v1 resolve call per confirmed POST. API bearer stays server-side.
 - **Create** `includes/Api/WooRestoreOfferContracts.php`: strictly validate response v1 discriminator and fields against the SHARED-001 fixture; retain existing base snapshot verification from WooCommerce-002; no permissive success on missing `outreachOffer`.
 - **Create** `includes/Checkout/CheckoutOutreachCouponRestorer.php`: implement the exact PHP interface and result below, calling only Woo native coupon/cart APIs.
-- `includes/Checkout/CheckoutCartRestorer.php`: invoke recommended coupon application exactly once after products and the original-coupon operation, *before final capture*; preserve rollback and capture suppression from WOOCOMMERCE-002.
+- `includes/Checkout/CheckoutCartRestorer.php`: invoke recommended coupon application exactly once after products and the original-coupon operation, _before final capture_; preserve rollback and capture suppression from WOOCOMMERCE-002.
 - `includes/Checkout/CheckoutResumeController.php`: pass the v1 result through the same confirmed-POST flow and hand off the typed offer outcome to the existing WOOCOMMERCE-006 presenter (WOOCOMMERCE-008 completes UI).
 - Focused `tests/CheckoutOutreachCouponRestorerTest.php`, `tests/WooRestoreOfferContractsTest.php` and existing relevant controller/cart tests. Register new PHP source/tests in `composer.json` lint only if required by its existing explicit allowlist.
 
@@ -59,7 +59,6 @@ No discount discovery, coupon creation, modified expiry or usage constraints, or
 ### Confirmed multi-code group application — normative 30 October 2026
 
 Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries), as well as existing single-code/automatic variants. After explicit customer-confirmed restore, validate existing **original** applied coupons first using native Woo APIs; attempt each recommended CODE item in immutable sent order using `WC()->cart->apply_coupon()` (contain only Woo error notices originating from those **automatic** Moda attempts; no Moda error on the merchant checkout), never trust API's offer as proof of current Woo applicability. Automatic entries are informational and must never be forced into cart coupon state. If any recommended code fails/invalidates an original or any other recommended code, restore the original successfully applied coupon set, recalculate totals and return a typed **GROUP_CONFLICT / GROUP_REJECTED** outcome rather than persisting a partial advertised group. Do not silently remove originals or claim partial savings. Re-run live Woo validation after customer chooses any explicit alternative group in WOOCOMMERCE-008. Log bounded outcomes without coupon values.
-
 
 - Keep the existing no-mutation GET and explicit nonce-protected confirmation POST. V1 resolver is called **after confirmation only**, using the original signed recovery link; no browser-side installation credentials, no external visitor contact/discount parameters.
 - Restore product lines first. Reapply original coupons in their persisted order using WOOCOMMERCE-005. Only then process `outreachOffer`.
@@ -78,7 +77,6 @@ Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries)
 - WooCommerce PHP executes on merchant-controlled WordPress servers and **must not import or implement** `@modainteract/moda-interact-shared/logging` (that npm export belongs only to hosted Moda Node processes). Use existing server-side plugin diagnostics (the current bounded `error_log()` pattern where applicable), not a new generic logger, `wc_add_notice()`, browser console output or shopper-visible HTML for Moda errors. Record a bounded event/reason and safe correlation identifier; preserve the original error message and relevant safe provider response details when available after redaction, without guessing a substitute cause. Never log bearer tokens, full restore URLs, coupon codes or customer PII. At storefront/controller boundaries catch and privately log unexpected errors, preserve or safely roll back the cart, and continue/redirect without Moda-originated error notices. At Action Scheduler and other retry-owning job boundaries, log and **propagate** retryable failures for durable retry/failure evidence; do not acknowledge them as success. Never globally suppress WordPress diagnostics or delete unrelated Woo notices.
 - Keep checkout restoration read-only in the hosted API and cart-local in WooCommerce. Never have PHP query Moda PostgreSQL/Redis or an API handler change a visitor cart. Never create a new discount, extend an expired coupon, use ARCH-052 discovery code, bypass merchant consent/STOP/order/final provider gates or impose a cross-generation outreach cap.
 - When the specified receipt/provider contract is absent, conflicting or untestable, **stop and return the gap to moda_architect**; do not invent an approximation, copy a Shared schema locally or broaden the task to another repo. System-test tasks are terminal and may not gate implementation tasks.
-
 
 ## Work Items
 
@@ -101,7 +99,7 @@ Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries)
     "schemaVersion": "woo.cart-restore.v1",
     "kind": "supported",
     "appliedCouponCodes": ["SAVE10"],
-    "lines": [{"productId":"101","quantity":2}]
+    "lines": [{ "productId": "101", "quantity": 2 }]
   },
   "outreachOffer": {
     "kind": "CHECKOUT_CODE",
@@ -140,15 +138,15 @@ The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliabl
 
 **Examples:**
 
-| Original | Outreach | Woo current outcome | Result |
-|---|---|---|---|
-| `SAVE10` valid | `EXTRA15` valid and stackable | Both remain applied | `APPLIED` |
-| `SAVE10` expired | `EXTRA15` valid | Only `EXTRA15` applied | `APPLIED`; original rejection privately recorded; no generated storefront notice |
-| `SAVE10` valid | `EXTRA15` expired | Only `SAVE10` applied | `REJECTED`; offered rejection privately recorded; no generated storefront notice |
-| `SAVE10` valid | `EXTRA15` individually used | Original retained, offer not applied | `CONFLICT_REQUIRES_CHOICE` |
-| `EXTRA15` original and valid | recommended `EXTRA15` | One copy remains | `ALREADY_APPLIED` |
-| `SAVE10` valid | `CHECKOUT_AUTOMATIC` | Native totals only | `AUTOMATIC_NOT_FORCED` |
-| Any | `ALTERNATIVE_PRODUCT` | No new product or coupon | `NOT_APPLICABLE` |
+| Original                     | Outreach                      | Woo current outcome                  | Result                                                                           |
+| ---------------------------- | ----------------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
+| `SAVE10` valid               | `EXTRA15` valid and stackable | Both remain applied                  | `APPLIED`                                                                        |
+| `SAVE10` expired             | `EXTRA15` valid               | Only `EXTRA15` applied               | `APPLIED`; original rejection privately recorded; no generated storefront notice |
+| `SAVE10` valid               | `EXTRA15` expired             | Only `SAVE10` applied                | `REJECTED`; offered rejection privately recorded; no generated storefront notice |
+| `SAVE10` valid               | `EXTRA15` individually used   | Original retained, offer not applied | `CONFLICT_REQUIRES_CHOICE`                                                       |
+| `EXTRA15` original and valid | recommended `EXTRA15`         | One copy remains                     | `ALREADY_APPLIED`                                                                |
+| `SAVE10` valid               | `CHECKOUT_AUTOMATIC`          | Native totals only                   | `AUTOMATIC_NOT_FORCED`                                                           |
+| Any                          | `ALTERNATIVE_PRODUCT`         | No new product or coupon             | `NOT_APPLICABLE`                                                                 |
 
 ## Dependencies
 

@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-014-DATABASE-002
-- ARCH-014-ADMIN-004
-- ARCH-014-ADMIN-005
-- ARCH-014-ADMIN-006
-- ARCH-014-SHOPIFY-002
+  - ARCH-014-DATABASE-002
+  - ARCH-014-ADMIN-004
+  - ARCH-014-ADMIN-005
+  - ARCH-014-ADMIN-006
+  - ARCH-014-SHOPIFY-002
 enables: []
 created: 2026-09-15
 updated: 2026-09-15
@@ -191,7 +191,6 @@ merchant reader order/visibility comes from MerchantPricingPlan only
 
 This scenario must not mutate production operational billing semantics; use existing system-test fixture mechanisms.
 
-
 ## Scenario K — Admin step gating, placement concurrency and translation retention
 
 Prove all of the following through integrated Admin behavior/state evidence:
@@ -240,7 +239,7 @@ Also prove merchant reader has no English fallback for highlight content.
 Return one table in Completion Report:
 
 | Scenario | PASS/FAIL | DB evidence | Admin/economics evidence | Merchant UI evidence | Operational-isolation / Shopify-authority evidence |
-|---|---|---|---|---|---|
+| -------- | --------- | ----------- | ------------------------ | -------------------- | -------------------------------------------------- |
 
 Record exact integrated repository commits/githashes exercised.
 

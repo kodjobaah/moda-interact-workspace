@@ -83,12 +83,12 @@ Do **not** edit Shopify finalisation, Woo adapters, billing or human-send paths 
 
 ```ts
 export type ConfirmedInitialRecoveryOutreachInput = {
-  shopId: string;                    // asserted against persisted recovery
+  shopId: string; // asserted against persisted recovery
   checkoutRecoveryId: string;
   outreachAttemptId: string;
   outboundMessageId: string;
-  sentAt: Date;                      // must agree with persisted provider message
-  followUpDueAt: Date | null;       // Shopify policy due date or Woo null
+  sentAt: Date; // must agree with persisted provider message
+  followUpDueAt: Date | null; // Shopify policy due date or Woo null
 };
 export type InitialOutreachNoticeResult =
   | { outcome: "created"; outreachAttemptId: string }
@@ -96,7 +96,7 @@ export type InitialOutreachNoticeResult =
   | { outcome: "replayed"; outreachAttemptId: string };
 export interface ConfirmedInitialOutreachFinalizer {
   finalizeConfirmedInitial(
-    input: ConfirmedInitialRecoveryOutreachInput
+    input: ConfirmedInitialRecoveryOutreachInput,
   ): Promise<InitialOutreachNoticeResult>;
 }
 ```
@@ -105,12 +105,12 @@ export interface ConfirmedInitialOutreachFinalizer {
 
 **Stable structured events (owned by this task):**
 
-| Event | Level | Required safe data |
-|---|---|---|
-| `recovery.initial_outreach_support_notice.created` | `info` | `outcome:"created"`, validated shop/recovery/attempt IDs |
-| `recovery.initial_outreach_support_notice.disabled` | `info` | `outcome:"disabled"`, validated shop/recovery/attempt IDs |
-| `recovery.initial_outreach_support_notice.replayed` | `info` | `outcome:"replayed"`, validated shop/recovery/attempt IDs |
-| `recovery.initial_outreach_support_notice.failed` | `error` | `outcome:"failed"`, `errorCategory`, safe available IDs, `{error}` (bounded Shared serializer) |
+| Event                                               | Level   | Required safe data                                                                             |
+| --------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `recovery.initial_outreach_support_notice.created`  | `info`  | `outcome:"created"`, validated shop/recovery/attempt IDs                                       |
+| `recovery.initial_outreach_support_notice.disabled` | `info`  | `outcome:"disabled"`, validated shop/recovery/attempt IDs                                      |
+| `recovery.initial_outreach_support_notice.replayed` | `info`  | `outcome:"replayed"`, validated shop/recovery/attempt IDs                                      |
+| `recovery.initial_outreach_support_notice.failed`   | `error` | `outcome:"failed"`, `errorCategory`, safe available IDs, `{error}` (bounded Shared serializer) |
 
 No additional Shared contract package is needed; the event names are service-local domain semantics implemented through the Shared logger.
 
@@ -149,7 +149,7 @@ After Work Items, Acceptance Criteria and required Validation are complete, upda
 
 ## Implementation Notes
 
-**Concurrency algorithm:** acquire per-attempt row lock *before* reading first/previous transition state; validate lineage; if already sent, verify same message and return `replayed`; otherwise update pending/capacity-blocked attempt, sample preference, optionally insert Support row, commit. `sourceKey` uniqueness is a secondary dedupe fence, not a substitute for the one-time decision. Use the consent-notice service only as a reusable pattern; it should not acquire responsibility for outreach attempt state.
+**Concurrency algorithm:** acquire per-attempt row lock _before_ reading first/previous transition state; validate lineage; if already sent, verify same message and return `replayed`; otherwise update pending/capacity-blocked attempt, sample preference, optionally insert Support row, commit. `sourceKey` uniqueness is a secondary dedupe fence, not a substitute for the one-time decision. Use the consent-notice service only as a reusable pattern; it should not acquire responsibility for outreach attempt state.
 
 Do not require `RecoveryOutreachAttempt.initiatedBy === "AUTOMATION"` as the current `getOrCreate()` implementation does not populate that field for ordinary initial sends. Instead reject `HUMAN` and require the persisted outbound message `senderType === "AUTOMATION"` plus the dedicated automatic callsite. Do not rewrite the existing attempt creation in this task.
 
@@ -215,48 +215,48 @@ Attempt 1 stopped before source edits because the synchronized Background databa
 ### Task Branch / Worktree Evidence
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-001`
-  parent branch: `task/ARCH-050-BACKGROUND-001`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-001`
-  implementation branch: `task/ARCH-050-BACKGROUND-001`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-001`
+parent branch: `task/ARCH-050-BACKGROUND-001`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-001`
+implementation branch: `task/ARCH-050-BACKGROUND-001`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded submodule commit: `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded submodule commit: `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
 
 Implementation repository:
-  repository: `moda-interact-background`
-  Attempt 2 implementation commit: `a4ec3b17da9b6d158243b1b6fb953aa2dd9c173c`
-  Attempt 3 correction commit: `7a8906278dfd053ac896dfa99d8d6d988410c889`
-  remote branch: `origin/task/ARCH-050-BACKGROUND-001`
-  pushed: yes (both implementation commits)
+repository: `moda-interact-background`
+Attempt 2 implementation commit: `a4ec3b17da9b6d158243b1b6fb953aa2dd9c173c`
+Attempt 3 correction commit: `7a8906278dfd053ac896dfa99d8d6d988410c889`
+remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+pushed: yes (both implementation commits)
 
 Parent workspace:
-  task file: `docs/decisions/background/ARCH-050/BACKGROUND-001-finalize-initial-attempt-and-write-deduplicated-support-notice.md`
-  claim commit: `62d41b1523d298a49bc061bcb50f8df6d37948e7` (pushed by launcher)
-  report commit: `0f4c8ca0ca65510fa6a3096ac762a57a34c71b22`
-  remote branch: `origin/task/ARCH-050-BACKGROUND-001`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/background/ARCH-050/BACKGROUND-001-finalize-initial-attempt-and-write-deduplicated-support-notice.md`
+claim commit: `62d41b1523d298a49bc061bcb50f8df6d37948e7` (pushed by launcher)
+report commit: `0f4c8ca0ca65510fa6a3096ac762a57a34c71b22`
+remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+pushed: yes
+submodule gitlink staged: no
 
 ### Attempt 3 Publication Evidence
 
-  launcher claim commit: `d66729925e39bc83c42bb9e2a96f2b026cf2883d` (pushed)
-  parent task report commit: this Attempt 3 completion report (pushed on the parent task branch)
-  parent remote branch: `origin/task/ARCH-050-BACKGROUND-001`
-  implementation correction commit: `7a8906278dfd053ac896dfa99d8d6d988410c889` (pushed)
-  Background ARCH-050 index changed: no (architect-owned reconciliation)
+launcher claim commit: `d66729925e39bc83c42bb9e2a96f2b026cf2883d` (pushed)
+parent task report commit: this Attempt 3 completion report (pushed on the parent task branch)
+parent remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+implementation correction commit: `7a8906278dfd053ac896dfa99d8d6d988410c889` (pushed)
+Background ARCH-050 index changed: no (architect-owned reconciliation)
 
 Merged to implementation main: no
 Merged to workspace main: no

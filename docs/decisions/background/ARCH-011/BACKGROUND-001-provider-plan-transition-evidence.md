@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-BACKGROUND-015
+  - ARCH-010-BACKGROUND-015
 enables:
-- ARCH-011-BACKGROUND-002
+  - ARCH-011-BACKGROUND-002
 created: 2026-09-14
 updated: 2026-09-14
 ---
@@ -25,13 +25,16 @@ updated: 2026-09-14
 # ARCH-011-BACKGROUND-001
 
 ## Authorized implementation surface
+
 ```text
 src/providers/shopify-partner-billing.provider.ts
 tests/unit/providers/shopify-partner-billing.provider.test.ts
 ```
+
 Do not edit reconciliation/database services in this task.
 
 ## Exact provider changes
+
 In `PartnerSubscriptionLifecycleEvent` add exact fields:
 
 ```text
@@ -71,9 +74,11 @@ selectSameCyclePlanLifecycleEvent({events, providerAppId, providerShopId, target
 Rules: candidates must match app, shop, CREATED/UPDATED, exact target handle, and `cycleStart < occurredAt < cycleEnd`; deduplicate exact event ID; sort by occurredAt descending then ID ascending; return newest candidate or null. Never use requested target or worker time.
 
 ## Tests
+
 Append tests proving first=25 query, all-edge validation, identity mismatch rejection, null legacy ID success, exact handle matching, strict cycle boundaries, newest deterministic candidate, no-match null, and latestLifecycleEvent compatibility.
 
 ## Validation
+
 ```text
 npm run prisma:validate
 npm run prisma:generate

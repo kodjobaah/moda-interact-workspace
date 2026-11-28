@@ -19,6 +19,7 @@ enables:
 created: 2026-08-31
 updated: 2026-09-02
 ---
+
 # Implement Host-Based Admin Gateway Routing
 
 ## Architecture
@@ -526,4 +527,3 @@ ARCH-002-ADMIN-001
 ```
 
 No downstream task is automatically promoted or started.
-

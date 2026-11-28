@@ -91,14 +91,12 @@ Preserve SUPER_ADMIN gating, ADMIN explanatory copy, previous-release rollback l
 
 Typing the confirmation reason continues to mark global dirty. Cancelling the dialog currently only closes confirmation and does not clear global dirty; preserve that behaviour during extraction rather than silently normalising it.
 
-
 ## Work Items
 
 - [x] Move Release Detail into the dedicated module.
 - [x] Reuse the accepted internal operation-ID helper and workspace command/navigation contract.
 - [x] Add focused clone/role/fence/dirty-confirmation tests.
 - [x] Keep COMMERCE-001 controller and COMMERCE-002 Release Composer unchanged.
-
 
 ## Interfaces / Contracts
 
@@ -118,7 +116,6 @@ Consumes accepted COMMERCE-001 common props plus `useStudioComposer`; no new pub
 - [x] Activation/rollback role gating, confirmation and active-pointer fencing are unchanged.
 - [x] Current dirty-on-reason / cancel-does-not-clear-dirty behaviour is preserved.
 - [x] Frozen 13/3/90-test assets remain byte-identical. The exact focused run has four Release Detail tests pass and the same six known StudioWorkspace failures documented in `ARCH025-COMMERCE-TEST-001`; no task-owned focused failure was found.
-
 
 ## Validation
 

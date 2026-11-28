@@ -221,6 +221,7 @@ Review
 ### Files Changed
 
 Implementation repository: `moda-interact-commerce`.
+
 - `lib/discovery/admin-schema.ts`
 - `lib/discovery/admin-compiler.ts`
 - `lib/discovery/service.ts`
@@ -238,6 +239,7 @@ Implementation commits: `d1f1e76b3c0acbed86275d7f191e82e3edda6b0c` (Attempt 1) a
 Remote branch: `origin/task/ARCH-021-COMMERCE-061`.
 
 Prepared execution evidence:
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-061`, branch `task/ARCH-021-COMMERCE-061`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-061`, branch `task/ARCH-021-COMMERCE-061`.
@@ -256,6 +258,7 @@ Added pure GraphQL-AST query generation over normalized Admin schema pages. It e
 Attempt 2 extracted the compiler's pinned-schema, document, operation and mapping checks into `compileAdminQueryAuthoring`, shared by both generated-query validation and manual-query parsing. This preserves one canonical argument-compatibility implementation while keeping Response-owned `resultPath` and `resultSchema` checks in full execution compilation only. The builder resolves fields across every loaded page for a parent type and constructs valid nested list/non-null variable types.
 
 Architect Review correction disposition:
+
 1. Implemented in `lib/discovery/admin-compiler.ts`, `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: generated Tool-input and literal bindings are checked by the canonical Admin authoring validator before an output is returned. Tests reject a number input for a String argument and an object literal for an enum argument; accepted generated query candidates pass canonical mapped-argument validation.
 2. Implemented in `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: selected fields are searched across all loaded pages for their parent type. A cursor-0 plus cursor-100 `QueryRoot` regression builds `deliveryProfiles` from the later page and validates it with the canonical compiler.
 3. Implemented in `lib/discovery/admin-compiler.ts`, `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: manual-query parsing uses request-only canonical validation, so a representable valid query is recovered with stale `resultPath`/`resultSchema`; a query violating Admin compiler pagination rules still returns `invalid`.
@@ -263,6 +266,7 @@ Architect Review correction disposition:
 ### Validation Results
 
 Passed:
+
 - `vitest run tests/admin-discovery.test.ts tests/admin-query-builder.test.ts tests/discovery.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts`: 56 tests passed.
 - `npm run test:arch021-shopify-admin-compiler`: 22 tests passed.
 - Targeted ESLint on `lib/discovery/admin-compiler.ts`, `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: passed without warnings.

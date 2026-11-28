@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-SHARED-003
-- ARCH-049-ADMIN-002
+  - ARCH-052-SHARED-003
+  - ARCH-049-ADMIN-002
 enables:
-- ARCH-052-BACKGROUND-008
-- ARCH-052-BACKGROUND-012
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-created: '2026-10-29'
+  - ARCH-052-BACKGROUND-008
+  - ARCH-052-BACKGROUND-012
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+created: "2026-10-29"
 updated: 2026-10-30
 ---
 
@@ -79,7 +79,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-Existing ARCH-049 media conventions and published Shared-002 `CHECKOUT_PRODUCT` + `promotionTarget` bindings remain authoritative. Admin produces a frozen `MetaLocaleSnapshot` / `MetaSubmissionPlan` with `HEADER.format = IMAGE` and **no** `HEADER.example.header_handle`; its normal transaction persists a `READY_TO_SUBMIT` `WhatsAppTemplateMetaRegistration` for the current approved WABA. `submittedContentHash` and role/locale checks remain stable. Background-012 consumes the frozen registration, adds a *provider-request-only* Meta-issued sample handle and POSTs through the existing adapter. No new Shared or Prisma contract; never persist the handle or modify the approved content digest. Background-007 separately owns authenticated MCP image reads and its local `READY` / `UNAVAILABLE` send-time result. No timed proof.
+Existing ARCH-049 media conventions and published Shared-002 `CHECKOUT_PRODUCT` + `promotionTarget` bindings remain authoritative. Admin produces a frozen `MetaLocaleSnapshot` / `MetaSubmissionPlan` with `HEADER.format = IMAGE` and **no** `HEADER.example.header_handle`; its normal transaction persists a `READY_TO_SUBMIT` `WhatsAppTemplateMetaRegistration` for the current approved WABA. `submittedContentHash` and role/locale checks remain stable. Background-012 consumes the frozen registration, adds a _provider-request-only_ Meta-issued sample handle and POSTs through the existing adapter. No new Shared or Prisma contract; never persist the handle or modify the approved content digest. Background-007 separately owns authenticated MCP image reads and its local `READY` / `UNAVAILABLE` send-time result. No timed proof.
 
 ## Dependencies
 
@@ -256,8 +256,8 @@ Updated the Admin IMAGE guidance to state that Admin queues a handle-free regist
 
 Accepted under `completion_mode: automatic`; set `status: complete`, cleared `executor` and `claimed_at`, and retained `attempt: 2`. Dependency frontier reconciliation makes BACKGROUND-012 Ready. BACKGROUND-007 remains Pending because BACKGROUND-008 and other prerequisites are incomplete; BACKGROUND-008 and both terminal system tests remain gated by their other prerequisites. No implementation branch was merged to `main`.
 
-
 ## Architect Review
+
 ### Review Status
 
 Changes Requested.

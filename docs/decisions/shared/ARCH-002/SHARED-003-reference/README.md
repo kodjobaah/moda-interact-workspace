@@ -60,17 +60,14 @@ types.
 Import Shopify contracts from:
 
 ```ts
-import {
-  // schemas, parsers, constants and types
-} from "@modainteract/moda-interact-shared/shopify";
+import {} from // schemas, parsers, constants and types
+"@modainteract/moda-interact-shared/shopify";
 ```
 
 Node-only Shopify helpers are isolated under:
 
 ```ts
-import {
-  createShopifyWebhookJobId,
-} from "@modainteract/moda-interact-shared/shopify/node";
+import { createShopifyWebhookJobId } from "@modainteract/moda-interact-shared/shopify/node";
 ```
 
 The Node-only subpath prevents `node:` built-ins from being accidentally pulled

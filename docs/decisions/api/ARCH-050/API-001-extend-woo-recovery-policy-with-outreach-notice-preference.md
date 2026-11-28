@@ -76,8 +76,8 @@ Do not modify Woo plugin PHP/JS validators or Shopify settings code here (they h
 type MerchantRecoveryPolicyResponseV2 = {
   schemaVersion: 2;
   revision: string;
-  merchant: RecoveryPolicyValues;   // original 4 fields unchanged
-  effective: RecoveryPolicyValues;  // original 4 fields unchanged
+  merchant: RecoveryPolicyValues; // original 4 fields unchanged
+  effective: RecoveryPolicyValues; // original 4 fields unchanged
   source: "MERCHANT" | "ADMIN_OVERRIDE";
   overrideActive: boolean;
   offerSelectionAvailable: false;
@@ -93,6 +93,7 @@ type RecoveryPolicyUpdateV2 = {
 ```
 
 Existing `GET|PUT /v1/merchant/recovery-policy` accepts only exact fields; no change to separate recovery summary or Support endpoints.
+
 - Logging boundary: use route-injected `StructuredLogger`; keep stable `merchant.recovery_policy.access`/`.access.failed` events, distinguish known 409 conflict from unexpected 500 and include safe operation/category. No new cross-repository logging contract.
 
 ## Dependencies

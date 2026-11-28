@@ -80,7 +80,7 @@ Shopify-idempotency contracts.
 Set:
 
 ```ts
-WHATSAPP_PROVIDER_STATUS_SCHEMA_VERSION = 2
+WHATSAPP_PROVIDER_STATUS_SCHEMA_VERSION = 2;
 ```
 
 The strict normalized event must contain exactly:

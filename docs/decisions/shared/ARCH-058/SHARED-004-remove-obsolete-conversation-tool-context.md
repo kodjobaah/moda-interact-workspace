@@ -150,49 +150,49 @@ Review
 
 ### Files Changed
 
- - `README.md`
- - `scripts/validate-commerce-entrypoints.mjs`
- - `src/commerce/product-discovery-contracts.test.ts`
- - `src/commerce/schemas.ts`
+- `README.md`
+- `scripts/validate-commerce-entrypoints.mjs`
+- `src/commerce/product-discovery-contracts.test.ts`
+- `src/commerce/schemas.ts`
 
 ### Work Completed
 
- - Removed `CommerceConversationToolContextSchema` and its inferred type from the public Commerce schemas.
- - Removed obsolete contract assertions while retaining recommendation tests; the clean-process verifier now rejects both removed runtime exports and generated declaration names.
- - Confirmed the verifier still sees turn identity, resolve/execute assertions, assertion union, conversation grant and outreach context exports.
- - Documented Background ownership of conversation/grant/turn state and the limited opaque MCP adapter-context boundary.
- - Implementation commit: `2efd9cd` (`Remove obsolete Commerce conversation context`), pushed to `task/ARCH-058-SHARED-004`.
+- Removed `CommerceConversationToolContextSchema` and its inferred type from the public Commerce schemas.
+- Removed obsolete contract assertions while retaining recommendation tests; the clean-process verifier now rejects both removed runtime exports and generated declaration names.
+- Confirmed the verifier still sees turn identity, resolve/execute assertions, assertion union, conversation grant and outreach context exports.
+- Documented Background ownership of conversation/grant/turn state and the limited opaque MCP adapter-context boundary.
+- Implementation commit: `2efd9cd` (`Remove obsolete Commerce conversation context`), pushed to `task/ARCH-058-SHARED-004`.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-004`
-  parent branch: `task/ARCH-058-SHARED-004`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-004`
-  implementation branch: `task/ARCH-058-SHARED-004`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-004`
+parent branch: `task/ARCH-058-SHARED-004`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-004`
+implementation branch: `task/ARCH-058-SHARED-004`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  status: ready; no recursive submodule entries
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+status: ready; no recursive submodule entries
 
 ### Validation Results
 
- - `npm ci --no-audit --no-fund`: passed.
- - `npm run test:product-discovery-contracts`: passed; 76 passed, 1 skipped, 0 failed.
- - `npm run typecheck`: passed.
- - `npm run build`: passed; generated the Commerce package declarations.
- - `npm run validate:commerce-entrypoints`: passed; clean-process runtime imports retain expected exports and neither removed name appears in the built `/commerce` declarations.
- - `rg -n 'CommerceConversationToolContext' src/commerce --glob '!*.test.ts' || true`: no production-source matches.
- - `git diff --check`: passed.
+- `npm ci --no-audit --no-fund`: passed.
+- `npm run test:product-discovery-contracts`: passed; 76 passed, 1 skipped, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; generated the Commerce package declarations.
+- `npm run validate:commerce-entrypoints`: passed; clean-process runtime imports retain expected exports and neither removed name appears in the built `/commerce` declarations.
+- `rg -n 'CommerceConversationToolContext' src/commerce --glob '!*.test.ts' || true`: no production-source matches.
+- `git diff --check`: passed.
 
 ### Deviations
 

@@ -50,11 +50,13 @@ async function authoriseGoogleProfile(rawProfile: unknown): Promise<boolean> {
     });
 
     if (bound.count !== 1) {
-      const current = await prisma.platformAdmin.findUnique({ where: { id: admin.id } });
+      const current = await prisma.platformAdmin.findUnique({
+        where: { id: admin.id },
+      });
       return Boolean(
         current?.active &&
-          current.provider === "google" &&
-          current.providerSubject === subject,
+        current.provider === "google" &&
+        current.providerSubject === subject,
       );
     }
 

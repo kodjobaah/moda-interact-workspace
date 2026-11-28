@@ -76,7 +76,6 @@ Do not stop solely because an unrelated or historical task is marked `superseded
 
 After eligibility is verified, claim and execute the task according to the resolved repository-agent protocol, validate it, move it to `review`, and return control to `moda_architect`.
 
-
 ## Successful-resolution continuation rule
 
 When the resolver succeeds:
@@ -100,7 +99,6 @@ Stop before claiming only when:
 - the runtime genuinely cannot perform logical-agent handoff/adoption.
 
 Successful routing to `status: ready` is not itself a stopping condition.
-
 
 ## Canonical executor identity
 

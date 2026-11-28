@@ -259,25 +259,30 @@ Return the mismatch to `moda_architect` rather than expanding scope.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - Attempt 4 production: `app/routes/app/billing/callback/route.tsx`, `app/services/billing/billing.service.ts`.
 - Attempt 4 tests: `tests/unit/routes/billing-callback.test.ts`, `tests/unit/services/billing.service.test.ts`.
 - Accepted prior-attempt files remain unchanged: `app/components/dashboard/SubscriptionChangePanel.jsx`, `app/routes/app/billing/options/route.tsx`, and `tests/unit/subscription-change-panel.test.tsx`.
 
 ### Work Completed
+
 - Attempt 4 replaces the wall-clock `verificationStartedAt` check with one immutable durable projection fence captured immediately before the single Partner read; the locked projection is compared field-for-field, including exact nullable dates, before any mapping or write.
 - Verified CURRENT/PENDING projections now persist provider `currentPeriodStart`, `currentPeriodEnd`, and `trialEndsAt` as exact nullable values, including clearing stale local facts.
 - Attempt 4 preserves the accepted active-only pending mapping, lock ordering, callback activation suite, protected-model no-write contract, hosted route composition boundary, provider commercial truth, and callback enqueue restrictions.
 - No schema, shared contract, background, provider, Admin, or SHOPIFY-012 implementation was changed.
 
 ### Attempt 4 Correction Mapping
+
 - Review Finding 1, durable commit-order fence: `app/services/billing/billing.service.ts` adds `HostedPlanVerificationFence`, the pre-provider reader, complete projection equality, and locked re-read; `app/routes/app/billing/callback/route.tsx` passes the same object to success/failure persistence. Tests in `tests/unit/routes/billing-callback.test.ts`: `captures the durable hosted verification fence before the Partner read`, `passes the same durable hosted verification fence to provider failure recording`, and `does not enqueue a freshness-fenced unverified result`. Service tests in `tests/unit/services/billing.service.test.ts`: `fences a durable commit that is newer than the pre-provider projection even when its updatedAt is earlier than the old wall-clock start`, `fences a changed durable projection even when updatedAt is identical`, and `does not record provider failure when the durable projection changed during verification`.
 - Review Finding 2, exact nullable provider projection: `app/services/billing/billing.service.ts` writes provider cycle/trial facts as `Date | null`; `tests/unit/services/billing.service.test.ts` adds `clears stale nullable provider cycle and trial facts from a verified hosted observation`.
 - Protected no-write and preservation evidence remains in `tests/unit/services/billing.service.test.ts`: `stores only an active exact pending mapping for %s provider plans`, `locks the accepted settings/subscription pair before rereading the hosted projection`, `schedules current state without changing entitlement ownership`, `does not mutate a mismatch or invent a plan when there is no active subscription`, `updates only retry metadata when provider verification fails`, plus the three durable-fence tests above. The fixture covers BillingPeriod, BillingPeriodEntitlementCounter, ShopEntitlementCounter, RecoveryCreditPurchase, RecoveryCreditRefund, PromotionalCreditGrant, and MerchantPromotionSelection write methods.
 
 ### Required Test Mapping
+
 - Callback durable-fence propagation: `captures the durable hosted verification fence before the Partner read`, `passes the same durable hosted verification fence to provider failure recording`, `does not enqueue a freshness-fenced unverified result`, and `distinguishes no active subscription from verification failure` - `tests/unit/routes/billing-callback.test.ts`.
 - Hosted-return persistence and protected no-write evidence: `stores only an active exact pending mapping for %s provider plans`, `locks the accepted settings/subscription pair before rereading the hosted projection`, `schedules current state without changing entitlement ownership`, `does not mutate a mismatch or invent a plan when there is no active subscription`, and `updates only retry metadata when provider verification fails` - `tests/unit/services/billing.service.test.ts`.
 - Durable-fence tests: `fences a durable commit that is newer than the pre-provider projection even when its updatedAt is earlier than the old wall-clock start`, `fences a changed durable projection even when updatedAt is identical`, and `does not record provider failure when the durable projection changed during verification` - `tests/unit/services/billing.service.test.ts`.
@@ -285,6 +290,7 @@ Ready for Review.
 - Accepted panel, selection, and i18n coverage remains in `tests/unit/subscription-change-panel.test.tsx`, `tests/unit/billing-ui.test.ts`, `tests/unit/billing-i18n.test.ts`, and `tests/unit/merchant-i18n.test.ts`.
 
 ### Validation Results
+
 - Focused command passed: 6 files, 191 tests passed, 0 failed, 0 skipped.
 - `npm test` passed: 39 files passed, 2 skipped; 433 tests passed, 3 skipped, 0 failed.
 - `npm run prisma:validate` passed; `npm run prisma:generate` passed.
@@ -295,6 +301,7 @@ Ready for Review.
 - Prohibited production scan exited 1 with zero matches for `verificationStartedAt`, local rank/upgrade inference, Billing API mutation, or Admin references.
 
 ### Git / VCS
+
 - Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-015`, branch `task/ARCH-010-SHOPIFY-015`.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-015`, branch `task/ARCH-010-SHOPIFY-015`.
 - Attempt 3 implementation SHA: `69c79a6214dd74521453456724c63092bf369230`.
@@ -405,7 +412,7 @@ how that route eventually composes and renders the completed child panel.
 `recordHostedPlanChangeReturn(...)` currently writes:
 
 ```ts
-pendingPlanId: state.pendingModaMapping?.id ?? null
+pendingPlanId: state.pendingModaMapping?.id ?? null;
 ```
 
 The SHOPIFY-013 read model treats an existing `BillingPlan` row as mapping metadata and
@@ -714,7 +721,6 @@ requires:
 After corrections and validation, set `status: review`, clear claim metadata,
 commit/push both task branches, and STOP for architect review.
 
-
 ### Architect Review — Attempt 2
 
 #### Status
@@ -868,6 +874,7 @@ In `tests/unit/routes/billing-callback.test.ts`:
    ```
 
    so hosted-flow tests deterministically enter the SHOPIFY-015 branch;
+
 5. there must be no `describe.skip`/`it.skip`/`test.skip` covering the callback activation or hosted-return contracts;
 6. record the new focused/full pass/skip totals. Do not count the 15 disabled SHOPIFY-003 tests as acceptable skipped coverage.
 
@@ -1166,14 +1173,15 @@ const verificationStartedAt = new Date();
 with:
 
 ```ts
-const verificationFence =
-  await billingService.getHostedPlanVerificationFence(shop.id);
+const verificationFence = await billingService.getHostedPlanVerificationFence(
+  shop.id,
+);
 ```
 
 Capture it **immediately before**:
 
 ```ts
-billingService.getMerchantShopifySubscriptionState(shop.id)
+billingService.getMerchantShopifySubscriptionState(shop.id);
 ```
 
 and after the initial Free/Paid activation branch has returned no activation.
@@ -1675,7 +1683,7 @@ other Attempt-4 production correction is requested.
 `getHostedPlanVerificationFence(...)` currently declares:
 
 ```ts
-Promise<HostedPlanVerificationFence>
+Promise<HostedPlanVerificationFence>;
 ```
 
 and represents no durable Subscription as an object whose every field is null.
@@ -1689,7 +1697,7 @@ const current = await transaction.subscription.findUnique(...);
 which is actual:
 
 ```ts
-null
+null;
 ```
 
 when no Subscription exists.
@@ -1776,8 +1784,7 @@ Do not manufacture an all-null object.
 The existing local type:
 
 ```ts
-type HostedPlanVerificationFenceSource =
-  HostedPlanVerificationFence | null;
+type HostedPlanVerificationFenceSource = HostedPlanVerificationFence | null;
 ```
 
 and:
@@ -1859,7 +1866,7 @@ locked current = null
 `recordHostedPlanVerificationFailure(...)` must return:
 
 ```ts
-null
+null;
 ```
 
 without issuing a Subscription mutation.
@@ -2220,14 +2227,11 @@ absent Subscription  -> null
 ```
 
 without BillingPlan lookup, Subscription mutation, reconciliation enqueue, or
-protected-model mutation.
-5. Provider verification failure with no durable Subscription returns `null` and does
-   not manufacture retry/error metadata or a Subscription row.
-6. The callback propagates the same nullable fence through both successful
-   `NO_ACTIVE` verification and Partner-failure handling.
-7. The accepted Attempt-4 commit-order fence, identical-`updatedAt` projection fence,
-   exact nullable provider projection, single Partner read, lock order, and protected
-   no-write invariants remain intact.
+protected-model mutation. 5. Provider verification failure with no durable Subscription returns `null` and does
+not manufacture retry/error metadata or a Subscription row. 6. The callback propagates the same nullable fence through both successful
+`NO_ACTIVE` verification and Partner-failure handling. 7. The accepted Attempt-4 commit-order fence, identical-`updatedAt` projection fence,
+exact nullable provider projection, single Partner read, lock order, and protected
+no-write invariants remain intact.
 
 Permanent Attempt-5 regression evidence:
 
@@ -2287,4 +2291,3 @@ Dependency reconciliation:
 - `ARCH-010-SHOPIFY-012` remains Pending because `ARCH-010-SHOPIFY-007`,
   `ARCH-010-SHOPIFY-009`, and `ARCH-010-SHOPIFY-014` are still incomplete.
 - No normal implementation task becomes newly Ready solely from this acceptance.
-

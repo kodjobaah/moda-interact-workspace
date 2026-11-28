@@ -22,6 +22,7 @@ enables:
 created: 2026-10-22
 updated: 2026-10-23
 ---
+
 # ARCH-035-WOOCOMMERCE-017: Connect existing WooCommerce Promotions screen to hosted promotional credits
 
 ## Architecture

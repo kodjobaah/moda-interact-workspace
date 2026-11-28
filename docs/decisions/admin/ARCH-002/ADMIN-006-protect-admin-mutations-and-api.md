@@ -18,6 +18,7 @@ enables:
 created: 2026-08-31
 updated: 2026-09-02
 ---
+
 # Protect Admin Mutations and Privileged Route Handlers
 
 ## Objective
@@ -63,7 +64,7 @@ privileged mutation APIs and should remain bounded/public for infrastructure.
 - [x] existing transaction/business validation remains unchanged.
 
 - [x] implementation changes are ready for developer commit/push; repository
-  agent does not commit or push.
+      agent does not commit or push.
 
 ## Reference implementation
 

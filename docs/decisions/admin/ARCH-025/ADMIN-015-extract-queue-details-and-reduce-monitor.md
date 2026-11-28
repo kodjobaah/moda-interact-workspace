@@ -255,7 +255,7 @@ pre-extraction shell.
   lifecycle timestamps;
 - failed reason remains rendered only for failed jobs;
 - stacktrace and normalized payload remain bounded by the existing `max-h-72
-  overflow-auto` presentation;
+overflow-auto` presentation;
 - payload formatting remains bounded `JSON.stringify(..., null, 2)` with the existing
   translated fallback;
 - Copy continues to use `navigator.clipboard.writeText`;

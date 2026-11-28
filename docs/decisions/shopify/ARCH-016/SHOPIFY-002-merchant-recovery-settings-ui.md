@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-016-DATABASE-001
-- ARCH-016-SHARED-001
+  - ARCH-016-DATABASE-001
+  - ARCH-016-SHARED-001
 enables:
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16T19:55:00Z
 ---
@@ -849,7 +849,6 @@ Return Attempt 3 to `moda_architect` with `status: review`, clear
 2 to Attempt 3 when the task is reclaimed. `ARCH-016-SYSTEM-TEST-001` remains Pending and
 MUST NOT start automatically; the developer manual-testing checkpoint remains before terminal
 integrated testing.
-
 
 ## Architect Review — Attempt 3
 

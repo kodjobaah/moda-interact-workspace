@@ -53,12 +53,12 @@ Message counts, CommerceAgent limits and provider/AI safety controls remain oper
 
 The initial/current target catalogue is:
 
-| Plan | Shopify recurring price* | Paid-plan monthly included recoveries | Shop-lifetime Free grant |
-| --- | ---: | ---: | ---: |
-| **Free** | $0 | none | 5 once per shop |
-| **Starter** | $35/month | 200/current verified billing period | 5 once per shop |
-| **Growth** | $75/month | 500/current verified billing period | 5 once per shop |
-| **Scale** | $149/month | 1,200/current verified billing period | 5 once per shop |
+| Plan        | Shopify recurring price* | Paid-plan monthly included recoveries | Shop-lifetime Free grant |
+| ----------- | -----------------------: | ------------------------------------: | -----------------------: |
+| **Free**    |                       $0 |                                  none |          5 once per shop |
+| **Starter** |                $35/month |   200/current verified billing period |          5 once per shop |
+| **Growth**  |                $75/month |   500/current verified billing period |          5 once per shop |
+| **Scale**   |               $149/month | 1,200/current verified billing period |          5 once per shop |
 
 \* Shopify App Pricing is authoritative for the live commercial plan, price, currency, billing cycle and pending plan change. Moda does not treat duplicated local price data as commercial truth.
 
@@ -445,14 +445,14 @@ Merchant and Admin history are derived from campaign-linked `PromotionalCreditGr
 
 The following states have deliberately different behaviour:
 
-| State | New recovery admission | Existing admitted conversation | Merchant dashboard/history | Owned lifetime balances |
-| --- | --- | --- | --- | --- |
-| **Capacity exhausted** | blocked | continues | available | preserved |
-| **FROZEN** | blocked | business execution paused | available/read-only where required | preserved |
-| **NO_CONTRACT — never subscribed / no verified cancellation** | blocked | business execution stopped | available | preserved |
-| **NO_CONTRACT — verified post-cancellation** | purchased/lifetime-Free only until exhausted | an already-started recovery conversation may continue; generic business execution remains stopped | available | preserved and recovery-spendable for purchased/lifetime Free |
-| **UNINSTALLED/inactive** | blocked | business execution stopped | not normal merchant execution | preserved |
-| **Billing-period DRAINING** | period-bound/billable mutations restricted; non-period lifetime sources may still be usable per ARCH-010 | existing admitted work handled under boundary rules | available | preserved |
+| State                                                         | New recovery admission                                                                                   | Existing admitted conversation                                                                    | Merchant dashboard/history         | Owned lifetime balances                                      |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| **Capacity exhausted**                                        | blocked                                                                                                  | continues                                                                                         | available                          | preserved                                                    |
+| **FROZEN**                                                    | blocked                                                                                                  | business execution paused                                                                         | available/read-only where required | preserved                                                    |
+| **NO_CONTRACT — never subscribed / no verified cancellation** | blocked                                                                                                  | business execution stopped                                                                        | available                          | preserved                                                    |
+| **NO_CONTRACT — verified post-cancellation**                  | purchased/lifetime-Free only until exhausted                                                             | an already-started recovery conversation may continue; generic business execution remains stopped | available                          | preserved and recovery-spendable for purchased/lifetime Free |
+| **UNINSTALLED/inactive**                                      | blocked                                                                                                  | business execution stopped                                                                        | not normal merchant execution      | preserved                                                    |
+| **Billing-period DRAINING**                                   | period-bound/billable mutations restricted; non-period lifetime sources may still be usable per ARCH-010 | existing admitted work handled under boundary rules                                               | available                          | preserved                                                    |
 
 Never use a generic `blocked` flag as a substitute for these distinct lifecycle states.
 
@@ -481,17 +481,17 @@ For a frozen shop specifically:
 
 ## 17. Repository ownership
 
-| Repository | Current ARCH-010 responsibility |
-| --- | --- |
-| `moda-interact-database` | subscription/lifecycle state, BillingPeriods, entitlement counters, purchase lots, refunds, promotional grants, constraints/indexes |
-| `moda-interact-shared` | versioned cross-service reconciliation/refund contracts and shared primitives |
-| `moda-interact` | merchant onboarding, dashboard, billing/options UI, Shopify hosted plan-selection integration, current/pending provider read model |
-| `moda-interact-admin` | internal policy/configuration, promotion-campaign management/reporting, partial-refund triage/settlement evidence |
-| `moda-interact-background` | subscription reconciliation, BillingPeriod transitions, capacity reservation, recovery gates, App Event publication/reconciliation, resume logic |
-| `moda-interact-gateway` | runtime Redis/environment wiring required by billing workers |
-| `moda-interact-messaging` | provider ingress/normalisation only; does not decide merchant entitlement |
-| `moda-interact-system-test` | terminal/manual-gated cross-service lifecycle validation |
-| `moda_architect` | cross-repository invariants, task sequencing and architectural acceptance |
+| Repository                  | Current ARCH-010 responsibility                                                                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `moda-interact-database`    | subscription/lifecycle state, BillingPeriods, entitlement counters, purchase lots, refunds, promotional grants, constraints/indexes              |
+| `moda-interact-shared`      | versioned cross-service reconciliation/refund contracts and shared primitives                                                                    |
+| `moda-interact`             | merchant onboarding, dashboard, billing/options UI, Shopify hosted plan-selection integration, current/pending provider read model               |
+| `moda-interact-admin`       | internal policy/configuration, promotion-campaign management/reporting, partial-refund triage/settlement evidence                                |
+| `moda-interact-background`  | subscription reconciliation, BillingPeriod transitions, capacity reservation, recovery gates, App Event publication/reconciliation, resume logic |
+| `moda-interact-gateway`     | runtime Redis/environment wiring required by billing workers                                                                                     |
+| `moda-interact-messaging`   | provider ingress/normalisation only; does not decide merchant entitlement                                                                        |
+| `moda-interact-system-test` | terminal/manual-gated cross-service lifecycle validation                                                                                         |
+| `moda_architect`            | cross-repository invariants, task sequencing and architectural acceptance                                                                        |
 
 ---
 
@@ -533,7 +533,6 @@ docs/architecture/ARCH-010-implementation-handoff.md
 System-test tasks are terminal/manual-gated and do not block implementation work from starting.
 
 Historical ARCH-007 task files remain valid evidence of what was implemented/reviewed at that stage, but their superseded merchant billing semantics must not override ARCH-010.
-
 
 ### Upgrade economics Admin guardrail
 

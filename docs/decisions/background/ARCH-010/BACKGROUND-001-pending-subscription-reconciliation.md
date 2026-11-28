@@ -234,16 +234,20 @@ STOP if accepted Shared contract is unavailable, Prisma client lacks `nextReconc
 ## Completion Report
 
 ### Status
+
 Attempt 6 complete; returned to review.
 
 ### Implementation
+
 Changed files:
+
 - `src/services/billing-subscription-reconciliation.service.ts`
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 
 Implemented the narrow Attempt-5 correction: `completeVerifiedFree` now returns the boolean committed result from its locked transaction, retains exact expected-state checks after ShopSettings and Subscription locks, and calls `publishNext` only when `committed === true` and `nextReconcileAt` exists. Added a direct regression for a verified Free response whose locked re-read has a newer pending plan; it proves both locks occur while BillingPeriod, lifetime-counter, Subscription, ShopSettings, and queue writes are skipped.
 
 ### Validation Results
+
 - Focused command `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 2 files and 41 tests.
 - Full `npm test`: 47 files passed, 3 files failed, 5 skipped; 580 tests passed, 6 failed, 7 skipped. The six unchanged baseline failures are five integration failures because database `moda_interact_test` does not exist, plus the unchanged `tests/unit/runtime/observability-startup.test.ts` expectation of shared package version `0.9.0` while the accepted dependency is `0.10.0`.
 - `npm run prisma:validate`: passed.
@@ -252,6 +256,7 @@ Implemented the narrow Attempt-5 correction: `completeVerifiedFree` now returns 
 - Editor diagnostics: no errors in the four task-touched files.
 
 ### Git / VCS
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Canonical parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-001`, `task/ARCH-010-BACKGROUND-001`.
 - Canonical implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-001`, `task/ARCH-010-BACKGROUND-001`.
@@ -270,11 +275,12 @@ Implemented the narrow Attempt-5 correction: `completeVerifiedFree` now returns 
 - Merged to implementation main: no; merged to workspace main: no.
 
 ### Architectural Concerns
+
 The full repository build and test suite retain only the documented unrelated database, observability-version, and nullable-`counterId` baseline failures. The database gitlink remains at the accepted revision.
 
 ### Unresolved Issues
-No bounded-task implementation issues remain.
 
+No bounded-task implementation issues remain.
 
 ### Architect Review
 
@@ -307,7 +313,7 @@ but that instance is used only for `reconstruct()`.
 `billing-subscription-reconciliation.worker.ts` instead imports the module-level:
 
 ```ts
-billingSubscriptionReconciliationService
+billingSubscriptionReconciliationService;
 ```
 
 whose default constructor has no Queue.
@@ -471,7 +477,7 @@ Two issues remain in `completeVerifiedFree(...)`.
 First, the lifetime counter currently uses:
 
 ```ts
-policy?.lifetimeFreeRecoveryAllowance ?? 5
+policy?.lifetimeFreeRecoveryAllowance ?? 5;
 ```
 
 The one-time grant must snapshot the durable
@@ -512,7 +518,7 @@ Add direct regressions for:
 architecture without Redis, but:
 
 ```ts
-WORKER_DEPENDENCIES["moda-billing-worker"]
+WORKER_DEPENDENCIES["moda-billing-worker"];
 ```
 
 still declares only PostgreSQL.
@@ -1025,7 +1031,7 @@ src/services/billing-subscription-reconciliation.service.ts
 The queue producer currently uses:
 
 ```ts
-removeOnFail: 100
+removeOnFail: 100;
 ```
 
 with a deterministic `jobId`.
@@ -1038,7 +1044,7 @@ reconstruction pass from recreating the same durable `expectedNextReconcileAt` w
 For this PostgreSQL-authoritative repair queue use:
 
 ```ts
-removeOnFail: true
+removeOnFail: true;
 ```
 
 Keep:
@@ -1072,7 +1078,7 @@ tests/unit/runtime/entrypoint-isolation.test.ts
 tests/unit/runtime/billing-scheduler.test.ts
 ```
 
-The current scheduler test proves only that an arbitrary callback *can* call a mocked
+The current scheduler test proves only that an arbitrary callback _can_ call a mocked
 `reconstruct()`. It does not prove the production billing entrypoint actually wires the
 same queue-aware service to both the Worker and repair cadence.
 
@@ -1270,7 +1276,7 @@ The current `completeVerifiedFree(...)` computes a pack-enabled/no-cycle schedul
 ```ts
 pendingEffectiveAt
   ? nextSubscriptionReconcileAt(pendingEffectiveAt, now)
-  : null
+  : null;
 ```
 
 That is the **initial activation retry algorithm**, not the post-onboarding
@@ -1306,14 +1312,12 @@ if (recoveryCreditPackEnabled) {
     nextReconcileAt = new Date(
       Math.max(
         now.getTime(),
-        provider.currentPeriodEnd.getTime()
-          - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS,
+        provider.currentPeriodEnd.getTime() -
+          APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS,
       ),
     );
   } else {
-    nextReconcileAt = new Date(
-      now.getTime() + FREE_CYCLE_DISCOVERY_RETRY_MS,
-    );
+    nextReconcileAt = new Date(now.getTime() + FREE_CYCLE_DISCOVERY_RETRY_MS);
   }
 }
 ```
@@ -1354,7 +1358,9 @@ src/services/billing-subscription-reconciliation.service.ts
 The current cycle-discovery null/error CAS uses:
 
 ```ts
-planId: { not: null }
+planId: {
+  not: null;
+}
 ```
 
 That is not an exact stale guard. An older cycle-discovery Partner request can return
@@ -1384,13 +1390,15 @@ nextReconcileAt = expectedNextReconcileAt
 `recordMissingCycle(...)` and `recordCycleDiscoveryFailure(...)` MUST use:
 
 ```ts
-planId: expected.currentPlanId
+planId: expected.currentPlanId;
 ```
 
 and MUST NOT use:
 
 ```ts
-planId: { not: null }
+planId: {
+  not: null;
+}
 ```
 
 If the exact CAS returns `count === 0`:
@@ -1674,7 +1682,7 @@ src/entrypoints/billing.ts
 The current telemetry wiring contains the literal:
 
 ```ts
-queueNames: ["billing-subscription-reconcile"]
+queueNames: ["billing-subscription-reconcile"];
 ```
 
 Do not duplicate the Shared queue contract in runtime wiring.
@@ -1682,13 +1690,13 @@ Do not duplicate the Shared queue contract in runtime wiring.
 Use either:
 
 ```ts
-queueNames: [billingSubscriptionQueue.name]
+queueNames: [billingSubscriptionQueue.name];
 ```
 
 or the imported:
 
 ```ts
-BILLING_SUBSCRIPTION_RECONCILE_QUEUE_NAME
+BILLING_SUBSCRIPTION_RECONCILE_QUEUE_NAME;
 ```
 
 Prefer `billingSubscriptionQueue.name` because the Queue has already been created from
@@ -2111,8 +2119,8 @@ returns `true`.
 Future deterministic work is published only when both conditions hold:
 
 ```ts
-committed === true
-nextReconcileAt != null
+committed === true;
+nextReconcileAt != null;
 ```
 
 Therefore a stale/losing verified-Free job now performs:

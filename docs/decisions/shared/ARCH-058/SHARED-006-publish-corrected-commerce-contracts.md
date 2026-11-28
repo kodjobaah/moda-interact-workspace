@@ -239,23 +239,23 @@ The following is the actual receipt generated only after successful registry ver
 
 Publication/artifact verification only:
 
-| Actual command/check | Result |
-|---|---|
-| Prerequisite acceptance records, accepted commit ancestry, baseline-to-accepted full-tree comparison | Passed; accepted combined implementation present |
-| `npm view @modainteract/moda-interact-shared versions --json` |5.0.0 absent before metadata change |
-| `npm ci --no-audit --no-fund` | Passed; committed dependency graph retained |
-| `npm version 5.0.0 --no-git-tag-version` | Passed; exactly three version scalars changed |
-| `npm pack --json --pack-destination /tmp/moda-shared-5.0.0-42wvvrfq/local` | Passed; sole build via existing prepack lifecycle |
-| `npm pack --dry-run --ignore-scripts --json` | Passed; README inventory inspection on completed build, without another build |
-| Local archive inventory, runtime verifier and strict declaration consumer | Passed; all public export targets present |
-| `npm view @modainteract/moda-interact-shared versions --prefer-online --json` | Fresh prepublish guard:5.0.0 absent; exact inspected archive hash unchanged |
-| `npm publish /tmp/moda-shared-5.0.0-42wvvrfq/local/modainteract-moda-interact-shared-5.0.0.tgz --access public` | Accepted once; subsequently verified retrievable |
-| `npm view @modainteract/moda-interact-shared@5.0.0 version dist --prefer-online --json` | Third read succeeded after two processing-related E404 responses |
-| `npm pack @modainteract/moda-interact-shared@5.0.0 --prefer-online --ignore-scripts --json --pack-destination /tmp/moda-shared-5.0.0-42wvvrfq/registry` | Passed; actual registry archive retrieved |
-| Full local/registry byte comparison, registry integrity/shasum/size checks | Passed;287137 compressed bytes,1302170 unpacked bytes,131 files |
-| Retrieved archive runtime verifier and strict declaration consumer | Passed; same outcomes as local archive |
-| `npm view @modainteract/moda-interact-shared time --prefer-online --json` and dist-tags query | Actual publication timestamp and latest5.0.0 recorded in receipt |
-| `git diff --check` and metadata-only working-tree checks | Passed |
+| Actual command/check                                                                                                                                    | Result                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Prerequisite acceptance records, accepted commit ancestry, baseline-to-accepted full-tree comparison                                                    | Passed; accepted combined implementation present                              |
+| `npm view @modainteract/moda-interact-shared versions --json`                                                                                           | 5.0.0 absent before metadata change                                           |
+| `npm ci --no-audit --no-fund`                                                                                                                           | Passed; committed dependency graph retained                                   |
+| `npm version 5.0.0 --no-git-tag-version`                                                                                                                | Passed; exactly three version scalars changed                                 |
+| `npm pack --json --pack-destination /tmp/moda-shared-5.0.0-42wvvrfq/local`                                                                              | Passed; sole build via existing prepack lifecycle                             |
+| `npm pack --dry-run --ignore-scripts --json`                                                                                                            | Passed; README inventory inspection on completed build, without another build |
+| Local archive inventory, runtime verifier and strict declaration consumer                                                                               | Passed; all public export targets present                                     |
+| `npm view @modainteract/moda-interact-shared versions --prefer-online --json`                                                                           | Fresh prepublish guard:5.0.0 absent; exact inspected archive hash unchanged   |
+| `npm publish /tmp/moda-shared-5.0.0-42wvvrfq/local/modainteract-moda-interact-shared-5.0.0.tgz --access public`                                         | Accepted once; subsequently verified retrievable                              |
+| `npm view @modainteract/moda-interact-shared@5.0.0 version dist --prefer-online --json`                                                                 | Third read succeeded after two processing-related E404 responses              |
+| `npm pack @modainteract/moda-interact-shared@5.0.0 --prefer-online --ignore-scripts --json --pack-destination /tmp/moda-shared-5.0.0-42wvvrfq/registry` | Passed; actual registry archive retrieved                                     |
+| Full local/registry byte comparison, registry integrity/shasum/size checks                                                                              | Passed;287137 compressed bytes,1302170 unpacked bytes,131 files               |
+| Retrieved archive runtime verifier and strict declaration consumer                                                                                      | Passed; same outcomes as local archive                                        |
+| `npm view @modainteract/moda-interact-shared time --prefer-online --json` and dist-tags query                                                           | Actual publication timestamp and latest5.0.0 recorded in receipt              |
+| `git diff --check` and metadata-only working-tree checks                                                                                                | Passed                                                                        |
 
 Both temporary declaration consumers use the installed compiler with `--noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --skipLibCheck --types node` on the artifact's verify.ts. Dependency-resolution links expose only the installed third-party build dependencies; the inspected/downloaded package resolves its own public exports. Node24.19.0/npm11.17.0 came from the workspace bootstrap; Zod4.4.3 remains the existing locked build/runtime-fixture dependency, and package Zod range remains unchanged. No application Zod pin/override was introduced.
 

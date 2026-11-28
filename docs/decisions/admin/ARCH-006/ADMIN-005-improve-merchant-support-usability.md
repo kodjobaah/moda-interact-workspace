@@ -109,28 +109,28 @@ The Admin operator must not need to understand tags such as `fr-CA`, `pt-BR` or 
 
 The dropdown must expose **exactly these 20 currently supported product languages**, in this order:
 
-| Visible label | Submitted value |
-|---|---|
-| Czech | `cs` |
-| Danish | `da` |
-| German | `de` |
-| English | `en` |
-| Spanish | `es` |
-| Finnish | `fi` |
-| French | `fr` |
-| Italian | `it` |
-| Japanese | `ja` |
-| Korean | `ko` |
-| Norwegian Bokmål | `nb` |
-| Dutch | `nl` |
-| Polish | `pl` |
-| Portuguese (Brazil) | `pt-BR` |
-| Portuguese (Portugal) | `pt-PT` |
-| Swedish | `sv` |
-| Thai | `th` |
-| Turkish | `tr` |
-| Chinese (Simplified) | `zh-Hans` |
-| Chinese (Traditional) | `zh-Hant` |
+| Visible label         | Submitted value |
+| --------------------- | --------------- |
+| Czech                 | `cs`            |
+| Danish                | `da`            |
+| German                | `de`            |
+| English               | `en`            |
+| Spanish               | `es`            |
+| Finnish               | `fi`            |
+| French                | `fr`            |
+| Italian               | `it`            |
+| Japanese              | `ja`            |
+| Korean                | `ko`            |
+| Norwegian Bokmål      | `nb`            |
+| Dutch                 | `nl`            |
+| Polish                | `pl`            |
+| Portuguese (Brazil)   | `pt-BR`         |
+| Portuguese (Portugal) | `pt-PT`         |
+| Swedish               | `sv`            |
+| Thai                  | `th`            |
+| Turkish               | `tr`            |
+| Chinese (Simplified)  | `zh-Hans`       |
+| Chinese (Traditional) | `zh-Hant`       |
 
 These values correspond to the current 20 merchant-language catalogues already supported by Moda Interact:
 
@@ -191,26 +191,26 @@ The exact JSX may use `.map()` over a local constant rather than writing 20 lite
 
 ```ts
 const SUPPORTED_TRANSLATION_LANGUAGE_OPTIONS = [
-  { value: 'cs', label: 'Czech' },
-  { value: 'da', label: 'Danish' },
-  { value: 'de', label: 'German' },
-  { value: 'en', label: 'English' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'fi', label: 'Finnish' },
-  { value: 'fr', label: 'French' },
-  { value: 'it', label: 'Italian' },
-  { value: 'ja', label: 'Japanese' },
-  { value: 'ko', label: 'Korean' },
-  { value: 'nb', label: 'Norwegian Bokmål' },
-  { value: 'nl', label: 'Dutch' },
-  { value: 'pl', label: 'Polish' },
-  { value: 'pt-BR', label: 'Portuguese (Brazil)' },
-  { value: 'pt-PT', label: 'Portuguese (Portugal)' },
-  { value: 'sv', label: 'Swedish' },
-  { value: 'th', label: 'Thai' },
-  { value: 'tr', label: 'Turkish' },
-  { value: 'zh-Hans', label: 'Chinese (Simplified)' },
-  { value: 'zh-Hant', label: 'Chinese (Traditional)' },
+  { value: "cs", label: "Czech" },
+  { value: "da", label: "Danish" },
+  { value: "de", label: "German" },
+  { value: "en", label: "English" },
+  { value: "es", label: "Spanish" },
+  { value: "fi", label: "Finnish" },
+  { value: "fr", label: "French" },
+  { value: "it", label: "Italian" },
+  { value: "ja", label: "Japanese" },
+  { value: "ko", label: "Korean" },
+  { value: "nb", label: "Norwegian Bokmål" },
+  { value: "nl", label: "Dutch" },
+  { value: "pl", label: "Polish" },
+  { value: "pt-BR", label: "Portuguese (Brazil)" },
+  { value: "pt-PT", label: "Portuguese (Portugal)" },
+  { value: "sv", label: "Swedish" },
+  { value: "th", label: "Thai" },
+  { value: "tr", label: "Turkish" },
+  { value: "zh-Hans", label: "Chinese (Simplified)" },
+  { value: "zh-Hant", label: "Chinese (Traditional)" },
 ] as const;
 ```
 

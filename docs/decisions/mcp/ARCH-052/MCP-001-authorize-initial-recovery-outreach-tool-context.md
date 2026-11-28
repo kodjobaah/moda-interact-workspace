@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-SHARED-003
+  - ARCH-052-SHARED-003
 enables:
-- ARCH-052-MCP-002
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-created: '2026-10-29'
+  - ARCH-052-MCP-002
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+created: "2026-10-29"
 updated: 2026-10-30
 ---
 
@@ -80,7 +80,7 @@ Authorise the `INITIAL_RECOVERY_OUTREACH` **purpose** within MCP's existing priv
 
 ```typescript
 {
-  purpose: "INITIAL_RECOVERY_OUTREACH"
+  purpose: "INITIAL_RECOVERY_OUTREACH";
 }
 ```
 

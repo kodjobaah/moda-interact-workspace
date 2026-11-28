@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-058-MCP-001
-- ARCH-058-DATABASE-002
-- ARCH-058-SHARED-006
+  - ARCH-058-MCP-001
+  - ARCH-058-DATABASE-002
+  - ARCH-058-SHARED-006
 enables:
-- ARCH-058-MCP-003
-- ARCH-058-COMMERCE-001
-- ARCH-058-BACKGROUND-001
-- ARCH-058-SYSTEM-TEST-001
-created: '2026-11-04'
+  - ARCH-058-MCP-003
+  - ARCH-058-COMMERCE-001
+  - ARCH-058-BACKGROUND-001
+  - ARCH-058-SYSTEM-TEST-001
+created: "2026-11-04"
 updated: 2026-11-05
 ---
 
@@ -62,20 +62,20 @@ Only `moda-interact-mcp` source, tests and its task report. Public input/output 
 
 Paths in this table are relative to the MCP implementation worktree. Test fixtures must exercise these implementations, not alternative helpers that reproduce the intended answers.
 
-| Path | Required change |
-| --- | --- |
-| `src/execution/policy/shopify-core.ts` | Extend `SearchInput`; replace search document/filter composition; add the category document and provider parsers; implement the three bounded search branches below; qualify publication in every search/exact-get path and Woo availability from the selected source's stock/purchasable facts; correct optional Woo `parent_id` handling. Keep basket behavior and public product schemas/versions unchanged. |
-| `src/execution/policy/product-search-cursor.ts` — new | Own only the signed version-2 search cursor, normalized filter fingerprint and strict provider progress parsing described below. Move the existing product-search cursor mechanics here; no other cursor protocol changes. |
-| `src/execution/reference-taxonomy/category-membership.ts` — new | Export `createPrismaProductCategoryReader` and the narrow `ProductCategoryReader` port below. Read the already accepted taxonomy tables by exact ID; no embedding/import/source download. |
-| `src/execution/policy/shopify-core-executor.ts` | Add `category`/`browse` only to `products.search` mappings; inject the category reader and trusted environment into its adapter. Keep the legacy `shopify.searchProducts` mapping text-only. Preserve actual output-schema validation and rendering. |
-| `src/connections/{ports,resolver,prisma-reader}.ts` | Add the exact private list fields and trusted cursor connection identity below; forward fields through the resolver and extend its strict key checks. Select Woo installation `id`/`credentialVersion` alongside the already selected fields; no extra connection query. |
-| `src/connections/woocommerce/{provider,direct-product-reader}.ts` | Extend `approvedRequest`, `validRequest` and `pathFor` together; add the fixed list/exact publication and purchasable projections, published-list filters and fixed ordering; preserve accepted credential/transport/original-error work. |
-| `src/capabilities/{records,prisma-reader,manifest,resolve}.ts` | Keep the exact generic shop/release/plan projections; remove discount settings/selection reads from this capability reader. Project the canonical pair independently of caller context/current mode and build the provider manifest tool union with `deduplicateTools(capabilities, builtInTools)`; read no retained grant. Preserve MCP-001 required-feature selection. |
-| Existing `src/execution/{discount-tools,discount-catalogue}.ts` | Replace purpose-dependent descriptor projection and remove the reader's outreach-purpose gate. Preserve the existing factory, current mode/FIXED selection/override checks, condition mapping and keyset cursor. Apply section 7's exact NONE/details/cursor ordering and section 8's query-scoped unavailable-data classification for every caller. |
-| `src/mcp/{ports,snapshot,registration,execution}.ts` | Use the canonical descriptor DTO and exact manifest/list equality. Remove the purpose/list-time mode gate; route built-in calls through the bounded wrapper in section 7. Share the existing call-policy/deadline/cancellation/result-byte mechanism within `execution.ts`, preserving published-call behavior. |
-| `src/runtime/{ports,prisma,service-ports}.ts` | Add the category reader to the existing composition and remove the outreach-only listing call. Preserve the existing `createPrismaDiscountCatalogueReader` -> `ports.discounts` -> `ShopifyServiceComposition.discounts` -> `executeDiscountTool` chain; forward the added private RPC signal/deadline through its existing spread. The published execution registry retains its generic shop/environment authorization read. |
-| `package.json`, `package-lock.json` | After SHARED-006 acceptance, pin Shared exactly `5.0.0`; do not change MCP's direct `zod` version for ARCH-058. Retain all other dependency versions/scripts and update the Database gitlink only to the accepted DATABASE-002 descendant supplied by normal task preparation. Verify the no-hash public exports and strict name/version built-in identity below. |
-| Tests named in Validation | Add/extend focused fixtures and the existing disposable database harness. No new test framework or runtime dependency is required. |
+| Path                                                              | Required change                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/execution/policy/shopify-core.ts`                            | Extend `SearchInput`; replace search document/filter composition; add the category document and provider parsers; implement the three bounded search branches below; qualify publication in every search/exact-get path and Woo availability from the selected source's stock/purchasable facts; correct optional Woo `parent_id` handling. Keep basket behavior and public product schemas/versions unchanged.               |
+| `src/execution/policy/product-search-cursor.ts` — new             | Own only the signed version-2 search cursor, normalized filter fingerprint and strict provider progress parsing described below. Move the existing product-search cursor mechanics here; no other cursor protocol changes.                                                                                                                                                                                                    |
+| `src/execution/reference-taxonomy/category-membership.ts` — new   | Export `createPrismaProductCategoryReader` and the narrow `ProductCategoryReader` port below. Read the already accepted taxonomy tables by exact ID; no embedding/import/source download.                                                                                                                                                                                                                                     |
+| `src/execution/policy/shopify-core-executor.ts`                   | Add `category`/`browse` only to `products.search` mappings; inject the category reader and trusted environment into its adapter. Keep the legacy `shopify.searchProducts` mapping text-only. Preserve actual output-schema validation and rendering.                                                                                                                                                                          |
+| `src/connections/{ports,resolver,prisma-reader}.ts`               | Add the exact private list fields and trusted cursor connection identity below; forward fields through the resolver and extend its strict key checks. Select Woo installation `id`/`credentialVersion` alongside the already selected fields; no extra connection query.                                                                                                                                                      |
+| `src/connections/woocommerce/{provider,direct-product-reader}.ts` | Extend `approvedRequest`, `validRequest` and `pathFor` together; add the fixed list/exact publication and purchasable projections, published-list filters and fixed ordering; preserve accepted credential/transport/original-error work.                                                                                                                                                                                     |
+| `src/capabilities/{records,prisma-reader,manifest,resolve}.ts`    | Keep the exact generic shop/release/plan projections; remove discount settings/selection reads from this capability reader. Project the canonical pair independently of caller context/current mode and build the provider manifest tool union with `deduplicateTools(capabilities, builtInTools)`; read no retained grant. Preserve MCP-001 required-feature selection.                                                      |
+| Existing `src/execution/{discount-tools,discount-catalogue}.ts`   | Replace purpose-dependent descriptor projection and remove the reader's outreach-purpose gate. Preserve the existing factory, current mode/FIXED selection/override checks, condition mapping and keyset cursor. Apply section 7's exact NONE/details/cursor ordering and section 8's query-scoped unavailable-data classification for every caller.                                                                          |
+| `src/mcp/{ports,snapshot,registration,execution}.ts`              | Use the canonical descriptor DTO and exact manifest/list equality. Remove the purpose/list-time mode gate; route built-in calls through the bounded wrapper in section 7. Share the existing call-policy/deadline/cancellation/result-byte mechanism within `execution.ts`, preserving published-call behavior.                                                                                                               |
+| `src/runtime/{ports,prisma,service-ports}.ts`                     | Add the category reader to the existing composition and remove the outreach-only listing call. Preserve the existing `createPrismaDiscountCatalogueReader` -> `ports.discounts` -> `ShopifyServiceComposition.discounts` -> `executeDiscountTool` chain; forward the added private RPC signal/deadline through its existing spread. The published execution registry retains its generic shop/environment authorization read. |
+| `package.json`, `package-lock.json`                               | After SHARED-006 acceptance, pin Shared exactly `5.0.0`; do not change MCP's direct `zod` version for ARCH-058. Retain all other dependency versions/scripts and update the Database gitlink only to the accepted DATABASE-002 descendant supplied by normal task preparation. Verify the no-hash public exports and strict name/version built-in identity below.                                                             |
+| Tests named in Validation                                         | Add/extend focused fixtures and the existing disposable database harness. No new test framework or runtime dependency is required.                                                                                                                                                                                                                                                                                            |
 
 ## Out of Scope
 
@@ -109,13 +109,13 @@ For query-schema validation, reuse the prepared MCP artifact `artifacts/shopify-
 
 Replace the old interface with `export type SearchInput = z.input<typeof CommerceToolInputs.commerce_search_products>`; use `z.output` for normalized internal input after parsing that Shared schema. Trim a non-null query; a whitespace-only query is `INVALID_INPUT`. Keep null as null, with no synthetic wildcard. Defaults remain query null, browse false, availableOnly true, limit 10 and cursor null; maximumPrice remains optional. Keep the exact flat Shared category object.
 
-| Parsed request | Service action |
-| --- | --- |
-| browse false, query non-null, no category | Text branch. |
-| browse false, category present, query null or non-null | Exact category branch; a supplied query is an additional conjunction. |
-| browse true, query null, category absent | Explicit catalogue browse branch. |
-| No query/category with browse false; browse combined with query/category | `INVALID_INPUT`, zero provider calls. |
-| Wrong category system for the connection; invalid native ID; missing/mismatched Shopify version; non-null Woo version | `INVALID_INPUT`, zero provider calls. |
+| Parsed request                                                                                                        | Service action                                                        |
+| --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| browse false, query non-null, no category                                                                             | Text branch.                                                          |
+| browse false, category present, query null or non-null                                                                | Exact category branch; a supplied query is an additional conjunction. |
+| browse true, query null, category absent                                                                              | Explicit catalogue browse branch.                                     |
+| No query/category with browse false; browse combined with query/category                                              | `INVALID_INPUT`, zero provider calls.                                 |
+| Wrong category system for the connection; invalid native ID; missing/mismatched Shopify version; non-null Woo version | `INVALID_INPUT`, zero provider calls.                                 |
 
 Shopify category membership is verified by `ProductCategoryReader.read({environment, categoryId, taxonomyVersion, signal})`, returning `{generationId, categoryId, taxonomyVersion}` from this fixed parameterized read (use the existing generated Prisma tagged-SQL interface; never concatenate the values):
 
@@ -145,23 +145,67 @@ The private status parser recognizes `ACTIVE`, `DRAFT`, `ARCHIVED` and `UNLISTED
 Add `CATEGORY_SEARCH_DOCUMENT` with this exact selection (reuse the updated `productFields` constant for identical fields when assembling the trusted string); no fragments or caller-provided selections:
 
 ```graphql
-query CommerceSearchProductsByCategory($query: String!, $after: String, $variantAfter: String) {
-  shop { currencyCode primaryDomain { url } }
-  products(first: 1, after: $after, query: $query, sortKey: ID, reverse: false) {
+query CommerceSearchProductsByCategory(
+  $query: String!
+  $after: String
+  $variantAfter: String
+) {
+  shop {
+    currencyCode
+    primaryDomain {
+      url
+    }
+  }
+  products(
+    first: 1
+    after: $after
+    query: $query
+    sortKey: ID
+    reverse: false
+  ) {
     edges {
       cursor
       node {
-        id title handle vendor productType onlineStoreUrl status
-        category { id name }
-        collections(first: 20) { nodes { id } }
-        featuredImage { url }
+        id
+        title
+        handle
+        vendor
+        productType
+        onlineStoreUrl
+        status
+        category {
+          id
+          name
+        }
+        collections(first: 20) {
+          nodes {
+            id
+          }
+        }
+        featuredImage {
+          url
+        }
         variants(first: 20, after: $variantAfter, sortKey: ID, reverse: false) {
-          edges { cursor node { id price compareAtPrice availableForSale } }
-          pageInfo { hasNextPage endCursor }
+          edges {
+            cursor
+            node {
+              id
+              price
+              compareAtPrice
+              availableForSale
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
         }
       }
     }
-    pageInfo { hasNextPage endCursor }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
   }
 }
 ```
@@ -188,20 +232,20 @@ In `pathFor`, add `category=<id>` for category reads. For all product/variation 
 
 For a category request, inspect the **full returned** categories array before the bounded public projection: a product matches only when one observed native ID equals the requested ID. A child-only membership does not match. Apply this publication table before mapping a simple product or making a variation read; do not rely only on the provider list filter:
 
-| Product-read branch | Required observed parent fields | Required selected variation field |
-| --- | --- | --- |
-| Text/category search and exact get | `status: publish`; `catalog_visibility: visible|catalog|search` | `status: publish` |
-| Browse | `status: publish`; `catalog_visibility: visible|catalog` | `status: publish` |
+| Product-read branch                | Required observed parent fields                 | Required selected variation field |
+| ---------------------------------- | ----------------------------------------------- | --------------------------------- |
+| Text/category search and exact get | `status: publish`; `catalog_visibility: visible | catalog                           | search`           | `status: publish` |
+| Browse                             | `status: publish`; `catalog_visibility: visible | catalog`                          | `status: publish` |
 
 Known nonpublished status (`draft`, `pending`, `private`, `future` or `trash`) or `catalog_visibility: hidden` is ineligible in every product-read branch. Search-only visibility is ineligible only for browse. Consume/exclude a known ineligible search entry; return the existing `{product:null}` shape for exact get. Required status must be one of `publish,draft,pending,private,future,trash`; parent visibility must be one of `visible,catalog,search,hidden`. A missing/null/wrong-type/unknown required qualifier is malformed provider data: outer `UNAVAILABLE`, retryable false, with original safe validation diagnostics, not successful empty data. Validate required parent qualifiers before any variation read; validate each selected variation status before accepting that variation. `availableOnly:false` never relaxes publication or visibility. Keep the current safe-permalink projection and Background's separate requirement for a non-null safe recommendation URL.
 
 For `available`, inspect only the selected simple-product or variation payload, never a variable parent's `purchasable` value. The supplied `purchasable` field may be boolean, null or absent; any other non-null type is malformed and follows the same hard path above. After that validation, use this ordered truth table; do not infer buyability from stock alone or infer backorder availability:
 
-| Selected source facts | Public available |
-| --- | --- |
-| `purchasable === false` or `stock_status === "outofstock"` | false |
-| Otherwise, `purchasable === true` and `stock_status === "instock"` | true |
-| Otherwise, including missing/null purchasable or unrecognized/unknown/backorder stock | null |
+| Selected source facts                                                                 | Public available |
+| ------------------------------------------------------------------------------------- | ---------------- |
+| `purchasable === false` or `stock_status === "outofstock"`                            | false            |
+| Otherwise, `purchasable === true` and `stock_status === "instock"`                    | true             |
+| Otherwise, including missing/null purchasable or unrecognized/unknown/backorder stock | null             |
 
 Apply availableOnly and price filtering after publication qualification and this mapping. A variable parent's false/null purchasable flag must not suppress its independently observed published variations.
 
@@ -225,13 +269,13 @@ Keep `parseMcpRequestContext` and the existing private-ingress trust boundary un
 
 Remove `discountPolicy` from `ShopCapabilityRecords` and remove the `shopSettings`, `shopRecoveryPolicyOverride` and selection-only `shopifyDiscount` delegates/queries from `PrismaShopCapabilityTransaction`. Do not add conversation, retained-grant, checkout or outreach-attempt delegates. The successful generic capability read keeps exactly five top-level Prisma delegate calls in its existing RepeatableRead transaction, with the existing relation-loading behavior:
 
-| Delegate call | Exact retained projection |
-| --- | --- |
-| `shop.findUnique` | `where: {id: context.shopId}`; `select: {id:true,domain:true,status:true,platform:true,wooCommerceInstallation:{select:{id:true,shopId:true,status:true,canonicalSiteUrl:true,credentialVersion:true}}}`. These Woo fields also supply the private cursor identity in section 5. |
-| `commerceReleasePointer.findUnique` | `where: {environment: databaseEnvironment(context.environment)}`; `select: {releaseId:true}`. |
-| `commerceRelease.findUnique` | `where: {id: pointer.releaseId}`; retain the existing `releaseInclude`, including MCP-001's accepted required-feature fields. |
-| `subscription.findUnique` | `where: {shopId: context.shopId}`; `select: {status:true,plan:{select:{active:true,features:{where:{featureId:{in:featureIds}},select:{featureId:true,enabled:true}}}}}`. `featureIds` is the distinct release feature-ID set as before. |
-| `shopFeaturePreference.findMany` | `where: {shopId: context.shopId,featureId:{in:featureIds}}`; `select: {featureId:true,enabled:true}`. |
+| Delegate call                       | Exact retained projection                                                                                                                                                                                                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shop.findUnique`                   | `where: {id: context.shopId}`; `select: {id:true,domain:true,status:true,platform:true,wooCommerceInstallation:{select:{id:true,shopId:true,status:true,canonicalSiteUrl:true,credentialVersion:true}}}`. These Woo fields also supply the private cursor identity in section 5. |
+| `commerceReleasePointer.findUnique` | `where: {environment: databaseEnvironment(context.environment)}`; `select: {releaseId:true}`.                                                                                                                                                                                    |
+| `commerceRelease.findUnique`        | `where: {id: pointer.releaseId}`; retain the existing `releaseInclude`, including MCP-001's accepted required-feature fields.                                                                                                                                                    |
+| `subscription.findUnique`           | `where: {shopId: context.shopId}`; `select: {status:true,plan:{select:{active:true,features:{where:{featureId:{in:featureIds}},select:{featureId:true,enabled:true}}}}}`. `featureIds` is the distinct release feature-ID set as before.                                         |
+| `shopFeaturePreference.findMany`    | `where: {shopId: context.shopId,featureId:{in:featureIds}}`; `select: {featureId:true,enabled:true}`.                                                                                                                                                                            |
 
 The shop/pointer reads can retain their existing parallel execution; release and entitlement reads keep their existing dependency order. Missing or malformed shop/release/plan data keeps the existing typed outcome. This reader makes zero discount settings/override/catalogue queries and zero workflow-state queries. `createMcpService` already resolves a fresh snapshot for every RPC, including each tools/call; do not add a second generic capability read solely for a built-in call. Keep `runtime/execution-registry.ts`'s existing shop/environment reader context for published calls.
 
@@ -242,7 +286,9 @@ Use these exact private DTO/export changes:
 export type McpSystemTool = CommerceBuiltInToolDescriptor;
 
 // src/execution/discount-tools.ts — pure projection, no database/context argument
-export function projectShopDiscountTools(records: ShopCapabilityRecords): McpSystemTool[];
+export function projectShopDiscountTools(
+  records: ShopCapabilityRecords,
+): McpSystemTool[];
 ```
 
 `resolveShopCapabilities` first applies its existing `requireActiveShop` and published-release checks. The pure projection returns both installed `commerceDiscountBuiltInDescriptors` when subscription status is ACTIVE or TRIALING and `subscription.plan.active === true`; otherwise it returns `[]`. It uses no merchant offer mode, selection, optional preference, purpose or workflow state. The same active Free/paid plan rule applies to Shopify and Woo. The already present catalogue reader must remain wired through the existing production `executeDiscountTool` port; a missing port is a hard configuration failure, never permission to fabricate successful empty data.
@@ -262,7 +308,10 @@ In `src/mcp/registration.ts`, retain the existing `CommerceToolInputs` parsing b
 The uploaded built-in branch has no per-call wrapper. In the existing `src/mcp/execution.ts`, extract its current policy selection, combined request/SDK abort controller, timer, provider budget, promise race, final deadline check, result-schema parse and result-byte bound into one private helper. Keep this helper in that file; do not create another execution framework, generic logger, policy reader or provider registry. Use these exact private signatures:
 
 ```typescript
-type BoundedToolCall = Pick<CapabilityInvocation, "deadlineAt" | "signal" | "budget">;
+type BoundedToolCall = Pick<
+  CapabilityInvocation,
+  "deadlineAt" | "signal" | "budget"
+>;
 
 async function executeBoundedToolCall(
   ports: McpServicePorts,
@@ -294,16 +343,16 @@ Inside the reader, check the supplied abort/deadline before starting the transac
 
 Move the options `limit`/`cursor` shape check before its mode-specific early return, using the values already parsed by registration. For NONE, reject every non-null cursor as `MCP_DISCOUNT_CURSOR_INVALID` before returning empty options: this mode never issues a continuation token. NONE details is a hard FORBIDDEN mapped to outer DENIED. For FIXED details, reject an offerId outside `policy.allowedDiscountIds` before a detail query, with the same outer DENIED result. Use `MCP_DISCOUNT_NOT_AUTHORIZED` as that private denial reason. A permitted detail lookup uses `shopifyDiscount.findUnique({where:{id:offerId,shopId:call.context.shopId}})` and retains the existing post-read shop check and `rowIsCurrent` filter. Only a permitted absent/non-current record returns `{details:null}`. These replace the uploaded reader's NONE/details-null shortcuts; they do not introduce conversation permission.
 
-| Current authorized shop state / request | Exact catalogue behavior for every caller |
-| --- | --- |
-| NONE; options with initial cursor null | `OK` data `{mode:"NONE",offers:[],cursor:null,truncated:false}`. This is an observed configured mode, not a default for a failed configuration read. No catalogue scan is needed. |
-| FIXED; options | Existing bounded page over current permitted selected IDs or the active exact-ID override, with `mode:"FIXED"`. |
-| AI_BEST_APPLICABLE; options | Existing bounded provider-current catalogue page independently of selection checkboxes, with the actual configured mode. |
-| NONE; details, or FIXED details outside the current permitted set | Outer `ERROR`, `code:"DENIED"`, `retryable:false`. No facts escape the configured scope. |
-| Authorized details ID has no qualifying same-shop record | Existing `OK` data `{details:null}`. Wrong-shop IDs never expose another shop's record. |
-| Authorized record exists | Existing exact offer/condition projection; unsupported or missing source observations stay PARTIAL/UNKNOWN. |
-| Invalid/expired/tampered/cross-shop/cross-mode cursor | Existing typed invalid-input rejection. A cursor from a prior mode is not accepted by the NONE branch. |
-| Missing/malformed/unavailable shop configuration or failed shop/provider authorization | Existing hard outer error; never fabricate NONE, empty offers or optional absence. |
+| Current authorized shop state / request                                                | Exact catalogue behavior for every caller                                                                                                                                         |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NONE; options with initial cursor null                                                 | `OK` data `{mode:"NONE",offers:[],cursor:null,truncated:false}`. This is an observed configured mode, not a default for a failed configuration read. No catalogue scan is needed. |
+| FIXED; options                                                                         | Existing bounded page over current permitted selected IDs or the active exact-ID override, with `mode:"FIXED"`.                                                                   |
+| AI_BEST_APPLICABLE; options                                                            | Existing bounded provider-current catalogue page independently of selection checkboxes, with the actual configured mode.                                                          |
+| NONE; details, or FIXED details outside the current permitted set                      | Outer `ERROR`, `code:"DENIED"`, `retryable:false`. No facts escape the configured scope.                                                                                          |
+| Authorized details ID has no qualifying same-shop record                               | Existing `OK` data `{details:null}`. Wrong-shop IDs never expose another shop's record.                                                                                           |
+| Authorized record exists                                                               | Existing exact offer/condition projection; unsupported or missing source observations stay PARTIAL/UNKNOWN.                                                                       |
+| Invalid/expired/tampered/cross-shop/cross-mode cursor                                  | Existing typed invalid-input rejection. A cursor from a prior mode is not accepted by the NONE branch.                                                                            |
+| Missing/malformed/unavailable shop configuration or failed shop/provider authorization | Existing hard outer error; never fabricate NONE, empty offers or optional absence.                                                                                                |
 
 Preserve the accepted catalogue keyset algorithm, shop/mode/FIXED-policy/generation binding, expiry, actual page boundaries and generation-change error. Current provider status, dates and unavailability remain data filters; no provider HTTP, basket/applicability evaluator or new options-filter argument is added. Both structuredContent and text serialize the same validated result; isError is true exactly for outer ERROR. NONE's successful empty options result does not cause Background to call it: the host owns whether a tool should run.
 
@@ -416,10 +465,10 @@ Implementation **`11fba27f458309930f0809ee3f556851c3d59ba4`** is committed and p
 
 ### Mandatory correction checklist
 
-| Requested correction | Changed implementation and verification |
-| --- | --- |
-| Typed category error assertions | `tests/integration/shop-product-discovery.integration.test.ts` now checks `McpRequestError`, `code` and `reason` for missing corpus/non-English corpus and wrong version/unknown category. It preserves the successful exact English join. Production error messages are unchanged. Integration typechecking passes; persisted cases await the developer rerun. |
-| Valid FIXED-mode state | The same scenario sets a valid same-shop `fixedShopifyDiscountId` on entering FIXED, changes it alongside the availability selection, and clears it when leaving FIXED for AI/NONE. This matches `ck_arch016_shop_settings_fixed_offer` without modifying the constraint. Existing details denial, selection changes, AI pagination, cross-shop/cross-mode cursors and exact override expiry assertions remain. Integration typechecking passes; PostgreSQL execution remains pending. |
+| Requested correction                    | Changed implementation and verification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typed category error assertions         | `tests/integration/shop-product-discovery.integration.test.ts` now checks `McpRequestError`, `code` and `reason` for missing corpus/non-English corpus and wrong version/unknown category. It preserves the successful exact English join. Production error messages are unchanged. Integration typechecking passes; persisted cases await the developer rerun.                                                                                                                                                                                                                                                        |
+| Valid FIXED-mode state                  | The same scenario sets a valid same-shop `fixedShopifyDiscountId` on entering FIXED, changes it alongside the availability selection, and clears it when leaving FIXED for AI/NONE. This matches `ck_arch016_shop_settings_fixed_offer` without modifying the constraint. Existing details denial, selection changes, AI pagination, cross-shop/cross-mode cursors and exact override expiry assertions remain. Integration typechecking passes; PostgreSQL execution remains pending.                                                                                                                                 |
 | Missing published capability root cause | The generic seeded policy fixture used `{{ result.values }}`, a field absent from the product policy output schema. `supportedShopifyCoreDefinition` therefore correctly rejected the fixture at its template validation boundary. A new shared test fixture, `tests/fixtures/product-search-published.ts`, defines version 2.0.0 `products.search` operation 1.0.0 with bounded input mapping and `result.products` rendering. `tests/integration/fixtures.ts` adopts it through an explicit option for this scenario and persists revision version 2.0.0. Other fixture consumers retain their existing definitions. |
 
 The new `tests/unit/runtime/service-ports.test.ts` regression proves the invalid output-field template is rejected, the corrected shared fixture passes the actual core validator, and the actual registry advertises the published capability/descriptor without a permissive definitions stub or provider call. Merchant preference revocation still removes the capability and restoration advertises it again. This establishes fixture drift at the executable-definition boundary; no production eligibility relaxation was needed.
@@ -430,16 +479,16 @@ The PostgreSQL scenario now requires the exact full tools/list result and select
 
 Commands ran from the canonical implementation worktree with the prescribed bootstrap: Node 24.19.0, npm 11.17.0, Prisma 6.19.3.
 
-| Command/check | Observed result |
-| --- | --- |
-| Focused `tests/unit/runtime/service-ports.test.ts` | **7 passed**, no failures/skips; `/tmp/mcp002-a3-registry.log` |
-| Required product/provider/category/cursor group from Validation | **76 passed**, no failures/skips; `/tmp/mcp002-a3-products.log` |
+| Command/check                                                           | Observed result                                                  |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Focused `tests/unit/runtime/service-ports.test.ts`                      | **7 passed**, no failures/skips; `/tmp/mcp002-a3-registry.log`   |
+| Required product/provider/category/cursor group from Validation         | **76 passed**, no failures/skips; `/tmp/mcp002-a3-products.log`  |
 | Required catalogue/capability/protocol/runtime group plus service tests | **76 passed**, no failures/skips; `/tmp/mcp002-a3-discounts.log` |
-| `npm run typecheck` | PASS; `/tmp/mcp002-a3-typecheck.log` |
-| `npm run typecheck:integration` | PASS; `/tmp/mcp002-a3-typecheck-integration.log` |
-| `npm run lint` | PASS; `/tmp/mcp002-a3-lint.log` |
-| `npm run build` | PASS; `/tmp/mcp002-a3-build.log` |
-| `git diff --check` | PASS |
+| `npm run typecheck`                                                     | PASS; `/tmp/mcp002-a3-typecheck.log`                             |
+| `npm run typecheck:integration`                                         | PASS; `/tmp/mcp002-a3-typecheck-integration.log`                 |
+| `npm run lint`                                                          | PASS; `/tmp/mcp002-a3-lint.log`                                  |
+| `npm run build`                                                         | PASS; `/tmp/mcp002-a3-build.log`                                 |
+| `git diff --check`                                                      | PASS                                                             |
 
 The two required groups contain **152 passing tests total**; the separate seven-test check is overlapping evidence, not added again. No Docker suite was run by the agent this attempt.
 
@@ -495,15 +544,15 @@ Added `tests/integration/shop-product-discovery.integration.test.ts` to the exis
 
 All commands ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002` after the required Node bootstrap: Node 24.19.0, npm 11.17.0, Prisma 6.19.3.
 
-| Check | Observed result |
-| --- | --- |
-| Required product/provider/category/cursor group | **76 passed, 0 failed, 0 skipped**; `/tmp/mcp002-a2-products-final.log` |
+| Check                                                                    | Observed result                                                          |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Required product/provider/category/cursor group                          | **76 passed, 0 failed, 0 skipped**; `/tmp/mcp002-a2-products-final.log`  |
 | Required catalogue/capability/protocol/runtime group, plus service tests | **75 passed, 0 failed, 0 skipped**; `/tmp/mcp002-a2-discounts-final.log` |
-| `npm run typecheck` | PASS; `/tmp/mcp002-a2-typecheck-final.log` |
-| `npm run typecheck:integration` | PASS; `/tmp/mcp002-a2-typecheck-integration-final.log` |
-| `npm run lint` | PASS; `/tmp/mcp002-a2-lint-final.log` |
-| `npm run build` | PASS; `/tmp/mcp002-a2-build-final.log` |
-| `git diff --check` | PASS |
+| `npm run typecheck`                                                      | PASS; `/tmp/mcp002-a2-typecheck-final.log`                               |
+| `npm run typecheck:integration`                                          | PASS; `/tmp/mcp002-a2-typecheck-integration-final.log`                   |
+| `npm run lint`                                                           | PASS; `/tmp/mcp002-a2-lint-final.log`                                    |
+| `npm run build`                                                          | PASS; `/tmp/mcp002-a2-build-final.log`                                   |
+| `git diff --check`                                                       | PASS                                                                     |
 
 Initial integration types identified two missing override fixture fields, which were supplied before the passing rerun. Initial lint identified four task-local findings, all corrected before the passing rerun. These superseded failures are not presented as baseline limitations. No full PostgreSQL or aggregate integration pass is claimed.
 
@@ -539,14 +588,15 @@ Committed and pushed all 40 task-owned source/test draft files on the existing i
 The task requires verifying canonical built-in hashes against the installed schemas with Node SHA-256. That assertion fails for **both** frozen Shared 4.0.0 discount descriptors. The independent fresh-process calculation uses only installed package exports:
 
 ```js
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 import {
   commerceDiscountBuiltInDescriptors,
   commerceBuiltInToolContractPayload,
-} from '@modainteract/moda-interact-shared/commerce';
+} from "@modainteract/moda-interact-shared/commerce";
 for (const descriptor of commerceDiscountBuiltInDescriptors) {
-  const observed = createHash('sha256')
-    .update(commerceBuiltInToolContractPayload(descriptor)).digest('hex');
+  const observed = createHash("sha256")
+    .update(commerceBuiltInToolContractPayload(descriptor))
+    .digest("hex");
   if (observed !== descriptor.contractHash) process.exitCode = 1;
 }
 ```
@@ -648,7 +698,6 @@ Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; 
 Dependency gate passed MCP-001 Complete. Parent prepared head `bb7f06ccc391b8d6bf82142abd6bf0478a9e0c56`; claim **`f4250e2e68a71626b36c456e901077fec656fb96`**, pushed, executor codex, Attempt 1 at `2026-11-04T15:08:56Z`. Implementation HEAD remains **`469a00fbbbf1e5fb4499b19c92c158f156786633`** with the local draft described above. Only this task report is committed in the parent; no implementation gitlink/index/architecture/Architect Review change is made. Downstream tasks are not promoted.
 
 ## Definition-time Completion Report (historical)
-
 
 ### Status
 

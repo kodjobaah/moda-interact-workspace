@@ -86,18 +86,22 @@ STOP if equivalent refund message codes already exist with different values/sema
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `src/billing.test.ts`
 - `docs/decisions/shared/ARCH-010/SHARED-005-topup-refund-system-message-contracts.md`
 
 ### Work Completed
+
 - Reused the existing `BILLING_SYSTEM_MESSAGE_CODES` entries and `BillingSystemMessageCodeSchema` values for all three required refund codes; no duplicate registry or source constants were introduced.
 - Added focused acceptance coverage for the exact refund values, schema parsing, deterministic `RecoveryCreditRefund.id`-style source keys, and bounded long shop/refund identifiers.
 - Existing cancellation, WhatsApp, and other billing contract coverage remains unchanged.
 
 ### Validation Results
+
 - `npm test -- --test-name-pattern='top-up refund'` passed: 107 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured; the refund acceptance test passed.
 - `npm run typecheck` passed.
 - `npm run build` passed, including the public billing entrypoint declarations.
@@ -105,6 +109,7 @@ Ready for Review.
 - `npm ci` installed the repository lockfile dependencies in the new worktree; npm reported one low-severity audit finding and pending install-script approvals, with no task-source impact.
 
 ### Git / VCS
+
 - Task branch: `task/ARCH-010-SHARED-005`.
 - Physical worktree isolation:
   - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
@@ -169,4 +174,3 @@ contains earlier parent claim/review commit evidence; this is not an acceptance 
 the final parent commit cannot durably embed its own final hash.
 
 `ARCH-010-SHARED-006` depends only on this task and is therefore promoted to `ready`.
-

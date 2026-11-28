@@ -88,6 +88,7 @@ tests/feature-authoring.test.ts
 ```
 
 The current 19 diagnostics are:
+
 - 2 renderer narrowing errors reading `operation` / `operationVersion` from the wrong execution variant;
 - 16 test typing errors reading `disabled` from values typed only as `HTMLElement`;
 - 1 Feature-authoring fixture typing error where the mocked `featureModel.findUnique` result is incomplete for the current selected shape.

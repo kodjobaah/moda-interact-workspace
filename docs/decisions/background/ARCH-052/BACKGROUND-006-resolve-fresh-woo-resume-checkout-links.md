@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables: []
-created: '2026-10-29'
-updated: '2026-10-29'
+created: "2026-10-29"
+updated: "2026-10-29"
 ---
 
 # ARCH-052-BACKGROUND-006: Resolve fresh authenticated Woo restore links at initial send preparation
@@ -119,7 +119,6 @@ None established by implementation.
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
-
 
 ## Architect Review
 

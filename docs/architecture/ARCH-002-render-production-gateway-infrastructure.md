@@ -692,7 +692,6 @@ Third-party operational telemetry remains subject to the internal observability
 access boundary and must not be exposed through tenant-facing or public
 interfaces.
 
-
 ### Framework-First Telemetry Reuse
 
 Trusted third-party telemetry should be reused rather than duplicated.
@@ -736,55 +735,55 @@ as owner-specific tasks by `moda_architect`.
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|------|-------|--------|------------|
-| ARCH-002-GATEWAY-001 | moda_gateway | Complete | - |
-| ARCH-002-GATEWAY-002 | moda_gateway | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-001 | moda_app | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-002 | moda_app | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-003 | moda_app | Superseded | SHOPIFY-006/007 |
-| ARCH-002-SHOPIFY-004 | moda_app | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-006 | moda_app | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-SHOPIFY-007 | moda_app | Complete | ARCH-002-SHOPIFY-006 |
-| ARCH-002-SHOPIFY-008 | moda_app | Complete | ARCH-002-SHOPIFY-002 |
-| ARCH-002-MESSAGING-001 | moda_messaging | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-MESSAGING-002 | moda_messaging | Superseded | MESSAGING-003/004/005 |
-| ARCH-002-MESSAGING-003 | moda_messaging | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-MESSAGING-004 | moda_messaging | Complete | ARCH-002-MESSAGING-003 |
-| ARCH-002-MESSAGING-005 | moda_messaging | Complete | ARCH-002-MESSAGING-003 |
-| ARCH-002-ADMIN-001 | moda_admin | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-ADMIN-002 | moda_admin | Superseded | ADMIN-009/010 |
-| ARCH-002-DATABASE-001 | moda_database | Complete | - |
-| ARCH-002-ADMIN-003 | moda_admin | Complete | ARCH-002-DATABASE-001 |
-| ARCH-002-ADMIN-005 | moda_admin | Complete | ARCH-002-ADMIN-003 |
-| ARCH-002-ADMIN-006 | moda_admin | Complete | ARCH-002-ADMIN-003 |
-| ARCH-002-ADMIN-007 | moda_admin | Complete | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005 |
-| ARCH-002-ADMIN-008 | moda_admin | Complete | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007 |
-| ARCH-002-ADMIN-004 | moda_admin | Complete | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006 |
-| ARCH-002-ADMIN-009 | moda_admin | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-ADMIN-010 | moda_admin | Superseded | Duplicate of standard framework/OpenTelemetry HTTP request telemetry |
-| ARCH-002-ADMIN-011 | moda_admin | Complete | ARCH-002-ADMIN-005 |
-| ARCH-002-BACKGROUND-001 | moda_background | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-BACKGROUND-002 | moda_background | Complete | ARCH-002-BACKGROUND-001 |
-| ARCH-002-BACKGROUND-003 | moda_background | Superseded | Replaced by BACKGROUND-005/006/007/008/009 |
-| ARCH-002-BACKGROUND-004 | moda_background | Complete | ARCH-002-GATEWAY-001 |
-| ARCH-002-GATEWAY-005 | moda_gateway | Complete | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
-| ARCH-002-GATEWAY-006 | moda_gateway | Complete | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005 |
-| ARCH-002-GATEWAY-007 | moda_gateway | Complete | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008 |
-| ARCH-002-GATEWAY-008 | moda_gateway | Complete | ARCH-002-GATEWAY-003, ARCH-002-ADMIN-004, ARCH-002-ADMIN-009 |
-| ARCH-002-GATEWAY-009 | moda_gateway | Pending | ARCH-002-GATEWAY-003, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-010 |
-| ARCH-002-GATEWAY-010 | moda_gateway | Ready | ARCH-002-GATEWAY-008 |
-| ARCH-002-GATEWAY-003 | moda_gateway | Complete | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
-| ARCH-002-GATEWAY-004 | moda_gateway | Complete | ARCH-002-GATEWAY-003 |
-| ARCH-002-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-008 |
-| ARCH-002-SYSTEM-TEST-002 | moda_system_test | Complete | ARCH-002-SHOPIFY-007, ARCH-002-BACKGROUND-007, ARCH-002-BACKGROUND-009, ARCH-002-MESSAGING-004, ARCH-002-MESSAGING-005, ARCH-002-ADMIN-009, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-004, ARCH-002-SYSTEM-TEST-003, ARCH-002-SYSTEM-TEST-004, ARCH-002-SYSTEM-TEST-005 |
-| ARCH-002-SYSTEM-TEST-003 | moda_system_test | Complete | - |
-| ARCH-002-SYSTEM-TEST-004 | moda_system_test | Complete | ARCH-002-BACKGROUND-010 |
-| ARCH-002-SYSTEM-TEST-005 | moda_system_test | Complete | - |
-| ARCH-002-SYSTEM-TEST-006 | moda_system_test | Complete | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004, ARCH-002-SHOPIFY-008, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-010 |
-| ARCH-002-SYSTEM-TEST-007 | moda_system_test | Complete | ARCH-002-GATEWAY-004 |
-| ARCH-002-SYSTEM-TEST-008 | moda_system_test | Pending | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-009 |
-| ARCH-002-SYSTEM-TEST-009 | moda_system_test | Pending | ARCH-002-GATEWAY-010, ARCH-002-SYSTEM-TEST-007 |
+| Task                     | Owner            | Status     | Depends On                                                                                                                                                                                                                                                           |
+| ------------------------ | ---------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-002-GATEWAY-001     | moda_gateway     | Complete   | -                                                                                                                                                                                                                                                                    |
+| ARCH-002-GATEWAY-002     | moda_gateway     | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-001     | moda_app         | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-002     | moda_app         | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-003     | moda_app         | Superseded | SHOPIFY-006/007                                                                                                                                                                                                                                                      |
+| ARCH-002-SHOPIFY-004     | moda_app         | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-006     | moda_app         | Complete   | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-SHOPIFY-007     | moda_app         | Complete   | ARCH-002-SHOPIFY-006                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-008     | moda_app         | Complete   | ARCH-002-SHOPIFY-002                                                                                                                                                                                                                                                 |
+| ARCH-002-MESSAGING-001   | moda_messaging   | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-MESSAGING-002   | moda_messaging   | Superseded | MESSAGING-003/004/005                                                                                                                                                                                                                                                |
+| ARCH-002-MESSAGING-003   | moda_messaging   | Complete   | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-MESSAGING-004   | moda_messaging   | Complete   | ARCH-002-MESSAGING-003                                                                                                                                                                                                                                               |
+| ARCH-002-MESSAGING-005   | moda_messaging   | Complete   | ARCH-002-MESSAGING-003                                                                                                                                                                                                                                               |
+| ARCH-002-ADMIN-001       | moda_admin       | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-ADMIN-002       | moda_admin       | Superseded | ADMIN-009/010                                                                                                                                                                                                                                                        |
+| ARCH-002-DATABASE-001    | moda_database    | Complete   | -                                                                                                                                                                                                                                                                    |
+| ARCH-002-ADMIN-003       | moda_admin       | Complete   | ARCH-002-DATABASE-001                                                                                                                                                                                                                                                |
+| ARCH-002-ADMIN-005       | moda_admin       | Complete   | ARCH-002-ADMIN-003                                                                                                                                                                                                                                                   |
+| ARCH-002-ADMIN-006       | moda_admin       | Complete   | ARCH-002-ADMIN-003                                                                                                                                                                                                                                                   |
+| ARCH-002-ADMIN-007       | moda_admin       | Complete   | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005                                                                                                                                                                                                          |
+| ARCH-002-ADMIN-008       | moda_admin       | Complete   | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007                                                                                                                                                                                       |
+| ARCH-002-ADMIN-004       | moda_admin       | Complete   | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006                                                                                                                                                                                                                             |
+| ARCH-002-ADMIN-009       | moda_admin       | Complete   | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-ADMIN-010       | moda_admin       | Superseded | Duplicate of standard framework/OpenTelemetry HTTP request telemetry                                                                                                                                                                                                 |
+| ARCH-002-ADMIN-011       | moda_admin       | Complete   | ARCH-002-ADMIN-005                                                                                                                                                                                                                                                   |
+| ARCH-002-BACKGROUND-001  | moda_background  | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-BACKGROUND-002  | moda_background  | Complete   | ARCH-002-BACKGROUND-001                                                                                                                                                                                                                                              |
+| ARCH-002-BACKGROUND-003  | moda_background  | Superseded | Replaced by BACKGROUND-005/006/007/008/009                                                                                                                                                                                                                           |
+| ARCH-002-BACKGROUND-004  | moda_background  | Complete   | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-GATEWAY-005     | moda_gateway     | Complete   | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004                                                                                                                                                                                                  |
+| ARCH-002-GATEWAY-006     | moda_gateway     | Complete   | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005                                                                                                                                                      |
+| ARCH-002-GATEWAY-007     | moda_gateway     | Complete   | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008                                                                                                                                                                                                                             |
+| ARCH-002-GATEWAY-008     | moda_gateway     | Complete   | ARCH-002-GATEWAY-003, ARCH-002-ADMIN-004, ARCH-002-ADMIN-009                                                                                                                                                                                                         |
+| ARCH-002-GATEWAY-009     | moda_gateway     | Pending    | ARCH-002-GATEWAY-003, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-010                                                                                                                                                                                                     |
+| ARCH-002-GATEWAY-010     | moda_gateway     | Ready      | ARCH-002-GATEWAY-008                                                                                                                                                                                                                                                 |
+| ARCH-002-GATEWAY-003     | moda_gateway     | Complete   | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002                 |
+| ARCH-002-GATEWAY-004     | moda_gateway     | Complete   | ARCH-002-GATEWAY-003                                                                                                                                                                                                                                                 |
+| ARCH-002-SYSTEM-TEST-001 | moda_system_test | Pending    | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-008                                                                                                                                                               |
+| ARCH-002-SYSTEM-TEST-002 | moda_system_test | Complete   | ARCH-002-SHOPIFY-007, ARCH-002-BACKGROUND-007, ARCH-002-BACKGROUND-009, ARCH-002-MESSAGING-004, ARCH-002-MESSAGING-005, ARCH-002-ADMIN-009, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-004, ARCH-002-SYSTEM-TEST-003, ARCH-002-SYSTEM-TEST-004, ARCH-002-SYSTEM-TEST-005 |
+| ARCH-002-SYSTEM-TEST-003 | moda_system_test | Complete   | -                                                                                                                                                                                                                                                                    |
+| ARCH-002-SYSTEM-TEST-004 | moda_system_test | Complete   | ARCH-002-BACKGROUND-010                                                                                                                                                                                                                                              |
+| ARCH-002-SYSTEM-TEST-005 | moda_system_test | Complete   | -                                                                                                                                                                                                                                                                    |
+| ARCH-002-SYSTEM-TEST-006 | moda_system_test | Complete   | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004, ARCH-002-SHOPIFY-008, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-010                                                                                                                                     |
+| ARCH-002-SYSTEM-TEST-007 | moda_system_test | Complete   | ARCH-002-GATEWAY-004                                                                                                                                                                                                                                                 |
+| ARCH-002-SYSTEM-TEST-008 | moda_system_test | Pending    | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-009                                                                                                                                                               |
+| ARCH-002-SYSTEM-TEST-009 | moda_system_test | Pending    | ARCH-002-GATEWAY-010, ARCH-002-SYSTEM-TEST-007                                                                                                                                                                                                                       |
 
 `ARCH-002-GATEWAY-003` and `ARCH-002-GATEWAY-004` are Complete.
 
@@ -904,7 +903,6 @@ not duplicate or silently override them.
   validator to the new concrete resource names;
 - `SYSTEM-TEST-008` now also waits for SYSTEM-TEST-009.
 
-
 ### 2026-09-03 — Render test custom domains
 
 - the Render test gateway is live at
@@ -919,7 +917,6 @@ not duplicate or silently override them.
 - `SYSTEM-TEST-006` remains Blocked until the Blueprint is synchronized,
   domains are verified/TLS-enabled, test services are healthy and live test
   inputs are supplied.
-
 
 ### 2026-09-03 — Render test Admin build failure
 
@@ -937,7 +934,6 @@ not duplicate or silently override them.
 - deployed topology validation `SYSTEM-TEST-006` remains Blocked until the
   Admin test service is healthy and its live environment inputs are available.
 
-
 ### 2026-09-03 — Render test Shopify build failure
 
 - deployment of `moda-interact-test` exposed a Docker build dependency-order
@@ -953,7 +949,6 @@ not duplicate or silently override them.
   `moda-interact-test` must now use the corrected image contract;
 - `SYSTEM-TEST-006` remains Blocked until that deployment is healthy and the
   five live test inputs are available.
-
 
 ### 2026-08-29
 
@@ -1041,7 +1036,6 @@ Reformatted the original ARCH-002 gateway bundle to the current
 - removed stale index references to the old single `render.yaml`,
   workspace-root production build model and not-yet-created system-test task.
 
-
 ### 2026-08-31 — Admin Render/control-plane routing and Grafana presentation
 
 - confirmed `moda-interact-admin` remains a private Render HTTP service rather
@@ -1063,6 +1057,7 @@ Reformatted the original ARCH-002 gateway bundle to the current
   gateway upstreams.
 
 <!-- ARCH-002-SHARED-LOGGING-AMENDMENT:START -->
+
 ## Shared Structured Logging Amendment
 
 Generic structured application logging is owned by:
@@ -1087,7 +1082,6 @@ Consumer guide:
 
 <!-- ARCH-002-SHARED-LOGGING-AMENDMENT:END -->
 
-
 ### 2026-08-31 — Admin security decomposition
 
 See `docs/architecture/ARCH-002-admin-security-amendment.md`. The former broad ADMIN-003 security task is decomposed into DATABASE-001 and ADMIN-003/005/006/007/008. Development auth bypass is allowed only for the development deployment environment and never in a production Node process.
@@ -1097,7 +1091,6 @@ See `docs/architecture/ARCH-002-admin-security-amendment.md`. The former broad A
 See `docs/architecture/ARCH-002-shared-observability-runtime-amendment.md` and
 the durable consumer contract at
 `docs/observability/shared-observability-runtime.md`.
-
 
 ### 2026-08-31 — Shared observability release `0.4.0` and granular consumer rollout
 
@@ -1121,7 +1114,6 @@ granular semantic telemetry gates plus the accepted observability transport mode
 but integrated observability validation must also wait for the infrastructure
 validation gate that establishes the integrated test topology.
 
-
 ### 2026-09-02 — Observability coordination reconciliation
 
 `ARCH-002-SYSTEM-TEST-002` remains Pending on SHOPIFY-007, MESSAGING-004,
@@ -1129,7 +1121,6 @@ MESSAGING-005, ADMIN-009, BACKGROUND-007, BACKGROUND-009, GATEWAY-006 and
 GATEWAY-004. GATEWAY-004 is required because SYSTEM-TEST-002 validates the
 integrated test topology rather than only repository-local telemetry.
 Superseded ADMIN-010 and BACKGROUND-003 must not satisfy active dependencies.
-
 
 ### 2026-09-02 — GATEWAY-006 dependency reconciliation
 
@@ -1192,7 +1183,6 @@ integrated test topology, and ARCH-002 rollout places integration/system
 validation after the test Blueprint/infrastructure gate. It therefore also
 depends on `ARCH-002-GATEWAY-004`.
 
-
 ### 2026-09-02 — DATABASE-001 architect acceptance
 
 - accepted `ARCH-002-DATABASE-001` as Complete;
@@ -1201,7 +1191,6 @@ depends on `ARCH-002-GATEWAY-004`.
   submodule target;
 - once publication is confirmed, `ADMIN-003` becomes the next task on the
   platform-admin security critical path.
-
 
 ### 2026-09-02 — DATABASE-001 publication gate satisfied
 
@@ -1221,7 +1210,6 @@ Consequences:
 - `ARCH-002-ADMIN-003` is promoted `Pending -> Ready`;
 - `ADMIN-003` must pin its nested database submodule to `9a286b7`;
 - no downstream Admin task is promoted automatically.
-
 
 ### 2026-09-02 — ADMIN-003 architect acceptance
 
@@ -1256,7 +1244,6 @@ acceptance.
 No downstream task is promoted or started automatically by this acceptance.
 The ARCH-002 executable frontier must be re-evaluated separately.
 
-
 ### 2026-09-02 — ADMIN-005 architect acceptance
 
 `ARCH-002-ADMIN-005` is architect-accepted Complete.
@@ -1282,7 +1269,6 @@ publication after architect acceptance.
 
 No downstream task is promoted or started automatically by this acceptance.
 
-
 ### 2026-09-02 — ADMIN-006 architect acceptance
 
 `ARCH-002-ADMIN-006` is architect-accepted Complete.
@@ -1298,7 +1284,6 @@ publication after architect acceptance.
 
 No downstream task is promoted or started automatically by this acceptance.
 
-
 ### 2026-09-02 — ADMIN-007 ready
 
 All explicit direct dependencies are architect-accepted Complete:
@@ -1313,7 +1298,6 @@ ARCH-002-SHARED-005
 
 This promotion does not start the task automatically and does not promote
 `ADMIN-008`.
-
 
 ### 2026-09-02 — ADMIN-007 architect acceptance
 
@@ -1336,7 +1320,6 @@ publication after architect acceptance.
 
 No downstream task is promoted or started automatically by this acceptance.
 
-
 ### 2026-09-02 — ADMIN-008 ready
 
 All explicit direct dependencies are architect-accepted Complete:
@@ -1356,7 +1339,6 @@ security boundary.
 
 Repository-agent Git publication remains prohibited; the developer/user owns
 commit and push after architect review.
-
 
 ### 2026-09-02 — ADMIN-008 attempt 2 ready
 
@@ -1384,7 +1366,6 @@ direct-mutation, environment and deployment matrix.
 
 Repository-agent commit/push remains prohibited; the developer/user owns
 publication after architect acceptance.
-
 
 ### 2026-09-02 — ADMIN-008 architect accepted
 
@@ -1476,7 +1457,6 @@ unlocks another unresolved direct `GATEWAY-003` prerequisite
 
 No Ready task is started automatically.
 
-
 ### 2026-09-02 — GATEWAY-005 architect accepted
 
 `ARCH-002-GATEWAY-005` is Complete.
@@ -1522,7 +1502,6 @@ ADMIN-001 -----+
 
 No downstream task is started automatically.
 
-
 ### 2026-09-02 — GATEWAY-007 architect accepted
 
 `ARCH-002-GATEWAY-007` is Complete.
@@ -1564,7 +1543,6 @@ ADMIN-001 -------+
 ```
 
 No downstream task is started automatically.
-
 
 ### 2026-09-02 — Isolated system-test dependency infrastructure
 
@@ -1638,7 +1616,6 @@ SYSTEM-TEST-004 Ready ---+        ^
 These tasks do not change the remaining `GATEWAY-003` implementation
 prerequisites and are not started automatically.
 
-
 ### 2026-09-02 — MESSAGING-001 architect accepted
 
 `ARCH-002-MESSAGING-001` is Complete.
@@ -1678,7 +1655,6 @@ ARCH-002-GATEWAY-004
 
 No downstream task is started automatically.
 
-
 ### 2026-09-02 — ADMIN-001 architect accepted
 
 `ARCH-002-ADMIN-001` is Complete.
@@ -1713,7 +1689,6 @@ inspect the authoritative current task file and re-evaluate only its explicit
 
 No downstream task is started automatically.
 
-
 ### 2026-09-02 — GATEWAY-003 Ready
 
 The authoritative `ARCH-002-GATEWAY-003` direct dependency list was
@@ -1730,7 +1705,6 @@ ARCH-002-GATEWAY-003
 
 This coordination change does not claim the task and does not start
 `GATEWAY-004`.
-
 
 ### 2026-09-02 — GATEWAY-003 architect accepted
 
@@ -1760,7 +1734,6 @@ ARCH-002-GATEWAY-004
 ```
 
 No downstream task is automatically claimed.
-
 
 ### 2026-09-02 — GATEWAY-004 architect accepted
 
@@ -1794,7 +1767,6 @@ SYSTEM-TEST-004 Ready ---+        ^
 No system-test task is automatically started or promoted without re-reading its
 authoritative direct dependency list.
 
-
 ### 2026-09-02 — SYSTEM-TEST-003 architect accepted
 
 `ARCH-002-SYSTEM-TEST-003` is Complete.
@@ -1822,7 +1794,6 @@ ARCH-002-SYSTEM-TEST-004
 
 Integrated `SYSTEM-TEST-001` and `SYSTEM-TEST-002` remain Pending until all of
 their explicit direct prerequisites are Complete.
-
 
 ### 2026-09-02 — SYSTEM-TEST-004 consumer preflight blocker
 
@@ -1868,7 +1839,6 @@ No test-only network interception is approved.
 `SYSTEM-TEST-004` may resume only after `BACKGROUND-010` is
 architect-accepted Complete and the architect changes it `blocked -> ready`.
 
-
 ### 2026-09-02 — BACKGROUND-010 accepted; SYSTEM-TEST-004 unblocked
 
 `ARCH-002-BACKGROUND-010` is Complete.
@@ -1889,7 +1859,6 @@ SYSTEM-TEST-004 Ready
 
 Integrated `SYSTEM-TEST-001` and `SYSTEM-TEST-002` remain Pending until all of
 their explicit direct prerequisites are Complete.
-
 
 ### 2026-09-02 — SYSTEM-TEST-004 architect accepted
 
@@ -1925,7 +1894,6 @@ ARCH-002-ADMIN-004
 
 No integrated system-test task is automatically claimed.
 
-
 ### 2026-09-03 — ADMIN-004 architect accepted; SYSTEM-TEST-001 ready
 
 `ARCH-002-ADMIN-004` is Complete after architect review of the actual Admin
@@ -1945,7 +1913,6 @@ ARCH-002-SYSTEM-TEST-001
 `ARCH-002-SYSTEM-TEST-002` also remains Ready. Neither system-test task is
 automatically claimed. ARCH-002 remains In Progress until the required
 integrated validation/capacity gates are reviewed and accepted.
-
 
 ### 2026-09-03 — SYSTEM-TEST-002 attempt 1 blocked; ADMIN-009 validation correction
 
@@ -1983,7 +1950,6 @@ Admin runtime/exporter configuration or OTLP/environment wiring.
 The valid SYSTEM-TEST-002 attempt-1 runner/evidence is preserved. After
 ADMIN-009 is architect-accepted Complete again, SYSTEM-TEST-002 may return to
 Ready for attempt 2. SYSTEM-TEST-001 remains independently Ready.
-
 
 ### 2026-09-03 — Add local ephemeral PostgreSQL prerequisite for SYSTEM-TEST-002
 
@@ -2039,7 +2005,6 @@ ARCH-002-SYSTEM-TEST-002  Blocked
 ```
 
 After SYSTEM-TEST-005 is architect-accepted Complete, SYSTEM-TEST-002 may be returned to Ready for attempt 2 using its preserved attempt-1 runner/evidence.
-
 
 ### 2026-09-03 — SYSTEM-TEST-005 attempt 2 accepted; SYSTEM-TEST-002 unblocked
 
@@ -2112,8 +2077,6 @@ This refactor does not change application/gateway runtime architecture and does
 not modify the approximately 22,000 Shopify webhook requests/minute reference
 target.
 
-
-
 ### 2026-09-04 — Add bounded Admin Redis queue monitor for Render checkout investigation
 
 The current developer investigation is focused on the deployed Shopify event path:
@@ -2145,7 +2108,6 @@ Blueprints.
 Successful Shopify jobs currently use `removeOnComplete: true`. The monitor must
 therefore not represent completed-job counts as durable processing history.
 Recent BullMQ event-stream activity is operational evidence only.
-
 
 ### 2026-09-04 — ADMIN-011 attempt 2 accepted
 

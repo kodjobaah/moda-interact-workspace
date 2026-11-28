@@ -14,17 +14,20 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ['ARCH-068-SHARED-001']
+depends_on: ["ARCH-068-SHARED-001"]
 enables: ["ARCH-068-SHARED-003"]
 created: 2026-11-09
 updated: 2026-11-09
 ---
+
 # Implement reusable Node product image preparation
 
 ## Architecture and objective
+
 Implement the owned portion of [binding ARCH-068](../../../architecture/ARCH-068-optional-conversation-product-image.md). The entire contract is normative, including exact schemas, transport/failure rules, initialization, rollout and acceptance matrix. Read it before execution.
 
 ## Context and scope
+
 New explicit entrypoint `@modainteract/moda-interact-shared/commerce/presentation/node`, backed by `src/commerce/presentation/node/index.ts`, product-image.ts and extracted generic media modules. Add package exports, tsup entry, declaration output, required AWS S3/sharp runtime dependencies and package-lock. Browser presentation barrel must not export/import the Node entrypoint.
 
 Public `prepareConversationProductImage({source,publicOrigin,bucketName,r2,signal})` returns READY with ConversationPreparedProductImage or OMITTED with reason CONFIGURATION_UNAVAILABLE|UNSAFE_IMAGE_SOURCE|SOURCE_UNAVAILABLE|IMAGE_TRANSFORM_FAILED|R2_UNAVAILABLE|PUBLIC_IMAGE_UNAVAILABLE|MEDIA_DEADLINE. r2 is `{endpoint,accessKeyId,secretAccessKey}` server-only; source is the SOURCE result above. Dependency-injected fetch/transform/S3/probe implementations and clock enable deterministic tests. Never log input config, URLs containing query strings, raw images or provider bodies.
@@ -36,9 +39,11 @@ Image processing uses existing safe image fetch semantics (DNS/private/loopback/
 Preparation budget is min(5000ms, remaining turn deadline minus1000ms); <=0 means omit without I/O. Hosts create one child signal covering fetch/transform/upload/probe and retain their original turn deadline. Source selection once, one preparation attempt per turn; no retries/modeltool budget increment for internal media preparation. Shared returns bounded stage/reason; hosts extend existing domain logs with shop/conversation/run, pair, omission/stage/duration and plan kind only.
 
 ## Interfaces and contracts
+
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
+
 - [x] Verify dependencies and current owned source against binding touch points.
 - [x] Implement every requirement in the owned scope and binding contract.
 - [x] Add deterministic success/failure/compatibility tests specified above.
@@ -46,15 +51,19 @@ The named exported schemas/APIs and exact JSON shapes in the binding contract ar
 - [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
+
 ARCH-068-SHARED-001
 
 ## Acceptance criteria
+
 All owned scope above is complete, exact contract tests pass and no TODO/placeholder or unresolved cross-service choice remains. For this Shared task, validate its owned source and built public exports; publication evidence is owned by SHARED-003; no sibling source imports/copied mechanics. Record actual changed paths and checks. Preserve existing grounded text, product identity, moderation/send fences, initial/proactive Meta flows.
 
 ## Out of Scope
+
 No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write, unrelated cleanup, budget increase, production mutation or automatic live initializer.
 
 ## Agent execution and review
+
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
@@ -135,9 +144,11 @@ No operational wrapper binding activation, rollout, public-object migration/dele
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1, 2026-11-09.
 
 ### Review Notes
+
 Independent moda_architect review of implementation `8f8a298de90803671b789ba0ef2fe03058a8023e` against baseline `df87e770a56db61617f1d9c2fd9397005add692d`, parent report `59435d21a0f2ef66edbf6adf2109ff5b0865da51`, accepted SHARED001, and the binding architecture. No required correction remains.
 
 Compared relocated code directly to immutable Background `db32bdf1e69944b0a15f7c76400f222f00244be4`: fetch differs only in its local network import; metadata verifier, brand presets and public probe are unchanged; product encoder preserves operations and adds optional cancellation; generic immutable writer removes host key/config adapters. Generic network policy retains DNS/IP/pinning protections. Four golden receipts preserve encoded bytes/hash/dimensions/MIME. Background adoption remains a separate published-package consumer task.
@@ -145,38 +156,42 @@ Compared relocated code directly to immutable Background `db32bdf1e69944b0a15f7c
 The thin coordinator uses the sole product preset, exact tenant/pair/content key, immutable reuse/collision checks and no-redirect byte/hash probe. Configuration failure, exhausted deadline and cancellation omit media; stages share one bounded signal, clock checks prevent late storage entry, and owned transports close. Omission outputs expose no source URLs, credentials, bytes or provider errors. No database/configuration lookup, send, new retry loop or application-source import is introduced. Browser barrel stays isolated from Node/native/SDK dependencies. Exact dependency pins match extraction provenance; package version is unchanged and no release occurred.
 
 ### Reviewed Files
+
 All 17 changed paths, including package/lock/tsup, Node exports, contracts/network/fetch/verifier/transforms/writer/probe/coordinator, extraction inventory, golden receipts, tests and public validator; original Background source comparison; task and architecture ownership/rollout requirements.
 
 ### Validation Reviewed
+
 Independent rerun in the canonical implementation worktree: **10/10 focused media tests**, `npm run typecheck`, and `npm run validate:conversation-product-image-node` all passed (exit0). Public validator imports the built Node entrypoint and bundles/executes the browser barrel without Node/sharp/AWS/host runtime dependencies or provider I/O. Inspected implementation evidence for full670 passes/3 existing opt-in skips, final ESM/DTS build/public consumer declarations, and 41 original Background regressions. No unresolved failure or additional broad rerun required.
 
 ### Architecture Conformance
+
 Conforms to this repository-owned scope and binding contract. Verified launcher-resolved dedicated parent/implementation worktrees on matching task branches, clean submitted states and matching pushed refs. Prepared claim `94e355ee0ddee92a54d3fcb387f22dff4855223f`, recorded start-of-attempt synchronization and recursive-submodule evidence are consistent with task history; no shared checkout substitution. Review made no implementation edits, implementation push, main merge, gitlink update, package publication, deployment or live operation.
 
 ### Follow-up
+
 No correction required. SHARED003 is the sole newly executable task: publication of both accepted Shared capabilities. Consumers remain gated on publication; system validation remains terminal/manual-gated. Host consumers must preserve child-signal/original-turn deadline semantics and replace Background generic bodies with published Shared imports as already required.
 
 ## Completion Decision — 2026-11-09
-The user explicitly authorized independent architect review and, if passing, completion and pushing the decision/frontier. Accepted Attempt1 above satisfies automatic completion: status Complete, executor/claimed_at null, attempt unchanged. Mechanical parent-branch commit/push is explicitly delegated. SHARED003 Pending→Ready, Attempt0 unclaimed; its release-only contract explicitly lists both accepted implementation prerequisites. Architecture remains In Progress. No follow-on execution or integration is implied.
 
+The user explicitly authorized independent architect review and, if passing, completion and pushing the decision/frontier. Accepted Attempt1 above satisfies automatic completion: status Complete, executor/claimed_at null, attempt unchanged. Mechanical parent-branch commit/push is explicitly delegated. SHARED003 Pending→Ready, Attempt0 unclaimed; its release-only contract explicitly lists both accepted implementation prerequisites. Architecture remains In Progress. No follow-on execution or integration is implied.
 
 ## Existing Background reuse inventory — mandatory, not a second pipeline
 
 Background already prepares both brand and checkout-product images. SHARED-002 relocates the existing generic implementation; BACKGROUND-001 switches its callers to the published implementation. Do not introduce a parallel fetcher, transformer, uploader or verifier.
 
-| Existing source under Background `src/services/` | Required disposition |
-|---|---|
-| `shop-brand-media/safe-fetch.ts`: `createSafeImageFetcher`, pinned HTTP/DNS implementation | Move generic implementation and its ports to Shared Node; keep a Background compatibility re-export. Both old paths and the conversation path use it. |
-| `shop-brand-media/metadata-verifier.ts`: `verifyEncodedBrandImage` | Move byte/metadata verification to Shared Node; compatibility re-export. |
-| `shop-brand-media/image-transformer.ts`: `assertSelfContainedSvg`, `createShopBrandImageTransformer` | Move existing SVG check and brand transform presets to Shared Node unchanged; compatibility re-export. Do not use the brand preset for product images. |
-| `recovery-product-media/product-image-transformer.ts`: `createOutreachProductImageTransformer` | Move this existing product preset to Shared Node unchanged and export it under the existing name. Conversation preparation calls this same function. Preserve 1125×600 JPEG, contain/white padding, orientation, sRGB, metadata stripping, quality steps `[86,76,66,56,46]`, 1MiB quality target and strict output `<5MiB`. Align the new prepared-image validator to this strict bound (`max(5*1024*1024-1)`). Keep compatibility re-export. |
-| `shop-brand-media/r2-writer.ts`: `createBrandR2S3Transport`, `putGuardedImmutableR2Object` | Move these existing generic transport/immutable PUT+HEAD functions and transport types to Shared Node. Preserve key predicate injection. Background brand/product wrappers retain their own accepted-key predicates. Conversation preparation passes its conversation-key predicate into this same writer. |
-| `shop-brand-media/public-probe.ts`: `createShopBrandPublicMediaProbe` | Move existing byte/hash probe to Shared Node with compatibility re-export. Preserve no-redirect public verification. |
-| `shop-brand-media/contracts.ts`, `merchant-knowledge-network-policy.ts` | Extract only transitive generic types/errors/security functions required above; keep domain/DB/configuration concerns in Background. Preserve exported compatibility names and error codes. |
-| `shop-brand-media/processor.ts`, `shop-brand-media-orchestration/*`, `shop-brand-media-runtime/*` | Remain Background orchestration. Update generic imports only; preserve role/source-generation/fingerprint checks and `shop-brands/` key behavior. |
-| `recovery-product-media/product-r2-writer.ts`, `outreach-product-object-key.ts`, `merchant-site-segment.ts` | Remain Background outreach adapters and identity/key policy. Use extracted common writer; preserve `outreach-products/` key format and all existing keys/URLs. |
-| `recovery-product-media/recovery-product-image-resolver.ts`: `RecoveryProductImageResolver` | Remain Background. Preserve live MCP product read, recovery/generation/attempt/recipient/sequence checks, 30s preparation budget and final `validateBeforeBinding` fence. Change generic imports only. Never fabricate an outreach attempt to call it from Studio or a conversational reply. |
-| `shop-brand-media/r2-config.ts` and platform configuration consumers | Keep configuration lookup/credential loading in Background. Shared receives validated configuration from each host and performs no Prisma/platform-setting reads. |
+| Existing source under Background `src/services/`                                                            | Required disposition                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shop-brand-media/safe-fetch.ts`: `createSafeImageFetcher`, pinned HTTP/DNS implementation                  | Move generic implementation and its ports to Shared Node; keep a Background compatibility re-export. Both old paths and the conversation path use it.                                                                                                                                                                                                                                                                                         |
+| `shop-brand-media/metadata-verifier.ts`: `verifyEncodedBrandImage`                                          | Move byte/metadata verification to Shared Node; compatibility re-export.                                                                                                                                                                                                                                                                                                                                                                      |
+| `shop-brand-media/image-transformer.ts`: `assertSelfContainedSvg`, `createShopBrandImageTransformer`        | Move existing SVG check and brand transform presets to Shared Node unchanged; compatibility re-export. Do not use the brand preset for product images.                                                                                                                                                                                                                                                                                        |
+| `recovery-product-media/product-image-transformer.ts`: `createOutreachProductImageTransformer`              | Move this existing product preset to Shared Node unchanged and export it under the existing name. Conversation preparation calls this same function. Preserve 1125×600 JPEG, contain/white padding, orientation, sRGB, metadata stripping, quality steps `[86,76,66,56,46]`, 1MiB quality target and strict output `<5MiB`. Align the new prepared-image validator to this strict bound (`max(5*1024*1024-1)`). Keep compatibility re-export. |
+| `shop-brand-media/r2-writer.ts`: `createBrandR2S3Transport`, `putGuardedImmutableR2Object`                  | Move these existing generic transport/immutable PUT+HEAD functions and transport types to Shared Node. Preserve key predicate injection. Background brand/product wrappers retain their own accepted-key predicates. Conversation preparation passes its conversation-key predicate into this same writer.                                                                                                                                    |
+| `shop-brand-media/public-probe.ts`: `createShopBrandPublicMediaProbe`                                       | Move existing byte/hash probe to Shared Node with compatibility re-export. Preserve no-redirect public verification.                                                                                                                                                                                                                                                                                                                          |
+| `shop-brand-media/contracts.ts`, `merchant-knowledge-network-policy.ts`                                     | Extract only transitive generic types/errors/security functions required above; keep domain/DB/configuration concerns in Background. Preserve exported compatibility names and error codes.                                                                                                                                                                                                                                                   |
+| `shop-brand-media/processor.ts`, `shop-brand-media-orchestration/*`, `shop-brand-media-runtime/*`           | Remain Background orchestration. Update generic imports only; preserve role/source-generation/fingerprint checks and `shop-brands/` key behavior.                                                                                                                                                                                                                                                                                             |
+| `recovery-product-media/product-r2-writer.ts`, `outreach-product-object-key.ts`, `merchant-site-segment.ts` | Remain Background outreach adapters and identity/key policy. Use extracted common writer; preserve `outreach-products/` key format and all existing keys/URLs.                                                                                                                                                                                                                                                                                |
+| `recovery-product-media/recovery-product-image-resolver.ts`: `RecoveryProductImageResolver`                 | Remain Background. Preserve live MCP product read, recovery/generation/attempt/recipient/sequence checks, 30s preparation budget and final `validateBeforeBinding` fence. Change generic imports only. Never fabricate an outreach attempt to call it from Studio or a conversational reply.                                                                                                                                                  |
+| `shop-brand-media/r2-config.ts` and platform configuration consumers                                        | Keep configuration lookup/credential loading in Background. Shared receives validated configuration from each host and performs no Prisma/platform-setting reads.                                                                                                                                                                                                                                                                             |
 
 New code is limited to conversation-specific source selection, the optional wrapper binding, a thin preparation coordinator using the relocated components, the conversation key predicate/key builder, delivery-plan handling, Studio display and Background media-send wiring. Distinct `conversation-products/` keys isolate conversational lifecycle from outreach-attempt keys; they do not require another bucket, credentials, uploader or transform preset. Existing public objects are not migrated, copied or deleted. Reusing image-processing code does not mean reusing a historical object's identity without fresh product verification.
 
@@ -187,21 +202,27 @@ Before SHARED-002 is accepted, record the original Background source commit and 
 This section resolves terminology in earlier sections; it does not authorize another implementation. The original Background product transformer is the only product preset. Its output is strictly less than 5MiB, uses contain/white padding (not crop), and retains its quality ladder. Host configuration readers and credential loading stay in their host repositories. Only the generic media operations move to Shared.
 
 Shared SHARED-001 also exports these exact strict provenance schemas, reusing the validators already defined above:
+
 ```ts
 export const ConversationProductPairSchema = z.strictObject({
-  productId: NativeProductId, variantId: NativeVariantId,
+  productId: NativeProductId,
+  variantId: NativeVariantId,
 });
 export const ConversationVerifiedProductsSchema = z.strictObject({
   shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
   products: z.array(CommerceProductSchema).max(3),
 });
 export const ConversationProductImageSourceSchema = z.strictObject({
-  kind: z.literal('SOURCE'), shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
-  productId: NativeProductId, variantId: NativeVariantId, sourceUrl: HttpsUrl,
+  kind: z.literal("SOURCE"),
+  shopId: BoundId,
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
+  productId: NativeProductId,
+  variantId: NativeVariantId,
+  sourceUrl: HttpsUrl,
 });
 ```
+
 Selector input is exactly `{shopId, platform, displayedPairs, verifiedProducts}`; displayedPairs is an array of ConversationProductPairSchema with maximum 3 and uniqueness by canonical productId/variantId tuple. Verified product array pairs must also be unique. Schema/provenance mismatch throws an Error with code PRODUCT_IMAGE_IDENTITY_INVALID; missing exact first pair returns PRODUCT_NOT_VERIFIED. No new native-ID format validation is introduced. This result is internal and is never accepted from a browser or model as proof of authorization. Shared task tests must cover WooCommerce simple products (`variantId:null`) and both platforms' native variant IDs.
 
 Plan construction first validates the body and binding. Omitted binding produces TEXT/BINDING_DISABLED. A present invalid binding throws PREPARED_INVALID; it cannot silently become text. With a valid binding, precedence is NO_PRESENTED_PRODUCT, CAPTION_TOO_LONG, IMAGE_UNAVAILABLE, IMAGE_IDENTITY_MISMATCH, then IMAGE success. Host source/preparation omissions are logged with their original reason; buildConversationDeliveryPlan's IMAGE_UNAVAILABLE is the delivery-level summary. IMAGE_IDENTITY_MISMATCH logs at error severity and never dispatches that URL. Source absence or optional preparation failure still allows valid text. Hosts skip media configuration/network work when the first two applicable omission conditions already determine TEXT.

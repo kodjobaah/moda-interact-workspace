@@ -19,7 +19,9 @@ enables: []
 created: 2026-09-06
 updated: 2026-09-06T17:30:00Z
 ---
+
 # ARCH-006-BACKGROUND-008: Adopt disposable integration-test infrastructure in Background
+
 ## Architecture
 
 Canonical: `docs/architecture/ARCH-006-merchant-communications-support-inbox.md`
@@ -29,6 +31,7 @@ Canonical: `docs/architecture/ARCH-006-merchant-communications-support-inbox.md`
 Make Background integration tests self-provision a fresh migrated PostgreSQL database and Redis instance through the published Shared testing harness, removing the normal requirement for manually configured `TEST_DATABASE_URL`/`TEST_REDIS_URL`.
 
 ## Context
+
 ## Out of Scope
 
 - translation production behavior;
@@ -75,6 +78,7 @@ npm run test:integration
 ```
 
 ## Dependencies
+
 ## Acceptance Criteria
 
 - [x] A developer with Docker but no local PostgreSQL/Redis test services can run the dedicated Background integration command successfully.
@@ -134,7 +138,6 @@ No new architectural concerns. The runner uses the shared lifecycle owner and le
 ### Review Status
 
 Ready for Architect Review.
-
 
 ## Architect Review
 

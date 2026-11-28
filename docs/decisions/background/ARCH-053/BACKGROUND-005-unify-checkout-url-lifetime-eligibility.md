@@ -74,10 +74,10 @@ Implementation support files needed by the listed paths may be adjusted only to 
 
 The sole policy source is the `id = 'default'` row of `public."BackgroundRuntimeConfig"`. Treat `checkoutRecoveryLifetimeDays` as a **non-negative whole number** (0, 1, 21, 91, 180, 365 and larger values representable by the existing PostgreSQL `INTEGER` column), with no application-imposed upper bound. Do not substitute 21 or seven days when the row is absent/invalid. A value of **0 makes every recovery immediately age-ineligible**, even at the observation instant; it does not imply an unlimited lifetime.
 
-For valid `Date` values `activityAt` and `now`, the *only* age predicate is:
+For valid `Date` values `activityAt` and `now`, the _only_ age predicate is:
 
 ```ts
-activityAt <= now && now - activityAt < lifetimeDays * 86_400_000
+activityAt <= now && now - activityAt < lifetimeDays * 86_400_000;
 ```
 
 Treat the expression as mathematical integer milliseconds, **not** an instruction to use unsafe Number arithmetic or construct an out-of-range `Date`. With large PostgreSQL `INTEGER` values use exact, safe arithmetic (e.g. compare `BigInt(now.getTime()) - BigInt(activityAt.getTime())` against `BigInt(lifetimeDays) * 86_400_000n`) so the allowable configuration range is not accidentally narrowed. Validate both timestamps and the policy; do not round fractional days or clamp high values. At the **exact** cutoff (`now - activityAt === lifetimeMs`), eligibility is false, matching the expiry worker's `lte` cutoff. Any future or invalid activity timestamp is ineligible.
@@ -87,11 +87,13 @@ Treat the expression as mathematical integer milliseconds, **not** an instructio
 The single Background-owned helper must expose an explicit, testable signature with semantics equivalent to:
 
 ```ts
-export function isCheckoutRecoveryWithinLifetime(input: Readonly<{
-  lastExternalActivityAt: Date;
-  now: Date;
-  checkoutRecoveryLifetimeDays: number;
-}>): boolean;
+export function isCheckoutRecoveryWithinLifetime(
+  input: Readonly<{
+    lastExternalActivityAt: Date;
+    now: Date;
+    checkoutRecoveryLifetimeDays: number;
+  }>,
+): boolean;
 
 export function parseCheckoutRecoveryLifetimeDays(value: unknown): number;
 

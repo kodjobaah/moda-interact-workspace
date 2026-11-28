@@ -15,10 +15,10 @@ executor:
 claimed_at:
 attempt: 1
 depends_on:
-- ARCH-010-SHOPIFY-021
-- ARCH-010-SHOPIFY-022
+  - ARCH-010-SHOPIFY-021
+  - ARCH-010-SHOPIFY-022
 enables:
-- ARCH-018-SYSTEM-TEST-001
+  - ARCH-018-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-20
 ---
@@ -94,7 +94,7 @@ If the required behaviour cannot be implemented inside the authorized surface, S
 Do not rename:
 
 ```ts
-ACTIVE_PROMOTION_ALREADY_SELECTED
+ACTIVE_PROMOTION_ALREADY_SELECTED;
 ```
 
 Its meaning changes from "different still-usable promotion exists" to:
@@ -140,11 +140,7 @@ with this exact rule:
 ```ts
 const currentGrant = current?.promotionalCreditGrant ?? null;
 
-if (
-  current &&
-  currentGrant &&
-  currentGrant.campaign.expiresAt > now
-) {
+if (current && currentGrant && currentGrant.campaign.expiresAt > now) {
   throw new PromotionSelectionError("ACTIVE_PROMOTION_ALREADY_SELECTED");
 }
 ```
@@ -205,7 +201,9 @@ Do not increment `selectionCount` on a blocked duplicate request.
 Preserve:
 
 ```ts
-{ isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+{
+  isolationLevel: Prisma.TransactionIsolationLevel.Serializable;
+}
 ```
 
 and the existing maximum three attempts for Prisma `P2034`.
@@ -242,7 +240,7 @@ export async function getCurrentPromotionSelectionState(
   locale: string,
   now = new Date(),
   database: PromotionDatabase = prisma,
-): Promise<CurrentPromotionSelectionState | null>
+): Promise<CurrentPromotionSelectionState | null>;
 ```
 
 Implementation contract:
@@ -330,7 +328,7 @@ app/routes/app/promotions/route.tsx
 Import:
 
 ```ts
-getCurrentPromotionSelectionState
+getCurrentPromotionSelectionState;
 ```
 
 The loader must read all three promotion projections:
@@ -357,7 +355,7 @@ Do not infer the lock by searching the paginated offer list.
 When:
 
 ```ts
-promotionSelection?.locked === true
+promotionSelection?.locked === true;
 ```
 
 render a notice before the promotion-offers panel with:
@@ -400,7 +398,7 @@ OR offer.currentlySelected
 The selected card's disabled button text uses:
 
 ```ts
-i18n.t("promotions.status.selected")
+i18n.t("promotions.status.selected");
 ```
 
 Non-selected cards retain the existing select/reselect labels.
@@ -412,12 +410,7 @@ Do not hide other offers while locked. The merchant must be able to see what wil
 Add React imports:
 
 ```ts
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 ```
 
 Add React Router `useNavigation`.
@@ -427,7 +420,9 @@ Inside `PromotionsRoute()` create exactly one page-wide submission lock:
 ```ts
 const navigation = useNavigation();
 const submitLockRef = useRef(false);
-const [submittingCampaignId, setSubmittingCampaignId] = useState<string | null>(null);
+const [submittingCampaignId, setSubmittingCampaignId] = useState<string | null>(
+  null,
+);
 
 useEffect(() => {
   if (navigation.state === "idle") {
@@ -440,8 +435,7 @@ const submissionInFlight =
   navigation.state !== "idle" || submittingCampaignId !== null;
 
 const guardPromotionSubmit =
-  (campaignId: string) =>
-  (event: FormEvent<HTMLFormElement>) => {
+  (campaignId: string) => (event: FormEvent<HTMLFormElement>) => {
     if (selectionLocked || submitLockRef.current) {
       event.preventDefault();
       return;

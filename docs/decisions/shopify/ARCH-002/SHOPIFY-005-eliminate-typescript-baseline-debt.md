@@ -71,14 +71,14 @@ The baseline is now being addressed directly by this dedicated cleanup task.
 
 Current observed compiler categories are:
 
-| TypeScript error | Count | Current symptom |
-|---|---:|---|
-| `TS7006` | 27 | function/callback parameter implicitly has `any` |
-| `TS2307` | 9 | `@/...` module imports cannot be resolved |
-| `TS7031` | 7 | destructured route parameters implicitly have `any` |
-| `TS7017` | 3 | `global.prismaGlobal` is not typed on `globalThis` |
-| `TS2339` | 2 | Shopify `s-app-nav` is not known to JSX intrinsic elements |
-| **Total** | **48** | **8 files** |
+| TypeScript error |  Count | Current symptom                                            |
+| ---------------- | -----: | ---------------------------------------------------------- |
+| `TS7006`         |     27 | function/callback parameter implicitly has `any`           |
+| `TS2307`         |      9 | `@/...` module imports cannot be resolved                  |
+| `TS7031`         |      7 | destructured route parameters implicitly have `any`        |
+| `TS7017`         |      3 | `global.prismaGlobal` is not typed on `globalThis`         |
+| `TS2339`         |      2 | Shopify `s-app-nav` is not known to JSX intrinsic elements |
+| **Total**        | **48** | **8 files**                                                |
 
 Current observed files:
 

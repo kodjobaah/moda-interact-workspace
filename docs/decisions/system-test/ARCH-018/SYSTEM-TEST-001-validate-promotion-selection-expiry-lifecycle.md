@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-018-SHOPIFY-001
-- ARCH-018-BACKGROUND-001
-- ARCH-018-ADMIN-001
+  - ARCH-018-SHOPIFY-001
+  - ARCH-018-BACKGROUND-001
+  - ARCH-018-ADMIN-001
 enables: []
 created: 2026-09-20
 updated: 2026-09-20

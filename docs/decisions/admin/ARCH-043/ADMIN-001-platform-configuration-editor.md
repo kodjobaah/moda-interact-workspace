@@ -19,9 +19,10 @@ depends_on:
 enables:
   - ARCH-043-GATEWAY-001
   - ARCH-043-SYSTEM-TEST-001
-created: '2026-10-17'
+created: "2026-10-17"
 updated: 2026-10-17
 ---
+
 # Contract-driven Platform Configuration Editor
 
 ## Architecture
@@ -66,37 +67,69 @@ Each entry is a trusted, immutable typed declaration of the following conceptual
 
 ```typescript
 interface ConfigurationContract<T> {
-  key: string;                    // allowlisted stable persisted key
+  key: string; // allowlisted stable persisted key
   title: string;
   description: string;
-  kind: 'policy' | 'secret';       // ADMIN-001 persists 'policy' only
+  kind: "policy" | "secret"; // ADMIN-001 persists 'policy' only
   fields: readonly FieldContract[];
-  validate(values: unknown): T;   // derived from field declarations plus optional cross-field refinement
-  defaults?: T;                   // only where code-safe defaults exist
-  canReset: boolean;             // true only when defaults are legitimate
-  requiredRole: 'SUPER_ADMIN';
+  validate(values: unknown): T; // derived from field declarations plus optional cross-field refinement
+  defaults?: T; // only where code-safe defaults exist
+  canReset: boolean; // true only when defaults are legitimate
+  requiredRole: "SUPER_ADMIN";
 }
 type FieldContract =
-  | {name:string; kind:'integer'; label:string; description:string; min:number; max:number; unit?:string}
-  | {name:string; kind:'boolean'; label:string; description:string}
-  | {name:string; kind:'string'; label:string; description:string; maxLength:number}
-  | {name:string; kind:'enum'; label:string; description:string; options:readonly string[]}
-  | {name:string; kind:'nullable-https-url'; label:string; description:string; maxLength:number}
-  | {name:string; kind:'secret'; label:string; description:string; writeOnly:true};
+  | {
+      name: string;
+      kind: "integer";
+      label: string;
+      description: string;
+      min: number;
+      max: number;
+      unit?: string;
+    }
+  | { name: string; kind: "boolean"; label: string; description: string }
+  | {
+      name: string;
+      kind: "string";
+      label: string;
+      description: string;
+      maxLength: number;
+    }
+  | {
+      name: string;
+      kind: "enum";
+      label: string;
+      description: string;
+      options: readonly string[];
+    }
+  | {
+      name: string;
+      kind: "nullable-https-url";
+      label: string;
+      description: string;
+      maxLength: number;
+    }
+  | {
+      name: string;
+      kind: "secret";
+      label: string;
+      description: string;
+      writeOnly: true;
+    };
 ```
 
 - The browser receives display-safe contract metadata only; never accepts a client-provided schema, default, authorised key list, `environment`, or role as authoritative.
-- Use Zod or the repository's existing validation mechanism **in Admin**, with closed object checks, strict numeric parsing and bounded strings. The registry must be the **single source of truth** for per-field type, optionality, bounds, enum choices and display metadata; the server validator must be generated from, or mechanically tied to, the exact same field declarations. Permit a small server-only per-contract cross-field refinement for rules such as Commerce preview deadline; never maintain a second hand-written copy of the individual field definitions. Share *documented shapes* with runtime owners via ARCH-043 architecture. Do not duplicate existing ARCH-039 cryptography.
+- Use Zod or the repository's existing validation mechanism **in Admin**, with closed object checks, strict numeric parsing and bounded strings. The registry must be the **single source of truth** for per-field type, optionality, bounds, enum choices and display metadata; the server validator must be generated from, or mechanically tied to, the exact same field declarations. Permit a small server-only per-contract cross-field refinement for rules such as Commerce preview deadline; never maintain a second hand-written copy of the individual field definitions. Share _documented shapes_ with runtime owners via ARCH-043 architecture. Do not duplicate existing ARCH-039 cryptography.
 - Register exactly the **six policy keys** in the schema review, with every field and bound from that source:
 
-| Contract key | Fields rendered from registry | Notes |
-|---|---|---|
-| `woo.couponSync` | `dispatchBatchSize`, `refreshIntervalMinutes`, `dispatchCooldownMinutes`, `unavailableRecheckMinutes`, `staleScanMinutes`, `maxPages`, `requestTimeoutMs`, `maxResponseBytes`, `maxScanDurationMs`, `workerConcurrency` | Ten strictly bounded integers; no invented `enabled` flag; workerConcurrency is a runtime-consumer concern |
-| `merchantKnowledge.upload` | `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint`, `r2Bucket` | Both R2 endpoint and bucket remain editable on every authorised revision; no placeholder URL/bucket accepted as production config; strict HTTPS and bucket validation; relocation owned by separate tasks |
-| `speech.transcription` | `provider`, `groqModelId`, `openaiModelId` | Provider enum and bounded model IDs |
-| `support.translation` | `provider`, `model` | Restrict to support-message translation; do not edit Commerce translation policy |
-| `commerce.preview` | `deadlineMs`, `outputTokens` | Enforce bounded integers and `deadlineMs <= PREVIEW_SLOT_MS - 30000`; obtain actual slot limit from approved code contract, not guessed input |
-| `admin.grafana` | `baseUrl`, `logsUrl`, `metricsUrl`, `tracesUrl`, `platformDashboardUrl` | Nullable HTTPS URLs <=2048, no embedded credentials, tokens or fragments intended to carry secrets |
+| Contract key               | Fields rendered from registry                                                                                                                                                                                           | Notes                                                                                                                                                                                                     |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `woo.couponSync`           | `dispatchBatchSize`, `refreshIntervalMinutes`, `dispatchCooldownMinutes`, `unavailableRecheckMinutes`, `staleScanMinutes`, `maxPages`, `requestTimeoutMs`, `maxResponseBytes`, `maxScanDurationMs`, `workerConcurrency` | Ten strictly bounded integers; no invented `enabled` flag; workerConcurrency is a runtime-consumer concern                                                                                                |
+| `merchantKnowledge.upload` | `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint`, `r2Bucket`                                                                                                                                                  | Both R2 endpoint and bucket remain editable on every authorised revision; no placeholder URL/bucket accepted as production config; strict HTTPS and bucket validation; relocation owned by separate tasks |
+| `speech.transcription`     | `provider`, `groqModelId`, `openaiModelId`                                                                                                                                                                              | Provider enum and bounded model IDs                                                                                                                                                                       |
+| `support.translation`      | `provider`, `model`                                                                                                                                                                                                     | Restrict to support-message translation; do not edit Commerce translation policy                                                                                                                          |
+| `commerce.preview`         | `deadlineMs`, `outputTokens`                                                                                                                                                                                            | Enforce bounded integers and `deadlineMs <= PREVIEW_SLOT_MS - 30000`; obtain actual slot limit from approved code contract, not guessed input                                                             |
+| `admin.grafana`            | `baseUrl`, `logsUrl`, `metricsUrl`, `tracesUrl`, `platformDashboardUrl`                                                                                                                                                 | Nullable HTTPS URLs <=2048, no embedded credentials, tokens or fragments intended to carry secrets                                                                                                        |
 
 - Do not invent defaults for required `merchantKnowledge.upload` endpoint/bucket or support-translation models. Where no safe full default exists, the editor starts unconfigured and **Reset** is unavailable. Field descriptions, units and existing enforced bounds are authoritative.
 - Both form rendering and server-side validation use the server-owned registry; the validator re-runs on every mutation. The browser receives only safe serialisable presentation descriptors (not executable validators). No dynamically executed formulas or caller-provided executable contract.
@@ -121,7 +154,7 @@ src/app/(protected)/system-controls/platform-configuration/page.tsx
 
 - Render title, description, units, controls, inline field/server errors, version, modified timestamp, actor, reason, Reset when allowed, and paginated audit. A changed setting does not require adding a hand-written page.
 - No auto-refresh while editing; show explicit Refresh. Dirty edits must not be silently overwritten; disable duplicate Save/Reset while submitting; show version conflicts with reload guidance. Preserve accessibility labels and keyboard form submission.
-- `secret` field kind may render a write-only password control in the reusable component, but must *never* be populated from persistence. No secret API is authorised in this task.
+- `secret` field kind may render a write-only password control in the reusable component, but must _never_ be populated from persistence. No secret API is authorised in this task.
 
 ### C. Extensibility contract — add settings without writing another form
 

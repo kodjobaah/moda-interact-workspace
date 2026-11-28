@@ -224,7 +224,6 @@ This task MUST NOT:
 
 Plan discovery/selection remains Shopify-hosted through `/app/billing/select`.
 
-
 ## Free + usage-meter subscription is first-class
 
 Do not assume that `BillingPlan.kind = FREE` means there is no Shopify billing cycle or no usage item. A Moda Free plan that permits recovery top-ups is configured in Shopify App Pricing as a zero-recurring/usage-enabled plan and can carry the recovery-credit-pack meter.
@@ -278,7 +277,7 @@ Do not convert provider tier pricing into local `BillingPlan` monetary fields.
 At minimum prove:
 
 0. active mapped Free subscription preserves exact currentBillingCycle, £0/current flat-rate commercial data and active usage items;
-0a. active Free recovery-credit-pack usage item is exposed identically to a Paid pack usage item and is not filtered out because the plan is Free;
+   0a. active Free recovery-credit-pack usage item is exposed identically to a Paid pack usage item and is not filtered out because the plan is Free;
 
 1. current flat-rate amount/currency/description are preserved from the provider response;
 2. billing period is preserved;
@@ -312,6 +311,7 @@ STOP if implementation would require local `BillingPlan` rows to substitute for 
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
@@ -362,34 +362,34 @@ None.
 Task branch: `task/ARCH-010-SHOPIFY-013`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-013`
-  parent branch: `task/ARCH-010-SHOPIFY-013`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-013`
-  implementation branch: `task/ARCH-010-SHOPIFY-013`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-013`
+parent branch: `task/ARCH-010-SHOPIFY-013`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-013`
+implementation branch: `task/ARCH-010-SHOPIFY-013`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact`
-  commit: `8ef0786`
-  remote branch: `origin/task/ARCH-010-SHOPIFY-013`
-  pushed: yes
+repository: `moda-interact`
+commit: `8ef0786`
+remote branch: `origin/task/ARCH-010-SHOPIFY-013`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-013-authoritative-shopify-subscription-read-model.md`
-  claim commit: `49c36ed`
-  review submission commit: pending until this report is committed
-  remote branch: `origin/task/ARCH-010-SHOPIFY-013`
-  pushed: yes for claim; review submission follows this commit
-  submodule gitlink staged: no
+task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-013-authoritative-shopify-subscription-read-model.md`
+claim commit: `49c36ed`
+review submission commit: pending until this report is committed
+remote branch: `origin/task/ARCH-010-SHOPIFY-013`
+pushed: yes for claim; review submission follows this commit
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

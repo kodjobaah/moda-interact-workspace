@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-007-SHARED-004
+  - ARCH-007-SHARED-004
 enables:
-- ARCH-012-MESSAGING-001
-- ARCH-012-BACKGROUND-001
+  - ARCH-012-MESSAGING-001
+  - ARCH-012-BACKGROUND-001
 created: 2026-09-14
 updated: 2026-09-16
 ---
@@ -28,22 +28,26 @@ updated: 2026-09-16
 > **Architect release-line reconciliation — 2026-09-16:** the dependency/release-order prose below records the original execution contract. During review, the architect confirmed that ARCH-011-SHARED-002 had been advanced to Complete without its prerequisite implementation. The Accepted Attempt 1 review at the end of this file supersedes that ordering: ARCH-012 `0.12.0` is accepted, and ARCH-011 Shared work follows it on the `0.13.0` publication line.
 
 ## Objective
+
 Implement **and publish** one strict, versioned cross-repository contract for inbound WhatsApp customer messages. This single task replaces the previous split between SHARED-001 implementation and SHARED-002 publication.
 
 The task is complete only when the exact validated source has been published to npm and independently verified as consumable by Messaging and Background.
 
 ## Why publication is in this task
+
 The contract has no useful downstream state between “implemented” and “published”: `moda_messaging` and `moda_background` must consume an immutable published Shared release. Keeping implementation and publication in one repository-owned task avoids a second artificial lifecycle boundary.
 
 Publication remains the **last phase** of this task. Do not publish before all source validation and package-content checks pass.
 
 ## Architectural boundary
+
 This contract represents **provider-normalized communications data only**. It MUST NOT contain Shopify recovery policy, merchant billing, CommerceAgent decisions, database entities, or recovery scheduling.
 
 Producer after publication: `moda_messaging`.
 Consumer after publication: `moda_background`.
 
 ## Mandatory dependency and release ordering
+
 This task depends on `ARCH-011-SHARED-002` because both initiatives publish `@modainteract/moda-interact-shared` and must not race the package version line.
 
 Do not prepare/start this task while `ARCH-011-SHARED-002` is not architect-accepted Complete.
@@ -59,6 +63,7 @@ At task start:
 If the canonical source is behind an already-published accepted Shared release, STOP before editing. Do not reconstruct missing source from npm artifacts.
 
 ### Deterministic ARCH-012 version rule
+
 After the preflight succeeds, choose the ARCH-012 version using this exact rule:
 
 ```text
@@ -87,6 +92,7 @@ package-lock.json                            # matching export/version metadata 
 Do not edit existing billing/provider-status semantics except for mechanically preserving exports while changing package metadata.
 
 ## Exact contract
+
 Export:
 
 ```text
@@ -141,6 +147,7 @@ Validation rules:
 - no `shopId`, `conversationId`, `checkoutRecoveryId`, recovery state or merchant identity field.
 
 ## Required source tests
+
 Prove at minimum:
 
 1. contextual text parses;
@@ -156,6 +163,7 @@ Prove at minimum:
 11. TypeScript discriminated-union narrowing works for text/audio/unsupported.
 
 ## Phase 1 — implementation validation
+
 Before changing the package version or publishing, run repository-declared validation. Minimum expected where declared:
 
 ```text
@@ -171,6 +179,7 @@ Inspect the dry-run tarball/manifest and prove `./whatsapp` runtime and declarat
 If any source validation fails because of this task, fix it before publication. Do not publish a known-failing source tree.
 
 ## Phase 2 — package version and publication
+
 Only after Phase 1 passes:
 
 1. update `package.json` and lockfile root version to the deterministic target;
@@ -218,6 +227,7 @@ Do not expose npm credentials/tokens in logs or the Completion Report.
 - [x] an isolated consumer can import the runtime/declarations.
 
 ## Stop conditions
+
 STOP and return to `moda_architect` if:
 
 - ARCH-011-SHARED-002 is not accepted Complete;
@@ -231,14 +241,17 @@ STOP and return to `moda_architect` if:
 Do not split publication into a new ARCH-012 task.
 
 ## Completion protocol
+
 After implementation, validation, publication and clean-consumer verification all pass: update Completion Report, set `status: review`, clear the claim according to launcher protocol, return to `moda_architect`, and STOP. Do not start Messaging or Background.
 
 ## Completion Report
 
 ### Status
+
 Implemented, validated, published, and independently verified. Awaiting `moda_architect` review.
 
 ### Published Version
+
 `@modainteract/moda-interact-shared@0.12.0`
 
 npm verification:
@@ -249,6 +262,7 @@ npm verification:
 - `npm view @modainteract/moda-interact-shared dist-tags.latest` returned `0.12.0`.
 
 ### Files Changed
+
 - `src/whatsapp.ts`
 - `src/whatsapp.test.ts`
 - `tsup.config.ts`
@@ -256,6 +270,7 @@ npm verification:
 - `package-lock.json`
 
 ### Validation Results
+
 - `npm test`: 118 passed, 1 skipped, 0 failed.
 - `npm run typecheck`: passed.
 - `npm run build`: passed; emitted `dist/whatsapp.js` and `dist/whatsapp.d.ts`.
@@ -267,9 +282,11 @@ npm verification:
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1.
 
 ### Review Notes
+
 Functionality-first review accepted. Implementation commit `147955b` implements the required strict Shared v1 WhatsApp inbound contract and publishes it as `@modainteract/moda-interact-shared@0.12.0`.
 
 Verified functional properties:

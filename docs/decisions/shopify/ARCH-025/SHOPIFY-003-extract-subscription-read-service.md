@@ -155,7 +155,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Keep the mapper close to the read service; do not create a generic Shopify billing mapper package. The façade may delegate directly to one collaborator created in its constructor.
 
-
 ## Completion Report
 
 ### Status

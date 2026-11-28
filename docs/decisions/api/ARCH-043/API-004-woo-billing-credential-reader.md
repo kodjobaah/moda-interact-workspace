@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-043-ADMIN-002
-- ARCH-043-DATABASE-001
+  - ARCH-043-ADMIN-002
+  - ARCH-043-DATABASE-001
 enables:
-- ARCH-043-GATEWAY-001
-- ARCH-043-SYSTEM-TEST-001
-created: '2026-10-17'
-updated: '2026-10-21'
+  - ARCH-043-GATEWAY-001
+  - ARCH-043-SYSTEM-TEST-001
+created: "2026-10-17"
+updated: "2026-10-21"
 ---
 
 # Use database Woo billing credential pair
@@ -230,7 +230,7 @@ unrelated changes.
 - Reviewed implementation diff from `origin/main` to `9d93afc`; implementation worktree was clean and the task branch was published.
 - Focused validation on 2026-10-21: billing credential, command-preflight, and webhook tests passed 14/14; `git diff --check origin/main...HEAD` passed.
 - The remaining correction is limited to unrelated integration-runner scope;
-	billing credential acceptance criteria otherwise appear satisfied.
+  billing credential acceptance criteria otherwise appear satisfied.
 
 The task returns to `ready` for correction. Attempt remains 1; executor and
 claim timestamp are cleared. Do not claim Attempt 2 in this reconciliation.

@@ -97,21 +97,21 @@ HEAD was `3ffc6a58ce0e3b88f0ca06aa511472f4db334a63`; fetched `origin/main` was
 `1632cd76ae7fa8b296c6a863a3861c4fb64b01f7` (23 commits ahead). Unrelated local
 submodule changes were present and were not integrated by this design task.
 
-| Evidence | Finding / implication |
-|---|---|
-| `moda-interact-background/src/agents/commerce.agent.ts` | Groq model from environment, hard-coded prompt, `searchProducts` and `finalResponse`, 800 output tokens, six steps; forces final response after a product search. This must change for multi-tool discount reasoning. |
-| `src/workers/whatsapp.worker.ts` in Background | Directly injects `runCommerceAgent` into the turn processor. The LangGraph pipeline file is not the observed worker entry path. |
-| `src/services/conversation-turn-processor.service.ts` in Background | Orders/coalesces turns, claims a 120-second lease, enforces admission, rejects stale results and sends through the existing outbound service. Keep this ownership. |
-| `src/agents/types.ts` in Background | Current context lacks a validated basket-line contract and includes sentinel-recovery branches. ARCH-020 does not adopt those branches: its MCP boundary requires a real checkoutRecoveryId and recovery-linked WhatsApp conversation. |
-| `src/tools/search-product.ts`, `src/services/shopify.service.ts` in Background | Local Shopify product search returns product-level price ranges and inventory. This does not prove variant eligibility or market-specific offer savings. |
-| Shared `src/whatsapp.ts` and `src/whatsapp.test.ts`; `src/billing.ts` status schema | Inbound v1 already supplies nullable contextMessageId and sender/customer identifiers and rejects business IDs; status v2 is separate. Reuse both unchanged (C0). |
-| `moda-interact-database/prisma/schema.prisma` | Existing `Feature`, plan mappings, `ShopFeaturePreference`, `ShopSettings`, recovery-policy overrides, `ShopifyDiscount`, `CheckoutRecovery.lineItems` and `PlatformAdmin` can be reused. |
-| Background `src/services/effective-billing-policy.service.ts` | Active plan feature mappings and merchant opt-ins already contribute effective feature keys. Do not duplicate or replace billing admission. |
-| Background `src/providers/shopify-discount.provider.ts` | Catalogue query fetches title/status/dates/summary/code metadata; it does not fetch enough rules to prove product, collection, customer or minimum-spend eligibility. |
-| Background `src/services/recovery-policy.service.ts` | Existing merchant policy and unexpired admin overrides resolve `NONE`, `FIXED`, or `AI_BEST_APPLICABLE`. |
-| `moda-interact-admin/src/auth.ts` | Google login bound to active `PlatformAdmin` identities provides an existing staff-authentication model; Studio needs its own server-checked session. |
-| Admin/Background `.gitmodules` | Both use nested `database/` pointing to the canonical database repository. Commerce must follow this pattern. |
-| `scripts/start-agent-task.py` | COMMERCE was absent at inspection. This review packet registers the route and adds `moda_commerce.toml` plus its generated Claude mirror; the private Git repository/submodule is now provisioned; see the handoff evidence. |
+| Evidence                                                                            | Finding / implication                                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `moda-interact-background/src/agents/commerce.agent.ts`                             | Groq model from environment, hard-coded prompt, `searchProducts` and `finalResponse`, 800 output tokens, six steps; forces final response after a product search. This must change for multi-tool discount reasoning.                  |
+| `src/workers/whatsapp.worker.ts` in Background                                      | Directly injects `runCommerceAgent` into the turn processor. The LangGraph pipeline file is not the observed worker entry path.                                                                                                        |
+| `src/services/conversation-turn-processor.service.ts` in Background                 | Orders/coalesces turns, claims a 120-second lease, enforces admission, rejects stale results and sends through the existing outbound service. Keep this ownership.                                                                     |
+| `src/agents/types.ts` in Background                                                 | Current context lacks a validated basket-line contract and includes sentinel-recovery branches. ARCH-020 does not adopt those branches: its MCP boundary requires a real checkoutRecoveryId and recovery-linked WhatsApp conversation. |
+| `src/tools/search-product.ts`, `src/services/shopify.service.ts` in Background      | Local Shopify product search returns product-level price ranges and inventory. This does not prove variant eligibility or market-specific offer savings.                                                                               |
+| Shared `src/whatsapp.ts` and `src/whatsapp.test.ts`; `src/billing.ts` status schema | Inbound v1 already supplies nullable contextMessageId and sender/customer identifiers and rejects business IDs; status v2 is separate. Reuse both unchanged (C0).                                                                      |
+| `moda-interact-database/prisma/schema.prisma`                                       | Existing `Feature`, plan mappings, `ShopFeaturePreference`, `ShopSettings`, recovery-policy overrides, `ShopifyDiscount`, `CheckoutRecovery.lineItems` and `PlatformAdmin` can be reused.                                              |
+| Background `src/services/effective-billing-policy.service.ts`                       | Active plan feature mappings and merchant opt-ins already contribute effective feature keys. Do not duplicate or replace billing admission.                                                                                            |
+| Background `src/providers/shopify-discount.provider.ts`                             | Catalogue query fetches title/status/dates/summary/code metadata; it does not fetch enough rules to prove product, collection, customer or minimum-spend eligibility.                                                                  |
+| Background `src/services/recovery-policy.service.ts`                                | Existing merchant policy and unexpired admin overrides resolve `NONE`, `FIXED`, or `AI_BEST_APPLICABLE`.                                                                                                                               |
+| `moda-interact-admin/src/auth.ts`                                                   | Google login bound to active `PlatformAdmin` identities provides an existing staff-authentication model; Studio needs its own server-checked session.                                                                                  |
+| Admin/Background `.gitmodules`                                                      | Both use nested `database/` pointing to the canonical database repository. Commerce must follow this pattern.                                                                                                                          |
+| `scripts/start-agent-task.py`                                                       | COMMERCE was absent at inspection. This review packet registers the route and adds `moda_commerce.toml` plus its generated Claude mirror; the private Git repository/submodule is now provisioned; see the handoff evidence.           |
 
 ARCH-016 explicitly deferred AI discount selection; ARCH-020 owns this new
 behaviour. The accepted ARCH-016 task records are dependencies where their
@@ -154,7 +154,6 @@ serves all shops. A customer phone can occur at several stores, so ordinary-mess
 candidate counting spans every merchant on that receiving Moda sender before a
 shop is selected. Provider account/phone IDs identify transport, not the merchant.
 Implementation contract C2 is limited to today's one-number setup; sender-pool design is outside scope.
-
 
 Background must resolve the recovery before creating a conversation grant or
 invoking CommerceAgent/MCP. A WhatsApp `contextMessageId` referencing a persisted
@@ -334,14 +333,14 @@ Staff may publish additional tool names/schemas/templates over supported operati
 Shared owns the definition validators; Commerce loads and executes the definitions. Tool JSON schemas must exclude shop IDs, access tokens and arbitrary
 provider queries from model-controlled parameters.
 
-| Tool | Bounded result |
-|---|---|
-| `commerce_get_basket` | Authorised checkout-recovery basket snapshot, freshness, currency and explicit unknown fields; a missing recovery link is rejected, while missing line-item facts remain unknown. |
-| `commerce_search_products` | Current relevant variants and factual availability/price context; cursor and page bounds. |
-| `commerce_get_discount_options` | Current permitted offers under NONE/FIXED/AI mode, supported/unsupported classification and reason. |
-| `commerce_evaluate_discount` | Eligibility evidence for a basket/proposal, missing conditions, uncertainty and savings where provable. |
-| `commerce_find_qualifying_products` | Validated qualifying variants and proposed add/replace plans, with eligibility evidence. |
-| `commerce_find_similar_products` | Relevant alternatives grounded in product attributes; qualifying status checked separately, never inferred from similarity. |
+| Tool                                | Bounded result                                                                                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commerce_get_basket`               | Authorised checkout-recovery basket snapshot, freshness, currency and explicit unknown fields; a missing recovery link is rejected, while missing line-item facts remain unknown. |
+| `commerce_search_products`          | Current relevant variants and factual availability/price context; cursor and page bounds.                                                                                         |
+| `commerce_get_discount_options`     | Current permitted offers under NONE/FIXED/AI mode, supported/unsupported classification and reason.                                                                               |
+| `commerce_evaluate_discount`        | Eligibility evidence for a basket/proposal, missing conditions, uncertainty and savings where provable.                                                                           |
+| `commerce_find_qualifying_products` | Validated qualifying variants and proposed add/replace plans, with eligibility evidence.                                                                                          |
+| `commerce_find_similar_products`    | Relevant alternatives grounded in product attributes; qualifying status checked separately, never inferred from similarity.                                                       |
 
 `finalResponse` stays a local runner tool, not an MCP tool. Extend its structured
 result with bounded offer-evidence references so Background can revalidate
@@ -460,16 +459,16 @@ publication/preview duplicate protection with the complete user flow.
 
 ## Repository Responsibilities
 
-| Owner | Responsibility |
-|---|---|
-| `moda_commerce` (new) / `moda-interact-commerce` | Next.js UI, staff auth integration, capability persistence services, MCP server, Shopify read adapters, eligibility/recommendation tools and service telemetry. |
-| `moda_background` | Production model/provider configuration, MCP client, authoritative turn context, admission/ordering, final reply validation and WhatsApp delivery. |
-| `moda_shared` | Published runtime schemas, pure capability selection, and the provider-neutral bounded runner reused by Background and Studio preview. No database/provider business implementation. |
-| `moda_database` | Canonical Prisma schema, migrations, constraints, indexes and ERD. |
-| `moda_app` | Merchant feature-selection UI using canonical preferences; preserve existing recovery settings. |
-| `moda_gateway` | Render Blueprint, routing, private network, secret-name wiring and health/timeout configuration. Custom Grafana dashboards/alerts are developer-managed. |
-| `moda_system_test` | Terminal integrated validation, fixtures and evidence. |
-| `moda_architect` + developer | New-owner/submodule registration, dependency reconciliation, acceptance and final integration. |
+| Owner                                            | Responsibility                                                                                                                                                                       |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `moda_commerce` (new) / `moda-interact-commerce` | Next.js UI, staff auth integration, capability persistence services, MCP server, Shopify read adapters, eligibility/recommendation tools and service telemetry.                      |
+| `moda_background`                                | Production model/provider configuration, MCP client, authoritative turn context, admission/ordering, final reply validation and WhatsApp delivery.                                   |
+| `moda_shared`                                    | Published runtime schemas, pure capability selection, and the provider-neutral bounded runner reused by Background and Studio preview. No database/provider business implementation. |
+| `moda_database`                                  | Canonical Prisma schema, migrations, constraints, indexes and ERD.                                                                                                                   |
+| `moda_app`                                       | Merchant feature-selection UI using canonical preferences; preserve existing recovery settings.                                                                                      |
+| `moda_gateway`                                   | Render Blueprint, routing, private network, secret-name wiring and health/timeout configuration. Custom Grafana dashboards/alerts are developer-managed.                             |
+| `moda_system_test`                               | Terminal integrated validation, fixtures and evidence.                                                                                                                               |
+| `moda_architect` + developer                     | New-owner/submodule registration, dependency reconciliation, acceptance and final integration.                                                                                       |
 
 No new Messaging implementation or duplicate Admin feature editor is required.
 Commerce credential access is read-only for authorised Shopify lookups; it does
@@ -509,17 +508,17 @@ redesign that contract without an architect amendment.
 
 The nine exact tables in the existing `commerce` schema are:
 
-| Table | Purpose |
-|---|---|
-| `CommerceCapability` | Stable capability identity, selection binding, existing Feature reference and emergency enabled state. |
+| Table                        | Purpose                                                                                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CommerceCapability`         | Stable capability identity, selection binding, existing Feature reference and emergency enabled state.                                                              |
 | `CommerceCapabilityRevision` | Draft/published promptTemplate, configuration, toolBindings, contract/edit versions, publication hash and existing-admin attribution. Published rows are immutable. |
-| `CommerceRelease` | Immutable release identity, number, description and runner/contract compatibility. |
-| `CommerceReleaseCapability` | Ordered membership linking a release to one published revision per capability with a matching-capability composite FK. |
-| `CommerceReleasePointer` | One active release per environment with optimistic editVersion and administrator attribution. |
-| `CommerceAuditEvent` | Append-only actor/action/target/reason metadata referencing existing PlatformAdmin. |
-| `CommerceConversationGrant` | One immutable grant per conversation: shopId, initialInboundVersion, releaseId, selectedCapabilityKeys, exact grantedTools, runnerVersion and timestamps. |
-| `CommerceTool` | Independent immutable tool name, staff metadata and emergency enabled state. |
-| `CommerceToolRevision` | Versioned complete definition, execution/query/template and immutable publication metadata. |
+| `CommerceRelease`            | Immutable release identity, number, description and runner/contract compatibility.                                                                                  |
+| `CommerceReleaseCapability`  | Ordered membership linking a release to one published revision per capability with a matching-capability composite FK.                                              |
+| `CommerceReleasePointer`     | One active release per environment with optimistic editVersion and administrator attribution.                                                                       |
+| `CommerceAuditEvent`         | Append-only actor/action/target/reason metadata referencing existing PlatformAdmin.                                                                                 |
+| `CommerceConversationGrant`  | One immutable grant per conversation: shopId, initialInboundVersion, releaseId, selectedCapabilityKeys, exact grantedTools, runnerVersion and timestamps.           |
+| `CommerceTool`               | Independent immutable tool name, staff metadata and emergency enabled state.                                                                                        |
+| `CommerceToolRevision`       | Versioned complete definition, execution/query/template and immutable publication metadata.                                                                         |
 
 A conversation grant is valid only when its WhatsApp conversation references an
 existing CheckoutRecovery owned by the same shop. Conversation.shopId is not an
@@ -561,10 +560,10 @@ Render builds must recursively initialise the pin before client generation.
 
 Canonical package: `@modainteract/moda-interact-shared`.
 
-| Export (proposed) | Producer / consumer | Validation |
-|---|---|---|
-| `./commerce` | Commerce and Background; Shopify consumes selection DTOs only | Versioned Zod schemas for manifests, revision IDs, turn identity, capability bindings, basket/evidence, tool input/output, final reply and bounded errors. |
-| `./commerce/runner` | Shared implementation; Background production and Commerce preview consumers | Injected model/tools; strict result parsing, budgets, cancellation, deterministic prompt composition and finalResponse contract. |
+| Export (proposed)   | Producer / consumer                                                         | Validation                                                                                                                                                 |
+| ------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `./commerce`        | Commerce and Background; Shopify consumes selection DTOs only               | Versioned Zod schemas for manifests, revision IDs, turn identity, capability bindings, basket/evidence, tool input/output, final reply and bounded errors. |
+| `./commerce/runner` | Shared implementation; Background production and Commerce preview consumers | Injected model/tools; strict result parsing, budgets, cancellation, deterministic prompt composition and finalResponse contract.                           |
 
 Proposed schema exports include `CommerceManifestSchema`,
 `CommerceTurnIdentitySchema`, `CommerceToolResultSchema`,
@@ -714,29 +713,29 @@ are server-only placeholders in infrastructure, never committed values.
 See the generated task table below and domain `_index.md` files. The table is the branch-local definition frontier; DATABASE-001 has completed
 Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 
-| Task | Outcome | Owner | Status | Depends on |
-|---|---|---|---|---|
-| [ARCH-020-DATABASE-001](../decisions/database/ARCH-020/DATABASE-001-persist-capability-releases-and-turn-revision-pins.md) | Persist capability releases and conversation tool grants | moda_database | complete | ARCH-016-DATABASE-001 |
-| [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md) | Implement and publish commerce contracts and reusable runner | moda_shared | complete | ARCH-016-SHARED-001 |
-| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md) | Establish the Next.js service and nested database submodule | moda_commerce | complete | — |
-| [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md) | Authenticate team access to CommerceAgent Studio | moda_commerce | complete | ARCH-020-COMMERCE-001 |
-| [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md) | Implement draft and release publication lifecycle | moda_commerce | pending | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011 |
-| [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md) | Serve authorised MCP capability bundles | moda_commerce | complete | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md) | Execute validated public Shopify queries | moda_commerce | complete | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md) | Evaluate permitted Shopify discount rules | moda_commerce | pending | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
-| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md) | Recommend qualifying and similar products | moda_commerce | complete | ARCH-020-COMMERCE-006 |
-| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md) | Build capability authoring and release screens | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md) | Preview capabilities in an isolated conversation sandbox | moda_commerce | pending | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md) | Instrument capability operations and preview isolation | moda_commerce | ready | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md) | Provide integrated Shopify discovery and schema validation | moda_commerce | complete | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
-| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | complete | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
-| [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
-| [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
-| [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | superseded (developer-managed Grafana, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| [ARCH-020-GATEWAY-003](../decisions/gateway/ARCH-020/GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | moda_gateway | complete (Accepted, Attempt 3) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
-| [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | ready | All other ARCH-020 implementation tasks; exact list in task |
-| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012  |
+| Task                                                                                                                                       | Outcome                                                      | Owner            | Status                                            | Depends on                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ---------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [ARCH-020-DATABASE-001](../decisions/database/ARCH-020/DATABASE-001-persist-capability-releases-and-turn-revision-pins.md)                 | Persist capability releases and conversation tool grants     | moda_database    | complete                                          | ARCH-016-DATABASE-001                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [ARCH-020-SHARED-001](../decisions/shared/ARCH-020/SHARED-001-define-commerce-capability-and-evidence-contracts.md)                        | Implement and publish commerce contracts and reusable runner | moda_shared      | complete                                          | ARCH-016-SHARED-001                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [ARCH-020-COMMERCE-001](../decisions/commerce/ARCH-020/COMMERCE-001-establish-the-next-js-service-and-nested-database-submodule.md)        | Establish the Next.js service and nested database submodule  | moda_commerce    | complete                                          | —                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [ARCH-020-COMMERCE-002](../decisions/commerce/ARCH-020/COMMERCE-002-authenticate-team-access-to-commerceagent-studio.md)                   | Authenticate team access to CommerceAgent Studio             | moda_commerce    | complete                                          | ARCH-020-COMMERCE-001                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [ARCH-020-COMMERCE-003](../decisions/commerce/ARCH-020/COMMERCE-003-implement-draft-and-release-publication-lifecycle.md)                  | Implement draft and release publication lifecycle            | moda_commerce    | pending                                           | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001, ARCH-020-COMMERCE-011                                                                                                                                                                                                                                                                                                                                      |
+| [ARCH-020-COMMERCE-004](../decisions/commerce/ARCH-020/COMMERCE-004-serve-authorised-mcp-capability-bundles.md)                            | Serve authorised MCP capability bundles                      | moda_commerce    | complete                                          | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                                                    |
+| [ARCH-020-COMMERCE-005](../decisions/commerce/ARCH-020/COMMERCE-005-implement-basket-and-product-discovery-tools.md)                       | Execute validated public Shopify queries                     | moda_commerce    | complete                                          | ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-011, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                             |
+| [ARCH-020-COMMERCE-006](../decisions/commerce/ARCH-020/COMMERCE-006-evaluate-permitted-shopify-discount-rules.md)                          | Evaluate permitted Shopify discount rules                    | moda_commerce    | pending                                           | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001                                                                                                                                                                                                                                                                                                                                                         |
+| [ARCH-020-COMMERCE-007](../decisions/commerce/ARCH-020/COMMERCE-007-recommend-qualifying-and-similar-products.md)                          | Recommend qualifying and similar products                    | moda_commerce    | complete                                          | ARCH-020-COMMERCE-006                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [ARCH-020-COMMERCE-008](../decisions/commerce/ARCH-020/COMMERCE-008-build-capability-authoring-and-release-screens.md)                     | Build capability authoring and release screens               | moda_commerce    | complete                                          | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                             |
+| [ARCH-020-COMMERCE-009](../decisions/commerce/ARCH-020/COMMERCE-009-preview-capabilities-in-an-isolated-conversation-sandbox.md)           | Preview capabilities in an isolated conversation sandbox     | moda_commerce    | pending                                           | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                             |
+| [ARCH-020-COMMERCE-010](../decisions/commerce/ARCH-020/COMMERCE-010-instrument-capability-operations-and-preview-isolation.md)             | Instrument capability operations and preview isolation       | moda_commerce    | ready                                             | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009                                                                                                                                                                                                                                                                                                                                                           |
+| [ARCH-020-COMMERCE-011](../decisions/commerce/ARCH-020/COMMERCE-011-provide-integrated-shopify-discovery-and-schema-validation.md)         | Provide integrated Shopify discovery and schema validation   | moda_commerce    | complete                                          | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                                                    |
+| [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md)                 | Integrate the generic MCP CommerceAgent host                 | moda_background  | complete                                          | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001                                                                                                                                                                                                                                                                                                                                    |
+| [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md)          | Preserve turn safeguards and validate offer replies          | moda_background  | complete                                          | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007                                                                                                                                                                                                                                                                                                                                                                                |
+| [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md)                        | Expose merchant capability feature preferences               | moda_app         | complete                                          | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002                                                                                                                                                                                                                                                                                                                                                                                     |
+| [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md)                 | Deploy Commerce topology through the Render Blueprint        | moda_gateway     | complete (Accepted, Attempt 4)                    | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019                                                                                                                                                                                                                                      |
+| [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md)                        | Add Commerce operational dashboards and alerts               | moda_gateway     | superseded (developer-managed Grafana, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002                                                                                                                                                                                                                                                                                                                                                          |
+| [ARCH-020-GATEWAY-003](../decisions/gateway/ARCH-020/GATEWAY-003-configure-external-api-credential-runtime.md)                             | Configure external API credential runtime                    | moda_gateway     | complete (Accepted, Attempt 3)                    | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029                                                                                                                                                                                                                                                                                       |
+| [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md)                            | Add frequency-based tool-result caching                      | moda_commerce    | ready                                             | All other ARCH-020 implementation tasks; exact list in task                                                                                                                                                                                                                                                                                                                                                                   |
+| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end    | moda_system_test | pending                                           | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012 |
 
 ## Open Questions and Explicit Assumptions
 
@@ -808,7 +807,6 @@ COMMERCE-008. CommerceRelease adds responseContract and responseContractHash,
 keeping the nine-table design. Database, Shared contracts/runner, Commerce
 publication/MCP/UI/preview, Background and system-test tasks own the full change.
 
-
 ## Database review response-definition requirements
 
 C16 requires immutable CommerceRelease.responseContract and responseContractHash,
@@ -868,7 +866,6 @@ Current branch frontier: 19 tasks, 2 Complete, 1 Ready, 16 Pending, 0 Blocked.
 SHARED-001 remains Ready at Attempt 1 with no active claim. No next attempt is
 claimed by conflict resolution. Architecture completion/system-test gates remain.
 
-
 ## Shared Attempt 2 acceptance — 2026-09-20
 
 ARCH-020-SHARED-001 is **Accepted / Complete, Attempt 2** against implementation
@@ -885,7 +882,6 @@ must synchronize dedicated worktrees and verify dependency source availability.
 Other pending tasks retain their existing gates. Current branch frontier:
 **19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
 terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
-
 
 ## BACKGROUND-001 review scope amendments — 2026-09-20
 
@@ -913,6 +909,7 @@ user-invoked; no task is launched. Developer integration remains separate.
 Historical pre-acceptance snapshot: 19 tasks, 4 Complete, 1 Ready, 14 Pending; superseded for BACKGROUND-001 by the Attempt 3 acceptance below.
 Other canonical task worktrees remain authoritative for concurrent progress;
 this review does not overwrite their state. Prior readiness records are historical.
+
 ## Deferred dynamic tool caching
 
 [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md)
@@ -932,7 +929,6 @@ and superseded. Both unclaimed provenance tasks were removed with their dependen
 edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcription
 scope remains. All four retained prerequisites are accepted Complete. Active task
 scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
-
 
 ## BACKGROUND-001 Attempt 2 architect review — Changes Requested
 
@@ -972,14 +968,12 @@ GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
 
-
 ### Parallel component delivery and integration — 2026-09-21
 
 Binding C17 allows003 publication and008 Studio to be implemented and accepted
 against agreed service ports while011 continues. Separate013 owns production
 adapters and integrated U01–U13 acceptance;009, GATEWAY-001,012 and terminal
 system tests depend on013. Component fixtures never become production fallbacks.
-
 
 ## COMMERCE-003 Attempt 1 review — 2026-09-21
 
@@ -991,7 +985,6 @@ fixture tests passed and four architect regressions failed. Exact correction
 instructions/tests are in the task. C17 fixture acceptance remains permitted;
 013 production composition and developer PostgreSQL rehearsal remain separate.
 No new claim, downstream promotion, main integration or gitlink update.
-
 
 ## COMMERCE-003 Attempt 2 review — 2026-09-21
 
@@ -1006,7 +999,6 @@ See the task for file-level algorithms/tests. This supersedes previous current-s
 wording. C17 component acceptance remains permitted;013 composition and developer
 PostgreSQL execution remain separate. No promotion, claim, main merge or gitlink edit.
 
-
 ## COMMERCE-003 Attempt 3 review — 2026-09-21
 
 Current decision: Ready, Attempt3 retained, claim cleared; Changes Requested for
@@ -1017,13 +1009,13 @@ cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardo
 corrections. Preserve passing component code. PostgreSQL execution remains
 explicitly developer-owned/unrun;013 composition remains separate. This is the
 latest decision. No downstream promotion, new claim, main merge or gitlink edit.
+
 ### Smaller component scopes — 2026-09-21
 
 C19 splits004 into transport004/execution014,005 into queries005/basket-products015,
 006 into rule reader006/evaluator016 and009 into preview backend009/U14 interface017.
 013 owns backend and frontend service assembly;017 is frontend-only; SYSTEM-TEST owns cross-service evidence.
 This ownership replaces earlier combined-owner references without changing behavior.
-
 
 ## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
 
@@ -1033,7 +1025,6 @@ R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
 three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
 are required; live producer pairing stays terminal-system-test-owned. See the
 canonical task's explicit correction steps. No new claim or downstream promotion.
-
 
 ## BACKGROUND-002 Attempt 2 — Changes Requested — 2026-09-21
 
@@ -1046,7 +1037,6 @@ a deliverable referral); A2-R3: complete the canonical EC01–EC12 tests and cor
 overstated report mappings/results. See the task's exact code/location instructions.
 This is the latest decision; prior review entries are historical. No downstream
 promotion or claim; live pairing remains terminal-system-test-owned.
-
 
 ## BACKGROUND-002 Attempt 3 review — 2026-09-21
 
@@ -1098,6 +1088,7 @@ Ready (001/011/Shared Complete), with no new claim. Other dependants retain curr
 states because prerequisites remain unresolved. No main merge or gitlink update;
 architecture is not Implemented. This supersedes older COMMERCE-011 current-state
 wording while preserving historical reviews.
+
 ## COMMERCE-003 Attempt 4 accepted — 2026-09-21
 
 COMMERCE-003 is **Complete, architect accepted, Attempt 4 retained**, claim cleared.
@@ -1111,7 +1102,6 @@ or gitlink update. COMMERCE-004 is promoted Ready (003 and SHARED-001 Complete),
 without claiming an attempt. Other dependent tasks retain their current states;
 012/013/system-test still have unresolved prerequisites. This acceptance supersedes
 older COMMERCE-003 current-state wording; architecture is not yet Implemented.
-
 
 ## COMMERCE-015 Attempt 1 architect review — 2026-09-21
 
@@ -1151,6 +1141,7 @@ separate; live Shopify/integration validation is still developer-owned and pendi
 No dependent promotion:016 still needs006,007 needs016, and012/013/system-test have
 other prerequisites. No main merge/gitlink change; architecture is not Implemented.
 This acceptance supersedes all older COMMERCE-015 current-state wording.
+
 ## COMMERCE-006 Attempt 3 architect review — 2026-09-21
 
 Changes Requested; Ready, Attempt3 retained, claim clear; not accepted.
@@ -1163,7 +1154,6 @@ See the canonical COMMERCE-006 task for precise code locations and expected effe
 No live validation gate, dependent promotion, new claim, implementation change,
 main integration or gitlink update. Parent overlay published before preparation.
 
-
 ## COMMERCE-006 Attempt 4 accepted — 2026-09-21
 
 Current decision: Complete, architect accepted; Attempt4 retained, claim clear.
@@ -1175,7 +1165,6 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 015;012/013/system-test retain other unfinished dependencies. No downstream
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
-
 
 ## COMMERCE-004 Attempt 2 architect review — 2026-09-21
 
@@ -1204,6 +1193,7 @@ Attempt0 with no claim, because004/SHARED-001 are Complete. Other dependants ret
 their unresolved gates;012 is still the final implementation checkpoint.
 No implementation changes, main integration or gitlink update. Architecture is not
 yet Implemented. This supersedes older004 state wording and retains review history.
+
 ## COMMERCE-009 Attempt 4 accepted — 2026-09-21
 
 Complete, architect accepted; Attempt4 retained, claim clear. Reviewed5d4dcd3 /
@@ -1214,6 +1204,7 @@ Prior accepted prompt/history/language/replay/bounded-state corrections retained
 009 is satisfied;012/013/system-test retain other unfinished prerequisites, and
 017 has no009 dependency. No promotion or automatic execution. Live deployment
 and013 assembly remain separate. No main integration or gitlink update.
+
 ## COMMERCE-008 Attempt 5 review — 2026-09-21
 
 COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
@@ -1255,6 +1246,7 @@ integrated policy/query execution; live infrastructure/evidence validation remai
 separate. No dependent promotion, new claim, implementation edit, main integration
 or gitlink update.012 remains the final implementation checkpoint; architecture is
 not yet Implemented. Older014 readiness wording is historical.
+
 ## COMMERCE-016 Attempt 1 architect review — 2026-09-21
 
 Changes Requested; Ready, Attempt 1 retained, claim cleared; not accepted.
@@ -1268,7 +1260,6 @@ budget boundaries are retained. No implementation edits, next claim, main merge,
 gitlink update or dependent promotion.007 remains gated by016;013 and012 retain
 their remaining gates. Live provider composition remains separate integration work.
 Older readiness wording is historical; architecture is not yet Implemented.
-
 
 ## COMMERCE-016 Attempt 2 accepted — 2026-09-21
 
@@ -1289,7 +1280,6 @@ A2-R1–R3 give exact recursion fix, active body cleanup and C14 UNAVAILABLE map
 for provider-version fallback. Retain variable validation/HTTP envelope/deadline
 race improvements. No scope expansion, promotion, new claim, main merge or gitlink
 change. See task for exact acceptance effects; live provider validation is separate.
-
 
 ## COMMERCE-005 Attempt 3 architect review — 2026-09-21
 
@@ -1315,7 +1305,6 @@ submitted evidence; baseline failures do not block this component acceptance.
 pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
-
 
 ### Integration ownership — 2026-09-21
 
@@ -1354,7 +1343,6 @@ validation remain pending separately. No dependent promotion, new claim,
 implementation change, main integration or gitlink update. This supersedes older
 COMMERCE-017 current-state wording only; other task decisions remain unchanged.
 Architecture is not yet Implemented; COMMERCE-012 remains the final checkpoint.
-
 
 ## COMMERCE-017 Attempt 6 architect review — 2026-09-21
 
@@ -1433,7 +1421,6 @@ main integration or gitlink update. This supersedes older COMMERCE-007 current-s
 other task decisions remain unchanged. Architecture is not yet Implemented and
 COMMERCE-012 remains the final implementation checkpoint.
 
-
 ### COMMERCE-010 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1; executor/claim null.** Reviewed implementation
@@ -1445,7 +1432,6 @@ two independent functional reproductions failed (duplicate execution and prematu
 discovery success). Baseline repository-wide failures do not drive this decision.
 COMMERCE-010 is not accepted; no dependent is promoted. Hosted validation remains
 developer-owned; the final manual system-test gate is unchanged.
-
 
 ### COMMERCE-010 Attempt 2 architect review — 2026-09-21
 
@@ -1460,7 +1446,6 @@ must be handed off honestly, not replaced by an evaluator metric. No acceptance
 or downstream promotion. Redis baseline and hosted arrival are not review blockers;
 the developer-owned final manual system-test gate remains unchanged.
 
-
 ### COMMERCE-010 Attempt 3 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `a51eb69`
@@ -1470,7 +1455,6 @@ passed 71 tests; prior architect reproductions passed 3/3, while the new denial
 precedence check failed. Other A2 corrections are resolved. No acceptance or
 downstream promotion. External C18 refresh signal/hosted arrival remain explicit
 integration/developer handoffs; baseline failures are not review blockers.
-
 
 ## COMMERCE-010 Attempt 4 architect acceptance — 2026-09-21
 
@@ -1534,6 +1518,7 @@ Other deployment/cache/system gates retain their dependencies and manual validat
 ### SHARED-002 Attempt 4 architect review — 2026-09-21
 
 **Changes Requested / Ready, Attempt 4 retained; claims cleared.** Reviewed implementation `b23a7c1` and report `52b14319`. Prior external-contract corrections and submitted `0.14.1` clean-consumer evidence are preserved. One C21 publication defect remains: LIST definitions can pass static publication compatibility with an impossible result wrapper/cardinality (extra root output, non-empty minimum, or array maximum below the LIST limit). The package root README/export inventory and current Completion Report also require reconciliation. Exact A4-R1–R3 are in SHARED-002. No dependent promotion, new claim, implementation/main change or gitlink update.
+
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1566,6 +1551,7 @@ state. Fresh and upgrade PostgreSQL rehearsals pass with preservation,
 credential uniqueness/bounds, RESTRICT FK, immutable-row and rollback evidence.
 No dependent task becomes Ready solely from this acceptance; remaining declared
 dependencies continue to gate the frontier.
+
 ## COMMERCE-029 Attempt 4 accepted — 2026-09-21
 
 ARCH-020-COMMERCE-029 is **Accepted / Complete, Attempt 4**. Reviewed implementation
@@ -1577,6 +1563,7 @@ artifact, isolation, serialization and fixed-memory evidence is preserved.
 No dependent task is newly Ready: COMMERCE-026 still awaits SHARED-002. GATEWAY-003,
 COMMERCE-012 and system validation keep their remaining gates. ARCH-020 remains In
 Progress and no task is launched automatically.
+
 ### COMMERCE-018 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1604,7 +1591,6 @@ real-application-service integration path, and the C20 producer-SHA/source/expor
 mapping table is still absent. Exact A2-R1..R4 corrections are recorded in the task's
 Architect Review. Submitted 8 focused tests plus typecheck/lint/build/diff hygiene are
 retained as passing evidence. No dependent task is promoted or launched.
-
 
 ### COMMERCE-018 Attempt 3 / COMMERCE-033 fixture correction — 2026-09-21
 
@@ -1651,6 +1637,7 @@ a successful launcher claim, so no Attempt 1 is invented retroactively. The next
 successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
 already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
 Architect Review. No downstream promotion or automatic launch.
+
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1664,6 +1651,7 @@ request validation/default-port normalization is not strict (`:443` is retained 
 invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
 A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
 downstream promotion or automatic launch.
+
 ## COMMERCE-033 Attempt 1 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
@@ -1699,6 +1687,7 @@ non-empty behaviour/draft source before Conversation preview can start; no synth
 tool-to-capability fallback is permitted. COMMERCE-019 now records COMMERCE-034 as
 an accepted prerequisite and remains **Ready**. No downstream task was launched by
 this state reconciliation.
+
 ## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
 
 ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
@@ -1723,6 +1712,7 @@ failure presentation and focused evidence.
 
 No dependency is promoted. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
 gated. No downstream task is launched automatically.
+
 ## ARCH-020 COMMERCE-019 Attempt 3 readiness reconciliation — 2026-09-22
 
 COMMERCE-019 is **Ready, Attempt 2 retained**, claim null. Architect-accepted
@@ -1737,10 +1727,10 @@ reimplementation until developer integration or explicit exact dependency-commit
 consumption makes the accepted producer source available. No downstream task is
 started by this reconciliation.
 
-
 ## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
 `ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
+
 ## COMMERCE-025 Attempt 2 architect acceptance — 2026-09-22
 
 ARCH-020-COMMERCE-025 is **Accepted / Complete, Attempt 2** (`8b281cf`; report
@@ -1796,6 +1786,7 @@ pre-dispatch save failure from retained-ID UNKNOWN reconciliation with serialize
 read/cancel operations. Existing CodeMirror/raw-sample/content-hash corrections remain
 intact. COMMERCE-024 and COMMERCE-012 retain other dependency gates; no automatic
 launch.
+
 ## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
@@ -1819,6 +1810,7 @@ Accepted/Complete C20 fixture producer; stale historical prose naming COMMERCE-0
 that fixture is superseded. COMMERCE-018 is Ready for validation-only Attempt 7 with
 architect-authorised local disposable Docker PostgreSQL/Redis provisioning. No
 downstream promotion occurs until architect acceptance of COMMERCE-018.
+
 ## COMMERCE-028 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-028 is **Changes Requested / Ready, Attempt 1**, claim clear.
@@ -1846,6 +1838,7 @@ the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
 credential resolution derives `Authorization`. The bounded producer correction is
 materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
 on it before final production composition. No task is started automatically.
+
 ## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
 
 ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
@@ -1881,6 +1874,7 @@ retain invalid IN text; and complete the exact XN02 proof/current Completion Rep
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
 automatically.
+
 ## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 3** (`d15d3f5`).
@@ -1896,6 +1890,7 @@ production renderer reuse and later real-provider runtime validation remain inta
 and executor/claimed_at null. Architect review is required before downstream
 promotion. COMMERCE-024 and COMMERCE-012 remain Pending behind their other
 authoritative prerequisites.
+
 ## COMMERCE-018 Attempt 7 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 7 retained.**
@@ -1912,6 +1907,7 @@ activate, rollback) rather than only operating on COMMERCE-035's pre-seeded
 published graph. Attempt 8 is limited to that deterministic proof plus explicit
 saved-draft preservation during the intentional discovery outage unless the real
 flow exposes a bounded 018-owned defect. No downstream task is promoted.
+
 ## COMMERCE-032 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
@@ -1925,6 +1921,7 @@ C21 now makes the intended boundary explicit and
 read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
 accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
 COMMERCE-012 remain gated. No task is started automatically.
+
 ## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
@@ -1937,6 +1934,7 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
 ## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
 
 The production Studio composition task is **Accepted / Complete** at Attempt 8. Its
@@ -1945,12 +1943,14 @@ activate/rollback traversal, saved-draft preservation during discovery outage an
 one-audit-per-operation verification. Preview remains COMMERCE-019-owned and external
 production composition remains COMMERCE-024-owned. GATEWAY-001 becomes Ready; no
 automatic execution follows from readiness.
+
 ## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
 
 The Connections U15/U16 frontend is **Accepted / Complete** at Attempt 4. Final
 credential dirty/unknown navigation, exact shop/revision status ownership and terminal
 read-state gaps are closed. Production external-tool/Connections composition remains
 with COMMERCE-024; no downstream execution is implied by this acceptance.
+
 ## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
@@ -2046,6 +2046,7 @@ Complete. It is not automatically launched. COMMERCE-012 and system-test work re
 their remaining integration/gateway gates.
 
 <!-- Preserved task-branch record. -->
+
 ## COMMERCE-024 Attempt 1 blocked / COMMERCE-038 created — 2026-09-22
 
 COMMERCE-024 is **Blocked, Attempt 1 retained**.
@@ -2092,6 +2093,7 @@ A local untracked `typescript` artifact was present in the developer main worktr
 it is not part of the accepted source and should be moved/removed before launch rather
 than committed.
 <!-- Preserved mainline record. -->
+
 ## GATEWAY-001 Attempt 4 architect acceptance — 2026-09-22
 
 ARCH-020-GATEWAY-001 is **Complete / Accepted, Attempt 4** (`478923a`; parent
@@ -2099,8 +2101,7 @@ report `cb41f7c`). The Render/private-MCP/public-Studio topology and final hoste
 smoke contract are accepted. Real deployment/DNS/TLS/OAuth/assertion smoke remains
 a developer validation checkpoint, not an unfinished implementation dependency.
 
-Because their remaining prerequisites are already Complete, GATEWAY-003 (priority
-175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
+Because their remaining prerequisites are already Complete, GATEWAY-003 (priority 175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
 Neither is started automatically. COMMERCE-012 and system-test work retain their
 additional dependency gates.
 
@@ -2119,7 +2120,6 @@ this task. Once that source is developer-integrated, a fresh synchronized 024 sn
 can be returned to `moda_architect` for Blocked -> Ready reconciliation.
 
 No downstream task is launched automatically.
-
 
 ## Grafana ownership decision — 2026-09-22
 

@@ -30,7 +30,6 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 **SUPERSEDED by `ARCH-040-BACKGROUND-001` (service/policy implementation) and `ARCH-040-BACKGROUND-002` (runtime integration). Do not execute this task.** Its detailed requirements are historical context; all required behaviour and tests were folded into the two active tasks.
 
-
 Prevent queued or newly submitted HUMAN messages from reaching the WhatsApp provider once platform restriction is suspended, without interrupting AGENT/AUTOMATION messages.
 
 ## Context
@@ -106,45 +105,59 @@ Coordinate ordering with ADMIN-001 and DATABASE-001. If precise provider-admissi
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The initiative is proposed; work has not begun.
 
 ### Unresolved Issues
+
 None recorded.
 
 ### Architectural Concerns
+
 None recorded.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.

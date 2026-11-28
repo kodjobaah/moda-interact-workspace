@@ -18,6 +18,7 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
+
 # Fix Shopify Render Docker Build Dependency Installation
 
 ## Architecture

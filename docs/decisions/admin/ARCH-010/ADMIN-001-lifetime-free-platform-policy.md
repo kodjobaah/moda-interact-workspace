@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-ADMIN-001
 architecture_id: ARCH-010
-title: Move lifetime Free grant configuration from plan catalogue to platform billing
+title:
+  Move lifetime Free grant configuration from plan catalogue to platform billing
   controls
 task_kind: implementation
 domain: admin
@@ -16,9 +17,9 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-006
+  - ARCH-010-DATABASE-006
 enables:
-- ARCH-010-ADMIN-008
+  - ARCH-010-ADMIN-008
 created: 2026-09-11
 updated: 2026-09-12T08:38:03Z
 ---
@@ -154,9 +155,11 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `src/app/actions/billing-controls.ts`
 - `src/app/actions/billing-plan.ts`
 - `src/components/admin/billing-controls.tsx`
@@ -173,6 +176,7 @@ Ready for Review.
 - `tests/security/admin-billing-plan.test.mjs`
 
 ### Work Completed
+
 - Platform controls now own `lifetimeFreeRecoveryAllowance`, persist it through the existing audited policy action, and render the future-first-grant explanation.
 - Validation uses whole-number syntax and safe-integer checks without string/`NaN` coercion; zero is valid.
 - Plan catalogue forms, validation, toggle payloads, and create/edit actions no longer treat `freeLifetimeConversationAllowance` as current authority or write it.
@@ -184,6 +188,7 @@ Ready for Review.
 - Validated against accepted DATABASE-006 revision `7523f495bf31f3e0a0e69d0344468faeac64fea8`.
 
 ### Validation Results
+
 - Accepted DATABASE-006 revision `7523f495bf31f3e0a0e69d0344468faeac64fea8` was initialized and checked out detached in the implementation worktree; its `PlatformBillingPolicy` contains `lifetimeFreeRecoveryAllowance Int @default(5)`. The detached submodule state was not staged or committed.
 - `npm run prisma:generate` passed against that revision.
 - `npm run prisma:validate` passed against that revision.
@@ -193,6 +198,7 @@ Ready for Review.
 - `git diff --check` passed.
 
 ### Git / VCS
+
 - Physical worktree isolation:
   - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
   - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-001`

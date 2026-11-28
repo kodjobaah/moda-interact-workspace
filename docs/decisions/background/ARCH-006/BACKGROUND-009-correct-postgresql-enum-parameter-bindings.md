@@ -223,7 +223,7 @@ In `src/services/translation-batch-poll.service.ts`, preserve the provider termi
 status mapping:
 
 ```ts
-providerStatus.toUpperCase()
+providerStatus.toUpperCase();
 ```
 
 for the normalized provider statuses:
@@ -257,8 +257,7 @@ table merely for this correction.
 In the same poll service, preserve:
 
 ```ts
-const shouldRetry =
-  retryable && item.retryCount < configuredMaxAutoRetries();
+const shouldRetry = retryable && item.retryCount < configuredMaxAutoRetries();
 ```
 
 Current invalid form:
@@ -285,8 +284,7 @@ In `src/services/translation-batch-results.service.ts`, preserve the existing re
 retry decision:
 
 ```ts
-const retry =
-  retryable && record.retryCount < maxAutoRetries();
+const retry = retryable && record.retryCount < maxAutoRetries();
 ```
 
 Current invalid form:

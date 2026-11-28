@@ -12,11 +12,12 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on: []
-enables: 
+enables:
   - ARCH-002-GATEWAY-002
 created: 2026-08-29
 updated: 2026-08-29
 ---
+
 # Inspect Platform and Define Production Deployment Prerequisites
 
 ## Architecture

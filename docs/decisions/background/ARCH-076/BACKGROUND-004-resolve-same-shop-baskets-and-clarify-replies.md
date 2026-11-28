@@ -14,7 +14,13 @@ priority: 45
 executor: codex
 claimed_at: 2026-11-15T19:19:04Z
 attempt: 1
-depends_on: [ARCH-076-BACKGROUND-003, ARCH-076-ADMIN-002, ARCH-076-ADMIN-003, ARCH-076-COMMERCE-001]
+depends_on:
+  [
+    ARCH-076-BACKGROUND-003,
+    ARCH-076-ADMIN-002,
+    ARCH-076-ADMIN-003,
+    ARCH-076-COMMERCE-001,
+  ]
 enables: []
 created: 2026-11-13
 updated: 2026-11-15
@@ -213,7 +219,6 @@ Reconciled from the later local sender-pool revision formerly labelled ARCH-069.
 ## Mandatory same-conversation allowance renewal amendment
 
 Historical renewal amendment is superseded for this sender task: allowance work belongs only to independent DATABASE-002/BACKGROUND-005 and does not gate sender routing. Never filter ownership by credit or cap.
-
 
 ### 15 November definition amendment
 

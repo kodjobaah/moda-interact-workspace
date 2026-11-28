@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-ADMIN-005
-- ARCH-010-DATABASE-013
+  - ARCH-010-ADMIN-005
+  - ARCH-010-DATABASE-013
 enables:
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
 updated: 2026-09-13
 ---
@@ -28,7 +28,6 @@ updated: 2026-09-13
 ## Objective
 
 Add internal campaign-detail reporting so Moda can answer which merchants selected/used a promotion and how much of each one-time campaign allocation remains, without using aggregate shop counters as historical truth.
-
 
 ## Required campaign detail
 
@@ -82,9 +81,11 @@ Stop if DATABASE-011 does not expose deterministic per-campaign/shop grant histo
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/lib/admin/promotion-report-model.ts`
 - `moda-interact-admin/src/lib/admin/promotion-report.ts`
 - `moda-interact-admin/src/app/(protected)/promotions/page.tsx`
@@ -93,6 +94,7 @@ Ready for Review.
 - `moda-interact-admin/tests/security/admin-promotions.test.mjs`
 
 ### Work Completed
+
 - Added a SUPER_ADMIN-only, server-side campaign usage report derived from exact `PromotionalCreditGrant(campaignId, shopId)` lots.
 - Added bounded 25-row pagination and bounded merchant search across safe shop ID/domain fields, with selected/used/exhausted filters.
 - Added campaign-wide selected, used, exhausted and committed-credit summaries.
@@ -102,6 +104,7 @@ Ready for Review.
 - Completed the Attempt-2 presentation correction: the merchant table visibly renders first/last selection and use timestamps, selection count, all allocation quantities, exhausted status and current-selection state; Previous/Next links preserve normalized status and non-empty search filters.
 
 ### Validation Results
+
 - `node --experimental-strip-types --test tests/unit/promotion-report.test.ts tests/security/admin-promotions.test.mjs`: passed, 20/20.
 - `npm test`: passed, 171/171 (declared observability/security suite).
 - `npm run lint`: passed with two pre-existing warnings in `src/components/admin/queue-monitor.tsx` (missing `refresh` hook dependencies); no errors attributable to ADMIN-006.
@@ -110,6 +113,7 @@ Ready for Review.
 - Build emitted existing BullMQ warnings for dynamic dependency resolution and optional `@valkey/valkey-glide`; no build failure.
 
 ### Git / VCS
+
 - Attempt-2 launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-006`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-006`; both synchronized on `task/ARCH-010-ADMIN-006`; recursive database submodule status `ready` at `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`.
 - Attempt-2 implementation commit and push: `b0332e5` pushed to `origin/task/ARCH-010-ADMIN-006`.
 - Attempt-2 claim evidence: executor `copilot`, dependency gate passed, claim committed and pushed before implementation; parent report publication is the commit containing this update.
@@ -119,6 +123,7 @@ Ready for Review.
 - Parent report commit and push: recorded by the parent publication commit after this report update.
 
 ### Architect Review
+
 No Architect Review section was present in the complete claimed task file; there were no Changes Requested items. Ready for architect review after implementation publication.
 
 ## Architect Review — Attempt 1
@@ -515,4 +520,3 @@ claimed_at: null
 satisfied dependency, but SYSTEM-TEST-003 still has multiple incomplete
 implementation dependencies. Do not claim or start it solely because ADMIN-006 is
 Complete.
-

@@ -58,14 +58,14 @@ No new follow-up queue, schema, template catalogue, sender, credit or separate c
 
 `S` = initial sent, `D` = effective persisted due (null if disabled/unscheduled), `V` = verified inbound.
 
-| Scenario | HUMAN_TEXT | HUMAN template |
-|---|---|---|
-| `V` is within latest 24 hours | Eligible | Denied: window open |
-| `V` expired, `D <= now` | Denied | Eligible if sequence 2 free |
-| `V` expired, `D > now` or null | Denied | Denied |
-| No `V`, `D <= now` | Denied | Eligible even if `now < S+24h` |
-| No `V`, `D > now` or null | Denied | Denied |
-| Missing unsent `S` or terminal recovery | Denied | Denied |
+| Scenario                                | HUMAN_TEXT | HUMAN template                 |
+| --------------------------------------- | ---------- | ------------------------------ |
+| `V` is within latest 24 hours           | Eligible   | Denied: window open            |
+| `V` expired, `D <= now`                 | Denied     | Eligible if sequence 2 free    |
+| `V` expired, `D > now` or null          | Denied     | Denied                         |
+| No `V`, `D <= now`                      | Denied     | Eligible even if `now < S+24h` |
+| No `V`, `D > now` or null               | Denied     | Denied                         |
+| Missing unsent `S` or terminal recovery | Denied     | Denied                         |
 
 The existing approved Meta template requirement and all other policy gates apply to every eligible template row. A customer reply **does not schedule** a new follow-up; scheduled no-response jobs remain suppressed after engagement.
 
@@ -183,21 +183,27 @@ No Shopify/Background source, schema migration, queue, billing, or new infrastru
 ## Architect Review
 
 ### Review Status
+
 Developer Self-Review Passed/Accepted — 2026-10-21. Explicit developer completion was requested and is recorded separately after this durable review transition.
 
 ### Review Notes
+
 The configured follow-up due-time correction is implemented within API ownership. The decision table and integration coverage exercise verified inbound windows, configured due timestamps, replay, tenant isolation and single sequence-two admission.
 
 ### Reviewed Files
+
 `src/merchant/conversations/messages/eligibility.ts`, `src/merchant/conversations/messages/admission.service.ts`, focused unit/PostgreSQL tests, harness, and database gitlink at implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2`.
 
 ### Validation Reviewed
+
 Focused unit suite 5/5; disposable PostgreSQL API-004/API-005 suites 2/2 with 58 migrations; typecheck, lint, build, and `git diff --check` passed on the published implementation branch. The database gitlink matches the tested revision `807af3393f992c8a19bc9ef278d7e7e05f41799d`.
 
 ### Architecture Conformance
+
 Accepted. No independent delay, fallback scheduler, schema or cross-repository runtime change was introduced. Existing transaction locks, replay ordering, tenant checks, moderation boundary and sequence-two claim were retained.
 
 ### Follow-up
+
 No remaining API-005 work item or acceptance criterion is incomplete. ARCH-040-WOOCOMMERCE-001 remains pending because ARCH-040-API-002 is pending; ARCH-040-SYSTEM-TEST-003 remains pending because ARCH-040-WOOCOMMERCE-001 and ARCH-040-BACKGROUND-008 are pending. Neither task is promoted; system-test manual-gate policy remains in force.
 
 ## Developer Self-Review Passed/Accepted — Attempt 1

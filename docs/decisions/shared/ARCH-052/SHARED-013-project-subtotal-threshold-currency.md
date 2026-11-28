@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-SHARED-012
+  - ARCH-052-SHARED-012
 enables:
-- ARCH-052-SHARED-014
+  - ARCH-052-SHARED-014
 created: 2026-10-31
 updated: 2026-10-31
 ---
@@ -64,7 +64,7 @@ No new source file, schema name, package entrypoint, alias, DTO, API tool, queue
 5. **Existing facts unchanged:** Retain exact existing keys/limits/nullability for `provider`, `completeness`, timestamps, `discountKind`, `targeting`, quantity, limits, `customerScope`, `excludesSaleItems`, `individualUse`, `combination`, and `unrepresentedConditions`. Do not introduce a separate `CommerceDiscountThresholdFactsSchema`.
 6. **Wire nesting unchanged:** `CommerceDiscountDetailsSchema = z.strictObject({ offer: CommerceOfferSchema, facts: CommerceDiscountConditionFactsSchema, providerDiscountId: z.string().min(1).max(191).nullable() })` remains intact. Keep `CommerceToolOutputs.commerce_get_discount_details` as `{ details: CommerceDiscountDetailsSchema.nullable() }`; the generic `commerceToolResultSchema` `commerce.v1` OK/ERROR wrapper remains intact.
 7. **Structural validation only:** Zod deliberately permits a threshold with unknown currency and empty `unrepresentedConditions`, or a known currency with null thresholds. Producer/consumer code is responsible for enforcing truthful completeness and evidence. Do not put source-completeness or currency-match rules into Zod.
-8. **Change classification:** This is a breaking field addition only for *pre-production* consumers of the discount-details `commerce.v1` wire shape. Preserve `contractVersion: "commerce.v1"`; do not invent `commerce.v2`, duplicate locally in MCP, or overwrite the published `2.8.1` package. Consumers upgrade their pins only after SHARED-014 publishes a new immutable version.
+8. **Change classification:** This is a breaking field addition only for _pre-production_ consumers of the discount-details `commerce.v1` wire shape. Preserve `contractVersion: "commerce.v1"`; do not invent `commerce.v2`, duplicate locally in MCP, or overwrite the published `2.8.1` package. Consumers upgrade their pins only after SHARED-014 publishes a new immutable version.
 
 ## Work Items
 
@@ -82,11 +82,7 @@ These symbols are already imported in `src/commerce/schemas.ts`:
 
 ```typescript
 import { z } from "zod";
-import {
-  IdSchema as ID,
-  MoneySchema,
-  CurrencySchema,
-} from "./primitives";
+import { IdSchema as ID, MoneySchema, CurrencySchema } from "./primitives";
 ```
 
 The import block above names the **relevant existing members**, not an instruction to replace the full import block or remove other imports.
@@ -97,15 +93,23 @@ Copy/retain the following complete declaration block in `src/commerce/schemas.ts
 
 ```typescript
 export const CommerceDiscountCombinationFactsSchema = z.strictObject({
-  discountClasses: z.array(z.enum(["ORDER", "PRODUCT", "SHIPPING"])).max(3).nullable(),
+  discountClasses: z
+    .array(z.enum(["ORDER", "PRODUCT", "SHIPPING"]))
+    .max(3)
+    .nullable(),
   shopifyPlus: z.boolean().nullable(),
-  combinesWith: z.strictObject({
-    orderDiscounts: z.boolean().nullable(),
-    productDiscounts: z.boolean().nullable(),
-    shippingDiscounts: z.boolean().nullable(),
-  }).nullable(),
+  combinesWith: z
+    .strictObject({
+      orderDiscounts: z.boolean().nullable(),
+      productDiscounts: z.boolean().nullable(),
+      shippingDiscounts: z.boolean().nullable(),
+    })
+    .nullable(),
   discountTags: z.array(z.string().min(1).max(128)).max(64).nullable(),
-  allowedSameLineProductTags: z.array(z.string().min(1).max(128)).max(64).nullable(),
+  allowedSameLineProductTags: z
+    .array(z.string().min(1).max(128))
+    .max(64)
+    .nullable(),
 });
 export type CommerceDiscountCombinationFacts = z.infer<
   typeof CommerceDiscountCombinationFactsSchema
@@ -214,9 +218,7 @@ The existing `commerceToolResultSchema(CommerceToolOutputs.commerce_get_discount
         "discountCurrency": null,
         "targeting": {
           "kind": "PRODUCTS",
-          "includedProductIds": [
-            "401"
-          ],
+          "includedProductIds": ["401"],
           "includedVariantIds": [],
           "includedCategoryIds": [],
           "includedCollectionIds": [],
@@ -242,9 +244,7 @@ The existing `commerceToolResultSchema(CommerceToolOutputs.commerce_get_discount
           "discountTags": null,
           "allowedSameLineProductTags": null
         },
-        "unrepresentedConditions": [
-          "UNREPRESENTED_MAXIMUM_ITEMS"
-        ]
+        "unrepresentedConditions": ["UNREPRESENTED_MAXIMUM_ITEMS"]
       },
       "providerDiscountId": "woo:coupon:offer-20"
     }

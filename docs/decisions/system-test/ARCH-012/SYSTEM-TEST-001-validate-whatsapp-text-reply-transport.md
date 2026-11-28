@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-012-MESSAGING-001
-- ARCH-012-BACKGROUND-001
-- ARCH-012-BACKGROUND-003
-- ARCH-012-GATEWAY-001
+  - ARCH-012-MESSAGING-001
+  - ARCH-012-BACKGROUND-001
+  - ARCH-012-BACKGROUND-003
+  - ARCH-012-GATEWAY-001
 enables: []
 created: 2026-09-14
 updated: 2026-09-16
@@ -27,6 +27,7 @@ updated: 2026-09-16
 # ARCH-012-SYSTEM-TEST-001
 
 ## Objective
+
 Prove the integrated non-voice ARCH-012 communications path against realistic Meta-shaped traffic and the existing WhatsApp emulator. This task validates communications only; it must not test or redefine when a Shopify recovery should be scheduled.
 
 ## Required scenarios
@@ -46,6 +47,7 @@ existing outbound ConversationMessage with provider wamid
 Assert a more-recent unrelated conversation cannot steal an explicit reply.
 
 ### Inbound contextless reply
+
 Prove:
 
 - one actionable conversation -> routed;
@@ -54,6 +56,7 @@ Prove:
 - no context field is invented by Messaging.
 
 ### Outbound text/link
+
 Drive Background outbound transport and assert emulator receives:
 
 - exact text;
@@ -63,6 +66,7 @@ Drive Background outbound transport and assert emulator receives:
 - returned provider wamid persisted/status-tracked.
 
 ### Outbound approved template media/action
+
 Assert serialized template can contain:
 
 - body parameters;
@@ -79,6 +83,7 @@ Assert serialized template can contain:
 - malformed/unsupported inbound type -> never becomes empty text agent turn.
 
 ## Test ownership / fixtures
+
 Extend the existing WhatsApp Cloud API emulator rather than creating a second emulator. Add only fixtures/capabilities needed to inspect the new request fields and realistic inbound webhook generation.
 
 Use test database/Redis configuration according to existing system-test conventions. Do not call live Meta.
@@ -100,6 +105,7 @@ Use test database/Redis configuration according to existing system-test conventi
 - [ ] duplicate and provider-status behaviour remains idempotent.
 
 ## Validation
+
 Run the focused ARCH-012 system scenarios plus the repository-declared full test suite and:
 
 ```text
@@ -109,23 +115,29 @@ git diff --check
 If the task targets the deployed Render test environment, record exact service revision/environment evidence using existing system-test deployment conventions; do not silently substitute local-only evidence for a required deployed gate.
 
 ## Stop conditions
+
 STOP if any dependency is not architect-accepted/integrated or if the emulator cannot represent a required Meta field without changing application behaviour.
 
 ## Completion protocol
+
 Return SYSTEM-TEST-001 to `review`; STOP.
 
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Validation Results
+
 TBD.
 
 ## Architect Review
 
 ### Review Status
+
 Not reviewed.
 
 ### Review Notes
+
 TBD.

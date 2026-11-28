@@ -58,8 +58,8 @@ ARCH-039 standardises hosted credential security before consumer refactoring. Th
 
 ```ts
 export function createCommerceEmbeddingCredentialAad(input: {
-  environment: 'LOCAL' | 'TEST' | 'DEVELOPMENT' | 'STAGING' | 'PRODUCTION';
-  purpose: 'MERCHANT_KNOWLEDGE' | 'REFERENCE_TAXONOMY';
+  environment: "LOCAL" | "TEST" | "DEVELOPMENT" | "STAGING" | "PRODUCTION";
+  purpose: "MERCHANT_KNOWLEDGE" | "REFERENCE_TAXONOMY";
   provider: string;
   keyId: string;
 }): string;
@@ -75,8 +75,12 @@ export function createWooRestReadGrantAad(input: {
 
 ```ts
 canonicalJson({
-  credentialType: 'EMBEDDING', environment, purpose, provider, keyId,
-})
+  credentialType: "EMBEDDING",
+  environment,
+  purpose,
+  provider,
+  keyId,
+});
 ```
 
 `canonicalJson` must be imported from existing Shared source; do not use unordered `JSON.stringify` for embedding. Valid environment/purpose enum values above, nonempty provider (<=128 characters; reject CR/LF/NUL) and canonical key ID (1–64 `[A-Za-z0-9_-]`). No trimming or lowercasing, because both sides must derive identical bytes from persisted values.
@@ -85,9 +89,12 @@ canonicalJson({
 
 ```ts
 JSON.stringify([
-  'moda-woo-rest-read-v1', shopId, installationId,
-  authorizationAttemptId, credentialVersionSnapshot,
-])
+  "moda-woo-rest-read-v1",
+  shopId,
+  installationId,
+  authorizationAttemptId,
+  credentialVersionSnapshot,
+]);
 ```
 
 Inputs must be nonempty bounded identifiers (1–128 characters, no CR/LF/NUL) and positive safe integer `credentialVersionSnapshot`. Avoid normalisation, extra tags/fields or `canonicalJson` for the Woo array. AAD builder accepts **trusted, validated IDs** but does not decide access to an installation or grant.

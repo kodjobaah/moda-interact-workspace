@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-DATABASE-014
-- ARCH-010-BACKGROUND-021
-- ARCH-010-BACKGROUND-022
-- ARCH-010-SHOPIFY-014
-- ARCH-010-SHARED-008
+  - ARCH-010-DATABASE-014
+  - ARCH-010-BACKGROUND-021
+  - ARCH-010-BACKGROUND-022
+  - ARCH-010-SHOPIFY-014
+  - ARCH-010-SHARED-008
 enables:
-- ARCH-010-SHOPIFY-026
-- ARCH-010-ADMIN-002
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SHOPIFY-026
+  - ARCH-010-ADMIN-002
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-13
 updated: 2026-09-14
 ---
@@ -406,19 +406,23 @@ STOP if DATABASE-014/BACKGROUND-022 are not integrated, if authenticated shop sc
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Attempt-3 Completion Report
 
 #### Initially Missing
+
 - `requestRefundWithRetry` handled `P2002` only by reloading the exact deterministic request key. A concurrent request for the same purchase with a different request ID could therefore rethrow the partial one-live-refund uniqueness conflict as a server error.
 
 #### Applied Fixes
+
 - Added a shop-scoped `RecoveryCreditPurchase.findFirst` fallback after the exact request-key lookup. The fallback reloads only live refund statuses and returns the persisted purchase/refund outcome, preserving `REQUESTED` versus `ALREADY_WITHDRAWN` semantics and winning current/reserved/available values.
 - Added the required regression test for request B losing to a different-request live refund from request A. It proves no second refund is created and no Prisma error escapes.
 - No route, schema, Shared, Background, Admin, provider, page-UI, quantity, money, or transaction-boundary changes were made.
 
 #### Final Checklist Audit
+
 - Authenticated shop resolution, shop-scoped paginated history, all five purchase states, safe refund summaries, computed availability, bounded unique batch input, ordered independent outcomes, client-quantity/money rejection by omission, Serializable per-purchase transactions, bounded retry, purchase/refund/aggregate CAS, exact hold/release accounting, reactivation/provider-action protection, zero-credit completion, and no provider/App Event call remain intact from the prior implementation.
 - Same-request request-key replay remains deterministic.
 - Different-request one-live-refund `P2002` now resolves from authenticated persisted `id + shopId` purchase state; cross-shop fallback state is not queried or exposed.
@@ -426,6 +430,7 @@ Ready for Review.
 - All task non-goals remain satisfied. No unresolved functional requirement was found in the second explicit pass.
 
 #### Validation
+
 - Focused service test: passed, 12/12.
 - Related billing tests: passed, 2 files and 196 tests.
 - Full test suite: passed, 42 files and 516 tests; 2 files and 3 tests skipped.
@@ -438,21 +443,25 @@ Ready for Review.
 - Repository `npm run lint`: remains non-zero on 16 pre-existing errors outside changed files. Repository `npm run typecheck`: remains non-zero on the known baseline JSX implicit-any/Polaris, missing `d3` declarations, nullable billing plan, Redis overload, and incomplete billing test mock diagnostics; no diagnostic references the changed files.
 
 #### Git / Worktree / Claim Evidence
+
 - Launcher claim commit: `ec9e45437bbc889fa04c5e6c0bc947afe350c395`; attempt 3 was already claimed by the launcher and was not re-prepared or reclaimed.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-025`, branch `task/ARCH-010-SHOPIFY-025`, clean after publication.
 - Implementation commit: `957990b0b36b63eb4ff9f5871abead8d4d6ce68e`, pushed to `origin/task/ARCH-010-SHOPIFY-025`.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-025`, branch `task/ARCH-010-SHOPIFY-025`.
 
 #### Unresolved Baseline Issues
+
 - Repository-wide lint and typecheck baseline failures remain outside this task and do not reference the final changed files.
 
 ### Initial Audit Findings and Corrections
+
 - The existing service had no authenticated server resource boundary for the future merchant page. Added `app/routes/app/billing/recovery-credits/route.ts` with shop resolution, capability checks, paginated loader, bounded batch action, and reactivation action; no page UI or provider call was added.
 - A `P2002` request-key conflict was reported as `REQUESTED` without reading the authoritative row. The service now reloads the refund by its deterministic request key and returns the persisted purchase/refund lifecycle outcome.
 - The original pagination test fixture ignored its `shopId` filter and falsely expected a cross-shop row. The fixture now applies the filter and the assertion proves the other shop is excluded.
 - The Prisma schema was inspected and validated: `requestKey` is unique, aggregate identity is `(shopId, counter)`, and all fields/enums used by the service match the existing schema. No schema change is required.
 
 ### Requirement Checklist
+
 - Shop-scoped history, default page size 20, hard maximum 50, all five statuses, safe summaries, and computed availability: implemented and tested.
 - Fresh Serializable refund transactions, bounded retry, purchase/refund/aggregate CAS, exact hold/release accounting, and no shop-global lock: implemented.
 - Client quantity/money is ignored; the resource action accepts only authenticated shop context, purchase IDs, and request identity.
@@ -461,6 +470,7 @@ Ready for Review.
 - No provider refund API, negative App Event, new Shared code, schema, Background, Admin, or page-UI change was introduced.
 
 ### Required Test Items
+
 1. Shop-scoped paginated list: covered by the list test and corrected fixture filter.
 2. All five purchase states: covered by the status mapping test.
 3. ACTIVE availability: covered by computed availability assertions.
@@ -483,11 +493,13 @@ Ready for Review.
 20. Focused tests, relevant suite, full suite, Prisma validation/generation, build, touched lint, typecheck review, and `git diff --check`: recorded below.
 
 ### Files Changed
+
 - `moda-interact/app/services/billing/recovery-credit-purchase-management.service.ts`
 - `moda-interact/app/routes/app/billing/recovery-credits/route.ts`
 - `moda-interact/tests/unit/services/recovery-credit-purchase-management.service.test.ts`
 
 ### Validation Results
+
 - Focused management service: passed, 11/11.
 - Relevant billing suites: passed, 3 files and 198 tests.
 - Full suite: passed, 42 files and 515 tests; 2 files and 3 tests skipped.
@@ -500,6 +512,7 @@ Ready for Review.
 - `npm run typecheck`: remains non-zero on the known repository baseline (existing JSX implicit-any/Polaris diagnostics, missing `d3` declarations, existing nullable billing plan, Redis overload, and incomplete billing test mocks); no diagnostic remains in the changed service, route, or focused test.
 
 ### Git / VCS Evidence
+
 - Claim commit: `08d85bb9ac97e30ca1c2d8e4b2af3879e376ea09` on parent and implementation task branches.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-025`.
 - Implementation branch: `task/ARCH-010-SHOPIFY-025`.
@@ -508,9 +521,11 @@ Ready for Review.
 - No schema, Shared, Background, Admin, provider, or page-UI files were changed.
 
 ### Unresolved Issues
+
 - The repository-wide typecheck and lint baselines remain unresolved outside this task; they do not reference the final changed files.
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review — Attempt 2
@@ -572,13 +587,9 @@ up only:
 ```ts
 RecoveryCreditRefund.findUnique({
   where: {
-    requestKey: requestKey(
-      input.shopId,
-      input.requestId,
-      input.purchaseId,
-    ),
+    requestKey: requestKey(input.shopId, input.requestId, input.purchaseId),
   },
-})
+});
 ```
 
 That correctly resolves a replay/race where the conflicting unique constraint is the
@@ -682,7 +693,7 @@ recoveryCreditPurchase.findFirst({
       take: 1,
     },
   },
-})
+});
 ```
 
 Do not fetch a cross-shop purchase and then expose its refund state.
@@ -1132,4 +1143,3 @@ ARCH-010-ADMIN-002
 ```
 
 No Attempt 4 is required for `ARCH-010-SHOPIFY-025`.
-

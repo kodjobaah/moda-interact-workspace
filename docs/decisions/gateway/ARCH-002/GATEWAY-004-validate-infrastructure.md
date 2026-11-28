@@ -11,12 +11,13 @@ priority: 40
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: 
+depends_on:
   - ARCH-002-GATEWAY-003
 enables: []
 created: 2026-08-29
 updated: 2026-09-02
 ---
+
 # Validate Gateway and Render Infrastructure Configuration
 
 ## Architecture

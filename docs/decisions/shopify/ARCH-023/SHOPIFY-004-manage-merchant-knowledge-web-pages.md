@@ -84,7 +84,7 @@ Do not create a second Merchant Knowledge toggle or preference table.
 Implement/retain:
 
 ```ts
-loadCurrentMerchantKnowledgeEntitlement(shopId)
+loadCurrentMerchantKnowledgeEntitlement(shopId);
 ```
 
 Require current Subscription `ACTIVE|TRIALING`, current `planId`, active BillingPlan, enabled BillingPlanFeature, active `Feature.key=merchant_knowledge`, and `Feature.activationMode=MERCHANT_OPT_IN`. Parse C2 with Shared schema. Ignore pending future plans.
@@ -120,9 +120,13 @@ Intersect active Purpose/Data Format compatibility with current C2 `allowedSourc
 For each source expose commercial/source state separately:
 
 ```ts
-currentlyPlanEntitled
-processingEligible // currentlyPlanEntitled && merchantEnabled
-dormantReason: null | "MERCHANT_DISABLED" | "SOURCE_TYPE" | "SOURCE_COUNT" | "NO_CURRENT_PLAN"
+currentlyPlanEntitled;
+processingEligible; // currentlyPlanEntitled && merchantEnabled
+dormantReason: null |
+  "MERCHANT_DISABLED" |
+  "SOURCE_TYPE" |
+  "SOURCE_COUNT" |
+  "NO_CURRENT_PLAN";
 ```
 
 Disabled Merchant Knowledge does not delete or hide configured sources.
@@ -266,8 +270,11 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
+
 Attempt 2 corrections implemented and submitted to `moda_architect` for review. This is not an architect acceptance decision.
+
 ### Files Changed
+
 - `app/routes.ts`
 - `app/routes/app/recovery-settings/route.tsx`
 - `app/routes/app/recovery-settings/RecoverySettingsView.tsx`
@@ -278,21 +285,27 @@ Attempt 2 corrections implemented and submitted to `moda_architect` for review. 
 - `app/services/merchant-knowledge/merchant-knowledge-queue.server.ts`
 - `tests/unit/merchant-knowledge-{entitlement,actions,queue,read-model,section,url-validation}.test.*`
 - `tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts`
+
 ### Work Completed
+
 - Added current-subscription/current-plan entitlement resolution using the Shared C2 schema and `MERCHANT_OPT_IN` Feature state; plan entitlement grants configuration access independently from the merchant preference.
 - Read the canonical `ShopFeaturePreference` and expose plan, activation and effective state. Recovery Settings reuses its existing `FeaturePreferences` checkbox as the only activation control and presents Store Profile, Merchant Knowledge, then existing recovery controls in the required order.
 - Added WEB_PAGE source create/edit/refresh/delete/reorder actions and metadata read model. Operations use the authenticated `settingsAccess` shop, Shop/source row locks, exact ownership checks, current allowed source types, supported language tags, HTTPS syntax validation, revision generations, and collision-safe position rewrites.
 - OFF-state create/edit/refresh leaves durable PENDING revisions and does not enqueue; ON-state revisions use the existing Shared C4 job contract. Queue construction/publication failures are contained after commit. Preference changes do not enumerate sources or enqueue work.
 - The UI remains configurable while OFF, shows plan/source/dormancy and revision/active usage state, and does not expose extracted content or embeddings.
 - Implementation commits: `d2815f8b22a9f906276c45fce64e4a8abea9cd58` and `a33dc681d8e26adefd9b0ce5b759016d5baed5ce`.
+
 ### Launcher Evidence
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-004`, branch `task/ARCH-023-SHOPIFY-004`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-004`, branch `task/ARCH-023-SHOPIFY-004`.
 - Both worktrees were newly created for this task; no other task worktree was reused. Shared workspace/source checkouts were not switched or mutated for task implementation.
 - Start-of-attempt synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` `already-current`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` `already-current`.
 - Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` initialized at `2eb17ee910491e8f9df82736fc0a843844415947`.
+
 ### Validation Results
+
 - Focused Merchant Knowledge plus existing feature-preference/Recovery Settings tests: 9 files, 31 tests passed.
 - Disposable PostgreSQL lifecycle/concurrency proof: `tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts`, 5/5 passed. It verified OFF/ON queue behavior, non-destructive opt-out, OFF-state refresh remaining PENDING/un-enqueued, ownership isolation, plan/source validation, concurrent source-cap enforcement and serialized generation increments. Testcontainers used one owned `pgvector/pgvector:pg17` instance, deployed migrations, and removed the container. Colima required per-command `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock` and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`; no global Docker configuration was changed.
 - `npm run typecheck` — passed after the final implementation/test changes.
@@ -300,28 +313,40 @@ Attempt 2 corrections implemented and submitted to `moda_architect` for review. 
 - `npm run build` — passed. Build emitted dependency annotation/externalization and large-chunk warnings, with no build errors.
 - Changed-file diagnostics — no errors. `git diff --check HEAD~2 HEAD` — passed.
 - Implementation task branch `task/ARCH-023-SHOPIFY-004` was pushed and verified at `a33dc681d8e26adefd9b0ce5b759016d5baed5ce`; implementation worktree is clean.
+
 ### Deviations
+
 The integration proof needed explicit per-command Colima socket settings for Testcontainers. No product-scope or architecture deviations were made.
+
 ### Assumptions
+
 Durable OFF-state PENDING revisions are activated by the existing Background periodic reconciliation after merchant opt-in; Shopify does not add an enqueue-on-enable path, as required by R10.
+
 ### Unresolved Issues
+
 None within this task's scope.
+
 ### Architectural Concerns
+
 None identified. Commerce retrieval enforcement remains owned by COMMERCE-004; ingestion remains Background-owned.
 
 ### Attempt 2
+
 #### Files Changed
+
 - `app/services/merchant-knowledge/merchant-knowledge.server.ts`
 - `tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts`
 - `tests/unit/merchant-knowledge-url-validation.test.ts`
 
 #### Corrections Implemented
+
 - Delete and reorder now resolve current entitlement immediately after locking the Shop and deny before mutation without a valid entitlement. They do not require merchant opt-in or source-count eligibility; existing OFF-state operations under entitlement remain covered and passing.
 - Edit and refresh compute the R3 eligible source window under the Shop lock: active Purpose/Data Format, pair in current C2 `allowedSourceTypes`, position then id order, first `maxKnowledgeSources`. An excess source is denied before metadata, generation, revision or enqueue changes; reorder can move a source into the window.
 - URL validation checks raw and canonical URL lengths and returns only the validated canonical value. A Unicode path regression proves a raw input shorter than 2,048 characters is rejected when `URL.toString()` exceeds 2,048, before transaction entry.
 - PostgreSQL regressions cover a two-source downgrade to `maxKnowledgeSources: 1` (second source denied on edit/refresh without revision/enqueue; reorder moves it into the window and refresh succeeds) and no-entitlement delete/reorder denial with source rows and positions unchanged.
 
 #### Launcher and Worktree Evidence
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-004`, `task/ARCH-023-SHOPIFY-004`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-004`, `task/ARCH-023-SHOPIFY-004`.
@@ -331,6 +356,7 @@ None identified. Commerce retrieval enforcement remains owned by COMMERCE-004; i
 - Parent claim commit `b2336d9cb1ae8302dd0f8b2498d23dbe4f23cc41` and implementation commit `d17cfffc6c03dec77632d3e9cae5770ca2fc74d8` were pushed on their respective task branches.
 
 #### Validation Results
+
 - Focused Merchant Knowledge, activation and Recovery Settings suites: 9 files, 36 tests passed.
 - Disposable PostgreSQL lifecycle/concurrency suite: 1 file, 7 tests passed. Per-command environment: `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock`, `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`, `MODA_DISPOSABLE_INTEGRATION=1`; global Docker configuration was not changed.
 - `npm run typecheck`: passed.
@@ -339,6 +365,7 @@ None identified. Commerce retrieval enforcement remains owned by COMMERCE-004; i
 - `git diff --check`: passed.
 
 #### Deviations and Unresolved Issues
+
 No scope deviations or unresolved issues. No schema, migration, shared contract, Background, Commerce, or SHOPIFY-005 changes were made.
 
 ## Architect Review
@@ -400,9 +427,11 @@ Accepted. The current plan remains the configuration-access authority; `ShopFeat
 `ARCH-023-SHOPIFY-004` is now Complete / Accepted Attempt 2. Its sole enabled task, `ARCH-023-SHOPIFY-005`, has no remaining dependency and is promoted from Pending to Ready. SHOPIFY-005 is not claimed or started by this reconciliation.
 
 ### Review Status
+
 Changes Requested
 
 ### Review Notes
+
 Attempt 1 is substantially aligned with the Merchant Knowledge control-plane design, including reuse of the existing `ShopFeaturePreference`, OFF-state durability, authenticated shop derivation, revisioned WEB_PAGE lifecycle, queue-loss tolerance and Shop/source locking. Three bounded corrections remain before acceptance.
 
 **A1-R1 — current-plan configuration access is not enforced by delete/reorder.** `deleteMerchantKnowledgeSource(...)` and `reorderMerchantKnowledgeSources(...)` lock the authenticated Shop and validate ownership/set equality, but neither calls `loadCurrentMerchantKnowledgeEntitlement(...)`. A merchant whose current plan no longer entitles `merchant_knowledge` can therefore still mutate stored Merchant Knowledge state through these resource actions whenever Recovery Settings remains reachable for other plan features. R1 and R15 require current-plan entitlement for configuration access; OFF-state permission is not permission to mutate without a current Merchant Knowledge plan mapping.
@@ -412,6 +441,7 @@ Attempt 1 is substantially aligned with the Merchant Knowledge control-plane des
 **A1-R3 — URL length is checked before canonicalisation, not on the value persisted.** `parsePublicHttpsUrl(...)` checks the raw input length and then returns `url.toString()`. Percent-encoding can expand an input below 2,048 characters beyond the `MerchantKnowledgeSourceRevision.requestedUrl VARCHAR(2048)` bound, causing a database failure instead of deterministic `INVALID_INPUT`. The canonical `url.toString()` value must also be `<= 2048` before opening the transaction/persisting it.
 
 ### Reviewed Files
+
 - `moda-interact/app/services/merchant-knowledge/merchant-knowledge-entitlement.server.ts`
 - `moda-interact/app/services/merchant-knowledge/merchant-knowledge.server.ts`
 - `moda-interact/app/services/merchant-knowledge/merchant-knowledge-queue.server.ts`
@@ -424,12 +454,15 @@ Attempt 1 is substantially aligned with the Merchant Knowledge control-plane des
 - accepted ARCH-023 database schema/migrations relevant to source positions/revisions
 
 ### Validation Reviewed
+
 The Completion Report records 31/31 focused tests, 5/5 disposable PostgreSQL lifecycle/concurrency cases, typecheck, changed-file lint/diagnostics, build and diff checks as passing. The test suite does not currently exercise the three correction cases above. The review archive does not contain a runnable installed dependency environment, so these dependency-backed commands were inspected from durable evidence rather than independently rerun.
 
 ### Architecture Conformance
+
 Conformant on merchant opt-in reuse, OFF-state non-destruction, tenant identity, source locking/generation, queue-loss safety, UI ordering and WEB_PAGE ownership boundaries. Not yet conformant on the current-plan configuration gate, R3/R7 source-count eligibility for edit/refresh, and deterministic canonical URL-length validation.
 
 ### Follow-up
+
 Return the same task through `/moda-task ARCH-023-SHOPIFY-004` for Attempt 2. Preserve the current implementation and make only these bounded corrections:
 
 1. **Gate delete/reorder on current Merchant Knowledge entitlement.** After acquiring the existing Shop lock, call the current-plan entitlement resolver. If it is not `kind: "entitled"`, fail with `DENIED` before deleting or rewriting positions. Do not require `merchantEnabled`; delete/reorder remain allowed while OFF. Do not require the target source itself to be within the current source-count allowance; deletion/reordering must remain available for dormant/excess sources while the shop has a valid current Merchant Knowledge entitlement.

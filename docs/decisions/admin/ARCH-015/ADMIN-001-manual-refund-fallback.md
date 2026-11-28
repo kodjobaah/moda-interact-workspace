@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-BACKGROUND-003
 enables:
-- ARCH-015-SYSTEM-TEST-001
+  - ARCH-015-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-16
 ---
@@ -895,7 +895,6 @@ STOP and return evidence to `moda_architect` if the corrections would require a 
 refund mutation, Admin Shopify App Event submission, a Prisma/schema change, translation
 invention, or a new Admin-wide locale runtime. Otherwise return this same task with
 `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 2` after the next claim.
-
 
 ## Architect Review — Attempt 2 — Accepted
 

@@ -49,7 +49,7 @@ Prove and, only where necessary, minimally adapt the existing accepted API-017 p
 - Preserve R2 `Content-Type`, `If-None-Match: *`, `x-amz-meta-sha256` signatures, TTL ≤ the durable upload-intent expiry, immutable object identity, idempotent duplicate finalize and verified SHA-256/length before activation.
 - Ensure only the authenticated Woo principal receives the complete signed URL and required headers from the upload intent, with no-store responses and no logging/reflection of signed query parameters, file contents, keys or installation credentials; adjust API HTTP/OpenAPI output only if an evidenced gap exists.
 - Document exact browser upload contract, safe error semantics (signature expired, redirect, bad header, R2 412, CORS unavailable, cancelled upload and finalise failure), environment-scope and rollout ordering for WOO-014/015 and Gateway; use shared Node logging conventions for any added diagnostics.
-- Test configuration change *between* intent, signed browser PUT and finalisation (credential rotation, bucket/endpoint/policy change or disabled configuration). Never verify or finalise against a different object silently; require deterministic fail-closed handling and documented retry with a new valid intent where necessary. Do not demand uninterrupted in-flight uploads after a deliberate R2 storage change.
+- Test configuration change _between_ intent, signed browser PUT and finalisation (credential rotation, bucket/endpoint/policy change or disabled configuration). Never verify or finalise against a different object silently; require deterministic fail-closed handling and documented retry with a new valid intent where necessary. Do not demand uninterrupted in-flight uploads after a deliberate R2 storage change.
 - Add focused test evidence. If the accepted API-017 implementation already satisfies a requirement, document the proof instead of gratuitous code changes; do not mutate its completed task definition/history.
 
 ## Out of Scope
@@ -188,6 +188,7 @@ Developer Self-Review Accepted, followed by the explicit developer completion de
 ### Developer Completion Decision
 
 Decision: Complete
+
 - Authority: Explicit developer request `/moda_developer_update ARCH-035-API-018 complete`
 - Accepted attempt: 1 (unchanged)
 - Implementation branch: `task/ARCH-035-API-018`, published commits `939fdb3` and `4de3f18`

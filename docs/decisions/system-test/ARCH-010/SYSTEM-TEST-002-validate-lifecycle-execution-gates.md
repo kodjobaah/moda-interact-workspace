@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-BACKGROUND-006
-- ARCH-010-BACKGROUND-012
-- ARCH-010-BACKGROUND-013
-- ARCH-010-BACKGROUND-018
-- ARCH-010-SHOPIFY-006
-- ARCH-010-SHOPIFY-016
+  - ARCH-010-BACKGROUND-006
+  - ARCH-010-BACKGROUND-012
+  - ARCH-010-BACKGROUND-013
+  - ARCH-010-BACKGROUND-018
+  - ARCH-010-SHOPIFY-006
+  - ARCH-010-SHOPIFY-016
 enables:
-- ARCH-010-SYSTEM-TEST-004
+  - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: '2026-10-06'
+updated: "2026-10-06"
 ---
 
 # ARCH-010-SYSTEM-TEST-002: Validate uninstall, reinstall, cancellation and freeze execution gates
@@ -141,19 +141,25 @@ STOP if provider historical-event access is unavailable in the configured Partne
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Scenarios Executed
+
 Populate during execution.
 
 ### Evidence
+
 Populate during execution.
 
 ### Validation Results
+
 Populate during execution.
 
 ### Git / VCS
+
 Populate if harness code changes.
 
 ### Architect Review
+
 Manual terminal gate; pending developer/architect acceptance.

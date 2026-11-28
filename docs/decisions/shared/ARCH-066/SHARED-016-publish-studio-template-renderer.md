@@ -19,15 +19,19 @@ enables: ["ARCH-066-COMMERCE-003"]
 created: 2026-11-09
 updated: 2026-11-09
 ---
+
 # Publish preview-only template renderer
 
 ## Scope and touch points
+
 Release-only package metadata/package lock and existing publication mechanism. Require accepted and explicitly Complete015; preserve exact accepted source and production exports. Select first unused5.x minor version above all published5.x versions, patch0; record registry check/version before publication, never overwrite an artifact. Publish only through existing package mechanism; record source commit, exact version, dist.integrity and downloaded tarball SHA256. Verify public new preview schemas/renderer/types and retained production exports using installed artifact. No consumer edits, new source fixes or live calls. Return a discovered source defect to015; do not repair during release. This task does not depend on sender013/014/Admin001. Acceptance: immutable artifact downloadable, hashes match, exact accepted source preserved beyond release metadata, public import smoke passes. No implementation test reruns as substitute for accepted015 evidence.
 
 ## Execution and completion boundary
+
 Definition only. Preserve unrelated work; you are not alone in the codebase. Use canonical launcher task worktrees and mirrored task branches. Record exact source, commands/results and package integrity; submit for review, stop and retain developer completion authority. No main merge/push, deployment, real customer send, Meta call, database mutation in a hosted environment or follow-on task execution is authorized. No acceptance from tests against injected simulation alone.
 
 ## Completion Report
+
 Ready for Review — immutable5.10.0 published and downloaded hash verification passed. Final installed downloaded-artifact public runtime/declaration smoke passed exit0.
 
 Source/release metadata: implementation `80bb605f9c6fd026e82b1dd207a1de2874d221b6` pushed on task/ARCH-066-SHARED-016. Prepared baseline56a8130f2f17d805734b40e6220b6011190798f8 source/scripts/tsup exactly match accepted015a19519e460516cfbc95dbe817bae9598e2b4ac6d (including exact accepted009carry869f830 and accepted011 brand/media). Only package.json.version and two matching package-lock version entries changed, three lines5.7.0→5.10.0; no source/runtime/test/export-map edits.
@@ -42,13 +46,14 @@ Publication authority was the user's explicit implementation of this publication
 
 Prepared isolation evidence: canonical root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-016`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-016`; both task/ARCH-066-SHARED-016. Parent reused baselineb441a3e31072f8b82ba93f480f2976a948ba6c88; implementation created baseline56a8130f2f17d805734b40e6220b6011190798f8. Both remote FF not-needed/main already-current; recursive sync/update passed, no entries, ready. Launcher claimAttempt1codex2026-11-09T02:09:32Z fe7e7895b51c694234d461009ea7713a387ed635 durably pushed; dependency015Complete gate passed. Startup/claim not repeated. Shared/reference checkouts not switched/mutated; no another-task worktree reused. No main merge/push/gitlink, consumer, activation or follow-on changes. Developer completion retained; Architect Review untouched.
 
-
 ## Code-level amendment — 2026-11-09
 
 ### Exact release delta and verification
+
 Only package.json.version and the matching package-lock.json root/package version entries may change. Use `npm version "$selected_version" --no-git-tag-version --ignore-scripts` after verifying the recorded accepted015 source and unused registry version. `selected_version` is the first unused next minor above highest published5.x; never select latest tag alone. Do not edit source to make packing pass. Use existing approved repository publication command/registry settings and required packaging lifecycle.
 
 Downloaded installed artifact must export these exact names from `@modainteract/moda-interact-shared/commerce/outreach`:
+
 ```typescript
 import {
   StudioOutreachTemplateSchema,
@@ -59,40 +64,44 @@ import {
   type StudioOutreachTemplate,
   type StudioInitialOutreachRenderInput,
   type StudioInitialOutreachRenderResult,
-} from '@modainteract/moda-interact-shared/commerce/outreach';
+} from "@modainteract/moda-interact-shared/commerce/outreach";
 ```
-Run runtime/declaration import smoke against the downloaded artifact using existing scripts, record exact version/integrity/tarball SHA256. Production renderer export must remain present. Report diff proving release metadata-only changes. No consumer edits or source correction during016; no invented fixed future version or republish. Public code import above is the required contract, not a request to re-run implementation test suites during publication.
 
+Run runtime/declaration import smoke against the downloaded artifact using existing scripts, record exact version/integrity/tarball SHA256. Production renderer export must remain present. Report diff proving release metadata-only changes. No consumer edits or source correction during016; no invented fixed future version or republish. Public code import above is the required contract, not a request to re-run implementation test suites during publication.
 
 ## Mandatory shared-component ownership and reuse — 2026-11-09
 
 This section controls earlier ambiguous wording. Shared means implementation in the published `@modainteract/moda-interact-shared` package, consumed through its public entrypoints. A helper placed only in Commerce or duplicated between services does not meet this requirement.
 
-| Responsibility | Sole implementation owner | Consumers |
-|---|---|---|
-| Preview template/input/result Zod schemas and inferred types | Shared outreach/template-contracts.ts, public outreach exports | Commerce; Shared tests |
-| Placeholder-to-parameter construction | Shared outreach/bindings.ts prepareStoredComponents | Both Shared production and Studio renderer entrypoints |
-| Header/body/footer text substitution and length handling | Shared outreach/component-render.ts renderStoredComponentText | Both Shared renderer entrypoints |
-| Variable/brand/media resolution | Existing Shared PreparedVariableResolver | Both Shared renderer entrypoints |
-| Offer presentation classification and INITIAL purpose mapping | Existing Shared selectSendableOutreachOffer and purposeFor | Both Shared renderer paths; Commerce host selecting frozen content |
-| Production registration/approval/hash/sender validation | Existing Shared production entrypoint and Background sending pipeline | Production only; never Studio renderer |
-| Database query, selected-shop authorisation, credentials, preview lifecycle/storage and UI | Commerce | Studio only; these are host adapters, not Shared business logic |
+| Responsibility                                                                             | Sole implementation owner                                             | Consumers                                                          |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Preview template/input/result Zod schemas and inferred types                               | Shared outreach/template-contracts.ts, public outreach exports        | Commerce; Shared tests                                             |
+| Placeholder-to-parameter construction                                                      | Shared outreach/bindings.ts prepareStoredComponents                   | Both Shared production and Studio renderer entrypoints             |
+| Header/body/footer text substitution and length handling                                   | Shared outreach/component-render.ts renderStoredComponentText         | Both Shared renderer entrypoints                                   |
+| Variable/brand/media resolution                                                            | Existing Shared PreparedVariableResolver                              | Both Shared renderer entrypoints                                   |
+| Offer presentation classification and INITIAL purpose mapping                              | Existing Shared selectSendableOutreachOffer and purposeFor            | Both Shared renderer paths; Commerce host selecting frozen content |
+| Production registration/approval/hash/sender validation                                    | Existing Shared production entrypoint and Background sending pipeline | Production only; never Studio renderer                             |
+| Database query, selected-shop authorisation, credentials, preview lifecycle/storage and UI | Commerce                                                              | Studio only; these are host adapters, not Shared business logic    |
 
 ### Exact public API addition in SHARED-015
 
 Add to `src/commerce/outreach/index.ts`:
+
 ```typescript
-export { selectSendableOutreachOffer } from './sendable-offer.js';
-export type { SendableOutreachOffer } from './sendable-offer.js';
-export { purposeFor } from './selection.js';
+export { selectSendableOutreachOffer } from "./sendable-offer.js";
+export type { SendableOutreachOffer } from "./sendable-offer.js";
+export { purposeFor } from "./selection.js";
 ```
+
 These export the existing implementations; do not create wrappers, a second classifier or a copied purpose switch. Preserve the exact existing function signatures and inferred return type. Verify SendableOutreachOffer is the existing exported type; if declaration emission requires an existing referenced type, expose that type additively without changing its shape.
 
 COMMERCE-003 imports those helpers from the public outreach entrypoint and uses:
+
 ```typescript
 const sendable = selectSendableOutreachOffer(evaluation.offerDecision);
-const purpose = purposeFor('INITIAL', sendable.presentation);
+const purpose = purposeFor("INITIAL", sendable.presentation);
 ```
+
 It must not implement its own no-offer/code/automatic mapping. Shared owns reusable semantic decisions; Commerce freezes/selects existing database content using the resolved purpose. The Commerce presentation adapter delegates once and contains no substitution, brand resolution, template approval, hash validation or message-length algorithm.
 
 ### Required proof before acceptance
@@ -105,25 +114,36 @@ It must not implement its own no-offer/code/automatic mapping. Shared owns reusa
 
 No new standalone service, database table, sender projection or UI component in Shared is introduced. Existing Background consumers use the same common code through their existing production renderer; no Background package change is part of these tasks.
 
-
 ## Architect publication readiness — 2026-11-09
+
 Sole prerequisite SHARED015 explicitly CompleteAcceptedAttempt1, sourcea19519e460516cfbc95dbe817bae9598e2b4ac6d/review7dbfa0ca6c596ffcd1dea62d0b4ca2cecc6cfa1d clean/published. Ready unchangedAttempt0/unclaimed. Reuse retained validated dist and pack/source provenance recorded in015; publication-only metadata and archive/registry checks, no implementation test/lint/typecheck/build revalidation. No publication or implementation worktree created by readiness reconciliation.
 
-
 ## Architect Review
+
 ### Review Status
+
 Accepted
+
 ### Review Notes
+
 Reviewed actual metadata-only release source80bb605f9c6fd026e82b1dd207a1de2874d221b6 and report2bf67f36fead4a938ee738aae42ab945a0b757d6. Sole prerequisite015CompleteAccepted before publication. Canonical physical worktree/synchronization/submodule claim packet conforms. Source baseline56a8130 has empty diff versus accepted015a19519e4; all140 validated dist files reused byte-identically from hash-verified accepted archive without build. Only three package/lock version entries changed.
+
 ### Reviewed Files
+
 package.json, package-lock.json; accepted015source/build provenance; exact local archive and downloaded registry archive; publication and installed-artifact receipts; CompletionReport.
+
 ### Validation Reviewed
+
 Full registry version list established5.9.0 highest5.x and5.10.0 unused before publication. npm publish exact archive exit0. Initial processing404 resolved by02:14:44Z; exact registry metadata and archive now available. Independently verified downloaded447293bytes SHA256711fe20dfe54f6516e67eab0f6616e7799d4f9d567c93d90819e4eb974f4ac2d matches reviewed archive; SHA512 matches registry integrity sha512-cdXKp0YLPg/yFN5acZNpdZbDfzFqY1MV45rFHh1+Q1e8Wf3VFuR1Ylgr8icorCj9h8pE3CTFTheUuxCEMKCfFw==. Installed downloaded-artifact public runtime/declaration smoke exit0 includes Studio schemas/types/renderer, selectSendableOutreachOffer, purposeFor, retained production renderer and generic product imports. No implementation unit/integration/lint/typecheck/build revalidation.
+
 ### Architecture Conformance
+
 Release-only metadata scope conforms; exact accepted composition preserved, no feature/consumer/main/live changes. New APIs consumed only through public entrypoints in separate consumer task. No sender projection dependency introduced.
+
 ### Follow-up
+
 Accepted at Review unchangedAttempt1, executor/claimed_atnull; explicit developer completion pending via /moda_developer_update ARCH-066-SHARED-016 complete. COMMERCE003 remains gated until016actuallyComplete; no implicit consumer claim or integrated acceptance.
 
-
 ## Explicit developer completion decision — 2026-11-09
+
 Developer invoked /moda_developer_update ARCH-066-SHARED-016 complete. Durable Accepted5b35cdaf4ed1f0f9f5721d9ea4a6bb08f18bcd4a and release-source80bb605f9c6fd026e82b1dd207a1de2874d221b6 remain clean/remotely published. Verified immutable5.10.0 registry/archive/import evidence retained without reruns. Complete unchangedAttempt1/executorclaimed_atnull. Commerce003 sole dependency satisfied; exact existing definition ReadyAttempt0/unclaimed. No npm/tests/main/live/consumerexecution. Earlier completion-pending notes historical.

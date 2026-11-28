@@ -15,7 +15,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on: []
-enables: ["ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-BACKGROUND-004", "ARCH-049-API-001", "ARCH-049-ADMIN-002"]
+enables:
+  [
+    "ARCH-049-BACKGROUND-002",
+    "ARCH-049-BACKGROUND-003",
+    "ARCH-049-BACKGROUND-004",
+    "ARCH-049-API-001",
+    "ARCH-049-ADMIN-002",
+  ]
 created: 2026-10-25
 updated: 2026-10-27
 ---

@@ -286,6 +286,7 @@ The static source test checks that production app code does not read the legacy 
 ### Validation Results
 
 Passed:
+
 - `npm run prisma:generate` (also run by the production build) generated Prisma Client 6.19.3 against the accepted database gitlink.
 - `npm run typecheck`.
 - Focused Vitest suite: 7 files passed, 1 PostgreSQL-dependent integration file skipped; 114 tests passed, 6 skipped. This includes merchant access policy, home, billing callback/status, discount lifecycle, scopes update, and the static shared-onboarding authority audit.
@@ -295,6 +296,7 @@ Passed:
 - Implementation branch commit was pushed to `origin/task/ARCH-026-SHOPIFY-001`; implementation worktree was clean after commit.
 
 Limitations / existing diagnostics:
+
 - `tests/integration/merchant-feature-preferences.test.ts` skipped all six cases because PostgreSQL container prerequisites are unavailable in this environment.
 - Targeted ESLint reported two existing diagnostics outside this task's behavior: `process` is undefined in `app/routes/app/billing/select/route.jsx`, and `i18n.t` lacks prop validation in `app/routes/app/merchant-support/route.jsx`. Migration-related unused queries/imports found during lint were removed.
 - The build completed with existing dependency/bundler warnings (Zod annotation comments, external Prisma browser entry, empty route chunks, and a large merchant-i18n chunk). `npm ci` also reported 41 dependency audit vulnerabilities; dependency manifests were not changed.

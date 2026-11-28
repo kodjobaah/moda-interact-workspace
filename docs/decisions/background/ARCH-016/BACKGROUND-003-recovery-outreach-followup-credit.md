@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 6
 depends_on:
-- ARCH-016-DATABASE-001
-- ARCH-016-SHARED-001
+  - ARCH-016-DATABASE-001
+  - ARCH-016-SHARED-001
 enables:
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16T20:20:00Z
 ---
@@ -321,7 +321,7 @@ Follow-up:
 - customer reply before due => no attempt2/no credit;
 - no reply => attempt2/new credit/send;
 - <24h no reply still consumes new credit;
-- >=24h no reply consumes new credit;
+- > =24h no reply consumes new credit;
 - completed/cancelled/expired before due suppresses;
 - shop unavailable suppresses;
 - no capacity => CAPACITY_BLOCKED, no send;
@@ -488,7 +488,7 @@ architecture.
 `src/services/recovery-policy.service.ts` currently evaluates:
 
 ```ts
-discount.providerStatus === "CURRENT"
+discount.providerStatus === "CURRENT";
 ```
 
 `providerStatus` is Shopify provider state. ARCH-016 defines a currently-running provider
@@ -586,7 +586,7 @@ make the inbound message contract carry a parsed `occurredAt: Date`.
 Every `conversationService.receiveMessage(...)` call from `whatsapp.worker.ts` MUST pass:
 
 ```ts
-occurredAt: new Date(event.occurredAt)
+occurredAt: new Date(event.occurredAt);
 ```
 
 `ConversationService.receiveMessage()` MUST:
@@ -922,7 +922,6 @@ Return the task to `review`, clear `executor`/`claimed_at`, record the exact imp
 and parent report commits, and STOP for `moda_architect` re-review. Do not start
 `ARCH-016-SYSTEM-TEST-001`.
 
-
 ## Attempt 4 Completion Report
 
 ### Status
@@ -1201,8 +1200,8 @@ Fresh `sendTemplate()` success MUST also resolve and require the persisted succe
 message before finalisation. Remove every outreach-path fallback of the form:
 
 ```ts
-existing.sentAt ?? new Date()
-persistedMessage?.sentAt ?? new Date()
+existing.sentAt ?? new Date();
+persistedMessage?.sentAt ?? new Date();
 ```
 
 The recovery credit occurrence/finalisation time and attempt `sentAt` must use the durable
@@ -1213,7 +1212,7 @@ provider-send message time.
 Attempt 3 added `markWaitingAfterConfirmedSend(...)`, but the fresh initial path then calls:
 
 ```ts
-markStatus(attempt.id, "WAITING_FOR_RESPONSE", { followUpDueAt })
+markStatus(attempt.id, "WAITING_FOR_RESPONSE", { followUpDueAt });
 ```
 
 immediately afterwards. That second call is unconditional. A customer inbound can race
@@ -1392,7 +1391,6 @@ Return the task to `review`, clear `executor`/`claimed_at`, record the exact Att
 implementation and parent Completion Report commits, and STOP for `moda_architect`
 re-review. Do not start `ARCH-016-SYSTEM-TEST-001`.
 
-
 ## Architect Review — Attempt 4
 
 ### Status
@@ -1428,7 +1426,7 @@ finalizeConfirmedOutreach({ ..., policy })
 but the duplicate-success branch calls the same finaliser without `policy`:
 
 ```ts
-finalizeConfirmedOutreach({ recovery, attempt, admission, message: existing })
+finalizeConfirmedOutreach({ recovery, attempt, admission, message: existing });
 ```
 
 When the provider message is already durably `SENT|DELIVERED|READ` but the process crashed
@@ -1536,7 +1534,7 @@ src/services/inbound-whatsapp-audio.service.ts
 Attempt 4 correctly changed engagement repair to use:
 
 ```ts
-reservation.conversationId
+reservation.conversationId;
 ```
 
 but a duplicate existing audio reservation with `transcriptionStatus = PENDING` continues

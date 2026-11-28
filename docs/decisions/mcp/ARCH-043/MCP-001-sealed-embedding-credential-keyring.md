@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-043-DATABASE-001
+  - ARCH-043-DATABASE-001
 enables:
-- ARCH-043-GATEWAY-001
-- ARCH-043-SYSTEM-TEST-001
-created: '2026-10-17'
+  - ARCH-043-GATEWAY-001
+  - ARCH-043-SYSTEM-TEST-001
+created: "2026-10-17"
 updated: 2026-10-17
 ---
 

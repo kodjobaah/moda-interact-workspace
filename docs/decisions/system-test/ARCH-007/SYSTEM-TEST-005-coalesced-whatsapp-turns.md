@@ -29,8 +29,9 @@ updated: 2026-09-08
 Terminal/manual-gated integrated validation only.
 
 Validate with real queue/database behavior:
+
 - 3 fragmented inbound messages in the 3s window persist as 3 messages but produce 1 agent turn/reply;
-- >3s separation produces separate turns;
+- > 3s separation produces separate turns;
 - 10s maximum settling bound;
 - no concurrent agent processing for one conversation;
 - different conversations remain concurrent;
@@ -66,46 +67,59 @@ Do not run until implementation dependencies are Complete and developer manually
 ## Completion Report
 
 ### Status
+
 Pending
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
-None.
 
+None.

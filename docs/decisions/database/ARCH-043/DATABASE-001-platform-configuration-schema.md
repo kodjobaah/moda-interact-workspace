@@ -16,19 +16,19 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-043-ADMIN-001
-- ARCH-043-ADMIN-002
-- ARCH-043-API-001
-- ARCH-043-API-002
-- ARCH-043-BACKGROUND-001
-- ARCH-043-BACKGROUND-002
-- ARCH-043-COMMERCE-001
-- ARCH-043-COMMERCE-002
-- ARCH-043-MCP-001
-- ARCH-043-SHOPIFY-001
-- ARCH-043-SHOPIFY-002
-- ARCH-043-SYSTEM-TEST-001
-created: '2026-10-17'
+  - ARCH-043-ADMIN-001
+  - ARCH-043-ADMIN-002
+  - ARCH-043-API-001
+  - ARCH-043-API-002
+  - ARCH-043-BACKGROUND-001
+  - ARCH-043-BACKGROUND-002
+  - ARCH-043-COMMERCE-001
+  - ARCH-043-COMMERCE-002
+  - ARCH-043-MCP-001
+  - ARCH-043-SHOPIFY-001
+  - ARCH-043-SHOPIFY-002
+  - ARCH-043-SYSTEM-TEST-001
+created: "2026-10-17"
 updated: 2026-10-17
 ---
 
@@ -108,33 +108,33 @@ No foreign key to `PlatformAdmin` is proposed: Admin authenticates and authorise
 
 **`public."PlatformConfiguration"`:**
 
-| Column | PostgreSQL type | Nullable | Rule |
-|---|---|---|---|
-| `id` | TEXT | No | Primary key, Prisma-generated CUID |
-| `environment` | VARCHAR(32) | No | Nonblank; chosen from trusted deployment identity, not client input |
-| `key` | VARCHAR(128) | No | Nonblank; Admin allowlist validated before write |
-| `value` | JSONB | No | JSON object; strict settings payload or approved sealed/disabled envelope |
-| `version` | INTEGER | No | Defaults to 1; CHECK `version >= 1` |
-| `updatedBy` | VARCHAR(191) | Yes | Verified actor identifier |
-| `createdAt` | TIMESTAMP(3) | No | Defaults to current timestamp |
-| `updatedAt` | TIMESTAMP(3) | No | Maintained by Prisma on updates |
+| Column        | PostgreSQL type | Nullable | Rule                                                                      |
+| ------------- | --------------- | -------- | ------------------------------------------------------------------------- |
+| `id`          | TEXT            | No       | Primary key, Prisma-generated CUID                                        |
+| `environment` | VARCHAR(32)     | No       | Nonblank; chosen from trusted deployment identity, not client input       |
+| `key`         | VARCHAR(128)    | No       | Nonblank; Admin allowlist validated before write                          |
+| `value`       | JSONB           | No       | JSON object; strict settings payload or approved sealed/disabled envelope |
+| `version`     | INTEGER         | No       | Defaults to 1; CHECK `version >= 1`                                       |
+| `updatedBy`   | VARCHAR(191)    | Yes      | Verified actor identifier                                                 |
+| `createdAt`   | TIMESTAMP(3)    | No       | Defaults to current timestamp                                             |
+| `updatedAt`   | TIMESTAMP(3)    | No       | Maintained by Prisma on updates                                           |
 
 Indexes/constraints: primary key on `id`; unique `(environment,key)`; nonunique `(environment,updatedAt)`; SQL CHECK that `btrim(environment) <> ''`, `btrim(key) <> ''`, `version >= 1` and `jsonb_typeof(value) = 'object'` (using quoted identifiers where needed). Prevent SQL insertion of a **non-enveloped value** for one of the five secret keys: `commerce.connectionKeys`, `auth.admin`, `auth.commerce`, `shopify.oauth`, `messaging.meta`. For such keys, `value` must be either a sealed envelope with required markers (`kind=sealed`, integer `schemaVersion=1`, `algorithm=AES-256-GCM`, nonempty wrapping key ID/nonce/ciphertext/tag), or exactly `{ "kind": "disabled", "schemaVersion": 1 }`. Envelope decoding, cryptographic authenticity and nonsecret payload validation remain in the documented ARCH-043 configuration contract, not duplicated in SQL. Unknown and malformed values are denied by the relevant authorised writer.
 
 **`public."PlatformConfigurationAudit"`:**
 
-| Column | PostgreSQL type | Nullable | Rule |
-|---|---|---|---|
-| `id` | TEXT | No | Primary key, Prisma-generated CUID |
-| `environment` | VARCHAR(32) | No | Same canonical environment as mutated row |
-| `key` | VARCHAR(128) | No | Configuration key |
-| `expectedVersion` | INTEGER | No | CHECK `>= 0` |
-| `resultingVersion` | INTEGER | No | CHECK `= expectedVersion + 1` |
-| `beforeValue` | JSONB | Yes | `NULL` for initial create; redacted metadata for secrets |
-| `afterValue` | JSONB | No | Settings value or redacted metadata for secrets |
-| `actorId` | VARCHAR(191) | No | Nonblank, verified platform-admin ID |
-| `reason` | VARCHAR(1000) | Yes | Operator justification |
-| `createdAt` | TIMESTAMP(3) | No | Defaults to current timestamp |
+| Column             | PostgreSQL type | Nullable | Rule                                                     |
+| ------------------ | --------------- | -------- | -------------------------------------------------------- |
+| `id`               | TEXT            | No       | Primary key, Prisma-generated CUID                       |
+| `environment`      | VARCHAR(32)     | No       | Same canonical environment as mutated row                |
+| `key`              | VARCHAR(128)    | No       | Configuration key                                        |
+| `expectedVersion`  | INTEGER         | No       | CHECK `>= 0`                                             |
+| `resultingVersion` | INTEGER         | No       | CHECK `= expectedVersion + 1`                            |
+| `beforeValue`      | JSONB           | Yes      | `NULL` for initial create; redacted metadata for secrets |
+| `afterValue`       | JSONB           | No       | Settings value or redacted metadata for secrets          |
+| `actorId`          | VARCHAR(191)    | No       | Nonblank, verified platform-admin ID                     |
+| `reason`           | VARCHAR(1000)   | Yes      | Operator justification                                   |
+| `createdAt`        | TIMESTAMP(3)    | No       | Defaults to current timestamp                            |
 
 Indexes/constraints: primary key `id`; unique `(environment,key,resultingVersion)`; nonunique `(environment,key,createdAt)` and `(actorId,createdAt)`; checks for nonblank environment/key/actor, `expectedVersion >= 0`, `resultingVersion = expectedVersion+1`, and object-shaped `afterValue`. Secret-key audit JSON must conform to **only** `{ "redacted": true, "configured": boolean }` (or a separately approved equally non-sensitive closed metadata shape); enforce this for `beforeValue` and `afterValue` in SQL so bypassing application validation cannot persist ciphertext or a secret in the audit JSON. No arbitrary extra fields. `beforeValue` is nullable for initial creation.
 
@@ -144,26 +144,26 @@ Audit rows are **append-only**: database permissions and/or a migration-owned tr
 
 **Ordinary settings** (strict payloads owned by the ARCH-043 schema review):
 
-| Key | Stored fields | Reader |
-|---|---|---|
-| `woo.couponSync` | `dispatchBatchSize`, `refreshIntervalMinutes`, `dispatchCooldownMinutes`, `unavailableRecheckMinutes`, `staleScanMinutes`, `maxPages`, `requestTimeoutMs`, `maxResponseBytes`, `maxScanDurationMs`, `workerConcurrency` | Background |
-| `merchantKnowledge.upload` | `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint`, `r2Bucket` | Hosted API, trusted Shopify server |
-| `speech.transcription` | `provider`, `groqModelId`, `openaiModelId` | Background |
-| `support.translation` | `provider`, `model` | Background support-message translation only |
-| `commerce.preview` | `deadlineMs`, `outputTokens` | Commerce |
-| `admin.grafana` | `baseUrl`, `logsUrl`, `metricsUrl`, `tracesUrl`, `platformDashboardUrl` | Admin |
+| Key                        | Stored fields                                                                                                                                                                                                           | Reader                                      |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `woo.couponSync`           | `dispatchBatchSize`, `refreshIntervalMinutes`, `dispatchCooldownMinutes`, `unavailableRecheckMinutes`, `staleScanMinutes`, `maxPages`, `requestTimeoutMs`, `maxResponseBytes`, `maxScanDurationMs`, `workerConcurrency` | Background                                  |
+| `merchantKnowledge.upload` | `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint`, `r2Bucket`                                                                                                                                                  | Hosted API, trusted Shopify server          |
+| `speech.transcription`     | `provider`, `groqModelId`, `openaiModelId`                                                                                                                                                                              | Background                                  |
+| `support.translation`      | `provider`, `model`                                                                                                                                                                                                     | Background support-message translation only |
+| `commerce.preview`         | `deadlineMs`, `outputTokens`                                                                                                                                                                                            | Commerce                                    |
+| `admin.grafana`            | `baseUrl`, `logsUrl`, `metricsUrl`, `tracesUrl`, `platformDashboardUrl`                                                                                                                                                 | Admin                                       |
 
 All field types, bounds and defaults are defined explicitly in `ARCH-043-configuration-schema-review.md`. Its R2 endpoint and bucket examples are **placeholders**, not production seed data. Where a domain already has an authoritative DB setting for the same purpose, that domain retains ownership; avoid creating a redundant active row.
 
 **Encrypted application secrets** (sealed value only, validated under the ARCH-043 schema review using existing ARCH-039 credential crypto):
 
-| Key | Decrypted fields represented by envelope | Reader |
-|---|---|---|
-| `commerce.connectionKeys` | Existing Commerce connection keyring + active key ID; command HMAC key if required by that consumer | Commerce, API, Background, Admin, MCP |
-| `auth.admin` | `AUTH_SECRET` and existing Admin OAuth client credentials where required | Admin |
-| `auth.commerce` | `AUTH_SECRET` and existing Commerce OAuth client credentials where required | Commerce |
-| `shopify.oauth` | `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET` | Shopify app, Background token refresh |
-| `messaging.meta` | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | Messaging through authenticated private resolver |
+| Key                       | Decrypted fields represented by envelope                                                            | Reader                                           |
+| ------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `commerce.connectionKeys` | Existing Commerce connection keyring + active key ID; command HMAC key if required by that consumer | Commerce, API, Background, Admin, MCP            |
+| `auth.admin`              | `AUTH_SECRET` and existing Admin OAuth client credentials where required                            | Admin                                            |
+| `auth.commerce`           | `AUTH_SECRET` and existing Commerce OAuth client credentials where required                         | Commerce                                         |
+| `shopify.oauth`           | `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`                                                             | Shopify app, Background token refresh            |
+| `messaging.meta`          | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`                                                          | Messaging through authenticated private resolver |
 
 **Exact permitted sealed `value` object** (no plaintext secret fields):
 

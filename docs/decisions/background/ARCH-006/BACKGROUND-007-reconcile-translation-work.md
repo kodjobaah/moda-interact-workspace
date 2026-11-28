@@ -23,6 +23,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T19:47:27Z
 ---
+
 # ARCH-006-BACKGROUND-007: Add self-healing translation reconciliation and worker runtime
 
 ## Architecture
@@ -273,7 +274,6 @@ Validation:
 
 Return `ARCH-006-BACKGROUND-007` to `review` and STOP. Do not modify or promote Gateway, Admin, Shopify, or system-test tasks.
 
-
 ### Attempt 2 Decision
 
 Attempt 2 correctly resolves the provider-correlation, fairness, stale-request, exact-request, failed-only reset, canonical lifecycle and queue-failure findings from Attempt 1. The single shared Worker/router and downstream boundaries remain acceptable. One bounded scalability defect remains before this final Background task can be accepted.
@@ -317,7 +317,6 @@ Return `ARCH-006-BACKGROUND-007` to `review` and STOP. Do not modify or promote 
 ### Attempt 3 Implementation Note
 
 Replaced the `FAILED_TRANSLATIONS` continuation `COUNT(*)` query with a bounded existence probe using the unchanged eligible-row predicate and `LIMIT 1`. Added regressions covering both retryable continuation and completion when no eligible row remains.
-
 
 ### Attempt 3 Final Decision
 

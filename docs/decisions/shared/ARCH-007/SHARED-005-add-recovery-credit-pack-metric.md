@@ -39,6 +39,7 @@ Do not rename existing values.
 The Database `UsageMetric` enum and Shared `BILLING_USAGE_METRICS` must match exactly for the new value.
 
 Do NOT add:
+
 - `INBOUND_AUTOMATED_MESSAGE`;
 - `INBOUND_CUSTOMER_MESSAGE`;
 - `COMMERCE_AGENT_TURN`;
@@ -75,32 +76,40 @@ Do not publish in this task.
 ## Completion Report
 
 ### Status
+
 Ready for Review (Attempt 1)
 
 ### Files Changed
+
 - `moda-interact-shared/src/billing.ts`
 - `moda-interact-shared/src/billing.test.ts`
 
 ### Work Completed
+
 - Added `RECOVERY_CREDIT_PACK_PURCHASE` to the canonical `BILLING_USAGE_METRICS` tuple and derived schema.
 - Added executable assertions that the new metric parses and all existing metric values remain unchanged.
 
 ### Validation Results
+
 - `npm test`: passed, 104 tests passed and 1 skipped.
 - `npm run typecheck`: passed.
 - `npm run build`: passed, including billing ESM and declaration output.
 - `git diff --check`: passed.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 - The existing Database `UsageMetric` contract is the authoritative matching dependency, and no package version or publication change is required for this source-level contract update.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

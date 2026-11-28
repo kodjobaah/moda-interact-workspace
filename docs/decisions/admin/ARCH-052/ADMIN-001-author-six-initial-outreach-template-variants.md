@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-052-SHARED-003
+  - ARCH-052-SHARED-003
 enables:
-- ARCH-052-BACKGROUND-008
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-created: '2026-10-29'
+  - ARCH-052-BACKGROUND-008
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+created: "2026-10-29"
 updated: 2026-10-30
 ---
 
@@ -47,7 +47,7 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 ## Scope
 
 - Extend `src/lib/admin/whatsapp-templates/authoring/registry.ts`, `types.ts`, `validation.ts`, compiler and template publishing snapshot JSON to support approved immutable `promotionTarget:"CHECKOUT"|"ALTERNATIVE_PRODUCT"` for CODE_OFFER and AUTOMATIC_OFFER; NO_OFFER remains category-safe and offer-free. Keep existing three INITIAL + three FOLLOW_UP purpose identities and all ARCH-047 immutable approval/digest/locale rules.
-- For CHECKOUT provide basket-aware copy with verified discount that truly applies to checkout. For ALTERNATIVE_PRODUCT require `promotion.productName`, `promotion.offerDescription` and `promotion.productUrl`; author copy explicitly identifying a *different product* and never suggesting original abandoned basket receives that code. Use approved product CTA or safe separately approved link; checkout resume CTA remains trusted and not replaced silently.
+- For CHECKOUT provide basket-aware copy with verified discount that truly applies to checkout. For ALTERNATIVE_PRODUCT require `promotion.productName`, `promotion.offerDescription` and `promotion.productUrl`; author copy explicitly identifying a _different product_ and never suggesting original abandoned basket receives that code. Use approved product CTA or safe separately approved link; checkout resume CTA remains trusted and not replaced silently.
 - Provide own preview examples and exact proof-dependent bindings for CODE (must have provider-backed code) and AUTOMATIC (no coupon code); multiple approved immutable template entries may share a purpose/locale only when `promotionTarget`, header kind and active revision identify an unambiguous selected entry. Reject ambiguous same-purpose promotion target selection.
 - Meta promotional template category/consent requirements apply to cross-sell; publishing/review remains operator-controlled, not automatic on save. Tests for immutable header, translation placeholders, missing product, approval mismatch, wrong locale and fallback.
 
@@ -60,7 +60,6 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 ## Requirements
 
 **Attempt 14 immutable presentation contract:** for new initial CODE/AUTOMATIC variants, choose the exact approved registration by `(shopId, senderWabaId, purpose, canonicalLanguageTag, promotionTarget, headerKind)` and an enabled approved published revision. The currently implemented `selectRecoveryAssignment()` rejects multiple candidates for the same purpose/locale before checking `promotionTarget`; the Admin publisher must store the approved discriminator and make it available to Background-008 for deterministic filtering **before** ambiguity detection. Do not select arbitrarily by first record or publish the same identity twice. Alternative-product templates may have **two independently Meta-approved dynamic URL CTA slots**, one bound to `checkout.url` (Resume checkout) and one to `promotion.productUrl` (View offer), using existing Shared-002 `buttons[]` and approved component indexes. Only create such a variant if Meta accepts it; no unapproved button or arbitrary model-written text. No ARCH-052 checkout URL validity checks.
-
 
 - Meta template preview must be illustrative, but live variables must have proven Background resolver sources; no unbound placeholders.
 - Translation tokens remain protected; require approval/publishing per shop/WABA/language.
@@ -267,7 +266,6 @@ Blocked pending an architect-owned update to `ARCH-052-BACKGROUND-008`. Architec
 
 No Admin source correction was requested or made. This attempt changes only this task report and lifecycle status. No runtime tests were rerun because there were no source changes. The implementation branch remains `task/ARCH-052-ADMIN-001` at `14faa94a7096aef3ef9222c687cb663dd5834459`; the parent task branch contains this blocked report update. Return the cross-repository contract and acceptance disposition to `moda_architect`.
 
-
 ## Architect Review — Attempt 1 (Changes Requested)
 
 ### Review Status
@@ -296,7 +294,6 @@ Promotion-target metadata and header-kind selection are carried through authorin
 ### Follow-up
 
 Extend the Admin AST, validation, compiler, immutable snapshots, and translation/publication checks to support both independently indexed URL bindings (`checkout.url` and `promotion.productUrl`) when the approved Meta template contains both buttons. Add focused tests proving both indexes and semantic bindings survive compilation, translation, and registration snapshotting. Resubmit for review after the focused checks pass.
-
 
 ## Architect Review — Attempt 2 (Changes Requested)
 
@@ -358,4 +355,4 @@ Accepted for Admin's immutable template authoring and publication scope. Product
 
 ### Follow-up
 
-BACKGROUND-008 must prove source-bound `promotion.productUrl` and unsafe-URL fail-closed behaviour before *its own* acceptance. Its blocked runtime requirement must not be used to reopen or gate this completed Admin task. System-test terminal tasks independently certify both providers.
+BACKGROUND-008 must prove source-bound `promotion.productUrl` and unsafe-URL fail-closed behaviour before _its own_ acceptance. Its blocked runtime requirement must not be used to reopen or gate this completed Admin task. System-test terminal tasks independently certify both providers.

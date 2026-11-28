@@ -18,6 +18,7 @@ enables: []
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add Protected Redis Shopify Queue Monitor to Admin Tenant Directory
 
 ## Architecture
@@ -101,8 +102,7 @@ copy queue names/job names into a new Admin-owned contract.
 Authoritative contract import:
 
 ```ts
-import { SHOPIFY_WEBHOOK_QUEUE_CONTRACTS } from
-  '@modainteract/moda-interact-shared/shopify';
+import { SHOPIFY_WEBHOOK_QUEUE_CONTRACTS } from "@modainteract/moda-interact-shared/shopify";
 ```
 
 The required contracts are:
@@ -770,4 +770,3 @@ None required for task acceptance.
 `ARCH-002-ADMIN-011` is Complete. Live Render queue observation remains
 developer-owned deployment validation using the correctly configured Admin
 `REDIS_URL`.
-

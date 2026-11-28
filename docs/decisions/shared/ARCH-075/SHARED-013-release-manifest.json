@@ -17,12 +17,8 @@
     "sourceMetadataCommit": "dcfbfef99935709dc485fad003dbfa7164a6203b",
     "sameMembers": true,
     "nonmetadataByteIdenticalCount": 160,
-    "changedMembers": [
-      "package/package.json"
-    ],
-    "changedPackageFields": [
-      "version"
-    ],
+    "changedMembers": ["package/package.json"],
+    "changedPackageFields": ["version"],
     "manifestSha256": "8995df2d9465b1271f044099f800af7a29ea0afc35dcc66364ac228043339730",
     "privateAssetScan": "PASS: no logo/product/actual-header/private QA files",
     "publicationAuthorized": false

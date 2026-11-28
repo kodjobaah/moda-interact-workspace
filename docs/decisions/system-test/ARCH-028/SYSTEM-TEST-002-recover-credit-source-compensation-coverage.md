@@ -127,14 +127,14 @@ Measured fixture failures were corrected without weakening guards: mandatory ite
 
 All six actual isolated local cases PASS, each in its own process:
 
-| Scenario | Actual local run |
-| --- | --- |
-| RECOVERY-ARCH028-PAID-001 | system-test-20261113T165359276Z-741f099b |
-| RECOVERY-ARCH028-PROMO-001 | system-test-20261113T165702675Z-03400ce0 |
+| Scenario                       | Actual local run                         |
+| ------------------------------ | ---------------------------------------- |
+| RECOVERY-ARCH028-PAID-001      | system-test-20261113T165359276Z-741f099b |
+| RECOVERY-ARCH028-PROMO-001     | system-test-20261113T165702675Z-03400ce0 |
 | RECOVERY-ARCH028-PURCHASED-001 | system-test-20261113T170004480Z-84941c32 |
-| RECOVERY-OUTREACH-001 | system-test-20261113T170331132Z-3b242e09 |
-| RECOVERY-PROVIDER-FAILURE-001 | system-test-20261113T170509996Z-8db286e5 |
-| MESSAGING-STATUS-001 | system-test-20261113T172407965Z-96ce4473 |
+| RECOVERY-OUTREACH-001          | system-test-20261113T170331132Z-3b242e09 |
+| RECOVERY-PROVIDER-FAILURE-001  | system-test-20261113T170509996Z-8db286e5 |
+| MESSAGING-STATUS-001           | system-test-20261113T172407965Z-96ce4473 |
 
 The first five ran `ad54844`; subsequent changes only correct merchant-emulator identity/reconcile the UI helper and add diagnostics. Numeric DB identity is byte-for-byte unchanged; the five cases do not call that UI helper, so their financial evidence is unaffected. Final status ran `5a1ed06`. Its diagnostic-only pre-cleanup snapshot hook changes no service/business behavior. Final source publication after that is documentation-only.
 

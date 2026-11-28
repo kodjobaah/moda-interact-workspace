@@ -510,9 +510,11 @@ Do not create files merely because they are listed if the accepted post-BACKGROU
 ## Completion Report
 
 ### Status
+
 Ready for Review (Attempt 3)
 
 ### Files Changed
+
 - `src/services/inbound-whatsapp-abuse-admission.service.ts`
 - `src/services/conversation-turn-processor.service.ts`
 - `src/workers/whatsapp.worker.ts`
@@ -520,6 +522,7 @@ Ready for Review (Attempt 3)
 - `tests/unit/services/conversation-turn-processor.service.test.ts`
 
 ### Work Completed
+
 - Added a Background-local atomic Lua sliding-window limiter using `connectionRedis`, Redis server time, all-or-none scope insertion, bounded expiry, replay idempotency, and SHA-256 sender key hashing.
 - Corrected mixed-window settled replay handling so a member remembered by any applicable scope is never re-added to naturally expired short scopes.
 - Added raw admission before routing and persistence, including fail-closed limiter errors.
@@ -528,6 +531,7 @@ Ready for Review (Attempt 3)
 - Strengthened the stateful Redis harness and focused service regressions to prove sender and conversation short/long limits independently, all six settled scopes, all-or-none rejection, and mixed-window replay idempotency.
 
 ### Validation Results
+
 - `npx vitest run tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts tests/unit/services/conversation-turn-processor.service.test.ts`: passed, 50 tests.
 - `npm run build`: passed.
 - `npm run prisma:validate`: passed.
@@ -536,21 +540,26 @@ Ready for Review (Attempt 3)
 - `npm test`: 397 passed, 7 skipped, 2 failed. The two failures remain unrelated baseline failures in `tests/unit/services/pending-recovery-candidate.service.test.ts` concerning stale/rescheduled candidate context behavior.
 
 ### Deviations
+
 - The repository has no supported Redis integration harness; the Lua contract is unit-tested through the existing Vitest conventions, as permitted by the task.
 - No dedicated worker test file exists in the accepted repository organization; raw ordering is covered by the production call path and settled handling by the processor regression.
 
 ### Assumptions
+
 - `conversation.messages` is the accepted Prisma relation for the persisted inbound fragments of the settled turn.
 - The loaded outbound customer phone is the normalized sender identity used by the settled-turn limiter.
 
 ### Unresolved Issues
+
 - Full suite remains red only on the two documented unrelated pending-recovery-candidate baseline failures.
 - Pending-recovery-candidate baseline status remains unchanged and is outside this task's allowed file surface.
 
 ### Architectural Concerns
+
 None.
 
 ### Attempt 3 Correction Coverage
+
 - Mixed-window settled replay no longer re-adds expired short-scope capacity.
 - `B011-08` proves sender-short and conversation-short independently.
 - `B011-09` proves sender-long and conversation-long independently.

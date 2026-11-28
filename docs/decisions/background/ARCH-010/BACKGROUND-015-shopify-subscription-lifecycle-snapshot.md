@@ -16,9 +16,9 @@ attempt: 4
 executor: null
 depends_on: []
 enables:
-- ARCH-010-BACKGROUND-012
+  - ARCH-010-BACKGROUND-012
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-BACKGROUND-015: Read Shopify live subscription plus latest lifecycle event for reconciliation
@@ -170,9 +170,11 @@ STOP if the configured Partner API version does not expose root `events`, `Event
 ## Completion Report
 
 ### Status
+
 Attempt 4 complete; returned to review.
 
 ### Implementation
+
 - Production: `src/providers/shopify-partner-billing.provider.ts`.
 - Authorized tests: `tests/unit/providers/shopify-partner-billing.provider.test.ts`.
 - Added focused assertions for normalized lifecycle plan fields, valid-state/wrong-event-type rejection, malformed `plan.billingPeriod`, blank lifecycle event ID, and one combined request containing both `activeSubscription` and bounded `events` roots.
@@ -180,6 +182,7 @@ Attempt 4 complete; returned to review.
 - No reconciliation persistence, database source, shared contract, Shopify app, or unrelated service changes were made.
 
 ### Validation Results
+
 - Focused provider Vitest: 24 tests passed.
 - `npm run prisma:generate`: passed using recorded database revision `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`.
 - Repository `tsc --noEmit`: 7 unrelated errors remain in `src/services/billing-subscription-reconciliation.service.ts`, `src/services/effective-billing-policy.service.ts`, `src/services/free-recovery-reservation.service.ts`, and `src/services/purchased-recovery-reservation.service.ts`; all are stale generated-Prisma `EntitlementCounter` enum errors for `LIFETIME_FREE_RECOVERY_CREDITS`. The authorized provider/test slice is clean.
@@ -188,22 +191,23 @@ Attempt 4 complete; returned to review.
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 Task branch: `task/ARCH-010-BACKGROUND-015`
 
 Physical task isolation:
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-015`
-  parent branch: `task/ARCH-010-BACKGROUND-015`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-015`
-  implementation branch: `task/ARCH-010-BACKGROUND-015`
-  shared/default checkout mutated: no
-  shared implementation checkout mutated: no
-  another task worktree reused: no
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-015`
+parent branch: `task/ARCH-010-BACKGROUND-015`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-015`
+implementation branch: `task/ARCH-010-BACKGROUND-015`
+shared/default checkout mutated: no
+shared implementation checkout mutated: no
+another task worktree reused: no
 
 Synchronization:
-  parent remote task branch fast-forwarded: not-needed/already-current
-  parent origin/main incorporated: yes
-  implementation remote task branch fast-forwarded: not-needed/already-current
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed/already-current
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed/already-current
+implementation origin/main incorporated: already-current
 
 Implementation commit: `29c791c`, pushed to `origin/task/ARCH-010-BACKGROUND-015`.
 Parent claim commit: `831695b`.
@@ -214,6 +218,7 @@ No task branch was merged to `main`; no architect acceptance decision was made b
 ## Historical Completion Report (Attempt 3)
 
 ### Status
+
 In Progress.
 
 ### Files Changed
@@ -253,10 +258,10 @@ Architect Review correction mapping:
 - Focused ESLint: unavailable because `node_modules/.bin/eslint` is not installed in this repository worktree.
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: yes
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: yes
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: yes
+implementation origin/main incorporated: already-current
 
 ### Deviations
 
@@ -279,28 +284,28 @@ None.
 Task branch: `task/ARCH-010-BACKGROUND-015`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-015`
-  parent branch: `task/ARCH-010-BACKGROUND-015`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-015`
-  implementation branch: `task/ARCH-010-BACKGROUND-015`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-015`
+parent branch: `task/ARCH-010-BACKGROUND-015`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-015`
+implementation branch: `task/ARCH-010-BACKGROUND-015`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Implementation repository:
-  repository: `moda-interact-background`
-  commit: `f4bf204`
-  remote branch: `origin/task/ARCH-010-BACKGROUND-015`
-  pushed: yes
+repository: `moda-interact-background`
+commit: `f4bf204`
+remote branch: `origin/task/ARCH-010-BACKGROUND-015`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md`
-  claim commit: `654418c`
-  review report commit: `2cd0816`
-  remote branch: `origin/task/ARCH-010-BACKGROUND-015`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/background/ARCH-010/BACKGROUND-015-shopify-subscription-lifecycle-snapshot.md`
+claim commit: `654418c`
+review report commit: `2cd0816`
+remote branch: `origin/task/ARCH-010-BACKGROUND-015`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -1090,8 +1095,8 @@ Keep the existing null-plan test proving both normalized fields become `null`.
 Add one focused malformed lifecycle case where both values are individually valid but the pair is invalid:
 
 ```ts
-state: "FROZEN"
-eventType: "SUBSCRIPTION_CANCELED"
+state: "FROZEN";
+eventType: "SUBSCRIPTION_CANCELED";
 ```
 
 Assert:
@@ -1107,7 +1112,7 @@ Do not use an unknown state for this proof. The purpose is to exercise the exact
 The current malformed Partner-event table proves:
 
 ```ts
-plan.handle = 123
+plan.handle = 123;
 ```
 
 but it does not prove `billingPeriod` validation.
@@ -1136,7 +1141,7 @@ The provider rejects an empty/whitespace event ID, but the test suite does not p
 Add a malformed event case with:
 
 ```ts
-id: "   "
+id: "   ";
 ```
 
 and assert:
@@ -1569,4 +1574,3 @@ ARCH-010-ADMIN-010
 ARCH-010-BACKGROUND-019
 ARCH-010-SHOPIFY-018
 ```
-

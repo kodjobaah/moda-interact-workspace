@@ -166,8 +166,8 @@ The submission placed this narrative over definition sections. The definition is
 > - `moda-interact-commerce/src/studio/preview/client.ts`
 > - `moda-interact-commerce/src/studio/preview/preview-screen.tsx`
 > - `moda-interact-commerce/tests/preview-screen.test.tsx`
-> the former combined scope. No prior attempt or implementation is discarded. Normal
-> launcher/worktree/review policies apply. No task is claimed by this definition.
+>   the former combined scope. No prior attempt or implementation is discarded. Normal
+>   launcher/worktree/review policies apply. No task is claimed by this definition.
 >
 > - Replaced the placeholder preview handoff with the embedded U14 Tool test and Conversation screen.
 > - Added the typed `PreviewClient` transport boundary for conversation start/run/status/cancel and tool tests; browser transport remains same-origin and credentialed, while tests inject contract-faithful clients.
@@ -176,15 +176,15 @@ The submission placed this narrative over definition sections. The definition is
 >
 > ### Requirement-to-Fixture Matrix
 >
-> | Requirement | Fixture/test evidence | Expected and observed effect |
-> | --- | --- | --- |
-> | Tool test success and schema-driven arguments | `p01-healthy-en`; `tests/preview-screen.test.tsx` schema-driven tool case | `runToolTest` receives the frozen tool revision, fixture ID and bounded `{ handle }`; rendered result is shown. Passed. |
-> | Conversation start and frozen selection | `p01-healthy-en`; focused screen test | Start sends `FIXTURE`, fixture ID and selected revisions; selection controls disable after start. Passed. |
-> | Duplicate Send suppression and one run ID | `p01-healthy-en`; focused screen test | Two synchronous clicks dispatch one `startRun` with one generated `previewRunId`; input clears only on completed success. Passed. |
-> | Unknown failure preservation and reconciliation | simulated timeout followed by same-ID completed response; focused screen test | Message remains visible, status is Unknown, retry calls `getRun` with the original run ID and renders the reconciled answer. Passed. |
-> | Reset before changing frozen context | `p01-healthy-en`; focused screen test | Reset unlocks saved selection and clears synthetic conversation state. Passed. |
-> | Empty, missing-fact and provider-failure fixture choices | `p02-empty-en`, `p03-missing-fact-en`, `p04-provider-failure-en`; scenario selector and shared preview contract tests | All named fixture IDs are exposed without live provider calls; service/route/store contract coverage passed. |
-> | Cancel/status/trace/result contract surface | Preview route/service/store/Redis contract tests | 41 focused tests passed across the five preview test files; implementation renders Running, Completed, Failed, Cancelled and Unknown labels and trace/data panels. |
+> | Requirement                                              | Fixture/test evidence                                                                                                 | Expected and observed effect                                                                                                                                       |
+> | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+> | Tool test success and schema-driven arguments            | `p01-healthy-en`; `tests/preview-screen.test.tsx` schema-driven tool case                                             | `runToolTest` receives the frozen tool revision, fixture ID and bounded `{ handle }`; rendered result is shown. Passed.                                            |
+> | Conversation start and frozen selection                  | `p01-healthy-en`; focused screen test                                                                                 | Start sends `FIXTURE`, fixture ID and selected revisions; selection controls disable after start. Passed.                                                          |
+> | Duplicate Send suppression and one run ID                | `p01-healthy-en`; focused screen test                                                                                 | Two synchronous clicks dispatch one `startRun` with one generated `previewRunId`; input clears only on completed success. Passed.                                  |
+> | Unknown failure preservation and reconciliation          | simulated timeout followed by same-ID completed response; focused screen test                                         | Message remains visible, status is Unknown, retry calls `getRun` with the original run ID and renders the reconciled answer. Passed.                               |
+> | Reset before changing frozen context                     | `p01-healthy-en`; focused screen test                                                                                 | Reset unlocks saved selection and clears synthetic conversation state. Passed.                                                                                     |
+> | Empty, missing-fact and provider-failure fixture choices | `p02-empty-en`, `p03-missing-fact-en`, `p04-provider-failure-en`; scenario selector and shared preview contract tests | All named fixture IDs are exposed without live provider calls; service/route/store contract coverage passed.                                                       |
+> | Cancel/status/trace/result contract surface              | Preview route/service/store/Redis contract tests                                                                      | 41 focused tests passed across the five preview test files; implementation renders Running, Completed, Failed, Cancelled and Unknown labels and trace/data panels. |
 >
 > Own the exact U14 /preview tool-test/conversation page, its controls and typed preview-client boundary with the008 composer.
 >
@@ -229,14 +229,14 @@ Ready for Review. Attempt 1 implementation was preserved and corrected in the sa
 
 #### Requirement-to-fixture matrix
 
-| Requirement | Fixture/test | Expected and observed effect |
-| --- | --- | --- |
-| Fixture catalogue and selectable scenarios | `GET /api/studio/preview/fixtures`, injected `listFixtures` client fixture | UI uses returned IDs/labels; no hard-coded unavailable IDs are dispatched. |
-| Duplicate Start/Send/Cancel guards | `tests/preview-screen.test.tsx`, same-ID client fixtures | One reserved operation ID and one dispatch; cancellation retains the active ID while status is RUNNING. |
-| Unknown reconciliation | injected rejected send/tool fixtures plus `getRun`/`getToolTest` | Input and identity remain visible; retry/check uses the original ID. |
-| Release/draft source and return context | composer handoff fields and screen source selection | RELEASE carries release ID; DRAFT carries exact revisions; Back resolves handoff return context or `/features`. |
-| Typed tool arguments and stale output | schema-driven `catalog_lookup` fixture | String input remains supported; numeric/boolean/object values are parsed and invalid values make zero calls; edits invalidate prior results. |
-| Preview service contract | `tests/preview-screen.test.tsx tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts` | 5 files, 41 tests passed. |
+| Requirement                                | Fixture/test                                                                                                                                           | Expected and observed effect                                                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fixture catalogue and selectable scenarios | `GET /api/studio/preview/fixtures`, injected `listFixtures` client fixture                                                                             | UI uses returned IDs/labels; no hard-coded unavailable IDs are dispatched.                                                                   |
+| Duplicate Start/Send/Cancel guards         | `tests/preview-screen.test.tsx`, same-ID client fixtures                                                                                               | One reserved operation ID and one dispatch; cancellation retains the active ID while status is RUNNING.                                      |
+| Unknown reconciliation                     | injected rejected send/tool fixtures plus `getRun`/`getToolTest`                                                                                       | Input and identity remain visible; retry/check uses the original ID.                                                                         |
+| Release/draft source and return context    | composer handoff fields and screen source selection                                                                                                    | RELEASE carries release ID; DRAFT carries exact revisions; Back resolves handoff return context or `/features`.                              |
+| Typed tool arguments and stale output      | schema-driven `catalog_lookup` fixture                                                                                                                 | String input remains supported; numeric/boolean/object values are parsed and invalid values make zero calls; edits invalidate prior results. |
+| Preview service contract                   | `tests/preview-screen.test.tsx tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts` | 5 files, 41 tests passed.                                                                                                                    |
 
 #### Validation
 
@@ -272,14 +272,14 @@ The correction checklist is implemented and revalidated in the current Attempt 2
 
 #### Final fixture and focused-test matrix
 
-| Requirement | Fixture/test evidence | Expected and observed effect |
-| --- | --- | --- |
-| Catalogue and scenario selection | `listFixtures` injected fixture and `GET /api/studio/preview/fixtures` contract | Returned IDs/labels populate the UI; unavailable hard-coded IDs are not dispatched. |
-| Start/Send/Cancel duplicate guards | deferred promises in `tests/preview-screen.test.tsx` | One synchronous dispatch; replay/check uses the exact original ID and frozen payload; Cancel remains tied to that ID through RUNNING. |
-| Unknown reconciliation and stale callback fencing | rejected POST plus same-ID GET; unmount generation test | Input and identity remain visible; GET reconciliation is deduplicated; late responses cannot update the next generation. |
-| Release/draft and return context | selection payload assertions and `returnTo` navigation test | RELEASE carries release ID; DRAFT carries exact revision/contract data; Back restores the originating destination or `/features`. |
-| Typed arguments and zero-side-effect validation | number/boolean/enum/object/array test with out-of-range value | Invalid input makes zero `runToolTest` calls; valid values arrive as typed `{ count: 2, enabled: true, kind: 'linen', metadata: {}, tags: [] }`. |
-| Preview contract regression suite | five focused preview test files | 5 files, 46 tests passed. |
+| Requirement                                       | Fixture/test evidence                                                           | Expected and observed effect                                                                                                                     |
+| ------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Catalogue and scenario selection                  | `listFixtures` injected fixture and `GET /api/studio/preview/fixtures` contract | Returned IDs/labels populate the UI; unavailable hard-coded IDs are not dispatched.                                                              |
+| Start/Send/Cancel duplicate guards                | deferred promises in `tests/preview-screen.test.tsx`                            | One synchronous dispatch; replay/check uses the exact original ID and frozen payload; Cancel remains tied to that ID through RUNNING.            |
+| Unknown reconciliation and stale callback fencing | rejected POST plus same-ID GET; unmount generation test                         | Input and identity remain visible; GET reconciliation is deduplicated; late responses cannot update the next generation.                         |
+| Release/draft and return context                  | selection payload assertions and `returnTo` navigation test                     | RELEASE carries release ID; DRAFT carries exact revision/contract data; Back restores the originating destination or `/features`.                |
+| Typed arguments and zero-side-effect validation   | number/boolean/enum/object/array test with out-of-range value                   | Invalid input makes zero `runToolTest` calls; valid values arrive as typed `{ count: 2, enabled: true, kind: 'linen', metadata: {}, tags: [] }`. |
+| Preview contract regression suite                 | five focused preview test files                                                 | 5 files, 46 tests passed.                                                                                                                        |
 
 #### Final validation
 
@@ -308,13 +308,13 @@ Ready for Review. Attempt 3 preserves Attempts 1-2 and implements every remainin
 
 #### Fixture and request matrix
 
-| Case | Fixture/test | Expected and observed effect |
-| --- | --- | --- |
-| Duplicate Start/Send/Cancel and same-ID replay | `tests/preview-screen.test.tsx` deferred operations | One synchronous dispatch; original UUID/payload retained; cancellation remains tied to the active run through RUNNING -> CANCELLED. |
-| Unknown response and stale callback fencing | screen deferred/reconciliation cases | UNKNOWN remains explicitly checkable; reset/unmount generation prevents late mutation. |
-| Tool schema validation | nested object/array and typed primitive cases | Missing nested `sku`, wrong array item, prohibited extra property, and out-of-bound values produce zero calls; valid typed payload forwards exact values. |
-| Transport identity and paths | `tests/preview-client.test.ts` | Exact UUID IDs are accepted; different valid IDs and malformed results are uncertain; six request paths/methods match C9.1. |
-| Existing preview contracts | five prior preview contract suites | Backend/route/store/Redis fixture contracts remain passing. |
+| Case                                           | Fixture/test                                        | Expected and observed effect                                                                                                                              |
+| ---------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Duplicate Start/Send/Cancel and same-ID replay | `tests/preview-screen.test.tsx` deferred operations | One synchronous dispatch; original UUID/payload retained; cancellation remains tied to the active run through RUNNING -> CANCELLED.                       |
+| Unknown response and stale callback fencing    | screen deferred/reconciliation cases                | UNKNOWN remains explicitly checkable; reset/unmount generation prevents late mutation.                                                                    |
+| Tool schema validation                         | nested object/array and typed primitive cases       | Missing nested `sku`, wrong array item, prohibited extra property, and out-of-bound values produce zero calls; valid typed payload forwards exact values. |
+| Transport identity and paths                   | `tests/preview-client.test.ts`                      | Exact UUID IDs are accepted; different valid IDs and malformed results are uncertain; six request paths/methods match C9.1.                               |
+| Existing preview contracts                     | five prior preview contract suites                  | Backend/route/store/Redis fixture contracts remain passing.                                                                                               |
 
 #### Validation
 
@@ -357,14 +357,14 @@ Ready for Review. Attempt 4 preserves the accepted prior implementation and addr
 
 #### Fixture and request matrix
 
-| Case | Fixture/test | Expected and observed effect |
-| --- | --- | --- |
-| Cancellation reuse | `tests/preview-screen.test.tsx`, injected `RUNNING` sends and `CANCELLED` cancels | Two Send calls reserve two UUIDs; two Cancel calls use those exact UUIDs, one per run. |
-| Direct saved release | `release_01ACTIVE` plus one capability revision | One `startConversation` request carries `RELEASE` and the actual selected release ID; no composer is required. |
-| Uncertain HTTP and identity | `tests/preview-client.test.ts`, unreadable 502 and different UUID responses | Both remain uncertain; malformed responses do not clear the original operation or permit a new write. |
-| Empty catalogue | `listFixtures()` returns `[]` | Run tool test is disabled and `runToolTest` call count remains zero. |
-| Nested canonical schema | nested payload/tags fixture with required, additionalProperties, items and maxItems | Missing `sku`, extra property, wrong array item and bounds produce zero calls; valid typed JSON is forwarded unchanged. |
-| Existing preview contracts | six focused preview test files | 6 files, 54 tests passed; route/service/store/Redis fixtures remain green. |
+| Case                        | Fixture/test                                                                        | Expected and observed effect                                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Cancellation reuse          | `tests/preview-screen.test.tsx`, injected `RUNNING` sends and `CANCELLED` cancels   | Two Send calls reserve two UUIDs; two Cancel calls use those exact UUIDs, one per run.                                  |
+| Direct saved release        | `release_01ACTIVE` plus one capability revision                                     | One `startConversation` request carries `RELEASE` and the actual selected release ID; no composer is required.          |
+| Uncertain HTTP and identity | `tests/preview-client.test.ts`, unreadable 502 and different UUID responses         | Both remain uncertain; malformed responses do not clear the original operation or permit a new write.                   |
+| Empty catalogue             | `listFixtures()` returns `[]`                                                       | Run tool test is disabled and `runToolTest` call count remains zero.                                                    |
+| Nested canonical schema     | nested payload/tags fixture with required, additionalProperties, items and maxItems | Missing `sku`, extra property, wrong array item and bounds produce zero calls; valid typed JSON is forwarded unchanged. |
+| Existing preview contracts  | six focused preview test files                                                      | 6 files, 54 tests passed; route/service/store/Redis fixtures remain green.                                              |
 
 #### Validation
 
@@ -420,14 +420,14 @@ historical and is not represented as architect acceptance.
 
 #### Fixture and request matrix
 
-| Case | Fixture/test | Request and observed effect |
-| --- | --- | --- |
-| Reset and known-failure admission | `p01-healthy-en`; Attempt 5 screen regression | Start call 1 reserves UUID A and completes; confirmed Reset; Start call 2 reserves UUID B; `DENIED` settles; Start call 3 is admitted with a new UUID. Counts and IDs asserted. |
-| Uncertain creation replay | deferred `startConversation`; existing screen regression | Duplicate synchronous Start makes one call; same-ID Check replays the original `previewConversationId` and payload. |
-| Selected source execution | tool handoff A plus saved tool B; Attempt 5 screen regression | Selecting B and entering `linen-shirt` makes exactly one `runToolTest` with `toolRevisionId: toolrev_02SAVED`; no stale handoff A dispatch. |
-| Active release Back | saved `release_02SAVED` with `/releases/release_02SAVED`; Attempt 5 screen regression | Conversation source selection followed by Back navigates to the selected release, despite populated tool sources. |
-| Nullable values | typed nullable integer/boolean fixture; Attempt 5 screen regression | One valid tool request forwards exact `{ count: null, enabled: null }`; nonnullable and nested invalid cases remain zero-dispatch. |
-| Contract and fixture catalogue | six focused preview suites | Returned fixture IDs are used; malformed/uncertain transport, identity, route, service, store and Redis contract coverage remains green. |
+| Case                              | Fixture/test                                                                          | Request and observed effect                                                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reset and known-failure admission | `p01-healthy-en`; Attempt 5 screen regression                                         | Start call 1 reserves UUID A and completes; confirmed Reset; Start call 2 reserves UUID B; `DENIED` settles; Start call 3 is admitted with a new UUID. Counts and IDs asserted. |
+| Uncertain creation replay         | deferred `startConversation`; existing screen regression                              | Duplicate synchronous Start makes one call; same-ID Check replays the original `previewConversationId` and payload.                                                             |
+| Selected source execution         | tool handoff A plus saved tool B; Attempt 5 screen regression                         | Selecting B and entering `linen-shirt` makes exactly one `runToolTest` with `toolRevisionId: toolrev_02SAVED`; no stale handoff A dispatch.                                     |
+| Active release Back               | saved `release_02SAVED` with `/releases/release_02SAVED`; Attempt 5 screen regression | Conversation source selection followed by Back navigates to the selected release, despite populated tool sources.                                                               |
+| Nullable values                   | typed nullable integer/boolean fixture; Attempt 5 screen regression                   | One valid tool request forwards exact `{ count: null, enabled: null }`; nonnullable and nested invalid cases remain zero-dispatch.                                              |
+| Contract and fixture catalogue    | six focused preview suites                                                            | Returned fixture IDs are used; malformed/uncertain transport, identity, route, service, store and Redis contract coverage remains green.                                        |
 
 #### Agent-executed validation
 
@@ -494,13 +494,13 @@ treated as acceptance.
 
 #### Fixture and request matrix
 
-| Case | Fixture/test | Request count and observed effect |
-| --- | --- | --- |
-| Pending conversation source freeze | Tool A `toolrev_01PUBLISHED`, saved Tool B `toolrev_02SAVED`, deferred `startConversation` | Same-turn source change is rejected; exactly one POST is issued with A's DRAFT/tool revision payload. |
-| Unknown creation replay | Same A/B fixture with rejected creation | B remains unselected; Check same conversation issues exactly one second call with the original `previewConversationId` and payload, not B. |
-| Successful reconciliation freeze | Same deferred fixture resolved with `conversation-1` | Conversation becomes frozen; source remains A until confirmed Reset. |
-| Existing tool operation guard | Attempt 6 deferred Tool A POST/GET fixture | Pending/UNKNOWN source changes remain blocked; same-ID GET resolves before B can be selected; the existing test then dispatches B once with `toolrev_02SAVED`. |
-| Preview contract regression | Six focused preview test files | 6 files, 60 tests passed; client identity/error, route, service, store, Redis and screen contracts remain green. |
+| Case                               | Fixture/test                                                                               | Request count and observed effect                                                                                                                              |
+| ---------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pending conversation source freeze | Tool A `toolrev_01PUBLISHED`, saved Tool B `toolrev_02SAVED`, deferred `startConversation` | Same-turn source change is rejected; exactly one POST is issued with A's DRAFT/tool revision payload.                                                          |
+| Unknown creation replay            | Same A/B fixture with rejected creation                                                    | B remains unselected; Check same conversation issues exactly one second call with the original `previewConversationId` and payload, not B.                     |
+| Successful reconciliation freeze   | Same deferred fixture resolved with `conversation-1`                                       | Conversation becomes frozen; source remains A until confirmed Reset.                                                                                           |
+| Existing tool operation guard      | Attempt 6 deferred Tool A POST/GET fixture                                                 | Pending/UNKNOWN source changes remain blocked; same-ID GET resolves before B can be selected; the existing test then dispatches B once with `toolrev_02SAVED`. |
+| Preview contract regression        | Six focused preview test files                                                             | 6 files, 60 tests passed; client identity/error, route, service, store, Redis and screen contracts remain green.                                               |
 
 #### Agent-executed validation
 
@@ -606,11 +606,11 @@ unchanged.
 
 #### Fixture and request matrix
 
-| Case | Fixture/test | Expected and observed effect |
-| --- | --- | --- |
-| Unsaved draft beside saved release | `preview-screen.test.tsx`, draft handoff `draft-handoff-01`, saved `release_saved_01` | Start issues one DRAFT with `caprev_draft` and the exact response contract; reset/select saved issues RELEASE with `release_saved_01`; reset/select draft issues DRAFT again. Three calls and source payloads are asserted. |
-| Tool A pending/unknown source freeze | `preview-screen.test.tsx`, `toolrev_01PUBLISHED` -> `toolrev_02SAVED` with deferred POST/GET | Selection remains A during unknown POST and same-ID GET; no extra POST occurs. After terminal reconciliation, B is selectable and the next request carries `toolrev_02SAVED`. |
-| Existing lifecycle and schema regressions | Existing screen fixtures plus the new cases | Reset/restart, cancellation identity, nullable values, nested schema rejection, direct release selection, Back context, fixture gating and stale callback fencing remain passing. |
+| Case                                      | Fixture/test                                                                                 | Expected and observed effect                                                                                                                                                                                                |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unsaved draft beside saved release        | `preview-screen.test.tsx`, draft handoff `draft-handoff-01`, saved `release_saved_01`        | Start issues one DRAFT with `caprev_draft` and the exact response contract; reset/select saved issues RELEASE with `release_saved_01`; reset/select draft issues DRAFT again. Three calls and source payloads are asserted. |
+| Tool A pending/unknown source freeze      | `preview-screen.test.tsx`, `toolrev_01PUBLISHED` -> `toolrev_02SAVED` with deferred POST/GET | Selection remains A during unknown POST and same-ID GET; no extra POST occurs. After terminal reconciliation, B is selectable and the next request carries `toolrev_02SAVED`.                                               |
+| Existing lifecycle and schema regressions | Existing screen fixtures plus the new cases                                                  | Reset/restart, cancellation identity, nullable values, nested schema rejection, direct release selection, Back context, fixture gating and stale callback fencing remain passing.                                           |
 
 #### Agent-executed validation
 
@@ -634,7 +634,7 @@ unchanged.
 - Attempt 6 implementation files are `src/studio/preview/preview-screen.tsx`
   and `tests/preview-screen.test.tsx`.
 - Published implementation commit: `5aea0c4` (`fix(commerce): freeze preview
-  source identity`) on `origin/task/ARCH-020-COMMERCE-017`.
+source identity`) on `origin/task/ARCH-020-COMMERCE-017`.
 
 #### Authenticated browser and live limitations
 
@@ -667,7 +667,6 @@ No additional blocking functional finding was identified in this scoped review. 
 
 Readiness reconciliation: COMMERCE-019 still awaits COMMERCE-013; GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain their other prerequisites/manual execution gates. No dependent is promoted or launched by this review. No implementation edit, implementation push, main merge or service gitlink change. Architecture remains not yet Implemented; COMMERCE-012 is the final implementation checkpoint.
 
-
 ### Changes Requested — Attempt 6 — 2026-09-21
 
 **Current decision: Changes Requested; Ready for one scoped correction. Attempt 6 retained; executor/claimed_at null. Not accepted.** Verified implementation `5aea0c4a5f3dc4aec4230af45296a703ff787a4e` and report `2d30a0aa435ba3639602afbe3ebb8cfc89236e82` against remote task heads. Both worktrees clean; database pin remains `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No implementation edits, new claim, dependent promotion, main merge or gitlink change.
@@ -689,7 +688,7 @@ function isToolSourceLocked() {
     conversationOperation.current ||
     conversationCheckPending.current ||
     toolOperation.current ||
-    toolCheckOperation.current
+    toolCheckOperation.current,
   );
 }
 const toolSourceLocked = isToolSourceLocked();
@@ -728,7 +727,6 @@ This is the remaining portion of **A4-R2**, not a new feature or broader testing
 The obsolete commented screen implementation remains at the end of the submitted file despite the cleanup claim; remove that block as already requested. Update the report with the exact A5-R1 corrections/results, preserving earlier submission history. The four A4 reproductions and eight earlier reproductions must remain passing; no new exhaustive test matrix is requested.
 
 Authenticated desktop/narrow/keyboard browser validation remains pending a provisioned local Studio identity. Live-provider/system pairing remains developer-owned. These external prerequisites are separate from the two component failures above. Return to Review after the scoped corrections and mirrored task branches are pushed; do not self-accept or start dependent tasks.
-
 
 ### Changes Requested — Attempt 4 — 2026-09-21
 
@@ -775,7 +773,6 @@ Files: `src/studio/preview/preview-screen.tsx`, focused schema-input tests.
 Remove the obsolete commented implementation still at the end of `preview-screen.tsx` (lines1094–1175 at this revision), as already requested. Report the actual remaining/fixed behaviors rather than claiming all prior review items are complete. The previous implementation was reviewed with changes requested, not architect-accepted; correct that wording in the new report while preserving historical submissions. Record these scoped fixture results and commands.
 
 Authenticated desktop/narrow/keyboard browser validation remains explicitly pending a provisioned local Studio identity; live-provider/system pairing remains developer-owned. Those prerequisites do not explain the component failures above and are not new implementation demands. Return to Review after corrections and both task branches are pushed; do not self-accept or start dependent tasks.
-
 
 ### Changes Requested — Attempt 3 — 2026-09-21
 
@@ -834,7 +831,6 @@ Files: `src/studio/preview/preview-screen.tsx`, focused input tests.
 #### Evidence and report cleanup before resubmission
 
 Update the Attempt 3 checklist with an explicit superseding correction report: direct source selection, non-success uncertainty and full schema support are not yet implemented. Remove the obsolete commented-out screen implementation. Record the targeted fixture/component flows above with actual request values/counts. Keep authenticated desktop/narrow/keyboard evidence explicitly pending local Studio identity; do not claim component tests are browser screenshots or reclassify U14-owned source selection as developer-owned. No auth bypass or production fixture substitution is authorized. A missing identity alone does not add another implementation defect or require live-provider work here.
-
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 

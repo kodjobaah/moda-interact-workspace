@@ -74,25 +74,25 @@ interface ApiPlatformConfigurationReader {
 
 ```ts
 {
-  endpoint: string;               // MERCHANT_KNOWLEDGE_R2_ENDPOINT
-  bucket: string;                 // MERCHANT_KNOWLEDGE_R2_BUCKET
-  accessKeyId: string;            // MERCHANT_KNOWLEDGE_R2_ACCESS_KEY_ID
-  secretAccessKey: string;        // MERCHANT_KNOWLEDGE_R2_SECRET_ACCESS_KEY
-  maxUploadBytes: number;         // MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES
+  endpoint: string; // MERCHANT_KNOWLEDGE_R2_ENDPOINT
+  bucket: string; // MERCHANT_KNOWLEDGE_R2_BUCKET
+  accessKeyId: string; // MERCHANT_KNOWLEDGE_R2_ACCESS_KEY_ID
+  secretAccessKey: string; // MERCHANT_KNOWLEDGE_R2_SECRET_ACCESS_KEY
+  maxUploadBytes: number; // MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES
   maxXlsxUncompressedBytes: number; // MERCHANT_KNOWLEDGE_MAX_XLSX_UNCOMPRESSED_BYTES
 }
 ```
 
 Per the developer's recommendation, the ADMIN-002-documented six-field object above is the canonical shared decrypted plaintext contract. API output types retain their `r2*` projection names. The deterministic ADMIN-shaped fixture verifies reader compatibility; live Admin writer interoperability remains a pre-API-002 enablement gate. Do not write production credentials or switch consumers until that writer contract and the database enforcement below are verified end to end.
 
-- `readMerchantKnowledgeUploadPolicy()` must expose **only** `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint` and `r2Bucket` to a trusted policy caller; it must not leak either credential. It may use the same internal purpose-scoped reader as the secret accessor, but each *public service method invocation* performs a fresh DB read.
+- `readMerchantKnowledgeUploadPolicy()` must expose **only** `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint` and `r2Bucket` to a trusted policy caller; it must not leak either credential. It may use the same internal purpose-scoped reader as the secret accessor, but each _public service method invocation_ performs a fresh DB read.
 - `requireMerchantKnowledgeR2Configuration()` supplies both access credentials **only to trusted server-side code**; never expose this object through an HTTP endpoint, ordinary API JSON, a browser bundle or logs. API-002 owns consumer wiring and access authorisation.
-- Require HTTPS, the API's existing Cloudflare R2 endpoint-host/SSRF restrictions and bucket-name validation, and existing code-enforced transport and XLSX limits (including the current 25 MiB upload hard ceiling). Policy fields must be validated *after unsealing*. Endpoint/bucket remain **editable** in the Admin writer; no hardcoded location lock or object relocation belongs here.
+- Require HTTPS, the API's existing Cloudflare R2 endpoint-host/SSRF restrictions and bucket-name validation, and existing code-enforced transport and XLSX limits (including the current 25 MiB upload hard ceiling). Policy fields must be validated _after unsealing_. Endpoint/bucket remain **editable** in the Admin writer; no hardcoded location lock or object relocation belongs here.
 - The unseal root/keyring is externally provisioned, purpose-scoped and never read from the configuration table itself; wrong or missing wrapping keys fail closed. Credential rotation is independent of R2 location editing. No raw secrets appear in exceptions, structured logs or tests' failure output.
 
 **`commerce.connectionKeys`:** Query the sealed record, reconstruct only the documented `CredentialEnvelope`, construct exact AAD bytes `JSON.stringify(["moda-platform-config-v1", environment, key, record.version, 1])` after validation, decrypt with published ARCH-039 `decryptCredential`, then validate canonical `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` using existing Shared `parseCredentialKeyring` / `resolveActiveCredentialKey`. Preserve prior key IDs to decrypt existing Woo REST-read grants. The authoritative registry **also** maps `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` to this key: validate and surface it as a purpose-specific optional/required field according to the consuming operation, without weakening fail-closed protection for a consumer that requires it. Return typed security material to trusted server code only, never an HTTP response.
 
-**`messaging.meta`:** Use the identical sealed-envelope/AAD validation with *this* key and its row version; validate the purpose-specific plaintext fields `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN`. Provide the typed result to a trusted server caller only; do not provide a generic `getSecret(key)` public API. No caller or network endpoint in this task.
+**`messaging.meta`:** Use the identical sealed-envelope/AAD validation with _this_ key and its row version; validate the purpose-specific plaintext fields `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN`. Provide the typed result to a trusted server caller only; do not provide a generic `getSecret(key)` public API. No caller or network endpoint in this task.
 
 ## Out of Scope
 
@@ -108,7 +108,7 @@ Per the developer's recommendation, the ADMIN-002-documented six-field object ab
 - **No configuration caching:** execute a fresh PostgreSQL read for every method call/operation. No Redis, process-local snapshots, TTL, background refresher or last-known-good fallback; a caller may reuse its result within one operation only.
 - Fail closed for missing rows, wrong JSON shapes, disabled tombstones, unsupported schema versions, wrong envelope algorithm, invalid AAD, missing root/decryption keys or a failed database read. No fallback to `merchantKnowledge.upload`, a different environment or old environment variables. Never log secrets, ciphertext, nonces, tags, keyrings or decrypted payloads; only purpose-scoped trusted server return values may contain unsealed security material.
 - Validate a sealed row's precise closed-shape envelope (`kind: sealed`, `schemaVersion: 1`, `algorithm: AES-256-GCM`, wrapping key ID, nonce, ciphertext, auth tag), or exactly `{ "kind": "disabled", "schemaVersion": 1 }`. Use the **row's positive version** and exact `JSON.stringify(["moda-platform-config-v1", environment, key, record.version, 1])` AAD bytes for all three sealed purposes. A tombstone never becomes a default configuration.
-- For `merchant.knowledge.r2`, treat *all six* plaintext fields as one sealed purpose, not a separately persisted plaintext policy plus two environment-held credentials. Typed read-only policy projection must not expose access credentials; secret projection must be server-only.
+- For `merchant.knowledge.r2`, treat _all six_ plaintext fields as one sealed purpose, not a separately persisted plaintext policy plus two environment-held credentials. Typed read-only policy projection must not expose access credentials; secret projection must be server-only.
 - Use exact frozen ARCH-043 AAD bytes and the existing ARCH-039 security package. Support old key IDs in the unwrapped Commerce keyring for previously persisted grants. Test key rotation with old/new key preservation.
 - Keep methods dependency-injectable for tests. Do not force a DB read during unrelated API health probes or module import.
 - Existing structured logging must use `@modainteract/moda-interact-shared/logging`, with bounded safe reason codes and no secret material.
@@ -240,6 +240,7 @@ Accepted for API-001 scope. No consumer was switched, no production configuratio
 Keep API-002 pending until the Database/Admin cutover gates are resolved and represented in its authoritative dependency/acceptance record.
 
 ### Physical Worktree Isolation and Synchronization
+
 - Attempt 2 canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-API-001`, `task/ARCH-043-API-001`, head `bfdb1249d4b3a8ffd0a51727168f0a42603173f2`
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-API-001`, `task/ARCH-043-API-001`, head `01f3dfb25a2a45a0ae493f92c49cfd9859cd967b`
@@ -250,6 +251,7 @@ Keep API-002 pending until the Database/Admin cutover gates are resolved and rep
 - Durable developer claim: parent task commit `81df3e6e5044807c1d54d88e60c2fef455618271`, pushed to `origin/task/ARCH-043-API-001`.
 
 ## Physical Worktree Isolation and Synchronization at Self-Review
+
 ## Physical Worktree Isolation and Synchronization at Attempt 1 Self-Review
 
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-API-001`, `task/ARCH-043-API-001`.

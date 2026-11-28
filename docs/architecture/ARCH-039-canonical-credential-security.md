@@ -43,19 +43,19 @@ COMMERCE_CONNECTION_COMMAND_HMAC_KEY=
 - `COMMERCE_CONNECTION_ACTIVE_KEY_ID`: **the sole active encryption-key selector**, supplied only to services that create encrypted credentials; decryption uses the envelope key ID and never requires this variable.
 - `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`: **the sole Commerce connection-command HMAC key source**, an independent canonical padded Base64 32-byte key, supplied only to Commerce. It must not be an AES key, and must not be distributed to readers or API/Admin.
 
-**Hard prohibition:** No service may introduce, continue reading, accept as a fallback, document as an alternative, or configure any *other* environment variable for these ARCH-039 security purposes, including `MODA_WOO_REST_READ_KEYRING`, `MODA_WOO_REST_READ_ACTIVE_KEY_ID`, or newly named service-specific credential-encryption/HMAC secrets. No dual-reading, secret alias, local default, key generation, or implicit fallback to an old variable. When required canonical configuration is absent, incomplete, invalid or inconsistent, fail closed at the relevant enabled credential operation; a present legacy variable must never make that operation succeed. Remove obsolete runtime declarations and active deployment examples as part of consumer tasks.
+**Hard prohibition:** No service may introduce, continue reading, accept as a fallback, document as an alternative, or configure any _other_ environment variable for these ARCH-039 security purposes, including `MODA_WOO_REST_READ_KEYRING`, `MODA_WOO_REST_READ_ACTIVE_KEY_ID`, or newly named service-specific credential-encryption/HMAC secrets. No dual-reading, secret alias, local default, key generation, or implicit fallback to an old variable. When required canonical configuration is absent, incomplete, invalid or inconsistent, fail closed at the relevant enabled credential operation; a present legacy variable must never make that operation succeed. Remove obsolete runtime declarations and active deployment examples as part of consumer tasks.
 
 This closed set applies **only to ARCH-039 credential encryption/decryption, encryption key selection and Commerce connection-command signing**. It does not prohibit unrelated application settings (for example database URLs, provider access tokens, OAuth/webhook verification secrets, public origin or deployment/telemetry configuration). In particular, other unrelated security protocols retain their separately owned secrets; do not repurpose these three variables for other protocols. The pure Shared package reads **no environment variables**; hosted server adapters explicitly read only their authorised subset and pass validated values into Shared.
 
-| Runtime / owner | `KEYS_JSON` | `ACTIVE_KEY_ID` | `COMMAND_HMAC_KEY` |
-|---|---|---|---|
-| Admin credential writer | Yes | Yes | No |
-| Commerce credential writer and command signer | Yes | Yes | Yes |
-| API Woo credential writer | Yes | Yes | No |
-| Authorised Background decryptor | Yes | No | No |
-| MCP credential decryptor | Yes | No | No |
-| Shared package (pure library) | No (injected argument) | No (injected argument) | No (injected argument) |
-| Gateway proxy, messaging ingress, merchant/browser/WordPress and unrelated processes | No | No | No |
+| Runtime / owner                                                                      | `KEYS_JSON`            | `ACTIVE_KEY_ID`        | `COMMAND_HMAC_KEY`     |
+| ------------------------------------------------------------------------------------ | ---------------------- | ---------------------- | ---------------------- |
+| Admin credential writer                                                              | Yes                    | Yes                    | No                     |
+| Commerce credential writer and command signer                                        | Yes                    | Yes                    | Yes                    |
+| API Woo credential writer                                                            | Yes                    | Yes                    | No                     |
+| Authorised Background decryptor                                                      | Yes                    | No                     | No                     |
+| MCP credential decryptor                                                             | Yes                    | No                     | No                     |
+| Shared package (pure library)                                                        | No (injected argument) | No (injected argument) | No (injected argument) |
+| Gateway proxy, messaging ingress, merchant/browser/WordPress and unrelated processes | No                     | No                     | No                     |
 
 Gateway owns the explicit test/production Render wiring and static enforcement of this matrix. Every consumer task must assert it with focused negative tests for forbidden legacy-only and missing/invalid canonical settings. System tests verify it end-to-end. Secret values are externally managed and must never be committed.
 
@@ -69,15 +69,15 @@ Gateway owns the explicit test/production Render wiring and static enforcement o
 
 ## Current Architecture (2026-10-14 snapshot)
 
-| Consumer / owner | Source evidence and current behaviour |
-|---|---|
-| Admin | `src/lib/admin/openrouter-credential-keyring.ts` has a local parser, maximum key ID 64, and active-key loading. OpenRouter, translation and embedding credentials use local crypto helpers. |
-| Background | `src/commerce/credential-keyring.ts` parses locally, maximum key ID 128. `src/security/aes-gcm-credential.ts` implements local bounded decryption; `src/services/woo-coupon-grant.service.ts` decrypts Woo API grants. |
-| Commerce | `lib/server/credential-keyring.ts` returns an empty keyring on missing input; external connections, Preview/OpenRouter and embedding runtime each contain crypto. `src/commerce/connections/command-kernel.ts` HMACs canonical commands with a string key. |
-| MCP | `src/execution/merchant-knowledge/credential-keyring.ts` largely duplicates Commerce; embedding runtime decrypts with local GCM. |
-| API | `src/woocommerce/rest-read/config.ts` takes `MODA_WOO_REST_READ_KEYRING` with base64url material, plus a separate active ID; `envelope.ts` implements Woo grant AES-GCM. |
-| Shared | Existing `commerce/model` OpenRouter and translation credential AAD helpers, but no exported common credential keyring/envelope primitive. |
-| Gateway | Both `render.test.yaml` and `render.production.yaml` already define Commerce keyring/writer groups and Commerce-only HMAC. `tests/validate-render-blueprints.sh` currently limits keyring/writer attachments; the API is not yet a permitted writer. |
+| Consumer / owner | Source evidence and current behaviour                                                                                                                                                                                                                      |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Admin            | `src/lib/admin/openrouter-credential-keyring.ts` has a local parser, maximum key ID 64, and active-key loading. OpenRouter, translation and embedding credentials use local crypto helpers.                                                                |
+| Background       | `src/commerce/credential-keyring.ts` parses locally, maximum key ID 128. `src/security/aes-gcm-credential.ts` implements local bounded decryption; `src/services/woo-coupon-grant.service.ts` decrypts Woo API grants.                                     |
+| Commerce         | `lib/server/credential-keyring.ts` returns an empty keyring on missing input; external connections, Preview/OpenRouter and embedding runtime each contain crypto. `src/commerce/connections/command-kernel.ts` HMACs canonical commands with a string key. |
+| MCP              | `src/execution/merchant-knowledge/credential-keyring.ts` largely duplicates Commerce; embedding runtime decrypts with local GCM.                                                                                                                           |
+| API              | `src/woocommerce/rest-read/config.ts` takes `MODA_WOO_REST_READ_KEYRING` with base64url material, plus a separate active ID; `envelope.ts` implements Woo grant AES-GCM.                                                                                   |
+| Shared           | Existing `commerce/model` OpenRouter and translation credential AAD helpers, but no exported common credential keyring/envelope primitive.                                                                                                                 |
+| Gateway          | Both `render.test.yaml` and `render.production.yaml` already define Commerce keyring/writer groups and Commerce-only HMAC. `tests/validate-render-blueprints.sh` currently limits keyring/writer attachments; the API is not yet a permitted writer.       |
 
 `ARCH-024-GATEWAY-001` is separately Ready in the snapshot; it preserves the keyring distribution needed by database-backed OpenRouter. ARCH-039 Gateway work must incorporate its accepted result rather than overwrite or duplicate it.
 
@@ -108,7 +108,7 @@ Gateway owns the explicit test/production Render wiring and static enforcement o
 - Reader-only services do not require an active-key selector. A missing/invalid keyring must fail closed when the encrypted capability is enabled or invoked. Optional feature disabling must be an explicit, independently validated host decision; silent empty-keyring substitution after malformed input is prohibited.
 - Writers select only an active key that exists in the validated ring; readers select only the stored key ID. Existing key IDs can coexist for normal future rotation, although this initiative has no historical-ciphertext migration requirement.
 - The generic AEAD primitive accepts authenticated data as explicit UTF-8/bytes; cross-service AAD builders live in Shared, while single-owner AAD is kept with its owning domain.
-- For `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`, Shared provides strict encoding validation and raw key bytes, but Commerce retains its command digest/audit contract. Because non-production audit data will be cleared, the Commerce implementation may switch from treating the base64 *text* as an HMAC key to using decoded key bytes, with tests covering the new deterministic digest; this is **not** a ciphertext encryption key.
+- For `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`, Shared provides strict encoding validation and raw key bytes, but Commerce retains its command digest/audit contract. Because non-production audit data will be cleared, the Commerce implementation may switch from treating the base64 _text_ as an HMAC key to using decoded key bytes, with tests covering the new deterministic digest; this is **not** a ciphertext encryption key.
 
 ## Request / Event Flow
 
@@ -132,17 +132,17 @@ Commerce command mutation
 
 ## Repository Responsibilities
 
-| Owner | Responsibility |
-|---|---|
-| `moda_shared` | Canonical Node-only keyring, AEAD/envelope code, cross-service AAD helpers, HMAC-key decoding and publication |
-| `moda_admin` | OpenRouter/translation/embedding credential writer migration |
-| `moda_background` | Credential keyring consumers and Woo grant decryption migration |
-| `moda_commerce` | External connection credential security, command-HMAC and Preview/embedding readers |
-| `moda_mcp` | Merchant Knowledge keyring and embedding reader |
-| `moda_api` | Woo REST-read configuration and grant encryption/decryption |
-| `moda_gateway` | Render Blueprint groups/attachments, API writer wiring, secret-absence and least-privilege validation, operator docs |
-| `moda_system_test` | Black-box interop, tamper, secret boundary and rollout verification |
-| WordPress / Shopify merchant UI | No change; hosted secret values must never reach them |
+| Owner                           | Responsibility                                                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `moda_shared`                   | Canonical Node-only keyring, AEAD/envelope code, cross-service AAD helpers, HMAC-key decoding and publication        |
+| `moda_admin`                    | OpenRouter/translation/embedding credential writer migration                                                         |
+| `moda_background`               | Credential keyring consumers and Woo grant decryption migration                                                      |
+| `moda_commerce`                 | External connection credential security, command-HMAC and Preview/embedding readers                                  |
+| `moda_mcp`                      | Merchant Knowledge keyring and embedding reader                                                                      |
+| `moda_api`                      | Woo REST-read configuration and grant encryption/decryption                                                          |
+| `moda_gateway`                  | Render Blueprint groups/attachments, API writer wiring, secret-absence and least-privilege validation, operator docs |
+| `moda_system_test`              | Black-box interop, tamper, secret boundary and rollout verification                                                  |
+| WordPress / Shopify merchant UI | No change; hosted secret values must never reach them                                                                |
 
 ## Data Model
 
@@ -189,28 +189,28 @@ Reuse `@modainteract/moda-interact-shared/logging` for existing semantic structu
 
 **PRE-PRODUCTION / BREAKING ROLLOUT** explicitly approved on the basis of the user's plan to clear development data. The developer must confirm a cutover checkpoint that clears **all affected non-production encrypted rows, corresponding job payloads and command audit/idempotency evidence where required**, and ensures no old producer or consumer remains live. This permission does not apply to production durable state without separate approval. No backward-compatibility adapter or dual keyring is authorised for this effort.
 
-Order: SHARED-001/002/003/005 acceptance -> SHARED-004 publication -> repository consumer implementations/acceptance -> overlapping ARCH-024 Gateway completion -> GATEWAY-001 configuration/test+production manifest updates -> developer-controlled non-production clear-and-cutover -> SYSTEM-TEST-001 -> architect verification. The Gateway task must not itself perform an environment deployment, generate values or clear a database. Validated Render `sync:false` secret *names* and least-privilege attachments are committed; values remain out of source control.
+Order: SHARED-001/002/003/005 acceptance -> SHARED-004 publication -> repository consumer implementations/acceptance -> overlapping ARCH-024 Gateway completion -> GATEWAY-001 configuration/test+production manifest updates -> developer-controlled non-production clear-and-cutover -> SYSTEM-TEST-001 -> architect verification. The Gateway task must not itself perform an environment deployment, generate values or clear a database. Validated Render `sync:false` secret _names_ and least-privilege attachments are committed; values remain out of source control.
 
 ## Decisions / Tasks
 
-| Task | Owner | Initial status | Depends on |
-|---|---|---|---|
-| ARCH-039-SHARED-001 | moda_shared | Ready | — |
-| ARCH-039-SHARED-002 | moda_shared | Pending | SHARED-001 |
-| ARCH-039-SHARED-003 | moda_shared | Pending | SHARED-001 |
-| ARCH-039-SHARED-005 | moda_shared | Pending | SHARED-001 |
-| ARCH-039-SHARED-004 | moda_shared | Pending | SHARED-001, SHARED-002, SHARED-003, SHARED-005 |
-| ARCH-039-ADMIN-001 | moda_admin | Pending | SHARED-004 |
-| ARCH-039-ADMIN-002 | moda_admin | Pending | SHARED-004 |
-| ARCH-039-BACKGROUND-001 | moda_background | Pending | SHARED-004 |
-| ARCH-039-BACKGROUND-002 | moda_background | Pending | SHARED-004, BACKGROUND-001 |
-| ARCH-039-COMMERCE-001 | moda_commerce | Pending | SHARED-004 |
-| ARCH-039-COMMERCE-002 | moda_commerce | Pending | SHARED-004, COMMERCE-001 |
-| ARCH-039-MCP-001 | moda_mcp | Pending | SHARED-004 |
-| ARCH-039-API-001 | moda_api | Pending | SHARED-004 |
-| ARCH-039-API-002 | moda_api | Pending | SHARED-004, API-001 |
-| ARCH-039-GATEWAY-001 | moda_gateway | Pending | ARCH-024-GATEWAY-001, ADMIN-001/002, BACKGROUND-001/002, COMMERCE-001/002, MCP-001, API-002 |
-| ARCH-039-SYSTEM-TEST-001 | moda_system_test | Pending | SHARED-004 and all ARCH-039 consumer + GATEWAY-001 tasks |
+| Task                     | Owner            | Initial status | Depends on                                                                                  |
+| ------------------------ | ---------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| ARCH-039-SHARED-001      | moda_shared      | Ready          | —                                                                                           |
+| ARCH-039-SHARED-002      | moda_shared      | Pending        | SHARED-001                                                                                  |
+| ARCH-039-SHARED-003      | moda_shared      | Pending        | SHARED-001                                                                                  |
+| ARCH-039-SHARED-005      | moda_shared      | Pending        | SHARED-001                                                                                  |
+| ARCH-039-SHARED-004      | moda_shared      | Pending        | SHARED-001, SHARED-002, SHARED-003, SHARED-005                                              |
+| ARCH-039-ADMIN-001       | moda_admin       | Pending        | SHARED-004                                                                                  |
+| ARCH-039-ADMIN-002       | moda_admin       | Pending        | SHARED-004                                                                                  |
+| ARCH-039-BACKGROUND-001  | moda_background  | Pending        | SHARED-004                                                                                  |
+| ARCH-039-BACKGROUND-002  | moda_background  | Pending        | SHARED-004, BACKGROUND-001                                                                  |
+| ARCH-039-COMMERCE-001    | moda_commerce    | Pending        | SHARED-004                                                                                  |
+| ARCH-039-COMMERCE-002    | moda_commerce    | Pending        | SHARED-004, COMMERCE-001                                                                    |
+| ARCH-039-MCP-001         | moda_mcp         | Pending        | SHARED-004                                                                                  |
+| ARCH-039-API-001         | moda_api         | Pending        | SHARED-004                                                                                  |
+| ARCH-039-API-002         | moda_api         | Pending        | SHARED-004, API-001                                                                         |
+| ARCH-039-GATEWAY-001     | moda_gateway     | Pending        | ARCH-024-GATEWAY-001, ADMIN-001/002, BACKGROUND-001/002, COMMERCE-001/002, MCP-001, API-002 |
+| ARCH-039-SYSTEM-TEST-001 | moda_system_test | Pending        | SHARED-004 and all ARCH-039 consumer + GATEWAY-001 tasks                                    |
 
 See each fully-qualified YAML `depends_on` list for the authoritative graph. Tasks may run in parallel when dependencies and distinct task worktrees permit it; do not work in shared/default checkouts. All non-system-test tasks use `execution_mode: developer`, `completion_mode: developer` for the requested patch-apply/verify workflow. Architect review alone does not make a developer-mode task Complete; developer explicitly completes it. The system-test task uses the normal agent execution/review path.
 

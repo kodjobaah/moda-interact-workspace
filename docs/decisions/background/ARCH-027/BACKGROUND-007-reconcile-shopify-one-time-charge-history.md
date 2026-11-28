@@ -299,18 +299,27 @@ query ShopifyUsageChargeHistory($filter: EventFilterInput!, $cursor: String) {
         id
         occurredAt
         eventType
-        shop { id }
+        shop {
+          id
+        }
         subject {
           __typename
-          ... on AppReference { id }
+          ... on AppReference {
+            id
+          }
         }
         ... on Charge {
           chargeId
           chargeType
-          amount { amount currencyCode }
+          amount {
+            amount
+            currencyCode
+          }
           usageQuantity
           planHandle
-          metadata { legacyChargeId }
+          metadata {
+            legacyChargeId
+          }
         }
       }
     }

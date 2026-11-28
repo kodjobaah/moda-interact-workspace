@@ -19,12 +19,14 @@ depends_on:
 enables:
   - ARCH-043-GATEWAY-001
   - ARCH-043-SYSTEM-TEST-001
-created: '2026-10-17'
+created: "2026-10-17"
 updated: 2026-10-18
 ---
+
 # Write-only Secret Contracts and Admin Auth Bootstrap
 
 ## Architecture
+
 - `ARCH-043` parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Exact sealed-envelope, AAD and key-purpose rules: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Builds on the reusable field renderer, policy registry, privileged CAS/audit service and page from `ARCH-043-ADMIN-001`.
@@ -40,6 +42,7 @@ On 2026-10-17, `/moda_developer_create ARCH-043-ADMIN-002` was invoked to take o
 Extend the existing Admin Platform Configuration editor to provide one canonical, encrypted, authorised configuration record per approved secret purpose, including explicit saved-value reveal, CAS-protected changes, and lazy `auth.admin` resolution with absent-row-only environment fallback. Assume a **fresh pre-production database**: no configuration-data migration, legacy readers, reconciliation, retirement flags or compatibility layers.
 
 ## Context
+
 ADMIN-001 already owns the generic registry, UI, CAS and revision audit. ADMIN-002 adds the approved secret purposes using the published ARCH-039 Node encryption implementation. No dedicated bootstrap import command, startup secret lookup, separate authentication task, or migration work is required. Platform Configuration uses one canonical R2 record; the existing System Controls → Translations remains the sole translation-credential/profile owner.
 
 ## Scope
@@ -72,10 +75,9 @@ This feature has **not entered production** and is implemented against a fresh d
 
 - `merchant.knowledge.r2` owns all six R2 fields atomically. Enforce endpoint/bucket/hard-size constraints, seal with the approved keyring, and never expose credentials to general policy/browser metadata responses. Allow explicit authorised reveal of one stored field with a redacted security event, not a revision.
 - `ai.providers` stores speech API credentials only. Translation API credentials stay in `CommerceTranslationProviderCredential` and model selection stays in the enabled automatic Commerce translation profile. `speech.transcription` continues to govern speech provider/model choice. The Background support translation reader is implemented in its owning task, without a second Admin policy.
-- Preserve strict SUPER_ADMIN authorisation (development bypass only when the *real* deployment environment is development), environment-scoped reads/writes, CAS, and transactional redacted audit. First Set automatically records `initial-setup`; updates `configuration-update`; rotating requires a selected scheduled/compromise reason, revoking a decommission/compromise reason.
-- On an authentication request, resolve `auth.admin` from PostgreSQL and validate/decrypt the *whole* bundle. An **absent** row allows fallback to `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` together; a disabled/malformed/undecryptable row or database outage **does not**. Leave `AUTH_URL`, unseal root, deployment identity and database connectivity external. Do not read this credential during application boot. Verify database precedence, absent-row-only fallback, and fail-closed behaviour with automated resolver tests; verify JWT expiry and signing-secret rotation with automated Auth.js tests. A live Google OAuth login or manual session-rotation demonstration is not required for this task.
+- Preserve strict SUPER_ADMIN authorisation (development bypass only when the _real_ deployment environment is development), environment-scoped reads/writes, CAS, and transactional redacted audit. First Set automatically records `initial-setup`; updates `configuration-update`; rotating requires a selected scheduled/compromise reason, revoking a decommission/compromise reason.
+- On an authentication request, resolve `auth.admin` from PostgreSQL and validate/decrypt the _whole_ bundle. An **absent** row allows fallback to `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` together; a disabled/malformed/undecryptable row or database outage **does not**. Leave `AUTH_URL`, unseal root, deployment identity and database connectivity external. Do not read this credential during application boot. Verify database precedence, absent-row-only fallback, and fail-closed behaviour with automated resolver tests; verify JWT expiry and signing-secret rotation with automated Auth.js tests. A live Google OAuth login or manual session-rotation demonstration is not required for this task.
 - Do not silently migrate any old data. Consumer tasks must directly adopt the single canonical record on their own execution boundaries; no implementation task depends on system-test or Gateway rollout tasks.
-
 
 ## Work Items
 
@@ -86,7 +88,6 @@ This feature has **not entered production** and is implemented against a fresh d
 - [x] Verify request-time Admin authentication lookup with absent-row-only complete-env fallback and fail-closed error paths.
 - [x] Run focused registry/UI/security/auth tests, repository validation and disposable PostgreSQL tests; report outcomes and evidence.
 
-
 ## Interfaces / Contracts
 
 - Database source: `ARCH-043-DATABASE-001` (`PlatformConfiguration`, `PlatformConfigurationAudit`); no additional schema or data migration.
@@ -95,18 +96,15 @@ This feature has **not entered production** and is implemented against a fresh d
 - Authentication: `auth.admin` request-time database-first resolution with environment fallback **only for absent rows**. `AUTH_URL`, database connection, deployment identity and unseal keys remain external.
 - Downstream reader integration belongs to API/Shopify/Background/Commerce task owners; not ADMIN-002.
 
-
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
 - `ARCH-043-ADMIN-001`
 
-
 ## Enables
 
 - `ARCH-043-GATEWAY-001`
 - `ARCH-043-SYSTEM-TEST-001`
-
 
 ## Acceptance Criteria
 
@@ -118,7 +116,6 @@ This feature has **not entered production** and is implemented against a fresh d
 - [x] Admin starts without an auth-credential read, and authentication operations use database credentials or the complete environment bundle **only when the row is absent**; database/validation/decryption/revocation errors fail closed.
 - [x] Existing legitimate SUPER_ADMIN and development-only synthetic SUPER_ADMIN paths pass; production bypass remains forbidden. Verified by focused secret/access authorization tests (12/12), including production and staging bypass rejection.
 
-
 ## Validation
 
 - [x] Focused policy/secret registry, UI, reveal/rotate/revoke, authorisation and clean-start unit tests.
@@ -126,13 +123,11 @@ This feature has **not entered production** and is implemented against a fresh d
 - [x] Disposable PostgreSQL tests for transactional redacted audit, CAS conflict, environment isolation, sealed R2 and speech-only payloads.
 - [x] TypeScript, lint, production build and `git diff --check`; record baseline warnings and any unavailable validation honestly. (Lint had one warning and zero errors; build emitted existing dependency warnings; broader test failures are recorded below.)
 
-
 ## Stop Condition
 
 After scoped implementation, validation and Completion Report, set task to `review` and return control to `moda_architect`. STOP; do not start consumers/Gateway work or edit `_index.md`.
 
 ## Implementation Notes
-
 
 ## Completion Report
 
@@ -176,7 +171,7 @@ No implementation-scope deviation was found. The amended automated authenticatio
 
 ## Developer Self-Review - Changes Requested (Attempt 1, 2026-10-18)
 
-*Historical record:* The earlier manual Google OAuth/session-rotation request below is superseded by the 2026-10-18 acceptance-contract amendment above. It remains recorded as the contemporaneous review finding, not a current completion prerequisite. The unrelated broad-test findings are not waived.
+_Historical record:_ The earlier manual Google OAuth/session-rotation request below is superseded by the 2026-10-18 acceptance-contract amendment above. It remains recorded as the contemporaneous review finding, not a current completion prerequisite. The unrelated broad-test findings are not waived.
 
 ### Review Status
 

@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-BACKGROUND-001
-- ARCH-010-BACKGROUND-003
-- ARCH-010-BACKGROUND-007
-- ARCH-010-BACKGROUND-004
-- ARCH-010-BACKGROUND-005
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-BACKGROUND-001
+  - ARCH-010-BACKGROUND-003
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-004
+  - ARCH-010-BACKGROUND-005
 enables:
-- ARCH-010-SHOPIFY-006
-- ARCH-010-SYSTEM-TEST-002
+  - ARCH-010-SHOPIFY-006
+  - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -332,14 +332,14 @@ At minimum prove:
 14. same-plan rollover does not reset historical/lifetime balances;
 15. changed paid plan remains fail-closed and does not apply upgrade/downgrade;
 16. missing paid period/counter fails closed;
-16. provider transport error preserves all current subscription/credit truth;
-17. retry tiers schedule the next durable time and deterministic job;
-18. 24-hour transport expiry leaves Shop execution disabled and stops automatic scheduling;
-19. startup reconstruction restores reinstall jobs;
-20. periodic repair restores a Redis-lost reinstall job;
-21. ordinary active-shop initial activation reconciliation remains passing;
-22. Iteration-4 recovery and WhatsApp inactive-shop gates remain passing;
-23. usage publication for legitimate pre-uninstall committed usage remains passing.
+17. provider transport error preserves all current subscription/credit truth;
+18. retry tiers schedule the next durable time and deterministic job;
+19. 24-hour transport expiry leaves Shop execution disabled and stops automatic scheduling;
+20. startup reconstruction restores reinstall jobs;
+21. periodic repair restores a Redis-lost reinstall job;
+22. ordinary active-shop initial activation reconciliation remains passing;
+23. Iteration-4 recovery and WhatsApp inactive-shop gates remain passing;
+24. usage publication for legitimate pre-uninstall committed usage remains passing.
 
 ## Validation
 
@@ -371,12 +371,15 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Architect Accepted — Complete.
 
 ### Files Changed
+
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 
 ### Work Completed
+
 - Extended canonical subscription queue reconstruction to restore durable pending-reinstall jobs without contacting Shopify.
 - Added the exact `UNINSTALLED + reinstallPendingAt + matching nextReconcileAt` exception; arbitrary `UNINSTALLED` and all `SUSPENDED` jobs remain terminal no-ops.
 - Reconciled Partner null, verified Free, same paid period, and later same-plan paid cycle outcomes while preserving historical and lifetime entitlement state.
@@ -387,6 +390,7 @@ Architect Accepted — Complete.
 - Added the missing Free pending-plan unmapped case, exact same-paid-period corruption table, successful paid pending projection, paid queue-loss reconstruction, later-cycle wrapper preservation, changed-paid-plan blocking, and reinstall-specific transport retry boundary cases.
 
 ### Validation Results
+
 - `npm test -- --run tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 1 file and 105 tests.
 - Adjacent gate suite (`billing-scheduler`, `entrypoint-isolation`, `shopify-usage-event-publisher`, `recovery-routing`): passed, 4 files and 49 tests.
 - `npm run prisma:validate`: passed.
@@ -395,6 +399,7 @@ Architect Accepted — Complete.
 - `npm run build`: 15 documented baseline TypeScript errors remain in the unrelated purchase/recovery-credit services for the same generated schema/status mismatch; no errors in task-touched files.
 
 ### Attempt 3 Correction Disposition
+
 - Provider-null history and credit preservation: implemented in the focused provider-null preservation test; no history, counter, purchase, refund, promotion, or selection mutation spies were called.
 - Free lifetime quantity preservation: implemented with non-zero granted/committed/reserved/forfeited quantities and no create/upsert/update calls.
 - Unmapped/inactive Free pending projection: implemented; provider handle/time are retained and local pending plan id remains null.
@@ -407,6 +412,7 @@ Architect Accepted — Complete.
 - Reinstall 24-hour boundary: implemented for pre-boundary delayed publication and at-boundary unscheduled UNINSTALLED retention.
 
 ### Attempt 4 Correction Disposition
+
 - Full protected-state mutator coverage: implemented in `tests/unit/services/billing-subscription-reconciliation.service.test.ts` with `expectNoModelMutations(...)`, local historical counter spies for provider-null reinstall, and `upsert` spies on purchase/refund/promotion harness models.
 - Exact paid-period corruption preservation: implemented; every integrity-table row now asserts no BillingPeriod or BillingPeriodEntitlementCounter mutator is called.
 - Later-cycle wrapper preservation: implemented; wrapper-owned lifetime, purchased, refund, promotional, and merchant-selection models are checked across every available mutator while canonical rollover remains responsible for period state.
@@ -414,6 +420,7 @@ Architect Accepted — Complete.
 - Reinstall retry-boundary preservation: implemented for both pre-24-hour and at/after-24-hour cases; no lifecycle or protected-state mutation occurs, and the reinstall marker/status remain unchanged.
 
 ### Git / VCS
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-006`, `task/ARCH-010-BACKGROUND-006`.
@@ -431,9 +438,11 @@ Architect Accepted — Complete.
 ### Architect Review
 
 #### Review Status
+
 Changes Requested
 
 #### Review Notes
+
 Attempt 2 is **not yet acceptable**, but the production correction is substantially conformant. The reviewed implementation commit is `baa33fbae1a0f3883fe2beba27a0e57f98ef4ae3`; the parent Completion Report commit is `47f43f4e64b144d178df207077924da1f6df7a02`.
 
 Attempt 2 correctly addresses the eight production defects from the Attempt-1 review:
@@ -508,7 +517,7 @@ Add/strengthen executable tests with these deterministic expectations:
    - one negative quantity;
    - one non-integer quantity;
    - granted quantity differs from period `includedRecoveryCreditsGranted`.
-   Keep the existing missing-period/CLOSED/overcommitted rows.
+     Keep the existing missing-period/CLOSED/overcommitted rows.
 
 5. `same paid cycle refreshes pending projection`
    - provider has current exact paid cycle plus a pending mapped active plan;
@@ -572,6 +581,7 @@ Do not invent `npm run lint` or `npm run typecheck`; this repository does not de
 - Do not start `ARCH-010-SHOPIFY-006` or `ARCH-010-SYSTEM-TEST-002`.
 
 #### Reviewed Files
+
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 - `moda-interact-background/src/services/same-plan-billing-period-rollover.service.ts`
@@ -579,6 +589,7 @@ Do not invent `npm run lint` or `npm run typecheck`; this repository does not de
 - `docs/architecture/ARCH-010-implementation-handoff.md`
 
 #### Validation Reviewed
+
 - Reported focused reinstall/reconciliation suite: 86 passed.
 - Reported adjacent gate suite: 49 passed.
 - Reported Prisma validation and `git diff --check`: passed.
@@ -587,9 +598,11 @@ Do not invent `npm run lint` or `npm run typecheck`; this repository does not de
 - Review independently verified that the harness now honors Prisma `select`, but the missing evidence above is not present in the submitted test file.
 
 #### Architecture Conformance
+
 Production path is substantially conformant after Attempt 2. Acceptance is withheld solely because the explicitly required reinstall preservation/failure matrix is not yet executable evidence. Downstream tasks remain gated until the SAME task is Accepted Complete.
 
 #### Follow-up
+
 Return `ARCH-010-BACKGROUND-006` to Attempt 3 on the same task branch. `ARCH-010-SHOPIFY-006` and `ARCH-010-SYSTEM-TEST-002` remain gated until BACKGROUND-006 is architect-accepted Complete.
 
 ## Architect Review — Attempt 3
@@ -801,11 +814,9 @@ expect(update.where).toEqual({
   nextReconcileAt: new Date("2026-09-12T12:00:00.000Z"),
 });
 
-expect(Object.keys(update.data).sort()).toEqual([
-  "lastSyncErrorAt",
-  "lastSyncErrorCode",
-  "nextReconcileAt",
-].sort());
+expect(Object.keys(update.data).sort()).toEqual(
+  ["lastSyncErrorAt", "lastSyncErrorCode", "nextReconcileAt"].sort(),
+);
 
 expect(update.data.lastSyncErrorCode).toBe("PARTNER_API_ERROR");
 expect(update.data.nextReconcileAt).toEqual(
@@ -1040,4 +1051,3 @@ auto-start it.
 
 `ARCH-010-SYSTEM-TEST-002` remains **Pending / manual-gated** because its other
 implementation dependencies are incomplete and system tests must not auto-start.
-

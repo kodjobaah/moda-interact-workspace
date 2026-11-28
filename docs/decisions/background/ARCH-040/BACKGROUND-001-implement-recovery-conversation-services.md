@@ -80,28 +80,28 @@ The exact TypeScript names are repository-local, but BACKGROUND-002 must be able
 
 ### 1. Existing implementation to reuse — not replace
 
-| Existing source | Reuse precisely | Must not do in BG001 |
-|---|---|---|
-| `src/services/conversation.service.ts` | `getTurnState`, `claimTurn`, `releaseTurn`, `completeTurn`, `hasChanged`; preserve customer `receiveMessage` and inbound-version logic | Do not create an alternative inbound conversation/turn store |
-| `src/services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts` | Existing AGENT/AUTOMATION quota reservation and `ConversationMessage(PENDING)` idempotency | Do not insert HUMAN into the existing automated-message quota by casting sender types |
-| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts` | Existing provider adapter, prepared-send flow, final shop eligibility check, SENT/FAILED/unknown-message handling | Do not implement another raw Meta HTTP sender or mutate live production call sites here |
-| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` | Current due-date/engagement suppression, checkout lock, template selection and sequence-2 finalisation | Do not create another follow-up scheduler or redefine automatic follow-up eligibility |
-| `src/services/recovery-outreach-attempt.service.ts`, `src/services/recovery-billing.service.ts` | Existing attempt identity, `admit`, `revalidateBeforeProvider`, release/finalise and source key `recovery-outreach:<attempt.id>` | Do not add human-specific recovery-credit accounts or independent sequence-2 rows |
-| `src/services/whatsapp-provider-status.service.ts`, `src/services/whatsapp.service.ts` | Canonical provider-message receipt transitions and existing provider transport | No parallel provider-status reconciliation or duplicate send implementation |
-| `src/services/inbound-whatsapp-abuse-admission.service.ts` | Read as an example of injectable atomic Redis admission only | Never apply inbound customer-abuse counters to outbound merchant messages |
+| Existing source                                                                                 | Reuse precisely                                                                                                                        | Must not do in BG001                                                                    |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `src/services/conversation.service.ts`                                                          | `getTurnState`, `claimTurn`, `releaseTurn`, `completeTurn`, `hasChanged`; preserve customer `receiveMessage` and inbound-version logic | Do not create an alternative inbound conversation/turn store                            |
+| `src/services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts`            | Existing AGENT/AUTOMATION quota reservation and `ConversationMessage(PENDING)` idempotency                                             | Do not insert HUMAN into the existing automated-message quota by casting sender types   |
+| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`                 | Existing provider adapter, prepared-send flow, final shop eligibility check, SENT/FAILED/unknown-message handling                      | Do not implement another raw Meta HTTP sender or mutate live production call sites here |
+| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`               | Current due-date/engagement suppression, checkout lock, template selection and sequence-2 finalisation                                 | Do not create another follow-up scheduler or redefine automatic follow-up eligibility   |
+| `src/services/recovery-outreach-attempt.service.ts`, `src/services/recovery-billing.service.ts` | Existing attempt identity, `admit`, `revalidateBeforeProvider`, release/finalise and source key `recovery-outreach:<attempt.id>`       | Do not add human-specific recovery-credit accounts or independent sequence-2 rows       |
+| `src/services/whatsapp-provider-status.service.ts`, `src/services/whatsapp.service.ts`          | Canonical provider-message receipt transitions and existing provider transport                                                         | No parallel provider-status reconciliation or duplicate send implementation             |
+| `src/services/inbound-whatsapp-abuse-admission.service.ts`                                      | Read as an example of injectable atomic Redis admission only                                                                           | Never apply inbound customer-abuse counters to outbound merchant messages               |
 
-### 2. New modules and *exact behavioural* methods
+### 2. New modules and _exact behavioural_ methods
 
 Create cohesive files, not one large orchestrator. The signatures below describe inputs/outputs; final TypeScript naming may follow local conventions and should be recorded under Completion Report. Each receives injectable database/clock/Redis/policy dependencies for focused tests.
 
-| New file (proposed) | Public methods to implement | Required result behaviour |
-|---|---|---|
-| `src/services/recovery-conversation/ai-turn-ownership.service.ts` | `readTurnOwnership(conversationId)` -> `{mode, revision, recoveryId, shopId}`; `checkAutomatedTurn(conversationId, expectedRevision, phase)` | `allowed` only for recovery-linked `AI` mode and exact revision. Return `human-controlled`, `stale-control-revision`, `not-recovery-linked` or `shop-mismatch` without modifying inbound records. Capture original revision once at turn start; never load a fresh revision after Resume AI and treat a previously started turn as current. |
-| `src/services/recovery-conversation/merchant-send-command.service.ts` | `claimDueCommands(limit, now)` -> leased command IDs with tokens; `loadClaimedCommand(commandId, leaseToken)`; `completeCommand`/`rejectCommand`/`deferCommand` by expected lease token | Claim with a short SQL transaction, stable row identity and lease CAS. Validate command `shopId` against `CheckoutRecovery.shopId`, exact conversation and recovery, `expectedControlRevision` and immutable recipient snapshot. Reject terminally invalid/stale commands; retry only eligible transient failures. |
-| `src/services/recovery-conversation/recovery-follow-up-policy.service.ts` | `checkServiceWindow(conversationId, now)`; `validateHumanFollowUp(command)`; `claimSequenceTwo(recoveryId, initiator, initiationKey)` | Most recent **verified inbound customer** timestamp controls 24 hours. Free text is refused when closed, never silently converted into a template. A permitted HUMAN template uses the **already-linked** unique sequence-2 row, without replacing the initiator or the original automatic no-response semantics; return `already-claimed` for a losing human/AI race. |
-| `src/services/recovery-conversation/human-send-policy.service.ts` | `checkRestriction(shopId)`; `screenHumanCommand(commandId, shopId, recipient, normalizedContent)` | A SUSPENDED restriction blocks HUMAN only; do not block customer inbound, automated recovery or Resume AI. Bound text/template payloads, shop/recipient send rate and repeat spam with atomic Redis operations. The **same command ID** cannot consume counter capacity on a retry. Emit stable policy codes; Redis failure produces `human_screening_unavailable`, not an unchecked send. |
-| `src/services/recovery-conversation/outbound-send-fence.service.ts` | `admitFinalSend({messageId, commandId?, leaseToken?, expectedControlRevision, senderType, shopId, recoveryId})` | In one short durable transaction, atomically decide ownership, shop restriction for HUMAN, follow-up ownership, and **who wins the send-vs-takeover/suspension race**. Return `admitted` with a durable provider-dispatch identity or an explicit refusal. No provider network call inside that transaction. The lease claim alone is *not* equivalent to provider-send admission. |
-| `src/services/recovery-conversation/human-send-reconciliation.service.ts` | `recordProviderAccepted(commandId, leaseToken, messageId, providerMessageId)`; `recordDefinitiveFailure`; `recordProviderUnknown`; `reconcileUnknown` | Bind a command to at most one canonical `ConversationMessage(senderType=HUMAN)`/provider send; reuse status and billing services, and distinguish queued/claimed from SENT/DELIVERED/READ. An UNKNOWN provider disposition cannot be retried by issuing another provider request without a proven safe reconciliation outcome. |
+| New file (proposed)                                                       | Public methods to implement                                                                                                                                                             | Required result behaviour                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/services/recovery-conversation/ai-turn-ownership.service.ts`         | `readTurnOwnership(conversationId)` -> `{mode, revision, recoveryId, shopId}`; `checkAutomatedTurn(conversationId, expectedRevision, phase)`                                            | `allowed` only for recovery-linked `AI` mode and exact revision. Return `human-controlled`, `stale-control-revision`, `not-recovery-linked` or `shop-mismatch` without modifying inbound records. Capture original revision once at turn start; never load a fresh revision after Resume AI and treat a previously started turn as current.                                                |
+| `src/services/recovery-conversation/merchant-send-command.service.ts`     | `claimDueCommands(limit, now)` -> leased command IDs with tokens; `loadClaimedCommand(commandId, leaseToken)`; `completeCommand`/`rejectCommand`/`deferCommand` by expected lease token | Claim with a short SQL transaction, stable row identity and lease CAS. Validate command `shopId` against `CheckoutRecovery.shopId`, exact conversation and recovery, `expectedControlRevision` and immutable recipient snapshot. Reject terminally invalid/stale commands; retry only eligible transient failures.                                                                         |
+| `src/services/recovery-conversation/recovery-follow-up-policy.service.ts` | `checkServiceWindow(conversationId, now)`; `validateHumanFollowUp(command)`; `claimSequenceTwo(recoveryId, initiator, initiationKey)`                                                   | Most recent **verified inbound customer** timestamp controls 24 hours. Free text is refused when closed, never silently converted into a template. A permitted HUMAN template uses the **already-linked** unique sequence-2 row, without replacing the initiator or the original automatic no-response semantics; return `already-claimed` for a losing human/AI race.                     |
+| `src/services/recovery-conversation/human-send-policy.service.ts`         | `checkRestriction(shopId)`; `screenHumanCommand(commandId, shopId, recipient, normalizedContent)`                                                                                       | A SUSPENDED restriction blocks HUMAN only; do not block customer inbound, automated recovery or Resume AI. Bound text/template payloads, shop/recipient send rate and repeat spam with atomic Redis operations. The **same command ID** cannot consume counter capacity on a retry. Emit stable policy codes; Redis failure produces `human_screening_unavailable`, not an unchecked send. |
+| `src/services/recovery-conversation/outbound-send-fence.service.ts`       | `admitFinalSend({messageId, commandId?, leaseToken?, expectedControlRevision, senderType, shopId, recoveryId})`                                                                         | In one short durable transaction, atomically decide ownership, shop restriction for HUMAN, follow-up ownership, and **who wins the send-vs-takeover/suspension race**. Return `admitted` with a durable provider-dispatch identity or an explicit refusal. No provider network call inside that transaction. The lease claim alone is _not_ equivalent to provider-send admission.         |
+| `src/services/recovery-conversation/human-send-reconciliation.service.ts` | `recordProviderAccepted(commandId, leaseToken, messageId, providerMessageId)`; `recordDefinitiveFailure`; `recordProviderUnknown`; `reconcileUnknown`                                   | Bind a command to at most one canonical `ConversationMessage(senderType=HUMAN)`/provider send; reuse status and billing services, and distinguish queued/claimed from SENT/DELIVERED/READ. An UNKNOWN provider disposition cannot be retried by issuing another provider request without a proven safe reconciliation outcome.                                                             |
 
 Avoid constructing a second `ConversationMessage` for an already-admitted command. `MerchantConversationSendCommand` is a durable **intent**, not a second chat transcript; successful results attach it to the existing canonical outbound message. Preserve no staff/operator account fields.
 
@@ -109,9 +109,9 @@ Avoid constructing a second `ConversationMessage` for an already-admitted comman
 
 **AI takeover.** AI begins with `(conversationId, controlRevision=r)` captured before the model/tool call. A human takeover commits `r+1`. All later checks for that **original** AI turn must fail, even if someone resumes AI at `r+2`. An AI reply never sends when its ownership check loses the final admission race; customer inbound is still stored normally.
 
-**Final provider fence.** Use `Conversation.controlRevision` and the relevant shop restriction row under a consistent database-lock/CAS order, with a *durable* provider-dispatch decision recorded before network I/O. Precisely document the linearisation point: a takeover/suspension committed **before** final dispatch admission wins and blocks the send; a send durably admitted first may reach Meta even if takeover commits before its HTTP call. Do **not** claim a read-then-HTTP check has atomic precedence. Do **not** hold a PostgreSQL transaction open during Meta HTTP. `MerchantConversationSendState.CLAIMED` is only a worker lease; if the approved DATABASE-001 columns do not adequately record a distinct durable provider-dispatch decision for this contract, return the concrete schema gap to `moda_architect` for DATABASE-001 correction, instead of treating the lease as proof or silently adding an incompatible column in Background.
+**Final provider fence.** Use `Conversation.controlRevision` and the relevant shop restriction row under a consistent database-lock/CAS order, with a _durable_ provider-dispatch decision recorded before network I/O. Precisely document the linearisation point: a takeover/suspension committed **before** final dispatch admission wins and blocks the send; a send durably admitted first may reach Meta even if takeover commits before its HTTP call. Do **not** claim a read-then-HTTP check has atomic precedence. Do **not** hold a PostgreSQL transaction open during Meta HTTP. `MerchantConversationSendState.CLAIMED` is only a worker lease; if the approved DATABASE-001 columns do not adequately record a distinct durable provider-dispatch decision for this contract, return the concrete schema gap to `moda_architect` for DATABASE-001 correction, instead of treating the lease as proof or silently adding an incompatible column in Background.
 
-**Follow-up.** Both human and automatic actions use one sequence-2 `RecoveryOutreachAttempt` and its existing credit idempotency source. Sequence-2 claimant must be set once, including when an unclaimed row already exists. An automated no-response job retains the existing customer-engaged suppression. The HUMAN path is an explicit approved post-window template request, not an automatic follow-up schedule. While `HUMAN` mode is active, scheduled automated follow-up is suppressed. Reject invalid/terminal recovery, closed-window free text and unsupported recipient *before* provider send; do not charge rejected/definitively unsent work.
+**Follow-up.** Both human and automatic actions use one sequence-2 `RecoveryOutreachAttempt` and its existing credit idempotency source. Sequence-2 claimant must be set once, including when an unclaimed row already exists. An automated no-response job retains the existing customer-engaged suppression. The HUMAN path is an explicit approved post-window template request, not an automatic follow-up schedule. While `HUMAN` mode is active, scheduled automated follow-up is suppressed. Reject invalid/terminal recovery, closed-window free text and unsupported recipient _before_ provider send; do not charge rejected/definitively unsent work.
 
 **Command lifecycle.** Only `ACCEPTED`/due retryable work is leasable. A lost/expired lease may be reclaimed, but a stale lease holder cannot send or finalise. `UNKNOWN` requires provider/status reconciliation; it is never treated as a fresh command. Store only bounded error codes and redacted metadata in logs. Normal provider billing, execution eligibility, recipient suppression and recovery-terminal checks still apply; do not bypass them in a HUMAN-specific shortcut.
 
@@ -133,20 +133,19 @@ Place related tests in e.g. `tests/unit/services/recovery-conversation/` and use
 
 ### Platform-agnostic service contracts and execution ownership (Attempt 15)
 
-All six services in the proposed `src/services/recovery-conversation/` module operate only on canonical Prisma entities and trusted `shopId`/`recoveryId`/`conversationId`/`commandId` data. No commerce-platform discriminator, Shopify session, WordPress nonce, Woo installation credential, platform-specific BullMQ job, or platform-owned provider sender is accepted by any BG001 business method. Existing shop/provider adapters can resolve messaging configuration by `shopId` without platform-dependent *policy* branches.
+All six services in the proposed `src/services/recovery-conversation/` module operate only on canonical Prisma entities and trusted `shopId`/`recoveryId`/`conversationId`/`commandId` data. No commerce-platform discriminator, Shopify session, WordPress nonce, Woo installation credential, platform-specific BullMQ job, or platform-owned provider sender is accepted by any BG001 business method. Existing shop/provider adapters can resolve messaging configuration by `shopId` without platform-dependent _policy_ branches.
 
 **Durable dispatcher seam:** expose `claimDueHumanCommands({limit, now, ownerToken})`, `evaluateHumanCommand(commandId, leaseToken, now)`, `admitProviderDispatch(...)` and `reconcileProviderOutcome(...)` as producer-neutral ports. Claim runs via indexed PostgreSQL due scan, short `FOR UPDATE SKIP LOCKED`/CAS and lease expiry; never query Shopify/Woo REST or synchronously publish Redis. BG001 **does not** register its own timer/worker; BG002 owns one dispatcher loop.
 
 **Exact final admission:** `admitProviderDispatch` must take the immutable control revision captured at AI-turn start or HUMAN command acceptance and the canonical message/command dispatch identity. Under the shared DATABASE-001 short-transaction fence, check mode/revision, current HUMAN restriction (if applicable), recipient suppression, live service-window eligibility, follow-up claimant and shop entitlement; atomically record the one-way provider permit. `CLAIMED` never grants permission by itself. If a takeover/suspension commits first, reject; if permit commits first, an eventual provider call may be allowed and is not recallable. Do not hold a transaction across provider HTTP. A crashed/ambiguous admitted submission becomes UNKNOWN/reconciliation-only; never infer exactly-once Meta delivery without provider evidence.
 
-**Sender-aware agent context:** change the context projection *interface* so inbound CUSTOMER messages are user turns, AI/AGENT/AUTOMATION turns retain their true origin, and HUMAN outbound messages become **explicitly labelled, untrusted merchant-authored history**, not assistant role messages or elevated system/developer instructions. Define bounded chronological context and preserve merchant promises as attributed statements rather than instructions the model is authorised to execute. Do not mutate original `ConversationMessage` sender types. The real `ConversationService.toAgentMessage`/history integration belongs to BG002.
+**Sender-aware agent context:** change the context projection _interface_ so inbound CUSTOMER messages are user turns, AI/AGENT/AUTOMATION turns retain their true origin, and HUMAN outbound messages become **explicitly labelled, untrusted merchant-authored history**, not assistant role messages or elevated system/developer instructions. Define bounded chronological context and preserve merchant promises as attributed statements rather than instructions the model is authorised to execute. Do not mutate original `ConversationMessage` sender types. The real `ConversationService.toAgentMessage`/history integration belongs to BG002.
 
 **Monotonic inbound-clock port:** provide deterministic `latestVerifiedCustomerInbound(current, incoming, now)` semantics and a database-safe max update contract for `Conversation.lastInboundAt` and, where appropriate, `lastMessageAt`. Allow validated provider timestamp skew; ignore stale/out-of-order events for advancing these fields, but still persist/deduplicate their messages. The customer-service window must be derived from the **maximum verified customer inbound** time, never outbound activity or last-delivery time. Audio transcription arrival does not reset the window independently from the original verified inbound WhatsApp event.
 
 **Follow-up:** implement a single atomic sequence-2 claim service, accepting an explicit intent (`scheduled_no_response` or eligible `merchant_post_window`) but no platform parameter. Preserve the scheduled job's engaged-customer suppression, HUMAN ownership suppression of automation, and existing unique attempt/credit identity. Ensure an unclaimed PENDING scheduled row can be claimed by a HUMAN without replacing claimed recipient/template/provider evidence. Terminal/unavailable recoveries cannot initiate sends. Provider-UNKNOWN blocks release of a claimed follow-up.
 
 **Abuse/restriction:** evaluate human-only rules and definitive failures once per command identity, not once per lease/scan. Redis screening outage fails closed for HUMAN send admission when screening is mandatory; it must not pause inbound or unrelated AI delivery. Platform suspension is manual/admin-owned and is not automatically created by the moderation heuristic. Logs use IDs and bounded reason codes only.
-
 
 ## Work Items
 
@@ -204,6 +203,7 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 Complete — Attempt 2 passed developer self-review and all work, acceptance and validation criteria are checked. The developer explicitly recorded the completion decision below. Implementation and parent task branches are published; no merge to `main` was performed.
 
 ### Files Changed
+
 Implementation commits `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(background)`), `85ce5e899531506d3cffbc5b729aaa1eec9b882a` (`fix(ARCH-040-BACKGROUND-001): fence human follow-up claims and complete integration evidence`), `f21cb075a5ff667dc326fe74359ac73aca7e99ed` (`test(ARCH-040-BACKGROUND-001): prove follow-up races and billing denial`), and `923c9e3` (required DATABASE-001 gitlink update) are published on `task/ARCH-040-BACKGROUND-001`.
 
 - `package.json`
@@ -224,9 +224,11 @@ Implementation commits `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(backgro
 Implementation commit `923c9e3` advances the nested `database` gitlink to published ARCH-040 schema commit `d00492ad1c10e78ab50d415acefc12bf872c17af`. The developer confirmed this dependency update is intentional and required.
 
 ### Work Completed
+
 Implemented and documented the modular recovery-conversation service API: AI ownership and attributed history projection; due HUMAN command leasing/evaluation; 24-hour window and shared sequence-two follow-up policy; HUMAN suspension/content/rate/replay screening; the durable final provider-admission fence; provider outcome reconciliation; and a bridge to the existing recovery-billing lifecycle. The follow-up claim requires current HUMAN ownership and an exact expected control revision under Shop/Conversation locks; zero history limit returns an empty projection. The expanded integration tests now cover both follow-up race winners, same-command concurrent leasing, suspension/rate denial before durable billing admission, definitive failure and UNKNOWN reconciliation. No production worker registration or second sender was added. The database gitlink update to published commit `d00492ad1c10e78ab50d415acefc12bf872c17af` is intentional, committed as `923c9e3`, and required by the developer-confirmed schema dependency.
 
 ### Validation Results
+
 Agent-executed checks passed:
 
 - `npm run test:arch040-recovery-conversation` — 1 file, 15 tests passed on the current implementation branch.
@@ -241,9 +243,11 @@ An independent rerun in this review environment could not start because `docker`
 Source review confirms the integration additions exercise controlled races in both directions (HUMAN takeover wins before the scheduled claim, and scheduled claim commits while HUMAN takeover/claim contend), assert one shared sequence-2 row and billing identity, and prove suspension/rate-screening denials stop before durable eligibility/provider admission. The passing result above closes the prior validation gap.
 
 ### Deviations
+
 The first integration attempt in the developer's environment and this review environment lacked Docker; the developer later supplied a passing run from the canonical implementation worktree. The developer explicitly confirmed the database gitlink advance was required; it is included in implementation commit `923c9e3`, pointing to database `origin/main` `d00492ad1c10e78ab50d415acefc12bf872c17af`. No parent workspace submodule pointer was changed.
 
 ### Physical Worktree Isolation and Synchronization
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-001`, `task/ARCH-040-BACKGROUND-001`
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-001`, `task/ARCH-040-BACKGROUND-001`
@@ -257,12 +261,15 @@ The first integration attempt in the developer's environment and this review env
 - Recursive implementation submodules: initialized and verified against recorded gitlinks; Background `database` points to published commit `d00492ad1c10e78ab50d415acefc12bf872c17af`
 
 ### Assumptions
+
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
+
 - Architect review remains pending.
 
 ### Architectural Concerns
+
 No runtime wiring was attempted. Architect review remains pending; review the implementation contract and any cross-repository schema/dispatch concerns after the validation gaps are resolved.
 
 ## Developer Self-Review - Changes Requested (Attempt 1)
@@ -288,19 +295,25 @@ On 2026-10-17, the developer explicitly invoked `/moda_developer_update ARCH-040
 ## Architect Review
 
 ### Review Status
+
 Pending.
 
 ### Review Notes
+
 Not reviewed.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.

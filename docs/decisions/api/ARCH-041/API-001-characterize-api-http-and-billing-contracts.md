@@ -44,7 +44,7 @@ Create an executable regression guard for already-implemented hosted API routes 
 
 ## Context
 
-`src/server.ts` directly chains three routers and `src/woocommerce/installation/routes.ts` also handles merchant and billing endpoints; focused tests already exist but do not make the cross-router method/dispatch contract fully explicit. Add *missing* parity cases rather than duplicating the entire test suite.
+`src/server.ts` directly chains three routers and `src/woocommerce/installation/routes.ts` also handles merchant and billing endpoints; focused tests already exist but do not make the cross-router method/dispatch contract fully explicit. Add _missing_ parity cases rather than duplicating the entire test suite.
 
 ## Scope
 

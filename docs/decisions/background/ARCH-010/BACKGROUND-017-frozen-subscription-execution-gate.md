@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-BACKGROUND-004
-- ARCH-010-BACKGROUND-005
-- ARCH-010-BACKGROUND-013
-- ARCH-010-BACKGROUND-016
+  - ARCH-010-BACKGROUND-004
+  - ARCH-010-BACKGROUND-005
+  - ARCH-010-BACKGROUND-013
+  - ARCH-010-BACKGROUND-016
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 superseded_by: ARCH-010-BACKGROUND-013
 ---
 
@@ -144,4 +144,5 @@ STOP if a shop-owned business path cannot establish shop identity before irrever
 ## Completion Report
 
 ### Status
+
 Not started.

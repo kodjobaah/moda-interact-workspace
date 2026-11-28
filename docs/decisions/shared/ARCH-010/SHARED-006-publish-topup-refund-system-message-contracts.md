@@ -65,12 +65,15 @@ STOP if the registry/repository version has advanced unexpectedly, SHARED-005 is
 ## Completion Report
 
 ### Status
+
 Complete — publication satisfied by coordinated Shared `0.10.0` co-release.
 
 ### Files Changed
+
 No separate implementation or package-version change was required for this task.
 
 ### Work Completed
+
 The architect-accepted `ARCH-010-SHARED-005` refund message contracts were already
 present in the Shared source tree physically published by
 `ARCH-010-SHARED-002` as:
@@ -87,6 +90,7 @@ The published Shared contract contains the accepted canonical refund message cod
 - `BILLING_REFUND_REJECTED`.
 
 ### Validation Results
+
 Publication evidence inherited from the coordinated `0.10.0` release:
 
 - package tests: `110 passed, 1 skipped`;
@@ -101,6 +105,7 @@ No additional `npm publish` was required or permitted because it would have
 republished functionality already present in `0.10.0`.
 
 ### Git / VCS
+
 Publication evidence is the coordinated SHARED-002 release handoff:
 
 - implementation/publication commit: `583a7d6`;
@@ -112,6 +117,7 @@ satisfied by the already-published coordinated artifact.
 ### Architect Review
 
 #### Review Status
+
 Accepted
 
 #### Coordinated publication acceptance
@@ -131,4 +137,3 @@ coordination rules.
 
 `attempt: 0` is intentionally preserved because no separate task execution or
 second publication was required.
-

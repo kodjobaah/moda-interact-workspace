@@ -22,6 +22,7 @@ enables:
 created: 2026-10-08
 updated: 2026-10-22
 ---
+
 # Emit compatible checkout.updated lookup context from Shopify
 
 ## Architecture

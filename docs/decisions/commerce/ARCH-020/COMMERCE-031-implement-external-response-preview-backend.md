@@ -1246,9 +1246,7 @@ src/commerce/external-preview/service.ts
 Current code compares:
 
 ```ts
-execution.responseFormat.mediaTypes.includes(
-  sample.contentType.toLowerCase()
-)
+execution.responseFormat.mediaTypes.includes(sample.contentType.toLowerCase());
 ```
 
 This incorrectly rejects a valid C21 sample such as:
@@ -1267,13 +1265,10 @@ normalized MIME type. COMMERCE-030 already implements the canonical behavior.
 Replace the comparison input with exactly:
 
 ```ts
-const sampleMime = sample.contentType
-  .split(';', 1)[0]
-  .trim()
-  .toLowerCase();
+const sampleMime = sample.contentType.split(";", 1)[0].trim().toLowerCase();
 
 if (!execution.responseFormat.mediaTypes.includes(sampleMime)) {
-  throw new PreviewError('INVALID_INPUT');
+  throw new PreviewError("INVALID_INPUT");
 }
 ```
 
@@ -1283,7 +1278,7 @@ allowlist.
 Add a focused regression using a saved JSON external definition whose mediaTypes are:
 
 ```ts
-['application/json']
+["application/json"];
 ```
 
 and a sample:
@@ -1711,10 +1706,12 @@ src/commerce/external-preview/service.ts
 The submitted source still contains:
 
 ```ts
-if (!execution.responseFormat.mediaTypes.includes(
-  sample.contentType.toLowerCase()
-)) {
-  throw new PreviewError('INVALID_INPUT');
+if (
+  !execution.responseFormat.mediaTypes.includes(
+    sample.contentType.toLowerCase(),
+  )
+) {
+  throw new PreviewError("INVALID_INPUT");
 }
 ```
 
@@ -1731,13 +1728,10 @@ sample:
 Replace the comparison with exactly:
 
 ```ts
-const sampleMime = sample.contentType
-  .split(';', 1)[0]
-  .trim()
-  .toLowerCase();
+const sampleMime = sample.contentType.split(";", 1)[0].trim().toLowerCase();
 
 if (!execution.responseFormat.mediaTypes.includes(sampleMime)) {
-  throw new PreviewError('INVALID_INPUT');
+  throw new PreviewError("INVALID_INPUT");
 }
 ```
 
@@ -1787,7 +1781,7 @@ races the same preview identity across service instances without duplicate proce
 still shares:
 
 ```ts
-new InMemoryPreviewStateStore()
+new InMemoryPreviewStateStore();
 ```
 
 It therefore does not satisfy the task Work Item requiring:
@@ -2230,10 +2224,7 @@ Attempt 5 closes all remaining COMMERCE-031-owned functional and evidence gaps.
 A4-R1 — MIME normalization — is resolved:
 
 ```ts
-const sampleMime = sample.contentType
-  .split(';', 1)[0]
-  .trim()
-  .toLowerCase();
+const sampleMime = sample.contentType.split(";", 1)[0].trim().toLowerCase();
 ```
 
 The focused regression proves

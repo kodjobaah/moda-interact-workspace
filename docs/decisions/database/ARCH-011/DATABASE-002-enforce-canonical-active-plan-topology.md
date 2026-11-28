@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-011-DATABASE-001
+  - ARCH-011-DATABASE-001
 enables:
-- ARCH-011-ADMIN-001
-- ARCH-011-SHOPIFY-001
+  - ARCH-011-ADMIN-001
+  - ARCH-011-SHOPIFY-001
 created: 2026-09-14
 updated: 2026-09-14
 ---
@@ -26,16 +26,20 @@ updated: 2026-09-14
 # ARCH-011-DATABASE-002: Enforce canonical active plan topology at database commit
 
 ## Objective
+
 Make PostgreSQL the final authority that active BillingPlans plus active BillingUpgradeEconomicsEdges form exactly one linear adjacent chain. No transition/segment schema changes in this task.
 
 ## Authorized implementation surface
+
 ```text
 prisma/migrations/20260914020000_arch011_canonical_plan_topology/migration.sql
 scripts/validate-arch011-plan-topology.mjs   # new
 ```
+
 Do not edit `prisma/schema.prisma` unless Prisma requires relation/index metadata already authorised by DATABASE-001; no new business fields.
 
 ## Exact database mechanism
+
 Create schema-qualified function exactly named:
 
 ```text
@@ -69,9 +73,11 @@ billing."BillingUpgradeEconomicsEdge" AFTER INSERT OR UPDATE OF "active","lowerP
 Both call the same validator. Invoke the validator once at end of migration so invalid pre-existing state aborts migration.
 
 ## Required validator script
+
 `validate-arch011-plan-topology.mjs` must fail unless the exact function name, error prefix, deferred constraint triggers and migration self-validation call are present.
 
 ## Acceptance Criteria
+
 - [ ] Valid Free->Starter->Growth->Scale commits.
 - [ ] Direct merchant skipping requires no additional edge.
 - [ ] Branch, cycle, disconnected plan, self-edge, inactive endpoint and wrong edge count fail at transaction commit.
@@ -79,6 +85,7 @@ Both call the same validator. Invoke the validator once at end of migration so i
 - [ ] No partial topology write commits when final state is invalid.
 
 ## Validation
+
 ```text
 npm run prisma:validate
 npm run prisma:generate
@@ -88,6 +95,7 @@ git diff --check
 ```
 
 ## Out of scope
+
 Admin UI/actions, Shared validator, transition schema, entitlement logic.
 
 ## Completion protocol

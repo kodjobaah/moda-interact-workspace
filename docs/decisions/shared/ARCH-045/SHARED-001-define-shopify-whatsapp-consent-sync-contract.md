@@ -20,6 +20,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-22
 ---
+
 # Define Shopify consent synchronisation and canonical identity contracts
 
 ## Architecture
@@ -40,10 +41,12 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 ## Scope
 
 **Shopify-to-Background event contract**
+
 - Add the versioned `ShopifyWhatsAppConsentSyncJobV1Schema` (repository naming may vary), typed payload `{schemaVersion:1,shopId,shopifyCustomerId,deliveryId,triggeredAt}`, strict runtime validation, stable deterministic job ID and a **distinct** job name on an existing approved Shopify BullMQ queue. Exclude phone, consent Boolean, checkout key and recovery-wakeup fields; do not route it through checkout-created/updated parsing.
 - Export the producer/consumer runtime schemas and constants from the Shared package entrypoints; test malformed/replayed input, duplicate IDs, cross-shop identity and existing checkout event compatibility **within Shared**. Integrating the published contract into Shopify ingress and Background is separately owned by their dependent tasks after `ARCH-045-SHARED-002` publication.
 
 **Cross-platform exact recipient and Shopify customer identity**
+
 - Implement one browser-safe/Node-safe canonical phone validator/normaliser that produces a verified E.164-equivalent recipient or a typed rejection. National-format numbers require **explicit verified country context**; do not infer permission or guess from locale. Provider `wa_id`/digits-only send addresses remain service-owned adapters.
 - Implement validated numeric Shopify customer ID ↔ `gid://shopify/Customer/<numeric>` conversion/equality; reject malformed, zero/overflow and wrong-resource GIDs or arbitrary principal strings. Consumer services remain responsible for authenticated shop/tenant binding.
 - Publish deterministic compatibility fixtures for UK national/international equivalence, ambiguity, extensions, rotation/reassigned phone, numeric webhook/GID conversion and invalid IDs; test these fixtures with the Shared Node implementation. **Executing WooCommerce PHP runtime parity against the applicable phone and recipient-lifecycle vectors belongs to `ARCH-046-WOOCOMMERCE-002`, not this Shared task.** The PHP consumer must not import Node implementation source.
@@ -78,7 +81,7 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 - **Sync event:** `ShopifyWhatsAppConsentSyncJobV1Schema` (or repository-equivalent), `{schemaVersion:1,shopId,shopifyCustomerId,deliveryId,triggeredAt}`, deterministic job ID, existing queue with distinct job name. Producer `ARCH-045-SHOPIFY-001`, consumer `ARCH-045-BACKGROUND-003`. No checkout recovery side effect. Each consumer/producer task must import and validate against the published Shared contract in its own repository; SHARED-001 is not responsible for proving those integrations.
 - **Canonical recipient helper:** Node Shopify/Background/Woo API callers import the published identity entrypoint. `ARCH-045-BACKGROUND-001` owns Background adoption at the consent-sensitive recipient boundary; Shared owns only the reusable helper and its exports/tests. Shared publishes runtime-neutral JSON fixtures at `@modainteract/moda-interact-shared/identity/fixtures`; the PHP phone adapter and applicable fixture-parity execution are owned by `ARCH-046-WOOCOMMERCE-002` after `ARCH-045-SHARED-002` publication.
 - **Shopify ID helper:** numeric webhook IDs and GraphQL customer GIDs compare after strict validation; shop ownership is validated by consumers.
-- **Publication:** `ARCH-045-SHARED-002` publishes this *one accepted implementation task*; no implementation in publication task.
+- **Publication:** `ARCH-045-SHARED-002` publishes this _one accepted implementation task_; no implementation in publication task.
 
 ## Dependencies
 
@@ -112,7 +115,7 @@ Use existing Shopify Shared naming/style. Preserve published export compatibilit
 
 **Architect-approved scope amendment — 2026-10-21:** PHP-runtime interoperability is a **consumer validation**, not an implementation or acceptance responsibility of `moda-interact-shared`. `ARCH-045-SHARED-001` owns correct, deterministic, runtime-neutral golden JSON and the Node tests and export that establish its contract. `ARCH-046-WOOCOMMERCE-002` owns testing its PHP exact-recipient normalisation against **all applicable** Shared `phoneCases` and recipient-lifecycle vectors, including negative cases. Shopify-only numeric ID/GID vectors remain covered in Shared Node tests; Woo is not required to implement a Shopify principal codec. `ARCH-045-SHARED-002` may publish following Shared acceptance without waiting for PHP tests. This amendment changes no developer claim, versioned runtime contract, event semantics or recovery scheduling.
 
-**Architect-approved downstream adoption boundary — 2026-10-21:** SHARED-001 is complete in *scope* when it supplies and tests the canonical schema, job identity, identity helpers and safe exports; it does not implement Shopify/Background source imports or provide live consumer evidence. After separate package publication by `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001` must prove ingress production uses the Shared v1 schema/job identity, `ARCH-045-BACKGROUND-003` must prove existing-queue dispatch validates the same schema and does not route via checkout parsing, and `ARCH-045-BACKGROUND-001` must prove consent-sensitive recipient handling uses the canonical identity helper. Each downstream task already depends on publication (directly or through its prerequisites) and owns corresponding integration validation. No change to contract semantics, consumer dependencies, queue topology, developer attempt or status is implied. This scope amendment resolves only the **consumer-adoption** correction from Developer Self-Review; original launcher preparation/synchronisation evidence remains mandatory.
+**Architect-approved downstream adoption boundary — 2026-10-21:** SHARED-001 is complete in _scope_ when it supplies and tests the canonical schema, job identity, identity helpers and safe exports; it does not implement Shopify/Background source imports or provide live consumer evidence. After separate package publication by `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001` must prove ingress production uses the Shared v1 schema/job identity, `ARCH-045-BACKGROUND-003` must prove existing-queue dispatch validates the same schema and does not route via checkout parsing, and `ARCH-045-BACKGROUND-001` must prove consent-sensitive recipient handling uses the canonical identity helper. Each downstream task already depends on publication (directly or through its prerequisites) and owns corresponding integration validation. No change to contract semantics, consumer dependencies, queue topology, developer attempt or status is implied. This scope amendment resolves only the **consumer-adoption** correction from Developer Self-Review; original launcher preparation/synchronisation evidence remains mandatory.
 
 For this **developer-owned** attempt, preserve the `/moda_developer_create` claim and use `/moda_developer_update ARCH-045-SHARED-001` for reconciliation/self-review after required acceptance evidence is complete. The launcher-prepared packet and physical worktree/synchronisation evidence must be recorded, not inferred. Preserve `docs/decisions/**/_index.md` untouched until the developer explicitly closes the architecture documentation session. New runtime structured logging uses `@modainteract/moda-interact-shared/logging` where applicable. No source outside this task's owner repository may be changed unless explicitly authorised by the architecture.
 
@@ -156,22 +159,22 @@ Do not stage the untracked `typescript` terminal transcript noted in the impleme
 
 Evidence supplied in developer terminal captures `typescript(20261021-181643)` and `typescript(20261021-182855)`; results are observations from those logs, not a claim that a remote review has occurred.
 
-| Check | Observed result |
-| --- | --- |
-| Implementation patch application and `git diff --check` | Applied without displayed errors; diff check passed |
-| `npm ci` | Passed; npm audit reported 1 low and 1 high vulnerability, and installation warnings (not corrected within this task) |
-| `npm test` after initial implementation patch | 366 tests: **359 pass, 6 fail, 1 skip**; invalid-success expectations for Ofcom-reserved fictional UK numbers |
-| `npm test` after fixture-only correction | 367 tests: **366 pass, 0 fail, 1 skip** |
-| `npm run typecheck` | Passed in both recorded runs |
-| `npm run build` | Passed in both recorded runs; `/identity` JavaScript and declaration entrypoints emitted |
-| `npm test` during Attempt 2 self-review | **PASS**, 367 tests: 366 passed, 0 failed, 1 skipped |
-| `npm run typecheck` during Attempt 2 self-review | **PASS** |
-| `npm run build` during Attempt 2 self-review | **PASS**, identity and Shopify JavaScript/declaration entrypoints emitted |
-| `npm pack --dry-run --json` during Attempt 2 self-review | **PASS**; package includes `dist/identity/index.js`, `dist/identity/index.d.ts`, Shopify entrypoints and `fixtures/identity-v1.json` |
-| Built-package runtime smoke check | **PASS**; package-shape output confirms `/identity` and `/shopify` bundles and manifest exports `/identity`, `/identity/fixtures`, `/shopify` and `/shopify/node` |
-| PHP execution against portable fixture JSON | **Not run; out of scope by the 2026-10-21 architect-approved amendment.** `ARCH-046-WOOCOMMERCE-002` must record consumer-owned PHP fixture-parity evidence |
-| Implementation task branch commit/push | **Confirmed** — `12f6ff5` (`feat(shared)`) at `HEAD` and `origin/task/ARCH-045-SHARED-001` in the Shared implementation worktree |
-| Parent task report commit/push | **Attempt 1 confirmed** — `7a38e513` (`docs(ARCH-045-SHARED-001): record developer attempt 1 evidence`) successfully pushed to `origin/task/ARCH-045-SHARED-001`; Attempt 2 report reconciliation is the current parent worktree change |
+| Check                                                    | Observed result                                                                                                                                                                                                                         |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation patch application and `git diff --check`  | Applied without displayed errors; diff check passed                                                                                                                                                                                     |
+| `npm ci`                                                 | Passed; npm audit reported 1 low and 1 high vulnerability, and installation warnings (not corrected within this task)                                                                                                                   |
+| `npm test` after initial implementation patch            | 366 tests: **359 pass, 6 fail, 1 skip**; invalid-success expectations for Ofcom-reserved fictional UK numbers                                                                                                                           |
+| `npm test` after fixture-only correction                 | 367 tests: **366 pass, 0 fail, 1 skip**                                                                                                                                                                                                 |
+| `npm run typecheck`                                      | Passed in both recorded runs                                                                                                                                                                                                            |
+| `npm run build`                                          | Passed in both recorded runs; `/identity` JavaScript and declaration entrypoints emitted                                                                                                                                                |
+| `npm test` during Attempt 2 self-review                  | **PASS**, 367 tests: 366 passed, 0 failed, 1 skipped                                                                                                                                                                                    |
+| `npm run typecheck` during Attempt 2 self-review         | **PASS**                                                                                                                                                                                                                                |
+| `npm run build` during Attempt 2 self-review             | **PASS**, identity and Shopify JavaScript/declaration entrypoints emitted                                                                                                                                                               |
+| `npm pack --dry-run --json` during Attempt 2 self-review | **PASS**; package includes `dist/identity/index.js`, `dist/identity/index.d.ts`, Shopify entrypoints and `fixtures/identity-v1.json`                                                                                                    |
+| Built-package runtime smoke check                        | **PASS**; package-shape output confirms `/identity` and `/shopify` bundles and manifest exports `/identity`, `/identity/fixtures`, `/shopify` and `/shopify/node`                                                                       |
+| PHP execution against portable fixture JSON              | **Not run; out of scope by the 2026-10-21 architect-approved amendment.** `ARCH-046-WOOCOMMERCE-002` must record consumer-owned PHP fixture-parity evidence                                                                             |
+| Implementation task branch commit/push                   | **Confirmed** — `12f6ff5` (`feat(shared)`) at `HEAD` and `origin/task/ARCH-045-SHARED-001` in the Shared implementation worktree                                                                                                        |
+| Parent task report commit/push                           | **Attempt 1 confirmed** — `7a38e513` (`docs(ARCH-045-SHARED-001): record developer attempt 1 evidence`) successfully pushed to `origin/task/ARCH-045-SHARED-001`; Attempt 2 report reconciliation is the current parent worktree change |
 
 #### Task worktree evidence
 

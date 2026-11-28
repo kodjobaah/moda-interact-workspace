@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-053-SHARED-002
-- ARCH-053-DATABASE-001
+  - ARCH-053-SHARED-002
+  - ARCH-053-DATABASE-001
 enables:
-- ARCH-053-WOOCOMMERCE-002
-- ARCH-053-API-003
+  - ARCH-053-WOOCOMMERCE-002
+  - ARCH-053-API-003
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -78,9 +78,9 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
     "schemaVersion": "woo.cart-restore.v1",
     "kind": "supported",
     "appliedCouponCodes": ["SAVE10"],
-    "lines": [{"productId": "101", "quantity": 2}]
+    "lines": [{ "productId": "101", "quantity": 2 }]
   },
-  "outreachOffer": {"kind": "NONE", "reason": "NO_CONFIRMED_OFFER"}
+  "outreachOffer": { "kind": "NONE", "reason": "NO_CONFIRMED_OFFER" }
 }
 ```
 
@@ -228,6 +228,7 @@ Changes Requested — Attempt 1
 The implementation report confirms that the API database submodule was pinned to `728734b7f1c05a9175ada032e113babeb8066cda`, whose Prisma schema lacks `CheckoutRecovery.wooRestoreSnapshot`. The resolver therefore cannot execute its eligibility query against the task's prepared database module and fails closed with 503. The later local-only gitlink observation is not published integration evidence and does not satisfy this review gate.
 
 Required for Attempt 2:
+
 - Integrate the architect-accepted ARCH-053-DATABASE-001 revision into the API repository's `database` submodule on the API task branch; do not modify Database-owned schema or migration files and do not update the parent workspace gitlink.
 - Regenerate the API Prisma client from that integrated schema and verify the SQL/Prisma projection selects `wooRestoreSnapshot` from the actual schema.
 - Rerun the isolated PostgreSQL resolver test and demonstrate an eligible response using a supported persisted snapshot, alongside the focused authorization tests, typecheck, lint, and `git diff --check`.

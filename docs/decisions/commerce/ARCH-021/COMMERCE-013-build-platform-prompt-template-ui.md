@@ -172,6 +172,7 @@ Ready for Review
 - Repaired focused test result mocks with typed `TemplateResult<T>` helpers and made the loader dependency explicit with a memoized loader callback.
 
 Requirements mapping:
+
 - Production composition uses the COMMERCE-008 server action/port wiring in `agent-configuration-screen.tsx` and `production-studio-page.tsx`; no fixture port is used.
 - Stable category slugs are displayed as identity while metadata update controls omit slug mutation.
 - Empty drafts can be saved and blank publication errors are surfaced from the service result.
@@ -345,6 +346,7 @@ After `ARCH-021-COMMERCE-015` is architect-accepted Complete, return this same t
 7. reconcile Work Items, Acceptance Criteria, Validation and Completion Report/worktree evidence before returning to review.
 
 Do not add direct database reads to the UI, do not change template mutation semantics in COMMERCE-013, and do not begin COMMERCE-014.
+
 - `moda-interact-commerce/components/production-studio-page.tsx`
 - `moda-interact-commerce/tests/agent-configuration-template-ui.test.tsx`
 

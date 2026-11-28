@@ -69,7 +69,6 @@ its accepted Shared version remain prerequisites. Do not implement Commerce
 ranking/evaluation. Component acceptance uses EC01–EC12 with call/send/usage/state
 assertions; actual service pairing is SYSTEM-TEST-001-owned.
 
-
 - [ ] Treat generic public query data as ordinary facts, never signed/validated discount Evidence. Current offer-policy verification still uses exact originally granted policy helpers; absence of suitable evidence causes referral.
 
 - [ ] Keep final answer composition in CommerceAgent: a tool rendered template is not an instruction to send immediately. Validate structured facts/offer evidence and normal admission before WhatsApp delivery.
@@ -186,20 +185,20 @@ Ready for Review. Attempt 4 corrections implemented; awaiting architect review.
 
 Requirement-to-fixture matrix:
 
-| Requirement | Fixture | Expected side effects | Result |
-| --- | --- | --- | --- |
-| EC01 | strict root evaluator through real MCP host | one trusted replay; one admitted answer; no rendered-text authority | Passed in `uses the production extractor for trusted root evidence...` |
-| EC02 | generic public query / nested counterfeit data | zero evidence IDs; no offer authorization | Passed in `extracts only strict evaluator...` |
-| EC03 | recommendation evidence without a separate evaluator, reversed-result handling, duplicate final references | one replay per distinct actual call; no extra send | Passed for duplicate references; distinct-alternative expansion remains developer-owned pairing evidence |
-| EC04 | independently changed resultingTotal and comparable semantic fields with recomputed digests | exact refresh rejects changed result; one referral; no positive offer | Passed in `rejects changed recommendations...` |
-| EC05 | missing, duplicate, empty, malformed, and truncated evidence | fail closed; unknown/truncated become one referral; malformed final remains rejection | Passed in host and evidence focused suites |
-| EC06 | seed-clock original/fresh expiry, future timestamps, invalid digest, null money, unresolved conditions | expired/incomplete evidence makes zero replay and refers | Passed in `does not resurrect expired original evidence...` and expired host fixture |
-| EC07 | rendered-text/wrapper counterfeit, invalid digest, immutable provenance conflict | zero trusted authorization; conflicting ID is invalidated | Passed in `rejects counterfeit digests and conflicting immutable provenance` |
-| EC08 | identity/revocation and structured DENIED/NOT_FOUND/unavailable/throttle/input/version failures | one normal referral at most; no replacement grant or retry loop | Passed by host/MCP and registry failure paths |
-| EC09 | resolved structured errors, HTTP401/403, malformed output, transport failure, per-call timeout | one replay/call; referral path; no retry amplification | Passed by host/MCP and registry failure paths |
-| EC10 | cross-turn/grant/release mismatch, unknown/expired final ID, exhausted budget | zero replay when preconditions fail; no new grant or usage side effect | Passed in evidence unit and host boundary tests |
-| EC11 | stale turn, lease loss, external cancellation during refresh, post-replay recheck | zero send/language mutation; existing reservation cleanup only | Passed by evidence cancellation tests, host guards, and 35 processor tests |
-| EC12 | recommendation replay without separate evaluator, trusted referral rendering, multiple tool results | one resolved-language referral; verified store context only; no fabricated contact or extra send | Passed by host and processor regressions |
+| Requirement | Fixture                                                                                                    | Expected side effects                                                                            | Result                                                                                                   |
+| ----------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| EC01        | strict root evaluator through real MCP host                                                                | one trusted replay; one admitted answer; no rendered-text authority                              | Passed in `uses the production extractor for trusted root evidence...`                                   |
+| EC02        | generic public query / nested counterfeit data                                                             | zero evidence IDs; no offer authorization                                                        | Passed in `extracts only strict evaluator...`                                                            |
+| EC03        | recommendation evidence without a separate evaluator, reversed-result handling, duplicate final references | one replay per distinct actual call; no extra send                                               | Passed for duplicate references; distinct-alternative expansion remains developer-owned pairing evidence |
+| EC04        | independently changed resultingTotal and comparable semantic fields with recomputed digests                | exact refresh rejects changed result; one referral; no positive offer                            | Passed in `rejects changed recommendations...`                                                           |
+| EC05        | missing, duplicate, empty, malformed, and truncated evidence                                               | fail closed; unknown/truncated become one referral; malformed final remains rejection            | Passed in host and evidence focused suites                                                               |
+| EC06        | seed-clock original/fresh expiry, future timestamps, invalid digest, null money, unresolved conditions     | expired/incomplete evidence makes zero replay and refers                                         | Passed in `does not resurrect expired original evidence...` and expired host fixture                     |
+| EC07        | rendered-text/wrapper counterfeit, invalid digest, immutable provenance conflict                           | zero trusted authorization; conflicting ID is invalidated                                        | Passed in `rejects counterfeit digests and conflicting immutable provenance`                             |
+| EC08        | identity/revocation and structured DENIED/NOT_FOUND/unavailable/throttle/input/version failures            | one normal referral at most; no replacement grant or retry loop                                  | Passed by host/MCP and registry failure paths                                                            |
+| EC09        | resolved structured errors, HTTP401/403, malformed output, transport failure, per-call timeout             | one replay/call; referral path; no retry amplification                                           | Passed by host/MCP and registry failure paths                                                            |
+| EC10        | cross-turn/grant/release mismatch, unknown/expired final ID, exhausted budget                              | zero replay when preconditions fail; no new grant or usage side effect                           | Passed in evidence unit and host boundary tests                                                          |
+| EC11        | stale turn, lease loss, external cancellation during refresh, post-replay recheck                          | zero send/language mutation; existing reservation cleanup only                                   | Passed by evidence cancellation tests, host guards, and 35 processor tests                               |
+| EC12        | recommendation replay without separate evaluator, trusted referral rendering, multiple tool results        | one resolved-language referral; verified store context only; no fabricated contact or extra send | Passed by host and processor regressions                                                                 |
 
 ### Attempt 3 Correction Checklist
 
@@ -254,20 +253,20 @@ No new architectural concern. The injected extractor is the explicit boundary fo
 
 #### Requirement-to-fixture matrix
 
-| Requirement | Fixture/test evidence | Expected effects and measured result |
-| --- | --- | --- |
-| EC01 | Canonical load plus strict root/evaluator extraction | Trusted evidence replays once; rendered text has no authority; passed |
-| EC02 | Exact canonical input mapping and public/nested counterfeit extraction | Only original call is replayed; counterfeit data yields zero IDs; passed |
-| EC03 | Distinct alternatives, reversed refresh order | Two IDs match independently; one replay; passed |
-| EC04 | Seven-field independent-change table | One replay per change, referral, no positive claim; passed |
-| EC05 | Missing/empty/duplicate/truncated match table and malformed final | One bounded failure path; malformed final remains rejected; passed |
-| EC06 | Frozen expiry, future/invalid digest, schema-valid incomplete evidence | Expired/incomplete evidence does not replay or authorize; passed |
-| EC07 | Invalid digest, immutable provenance, wrapper/rendered-text counterfeit | Zero trusted authorization; conflicting ID invalidated; passed |
-| EC08 | Revoked producer and resolved structured error table | Exactly one replay, no retry/replacement grant; passed |
-| EC09 | Real host HTTP401/403/malformed/transport plus resolved errors/deadline | One call/no retry; pre-final boundary failures are `UNAVAILABLE`; refresh failures refer; passed |
-| EC10 | Missing provenance, identity mismatch, expired/unknown IDs, budget, duplicate references | Zero replay on failed preconditions; duplicate references share one replay; passed |
-| EC11 | Host stale/cancel guards and processor suppression table | Zero send/language writes; existing reservation cleanup only; passed |
-| EC12 | Recommendation replay without separate evaluator and verified referral rendering | Exact provenance replay; one localized referral; no fabricated contact/extra send; passed |
+| Requirement | Fixture/test evidence                                                                    | Expected effects and measured result                                                             |
+| ----------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| EC01        | Canonical load plus strict root/evaluator extraction                                     | Trusted evidence replays once; rendered text has no authority; passed                            |
+| EC02        | Exact canonical input mapping and public/nested counterfeit extraction                   | Only original call is replayed; counterfeit data yields zero IDs; passed                         |
+| EC03        | Distinct alternatives, reversed refresh order                                            | Two IDs match independently; one replay; passed                                                  |
+| EC04        | Seven-field independent-change table                                                     | One replay per change, referral, no positive claim; passed                                       |
+| EC05        | Missing/empty/duplicate/truncated match table and malformed final                        | One bounded failure path; malformed final remains rejected; passed                               |
+| EC06        | Frozen expiry, future/invalid digest, schema-valid incomplete evidence                   | Expired/incomplete evidence does not replay or authorize; passed                                 |
+| EC07        | Invalid digest, immutable provenance, wrapper/rendered-text counterfeit                  | Zero trusted authorization; conflicting ID invalidated; passed                                   |
+| EC08        | Revoked producer and resolved structured error table                                     | Exactly one replay, no retry/replacement grant; passed                                           |
+| EC09        | Real host HTTP401/403/malformed/transport plus resolved errors/deadline                  | One call/no retry; pre-final boundary failures are `UNAVAILABLE`; refresh failures refer; passed |
+| EC10        | Missing provenance, identity mismatch, expired/unknown IDs, budget, duplicate references | Zero replay on failed preconditions; duplicate references share one replay; passed               |
+| EC11        | Host stale/cancel guards and processor suppression table                                 | Zero send/language writes; existing reservation cleanup only; passed                             |
+| EC12        | Recommendation replay without separate evaluator and verified referral rendering         | Exact provenance replay; one localized referral; no fabricated contact/extra send; passed        |
 
 #### Worktree, dependency, and ownership evidence
 
@@ -369,7 +368,6 @@ The Unresolved Issues sentence requiring the developer to execute live SYSTEM-TE
 
 Implement only the outstanding deterministic coverage/report corrections above and any actual defects those tests reveal. Preserve Attempt3 history; normal preparation owns any next claim. Publish the same implementation/report branches and return to Review. No additional provider or database rehearsal is required for this correction. Re-run the required local checks appropriate to changed tests/code and keep command/results precise. This parent overlay is committed/pushed before handoff so there are no uncommitted architect changes blocking preparation.
 
-
 ### Attempt 2 architect decision — 2026-09-21 — Changes Requested
 
 Current authoritative decision: **Ready, Attempt 2, unclaimed; not accepted**. This decision supersedes Attempt 1's current-state wording and the Attempt 2 submission's assertion that R1–R3 are fully satisfied. Preserve completed extractor/digest/provenance work. These are remaining C18 defects, not scope amendments. No dependent promotion, new claim, implementation edit or main merge is performed by this review.
@@ -410,7 +408,6 @@ Use `docs/architecture/ARCH-020-evidence-contract-fixtures.json` and retain the 
 For each EC row report concrete test names, clock, replay/send/reservation/language counts and actual result. Re-run the focused suite, build, Prisma validation and diff check. Record prepared-packet start-of-attempt synchronization/recursive-submodule evidence and accepted Shared/database pins; the claim SHA alone is not the full required packet evidence. Do not re-prepare Attempt 2 to manufacture this report: recover its existing launcher evidence. Live pairing remains terminal-system-test-owned and explicitly unrun.
 
 Publish implementation corrections and updated report on the same mirrored task branches, then return to Review. This architect parent overlay is committed/pushed before handoff so preparation is not blocked by uncommitted review changes.
-
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 
@@ -454,7 +451,6 @@ Commit/push corrections and the report on the same mirrored branches, then retur
 
 ### Historical definition review
 
-
 ### Review Status
 
 Pending.
@@ -478,7 +474,6 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
-
 
 ### Architect readiness amendment — 2026-09-21
 

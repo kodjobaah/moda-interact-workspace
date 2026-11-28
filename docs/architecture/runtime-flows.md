@@ -26,14 +26,14 @@ stateDiagram-v2
 
 ### State meanings
 
-| State | Meaning |
-| --- | --- |
-| `DETECTED` | Shopify checkout was identified and is eligible for recovery messaging. |
-| `MESSAGE_SENT` | The initial recovery message was sent successfully. |
-| `ENGAGED` | The customer has interacted with the recovery conversation. |
-| `COMPLETED` | An order was completed for the recovery. This is terminal. |
-| `EXPIRED` | The recovery window ended without an order. This is terminal. |
-| `CANCELLED` | The recovery was intentionally stopped. This is terminal. |
+| State          | Meaning                                                                 |
+| -------------- | ----------------------------------------------------------------------- |
+| `DETECTED`     | Shopify checkout was identified and is eligible for recovery messaging. |
+| `MESSAGE_SENT` | The initial recovery message was sent successfully.                     |
+| `ENGAGED`      | The customer has interacted with the recovery conversation.             |
+| `COMPLETED`    | An order was completed for the recovery. This is terminal.              |
+| `EXPIRED`      | The recovery window ended without an order. This is terminal.           |
+| `CANCELLED`    | The recovery was intentionally stopped. This is terminal.               |
 
 ### Order-completed flow
 

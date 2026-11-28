@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-007
 architecture_id: ARCH-010
-title: Implement canonical same-plan App Pricing BillingPeriod rollover for Paid and
+title:
+  Implement canonical same-plan App Pricing BillingPeriod rollover for Paid and
   Free
 task_kind: implementation
 domain: background
@@ -16,22 +17,22 @@ executor: null
 claimed_at: null
 attempt: 8
 depends_on:
-- ARCH-010-BACKGROUND-001
-- ARCH-010-BACKGROUND-002
-- ARCH-010-BACKGROUND-008
-- ARCH-010-BACKGROUND-009
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-008-BACKGROUND-001
+  - ARCH-010-BACKGROUND-001
+  - ARCH-010-BACKGROUND-002
+  - ARCH-010-BACKGROUND-008
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-008-BACKGROUND-001
 enables:
-- ARCH-010-BACKGROUND-003
-- ARCH-010-BACKGROUND-006
-- ARCH-010-BACKGROUND-010
-- ARCH-010-BACKGROUND-012
-- ARCH-010-SHOPIFY-007
-- ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-BACKGROUND-003
+  - ARCH-010-BACKGROUND-006
+  - ARCH-010-BACKGROUND-010
+  - ARCH-010-BACKGROUND-012
+  - ARCH-010-SHOPIFY-007
+  - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-BACKGROUND-007: Canonical same-plan App Pricing BillingPeriod rollover for Paid and Free
@@ -542,9 +543,11 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Review.
 
 ### Files Changed
+
 - `moda-interact-background/src/services/same-plan-billing-period-rollover.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
@@ -553,6 +556,7 @@ Review.
 - `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
+
 - Added one transaction-owned same-plan rollover service for exact later provider cycles.
 - Added Paid old-period event finalization, reservation release, included-credit forfeiture, and exactly-once successor counter creation.
 - Added Free period rotation without period counters or lifetime-credit mutation.
@@ -568,6 +572,7 @@ Review.
 - Attempt 4 specifically fixed rotating provider-cycle lag to persist `PROVIDER_CYCLE_LAG`, retry after 60 seconds, reuse the deterministic existing queue job, and isolate enqueue failure; cleared cycle-specific Free scheduling when pack billing is disabled; and strengthened early pre-close rescheduling with exact source-projection CAS.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - Focused billing suites: `4 files, 74 tests passed`.
@@ -580,47 +585,48 @@ Review.
 
 ### Required Scenario Mapping
 
-| Scenario | Exact permanent test | Result |
-|---|---|---|
-| 1 | `billing-subscription-reconciliation.service.test.ts` — `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
-| 2 | `billing-subscription-reconciliation.service.test.ts` — `uses exact source projection CAS when rescheduling an early rollover job` | passed |
-| 3 | `billing-subscription-reconciliation.service.test.ts` — `does not mutate or enqueue when the schedule changes during Partner verification` | passed |
-| 4 | `billing-subscription-reconciliation.service.test.ts` — `ignores stale jobs after the durable schedule changes` | passed |
-| 5 | `billing-subscription-reconciliation.service.test.ts` — `records a provider-cycle lag retry with a new deterministic job after the boundary` | passed |
-| 6 | `billing-reconciliation.service.test.ts` — `preserves the mapped plan when the Partner API fails` | passed |
-| 7 | `same-plan-billing-period-rollover.service.test.ts` — `schedules the next Paid pre-close boundary after a contiguous rollover` | passed |
-| 8 | `same-plan-billing-period-rollover.service.test.ts` — `creates only the provider cycle when a Paid rollover has a gap` | passed |
-| 9 | `same-plan-billing-period-rollover.service.test.ts` — `fails closed when a successor has incompatible canonical identity` | passed |
-| 10 | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant` | passed |
-| 11 | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant` | passed |
-| 12 | `billing-reconciliation.service.test.ts` — `persists rotating provider-cycle lag and enqueues the existing +60 second job` | passed |
-| 13 | `shopify-usage-event-publisher.service.test.ts` — `claims and reports positive and negative usage with persisted identity` | passed |
-| 14 | `shopify-usage-event-publisher.service.test.ts` — `scopes stale in-flight recovery to the requested BillingPeriod` | passed |
-| 15 | `shopify-usage-event-publisher.service.test.ts` — `B008-R6 activates packs only through provider-confirmed current-cycle reconciliation` | passed |
-| 16 | `billing-subscription-reconciliation.service.test.ts` — `does not roll back durable state when queue publication fails` | passed |
-| 17 | `billing-reconciliation.service.test.ts` — `B008-R5 links the latest open billing cycle as current` | passed |
-| 18 | `same-plan-billing-period-rollover.service.test.ts` — `releases old reservations with PERIOD_CLOSED` | passed |
-| 19 | `same-plan-billing-period-rollover.service.test.ts` — `forfeits all remaining included capacity after reservation release` | passed |
-| 20 | `same-plan-billing-period-rollover.service.test.ts` — `fails closed when reservation and included-counter invariants mismatch` | passed |
-| 21 | `same-plan-billing-period-rollover.service.test.ts` — `creates exact successor Paid snapshots and grant` | passed |
-| 22 | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant` | passed |
-| 23 | `same-plan-billing-period-rollover.service.test.ts` — `sends one post-commit capacity-resume hint for Paid rollover` | passed |
-| 24 | `effective-billing-policy.service.test.ts` — accepted BG8 draining admission coverage | passed |
-| 25 | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter` | passed |
-| 26 | `billing-subscription-reconciliation.service.test.ts` — `creates the full Free period snapshot without an included-credit counter` | passed |
-| 27 | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter` | passed |
-| 28 | `billing-subscription-reconciliation.service.test.ts` — `preserves an existing lifetime counter and exact period replay state` | passed |
-| 29 | `billing-subscription-reconciliation.service.test.ts` — `preserves an existing lifetime counter and exact period replay state` | passed |
-| 30 | `effective-billing-policy.service.test.ts` — accepted BG8 Free draining pack-purchase block | passed |
-| 31 | `effective-billing-policy.service.test.ts` — accepted BG8 Free reconciling lifetime-admission coverage | passed |
-| 32 | `shopify-usage-event-publisher.service.test.ts` — `marks a valid event needs attention when default provider configuration is invalid` | passed |
-| 33 | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter` | passed |
-| 34 | `same-plan-billing-period-rollover.service.test.ts` — Free rollover emits no Paid capacity-resume hint | passed |
-| 35 | `billing-subscription-reconciliation.service.test.ts` — `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
+| Scenario | Exact permanent test                                                                                                                          | Result |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 1        | `billing-subscription-reconciliation.service.test.ts` — `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
+| 2        | `billing-subscription-reconciliation.service.test.ts` — `uses exact source projection CAS when rescheduling an early rollover job`            | passed |
+| 3        | `billing-subscription-reconciliation.service.test.ts` — `does not mutate or enqueue when the schedule changes during Partner verification`    | passed |
+| 4        | `billing-subscription-reconciliation.service.test.ts` — `ignores stale jobs after the durable schedule changes`                               | passed |
+| 5        | `billing-subscription-reconciliation.service.test.ts` — `records a provider-cycle lag retry with a new deterministic job after the boundary`  | passed |
+| 6        | `billing-reconciliation.service.test.ts` — `preserves the mapped plan when the Partner API fails`                                             | passed |
+| 7        | `same-plan-billing-period-rollover.service.test.ts` — `schedules the next Paid pre-close boundary after a contiguous rollover`                | passed |
+| 8        | `same-plan-billing-period-rollover.service.test.ts` — `creates only the provider cycle when a Paid rollover has a gap`                        | passed |
+| 9        | `same-plan-billing-period-rollover.service.test.ts` — `fails closed when a successor has incompatible canonical identity`                     | passed |
+| 10       | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant`                        | passed |
+| 11       | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant`                        | passed |
+| 12       | `billing-reconciliation.service.test.ts` — `persists rotating provider-cycle lag and enqueues the existing +60 second job`                    | passed |
+| 13       | `shopify-usage-event-publisher.service.test.ts` — `claims and reports positive and negative usage with persisted identity`                    | passed |
+| 14       | `shopify-usage-event-publisher.service.test.ts` — `scopes stale in-flight recovery to the requested BillingPeriod`                            | passed |
+| 15       | `shopify-usage-event-publisher.service.test.ts` — `B008-R6 activates packs only through provider-confirmed current-cycle reconciliation`      | passed |
+| 16       | `billing-subscription-reconciliation.service.test.ts` — `does not roll back durable state when queue publication fails`                       | passed |
+| 17       | `billing-reconciliation.service.test.ts` — `B008-R5 links the latest open billing cycle as current`                                           | passed |
+| 18       | `same-plan-billing-period-rollover.service.test.ts` — `releases old reservations with PERIOD_CLOSED`                                          | passed |
+| 19       | `same-plan-billing-period-rollover.service.test.ts` — `forfeits all remaining included capacity after reservation release`                    | passed |
+| 20       | `same-plan-billing-period-rollover.service.test.ts` — `fails closed when reservation and included-counter invariants mismatch`                | passed |
+| 21       | `same-plan-billing-period-rollover.service.test.ts` — `creates exact successor Paid snapshots and grant`                                      | passed |
+| 22       | `same-plan-billing-period-rollover.service.test.ts` — `reuses an already-open successor without duplicating its grant`                        | passed |
+| 23       | `same-plan-billing-period-rollover.service.test.ts` — `sends one post-commit capacity-resume hint for Paid rollover`                          | passed |
+| 24       | `effective-billing-policy.service.test.ts` — accepted BG8 draining admission coverage                                                         | passed |
+| 25       | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter`       | passed |
+| 26       | `billing-subscription-reconciliation.service.test.ts` — `creates the full Free period snapshot without an included-credit counter`            | passed |
+| 27       | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter`       | passed |
+| 28       | `billing-subscription-reconciliation.service.test.ts` — `preserves an existing lifetime counter and exact period replay state`                | passed |
+| 29       | `billing-subscription-reconciliation.service.test.ts` — `preserves an existing lifetime counter and exact period replay state`                | passed |
+| 30       | `effective-billing-policy.service.test.ts` — accepted BG8 Free draining pack-purchase block                                                   | passed |
+| 31       | `effective-billing-policy.service.test.ts` — accepted BG8 Free reconciling lifetime-admission coverage                                        | passed |
+| 32       | `shopify-usage-event-publisher.service.test.ts` — `marks a valid event needs attention when default provider configuration is invalid`        | passed |
+| 33       | `billing-subscription-reconciliation.service.test.ts` — `creates one canonical Free period for an exact cycle without a credit counter`       | passed |
+| 34       | `same-plan-billing-period-rollover.service.test.ts` — Free rollover emits no Paid capacity-resume hint                                        | passed |
+| 35       | `billing-subscription-reconciliation.service.test.ts` — `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
 
 Permanent pre-close failure regressions are covered by the reconciliation tests for scoped publisher failure, retry-before-boundary, exact-boundary retry, final-minute failure metadata, and stale projection CAS; all passed in the focused suite.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-007`
 - Branch: `task/ARCH-010-BACKGROUND-007`
 - Commit: `1863a7fd0b91bdcafb4a8de8c20a4ec64718b447` (`fix(background): close billing rollover review gaps`)
@@ -681,10 +687,7 @@ The current close calculation is:
 
 ```ts
 const forfeitable =
-  grantedQuantity
-  - committedQuantity
-  - reservedQuantity
-  - forfeitedQuantity;
+  grantedQuantity - committedQuantity - reservedQuantity - forfeitedQuantity;
 ```
 
 and then it releases `RESERVED` / `AMBIGUOUS` reservations, decrements
@@ -923,7 +926,7 @@ tests/unit/services/shopify-usage-event-publisher.service.test.ts
 Attempt 1 calls global:
 
 ```ts
-shopifyUsageEventPublisherService.publishDue()
+shopifyUsageEventPublisherService.publishDue();
 ```
 
 from a single subscription's pre-close job. That can publish unrelated shops and
@@ -932,7 +935,7 @@ unrelated BillingPeriods.
 Add a narrow publisher filter/reuse path, for example:
 
 ```ts
-publishDue({ billingPeriodId })
+publishDue({ billingPeriodId });
 ```
 
 or an equivalent `publishDueForBillingPeriod(...)` that reuses the same publisher
@@ -1212,8 +1215,6 @@ When the corrections and permanent evidence are complete:
 4. publish the parent task report;
 5. STOP for `moda_architect`.
 
-
-
 ## Final frozen-cycle interaction
 
 Canonical rollover MUST NOT close/grant a period merely because wall-clock `periodEnd` passes while the Subscription is FROZEN. BACKGROUND-012 owns the frozen retry.
@@ -1466,7 +1467,7 @@ tests/unit/services/shopify-usage-event-publisher.service.test.ts
 Attempt 2 adds:
 
 ```ts
-publishDue({ billingPeriodId })
+publishDue({ billingPeriodId });
 ```
 
 and correctly scopes the `PENDING`/`RETRYABLE` selection.
@@ -1518,7 +1519,7 @@ tests/unit/services/billing-subscription-reconciliation.service.test.ts
 Attempt 2 currently catches an exception from:
 
 ```ts
-publishDue({ billingPeriodId })
+publishDue({ billingPeriodId });
 ```
 
 logs it, and then unconditionally writes:
@@ -2384,7 +2385,7 @@ src/services/billing-reconciliation.service.ts
 Attempt 4 currently requires:
 
 ```ts
-existing.nextReconcileAt
+existing.nextReconcileAt;
 ```
 
 to be truthy before the rotating `provider-cycle-lag` branch writes the +60-second
@@ -2850,12 +2851,12 @@ Background origin/main: 0a752729e92002416c4b86db3fa5ef5004f78def
 
 ### Attempt 5 Correction Mapping
 
-| Correction | Exact permanent evidence | Result |
-|---|---|---|
-| Production rotating service is queue-backed | `tests/unit/runtime/entrypoint-isolation.test.ts` — `uses one queue-aware reconciliation service for the worker and repair cadence` | passed |
-| Paid null lag schedule repair | `tests/unit/services/billing-reconciliation.service.test.ts` — `repairs a missing Paid cycle schedule during rotating provider-cycle lag` | passed |
-| Pack-enabled Free null lag schedule repair | `tests/unit/services/billing-reconciliation.service.test.ts` — `repairs a missing pack-enabled Free cycle schedule during rotating provider-cycle lag` | passed |
-| Durable +60-second rotating lag retry | `tests/unit/services/billing-reconciliation.service.test.ts` — `persists rotating provider-cycle lag and enqueues the existing +60 second job` | passed |
+| Correction                                     | Exact permanent evidence                                                                                                                                                                                                                                                                                                                                       | Result |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| Production rotating service is queue-backed    | `tests/unit/runtime/entrypoint-isolation.test.ts` — `uses one queue-aware reconciliation service for the worker and repair cadence`                                                                                                                                                                                                                            | passed |
+| Paid null lag schedule repair                  | `tests/unit/services/billing-reconciliation.service.test.ts` — `repairs a missing Paid cycle schedule during rotating provider-cycle lag`                                                                                                                                                                                                                      | passed |
+| Pack-enabled Free null lag schedule repair     | `tests/unit/services/billing-reconciliation.service.test.ts` — `repairs a missing pack-enabled Free cycle schedule during rotating provider-cycle lag`                                                                                                                                                                                                         | passed |
+| Durable +60-second rotating lag retry          | `tests/unit/services/billing-reconciliation.service.test.ts` — `persists rotating provider-cycle lag and enqueues the existing +60 second job`                                                                                                                                                                                                                 | passed |
 | Existing canonical rollover behavior preserved | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` — `schedules the next Paid pre-close boundary after a contiguous rollover`; `creates only the provider cycle when a Paid rollover has a gap`; `leaves pack-disabled Free rollover without a cycle-specific schedule`; `reuses an already-open successor without duplicating its grant` | passed |
 
 The full required scenario matrix and earlier architect corrections remain recorded in the preceding Attempt-4 report and were exercised by the focused, preservation, and integration commands above. The Attempt-5 source corrections are limited to the two requested review regressions.
@@ -4199,43 +4200,43 @@ those diagnostics.
 
 ### Required Scenario Mapping
 
-| Scenario | Exact test file | Exact test title | Result |
-|---|---|---|---|
-| 1 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
-| 2 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `uses the exact source projection CAS when rescheduling an early rollover job` | passed |
-| 3 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `does not mutate or enqueue when the schedule changes during Partner verification` | passed |
-| 4 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `ignores stale jobs after the durable schedule changes` | passed |
-| 5 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `records a provider-cycle lag retry with a new deterministic job after the boundary` | passed |
-| 6 | `tests/unit/services/billing-reconciliation.service.test.ts` | `preserves the mapped plan when the Partner API fails` | passed |
-| 7 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `schedules the next Paid pre-close boundary after a contiguous rollover` | passed |
-| 8 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `creates only the provider cycle when a Paid rollover has a gap` | passed |
-| 9 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `fails closed when a successor has incompatible canonical identity` | passed |
-| 10 | `tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts` | `serializes two independent transitions into one successor period` | passed |
-| 11 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `does not reopen a CLOSED successor during replay` | passed |
-| 12 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `moves only old PENDING and RETRYABLE events to bounded attention` | passed |
-| 13 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `does not overwrite old REPORTED or IN_FLIGHT events during rollover` | passed |
-| 14 | `tests/unit/services/shopify-usage-event-publisher.service.test.ts` | `scopes stale in-flight recovery to the requested BillingPeriod` | passed |
-| 15 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `leaves an old pack purchase REQUESTED when its event is closed before reporting` | passed |
-| 16 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `does not roll back durable state when queue publication fails` | passed |
-| 17 | `tests/unit/services/billing-reconciliation.service.test.ts` | `lets the canonical rollover return its successor without using the legacy period upsert` | passed |
-| 18 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `releases RESERVED and AMBIGUOUS reservations as PERIOD_CLOSED and closes the counter invariant` | passed |
-| 19 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `releases RESERVED and AMBIGUOUS reservations as PERIOD_CLOSED and closes the counter invariant` | passed |
-| 20 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `aborts before releasing or closing when reservation aggregate mismatches the counter` | passed |
-| 21 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `creates an exact Paid successor snapshot and included grant` | passed |
-| 22 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `does not reset a compatible successor included counter on replay` | passed |
-| 23 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `emits one Paid capacity hint while allowing the generic hook for Free rollover` | passed |
-| 24 | `tests/unit/services/recovery-billing.service.test.ts` | `does not reserve paid included capacity while the billing period is draining` | passed |
-| 25 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `creates one canonical Free period for an exact cycle without a credit counter` | passed |
-| 26 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `creates the full Free period snapshot without an included-credit counter` | passed |
-| 27 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `rotates an existing pack-enabled Free period without counters or lifetime-state mutation` | passed |
-| 28 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `preserves an existing lifetime counter and exact period replay state` | passed |
-| 29 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `rotates an existing pack-enabled Free period without counters or lifetime-state mutation` | passed |
-| 30 | `tests/unit/services/recovery-billing.service.test.ts` | `uses the closing reason only after all DRAINING fallbacks are exhausted` | passed |
-| 31 | `tests/unit/services/recovery-billing.service.test.ts` | `blocks an expired paid period with the reconciliation reason` | passed |
-| 32 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `moves only old PENDING and RETRYABLE events to bounded attention` | passed |
-| 33 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `creates one canonical Free period for an exact cycle without a credit counter` | passed |
-| 34 | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts` | `emits one Paid capacity hint while allowing the generic hook for Free rollover` | passed |
-| 35 | `tests/unit/services/billing-subscription-reconciliation.service.test.ts` | `reconstructs future jobs with their remaining delay and deterministic duplicate ids` | passed |
+| Scenario | Exact test file                                                                       | Exact test title                                                                                 | Result |
+| -------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------ |
+| 1        | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `reconstructs future jobs with their remaining delay and deterministic duplicate ids`            | passed |
+| 2        | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `uses the exact source projection CAS when rescheduling an early rollover job`                   | passed |
+| 3        | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `does not mutate or enqueue when the schedule changes during Partner verification`               | passed |
+| 4        | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `ignores stale jobs after the durable schedule changes`                                          | passed |
+| 5        | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `records a provider-cycle lag retry with a new deterministic job after the boundary`             | passed |
+| 6        | `tests/unit/services/billing-reconciliation.service.test.ts`                          | `preserves the mapped plan when the Partner API fails`                                           | passed |
+| 7        | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `schedules the next Paid pre-close boundary after a contiguous rollover`                         | passed |
+| 8        | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `creates only the provider cycle when a Paid rollover has a gap`                                 | passed |
+| 9        | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `fails closed when a successor has incompatible canonical identity`                              | passed |
+| 10       | `tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts` | `serializes two independent transitions into one successor period`                               | passed |
+| 11       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `does not reopen a CLOSED successor during replay`                                               | passed |
+| 12       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `moves only old PENDING and RETRYABLE events to bounded attention`                               | passed |
+| 13       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `does not overwrite old REPORTED or IN_FLIGHT events during rollover`                            | passed |
+| 14       | `tests/unit/services/shopify-usage-event-publisher.service.test.ts`                   | `scopes stale in-flight recovery to the requested BillingPeriod`                                 | passed |
+| 15       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `leaves an old pack purchase REQUESTED when its event is closed before reporting`                | passed |
+| 16       | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `does not roll back durable state when queue publication fails`                                  | passed |
+| 17       | `tests/unit/services/billing-reconciliation.service.test.ts`                          | `lets the canonical rollover return its successor without using the legacy period upsert`        | passed |
+| 18       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `releases RESERVED and AMBIGUOUS reservations as PERIOD_CLOSED and closes the counter invariant` | passed |
+| 19       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `releases RESERVED and AMBIGUOUS reservations as PERIOD_CLOSED and closes the counter invariant` | passed |
+| 20       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `aborts before releasing or closing when reservation aggregate mismatches the counter`           | passed |
+| 21       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `creates an exact Paid successor snapshot and included grant`                                    | passed |
+| 22       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `does not reset a compatible successor included counter on replay`                               | passed |
+| 23       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `emits one Paid capacity hint while allowing the generic hook for Free rollover`                 | passed |
+| 24       | `tests/unit/services/recovery-billing.service.test.ts`                                | `does not reserve paid included capacity while the billing period is draining`                   | passed |
+| 25       | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `creates one canonical Free period for an exact cycle without a credit counter`                  | passed |
+| 26       | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `creates the full Free period snapshot without an included-credit counter`                       | passed |
+| 27       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `rotates an existing pack-enabled Free period without counters or lifetime-state mutation`       | passed |
+| 28       | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `preserves an existing lifetime counter and exact period replay state`                           | passed |
+| 29       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `rotates an existing pack-enabled Free period without counters or lifetime-state mutation`       | passed |
+| 30       | `tests/unit/services/recovery-billing.service.test.ts`                                | `uses the closing reason only after all DRAINING fallbacks are exhausted`                        | passed |
+| 31       | `tests/unit/services/recovery-billing.service.test.ts`                                | `blocks an expired paid period with the reconciliation reason`                                   | passed |
+| 32       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `moves only old PENDING and RETRYABLE events to bounded attention`                               | passed |
+| 33       | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `creates one canonical Free period for an exact cycle without a credit counter`                  | passed |
+| 34       | `tests/unit/services/same-plan-billing-period-rollover.service.test.ts`               | `emits one Paid capacity hint while allowing the generic hook for Free rollover`                 | passed |
+| 35       | `tests/unit/services/billing-subscription-reconciliation.service.test.ts`             | `reconstructs future jobs with their remaining delay and deterministic duplicate ids`            | passed |
 
 The matrix titles were mechanically checked with `rg` against their named test
 files. Parent report status is `Review`; the task claim is cleared. The parent
@@ -5246,4 +5247,3 @@ claimed_at: null
 ```
 
 No Attempt 9 is created.
-

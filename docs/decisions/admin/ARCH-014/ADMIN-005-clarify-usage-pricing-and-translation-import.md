@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-014-ADMIN-004
+  - ARCH-014-ADMIN-004
 enables:
-- ARCH-014-SYSTEM-TEST-001
+  - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -420,16 +420,16 @@ Implementation requirements:
 Maintain these component states separately:
 
 ```ts
-rawJson: string
-selectedFileName: string | null
-uploadError: string | null
-isDragging: boolean
+rawJson: string;
+selectedFileName: string | null;
+uploadError: string | null;
+isDragging: boolean;
 ```
 
 Use one function for both picker and dropped file processing, e.g.:
 
 ```ts
-async function processSelectedTranslationFile(file: File): Promise<void>
+async function processSelectedTranslationFile(file: File): Promise<void>;
 ```
 
 Exact rules:
@@ -502,7 +502,7 @@ Preserve existing `rawJson` and `selectedFileName`.
 The current behaviour of replacing `rawJson` with synthetic JSON such as:
 
 ```json
-{"error":"Translation package exceeds 256 KiB."}
+{ "error": "Translation package exceeds 256 KiB." }
 ```
 
 MUST be removed.

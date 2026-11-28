@@ -151,7 +151,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Keep this a read service. Do not absorb the purchase command simply because both concern recovery-credit packs.
 
-
 ## Completion Report
 
 ### Status
@@ -205,6 +204,7 @@ None identified.
 Task branch: `task/ARCH-025-SHOPIFY-005`
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-005`
 - Parent branch: `task/ARCH-025-SHOPIFY-005`
@@ -215,6 +215,7 @@ Physical worktree isolation:
 - Another task worktree reused: no
 
 Start-of-attempt synchronization:
+
 - Parent remote task branch fast-forwarded: not-needed.
 - Parent `origin/main` incorporated: already-current.
 - Implementation remote task branch fast-forwarded: not-needed.
@@ -222,12 +223,14 @@ Start-of-attempt synchronization:
 - Recursive submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; database initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 
 Implementation repository:
+
 - Repository: `moda-interact`
 - Commit: `28b7cc065035d8bc0fe81a30208c33d770930b08`
 - Remote branch: `origin/task/ARCH-025-SHOPIFY-005`
 - Pushed: yes
 
 Parent workspace:
+
 - Task file: `docs/decisions/shopify/ARCH-025/SHOPIFY-005-extract-merchant-billing-read-service.md`
 - Report commit: `0343aa445bd2faf06d896544f42cc7443376c897`
 - Remote branch: `origin/task/ARCH-025-SHOPIFY-005`

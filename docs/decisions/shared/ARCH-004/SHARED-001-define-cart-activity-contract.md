@@ -18,6 +18,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
+
 # Define canonical cart activity recovery event
 
 ## Objective
@@ -55,7 +56,7 @@ without creating a new queue.
 Add:
 
 ```ts
-SHOPIFY_RECOVERY_EVENT_TYPES_V2.CART_ACTIVITY = "cart.activity"
+SHOPIFY_RECOVERY_EVENT_TYPES_V2.CART_ACTIVITY = "cart.activity";
 ```
 
 Add a strict payload equivalent to:
@@ -139,17 +140,17 @@ Do not silently loosen `.strict()` schema behaviour.
 
 ## Acceptance criteria
 
- [x] `cart.activity` exists in canonical v2 event types.
- [x] strict payload validates `cartToken`.
- [x] `isEmpty` supports true/false/null only.
- [x] event participates in the canonical discriminated union.
- [x] type guard exists.
- [x] existing v2 checkout/order events remain valid.
- [x] queue contract uses existing `checkout-events`.
- [x] deterministic cart ordering key is tested.
- [x] no PII/cart contents are added to the contract.
- [x] unit tests/typecheck/build pass.
- [x] `git diff --check` passes.
+[x] `cart.activity` exists in canonical v2 event types.
+[x] strict payload validates `cartToken`.
+[x] `isEmpty` supports true/false/null only.
+[x] event participates in the canonical discriminated union.
+[x] type guard exists.
+[x] existing v2 checkout/order events remain valid.
+[x] queue contract uses existing `checkout-events`.
+[x] deterministic cart ordering key is tested.
+[x] no PII/cart contents are added to the contract.
+[x] unit tests/typecheck/build pass.
+[x] `git diff --check` passes.
 
 ## Completion Report
 
@@ -286,4 +287,3 @@ Conforms.
 
 `ARCH-004-SHARED-002` may advance to Ready for publication of the accepted
 shared contract.
-

@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-053-SHARED-002
+  - ARCH-053-SHARED-002
 enables:
-- ARCH-053-BACKGROUND-002
-- ARCH-053-WOOCOMMERCE-001
+  - ARCH-053-BACKGROUND-002
+  - ARCH-053-WOOCOMMERCE-001
 created: 2026-10-29
 updated: 2026-10-30
 ---

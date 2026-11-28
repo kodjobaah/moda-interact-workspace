@@ -164,9 +164,9 @@ template sending.
 - [x] Add focused provider-body and recovery-flow tests.
 - [x] Prove active-conversation text sends are unchanged.
 - [x] Attempt 2: replace fabricated free-form recovery history with a truthful bounded
-  template-send descriptor.
+      template-send descriptor.
 - [x] Attempt 2: add a regression proving a non-English selected template does not persist
-  the old English `buildRecoveryMessage(...)` content.
+      the old English `buildRecoveryMessage(...)` content.
 - [x] Attempt 2: rerun focused provider/recovery validation and `git diff --check`.
 
 ## Interfaces / Contracts
@@ -196,9 +196,9 @@ provider template fields. No new cross-service contract is introduced.
 - [x] active-conversation free-form replies remain unchanged.
 - [x] no AI translation/provider approval bypass exists.
 - [x] persisted proactive outbound history truthfully represents a template send rather
-  than storing unsent English free-form recovery copy.
+      than storing unsent English free-form recovery copy.
 - [x] selected non-English template regression proves canonical/provider language metadata
-  is persisted without pretending it is the localized provider body.
+      is persisted without pretending it is the localized provider body.
 - [x] focused/full tests, build/typecheck and `git diff --check` pass subject to baseline.
 
 ## Validation

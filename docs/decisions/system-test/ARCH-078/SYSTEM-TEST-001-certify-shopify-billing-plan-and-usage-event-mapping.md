@@ -14,7 +14,13 @@ priority: 80
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: [ARCH-078-DATABASE-001, ARCH-078-BACKGROUND-001, ARCH-078-SHOPIFY-001, ARCH-078-ADMIN-001]
+depends_on:
+  [
+    ARCH-078-DATABASE-001,
+    ARCH-078-BACKGROUND-001,
+    ARCH-078-SHOPIFY-001,
+    ARCH-078-ADMIN-001,
+  ]
 enables: []
 created: 2026-11-22
 updated: 2026-11-22
@@ -27,6 +33,7 @@ updated: 2026-11-22
 Follow [ARCH-078](../../../architecture/ARCH-078-shopify-provider-authoritative-billing-plan-and-usage-event-mapping.md).
 
 Run only after architect acceptance of:
+
 - `ARCH-078-DATABASE-001`
 - `ARCH-078-BACKGROUND-001`
 - `ARCH-078-SHOPIFY-001`

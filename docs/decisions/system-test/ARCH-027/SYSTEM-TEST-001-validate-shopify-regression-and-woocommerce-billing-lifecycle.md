@@ -872,29 +872,29 @@ At minimum the terminal matrix must include:
 14. prepaid_term_ended or local verified end-date safety net -> Free/CONTRACT_ENDED;
 15. old-contract lifecycle cannot mutate current Free or a later new contract;
 16. Free one-time top-up activation;
-16. paid top-up activation after acquisition period changed;
-17. canceled top-up checkout clears same-bundle pending state;
-18. duplicate charge webhook no double grant;
-19. Woo refund navigation performs no local mutation;
-20. Admin prepare creates one-attempt allowance hold;
-21. reservations settle and final hold is normalized;
-22. refunded webhook completes held allowance;
-23. provider monetary amount is audit-only and cannot change held allowance;
-24. unmatched/refunded-after-rejection remain attention-only;
-25. provider-started hold is not released without trusted rejection/cancellation evidence;
-26. Shopify cancel/continuation before period end does not reset allowance;
-27. unmatched provider under-refund has no mutation;
-28. invalid webhook HMAC creates no receipt/state;
-29. exact duplicate webhook dedupe;
-30. byte-distinct equivalent webhook business idempotency;
-31. cross-Shop provider-contract conflict fails closed;
-32. API read models match durable lifecycle state;
-33. Woo plugin accepted recurring/top-up/refund UI evidence;
-34. Shopify compatibility/regression matrix;
-35. Shopify create/switch/cancel/top-up commands record Shop-owned `billing.BillingOperation` history without changing Shopify pending/projection behaviour;
-36. Woo command-related receipts may correlate to the exact `BillingOperation` while autonomous lifecycle receipts remain valid with null correlation;
-37. Gateway Woo secret/routing/raw-body evidence;
-38. evidence contains no secrets.
+17. paid top-up activation after acquisition period changed;
+18. canceled top-up checkout clears same-bundle pending state;
+19. duplicate charge webhook no double grant;
+20. Woo refund navigation performs no local mutation;
+21. Admin prepare creates one-attempt allowance hold;
+22. reservations settle and final hold is normalized;
+23. refunded webhook completes held allowance;
+24. provider monetary amount is audit-only and cannot change held allowance;
+25. unmatched/refunded-after-rejection remain attention-only;
+26. provider-started hold is not released without trusted rejection/cancellation evidence;
+27. Shopify cancel/continuation before period end does not reset allowance;
+28. unmatched provider under-refund has no mutation;
+29. invalid webhook HMAC creates no receipt/state;
+30. exact duplicate webhook dedupe;
+31. byte-distinct equivalent webhook business idempotency;
+32. cross-Shop provider-contract conflict fails closed;
+33. API read models match durable lifecycle state;
+34. Woo plugin accepted recurring/top-up/refund UI evidence;
+35. Shopify compatibility/regression matrix;
+36. Shopify create/switch/cancel/top-up commands record Shop-owned `billing.BillingOperation` history without changing Shopify pending/projection behaviour;
+37. Woo command-related receipts may correlate to the exact `BillingOperation` while autonomous lifecycle receipts remain valid with null correlation;
+38. Gateway Woo secret/routing/raw-body evidence;
+39. evidence contains no secrets.
 
 ## Evidence To Capture
 

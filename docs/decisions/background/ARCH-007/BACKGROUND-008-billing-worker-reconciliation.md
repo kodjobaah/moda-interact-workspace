@@ -17,7 +17,7 @@ depends_on:
   - ARCH-007-BACKGROUND-007
   - ARCH-007-BACKGROUND-009
   - ARCH-007-SHOPIFY-001
-enables: 
+enables:
   - ARCH-007-ADMIN-003
   - ARCH-007-ADMIN-004
   - ARCH-007-GATEWAY-001
@@ -80,14 +80,14 @@ Background billing entrypoint/runtime/router/scheduler, Partner API subscription
 
 ## Interfaces / Contracts
 
- [x] Billing work survives Redis/job loss because PostgreSQL scans recover due state.
- [x] A `RECOVERY_CREDIT_PACK_PURCHASE` whose billing UsageEvent is already REPORTED but whose purchase activation was interrupted is rediscovered and activated idempotently through BACKGROUND-009.
- [x] External Shopify plan changes are reflected without requiring merchant callback.
- [x] Partner failure cannot become no-contract/free.
- [x] Unknown plan maps after Admin registration on later scan with no deploy.
- [x] Usage discrepancy is visible but not auto-fudged.
- [x] Post-uninstall cutoff is enforced.
- [x] Independent entrypoint/readiness/tests/validation pass.
+[x] Billing work survives Redis/job loss because PostgreSQL scans recover due state.
+[x] A `RECOVERY_CREDIT_PACK_PURCHASE` whose billing UsageEvent is already REPORTED but whose purchase activation was interrupted is rediscovered and activated idempotently through BACKGROUND-009.
+[x] External Shopify plan changes are reflected without requiring merchant callback.
+[x] Partner failure cannot become no-contract/free.
+[x] Unknown plan maps after Admin registration on later scan with no deploy.
+[x] Usage discrepancy is visible but not auto-fudged.
+[x] Post-uninstall cutoff is enforced.
+[x] Independent entrypoint/readiness/tests/validation pass.
 Use existing service.namespace/environment observability conventions.
 
 ## Dependencies
@@ -119,7 +119,6 @@ Inspect the repository `package.json` first. Run the focused tests required by t
 
 ## Implementation Notes
 
-
 Luna deterministic-execution guardrails:
 
 - Treat this task file as the complete implementation contract. Do not infer additional product policy from old billing code.
@@ -130,7 +129,6 @@ Luna deterministic-execution guardrails:
 - Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
 - Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-BACKGROUND-008` branch and the mirrored parent-workspace `task/ARCH-007-BACKGROUND-008` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
 - Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
-
 
 ## Completion Report
 
@@ -272,17 +270,17 @@ The discrepancy representation is operational structured output rather than dura
 Task branch: `task/ARCH-007-BACKGROUND-008`
 
 Implementation repository:
-   repository: moda-interact-background
-   commit: e3960d5
-   remote branch: origin/task/ARCH-007-BACKGROUND-008
-   pushed: yes
+repository: moda-interact-background
+commit: e3960d5
+remote branch: origin/task/ARCH-007-BACKGROUND-008
+pushed: yes
 
 Parent workspace:
-   task file: docs/decisions/background/ARCH-007/BACKGROUND-008-billing-worker-reconciliation.md
-   claim commit: c883ba4
-   remote branch: origin/task/ARCH-007-BACKGROUND-008
-   pushed: yes
-   submodule gitlink staged: no
+task file: docs/decisions/background/ARCH-007/BACKGROUND-008-billing-worker-reconciliation.md
+claim commit: c883ba4
+remote branch: origin/task/ARCH-007-BACKGROUND-008
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -406,9 +404,8 @@ correction remain.
 Current production reporter:
 
 ```ts
-const message = error instanceof Error
-  ? error.message.slice(0, 256)
-  : "unknown failure";
+const message =
+  error instanceof Error ? error.message.slice(0, 256) : "unknown failure";
 
 logger.error("billing.reconciliation.scan_failed", {
   errorName: error instanceof Error ? error.name : "UnknownError",
@@ -422,9 +419,8 @@ must not be treated as inherently bounded.
 Attempt 4 must bound it deterministically, for example:
 
 ```ts
-const errorName = error instanceof Error
-  ? error.name.slice(0, 64)
-  : "UnknownError";
+const errorName =
+  error instanceof Error ? error.name.slice(0, 64) : "UnknownError";
 ```
 
 and emit only bounded scalar metadata:
@@ -624,7 +620,6 @@ System-test tasks remain terminal/manual-gated.
 
 #### Attempt 2 — Changes Requested (preserved)
 
-
 ### Review Status
 
 Changes Requested — Attempt 2
@@ -711,7 +706,7 @@ The remaining defect is the production failure reporter. When no reporter is
 provided, `startBillingReconciliationScheduler()` currently falls back to:
 
 ```ts
-console.error("billing reconciliation failed", error)
+console.error("billing reconciliation failed", error);
 ```
 
 That emits the raw `Error` object and bypasses the Background Shared structured

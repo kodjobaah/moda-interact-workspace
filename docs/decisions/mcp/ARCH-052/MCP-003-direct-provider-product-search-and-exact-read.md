@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-052-SHARED-010
-- ARCH-052-COMMERCE-006
-- ARCH-052-MCP-005
+  - ARCH-052-SHARED-010
+  - ARCH-052-COMMERCE-006
+  - ARCH-052-MCP-005
 enables:
-- ARCH-052-BACKGROUND-007
-- ARCH-052-COMMERCE-007
-- ARCH-052-GATEWAY-001
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-created: '2026-10-29'
+  - ARCH-052-BACKGROUND-007
+  - ARCH-052-COMMERCE-007
+  - ARCH-052-GATEWAY-001
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+created: "2026-10-29"
 updated: 2026-10-31
 ---
 
@@ -362,7 +362,6 @@ The task is returned to Ready with the bounded scope amendment. Existing depende
 #### Follow-up
 
 Claim Attempt 2 through the canonical launcher after reading the amended requirements.
-
 
 ### Attempt 3 Architect Review — Accepted
 

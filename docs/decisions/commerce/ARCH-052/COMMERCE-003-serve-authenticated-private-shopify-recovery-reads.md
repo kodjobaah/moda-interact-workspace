@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables: []
-created: '2026-10-29'
-updated: '2026-10-30'
+created: "2026-10-29"
+updated: "2026-10-30"
 ---
 
 # ARCH-052-COMMERCE-003: Serve authenticated private Shopify checkout and alternative-product discount proof
@@ -89,6 +89,7 @@ This task is superseded. Do not claim, implement, run tests, publish, merge or u
 ## Implementation Notes
 
 Owning repository paths:
+
 - `moda-interact-commerce/app/internal/v1/recovery/discount-proof/route.ts` (new)
 - `moda-interact-commerce/src/commerce/discounts/` (existing evaluators from COMMERCE-001/008)
 - `moda-interact-commerce/tests/` (new route/provider integration tests)
@@ -128,7 +129,6 @@ None established by implementation.
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
-
 
 ## Architect Review
 

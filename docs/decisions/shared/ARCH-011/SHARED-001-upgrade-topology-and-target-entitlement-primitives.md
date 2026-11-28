@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SHARED-008
-- ARCH-012-SHARED-001
+  - ARCH-010-SHARED-008
+  - ARCH-012-SHARED-001
 enables:
-- ARCH-011-SHARED-002
+  - ARCH-011-SHARED-002
 created: 2026-09-14
 updated: 2026-09-16
 ---
@@ -32,12 +32,14 @@ ARCH-012-SHARED-001 was architect-accepted and published `@modainteract/moda-int
 This task adds the ARCH-011 billing primitives on top of that baseline. It must preserve all accepted `0.12.0` exports and WhatsApp semantics. Do not change package version here; publication remains `ARCH-011-SHARED-002`.
 
 ## Authorized implementation surface
+
 Edit only:
 
 ```text
 src/billing.ts
 src/billing.test.ts
 ```
+
 Do not add another billing module or change existing ARCH-010 exports.
 
 ## Exact exports to add to `src/billing.ts`
@@ -83,9 +85,11 @@ Require full contiguous cycle coverage, chronological order, no gap/overlap, saf
 `calculateAdditionalIncludedCreditGrant`: both args safe non-negative integers; if target<alreadyGranted throw `ARCH011_ENTITLEMENT_INCONSISTENT:TARGET_BELOW_GRANTED`; else return subtraction. No clamp and no downgrade/clawback helper.
 
 ## Exact tests to append in `src/billing.test.ts`
+
 Add named tests for: 0/1/4 plan topology, Free->Scale upgrade, Scale->Starter downgrade, SAME, each error code, input-order invariance, half-cycle 100/300=>200, additional 100, usage-not-input (compile/API assertion), repeated-upgrade complete-timeline rounding, gap/overlap/reversed rejection, unsafe integer rejection, target<granted rejection, constants 60s/30m.
 
 ## Validation
+
 ```text
 npm test
 npm run typecheck
@@ -96,6 +100,7 @@ git diff --check
 ```
 
 ## Stop conditions
+
 STOP if any accepted ARCH-010 export must be renamed/removed or if the new API cannot live under `@modainteract/moda-interact-shared/billing`.
 
 ## Completion protocol

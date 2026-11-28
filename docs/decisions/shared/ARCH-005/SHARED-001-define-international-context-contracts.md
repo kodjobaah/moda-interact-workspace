@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T19:05:00Z
 ---
+
 # Define canonical international context contracts
 
 ## Objective
@@ -712,4 +713,3 @@ These tasks may execute independently.
 
 `DATABASE-001` owns persistence design and does not require publication first;
 its authoritative dependency is the accepted SHARED-001 contract definition.
-

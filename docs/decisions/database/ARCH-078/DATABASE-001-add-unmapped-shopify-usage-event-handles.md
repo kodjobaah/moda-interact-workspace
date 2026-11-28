@@ -83,6 +83,7 @@ Do not edit, rename or regenerate any previously applied migration. Do not add a
    ```
 
    It must support `--mode fresh` and `--mode upgrade`, using the repository's existing disposable PostgreSQL test conventions.
+
 4. Add these package scripts:
 
    ```json
@@ -96,6 +97,7 @@ Do not edit, rename or regenerate any previously applied migration. Do not add a
 ## PostgreSQL test requirements
 
 Fresh mode:
+
 - Apply the complete migration history plus the ARCH-078 migration to a fresh disposable PostgreSQL database.
 - Verify `billing."Subscription"."unmappedShopifyUsageEventHandles"` exists as `TEXT[]`, is `NOT NULL`, and has an empty-array default.
 - Insert a Subscription without specifying the field and verify it reads as `[]`.
@@ -104,6 +106,7 @@ Fresh mode:
 - Verify the migration does not add a new enum, table, trigger or index.
 
 Upgrade mode:
+
 - Apply all migrations preceding ARCH-078 to a disposable database.
 - Insert at least one existing Subscription row before applying ARCH-078.
 - Apply the new migration.

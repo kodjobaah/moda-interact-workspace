@@ -272,9 +272,11 @@ Do not persist both modes into the canonical Tool definition. This is local edit
 ## Completion Report
 
 ### Status
+
 Attempt 3 implementation complete. The original blocked handoff was caused only by the isolated worktree QuickJS installation; supplemental developer validation supplied after that handoff resolved the runtime gate without any C042 source change.
 
 ### Files Changed
+
 - `app/styles.css`
 - `src/studio/external-http/editor.tsx`
 - `src/studio/external-http/request-tab.tsx`
@@ -284,12 +286,14 @@ Attempt 3 implementation complete. The original blocked handoff was caused only 
 - `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
+
 - Preserved the accepted Attempt 2 behavior: Request Validate/Preview do not gate Create/Save, malformed inactive Literal errors do not block Agent input, Add/Rename cannot overwrite bindings, and active-mode-only persistence remains in place.
 - Scoped duplicate binding-name errors to JavaScript mode. Declarative Request validation and preview remain available while a JavaScript rename error is retained locally.
 - Duplicate rename attempts now invalidate Request checkpoints; the active local name error is included in the validation/preview key so late results cannot display against the errored JavaScript form.
 - Expanded the UI regression to validate and preview before a duplicate rename, prove both results disappear, switch to Declarative and successfully call both checkpoints, restore the JavaScript error and rows, then perform a valid rename that preserves literal/input values.
 
 ### Validation Results
+
 - `npm exec -- vitest run tests/external-tools-ui.test.tsx -t "does not overwrite existing JavaScript Request bindings"` — passed, 1 targeted regression.
 - `npm run test:arch020-external-tools-ui` — passed, 49/49 tests.
 - Initial blocked handoff: `npm run code-runtime:package` could not resolve `quickjs-wasi/quickjs.wasm`, so the repository agent correctly stopped before running the runtime-dependent packet.
@@ -303,6 +307,7 @@ Attempt 3 implementation complete. The original blocked handoff was caused only 
 - `git diff --check` — passed.
 
 ### Execution Evidence
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-042`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-042`. Both branches are `task/ARCH-021-COMMERCE-042`; neither shared checkout nor another task worktree was used.
 - Attempt 3 claim: commit `99662ee998393aea5e0950dfba4aa1ad047ad1c7`, claimed `2026-09-27T09:03:33Z` by `copilot`; previous attempt 2. Dependency gate `ARCH-021-COMMERCE-041` passed. Parent preparation HEAD: `cdbc70dd2714d3f923c4091f3639273d633f69f9`; implementation starting HEAD: `38321e906f7b05d1fc37b67e610cfbcd87177e9e`.
 - Start synchronization: parent and implementation remote task-branch fast-forwards were `not-needed`; `origin/main` was incorporated into both task branches (`yes`). Final parent synchronization before claim was `already-current` at `cdbc70dd2714d3f923c4091f3639273d633f69f9`.
@@ -310,15 +315,19 @@ Attempt 3 implementation complete. The original blocked handoff was caused only 
 - Attempt 3 implementation commit: `1436b1e385b3c471c845000760305c8770a75921` (`fix(commerce): scope request rename errors and stale previews`); pushed to `origin/task/ARCH-021-COMMERCE-042`, with local/remote refs matching and a clean implementation worktree. The final parent report was pushed with local/remote parity and a clean parent worktree (final parent branch SHA is included in the handoff). Packaging failed before the runtime-dependent validation packet, so the task remains blocked rather than being submitted for review.
 
 ### Deviations
+
 The original Attempt 3 handoff was correctly blocked by incomplete local QuickJS dependency state. Supplemental developer validation later proved the pinned runtime package/smoke and the required runtime-dependent test packet without changing C042 source. No provider execution, service boundary, persistence model or tab gating was added.
 
 ### Assumptions
+
 Only schema-valid active Request state is emitted to canonical Tool definition state; malformed raw source/Literal drafts remain local. Request validation and preview do not authorize or gate final Create/Save.
 
 ### Unresolved Issues
+
 None within C042. Repository typecheck still reports the documented unrelated baseline diagnostics; no C042-owned TypeScript diagnostics remain.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
@@ -450,7 +459,9 @@ All dependencies of `ARCH-021-COMMERCE-053` are now Complete, so
 Do not start COMMERCE-054 until COMMERCE-053 is architect-accepted Complete.
 
 ### Historical Reviews
+
 ### Review Status
+
 Changes Requested — Attempt 2
 
 ### Review Notes
@@ -506,13 +517,13 @@ const [bindingNameError, setBindingNameError] = useState("");
 and is always appended to:
 
 ```ts
-requestIssues
+requestIssues;
 ```
 
 and always participates in:
 
 ```ts
-requestDraftValid
+requestDraftValid;
 ```
 
 even when the active Request mode is `DECLARATIVE`.
@@ -968,8 +979,7 @@ The current `activeLiteralErrors` logic treats an error as active whenever the
 binding name still exists:
 
 ```ts
-Object.entries(literalErrors)
-  .filter(([name]) => name in requestDraft.bindings)
+Object.entries(literalErrors).filter(([name]) => name in requestDraft.bindings);
 ```
 
 This is wrong after a binding switches from:

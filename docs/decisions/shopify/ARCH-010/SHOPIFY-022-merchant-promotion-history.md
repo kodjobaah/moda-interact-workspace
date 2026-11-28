@@ -13,10 +13,10 @@ status: complete
 priority: 86
 attempt: 3
 depends_on:
-- ARCH-010-SHOPIFY-021
-- ARCH-010-DATABASE-013
+  - ARCH-010-SHOPIFY-021
+  - ARCH-010-DATABASE-013
 enables:
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
 updated: 2026-09-13
 ---
@@ -71,9 +71,11 @@ Do not allow selecting campaigns from history, mutate campaign/grant quantities,
 ## Completion Report
 
 ### Status
+
 Ready for Architect Review. Attempt 3 completed.
 
 ### Files Changed
+
 - `moda-interact/app/services/promotions/promotion.service.ts`
 - `moda-interact/app/routes/app/promotions/route.tsx`
 - `moda-interact/app/i18n/locales/cs.json`
@@ -101,6 +103,7 @@ Ready for Architect Review. Attempt 3 completed.
 - `moda-interact/tests/unit/merchant-i18n.test.ts`
 
 ### Work Completed
+
 - Added a tenant-scoped `getPromotionHistory` query over exact `PromotionalCreditGrant` rows, bounded to 25 entries per page and ordered by selection history.
 - Added merchant-safe campaign history projection for granted, committed, remaining, selection/use timestamps, current expiry, current-selection state and lifecycle status.
 - Distinguishes selected, used, exhausted, expired, closed, no-longer-eligible and reopened history without reading aggregate promotional counters or internal provenance.
@@ -111,6 +114,7 @@ Ready for Architect Review. Attempt 3 completed.
 - Attempt 3 completed the required evidence-only corrections in `moda-interact/tests/unit/services/promotion.service.test.ts`: expired and no-longer-eligible cases now include the same genuine post-selection `reopenedAt` evidence as the reopened case, proving all four terminal/ineligible precedence rules; the query-to-projection assertion proves reopen evidence classifies the row without exposing `events`, `reopenedAt`, Admin identity, target IDs or `requestKey`.
 
 ### Validation Results
+
 - Focused promotion service/route/merchant-i18n tests: passed, 46/46 across 3 files.
 - Attempt 3 focused promotion service tests: passed, 28/28.
 - Full test suite: passed, 316 tests; 34 files passed and 2 skipped (3 tests skipped).
@@ -121,6 +125,7 @@ Ready for Architect Review. Attempt 3 completed.
 - `npm run lint`: repository baseline failure with 11 unrelated errors in onboarding, billing, merchant support, privacy and webhook files; no errors in changed promotion files. TypeScript 5.9 unsupported-version warning also remains baseline.
 
 ### Git / VCS
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-022` on `task/ARCH-010-SHOPIFY-022`.
@@ -166,9 +171,7 @@ events: {
 }
 ```
 
-Do **not** select or return `platformAdminId`, the PlatformAdmin relation, old/new audit payloads, or the lifecycle event object in the merchant history result. The event timestamp is server-side classification evidence only.
-3. Extend the internal projection input to accept the selected reopen timestamp evidence. Do not expose that evidence as a merchant history field.
-4. Calculate remaining allocation exactly as today:
+Do **not** select or return `platformAdminId`, the PlatformAdmin relation, old/new audit payloads, or the lifecycle event object in the merchant history result. The event timestamp is server-side classification evidence only. 3. Extend the internal projection input to accept the selected reopen timestamp evidence. Do not expose that evidence as a merchant history field. 4. Calculate remaining allocation exactly as today:
 
 ```text
 max(0, quantity - reservedQuantity - committedQuantity)
@@ -874,28 +877,42 @@ const reopenedAt = new Date("2026-09-13T12:01:00.000Z");
 Add an expired case equivalent to:
 
 ```ts
-expect(projectPromotionHistoryRow({
-  ...baseGrant,
-  reopenedAt,
-  campaign: {
-    ...baseGrant.campaign,
-    expiresAt: new Date("2026-09-01T00:00:00.000Z"),
-  },
-}, "shop-1", "plan-1", now).status).toBe("EXPIRED");
+expect(
+  projectPromotionHistoryRow(
+    {
+      ...baseGrant,
+      reopenedAt,
+      campaign: {
+        ...baseGrant.campaign,
+        expiresAt: new Date("2026-09-01T00:00:00.000Z"),
+      },
+    },
+    "shop-1",
+    "plan-1",
+    now,
+  ).status,
+).toBe("EXPIRED");
 ```
 
 Add a no-longer-eligible case equivalent to:
 
 ```ts
-expect(projectPromotionHistoryRow({
-  ...baseGrant,
-  reopenedAt,
-  campaign: {
-    ...baseGrant.campaign,
-    scope: "PLAN",
-    targetPlanId: "plan-other",
-  },
-}, "shop-1", "plan-1", now).status).toBe("NO_LONGER_ELIGIBLE");
+expect(
+  projectPromotionHistoryRow(
+    {
+      ...baseGrant,
+      reopenedAt,
+      campaign: {
+        ...baseGrant.campaign,
+        scope: "PLAN",
+        targetPlanId: "plan-other",
+      },
+    },
+    "shop-1",
+    "plan-1",
+    now,
+  ).status,
+).toBe("NO_LONGER_ELIGIBLE");
 ```
 
 The test must therefore prove all four precedence cases with valid reopen evidence:
@@ -921,7 +938,7 @@ reads only the authenticated shop's campaign-linked grants with bounded paginati
 the mocked grant already contains:
 
 ```ts
-events: [{ createdAt: new Date("2026-09-13T12:01:00.000Z") }]
+events: [{ createdAt: new Date("2026-09-13T12:01:00.000Z") }];
 ```
 
 After calling `getPromotionHistory(...)`, add assertions proving the query evidence
@@ -1094,4 +1111,3 @@ attempt:        3
 `ARCH-010-SYSTEM-TEST-003` remains Pending / manual-gated. Completion of
 SHOPIFY-022 satisfies only one of its many dependencies and does not make that
 terminal system-test task Ready. No downstream task is promoted by this acceptance.
-

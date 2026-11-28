@@ -471,13 +471,13 @@ Two tiny repository-internal support modules are deliberate rather than generic 
 Throughout all eleven tasks, this remains valid without caller migration:
 
 ```ts
-new BillingService(provider, database, dispatchTranslation)
+new BillingService(provider, database, dispatchTranslation);
 ```
 
 and the singleton remains:
 
 ```ts
-billingService
+billingService;
 ```
 
 The following current exports remain available from `app/services/billing/billing.service.ts` with compatible meanings:
@@ -1098,74 +1098,74 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 ### Shopify tranche
 
-| Task | Outcome | Status | Depends On |
-|---|---|---|---|
-| ARCH-025-SHOPIFY-001 | Extract current billing-period projection/cycle invariants | Complete | - |
+| Task                 | Outcome                                                    | Status   | Depends On  |
+| -------------------- | ---------------------------------------------------------- | -------- | ----------- |
+| ARCH-025-SHOPIFY-001 | Extract current billing-period projection/cycle invariants | Complete | -           |
 | ARCH-025-SHOPIFY-002 | Extract operational BillingPlan resolution/catalogue reads | Complete | SHOPIFY-001 |
-| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Complete | SHOPIFY-002 |
-| ARCH-025-SHOPIFY-004 | Extract merchant recovery-capacity read service | Complete | SHOPIFY-003 |
-| ARCH-025-SHOPIFY-005 | Extract merchant billing-state read service | Complete | SHOPIFY-004 |
-| ARCH-025-SHOPIFY-006 | Extract initial activation workflow | Complete | SHOPIFY-005 |
-| ARCH-025-SHOPIFY-007 | Extract hosted plan-change verification workflow | Complete | SHOPIFY-006 |
-| ARCH-025-SHOPIFY-008 | Extract recovery-credit purchase request workflow | Complete | SHOPIFY-007 |
-| ARCH-025-SHOPIFY-009 | Extract subscription-ended notification workflow | Complete | SHOPIFY-008 |
-| ARCH-025-SHOPIFY-010 | Extract initial Paid activation finalisation | Complete | SHOPIFY-009 |
+| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service                 | Complete | SHOPIFY-002 |
+| ARCH-025-SHOPIFY-004 | Extract merchant recovery-capacity read service            | Complete | SHOPIFY-003 |
+| ARCH-025-SHOPIFY-005 | Extract merchant billing-state read service                | Complete | SHOPIFY-004 |
+| ARCH-025-SHOPIFY-006 | Extract initial activation workflow                        | Complete | SHOPIFY-005 |
+| ARCH-025-SHOPIFY-007 | Extract hosted plan-change verification workflow           | Complete | SHOPIFY-006 |
+| ARCH-025-SHOPIFY-008 | Extract recovery-credit purchase request workflow          | Complete | SHOPIFY-007 |
+| ARCH-025-SHOPIFY-009 | Extract subscription-ended notification workflow           | Complete | SHOPIFY-008 |
+| ARCH-025-SHOPIFY-010 | Extract initial Paid activation finalisation               | Complete | SHOPIFY-009 |
 | ARCH-025-SHOPIFY-011 | Extract remaining subscription synchronization coordinator | Complete | SHOPIFY-010 |
 
 ### Background tranche
 
-| Task | Outcome | Status | Depends On |
-|---|---|---|---|
-| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
-| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Complete | BACKGROUND-001 |
-| ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Complete | BACKGROUND-002 |
-| ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Complete | BACKGROUND-003 |
-| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Complete | BACKGROUND-004 |
-| ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Complete | BACKGROUND-005 |
-| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Complete | BACKGROUND-006 |
-| ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
-| ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Complete | BACKGROUND-008 |
-| ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Complete | BACKGROUND-009 |
-| ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Complete | BACKGROUND-010 |
-| ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Complete | BACKGROUND-011 |
-| ARCH-025-BACKGROUND-013 | Extract order completion correlation | Complete | BACKGROUND-012 |
-| ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Complete | BACKGROUND-013 |
-| ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Complete | BACKGROUND-014 |
+| Task                    | Outcome                                                           | Status   | Depends On     |
+| ----------------------- | ----------------------------------------------------------------- | -------- | -------------- |
+| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification                        | Complete | -              |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction              | Complete | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation                         | Complete | BACKGROUND-002 |
+| ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation                                  | Complete | BACKGROUND-003 |
+| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation           | Complete | BACKGROUND-004 |
+| ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation                    | Complete | BACKGROUND-005 |
+| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow       | Complete | BACKGROUND-006 |
+| ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | -              |
+| ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor         | Complete | BACKGROUND-008 |
+| ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping                       | Complete | BACKGROUND-009 |
+| ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation                         | Complete | BACKGROUND-010 |
+| ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration                         | Complete | BACKGROUND-011 |
+| ARCH-025-BACKGROUND-013 | Extract order completion correlation                              | Complete | BACKGROUND-012 |
+| ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume                          | Complete | BACKGROUND-013 |
+| ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade        | Complete | BACKGROUND-014 |
 
 ### Admin tranche
 
-| Task | Outcome | Status | Depends On |
-|---|---|---|---|
-| ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Complete | - |
-| ARCH-025-ADMIN-002 | Extract Plan step | Complete | ADMIN-001 |
-| ARCH-025-ADMIN-003 | Extract Catalogue placement step | Complete | ADMIN-002 |
-| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Complete | ADMIN-003 |
-| ARCH-025-ADMIN-005 | Extract Usage events step | Complete | ADMIN-004 |
-| ARCH-025-ADMIN-006 | Extract Merchant content step | Complete | ADMIN-005 |
-| ARCH-025-ADMIN-007 | Extract Portfolio economics step | Complete | ADMIN-006 |
-| ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Complete | ADMIN-007 |
-| ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | - |
-| ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Complete | ADMIN-009 |
-| ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook | Complete | ADMIN-010 |
-| ARCH-025-ADMIN-012 | Extract selected-job detail hook | Complete | ADMIN-011 |
-| ARCH-025-ADMIN-013 | Extract resizable drawer hook | Complete | ADMIN-012 |
-| ARCH-025-ADMIN-014 | Extract queue summary table | Complete | ADMIN-013 |
-| ARCH-025-ADMIN-015 | Extract queue details presentation and reduce final QueueMonitor shell | Complete | ADMIN-014 |
+| Task               | Outcome                                                                              | Status   | Depends On |
+| ------------------ | ------------------------------------------------------------------------------------ | -------- | ---------- |
+| ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe          | Complete | -          |
+| ARCH-025-ADMIN-002 | Extract Plan step                                                                    | Complete | ADMIN-001  |
+| ARCH-025-ADMIN-003 | Extract Catalogue placement step                                                     | Complete | ADMIN-002  |
+| ARCH-025-ADMIN-004 | Extract Shopify pricing step                                                         | Complete | ADMIN-003  |
+| ARCH-025-ADMIN-005 | Extract Usage events step                                                            | Complete | ADMIN-004  |
+| ARCH-025-ADMIN-006 | Extract Merchant content step                                                        | Complete | ADMIN-005  |
+| ARCH-025-ADMIN-007 | Extract Portfolio economics step                                                     | Complete | ADMIN-006  |
+| ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell                           | Complete | ADMIN-007  |
+| ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | -          |
+| ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook                                     | Complete | ADMIN-009  |
+| ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook                                   | Complete | ADMIN-010  |
+| ARCH-025-ADMIN-012 | Extract selected-job detail hook                                                     | Complete | ADMIN-011  |
+| ARCH-025-ADMIN-013 | Extract resizable drawer hook                                                        | Complete | ADMIN-012  |
+| ARCH-025-ADMIN-014 | Extract queue summary table                                                          | Complete | ADMIN-013  |
+| ARCH-025-ADMIN-015 | Extract queue details presentation and reduce final QueueMonitor shell               | Complete | ADMIN-014  |
 
 ### Commerce tranche
 
-| Task | Outcome | Status | Depends On |
-|---|---|---|---|
+| Task                  | Outcome                                                                       | Status   | Depends On                       |
+| --------------------- | ----------------------------------------------------------------------------- | -------- | -------------------------------- |
 | ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Complete | ARCH-024-COMMERCE-003 (Complete) |
-| ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Complete | COMMERCE-001 (Complete) |
-| ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Complete | COMMERCE-002 (Complete) |
-| ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Complete | COMMERCE-003 (Complete) |
-| ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Complete | COMMERCE-004 (Complete) |
-| ARCH-025-COMMERCE-006 | Extract persisted Tool authoring controller and source-loader transition | Complete | COMMERCE-005 (Complete) |
-| ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper | Complete | COMMERCE-006 (Complete) |
-| ARCH-025-COMMERCE-008 | Extract persisted External HTTP editor wrapper | Complete | COMMERCE-007 (Complete) |
-| ARCH-025-COMMERCE-009 | Extract persisted Shopify Admin editor wrapper | Complete | COMMERCE-008 (Complete) |
-| ARCH-025-COMMERCE-010 | Extract revision/read-only/generic views and reduce final ToolEditor shell | Complete | COMMERCE-009 (Complete) |
+| ARCH-025-COMMERCE-002 | Extract immutable Release Composer                                            | Complete | COMMERCE-001 (Complete)          |
+| ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view                         | Complete | COMMERCE-002 (Complete)          |
+| ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views                                    | Complete | COMMERCE-003 (Complete)          |
+| ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell    | Complete | COMMERCE-004 (Complete)          |
+| ARCH-025-COMMERCE-006 | Extract persisted Tool authoring controller and source-loader transition      | Complete | COMMERCE-005 (Complete)          |
+| ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper                             | Complete | COMMERCE-006 (Complete)          |
+| ARCH-025-COMMERCE-008 | Extract persisted External HTTP editor wrapper                                | Complete | COMMERCE-007 (Complete)          |
+| ARCH-025-COMMERCE-009 | Extract persisted Shopify Admin editor wrapper                                | Complete | COMMERCE-008 (Complete)          |
+| ARCH-025-COMMERCE-010 | Extract revision/read-only/generic views and reduce final ToolEditor shell    | Complete | COMMERCE-009 (Complete)          |
 
 Execution graph:
 

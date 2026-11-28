@@ -220,14 +220,14 @@ introduced.
 
 - Focused U14 Vitest run: 20/20 passed.
 - `npm run lint`: 0 errors; two warnings are pre-existing and outside the
-   touched files.
+  touched files.
 - `npm run build`: passed production packaging, compilation, generation and
-   optimization checks.
+  optimization checks.
 - `git diff --check`: passed.
 - `npm run typecheck`: 179 pre-existing errors in four unrelated backend files;
-   no diagnostics were reported for the touched U14 files.
+  no diagnostics were reported for the touched U14 files.
 - Remote implementation ref `origin/task/ARCH-020-COMMERCE-034` resolves to
-   `57bd7d6`; the commit changes only the two scoped files.
+  `57bd7d6`; the commit changes only the two scoped files.
 
 ### Architecture Conformance
 

@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-SHARED-003
+  - ARCH-052-SHARED-003
 enables:
-- ARCH-052-BACKGROUND-008
-created: '2026-10-29'
+  - ARCH-052-BACKGROUND-008
+created: "2026-10-29"
 updated: 2026-10-30
 ---
 
@@ -124,23 +124,23 @@ Implementation complete; resubmitted for architect review at Attempt 2.
 
 ### Files Changed
 
- - `src/services/recovery-template-preparation/recovery-template-items-summary.ts` — new bounded, deterministic locale-aware formatter for saved Shopify/WooCommerce line items. It rejects malformed titles, controls, Unicode format characters and Meta placeholders, formats quantities and variants, limits visible rows, and caps output at 400 characters.
- - `src/services/recovery-template-preparation/recovery-template-brand.ts` and `recovery-template.types.ts` — bind Shared `checkout.itemsSummary` only for matching shop-scoped line items; resolve `shop.name` from the shop's configured `ShopBrand.brandName` first and retain the verified shop domain as safe fallback. Existing translated `shop.categoryName` continues to fail closed when unavailable.
- - `src/services/recovery-template-integration/automated-recovery-template.service.ts` — read persisted `lineItems` and pass them through the scoped preparation input. Unexpected exceptions remain logged with the Shared logger's bounded Error serialization; raw exception messages are not copied into log fields.
- - Unit and PostgreSQL integration tests cover Shopify and WooCommerce item shapes, quantities/variants, locale, invalid/missing titles, bounded truncation, tenant mismatch, configured-name preference and domain fallback, frozen binding digest compatibility, and persisted tenant-scoped preparation.
+- `src/services/recovery-template-preparation/recovery-template-items-summary.ts` — new bounded, deterministic locale-aware formatter for saved Shopify/WooCommerce line items. It rejects malformed titles, controls, Unicode format characters and Meta placeholders, formats quantities and variants, limits visible rows, and caps output at 400 characters.
+- `src/services/recovery-template-preparation/recovery-template-brand.ts` and `recovery-template.types.ts` — bind Shared `checkout.itemsSummary` only for matching shop-scoped line items; resolve `shop.name` from the shop's configured `ShopBrand.brandName` first and retain the verified shop domain as safe fallback. Existing translated `shop.categoryName` continues to fail closed when unavailable.
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts` — read persisted `lineItems` and pass them through the scoped preparation input. Unexpected exceptions remain logged with the Shared logger's bounded Error serialization; raw exception messages are not copied into log fields.
+- Unit and PostgreSQL integration tests cover Shopify and WooCommerce item shapes, quantities/variants, locale, invalid/missing titles, bounded truncation, tenant mismatch, configured-name preference and domain fallback, frozen binding digest compatibility, and persisted tenant-scoped preparation.
 
 ### Work Completed
 
- - The Shared semantic key was already present in Background's installed `@modainteract/moda-interact-shared` version `2.7.2`; Background now accepts and resolves it without duplicating a Shared contract.
- - Category values continue to come from the existing tenant-scoped, language-translated category reader. Missing category or translation produces the existing typed unavailable result, never invented text.
- - No provider calls, cart mutations, database schema changes, or dependent-task implementation were added.
+- The Shared semantic key was already present in Background's installed `@modainteract/moda-interact-shared` version `2.7.2`; Background now accepts and resolves it without duplicating a Shared contract.
+- Category values continue to come from the existing tenant-scoped, language-translated category reader. Missing category or translation produces the existing typed unavailable result, never invented text.
+- No provider calls, cart mutations, database schema changes, or dependent-task implementation were added.
 
 ### Validation Results
 
- - Focused unit run: **3 files passed, 30 tests passed** (`recovery-template-items-summary`, `recovery-template-preparer`, and `automated-recovery-template.service`). This includes the existing frozen-binding fingerprint compatibility coverage.
- - Disposable PostgreSQL integration: **1 file passed, 1 test passed** using `node scripts/test-integration.mjs tests/integration/arch047-recovery-template-preparation.integration.test.ts`. It exercised persisted basket binding and rejection of cross-tenant checkout facts.
- - `npm run build`: passed, including Prisma Client generation and TypeScript compilation.
- - `git diff --check`: passed.
+- Focused unit run: **3 files passed, 30 tests passed** (`recovery-template-items-summary`, `recovery-template-preparer`, and `automated-recovery-template.service`). This includes the existing frozen-binding fingerprint compatibility coverage.
+- Disposable PostgreSQL integration: **1 file passed, 1 test passed** using `node scripts/test-integration.mjs tests/integration/arch047-recovery-template-preparation.integration.test.ts`. It exercised persisted basket binding and rejection of cross-tenant checkout facts.
+- `npm run build`: passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check`: passed.
 - `npm run lint`: reports one error at untouched `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); no findings were reported in changed files. The task implementation does not modify that baseline file.
 - Attempt 2 focused rerun: **3 files passed, 30 tests passed**; `eslint` passed for the changed formatter and regression test; `git diff --check` passed.
 
@@ -159,7 +159,6 @@ None within the assigned implementation scope. The existing repository-wide lint
 ### Architectural Concerns
 
 None discovered.
-
 
 ## Architect Review
 

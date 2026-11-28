@@ -22,9 +22,7 @@ created: 2026-10-31
 updated: 2026-11-01
 ---
 
-
 # ARCH-054-SHOPIFY-002: Invalidate pending AI inside Shopify take-over/resume action
-
 
 ## Architecture
 
@@ -34,26 +32,21 @@ Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md
 
 Coordinator: `moda_architect`. This task is materialised and executing in its prepared parent and implementation worktrees.
 
-
 ## Objective
 
 Apply the same atomic pending-turn and processing-lease invalidation to authenticated Shopify control changes.
-
 
 ## Context
 
 ARCH-054 adds a **merchant-selectable integer 0–30 minute AI reply delay** to the existing ARCH-040 recovery-conversation processor and handover controls, leaving merchant-authored HUMAN replies without configured delay. See the parent architecture and current snapshot for specific boundaries.
 
-
 ## Scope
 
 Modify `app/services/recoveries/recovery-human-commands.server.ts` only plus existing Shopify control tests. Keep the existing recovery-detail route/UI and `targetMode` / `expectedControlRevision` interface.
 
-
 ## Out of Scope
 
 No unrelated architecture changes, new standalone chat service, per-user timer jobs, invented provider error explanations, or updates to `docs/decisions/**/_index.md`. No implementation outside the assigned repository.
-
 
 ## Requirements
 
@@ -61,33 +54,27 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 - Retain all existing entitlement, restriction, terminal-recovery and stale-control checks. Idempotent/no-op transitions and concurrent conflicting requests cannot erase newly started turns or reuse previous AI revision. Human composer and durable command dispatch do not consult aiResponseDelayMinutes.
 - The worker final provider admission must still fence on the original revision. Do not claim to recall already submitted Meta traffic.
 
-
 ## Work Items
 
 - [x] Extend the existing Shopify control service; add transaction-level race tests and rollback assertions.
 - [x] Verify no replay after HUMAN->AI, no pending AI for HUMAN, no human dispatch delay and no regression to existing controls.
 
-
 ## Interfaces / Contracts
 
 Existing ARCH-040 control DTO and `controlRevision` are unchanged; DATABASE-001 owns newly cleared nullable fields.
-
 
 ## Dependencies
 
 - ARCH-054-DATABASE-001
 
-
 ## Enables
 
 - ARCH-054-BACKGROUND-002
-
 
 ## Acceptance Criteria
 
 - [x] Shopify takeover suppresses a waiting or in-flight AI turn whose dispatch has not passed final admission; Resume AI cannot revive an old queued job.
 - [x] Authenticated merchant human send remains immediate subject to normal guards.
-
 
 ## Validation
 
@@ -98,16 +85,13 @@ Existing ARCH-040 control DTO and `controlRevision` are unchanged; DATABASE-001 
 - [x] Build: `npm run build` passed. It emitted the existing Zod annotation and large-chunk warnings; there were no build errors.
 - [x] `git diff --check` passed.
 
-
 ## Stop Condition
 
 After all required Work Items, Acceptance Criteria and Validation are complete, update Completion Report, set status to `review`, return control to `moda_architect` and **STOP**. Do not implement dependent tasks. Publication tasks do not rerun accepted implementation validation.
 
-
 ## Implementation Notes
 
 Implement only the identified repository-owned changes; preserve original provider/SDK errors in shared structured logs and rethrow failures to the owning retry/admission boundary.
-
 
 ## Completion Report
 
@@ -145,50 +129,49 @@ Ready for Review
 ### Worktree and Git Evidence
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-SHOPIFY-002
-  parent branch: task/ARCH-054-SHOPIFY-002
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-SHOPIFY-002
-  implementation branch: task/ARCH-054-SHOPIFY-002
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no (the exact-lockfile dependency tree was temporarily linked for validation only)
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-SHOPIFY-002
+parent branch: task/ARCH-054-SHOPIFY-002
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-SHOPIFY-002
+implementation branch: task/ARCH-054-SHOPIFY-002
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no (the exact-lockfile dependency tree was temporarily linked for validation only)
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
-  parent branch start SHA: 196bacc54c1b657657b35d54b4e66b207b44cfe8
-  implementation branch start SHA: db845bf5e67d0b1a6c853768f1abeb047402b3bd
-  durable claim commit: ac60a4c0a6711a297d62372dc2724654020ed23f (pushed)
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+parent branch start SHA: 196bacc54c1b657657b35d54b4e66b207b44cfe8
+implementation branch start SHA: db845bf5e67d0b1a6c853768f1abeb047402b3bd
+durable claim commit: ac60a4c0a6711a297d62372dc2724654020ed23f (pushed)
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  database submodule commit: 7c377282aa5819b3008b7d7f3018f44f4161523e
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+database submodule commit: 7c377282aa5819b3008b7d7f3018f44f4161523e
 
 Attempt 2 start-of-attempt synchronization:
-  parent branch start SHA: c35501b33697806e2e3189284b11de51be21518c
-  implementation branch start SHA: 0101f1bfb33e67e42c5d72a55c31022e3696901b
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
-  durable claim commit: d87df8317122ef573c2d4affd749e8eaa25c7fa9 (pushed)
-  database submodule commit: 7c377282aa5819b3008b7d7f3018f44f4161523e
+parent branch start SHA: c35501b33697806e2e3189284b11de51be21518c
+implementation branch start SHA: 0101f1bfb33e67e42c5d72a55c31022e3696901b
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+durable claim commit: d87df8317122ef573c2d4affd749e8eaa25c7fa9 (pushed)
+database submodule commit: 7c377282aa5819b3008b7d7f3018f44f4161523e
 
 Implementation publication:
-  Attempt 1 implementation commit: 0101f1bfb33e67e42c5d72a55c31022e3696901b (pushed to origin/task/ARCH-054-SHOPIFY-002)
-  Attempt 2 integration-test correction: baac1e3 (pushed to origin/task/ARCH-054-SHOPIFY-002)
-  parent task report: committed and pushed on task/ARCH-054-SHOPIFY-002
+Attempt 1 implementation commit: 0101f1bfb33e67e42c5d72a55c31022e3696901b (pushed to origin/task/ARCH-054-SHOPIFY-002)
+Attempt 2 integration-test correction: baac1e3 (pushed to origin/task/ARCH-054-SHOPIFY-002)
+parent task report: committed and pushed on task/ARCH-054-SHOPIFY-002
 
 ### Attempt 2 Completion Report
 
 Status: Ready for Review
 
 Attempt 2 addressed the review's outstanding validation requirement and made only test-fixture corrections exposed by running the real disposable PostgreSQL database. No production implementation changes were required. The integration suite now passes all three required transaction cases. Changed-file lint also passes, and the report records the worktree synchronization evidence for both worktrees.
-
 
 ## Architect Review
 

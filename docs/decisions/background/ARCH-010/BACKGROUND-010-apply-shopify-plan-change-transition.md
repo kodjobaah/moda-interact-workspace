@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-010
 architecture_id: ARCH-010
-title: Apply Shopify-authoritative plan changes without resetting lifetime credit
+title:
+  Apply Shopify-authoritative plan changes without resetting lifetime credit
   history
 task_kind: implementation
 domain: background
@@ -16,14 +17,14 @@ executor: null
 claimed_at: null
 attempt: 6
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-BACKGROUND-003
-- ARCH-010-BACKGROUND-007
-- ARCH-010-SHARED-008
+  - ARCH-010-DATABASE-013
+  - ARCH-010-BACKGROUND-003
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-SHARED-008
 enables:
-- ARCH-010-BACKGROUND-012
-- ARCH-010-SHOPIFY-015
-- ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-BACKGROUND-012
+  - ARCH-010-SHOPIFY-015
+  - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -185,7 +186,7 @@ Actions:
 9. clear pending fields after provider confirms Free current;
 10. schedule next pre-close reconciliation when Free pack billing is enabled;
 11. normal Free admission remains:
-   `promotional credits -> purchased credits -> remaining shop-lifetime Free -> BLOCK NEW RECOVERY ADMISSION`.
+    `promotional credits -> purchased credits -> remaining shop-lifetime Free -> BLOCK NEW RECOVERY ADMISSION`.
 
 ### Free -> Paid when provider Paid becomes current
 
@@ -242,7 +243,7 @@ At minimum prove:
 7. paid->Free closes paid period, creates/reuses exact Free provider BillingPeriod when required, and creates no monthly Free recovery counter;
 8. paid->Free does not reset lifetime Free committed usage;
 9. paid->Free purchased credits survive;
-9a. paid->Free Free provider period snapshot has includedRecoveryCreditsGranted=null;
+   9a. paid->Free Free provider period snapshot has includedRecoveryCreditsGranted=null;
 10. Free->Paid reuses first-paid activation semantics and preserves Free lifetime history;
 11. Free->Paid purchased credits survive;
 12. provider unmapped current handle grants no entitlement;
@@ -276,9 +277,11 @@ STOP and report to `moda_architect` if observed Shopify behaviour makes the `UNE
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-background/src/services/shopify-plan-change-transition.service.ts`
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
@@ -287,6 +290,7 @@ Ready for Review.
 - `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
+
 - Added retryable established-plan-change handling for Partner failures and unresolved provider state, preserving ACTIVE/TRIALING entitlement and publishing one bounded deterministic retry after a successful CAS.
 - Enforced the same-cycle immediate-change guard before pending-boundary scheduling in queued and rotating reconciliation; refused transitions expose no stale pack meter and enter `UNEXPECTED_IMMEDIATE_PLAN_CHANGE` fail-closed state.
 - Allowed only plan-change `SYNC_ERROR` rows to retry and transition; exact paid/pack-enabled cycles and configured meters are required, with `MISSING_BILLING_CYCLE`/`MISSING_USAGE_METER` retries.
@@ -298,6 +302,7 @@ Ready for Review.
 - Suppressed stale pack meters in rotating reconciliation before effective transition and added observable Attempt-3 regressions for atomic pending refresh, retryable failures, transition mutation boundaries, rotating fail-closed behavior, and capacity-resume failure isolation.
 
 ### Acceptance / Validation Evidence
+
 - Focused transition and reconciliation suites: passed, 3 files / 108 tests.
 - `npm run test:integration`: passed, 2 files / 3 tests.
 - `npm run test:unit`: 56 files / 724 tests executed; 54 files / 714 tests passed. Ten failures remain in unchanged recovery-credit purchase and observability-startup baseline tests: 8 recovery-credit purchase tests and 2 observability-startup tests.
@@ -308,6 +313,7 @@ Ready for Review.
 - Static `rg -n "tierRank|prorat"` over the three production files returned no matches, as required.
 
 ### Workflow Evidence
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-010`.
 - Parent branch: `task/ARCH-010-BACKGROUND-010`.
@@ -320,6 +326,7 @@ Ready for Review.
 - No merge to `main` or force-push was performed.
 
 ### Unresolved Issues
+
 - Shopify immediate different-plan current state remains intentionally fail-closed as `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`; normal production occurrence requires a separate architecture decision for mid-cycle entitlement segments.
 - Full-unit baseline failures are outside the allowed Attempt-3 scope: eight recovery-credit purchase tests fail against the prepared generated-client baseline, and two observability-startup tests fail against the prepared shared-runtime/version baseline.
 
@@ -333,7 +340,6 @@ Ready for Review.
 - Architect Review Finding 6: successful Paid transitions schedule post-commit `plan-change` capacity resume, and rejected enqueue is swallowed/logged; rotating capacity tests pass.
 - Architect Review Finding 7: provider-current pending fields, including `pendingPlanId`, are written in one guarded update with no follow-up unguarded update; atomic refresh test passes.
 - Architect Review Finding 8: transitioned results use `billingPeriodId: string | null`; the no-period Free result is explicitly tested.
-
 
 ## Final promotional preservation contract
 
@@ -442,7 +448,7 @@ For a provider-current plan different from the local current plan:
    different plan but refuses the transition must return:
 
 ```ts
-packMeterHandle: null
+packMeterHandle: null;
 ```
 
 It must never return the old plan pack meter or the un-applied target plan pack meter.
@@ -612,7 +618,7 @@ write can restore a stale pending-plan id.
 Resolve `pendingPlan` before the CAS and put:
 
 ```ts
-pendingPlanId: pendingPlan?.active ? pendingPlan.id : null
+pendingPlanId: pendingPlan?.active ? pendingPlan.id : null;
 ```
 
 in the **same** `subscription.updateMany(...)` data object that writes
@@ -995,13 +1001,13 @@ through `BillingReconciliationService`.
 1. Change the transitioned result contract to allow:
 
 ```ts
-billingPeriodId: string | null
+billingPeriodId: string | null;
 ```
 
 2. Return `null` when the resulting Free projection has no BillingPeriod.
 3. Keep a real period id for every transition that creates/reuses a BillingPeriod.
 4. Update callers/tests accordingly. Do not create a fabricated Free BillingPeriod
-solely to avoid returning null.
+   solely to avoid returning null.
 
 ### Required validation for Attempt 3
 
@@ -1070,8 +1076,6 @@ After implementing only this correction contract, running the required validatio
 updating the Completion Report, setting `status: review`, clearing the claim,
 committing/pushing the implementation and parent task branches, STOP and return to
 `moda_architect`.
-
-
 
 ## Architect Review — Attempt 3
 
@@ -1587,28 +1591,28 @@ Ready for Review.
 
 ### Evidence Map
 
-| Requirement | Exact test title(s) | Test file |
-|---|---|---|
-| 1 | `refreshes pending provider state in one guarded update` | `billing-subscription-reconciliation.service.test.ts` |
-| 2 | `clears a withdrawn established pending update atomically` | `billing-subscription-reconciliation.service.test.ts` |
-| 3 | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` |
-| 4 | `keeps established entitlement unresolved when Partner reports no active subscription` | `billing-subscription-reconciliation.service.test.ts` |
-| 5 | `fails closed before the pending boundary when the provider target uses the current cycle` | `billing-subscription-reconciliation.service.test.ts` |
-| 6 | `retries established plan changes from retryable SYNC_ERROR: %s` | `billing-subscription-reconciliation.service.test.ts` |
-| 7 | `fails established queued plan change closed for invalid target prerequisite: %s` | `billing-subscription-reconciliation.service.test.ts` |
-| 8 | `schedules plan-change capacity resume after a successful queued Paid transition` | `billing-subscription-reconciliation.service.test.ts` |
-| 9 | `swallows queued plan-change capacity-resume enqueue failure after transition` | `billing-subscription-reconciliation.service.test.ts` |
-| 10 | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter` | `billing-reconciliation.service.test.ts` |
-| 11 | `fails closed for rotating provider-current target with %s` | `billing-reconciliation.service.test.ts` |
-| 12 | `fails closed for rotating target prerequisite: %s` | `billing-reconciliation.service.test.ts` |
-| 13 | `does not schedule plan-change capacity resume after a successful Free transition`; `schedules plan-change capacity resume after a successful rotating Paid transition` | `billing-reconciliation.service.test.ts` |
-| 14 | `fails closed when the expected effective target transition returns not-applicable` | `billing-reconciliation.service.test.ts` |
-| 15 | `closes an existing outgoing Free period exactly once before Free -> Paid` | `shopify-plan-change-transition.service.test.ts` |
-| 16 | `reuses a matching successor without resetting its included usage` | `shopify-plan-change-transition.service.test.ts` |
-| 17 | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once` | `shopify-plan-change-transition.service.test.ts` |
-| 18 | `creates a Free successor without a monthly counter` | `shopify-plan-change-transition.service.test.ts` |
-| 19 | `preserves lifetime purchased and promotion state for transition direction: %s` | `shopify-plan-change-transition.service.test.ts` |
-| 20 | `does not mutate periods before target prerequisite validation: %s` | `shopify-plan-change-transition.service.test.ts` |
+| Requirement | Exact test title(s)                                                                                                                                                     | Test file                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 1           | `refreshes pending provider state in one guarded update`                                                                                                                | `billing-subscription-reconciliation.service.test.ts` |
+| 2           | `clears a withdrawn established pending update atomically`                                                                                                              | `billing-subscription-reconciliation.service.test.ts` |
+| 3           | `keeps established entitlement on Partner failure and publishes one bounded retry`                                                                                      | `billing-subscription-reconciliation.service.test.ts` |
+| 4           | `keeps established entitlement unresolved when Partner reports no active subscription`                                                                                  | `billing-subscription-reconciliation.service.test.ts` |
+| 5           | `fails closed before the pending boundary when the provider target uses the current cycle`                                                                              | `billing-subscription-reconciliation.service.test.ts` |
+| 6           | `retries established plan changes from retryable SYNC_ERROR: %s`                                                                                                        | `billing-subscription-reconciliation.service.test.ts` |
+| 7           | `fails established queued plan change closed for invalid target prerequisite: %s`                                                                                       | `billing-subscription-reconciliation.service.test.ts` |
+| 8           | `schedules plan-change capacity resume after a successful queued Paid transition`                                                                                       | `billing-subscription-reconciliation.service.test.ts` |
+| 9           | `swallows queued plan-change capacity-resume enqueue failure after transition`                                                                                          | `billing-subscription-reconciliation.service.test.ts` |
+| 10          | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter`                                                                              | `billing-reconciliation.service.test.ts`              |
+| 11          | `fails closed for rotating provider-current target with %s`                                                                                                             | `billing-reconciliation.service.test.ts`              |
+| 12          | `fails closed for rotating target prerequisite: %s`                                                                                                                     | `billing-reconciliation.service.test.ts`              |
+| 13          | `does not schedule plan-change capacity resume after a successful Free transition`; `schedules plan-change capacity resume after a successful rotating Paid transition` | `billing-reconciliation.service.test.ts`              |
+| 14          | `fails closed when the expected effective target transition returns not-applicable`                                                                                     | `billing-reconciliation.service.test.ts`              |
+| 15          | `closes an existing outgoing Free period exactly once before Free -> Paid`                                                                                              | `shopify-plan-change-transition.service.test.ts`      |
+| 16          | `reuses a matching successor without resetting its included usage`                                                                                                      | `shopify-plan-change-transition.service.test.ts`      |
+| 17          | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once`                                                                                                  | `shopify-plan-change-transition.service.test.ts`      |
+| 18          | `creates a Free successor without a monthly counter`                                                                                                                    | `shopify-plan-change-transition.service.test.ts`      |
+| 19          | `preserves lifetime purchased and promotion state for transition direction: %s`                                                                                         | `shopify-plan-change-transition.service.test.ts`      |
+| 20          | `does not mutate periods before target prerequisite validation: %s`                                                                                                     | `shopify-plan-change-transition.service.test.ts`      |
 
 ### Validation
 
@@ -2099,7 +2103,9 @@ Use a fully valid target/provider precondition set so no earlier guard fires.
 Mock transition result:
 
 ```ts
-{ kind: "not-applicable" }
+{
+  kind: "not-applicable";
+}
 ```
 
 Assert:
@@ -2210,8 +2216,8 @@ closes Paid -> Paid with PLAN_CHANGED and grants the new period once
 Assert both:
 
 ```ts
-usageReservation.aggregate
-usageReservation.updateMany
+usageReservation.aggregate;
+usageReservation.updateMany;
 ```
 
 use exactly:
@@ -2555,37 +2561,37 @@ Ready for Review.
 
 ### Correction Mapping
 
-| Architect Review correction | Evidence added |
-|---|---|
-| Withdrawn pending update must publish the exact deterministic replacement payload | `clears a withdrawn established pending update atomically` now asserts the exact `expectedNextReconcileAt` and deterministic `jobId` options. |
-| Capacity-resume enqueue failure must not classify the committed transition as failed | `swallows queued plan-change capacity-resume enqueue failure after transition` now inspects every guarded subscription update and rejects `SYNC_ERROR`, error-code, and bounded-retry writes. |
-| Rotating fail-closed paths must prove transition suppression | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter`, `fails closed for rotating provider-current target with %s`, and `fails closed for rotating target prerequisite: %s` now spy on `ShopifyPlanChangeTransitionService.transition` and assert it is not called. |
-| Evidence map must align with the required 1-20 contract | Replaced below with the corrected requirement map; no production source changes were made. |
+| Architect Review correction                                                          | Evidence added                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Withdrawn pending update must publish the exact deterministic replacement payload    | `clears a withdrawn established pending update atomically` now asserts the exact `expectedNextReconcileAt` and deterministic `jobId` options.                                                                                                                                                            |
+| Capacity-resume enqueue failure must not classify the committed transition as failed | `swallows queued plan-change capacity-resume enqueue failure after transition` now inspects every guarded subscription update and rejects `SYNC_ERROR`, error-code, and bounded-retry writes.                                                                                                            |
+| Rotating fail-closed paths must prove transition suppression                         | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter`, `fails closed for rotating provider-current target with %s`, and `fails closed for rotating target prerequisite: %s` now spy on `ShopifyPlanChangeTransitionService.transition` and assert it is not called. |
+| Evidence map must align with the required 1-20 contract                              | Replaced below with the corrected requirement map; no production source changes were made.                                                                                                                                                                                                               |
 
 ### Evidence Map
 
-| Requirement | Exact test title(s) | Test file |
-|---|---|---|
-| 1 | `refreshes pending provider state in one guarded update` | `billing-subscription-reconciliation.service.test.ts` |
-| 2 | `clears a withdrawn established pending update atomically` | `billing-subscription-reconciliation.service.test.ts` |
-| 3 | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` |
-| 4 | `keeps established entitlement unresolved when Partner reports no active subscription` | `billing-subscription-reconciliation.service.test.ts` |
-| 5 | `retries established plan changes from retryable SYNC_ERROR: %s`; `does not execute an unrelated SYNC_ERROR as an established plan change` | `billing-subscription-reconciliation.service.test.ts` |
-| 6 | `fails established queued plan change closed for invalid target prerequisite: %s` | `billing-subscription-reconciliation.service.test.ts` |
-| 7 | `schedules plan-change capacity resume after a successful queued Paid transition` | `billing-subscription-reconciliation.service.test.ts` |
-| 8 | `swallows queued plan-change capacity-resume enqueue failure after transition` | `billing-subscription-reconciliation.service.test.ts` |
-| 9 | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter` | `billing-reconciliation.service.test.ts` |
-| 10 | `fails closed for rotating provider-current target with %s` | `billing-reconciliation.service.test.ts` |
-| 11 | `fails closed for rotating target prerequisite: %s` | `billing-reconciliation.service.test.ts` |
-| 12 | `does not schedule plan-change capacity resume after a successful Free transition` | `billing-reconciliation.service.test.ts` |
-| 13 | `fails closed when the expected effective target transition returns not-applicable` | `billing-reconciliation.service.test.ts` |
-| 14 | `reuses a matching successor without resetting its included usage` | `shopify-plan-change-transition.service.test.ts` |
-| 15 | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once` | `shopify-plan-change-transition.service.test.ts` |
-| 16 | `creates a Free successor without a monthly counter` | `shopify-plan-change-transition.service.test.ts` |
-| 17 | `preserves lifetime purchased and promotion state for transition direction: %s` | `shopify-plan-change-transition.service.test.ts` |
-| 18 | `does not mutate periods before target prerequisite validation: %s` | `shopify-plan-change-transition.service.test.ts` |
-| 19 | `allows retryable plan-change SYNC_ERROR transition: %s`; `rejects unrelated SYNC_ERROR as not-applicable` | `shopify-plan-change-transition.service.test.ts` |
-| 20 | `supports Free -> Paid without an outgoing Free billing period`; `closes an existing outgoing Free period exactly once before Free -> Paid`; `returns a null billing period for a pack-disabled Free transition without a provider cycle` | `shopify-plan-change-transition.service.test.ts` |
+| Requirement | Exact test title(s)                                                                                                                                                                                                                       | Test file                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 1           | `refreshes pending provider state in one guarded update`                                                                                                                                                                                  | `billing-subscription-reconciliation.service.test.ts` |
+| 2           | `clears a withdrawn established pending update atomically`                                                                                                                                                                                | `billing-subscription-reconciliation.service.test.ts` |
+| 3           | `keeps established entitlement on Partner failure and publishes one bounded retry`                                                                                                                                                        | `billing-subscription-reconciliation.service.test.ts` |
+| 4           | `keeps established entitlement unresolved when Partner reports no active subscription`                                                                                                                                                    | `billing-subscription-reconciliation.service.test.ts` |
+| 5           | `retries established plan changes from retryable SYNC_ERROR: %s`; `does not execute an unrelated SYNC_ERROR as an established plan change`                                                                                                | `billing-subscription-reconciliation.service.test.ts` |
+| 6           | `fails established queued plan change closed for invalid target prerequisite: %s`                                                                                                                                                         | `billing-subscription-reconciliation.service.test.ts` |
+| 7           | `schedules plan-change capacity resume after a successful queued Paid transition`                                                                                                                                                         | `billing-subscription-reconciliation.service.test.ts` |
+| 8           | `swallows queued plan-change capacity-resume enqueue failure after transition`                                                                                                                                                            | `billing-subscription-reconciliation.service.test.ts` |
+| 9           | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter`                                                                                                                                                | `billing-reconciliation.service.test.ts`              |
+| 10          | `fails closed for rotating provider-current target with %s`                                                                                                                                                                               | `billing-reconciliation.service.test.ts`              |
+| 11          | `fails closed for rotating target prerequisite: %s`                                                                                                                                                                                       | `billing-reconciliation.service.test.ts`              |
+| 12          | `does not schedule plan-change capacity resume after a successful Free transition`                                                                                                                                                        | `billing-reconciliation.service.test.ts`              |
+| 13          | `fails closed when the expected effective target transition returns not-applicable`                                                                                                                                                       | `billing-reconciliation.service.test.ts`              |
+| 14          | `reuses a matching successor without resetting its included usage`                                                                                                                                                                        | `shopify-plan-change-transition.service.test.ts`      |
+| 15          | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once`                                                                                                                                                                    | `shopify-plan-change-transition.service.test.ts`      |
+| 16          | `creates a Free successor without a monthly counter`                                                                                                                                                                                      | `shopify-plan-change-transition.service.test.ts`      |
+| 17          | `preserves lifetime purchased and promotion state for transition direction: %s`                                                                                                                                                           | `shopify-plan-change-transition.service.test.ts`      |
+| 18          | `does not mutate periods before target prerequisite validation: %s`                                                                                                                                                                       | `shopify-plan-change-transition.service.test.ts`      |
+| 19          | `allows retryable plan-change SYNC_ERROR transition: %s`; `rejects unrelated SYNC_ERROR as not-applicable`                                                                                                                                | `shopify-plan-change-transition.service.test.ts`      |
+| 20          | `supports Free -> Paid without an outgoing Free billing period`; `closes an existing outgoing Free period exactly once before Free -> Paid`; `returns a null billing period for a pack-disabled Free transition without a provider cycle` | `shopify-plan-change-transition.service.test.ts`      |
 
 ### Validation
 
@@ -2735,9 +2741,10 @@ A deterministic form is:
 
 ```ts
 expect(
-  test.database.subscription.updateMany.mock.calls.some(([call]: any[]) =>
-    call.data?.status === "SYNC_ERROR"
-    || call.data?.lastSyncErrorCode != null
+  test.database.subscription.updateMany.mock.calls.some(
+    ([call]: any[]) =>
+      call.data?.status === "SYNC_ERROR" ||
+      call.data?.lastSyncErrorCode != null,
   ),
 ).toBe(false);
 ```
@@ -2809,28 +2816,28 @@ the three preserved Free transition cases
 Replace the `### Evidence Map` table with the following exact requirement mapping.
 Use the exact final test titles present after Attempt 6:
 
-| Requirement | Exact test title(s) | Test file |
-|---|---|---|
-| 1 | `refreshes pending provider state in one guarded update` | `billing-subscription-reconciliation.service.test.ts` |
-| 2 | `clears a withdrawn established pending update atomically` | `billing-subscription-reconciliation.service.test.ts` |
-| 3 | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` |
-| 4 | `keeps established entitlement unresolved when Partner reports no active subscription` | `billing-subscription-reconciliation.service.test.ts` |
-| 5 | `retries established plan changes from retryable SYNC_ERROR: %s`; `does not execute an unrelated SYNC_ERROR as an established plan change` | `billing-subscription-reconciliation.service.test.ts` |
-| 6 | `fails established queued plan change closed for invalid target prerequisite: %s` | `billing-subscription-reconciliation.service.test.ts` |
-| 7 | `schedules plan-change capacity resume after a successful queued Paid transition` | `billing-subscription-reconciliation.service.test.ts` |
-| 8 | `swallows queued plan-change capacity-resume enqueue failure after transition` | `billing-subscription-reconciliation.service.test.ts` |
-| 9 | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter` | `billing-reconciliation.service.test.ts` |
-| 10 | `fails closed for rotating provider-current target with %s` | `billing-reconciliation.service.test.ts` |
-| 11 | `fails closed for rotating target prerequisite: %s` | `billing-reconciliation.service.test.ts` |
-| 12 | `does not schedule plan-change capacity resume after a successful Free transition` | `billing-reconciliation.service.test.ts` |
-| 13 | `fails closed when the expected effective target transition returns not-applicable` | `billing-reconciliation.service.test.ts` |
-| 14 | `reuses a matching successor without resetting its included usage` | `shopify-plan-change-transition.service.test.ts` |
-| 15 | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once` | `shopify-plan-change-transition.service.test.ts` |
-| 16 | `creates a Free successor without a monthly counter` | `shopify-plan-change-transition.service.test.ts` |
-| 17 | `preserves lifetime purchased and promotion state for transition direction: %s` | `shopify-plan-change-transition.service.test.ts` |
-| 18 | `does not mutate periods before target prerequisite validation: %s` | `shopify-plan-change-transition.service.test.ts` |
-| 19 | `allows retryable plan-change SYNC_ERROR transition: %s`; `rejects unrelated SYNC_ERROR as not-applicable` | `shopify-plan-change-transition.service.test.ts` |
-| 20 | `supports Free -> Paid without an outgoing Free billing period`; `closes an existing outgoing Free period exactly once before Free -> Paid`; `returns a null billing period for a pack-disabled Free transition without a provider cycle` | `shopify-plan-change-transition.service.test.ts` |
+| Requirement | Exact test title(s)                                                                                                                                                                                                                       | Test file                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 1           | `refreshes pending provider state in one guarded update`                                                                                                                                                                                  | `billing-subscription-reconciliation.service.test.ts` |
+| 2           | `clears a withdrawn established pending update atomically`                                                                                                                                                                                | `billing-subscription-reconciliation.service.test.ts` |
+| 3           | `keeps established entitlement on Partner failure and publishes one bounded retry`                                                                                                                                                        | `billing-subscription-reconciliation.service.test.ts` |
+| 4           | `keeps established entitlement unresolved when Partner reports no active subscription`                                                                                                                                                    | `billing-subscription-reconciliation.service.test.ts` |
+| 5           | `retries established plan changes from retryable SYNC_ERROR: %s`; `does not execute an unrelated SYNC_ERROR as an established plan change`                                                                                                | `billing-subscription-reconciliation.service.test.ts` |
+| 6           | `fails established queued plan change closed for invalid target prerequisite: %s`                                                                                                                                                         | `billing-subscription-reconciliation.service.test.ts` |
+| 7           | `schedules plan-change capacity resume after a successful queued Paid transition`                                                                                                                                                         | `billing-subscription-reconciliation.service.test.ts` |
+| 8           | `swallows queued plan-change capacity-resume enqueue failure after transition`                                                                                                                                                            | `billing-subscription-reconciliation.service.test.ts` |
+| 9           | `fails closed for a mapped unexpected provider-current plan without exposing a pack meter`                                                                                                                                                | `billing-reconciliation.service.test.ts`              |
+| 10          | `fails closed for rotating provider-current target with %s`                                                                                                                                                                               | `billing-reconciliation.service.test.ts`              |
+| 11          | `fails closed for rotating target prerequisite: %s`                                                                                                                                                                                       | `billing-reconciliation.service.test.ts`              |
+| 12          | `does not schedule plan-change capacity resume after a successful Free transition`                                                                                                                                                        | `billing-reconciliation.service.test.ts`              |
+| 13          | `fails closed when the expected effective target transition returns not-applicable`                                                                                                                                                       | `billing-reconciliation.service.test.ts`              |
+| 14          | `reuses a matching successor without resetting its included usage`                                                                                                                                                                        | `shopify-plan-change-transition.service.test.ts`      |
+| 15          | `closes Paid -> Paid with PLAN_CHANGED and grants the new period once`                                                                                                                                                                    | `shopify-plan-change-transition.service.test.ts`      |
+| 16          | `creates a Free successor without a monthly counter`                                                                                                                                                                                      | `shopify-plan-change-transition.service.test.ts`      |
+| 17          | `preserves lifetime purchased and promotion state for transition direction: %s`                                                                                                                                                           | `shopify-plan-change-transition.service.test.ts`      |
+| 18          | `does not mutate periods before target prerequisite validation: %s`                                                                                                                                                                       | `shopify-plan-change-transition.service.test.ts`      |
+| 19          | `allows retryable plan-change SYNC_ERROR transition: %s`; `rejects unrelated SYNC_ERROR as not-applicable`                                                                                                                                | `shopify-plan-change-transition.service.test.ts`      |
+| 20          | `supports Free -> Paid without an outgoing Free billing period`; `closes an existing outgoing Free period exactly once before Free -> Paid`; `returns a null billing period for a pack-disabled Free transition without a provider cycle` | `shopify-plan-change-transition.service.test.ts`      |
 
 Do not add unrelated tests to the table merely to make each row look larger.
 
@@ -3074,4 +3081,3 @@ Dependency reconciliation:
 - `ARCH-010-SYSTEM-TEST-001` remains Pending/manual-gated because several other
   declared dependencies are still incomplete.
 - No other task is promoted solely by this acceptance.
-

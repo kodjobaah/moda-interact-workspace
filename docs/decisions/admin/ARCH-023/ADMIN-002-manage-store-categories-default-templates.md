@@ -404,13 +404,13 @@ UPDATE_PROMPT_TEMPLATE_CATEGORY
 with audit metadata:
 
 ```json
-{"changeKind":"DEFAULT_TEMPLATE"}
+{ "changeKind": "DEFAULT_TEMPLATE" }
 ```
 
 or:
 
 ```json
-{"changeKind":"TAXONOMY_MAPPING"}
+{ "changeKind": "TAXONOMY_MAPPING" }
 ```
 
 Set relevant `promptTemplateCategoryId` / `promptTemplateId`.
@@ -542,12 +542,19 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
+
 Implemented and returned for Architect Review (Attempt 2).
+
 ### Files Changed
+
 Added the protected Store Category catalogue route, mutation actions, validation/read models, category/template/taxonomy editors, navigation integration, and focused unit/security coverage. In the parent worktree, only this report changed; no database schema, migration, or gitlink changes were made.
+
 ### Work Completed
+
 Implemented the authoritative Admin catalogue for categories, current default templates, and Shopify taxonomy mappings. Every mutation independently authenticates and requires `SUPER_ADMIN`, validates its contract, provisions the durable development admin within its transaction, uses the required transaction/CAS/locking rules, writes exact audit metadata, and revalidates the route. Category slug is create-only and immutable. The required Shopify localization-key warning is shown for enabled and disabled categories; Admin does not inspect locale files or persist translation state.
+
 ### Validation Results
+
 - TypeScript: `npx tsc --noEmit --pretty false` passed.
 - Focused unit/action/validation tests: 23 passed.
 - Focused Admin catalogue/security/navigation regressions: 8 passed.
@@ -557,13 +564,21 @@ Implemented the authoritative Admin catalogue for categories, current default te
 - Broad unit suite: 157 passed, 2 unrelated existing merchant-pricing translation tests failed (`merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`).
 - Broad lint: 3 unrelated existing errors remain in billing/promotions files; 6 warnings were also reported.
 - Broad security suite: 9 unrelated existing failure markers, including Tenant Directory KPI, purchase-status, ICU, catalogue, ARCH-014, economics, shared-release, and auth assertions. Focused catalogue/security/navigation tests passed.
+
 ### Deviations
+
 None. Attempt 2 follows the architect-corrected immutable-slug contract. The required localization notice was made unconditional during final contract review.
+
 ### Assumptions
+
 The existing initialized database submodule at `2eb17ee910491e8f9df82736fc0a843844415947` is authoritative and remains unchanged.
+
 ### Unresolved Issues
+
 No ADMIN-002 implementation blockers. The unrelated broad-suite baseline failures listed above remain outside this task's scope.
+
 ### Architectural Concerns
+
 None identified. Returned to `moda_architect` as required; ADMIN-003 was not started.
 
 ### Attempt 2 Launcher Preparation Evidence

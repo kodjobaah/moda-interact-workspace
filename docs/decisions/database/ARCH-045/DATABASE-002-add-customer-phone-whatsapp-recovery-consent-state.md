@@ -29,6 +29,7 @@ enables:
 created: 2026-10-21
 updated: 2026-10-22
 ---
+
 # Add shared customer-phone consent and WhatsApp consent evidence
 
 ## Architecture
@@ -45,7 +46,7 @@ Implement the smallest shared WhatsApp checkout-recovery consent schema for Shop
 
 ## Context
 
-This task consolidates the consent portions of superseded `ARCH-046-DATABASE-001`. The earlier Attempt 1 schema/migration introduced separate `WooCheckoutCustomerIdentity`, `CustomerPrivacyErasureFence`, external-provider/installation settings, new `Customer` principal fields, and changes to `WhatsAppRecipientReachability`. Those are **not** part of the agreed consent scope. Erasure and broader privacy export/redaction belong to a separate future architecture; they are not requirements of this task. Existing WhatsApp reachability remains a delivery concern with its existing schema. Shopify continues to check Shopify's native WhatsApp marketing consent; Woo uses only Moda's optional checkout checkbox and documented, authorised manual merchant *suppression* (not merchant-created consent).
+This task consolidates the consent portions of superseded `ARCH-046-DATABASE-001`. The earlier Attempt 1 schema/migration introduced separate `WooCheckoutCustomerIdentity`, `CustomerPrivacyErasureFence`, external-provider/installation settings, new `Customer` principal fields, and changes to `WhatsAppRecipientReachability`. Those are **not** part of the agreed consent scope. Erasure and broader privacy export/redaction belong to a separate future architecture; they are not requirements of this task. Existing WhatsApp reachability remains a delivery concern with its existing schema. Shopify continues to check Shopify's native WhatsApp marketing consent; Woo uses only Moda's optional checkout checkbox and documented, authorised manual merchant _suppression_ (not merchant-created consent).
 
 ## Scope
 
@@ -215,15 +216,18 @@ The database enforces source/platform consistency, an active Woo installation, m
 ## Architect Review
 
 ### Review Status
+
 Passed/Accepted — developer Attempt 1 reviewed and reconciled before explicit completion.
 
 ### Review Notes
+
 - The implementation branch is clean at `e0ab833` and synchronized with `origin/task/ARCH-045-DATABASE-002` (`0 0` parity); `git diff --check` passes.
 - `npm run validate`, `npm run test:arch045-consent-schema`, and `npm run lint` pass.
 - Disposable PostgreSQL fresh and upgrade suites pass. Their logged SQL `ERROR:` lines are expected negative assertions; the suites report passing checks for schema boundaries, default deny, tenant isolation, atomic grant/revoke/regrant, immutable evidence, replay conflict detection, STOP precedence, installation lifecycle, concurrent revision ordering, and recipient rotation.
 - The canonical launcher resolves the required parent and implementation worktrees, and the parent task branch is synchronized. No merge to `main` is required or performed.
 
 ### Reviewed Files
+
 - `package.json`
 - `prisma/schema.prisma`
 - `prisma/migrations/20261021170000_arch045_shared_woo_consent_privacy/migration.sql`
@@ -232,6 +236,7 @@ Passed/Accepted — developer Attempt 1 reviewed and reconciled before explicit 
 - `docs/ARCH-045-046-consent-database-contract.md`
 
 ### Validation Reviewed
+
 - `npm run validate` — PASS
 - `npm run test:arch045-consent-schema` — PASS
 - `npm run test:arch045-consent:postgres:fresh` — PASS
@@ -240,9 +245,11 @@ Passed/Accepted — developer Attempt 1 reviewed and reconciled before explicit 
 - `git diff --check` — PASS
 
 ### Architecture Conformance
+
 Accepted for the stated ARCH-045 consent foundation: one new `commerce.WhatsAppConsentEvidence` table, consent fields only on existing `commerce.CustomerPhone`, default-deny and tenant-safe ordering enforced, and excluded identity/privacy/reachability structures absent.
 
 ### Follow-up
+
 Downstream dependency-frontier reconciliation follows the explicit completion decision below.
 
 ### Developer Completion Decision (Attempt 1)

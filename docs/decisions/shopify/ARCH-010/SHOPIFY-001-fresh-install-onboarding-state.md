@@ -636,4 +636,3 @@ Dependency reconciliation:
 depends on `ARCH-010-DATABASE-004`, which is not Complete in the submitted
 canonical task graph. Its other already-completed dependencies do not remove that
 remaining gate.
-

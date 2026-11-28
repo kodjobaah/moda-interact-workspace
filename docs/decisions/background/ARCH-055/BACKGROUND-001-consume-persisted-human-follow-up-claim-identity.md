@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-055-DATABASE-001
+  - ARCH-055-DATABASE-001
 enables:
-- ARCH-055-SHOPIFY-001
-- ARCH-055-API-004
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-SHOPIFY-001
+  - ARCH-055-API-004
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -65,9 +65,9 @@ Additional explicit registration/module paths for this revision:
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/services/recovery-conversation/merchant-send-command.service.ts` | ADD followUpClaimKey to command persistence projection/type; carry it unchanged to dispatch/cancel/fence/repair. Do not derive key from a request or command.id for historical records. |
+| File / symbol touchpoint                                                                                                                                                                                                | Deterministic edit                                                                                                                                                                                                                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/services/recovery-conversation/merchant-send-command.service.ts`                                                                                                                                                   | ADD followUpClaimKey to command persistence projection/type; carry it unchanged to dispatch/cancel/fence/repair. Do not derive key from a request or command.id for historical records.                                                                                                                                                 |
 | `src/services/recovery-conversation/human-command-dispatcher.service.ts; src/services/recovery-conversation/outbound-send-fence.service.ts; src/services/recovery-conversation/follow-up-claim-cancellation.service.ts` | REPLACE human attempt.initiationKey versus command.idempotencyKey ownership comparisons with stored followUpClaimKey; missing/blank template field is explicit fail-closed internal error before provider or release. HUMAN_TEXT does not require key. Every release CAS retains expected attempt/key/current owner/outcome predicates. |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
@@ -149,11 +149,11 @@ The public API remains unchanged except documentation corrections explicitly aut
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| J01 | New Woo and Shopify key=command ID; legacy backfilled key differs | Both dispatch/cancel with their persisted key; never recompute legacy key. |
-| J02 | Cancelled owner and reclaimed same attempt; old worker resumes | Old command cannot release or dispatch later owner. |
-| J03 | Null/blank template key, UNKNOWN/provider-admitted/SENT command | Missing key blocks safely; no unsafe release/resend/double credit; preserve prepared-body moderation. |
+| Case | Fixture / operation                                               | Required result                                                                                       |
+| ---- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| J01  | New Woo and Shopify key=command ID; legacy backfilled key differs | Both dispatch/cancel with their persisted key; never recompute legacy key.                            |
+| J02  | Cancelled owner and reclaimed same attempt; old worker resumes    | Old command cannot release or dispatch later owner.                                                   |
+| J03  | Null/blank template key, UNKNOWN/provider-admitted/SENT command   | Missing key blocks safely; no unsafe release/resend/double credit; preserve prepared-body moderation. |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 

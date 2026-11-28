@@ -31,12 +31,12 @@ Accepted Background b7cca48, Database 2e14f866 and published Shared 6.1.0 are th
 
 Five tables in schema `whatsapp` retain explicit customer/sender and shop generations. This restores the original five-entity model while retaining the R15 decision evidence, configured policy and independent allowance stream. Historical executable SQL is not copied blindly: the reviewed field contract below includes new evidence fields and must drive fresh migration authoring after approval.
 
-| Table | Exact proposed columns |
-| --- | --- |
-| WhatsAppPoolSender | providerPhoneNumberId VARCHAR(64) PK; providerAccountId VARCHAR(64) NOT NULL; priority INTEGER NOT NULL DEFAULT 0; allocationEnabled BOOLEAN NOT NULL DEFAULT false; verifiedAt TIMESTAMPTZ(3) NOT NULL; createdAt/updatedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now() |
-| RecoverySenderThread | id TEXT PK (client cuid); canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL |
-| RecoverySenderRoute | id TEXT PK (client cuid); shopId TEXT NOT NULL; threadId TEXT NOT NULL; canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL |
-| RecoverySenderAssignment | conversationId TEXT PK; routeId TEXT NOT NULL; assignedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); releasedAt TIMESTAMPTZ(3) NULL |
+| Table                     | Exact proposed columns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WhatsAppPoolSender        | providerPhoneNumberId VARCHAR(64) PK; providerAccountId VARCHAR(64) NOT NULL; priority INTEGER NOT NULL DEFAULT 0; allocationEnabled BOOLEAN NOT NULL DEFAULT false; verifiedAt TIMESTAMPTZ(3) NOT NULL; createdAt/updatedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| RecoverySenderThread      | id TEXT PK (client cuid); canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| RecoverySenderRoute       | id TEXT PK (client cuid); shopId TEXT NOT NULL; threadId TEXT NOT NULL; canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| RecoverySenderAssignment  | conversationId TEXT PK; routeId TEXT NOT NULL; assignedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); releasedAt TIMESTAMPTZ(3) NULL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | RecoveryBasketRoutingTurn | inboundProviderMessageId TEXT PK; threadId TEXT NOT NULL; routeId TEXT NULL; promptScopeRouteId TEXT NULL; occurredAt/createdAt TIMESTAMPTZ(3) NOT NULL (createdAt DEFAULT now()); inputJson/candidatesJson/moderationJson JSONB NULL; configurationSnapshot/routingDecision JSONB NULL; parentProviderMessageId TEXT NULL; resolutionInboundProviderMessageId TEXT NULL; state VARCHAR(24) NOT NULL DEFAULT 'RECEIVED'; selectedConversationId TEXT NULL; promptText TEXT NULL; promptAdmittedAt/promptSentAt TIMESTAMPTZ(3) NULL; promptProviderMessageId TEXT NULL; expiresAt TIMESTAMPTZ(3) NOT NULL; resolvedAt TIMESTAMPTZ(3) NULL; workToken TEXT NULL; workLeaseUntil/nextRepairAt TIMESTAMPTZ(3) NULL; repairAttempt INTEGER NOT NULL DEFAULT 0; updatedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now() |
 
 A WhatsApp physical chat thread (RecoverySenderThread) is NOT a new checkout Conversation. Thread is one immutable recipient/sender generation; route is one immutable shop ownership generation on that thread; assignment links each existing recovery Conversation to its route. A routing request always has exact threadId; unknown-shop request has routeId NULL. Once shop is verified, routeId may bind once to a route on that same thread. promptScopeRouteId freezes the prompt's actual scope at admission: NULL for a neutral prompt, even when the original later binds to a shop. Neither field is inferred later from the selected Conversation.
@@ -77,13 +77,13 @@ Snapshot configuration version, model entry editVersion, published prompt ID/has
 
 A new inbound message is not automatically the answer to an older clarification. Persist a structured role decision before admitting input to a merchant Conversation. The four application-owned roles are `SELECT_ONLY`, `NEW_QUESTION`, `SELECT_AND_QUESTION`, and `CLARIFY`.
 
-| Customer input while “Can it arrive Friday?” is pending | Required result |
-| --- | --- |
-| “running shoes”, linked to exactly one confirmed prompt and one offered basket | SELECT_ONLY: resume the original Friday question for that basket; do not replace it with the selection text. |
-| “Do the shoes come in black?” | NEW_QUESTION: process this independent product question if its own owner can be proven; leave the Friday question pending. A product mention alone is not consent to resolve an older question. |
+| Customer input while “Can it arrive Friday?” is pending                                                 | Required result                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| “running shoes”, linked to exactly one confirmed prompt and one offered basket                          | SELECT_ONLY: resume the original Friday question for that basket; do not replace it with the selection text.                                                                                                       |
+| “Do the shoes come in black?”                                                                           | NEW_QUESTION: process this independent product question if its own owner can be proven; leave the Friday question pending. A product mention alone is not consent to resolve an older question.                    |
 | “2. Can I collect on Saturday?”, linked to a verified prompt whose option 2 identifies that same basket | SELECT_AND_QUESTION: preserve the original Friday question and the exact new collection question for the selected basket. Moderate the new clause independently before admission; do not paraphrase or discard it. |
-| Bare “2” while several independent prompts are pending | CLARIFY: identify which prompt/request is being answered; do not choose newest or closest. |
-| Numeric text in an ordinary already-attributed conversation, without a matching pending prompt | Normal authentic customer input, not an invented selection control. |
+| Bare “2” while several independent prompts are pending                                                  | CLARIFY: identify which prompt/request is being answered; do not choose newest or closest.                                                                                                                         |
+| Numeric text in an ordinary already-attributed conversation, without a matching pending prompt          | Normal authentic customer input, not an invented selection control.                                                                                                                                                |
 
 A verified reference is a quote of the exact confirmed clarification provider ID, an explicit request token, or exactly one eligible outstanding confirmed prompt whose offered option uniquely matches. Prompt admission without a confirmed receipt is not enough. Multiple matches, missing evidence, conflicting shop/basket facts or confidence below saved policy produce CLARIFY. Semantic role classification uses the configured routing prompt/model/threshold; code validates evidence and offered identities. No hardcoded 80% rule, keyword-only heuristic, history recency or allowance/credit tie-breaker.
 
@@ -101,18 +101,18 @@ The user selected five routing tables for understandable, directly inspectable t
 
 New table `billing.ConversationAllowanceBlock`, deliberately reusing existing financial/provider evidence:
 
-| Fields | PostgreSQL type / nullability |
-| --- | --- |
-| id | TEXT PK, client cuid |
-| shopId, conversationId | TEXT NOT NULL |
-| ordinal | INTEGER NOT NULL, nonnegative |
-| fundingKind | VARCHAR(16) NOT NULL: INITIAL, FOLLOW_UP, CONTINUATION |
-| state | VARCHAR(16) NOT NULL: PENDING, ACTIVE, EXHAUSTED, CLOSED, CANCELLED |
-| predecessorId, creditReservationId | TEXT NULL |
-| hardMessageLimit, terminalReservedSlots | INTEGER NOT NULL; derive normal limit as hard minus reserve |
-| repairAt, repairLeaseUntil, repairDeadlineAt | TIMESTAMPTZ(3) NULL |
-| repairLeaseToken | TEXT NULL |
-| createdAt, updatedAt | TIMESTAMPTZ(3) NOT NULL DEFAULT now() |
+| Fields                                       | PostgreSQL type / nullability                                       |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| id                                           | TEXT PK, client cuid                                                |
+| shopId, conversationId                       | TEXT NOT NULL                                                       |
+| ordinal                                      | INTEGER NOT NULL, nonnegative                                       |
+| fundingKind                                  | VARCHAR(16) NOT NULL: INITIAL, FOLLOW_UP, CONTINUATION              |
+| state                                        | VARCHAR(16) NOT NULL: PENDING, ACTIVE, EXHAUSTED, CLOSED, CANCELLED |
+| predecessorId, creditReservationId           | TEXT NULL                                                           |
+| hardMessageLimit, terminalReservedSlots      | INTEGER NOT NULL; derive normal limit as hard minus reserve         |
+| repairAt, repairLeaseUntil, repairDeadlineAt | TIMESTAMPTZ(3) NULL                                                 |
+| repairLeaseToken                             | TEXT NULL                                                           |
+| createdAt, updatedAt                         | TIMESTAMPTZ(3) NOT NULL DEFAULT now()                               |
 
 Add `ConversationMessage.allowanceBlockId TEXT NULL`. No duplicated financial/dispatch state: reservation status/source key come from exact UsageReservation, admitted/unknown/confirmed provider results from pinned messages and existing delivery parts. No opening-message FK, logical-source column, message counters or extra timestamps duplicating those records. A deterministic continuation admission source derives from immutable block ID; preserve the exact resulting reservation link, including period-qualified source keys.
 
@@ -136,20 +136,20 @@ Use existing Shared logging and framework telemetry. Emit bounded domain decisio
 
 ## Tasks
 
-| Task | Owner | State | Direct dependencies |
-| --- | --- | --- | --- |
-| ARCH-076-DATABASE-001 | moda_database | Ready — explicit bounded reopen | None |
-| ARCH-076-ADMIN-001 | moda_admin | Complete | DATABASE-001 |
-| ARCH-076-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
-| ARCH-076-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001 |
-| ARCH-076-BACKGROUND-003 | moda_background | Complete | BACKGROUND-002 |
-| ARCH-076-ADMIN-002 | moda_admin | Complete | None |
-| ARCH-076-ADMIN-003 | moda_admin | Complete | None |
-| ARCH-076-BACKGROUND-004 | moda_background | Ready | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001 |
-| ARCH-076-DATABASE-002 | moda_database | Complete | None |
-| ARCH-076-BACKGROUND-005 | moda_background | Complete | DATABASE-002 |
-| ARCH-076-COMMERCE-001 | moda_commerce | Complete | None |
-| ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
+| Task                     | Owner            | State                           | Direct dependencies                                           |
+| ------------------------ | ---------------- | ------------------------------- | ------------------------------------------------------------- |
+| ARCH-076-DATABASE-001    | moda_database    | Ready — explicit bounded reopen | None                                                          |
+| ARCH-076-ADMIN-001       | moda_admin       | Complete                        | DATABASE-001                                                  |
+| ARCH-076-BACKGROUND-001  | moda_background  | Complete                        | DATABASE-001                                                  |
+| ARCH-076-BACKGROUND-002  | moda_background  | Complete                        | BACKGROUND-001                                                |
+| ARCH-076-BACKGROUND-003  | moda_background  | Complete                        | BACKGROUND-002                                                |
+| ARCH-076-ADMIN-002       | moda_admin       | Complete                        | None                                                          |
+| ARCH-076-ADMIN-003       | moda_admin       | Complete                        | None                                                          |
+| ARCH-076-BACKGROUND-004  | moda_background  | Ready                           | BACKGROUND-003, ADMIN-002, ADMIN-003, COMMERCE-001            |
+| ARCH-076-DATABASE-002    | moda_database    | Complete                        | None                                                          |
+| ARCH-076-BACKGROUND-005  | moda_background  | Complete                        | DATABASE-002                                                  |
+| ARCH-076-COMMERCE-001    | moda_commerce    | Complete                        | None                                                          |
+| ARCH-076-SYSTEM-TEST-001 | moda_system_test | Pending, user-deferred          | ADMIN-001, ADMIN-002, ADMIN-003, BACKGROUND-004, COMMERCE-001 |
 
 All dependency labels in this table abbreviate the ARCH-076 prefix. See authoritative domain indexes under docs/decisions/{database,background,admin,system-test}/ARCH-076. D001 and independent D002 are Complete; ADMIN002 and ADMIN003 are Complete; actual merged Admin pin is e4e4b0a2b5400f5cb7a49014dae17f3822eb1cd2. Dependent definitions remain Pending. D002 and BG005 independent of sender tasks. ADMIN002/003 independent of sender schema. No non-system-test task depends on SYSTEM-TEST.
 

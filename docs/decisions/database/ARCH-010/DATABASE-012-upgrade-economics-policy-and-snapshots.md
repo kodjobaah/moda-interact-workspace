@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-DATABASE-006
+  - ARCH-010-DATABASE-006
 enables: []
 created: 2026-09-12
-updated: '2026-09-12'
+updated: "2026-09-12"
 superseded_by: ARCH-010-DATABASE-013
 ---
 
@@ -27,7 +27,6 @@ superseded_by: ARCH-010-DATABASE-013
 ## Supersession
 
 **Superseded by `ARCH-010-DATABASE-013`.** ARCH-010 is now the clean first-production database baseline. The valid upgrade-economics target requirements in this task are absorbed into DATABASE-013; this task must not be implemented independently.
-
 
 ## Objective
 
@@ -150,6 +149,7 @@ or:
 ```
 
 with `VOLUME` using the same tier shape;
+
 - when packs are disabled, usage pricing may be null;
 - snapshot must preserve the local plan handle and configured pack-meter handle at verification time so later drift is detectable;
 - no Partner API token, secret, cookie or raw credential may be stored.
@@ -212,19 +212,25 @@ Stop if the current schema already contains a competing monetary-plan authority 
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Files Changed
+
 Populate during implementation.
 
 ### Work Completed
+
 Populate during implementation.
 
 ### Validation Results
+
 Populate during implementation.
 
 ### Git / VCS
+
 Populate canonical isolated worktree/branch/commit/push evidence.
 
 ### Architect Review
+
 Pending.

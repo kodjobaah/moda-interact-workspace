@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-053-SHARED-002
+  - ARCH-053-SHARED-002
 enables:
-- ARCH-053-WOOCOMMERCE-001
+  - ARCH-053-WOOCOMMERCE-001
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -61,7 +61,6 @@ No new event version, parallel parser, compatibility adapter, alternate queue, a
 5. **Invalid input and safety.** Enforce body cap 65,536 bytes before JSON parse; Shared validator enforces line/coupon shape, types, cardinalities and unknown-field rejection, never Woo business eligibility. Keep existing 4xx/503 mapping and bounded shared structured logs without raw cart, codes, tokens or PII. Never do WordPress network calls inside API ingest.
 6. **Pre-production cutover.** No consumer is known to need HTTP v2 compatibility in production; do not manufacture adapters. API-001 and WooCommerce-001 **must be integrated as one pre-production release**: existing test installations emitting HTTP v2 must not be pointed to the strict v1-only API until their plugin is updated. Do not deploy an intermediate API-only change. A retained test queue is explicitly drained or safely retained after a conscious developer decision, never silently deleted.
 
-
 ### Mandatory workflow/security invariants
 
 - Before claiming the task, inspect the parent ARCH-053 architecture, `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/developer-task-workflow.md`, `docs/task-definition-materialization.md`, accepted dependencies and launcher-prepared dedicated parent/implementation worktree evidence. Use only the assigned task worktree/branch, update only this task's execution fields and Completion Report, and do not claim any commit/push without Git evidence.
@@ -94,7 +93,7 @@ No new event version, parallel parser, compatibility adapter, alternate queue, a
   "checkout": {
     "currency": "GBP",
     "total": "90.00",
-    "items": [{"productId": "101", "title": "T-shirt", "quantity": 2}],
+    "items": [{ "productId": "101", "title": "T-shirt", "quantity": 2 }],
     "contact": {
       "phone": "+447700900123",
       "canonicalPhone": "447700900123",
@@ -104,7 +103,7 @@ No new event version, parallel parser, compatibility adapter, alternate queue, a
       "schemaVersion": "woo.cart-restore.v1",
       "kind": "supported",
       "appliedCouponCodes": ["SAVE10"],
-      "lines": [{"productId": "101", "quantity": 2}]
+      "lines": [{ "productId": "101", "quantity": 2 }]
     }
   }
 }
@@ -167,7 +166,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 The existing source already has `WOO_ACTIVITY_VERSION = 'woo.activity.v1'`, a v2 phone-specific `WOO_ACTIVITY_PHONE_VERSION`, and a v1 BullMQ publisher. Remove the **HTTP version split**, not the existing safety validation: move the working v2 phone-proof rules into the sole v1 checkout parser, then enrich that same normalized v1 queue event with Shared-validated restoration. Tests must use the published Shared contract, not a repository-local clone. No schema/migration task, queue migration or consumer-version task is justified for this change.
 
-Task dependency files record *source* readiness, not permission to deploy intermediate incompatible pieces to live test installations. Deployment/activation of strict v1 API and updated v1 Woo plugin is one coordinated, non-production change. If actual production or retained externally consumed v2 events are discovered, **stop for architect reclassification** rather than invent compatibility adapters.
+Task dependency files record _source_ readiness, not permission to deploy intermediate incompatible pieces to live test installations. Deployment/activation of strict v1 API and updated v1 Woo plugin is one coordinated, non-production change. If actual production or retained externally consumed v2 events are discovered, **stop for architect reclassification** rather than invent compatibility adapters.
 
 ## Completion Report
 

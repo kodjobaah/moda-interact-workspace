@@ -44,7 +44,7 @@ The consolidated `moda-interact-system-test` suite contains an existing Messagin
 - Run current black-box inbound/reply/duplicate/coalescing/abuse scenarios against the post-refactor built Messaging service when the environment supports them.
 - Add or reuse narrowly scoped INTEGRATION evidence proving signed v3 FAILED with bounded code and valid inbound payloads reach the unchanged queue boundary with expected event/identity and HMAC rejection precedes publication.
 - Prove that structurally malformed but correctly signed envelopes return `400 invalid_payload` without publication (not `500`), and a valid inbound event followed by a malformed inbound event anywhere later in the same request returns `400` with **zero** published jobs.
-- Verify signed valid mixed inbound/status requests still publish unchanged payloads/job IDs in order; malformed individual statuses remain ignored. Test accepted partial-publication/retry/idempotency explicitly as a *distinct* queue-failure boundary, not as preflight atomicity.
+- Verify signed valid mixed inbound/status requests still publish unchanged payloads/job IDs in order; malformed individual statuses remain ignored. Test accepted partial-publication/retry/idempotency explicitly as a _distinct_ queue-failure boundary, not as preflight atomicity.
 - Store redacted deterministic evidence and update the existing scenario catalogue/traceability only if a genuinely new scenario is introduced.
 
 ## Out of Scope

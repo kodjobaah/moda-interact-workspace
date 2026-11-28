@@ -39,7 +39,6 @@ The adopted ARCH-047 design is **Moda Admin-only authoring**. A saved English so
 
 The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**. They own separate route/action/service/component modules, use stable documented persistence payloads, and must prove their capability with fixtures or injected dependencies when a sibling Admin/Background implementation is not yet complete. The end-to-end system test, not an artificial task chain, verifies their integration.
 
-
 ## Scope
 
 - Own `publishing/` module and `/system-controls/whatsapp-templates/[definitionId]/publish/` route. The source is a Moda-authored definition and its 20 confirmed Meta registrations—not an existing shop row or an externally imported provider template.
@@ -50,7 +49,6 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Confirm overwriting shop-specific overrides explicitly, require admin reason and fresh server-side revalidation. Use technical FK/identity keys in DB and **application-level per-shop slot serialisation** to keep at most one selectable approved+enabled variant for `(shopId, providerAccountId, purpose, canonicalLanguageTag)`; no new DB business uniqueness constraint.
 - Create up to one `WhatsAppTemplatePublicationTarget` per `(operationId, shopId, languageTag)` (20 rows for a 20-language target shop); all language changes for a shop are committed together in a bounded **shop transaction** with correct `previousVariantId`/`newVariantId`. Preserve historical rows/provider references, disable replaced active variants in a safe order and audit each effective change; do not delete old variants.
 - Implement idempotent batch progression for thousands of targets, retry only failed/pending shops, and report both **shop counts** and **shop-language target counts** (DB counters count target rows). Stale/overlapping publication attempts are explicitly conflicted/reconfirmed; no unbounded single-request transaction or generic background publishing worker is invented.
-
 
 ### Required React component decomposition
 
@@ -69,7 +67,6 @@ Move UI state/selection/page-navigation/confirmation fingerprint handling into `
 
 - No Meta template creation, translation, provider status reconciliation, Admin authoring edits, wrapper activation, storefront merchant custom authoring or Runtime WhatsApp sending.
 
-
 ## Requirements
 
 - [x] Publication never proceeds on unapproved/drifted/mismatched template or without explicit impact review, including individual override replacement; all decisions are reverified within application transactions.
@@ -78,9 +75,7 @@ Move UI state/selection/page-navigation/confirmation fingerprint handling into `
 - [x] No assignment carries another WABA/provider identity or silently adopts an external/legacy row. Old content and audit history remain accessible for comparison/rollback via newly confirmed publication.
 - [x] Per-shop brand-variable availability is displayed accurately and independently of Meta approval: missing nullable `ShopBrand` fields are flagged, no substitute/preview value is silently treated as real data, and no merchant branding is copied into another shop's publication.
 
-
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
-
 
 ## Work Items
 
@@ -88,14 +83,11 @@ All server reads/mutations of template management require the existing authentic
 - [x] Build responsive complete previous/proposed comparisons, per-shop overrides, counts and progress/retry UI.
 - [x] Add cross-shop leakage, stale confirmation, concurrent publication, per-shop rollback, partial-operation restart and audit tests.
 
-
 ## Interfaces / Contracts
 
 **Reads:** `Shop`, Woo installation, eligible definition, reviewed locale and `MetaRegistration`, current `WhatsAppTemplateVariant`, and read-only shop-scoped `ShopBrand` when compiled bindings reference its fields. `ShopBrand` values are optional preview context only; persistence and eligibility checks remain as otherwise defined. **Writes:** `WhatsAppTemplatePublicationOperation`, per `(operationId,shopId,languageTag)` `WhatsAppTemplatePublicationTarget`, linked local `WhatsAppTemplateVariant.metaRegistrationId`, per-shop `CommerceAuditEvent`; optionally definition's `publishedAt` once on first authorised publication. `operationKey` and preview fingerprint are idempotency/collision identities, not provider template names. No new Shared/Background dependency: use direct DB fixtures for approved registration state in focused tests.
 
-
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/publishing/`, components under `src/components/admin/whatsapp-templates/publishing/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-publication.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
-
 
 ## Dependencies
 
@@ -115,14 +107,12 @@ None at task-definition time. Completion of this task does not grant permission 
 - [x] Exact, complete previous/proposed UI renders text, component/button/variable differences (including frozen header/body brand-binding keys and positions) per shop and labels missing history accurately.
 - [x] A shop with configured `ShopBrand` fields and one with missing/null fields receive distinct, accurate preview indicators without creating misleading sample branding, leaking values across tenants, or changing the existing eligibility policy.
 
-
 ## Validation
 
 - [x] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
 
 - [x] PostgreSQL integration tests for slot serialisation, 20-language per-shop transaction, 100-shop target cardinality, stale confirmation, cross-shop identity mismatch and interruptions/retries.
 - [x] Guarded Admin preview/action/UI tests for full comparisons, frozen brand-binding differences, scoped `ShopBrand` availability (configured/null/no record/unknown), paging, accessible responsive display, partial-result clarity; typecheck/lint/`git diff --check`.
-
 
 ## Stop Condition
 
@@ -131,7 +121,6 @@ After task-scoped work, acceptance criteria, validation and Completion Report ar
 ## Implementation Notes
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md`, `docs/developer-task-workflow.md`, the revised parent ARCH-047 architecture and current Admin repository instructions. Use launcher-prepared dedicated parent/implementation task worktrees and mirrored `task/<TASK_ID>` branches. In the Completion Report record prepared physical worktree isolation, start sync, recursive submodule materialisation, exact test commands/outcomes, changed paths and commits. The implementing agent must not modify `docs/decisions/**/_index.md`, another task, the parent architecture, another repository, or follow-on work. Reuse existing Admin Store Category AST authoring and Merchant Pricing translation UX patterns without copying their domain services or creating a competing generic runtime. Inspect the actual worktree state before implementation; the attached snapshot is not a live Git-branch guarantee.
-
 
 ## Completion Report
 
@@ -208,7 +197,6 @@ Fresh canonical-worktree verification on 2026-10-25:
 - Change: The developer explicitly invoked `/moda_developer_create ARCH-047-ADMIN-007` for this ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_admin`, repository, coordinator, dependencies, task scope and acceptance criteria, including the latest ShopBrand preview and React decomposition requirements.
 - Claim: Attempt 1 was claimed by `developer` after canonical worktree synchronization and dependency verification.
-
 
 ## Architect Review
 

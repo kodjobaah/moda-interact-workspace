@@ -84,9 +84,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-COMMERCE-008
 
 ## Enables
+
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
-
 
 ## Acceptance Criteria
 
@@ -160,8 +160,8 @@ Agent-executed validation:
 
 - `npm run test:arch020-connections-ui`: passed, 1 file and 7 tests.
 - `npm run lint`: passed with 0 errors and 2 existing warnings outside the task
-   (`scripts/code-runtime-manifest.mjs` and
-   `src/commerce/code-response/runtime/kernel.ts`).
+  (`scripts/code-runtime-manifest.mjs` and
+  `src/commerce/code-response/runtime/kernel.ts`).
 - `git diff --check`: passed.
 
 `npm run typecheck` exits nonzero on the known repository baseline. The final
@@ -241,6 +241,7 @@ Dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.wo
 Branch: `task/ARCH-020-COMMERCE-022`. Implementation commit and push are being
 
 ## Architect Review
+
 ### Review Status
 
 Changes Requested.
@@ -698,23 +699,23 @@ deterministic launcher; claim metadata is now cleared for handoff.
 ### Architect Correction Disposition
 
 - A0-R1: preserved server-owned `requireStudioAdminPage()` routes and the
-   serializable `ConnectionsRouteClient` composition; focused coverage mounts the
-   wrapper and VS Code diagnostics are clean for both routes and wrapper.
+  serializable `ConnectionsRouteClient` composition; focused coverage mounts the
+  wrapper and VS Code diagnostics are clean for both routes and wrapper.
 - A0-R2: retained the shared `ConnectionResult`/unknown mutation envelopes,
-   synchronous gates, CUID-shaped operation IDs, immutable admitted payloads and
-   replay action; added exact metadata/credential replay and stale-CAS regressions.
+  synchronous gates, CUID-shaped operation IDs, immutable admitted payloads and
+  replay action; added exact metadata/credential replay and stale-CAS regressions.
 - A0-R3: retained search/cursor/enabled initialization and propagation through
-   U15, U16, create navigation and Back navigation, with Studio composer guards;
-   focused coverage verifies non-default initial list state and dirty/unknown
-   guard behavior is covered by the existing composer-backed mutation tests.
+  U15, U16, create navigation and Back navigation, with Studio composer guards;
+  focused coverage verifies non-default initial list state and dirty/unknown
+  guard behavior is covered by the existing composer-backed mutation tests.
 - A0-R4: retained status-only credential dialogs, authorized `searchShops`,
-   PER_SHOP selection by returned shop ID, exact status CAS, NONE presentation and
-   bounded unavailable presentation; focused coverage verifies the Harbor shop ID,
-   unavailable result and absence of success. Fixtures contain two distinct shops,
-   a configured platform revision, a configured per-shop revision and a missing row.
+  PER_SHOP selection by returned shop ID, exact status CAS, NONE presentation and
+  bounded unavailable presentation; focused coverage verifies the Harbor shop ID,
+  unavailable result and absence of success. Fixtures contain two distinct shops,
+  a configured platform revision, a configured per-shop revision and a missing row.
 - A0-R5: retained independent `latest = revisions[0]` and explicit selected
-   revision state; focused regression confirms Overview remains Revision 2 after
-   selecting Revision 1 and Credentials remains on Revision 1.
+  revision state; focused regression confirms Overview remains Revision 2 after
+  selecting Revision 1 and Credentials remains on Revision 1.
 
 ### Files
 
@@ -731,20 +732,20 @@ Agent-executed:
 
 - `npm run test:arch020-connections-ui`: passed, 1 file and 11 tests.
 - `npm run lint`: passed with 0 errors and 2 warnings outside the task boundary
-   (`scripts/code-runtime-manifest.mjs` and
-   `src/commerce/code-response/runtime/kernel.ts`).
+  (`scripts/code-runtime-manifest.mjs` and
+  `src/commerce/code-response/runtime/kernel.ts`).
 - `git diff --check`: passed.
 - VS Code diagnostics: no errors in the Connections routes, wrapper, contracts,
-   fixtures, UI or focused tests.
+  fixtures, UI or focused tests.
 
 Blocked by unchanged repository conditions outside this task:
 
 - `npm run typecheck`: Next route type generation passed, then 15 diagnostics
-   remained in lifecycle/backend CodeMirror and response-processor files; none
-   were in the task-owned Connections slice.
+  remained in lifecycle/backend CodeMirror and response-processor files; none
+  were in the task-owned Connections slice.
 - `npm run build`: `code-runtime:package` passed, then the existing packaged
-   QuickJS smoke failed with `packaged transform output mismatch` before Next
-   compilation. No Connections source was implicated.
+  QuickJS smoke failed with `packaged transform output mismatch` before Next
+  compilation. No Connections source was implicated.
 
 No live, database, container, deployment, backend, network or secret-bearing
 validation was run. No backend or provider implementation was added.
@@ -816,6 +817,7 @@ Correction:
   `ConnectionsRouteClient`.
 
 Required proof:
+
 - TypeScript parsing/typechecking of both Connections page modules has no task-owned
   syntax/route diagnostic;
 - the focused route-wrapper test still proves the client wrapper creates the fixture
@@ -874,6 +876,7 @@ the required same-operation replay.
 
 Add the same **Check original operation** surface for `createMutation.unknown`.
 Replaying Create must call the exact retained create closure/payload and:
+
 - on `ok`, navigate to the created U16 connection using the originally admitted
   list return state;
 - on known failure, unlock and retain the create form/input with the bounded known
@@ -910,8 +913,8 @@ Files:
 `ConnectionDetail` decides tab changes using only its **parent**:
 
 ```ts
-dirty
-locked
+dirty;
+locked;
 ```
 
 state. Credential `secret`, credential `reason`, open credential dialog and
@@ -993,7 +996,7 @@ The UI can temporarily render Replace/Remove or submit the old CAS against Harbo
 Use an exact credential-context key:
 
 ```ts
-`${revision.id}:${shopId ?? ''}`
+`${revision.id}:${shopId ?? ""}`;
 ```
 
 and treat status as current only when it was returned for that exact key.
@@ -1109,6 +1112,7 @@ Do not repair unrelated Prisma, publication, CodeMirror, response-processor or b
 code.
 
 Before handoff:
+
 1. add focused regressions for A2-R1 through A2-R5;
 2. update Work Items / Acceptance Criteria / Completion Report truthfully;
 3. set `status: review`;
@@ -1292,8 +1296,8 @@ useNavigationGuard(
 while `ConnectionDetail` decides tab changes using only its parent:
 
 ```ts
-dirty
-locked
+dirty;
+locked;
 ```
 
 values. Credential state is therefore invisible to the tab-switch decision.
@@ -1387,8 +1391,8 @@ and runs:
 ```ts
 port.getCredentialStatus({
   connectionRevisionId: revision.id,
-  shopId
-})
+  shopId,
+});
 ```
 
 for every revision/shop state, including `PER_SHOP` with `shopId:null`.
@@ -1402,8 +1406,7 @@ Implement an exact credential context.
 Use:
 
 ```ts
-const credentialContextKey =
-  `${revision.id}:${shopId ?? ''}`;
+const credentialContextKey = `${revision.id}:${shopId ?? ""}`;
 ```
 
 and store enough state to know which key produced the currently displayed
@@ -1515,6 +1518,7 @@ unavailable
 Treat `ok(null)` as not-found.
 
 For each terminal state:
+
 - render a bounded user-facing state;
 - render **Back to Connections**;
 - preserve `search`, `cursor`, `enabled` in that Back navigation;
@@ -1589,6 +1593,7 @@ Do not repair unrelated Prisma, publication, CodeMirror, response-processor or
 backend code.
 
 Before handoff:
+
 1. add focused regressions only for A3-R1 through A3-R3;
 2. update Work Items / Acceptance Criteria / Completion Report truthfully;
 3. set `status: review`;
@@ -1779,6 +1784,7 @@ The three bounded Attempt 3 corrections are satisfied:
      return state.
 
 Previously accepted corrections remain intact:
+
 - valid server/client Connections route split;
 - Shared `ConnectionResult` envelopes;
 - synchronous duplicate-write guards;
@@ -1822,6 +1828,7 @@ boundary. No backend, crypto, HTTP, database, U06, preview, MCP or production-fa
 ownership moved into this task.
 
 No dependant becomes Ready solely from this acceptance:
+
 - `ARCH-020-COMMERCE-024` still has multiple incomplete dependencies;
 - `ARCH-020-COMMERCE-012` remains the later/final implementation checkpoint.
 

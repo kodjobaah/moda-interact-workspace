@@ -43,7 +43,6 @@ Coordinator:
 
 `moda_architect`
 
-
 ## Objective
 
 Make the normal Studio React boundary serializable: server pages load DTOs, client domain screens invoke named Server Actions, and production no longer passes `StudioServices`, Connection ports, External HTTP UI ports or other server-created function bundles into client components.
@@ -189,7 +188,6 @@ None. `moda_architect` must re-review/redefine the paused Phase-3 frontier after
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
-
 
 ## Implementation Notes
 

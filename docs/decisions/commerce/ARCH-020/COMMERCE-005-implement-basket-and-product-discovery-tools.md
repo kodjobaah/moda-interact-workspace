@@ -72,7 +72,6 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 Own `src/commerce/query/`. C19 QueryExecutionPort receives trusted context and the canonical query definition;013 connects it to014. C14 result wrapper and Shared types remain unchanged.
 
-
 ## Dependencies
 
 - ARCH-020-COMMERCE-001
@@ -150,16 +149,16 @@ Ready for Review.
 
 Agent validation:
 
-| Case | Fixture | Command | Result |
-|---|---|---|---|
+| Case                               | Fixture                                                                                                                                     | Command                                                | Result                                                                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | Focused Q01-Q04 and A2 regressions | injected query, ProductList projection, malformed input, HTTP envelope, controlled streams, overflow, early rejection and deadline fixtures | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 11/11; pre-I/O rejects made zero provider calls, response rejects made one injected request, and rejected/late streams were cancelled |
-| Attempt 4 A3-R1 regressions | async-iterable type exclusion, unsupported runtime body, and 429 body whose `cancel()` remains pending | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 13/13; unsupported body was not iterated and typed throttle returned before cleanup resolved |
-| lint | query module and tests | `npm run lint` | PASS |
-| typecheck | repository after Prisma generation | `npm run typecheck` | PASS |
-| build | Prisma client generation and production Next.js build | `npm run build` | PASS |
-| diff hygiene | implementation worktree | `git diff --check` | PASS |
-| build | production build and Prisma generation | `npm run build` | PASS |
-| diff hygiene | scoped files | `git diff --check` | PASS |
+| Attempt 4 A3-R1 regressions        | async-iterable type exclusion, unsupported runtime body, and 429 body whose `cancel()` remains pending                                      | `npm exec -- vitest run tests/query-execution.test.ts` | PASS, 13/13; unsupported body was not iterated and typed throttle returned before cleanup resolved                                          |
+| lint                               | query module and tests                                                                                                                      | `npm run lint`                                         | PASS                                                                                                                                        |
+| typecheck                          | repository after Prisma generation                                                                                                          | `npm run typecheck`                                    | PASS                                                                                                                                        |
+| build                              | Prisma client generation and production Next.js build                                                                                       | `npm run build`                                        | PASS                                                                                                                                        |
+| diff hygiene                       | implementation worktree                                                                                                                     | `git diff --check`                                     | PASS                                                                                                                                        |
+| build                              | production build and Prisma generation                                                                                                      | `npm run build`                                        | PASS                                                                                                                                        |
+| diff hygiene                       | scoped files                                                                                                                                | `git diff --check`                                     | PASS                                                                                                                                        |
 
 Full `npm test`: 30 files, 272 passed and 3 failed (275 total). The failures remain unrelated baseline conditions: `tests/discovery-limits.test.ts` timed out in the Redis-backed rolling-window admission test, and `tests/readiness-docker.test.ts` failed the ignored-stdio descendant signal-handler timing assertions in timeout and abort modes. No failure involved the changed Commerce-005 files.
 
@@ -222,7 +221,6 @@ Permanent regressions: rejected429/redirect/version body whose cancel promise ne
 
 Implement only A3-R1 in005-owned query files/tests, run focused and required checks, update report, commit/push the same branch pair and return to review. The prior two closed corrections do not need reimplementation. Live Shopify and full-suite baseline conditions remain separate; no dependent task is promoted. Parent review overlay is published before handoff; normal preparation owns the next claim.
 
-
 ### Changes Requested — Attempt 2 — 2026-09-21
 
 **Current decision: Ready; Attempt 2 retained; executor/claimed_at null; not accepted.** Reviewed implementation `2761e6b83806e9ca0d8a00df0200ad55f6b48086` and report `e4fc15cdeed48ec1406ac9d2deeb6257fe6bc1ee`; remote task heads verified and dedicated worktrees clean. No implementation changes, new claim, dependency promotion, main integration or gitlink update.
@@ -237,8 +235,12 @@ Change this exact recursion to:
 
 ```ts
 if (isListType(nullableType)) {
-  return Array.isArray(value)
-    && value.every((item) => validResponseValue(item, nullableType.ofType, selectionSet));
+  return (
+    Array.isArray(value) &&
+    value.every((item) =>
+      validResponseValue(item, nullableType.ofType, selectionSet),
+    )
+  );
 }
 ```
 
@@ -261,7 +263,6 @@ Change the response-header failure to `failure('UNAVAILABLE', true)` and update 
 ### Resubmission
 
 Implement A2-R1–A2-R3 within005-owned query files/tests; preserve the original successful variable/deadline corrections and the query fact wrapper. Record exact fixtures and side-effect counts, including actual streams versus preloaded bytes. Run required checks, commit/push the same branch pair, and return to review. Full-suite environment limits and live Shopify remain separate; no dependent task is promoted. Parent overlay is published before handoff; normal preparation owns the next claim.
-
 
 ### Changes Requested — Attempt 1 — 2026-09-21
 
@@ -300,7 +301,6 @@ Tests with fake clocks/barriers: never-settling transport returns DEADLINE on ti
 ### Evidence and resubmission
 
 Update Q01–Q04 and work-item checkboxes only after their effects are exercised. The current Q02 report incorrectly says all invalid cases make0 calls, although provider-response cases necessarily make1; distinguish pre-I/O rejection from rejected response. Record actual preparation synchronization and accepted source revisions, same-branch commits and required checks. Keep the five unrelated full-suite limitations and developer live validation separate; they are not these blockers. Publish implementation/report and return to review. Parent architect overlay is committed/pushed before handoff; normal preparation owns the next claim. No dependent task is promoted.
-
 
 ### Review Status
 

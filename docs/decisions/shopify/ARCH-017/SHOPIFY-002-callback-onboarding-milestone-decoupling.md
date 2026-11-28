@@ -15,9 +15,9 @@ executor:
 claimed_at:
 attempt: 1
 depends_on:
-- ARCH-017-SHOPIFY-001
+  - ARCH-017-SHOPIFY-001
 enables:
-- ARCH-017-SHOPIFY-003
+  - ARCH-017-SHOPIFY-003
 created: 2026-09-19
 updated: 2026-09-19
 ---
@@ -172,13 +172,13 @@ Authentication, authenticated-shop resolution and the ACTIVE-shop assertion rema
 Change:
 
 ```ts
-async function persistOnboardingMilestone(shopId: string): Promise<boolean>
+async function persistOnboardingMilestone(shopId: string): Promise<boolean>;
 ```
 
 to:
 
 ```ts
-async function persistOnboardingMilestone(shopId: string): Promise<void>
+async function persistOnboardingMilestone(shopId: string): Promise<void>;
 ```
 
 The body must remain an idempotent monotonic update:
@@ -212,7 +212,7 @@ isManagedPricingSelectionObserved(...)
 and remove its now-unused:
 
 ```ts
-MerchantShopifySubscriptionState
+MerchantShopifySubscriptionState;
 ```
 
 import if no other callback code needs it.
@@ -336,11 +336,16 @@ function matchesInitialFreeActivationToken(
   } | null,
   expected: InitialFreeActivationToken,
 ): boolean {
-  return subscription?.id === expected.subscriptionId &&
+  return (
+    subscription?.id === expected.subscriptionId &&
     subscription.pendingPlanId === expected.pendingPlanId &&
-    subscription.pendingShopifyPlanHandle === expected.pendingShopifyPlanHandle &&
-    subscription.pendingEffectiveAt?.getTime() === expected.pendingEffectiveAt.getTime() &&
-    subscription.nextReconcileAt?.getTime() === expected.nextReconcileAt.getTime();
+    subscription.pendingShopifyPlanHandle ===
+      expected.pendingShopifyPlanHandle &&
+    subscription.pendingEffectiveAt?.getTime() ===
+      expected.pendingEffectiveAt.getTime() &&
+    subscription.nextReconcileAt?.getTime() ===
+      expected.nextReconcileAt.getTime()
+  );
 }
 ```
 
@@ -355,7 +360,8 @@ Inside the existing transaction, delete the `shopSettings.findUnique()` read use
 Replace:
 
 ```ts
-const isInitialActivation = settings?.onboardingCompleted !== true &&
+const isInitialActivation =
+  settings?.onboardingCompleted !== true &&
   (!currentSubscription ||
     (currentSubscription.status === SubscriptionProjectionStatus.NO_CONTRACT &&
       currentSubscription.planId === null &&
@@ -365,7 +371,8 @@ const isInitialActivation = settings?.onboardingCompleted !== true &&
 with exactly:
 
 ```ts
-const isInitialActivation = !currentSubscription ||
+const isInitialActivation =
+  !currentSubscription ||
   (currentSubscription.status === SubscriptionProjectionStatus.NO_CONTRACT &&
     currentSubscription.planId === null &&
     !currentSubscription.observedShopifyPlanHandle);
@@ -382,7 +389,8 @@ Delete the `shopSettings.findUnique()` onboarding read.
 Replace the initial-activation predicate with exactly:
 
 ```ts
-const isInitialActivation = !currentSubscription ||
+const isInitialActivation =
+  !currentSubscription ||
   (currentSubscription.status === SubscriptionProjectionStatus.NO_CONTRACT &&
     currentSubscription.planId === null &&
     !currentSubscription.observedShopifyPlanHandle);
@@ -399,13 +407,13 @@ Delete the `shopSettings.findUnique()` onboarding read.
 Retain the Subscription read and change:
 
 ```ts
-matchesInitialFreeActivationToken(settings, subscription, expected)
+matchesInitialFreeActivationToken(settings, subscription, expected);
 ```
 
 to:
 
 ```ts
-matchesInitialFreeActivationToken(subscription, expected)
+matchesInitialFreeActivationToken(subscription, expected);
 ```
 
 The stale-token behaviour remains exactly the same except that changing onboarding state no longer invalidates a token.
@@ -433,11 +441,9 @@ const hasPendingSelection =
 
 if (
   hasPendingSelection &&
-  (
-    subscription.pendingShopifyPlanHandle !== requestedPlanHandle ||
+  (subscription.pendingShopifyPlanHandle !== requestedPlanHandle ||
     subscription.pendingPlanId !== subscription.planId ||
-    !subscription.pendingEffectiveAt
-  )
+    !subscription.pendingEffectiveAt)
 ) {
   return null;
 }
@@ -464,7 +470,7 @@ In the provider-null transaction:
 3. update the token call to:
 
 ```ts
-matchesInitialFreeActivationToken(current, expectedInitialSelection)
+matchesInitialFreeActivationToken(current, expectedInitialSelection);
 ```
 
 4. replace the onboarding-dependent `preserveInitialIntent` with exactly:
@@ -478,7 +484,7 @@ const preserveInitialIntent = Boolean(
   current.pendingShopifyPlanHandle &&
   current.pendingPlanId &&
   current.pendingEffectiveAt &&
-  current.nextReconcileAt
+  current.nextReconcileAt,
 );
 ```
 
@@ -496,7 +502,10 @@ Inside the provider-active transaction:
 ```ts
 if (
   expectedInitialSelection &&
-  !matchesInitialFreeActivationToken(existingSubscription, expectedInitialSelection)
+  !matchesInitialFreeActivationToken(
+    existingSubscription,
+    expectedInitialSelection,
+  )
 ) {
   return null;
 }
@@ -510,7 +519,8 @@ const initialPaidActivation = Boolean(
   existingSubscription?.planId === null &&
   !existingSubscription.observedShopifyPlanHandle &&
   expectedInitialSelection.planKind === BillingPlanKind.PAID_METERED &&
-  providerSubscription.planHandle === expectedInitialSelection.pendingShopifyPlanHandle
+  providerSubscription.planHandle ===
+    expectedInitialSelection.pendingShopifyPlanHandle,
 );
 ```
 
@@ -534,7 +544,7 @@ const preserveInitialIntent = Boolean(
   existingSubscription.pendingShopifyPlanHandle &&
   existingSubscription.pendingPlanId &&
   existingSubscription.pendingEffectiveAt &&
-  existingSubscription.nextReconcileAt
+  existingSubscription.nextReconcileAt,
 );
 ```
 
@@ -586,7 +596,9 @@ expect(mocks.updateShopSettings).toHaveBeenCalledWith({
   where: { shopId: "shop-1", onboardingCompleted: false },
   data: { onboardingCompleted: true },
 });
-expect(mocks.updateShopSettings).toHaveBeenCalledBefore(mocks.prepareFreeActivation);
+expect(mocks.updateShopSettings).toHaveBeenCalledBefore(
+  mocks.prepareFreeActivation,
+);
 expect(mocks.updateShopSettings).toHaveBeenCalledBefore(mocks.syncSubscription);
 ```
 

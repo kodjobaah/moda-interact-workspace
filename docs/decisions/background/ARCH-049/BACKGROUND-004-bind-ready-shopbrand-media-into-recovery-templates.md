@@ -66,7 +66,13 @@ Original-image downloading, resizing, Cloudflare uploads, Shopify/Woo sources, M
 Consume the Admin-owned prepared, persisted `WhatsAppTemplateMetaRegistration.parameterBindingsSnapshot` contract:
 
 ```json
-{"schemaVersion":1,"header":[],"headerMediaRole":"LOGO","body":[],"buttons":[]}
+{
+  "schemaVersion": 1,
+  "header": [],
+  "headerMediaRole": "LOGO",
+  "body": [],
+  "buttons": []
+}
 ```
 
 `headerMediaRole` is permitted **only** when the corresponding frozen Meta component has `type:"HEADER",format:"IMAGE"`, and its value must be one of `LOGO`, `SQUARE_LOGO`, `COVER_IMAGE`. A TEXT header must not contain this key. Preserve the existing BODY and button binding behaviour. The accepted ARCH-047 content fingerprint must include this new field **consistently with the Admin compiler's frozen projection**; do not recompute a new digest silently or use a different AST interpreter. Missing, unknown, duplicated or mismatched role bindings fail closed, including legacy `headerImage` without a specific media role.

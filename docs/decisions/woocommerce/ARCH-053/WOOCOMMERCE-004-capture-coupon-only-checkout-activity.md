@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-053-WOOCOMMERCE-001
+  - ARCH-053-WOOCOMMERCE-001
 enables:
-- ARCH-053-SYSTEM-TEST-002
-- ARCH-053-WOOCOMMERCE-005
+  - ARCH-053-SYSTEM-TEST-002
+  - ARCH-053-WOOCOMMERCE-005
 created: 2026-10-29
 updated: 2026-10-31
 ---
@@ -41,7 +41,7 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 
 - Own changes to `moda-interact-woocommerce/includes/Checkout/CheckoutCapture.php` plus narrowly required `CheckoutSnapshot.php` and `tests/CheckoutCaptureTest.php`; add targeted `tests/integration/scenarios/checkout-coupons-wordpress.mjs` (or local equivalent), without changing API/Background code.
 - Register `woocommerce_applied_coupon` and `woocommerce_removed_coupon` hooks with the correct Woo signature; use `captureExisting()` only when `CheckoutKey::SESSION_FIELD` contains an already observed valid checkout. Re-use the existing after-totals/Store API capture path for Checkout Blocks; do not create a new checkout key in the shopping-cart-only lifecycle.
-- On each coupon change, call `WC()->cart->get_applied_coupons()` for the canonical *applied* list; preserve 0..10 valid codes in `checkout.restoration.appliedCouponCodes` exactly as validated for Shared. The resulting full snapshot fingerprint must include the list, including transitions from `[]` to `[code]` and back.
+- On each coupon change, call `WC()->cart->get_applied_coupons()` for the canonical _applied_ list; preserve 0..10 valid codes in `checkout.restoration.appliedCouponCodes` exactly as validated for Shared. The resulting full snapshot fingerprint must include the list, including transitions from `[]` to `[code]` and back.
 - Publish the existing `woo.activity.v1` CHECKOUT_UPDATED envelope via `CheckoutActivityPublisher::enqueue()`/Action Scheduler; preserve original `(shopId,checkoutKey)` and event IDs. Do not introduce a new event type, Redis queue or direct API call from a Woo frontend hook.
 
 ## Out of Scope
@@ -56,7 +56,7 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 - Code list is the customer-applied original state, not catalogue lookup, potential coupon eligibility or ARCH-052 newly offered discounts. Capture only coupons Woo has actually applied; invalid attempts which Woo never applied must not appear as historical coupons.
 - For oversized/malformed/untrustworthy applied coupon lists the full restoration evidence is `kind:unsupported` with `COUPONS_UNAVAILABLE|LIMIT_EXCEEDED` instead of a falsely complete supported list. No silent truncation, no partial restore link.
 - Coupon mutations can precede/follow totals calculation. Tests must verify the snapshot is read after Woo updates applied state, including Classic and Store API checkout; preserve checkout capture nonblocking behaviour with bounded safe diagnostics.
-- Use exact shared schema from accepted `ARCH-053-SHARED-001` (PHP must match its JSON fixtures, not import Node code). Zod validates wire *shape*, never WooCommerce coupon policy. Preserve stable checkoutKey, tenant scoping and generation semantics.
+- Use exact shared schema from accepted `ARCH-053-SHARED-001` (PHP must match its JSON fixtures, not import Node code). Zod validates wire _shape_, never WooCommerce coupon policy. Preserve stable checkoutKey, tenant scoping and generation semantics.
 - WooCommerce PHP executes on merchant-controlled WordPress servers and **must not import or implement** `@modainteract/moda-interact-shared/logging` (that npm export belongs only to hosted Moda Node processes). Use existing server-side plugin diagnostics (the current bounded `error_log()` pattern where applicable), not a new generic logger, `wc_add_notice()`, browser console output or shopper-visible HTML for Moda errors. Record a bounded event/reason and safe correlation identifier; preserve the original error message and relevant safe provider response details when available after redaction, without guessing a substitute cause. Never log bearer tokens, full restore URLs, coupon codes or customer PII. At storefront/controller boundaries catch and privately log unexpected errors, preserve or safely roll back the cart, and continue/redirect without Moda-originated error notices. At Action Scheduler and other retry-owning job boundaries, log and **propagate** retryable failures for durable retry/failure evidence; do not acknowledge them as success. Never globally suppress WordPress diagnostics or delete unrelated Woo notices.
 - Honour launcher-prepared, dedicated synchronised task worktrees and `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`; the repository agent updates only its assigned task metadata and Completion Report. Never mark itself Complete or push main.
 

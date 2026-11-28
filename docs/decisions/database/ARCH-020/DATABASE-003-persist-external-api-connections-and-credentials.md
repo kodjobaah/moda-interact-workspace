@@ -357,7 +357,6 @@ Unlike the migration checks discussed for COMMERCE-013, fresh/upgrade and constr
 
 Ready for corrections, Attempt 1 retained, claims cleared. No acceptance, implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-020/028 remain gated on their actual dependencies; no automatic launch. Historical submission review notes are retained below and superseded by this decision.
 
-
 ### Review Status
 
 Accepted.
@@ -408,17 +407,17 @@ Review section was not edited and no downstream task was launched.
 ### Correction checklist
 
 - [x] **A1-R1:** Added `@db.Timestamptz(3)` to all six timestamps across the
-  four `CommerceExternal*` Prisma models, preserving defaults and `@updatedAt`.
-  Prisma validation and generated SQL now agree with the checked-in migration.
+      four `CommerceExternal*` Prisma models, preserving defaults and `@updatedAt`.
+      Prisma validation and generated SQL now agree with the checked-in migration.
 - [x] **A1-R2:** All raw Shop, PlatformAdmin, and Conversation fixture inserts
-  now provide required `updatedAt` values. README already documents the exact
-  fresh and upgrade commands and isolated database names.
+      now provide required `updatedAt` values. README already documents the exact
+      fresh and upgrade commands and isolated database names.
 - [x] **A1-R3:** The validator now asserts expected PostgreSQL SQLSTATEs for
-  unique, check, foreign-key, and immutable-trigger failures. Each boundary
-  uses an otherwise-valid isolated revision, immutable revision deletion is
-  tested without a credential FK masking it, rollback checks both inserted
-  rows, and upgrade mode snapshots Shop/Admin plus a tool, tool revision, and
-  conversation grant before and after the additive migration.
+      unique, check, foreign-key, and immutable-trigger failures. Each boundary
+      uses an otherwise-valid isolated revision, immutable revision deletion is
+      tested without a credential FK masking it, rollback checks both inserted
+      rows, and upgrade mode snapshots Shop/Admin plus a tool, tool revision, and
+      conversation grant before and after the additive migration.
 
 ### Files changed
 
@@ -431,17 +430,17 @@ Review section was not edited and no downstream task was launched.
 Implementation worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-DATABASE-003`.
 
-| Command | Result |
-| --- | --- |
-| `node --check scripts/validate-arch020-external-connections.mjs` | passed |
-| `npm run prisma:validate` | passed |
-| `npm run prisma:generate` | passed with Prisma `6.19.3` |
-| `npm run format -- --check` | passed |
-| `npm run erd:puml` | passed; generated ERD had no additional diff |
-| `git diff --check` | passed |
-| `npm run test:arch020-external-connections:database -- --mode fresh` | not run to completion; isolated database `arch020_connections_test_fresh` does not exist |
+| Command                                                                | Result                                                                                     |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `node --check scripts/validate-arch020-external-connections.mjs`       | passed                                                                                     |
+| `npm run prisma:validate`                                              | passed                                                                                     |
+| `npm run prisma:generate`                                              | passed with Prisma `6.19.3`                                                                |
+| `npm run format -- --check`                                            | passed                                                                                     |
+| `npm run erd:puml`                                                     | passed; generated ERD had no additional diff                                               |
+| `git diff --check`                                                     | passed                                                                                     |
+| `npm run test:arch020-external-connections:database -- --mode fresh`   | not run to completion; isolated database `arch020_connections_test_fresh` does not exist   |
 | `npm run test:arch020-external-connections:database -- --mode upgrade` | not run to completion; isolated database `arch020_connections_test_upgrade` does not exist |
-| `npm run typecheck`, `npm run lint`, `npm run build` | unavailable; no such scripts are declared in the owning repository |
+| `npm run typecheck`, `npm run lint`, `npm run build`                   | unavailable; no such scripts are declared in the owning repository                         |
 
 No database-backed X02 pass is claimed. The fresh/upgrade modes remain
 developer-owned validation requiring provisioned disposable PostgreSQL targets.
@@ -494,16 +493,16 @@ revision/grant snapshots remain unchanged across the additive migration.
 Implementation commit `bc59bf0` (`test(database): seed valid external
 migration baseline`) is pushed to `origin/task/ARCH-020-DATABASE-003`.
 
-| Command | Result |
-| --- | --- |
-| `node --check scripts/validate-arch020-external-connections.mjs` | passed |
-| `npm run prisma:validate` | passed |
-| `npm run prisma:generate` | passed with Prisma `6.19.3` |
-| `npm run format -- --check` | passed |
-| `npm run erd:puml` | passed; no generated ERD diff |
-| `git diff --check` | passed |
+| Command                                                                                                                  | Result                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `node --check scripts/validate-arch020-external-connections.mjs`                                                         | passed                                                                                                             |
+| `npm run prisma:validate`                                                                                                | passed                                                                                                             |
+| `npm run prisma:generate`                                                                                                | passed with Prisma `6.19.3`                                                                                        |
+| `npm run format -- --check`                                                                                              | passed                                                                                                             |
+| `npm run erd:puml`                                                                                                       | passed; no generated ERD diff                                                                                      |
+| `git diff --check`                                                                                                       | passed                                                                                                             |
 | `DATABASE_URL=...arch020_connections_test_upgrade node scripts/validate-arch020-external-connections.mjs --mode upgrade` | passed: existing Shop/PlatformAdmin/tool/grant rows unchanged; constraints, FKs, immutability, and rollback passed |
-| `DATABASE_URL=...arch020_connections_test_fresh node scripts/validate-arch020-external-connections.mjs --mode fresh` | passed: constraints, FKs, immutability, and rollback passed |
+| `DATABASE_URL=...arch020_connections_test_fresh node scripts/validate-arch020-external-connections.mjs --mode fresh`     | passed: constraints, FKs, immutability, and rollback passed                                                        |
 
 The two isolated PostgreSQL databases were explicitly recreated before these
 runs. No database-backed X02 result is inferred from static checks; both

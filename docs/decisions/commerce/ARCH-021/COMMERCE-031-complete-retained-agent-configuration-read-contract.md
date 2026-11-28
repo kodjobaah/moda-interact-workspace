@@ -114,7 +114,7 @@ In the existing Agent Configuration contract, define:
 ```ts
 type AgentConfigurationState = {
   environment: ModelEnvironment;
-  scope: 'PLATFORM' | 'SHOP';
+  scope: "PLATFORM" | "SHOP";
   shopId: string | null;
   modelId: string | null;
   activePromptRevisionId: string | null;

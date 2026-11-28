@@ -14,7 +14,16 @@ priority: 60
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: [ARCH-035-API-014, ARCH-035-API-015, ARCH-035-API-016, ARCH-035-API-017, ARCH-035-API-018, ARCH-035-GATEWAY-001, ARCH-035-WOOCOMMERCE-015]
+depends_on:
+  [
+    ARCH-035-API-014,
+    ARCH-035-API-015,
+    ARCH-035-API-016,
+    ARCH-035-API-017,
+    ARCH-035-API-018,
+    ARCH-035-GATEWAY-001,
+    ARCH-035-WOOCOMMERCE-015,
+  ]
 enables: []
 created: 2026-10-16
 updated: 2026-10-16

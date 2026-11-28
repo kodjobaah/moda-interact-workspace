@@ -20,6 +20,7 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06
 ---
+
 # Select approved WhatsApp templates by locale and market capability
 
 ## Architecture

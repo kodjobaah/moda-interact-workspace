@@ -656,7 +656,6 @@ review
 
 - The existing Render topology document previously asserted that `healthCheckPath` is unsupported on all `pserv` resources, while this task explicitly requires `/health/live` on the private API service. The document now records the task-specific API contract; the repository has no separate live Render/remote Blueprint-schema validator, so confirm Render acceptance of that private-service field during operator deployment validation.
 
-
 ### Architectural Concerns
 
 - The API's private-service health-check field follows the explicit GATEWAY-001 contract, but conflicts with earlier generic Render capability prose. Architect/operator confirmation during deployment remains prudent; `/health/ready` is not used as liveness.

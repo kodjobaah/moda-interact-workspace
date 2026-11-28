@@ -88,7 +88,7 @@ No `COMMERCE_PREVIEW_BASE_URL`, automatic provider fallback or alternate endpoin
 Export from `src/commerce/integration/preview/model-provider.ts`:
 
 ```ts
-export type PreviewModelProvider = 'openai' | 'groq';
+export type PreviewModelProvider = "openai" | "groq";
 export type PreviewModelConfig = {
   provider: PreviewModelProvider;
   model: string;
@@ -256,7 +256,7 @@ Implementation complete; returned to `moda_architect` review.
 - Repository `npm run typecheck`: passed.
 - `npm run build`: passed, including runtime packaging/smoke validation and Prisma client generation.
 - Validation used the isolated implementation worktree and synthetic controlled fetches only; no paid/live provider calls were made.
-Not Started.
+  Not Started.
 
 ### Files Changed
 
@@ -357,7 +357,7 @@ shape, for example:
 ```ts
 const responseToolCall = z.strictObject({
   id: z.string().min(1).max(256),
-  type: z.literal('function'),
+  type: z.literal("function"),
   function: z.strictObject({
     name: z.string().min(1).max(128),
     arguments: z.string(),
@@ -543,6 +543,7 @@ Dependency reconciliation: COMMERCE-019's durable YAML dependency list must incl
 that production composition occurs only after this provider transport is accepted.
 Because COMMERCE-033 becomes Complete in this same review, COMMERCE-019 remains
 Ready at Attempt 0 with no active claim. No task is automatically launched.
+
 ### Git / VCS
 
 Defined but not claimed. Expected mirrored branch `task/ARCH-020-COMMERCE-033`.

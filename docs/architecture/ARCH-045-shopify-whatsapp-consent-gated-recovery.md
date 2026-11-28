@@ -112,25 +112,25 @@ DATABASE-002 is marked Complete following acceptance of its task-branch schema/m
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends on |
-|---|---|---|---|
-| `ARCH-045-DATABASE-001` | `moda_database` | superseded | — |
-| `ARCH-045-DATABASE-002` | `moda_database` | complete | — |
-| `ARCH-045-DATABASE-003` | `moda_database` | superseded | — |
-| `ARCH-045-SHARED-001` | `moda_shared` | complete | — |
-| `ARCH-045-SHARED-002` | `moda_shared` | complete | `ARCH-045-SHARED-001` |
-| `ARCH-045-SHARED-003` | `moda_shared` | superseded | — |
-| `ARCH-045-SHOPIFY-001` | `moda_app` | ready | `ARCH-045-SHARED-002` |
-| `ARCH-045-SHOPIFY-002` | `moda_app` | complete | — |
-| `ARCH-045-SHOPIFY-003` | `moda_app` | superseded | — |
-| `ARCH-045-SHOPIFY-004` | `moda_app` | superseded | — |
-| `ARCH-045-SHOPIFY-005` | `moda_app` | superseded | `ARCH-045-DATABASE-002` |
-| `ARCH-045-BACKGROUND-001` | `moda_background` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
-| `ARCH-045-BACKGROUND-002` | `moda_background` | complete | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
-| `ARCH-045-BACKGROUND-003` | `moda_background` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001` |
-| `ARCH-045-BACKGROUND-004` | `moda_background` | ready | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
-| `ARCH-045-BACKGROUND-005` | `moda_background` | complete | `ARCH-045-DATABASE-002` |
-| `ARCH-045-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001`, `ARCH-045-SHOPIFY-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-003`, `ARCH-045-BACKGROUND-004`, `ARCH-045-SHARED-001`, `ARCH-045-BACKGROUND-005` |
+| Task                       | Owner              | Status     | Depends on                                                                                                                                                                                                                                                   |
+| -------------------------- | ------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ARCH-045-DATABASE-001`    | `moda_database`    | superseded | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-DATABASE-002`    | `moda_database`    | complete   | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-DATABASE-003`    | `moda_database`    | superseded | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-SHARED-001`      | `moda_shared`      | complete   | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-SHARED-002`      | `moda_shared`      | complete   | `ARCH-045-SHARED-001`                                                                                                                                                                                                                                        |
+| `ARCH-045-SHARED-003`      | `moda_shared`      | superseded | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-SHOPIFY-001`     | `moda_app`         | ready      | `ARCH-045-SHARED-002`                                                                                                                                                                                                                                        |
+| `ARCH-045-SHOPIFY-002`     | `moda_app`         | complete   | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-SHOPIFY-003`     | `moda_app`         | superseded | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-SHOPIFY-004`     | `moda_app`         | superseded | —                                                                                                                                                                                                                                                            |
+| `ARCH-045-SHOPIFY-005`     | `moda_app`         | superseded | `ARCH-045-DATABASE-002`                                                                                                                                                                                                                                      |
+| `ARCH-045-BACKGROUND-001`  | `moda_background`  | complete   | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002`                                                                                                                                                                                                               |
+| `ARCH-045-BACKGROUND-002`  | `moda_background`  | complete   | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-005`                                                                                                                                                                                                         |
+| `ARCH-045-BACKGROUND-003`  | `moda_background`  | pending    | `ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001`                                                                                                                                                            |
+| `ARCH-045-BACKGROUND-004`  | `moda_background`  | ready      | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-005`                                                                                                                                                                              |
+| `ARCH-045-BACKGROUND-005`  | `moda_background`  | complete   | `ARCH-045-DATABASE-002`                                                                                                                                                                                                                                      |
+| `ARCH-045-SYSTEM-TEST-001` | `moda_system_test` | pending    | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001`, `ARCH-045-SHOPIFY-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-003`, `ARCH-045-BACKGROUND-004`, `ARCH-045-SHARED-001`, `ARCH-045-BACKGROUND-005` |
 
 ## Open Questions
 

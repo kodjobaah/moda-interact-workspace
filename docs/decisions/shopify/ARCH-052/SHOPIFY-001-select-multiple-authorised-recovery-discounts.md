@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-052-BACKGROUND-009
+  - ARCH-052-BACKGROUND-009
 enables:
-- ARCH-052-SYSTEM-TEST-001
-created: '2026-10-29'
+  - ARCH-052-SYSTEM-TEST-001
+created: "2026-10-29"
 updated: 2026-10-31
 ---
 
@@ -215,7 +215,6 @@ The production catalogue sync function cannot be directly invoked from the assig
 - Implementation commit: `270e5dda914d9e4ec42c55812bf1c4485f138cee` (`test(shopify): cover catalogue sync interleaved with selection`), pushed to `origin/task/ARCH-052-SHOPIFY-001`.
 - Recursive database submodule remained at `af77c594ecbfc78c26d01c0021a090830884bbff`; no parent submodule gitlink was staged.
 - Only the task-owned implementation test and this task report were changed. No other task branch or `main` was changed.
-
 
 ## Architect Review
 

@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-007-DATABASE-006
+  - ARCH-007-DATABASE-006
 enables:
-- ARCH-012-BACKGROUND-001
-- ARCH-012-BACKGROUND-002
+  - ARCH-012-BACKGROUND-001
+  - ARCH-012-BACKGROUND-002
 created: 2026-09-14
 updated: 2026-09-16
 ---
@@ -26,9 +26,11 @@ updated: 2026-09-16
 # ARCH-012-DATABASE-001
 
 ## Objective
+
 Extend durable `whatsapp.ConversationMessage` state so inbound text, voice-note media provenance and asynchronous transcription can be represented truthfully without storing raw audio bytes.
 
 ## Current-state constraint
+
 `ConversationMessage.content` alone is insufficient because the current worker collapses non-text inbound messages to an empty string. ARCH-012 needs a durable two-phase voice lifecycle: reserve/dedupe the provider message first, then finalize the transcript before it becomes an ordinary conversation turn.
 
 ## Authorized implementation surface
@@ -44,11 +46,13 @@ package.json                                 # only if adding validator script i
 Do not edit application repositories.
 
 ## 2026-09-16 migration baseline
+
 The current database snapshot contains later ARCH-014/015 migrations through `20260916083000_arch015_refund_correction_evidence`. Create the ARCH-012 migration **after the current canonical latest migration** using the repository's normal timestamp naming; do not backdate it to the original 2026-09-14 overlay date and do not edit/reorder existing migrations.
 
 The existing `ConversationMessage` model itself is unchanged on the fields ARCH-012 extends, so the schema design below remains valid.
 
 ## Exact schema additions
+
 Add enums in the `whatsapp` schema:
 
 ```text
@@ -96,6 +100,7 @@ Field semantics:
 Add a migration-level check for non-negative `mediaDurationMs` if PostgreSQL/Prisma migration conventions permit it without introducing an unsupported Prisma representation. If not, enforce via validator/application and document the limitation rather than inventing raw database mechanisms outside repository convention.
 
 ## Required validator assertions
+
 The new schema validator must prove:
 
 - both enums and exact members exist;
@@ -121,6 +126,7 @@ The new schema validator must prove:
 - [x] migration and ERD are generated normally.
 
 ## Validation
+
 From `moda-interact-database/`:
 
 ```text
@@ -135,14 +141,17 @@ git diff --check
 If local PostgreSQL is unavailable, do not fabricate migration-application evidence. Record the exact environment blocker while still producing/validating the migration artifact to the extent repository tooling permits.
 
 ## Stop conditions
+
 STOP if this task would require changing recovery/billing schema, storing audio binaries, or creating a merchant-owned WhatsApp account model.
 
 ## Completion protocol
+
 Return only DATABASE-001 to `review`; do not start dependent Background work.
 
 ## Completion Report
 
 ### Status
+
 Ready for architect review.
 
 ### Physical worktree isolation
@@ -204,6 +213,7 @@ Ready for architect review.
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2.
 
 ### Review Notes

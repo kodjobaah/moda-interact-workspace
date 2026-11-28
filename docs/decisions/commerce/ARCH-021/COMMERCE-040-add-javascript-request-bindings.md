@@ -284,35 +284,45 @@ Literal     -> authored fixed value
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 `src/commerce/tool-definition/contracts.ts`, `src/commerce/tool-definition/mappings.ts`, `src/commerce/tool-authoring/external-validation.ts`, `src/commerce/tool-authoring/server-actions.ts`, `src/studio/external-http/request-tab.tsx`, `tests/arch021-commerce-tool-contract.test.ts`, `tests/code-request-processor.test.ts`, `tests/external-tool-authoring-validation.test.ts`, and `tests/external-tool-authoring-server-actions.test.ts`.
 
 ### Work Completed
+
 Added the required bounded JavaScript request `bindings` map and deterministic validation paths for unknown and forbidden input references. JavaScript Tool argument mapping and request preview now share one resolver for input/literal bindings, optional omission, structured-value copying, and required-missing errors; only resolved bindings reach QuickJS. Migrated canonical request fixtures/default data shape and added regressions for unbound input exclusion, nested values, literals, missing bindings, invalid bindings, and unsafe descriptors. Preserved the production executor's JavaScript request rejection.
 
 ### Validation Results
+
 `npm exec -- vitest run tests/arch021-commerce-tool-contract.test.ts tests/code-request-processor.test.ts tests/external-tool-authoring-validation.test.ts tests/external-tool-authoring-server-actions.test.ts`: 4 files, 61 tests passed. `npm run test:arch021-tool-authoring-common`: 7 files, 85 tests passed. Targeted ESLint passed. `git diff --check` passed. `npm exec -- tsc --noEmit --pretty false` exited nonzero with 249 repository diagnostics; none reference changed files, and editor diagnostics are clear for all changed files. Validation ran with Node 24.21.0; package engine declares 24.19.0. Implementation commit `b8d544d` is pushed to `task/ARCH-021-COMMERCE-040` in `moda-interact-commerce`.
 
 ### Deviations
+
 No QuickJS processor or production executor changes were needed: argument resolution occurs before the processor boundary, and production JavaScript External HTTP execution remains disabled. The Studio Request tab change is limited to including the newly required empty `bindings` field in its default JavaScript request data.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 The repository-wide TypeScript check remains non-green because of 249 diagnostics outside the changed files; no task-file diagnostics remain.
 
 ### Architectural Concerns
+
 None identified. The implementation remains pre-production and does not enable JavaScript External HTTP execution.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1
 
 ### Review Notes
+
 Reviewed implementation `b8d544d` and parent report handoff `5fdfbc03` against the complete COMMERCE-040 contract. Accepted.
 
 The canonical `EXTERNAL_HTTP` JavaScript request shape now requires an explicit bounded `bindings` map while retaining the `quickjs-sync.v1` runtime and `function buildRequest({ args })` entrypoint. JavaScript request arguments are no longer the complete validated Tool input object: `mapToolArguments(...)` validates the full invocation against `inputSchema` and resolves only declared bindings, preserving structured Agent-input values and bounded JSON literals while honoring `omitIfMissing`.
@@ -324,6 +334,7 @@ Canonical definition validation now applies unknown-input and forbidden External
 Production JavaScript External HTTP execution remains disabled by the existing executor compatibility gate. The only Studio source change is the required empty `bindings` member when switching a Request draft into JavaScript mode; COMMERCE-041/042 remain the owners of Request validation/preview presentation and JavaScript binding controls.
 
 ### Reviewed Files
+
 - `src/commerce/tool-definition/contracts.ts`
 - `src/commerce/tool-definition/mappings.ts`
 - `src/commerce/tool-authoring/external-validation.ts`
@@ -337,6 +348,7 @@ Production JavaScript External HTTP execution remains disabled by the existing e
 - `tests/external-tool-authoring-server-actions.test.ts`
 
 ### Validation Reviewed
+
 Accepted submitted evidence:
 
 ```text
@@ -360,7 +372,9 @@ production EXTERNAL_HTTP JavaScript request execution remains rejected
 ```
 
 ### Architecture Conformance
+
 Conforms. The implementation is bounded to the Commerce-owned Tool-definition/authoring contract, preserves authority and credential isolation, reuses one mapping resolver, keeps QuickJS schema/connection unaware, introduces no database or cross-repository contract change, and leaves UI authoring work to COMMERCE-041/042.
 
 ### Follow-up
+
 `ARCH-021-COMMERCE-041` is promoted to `ready`. COMMERCE-042 remains Pending on COMMERCE-041.

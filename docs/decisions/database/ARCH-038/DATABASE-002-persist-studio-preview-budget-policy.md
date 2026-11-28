@@ -20,6 +20,7 @@ created: 2026-10-13
 updated: 2026-10-13
 superseded_by: ARCH-038-DATABASE-001
 ---
+
 # Persist isolated Studio Preview budget policies
 
 ## Architecture

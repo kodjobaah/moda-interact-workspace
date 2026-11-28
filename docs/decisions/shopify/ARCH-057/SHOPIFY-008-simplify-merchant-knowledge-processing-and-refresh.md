@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-057-SHOPIFY-001
-- ARCH-057-SHOPIFY-007
+  - ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-007
 enables:
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -47,27 +47,27 @@ Paths are relative to `moda-interact`.
 
 ### Production edit map
 
-| Existing path | Required edit |
-|---|---|
-| `app/services/merchant-knowledge/merchant-knowledge.server.ts` | Consume the supplied settings read context; share pure entitlement/activation facts; remove unused read paths; implement two-statement ordered rewrite; re-export the moved error class for compatibility |
-| `app/services/merchant-knowledge/merchant-knowledge-entitlement.server.ts` | Extract pure entitlement projection; retain unavailable with actual cause rather than turning it into denied; own diagnostics for converted failures |
-| `app/services/merchant-knowledge/upload.server.ts` | Remove unused activation/default-language reads, distinguish real storage404 from operational failure, preserve causes and durable finalization/queue semantics |
-| `app/services/merchant-knowledge/r2-client.server.ts` | Own R2/AWS SDK source diagnostics with safe original evidence; preserve actual thrown exception; add trusted shop correlation at construction |
-| `app/services/merchant-knowledge/merchant-knowledge-queue.server.ts` | Log actual acquisition/close/add errors while retaining best-effort false and durable pending revisions |
-| `app/services/merchant-knowledge/merchant-knowledge-observability.server.ts` | Extend the existing thin Shared semantic adapter; retain original safe messages/codes/causes/provider details, not only errorType |
-| `app/routes/app/recovery-settings/route.tsx` | Pass the SHOPIFY-007 `SettingsReadContext` to knowledge loading; no duplicate scalar/relation projection |
-| `app/routes/app/merchant-knowledge/source/route.ts` | Pass framework context to `settingsMutationAccess`; preserve create/edit/edit-upload forms and use common knowledge HTTP error mapping |
-| `app/routes/app/merchant-knowledge/reorder/route.ts` | Same guard/error integration; retain existing 131072-character sourceIds bound and exact-set validation |
-| `app/routes/app/merchant-knowledge/refresh/route.ts` | Same guard/error integration; preserve durable generation/queue behavior |
-| `app/routes/app/merchant-knowledge/delete/route.ts` | Same guard/error integration; preserve tenant ownership and deletion semantics |
-| `app/routes/app/merchant-knowledge/reprocess/route.ts` | Same guard/error integration; preserve immutable uploaded-asset reuse |
-| `app/routes/app/merchant-knowledge/upload-intent/route.ts` | Same guard/error integration; preserve signed upload contract and input bounds |
-| `app/routes/app/merchant-knowledge/upload-finalize/route.ts` | Same guard/error integration; return operational503 versus genuine missing-object400 correctly |
-| `app/routes/app/merchant-knowledge/upload-failure/route.ts` | Use the minimal guard; retain telemetry-only behavior and truthful client-reported origin |
-| `app/components/settings/MerchantKnowledgeSection.tsx` | Remove fetcher-success revalidation; implement the fixed polling episode; distinguish unavailable from plan denial using existing localized common.unavailable text |
-| `app/components/settings/MerchantKnowledgeUploadForm.tsx` | Preserve its one explicit plain-fetch finalization refresh; update typed handling for unavailable without exposing source error text |
-| `tests/fixtures/settings-preview/main.tsx` | Keep fixture DTOs in sync with the added entitlement-state discriminant only |
-| `package.json` | Add the exact three scripts below; no dependency/router upgrade |
+| Existing path                                                                | Required edit                                                                                                                                                                                             |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/merchant-knowledge/merchant-knowledge.server.ts`               | Consume the supplied settings read context; share pure entitlement/activation facts; remove unused read paths; implement two-statement ordered rewrite; re-export the moved error class for compatibility |
+| `app/services/merchant-knowledge/merchant-knowledge-entitlement.server.ts`   | Extract pure entitlement projection; retain unavailable with actual cause rather than turning it into denied; own diagnostics for converted failures                                                      |
+| `app/services/merchant-knowledge/upload.server.ts`                           | Remove unused activation/default-language reads, distinguish real storage404 from operational failure, preserve causes and durable finalization/queue semantics                                           |
+| `app/services/merchant-knowledge/r2-client.server.ts`                        | Own R2/AWS SDK source diagnostics with safe original evidence; preserve actual thrown exception; add trusted shop correlation at construction                                                             |
+| `app/services/merchant-knowledge/merchant-knowledge-queue.server.ts`         | Log actual acquisition/close/add errors while retaining best-effort false and durable pending revisions                                                                                                   |
+| `app/services/merchant-knowledge/merchant-knowledge-observability.server.ts` | Extend the existing thin Shared semantic adapter; retain original safe messages/codes/causes/provider details, not only errorType                                                                         |
+| `app/routes/app/recovery-settings/route.tsx`                                 | Pass the SHOPIFY-007 `SettingsReadContext` to knowledge loading; no duplicate scalar/relation projection                                                                                                  |
+| `app/routes/app/merchant-knowledge/source/route.ts`                          | Pass framework context to `settingsMutationAccess`; preserve create/edit/edit-upload forms and use common knowledge HTTP error mapping                                                                    |
+| `app/routes/app/merchant-knowledge/reorder/route.ts`                         | Same guard/error integration; retain existing 131072-character sourceIds bound and exact-set validation                                                                                                   |
+| `app/routes/app/merchant-knowledge/refresh/route.ts`                         | Same guard/error integration; preserve durable generation/queue behavior                                                                                                                                  |
+| `app/routes/app/merchant-knowledge/delete/route.ts`                          | Same guard/error integration; preserve tenant ownership and deletion semantics                                                                                                                            |
+| `app/routes/app/merchant-knowledge/reprocess/route.ts`                       | Same guard/error integration; preserve immutable uploaded-asset reuse                                                                                                                                     |
+| `app/routes/app/merchant-knowledge/upload-intent/route.ts`                   | Same guard/error integration; preserve signed upload contract and input bounds                                                                                                                            |
+| `app/routes/app/merchant-knowledge/upload-finalize/route.ts`                 | Same guard/error integration; return operational503 versus genuine missing-object400 correctly                                                                                                            |
+| `app/routes/app/merchant-knowledge/upload-failure/route.ts`                  | Use the minimal guard; retain telemetry-only behavior and truthful client-reported origin                                                                                                                 |
+| `app/components/settings/MerchantKnowledgeSection.tsx`                       | Remove fetcher-success revalidation; implement the fixed polling episode; distinguish unavailable from plan denial using existing localized common.unavailable text                                       |
+| `app/components/settings/MerchantKnowledgeUploadForm.tsx`                    | Preserve its one explicit plain-fetch finalization refresh; update typed handling for unavailable without exposing source error text                                                                      |
+| `tests/fixtures/settings-preview/main.tsx`                                   | Keep fixture DTOs in sync with the added entitlement-state discriminant only                                                                                                                              |
+| `package.json`                                                               | Add the exact three scripts below; no dependency/router upgrade                                                                                                                                           |
 
 New production files:
 
@@ -131,21 +131,21 @@ No new knowledge-status endpoint, new polling service, cross-request cache, sour
 
 Apply the common error contract through the existing knowledge semantic adapter and Shared `createLogger`/`sanitizeLogFields`. The adapter supplies explicit safe original error/code/causeChain (maximum4), actual provider metadata and redaction/truncation flags. No generic serializer, log registry, competing sink or copied redactor. Preserve actual thrown cause/exception identity where not deliberately wrapping a typed domain result.
 
-| Failure/injection | Source owner | Required emitted evidence and business result |
-|---|---|---|
-| Entitlement DB query rejects | Entitlement loader | Original safe DB marker/code/cause, origin database; unavailable/retryable, never denied |
-| Persisted feature configuration fails parsing | Entitlement projection boundary | Original safe parse cause, origin internal; unavailable/nonretryable, no invented provider fields |
-| Knowledge source/revision/catalogue read or mutation DB failure not converted below | Read-model boundary or HTTP action mapper respectively | Original DB message/code/cause once; safe error/503, transaction rollback preserved |
-| R2 signPut or HEAD SDK/service/transport exception | `r2-client.server.ts` via existing knowledge semantic adapter | Actual safe name/message/cause, status/code/request ID/details when supplied; preserve original thrown exception |
-| R2 actual404 versus503/429/403/transport | Same R2 source owner; upload maps without re-logging source body | Correct400 missing-object versus503 unavailable; no asset/source writes before HEAD success |
-| Sealed configuration fails during upload or display limit load | Owning knowledge caller if not already logged by its source adapter | Actual safe config cause; upload503 or display maxUploadBytes0 as applicable; never log envelope/keyring/credentials |
-| P2025 converted by upload normalizeError | Conversion boundary | Actual safe DB cause/code retained before current typed denial; no loss caused by constructing a fresh code-only Error |
-| Postcommit activation read fails | Finalization continuation | Original DB failure once, warn; successful committed result with queuedfalse |
-| Queue creation/old queue close/add fails | Knowledge queue helper | Original safe Redis/BullMQ error/cause once, warn; false and durable pending revision |
-| Optional queue absent | Queue helper when dispatch requested | Truthful internal unavailable classification, no fabricated SDK/provider message |
-| Browser upload-failure telemetry | Existing telemetry route | Explicit client-reported stage/status/code; never pretend to possess the provider's original server response or accept arbitrary raw error text |
-| Validation, expected conflict/denial | Typed control flow | Preserve400/403/409; no fabricated upstream error |
-| Throwing Shared sink | Shared isolation | Same HTTP status, rollback, finalized rows, queued result and retry decision |
+| Failure/injection                                                                   | Source owner                                                        | Required emitted evidence and business result                                                                                                   |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Entitlement DB query rejects                                                        | Entitlement loader                                                  | Original safe DB marker/code/cause, origin database; unavailable/retryable, never denied                                                        |
+| Persisted feature configuration fails parsing                                       | Entitlement projection boundary                                     | Original safe parse cause, origin internal; unavailable/nonretryable, no invented provider fields                                               |
+| Knowledge source/revision/catalogue read or mutation DB failure not converted below | Read-model boundary or HTTP action mapper respectively              | Original DB message/code/cause once; safe error/503, transaction rollback preserved                                                             |
+| R2 signPut or HEAD SDK/service/transport exception                                  | `r2-client.server.ts` via existing knowledge semantic adapter       | Actual safe name/message/cause, status/code/request ID/details when supplied; preserve original thrown exception                                |
+| R2 actual404 versus503/429/403/transport                                            | Same R2 source owner; upload maps without re-logging source body    | Correct400 missing-object versus503 unavailable; no asset/source writes before HEAD success                                                     |
+| Sealed configuration fails during upload or display limit load                      | Owning knowledge caller if not already logged by its source adapter | Actual safe config cause; upload503 or display maxUploadBytes0 as applicable; never log envelope/keyring/credentials                            |
+| P2025 converted by upload normalizeError                                            | Conversion boundary                                                 | Actual safe DB cause/code retained before current typed denial; no loss caused by constructing a fresh code-only Error                          |
+| Postcommit activation read fails                                                    | Finalization continuation                                           | Original DB failure once, warn; successful committed result with queuedfalse                                                                    |
+| Queue creation/old queue close/add fails                                            | Knowledge queue helper                                              | Original safe Redis/BullMQ error/cause once, warn; false and durable pending revision                                                           |
+| Optional queue absent                                                               | Queue helper when dispatch requested                                | Truthful internal unavailable classification, no fabricated SDK/provider message                                                                |
+| Browser upload-failure telemetry                                                    | Existing telemetry route                                            | Explicit client-reported stage/status/code; never pretend to possess the provider's original server response or accept arbitrary raw error text |
+| Validation, expected conflict/denial                                                | Typed control flow                                                  | Preserve400/403/409; no fabricated upstream error                                                                                               |
+| Throwing Shared sink                                                                | Shared isolation                                                    | Same HTTP status, rollback, finalized rows, queued result and retry decision                                                                    |
 
 R2 diagnostics remove credentials, signed URLs, object keys, raw request/response bodies and echoed PII before Shared emission. Retain safe original provider wording/details; redact only unsafe portions, or explicitly mark an inseparable unsafe portion `[REDACTED]`. Keep no-error/malformed-success cases free of fabricated providerError. Pass trusted shopId into R2 client construction; do not perform another DB read for correlation. Browser replies never contain provider diagnostics.
 

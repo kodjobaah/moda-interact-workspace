@@ -71,17 +71,17 @@ Implement **only** a WooCommerce-specific adapter for the approved first-recover
 
 ### R1 — Exhaustive Woo denial-notice mapping
 
-| `WooAdmissionDenialReason` | Shared reason | Notify? |
-|---|---|---|
-| `CONSENT_NOT_GRANTED` | `NO_VERIFIED_OPT_IN` | Yes |
-| `CONSENT_AMBIGUOUS` | `RECIPIENT_AMBIGUOUS` | Yes |
-| `RECIPIENT_MISSING` | `RECIPIENT_UNVERIFIED` | Yes |
-| `RECIPIENT_INVALID` | `RECIPIENT_UNVERIFIED` | Yes |
-| `RECIPIENT_IDENTITY_MISMATCH` | `RECIPIENT_UNVERIFIED` | Yes |
-| `CONSENT_RECIPIENT_UNVERIFIED` | `RECIPIENT_UNVERIFIED` | Yes |
-| `CONSENT_NO_CONTACT` | — | No: existing STOP/no-contact notification owns this |
-| `CONSENT_CHANGED` | — | No: normal reconciliation/retry, not proof of refusal |
-| `INVALID_CANDIDATE`, `SHOP_NOT_ELIGIBLE`, `INSTALLATION_INACTIVE`, `BASKET_EMPTY`, `BASKET_INVALID` | — | No |
+| `WooAdmissionDenialReason`                                                                          | Shared reason          | Notify?                                               |
+| --------------------------------------------------------------------------------------------------- | ---------------------- | ----------------------------------------------------- |
+| `CONSENT_NOT_GRANTED`                                                                               | `NO_VERIFIED_OPT_IN`   | Yes                                                   |
+| `CONSENT_AMBIGUOUS`                                                                                 | `RECIPIENT_AMBIGUOUS`  | Yes                                                   |
+| `RECIPIENT_MISSING`                                                                                 | `RECIPIENT_UNVERIFIED` | Yes                                                   |
+| `RECIPIENT_INVALID`                                                                                 | `RECIPIENT_UNVERIFIED` | Yes                                                   |
+| `RECIPIENT_IDENTITY_MISMATCH`                                                                       | `RECIPIENT_UNVERIFIED` | Yes                                                   |
+| `CONSENT_RECIPIENT_UNVERIFIED`                                                                      | `RECIPIENT_UNVERIFIED` | Yes                                                   |
+| `CONSENT_NO_CONTACT`                                                                                | —                      | No: existing STOP/no-contact notification owns this   |
+| `CONSENT_CHANGED`                                                                                   | —                      | No: normal reconciliation/retry, not proof of refusal |
+| `INVALID_CANDIDATE`, `SHOP_NOT_ELIGIBLE`, `INSTALLATION_INACTIVE`, `BASKET_EMPTY`, `BASKET_INVALID` | —                      | No                                                    |
 
 These are the **actual** denial reason variants in the accepted BG003 source. A `deferred`, `already-exists`, `superseded` or `created` result never invokes this denial adapter. Unexpected/future reason variants fail visibly during exhaustive mapping review; do not silently reinterpret them as missing consent.
 
@@ -92,13 +92,10 @@ import type {
   RecoveryConsentMerchantNotifier,
   RecoveryConsentNoticeInput,
 } from "../checkout-recovery/recovery-consent-merchant-notice.contracts.js";
-import type {
-  WooDeniedAdmission,
-} from "./woo-recovery-admission.service.js";
+import type { WooDeniedAdmission } from "./woo-recovery-admission.service.js";
 
 // Illustrative adapter boundary; BG005 injects the actual callback.
-type WooDeniedAdmissionNotifier =
-  (denial: WooDeniedAdmission) => Promise<void>;
+type WooDeniedAdmissionNotifier = (denial: WooDeniedAdmission) => Promise<void>;
 
 // For an included reason:
 const input: RecoveryConsentNoticeInput = {
@@ -164,7 +161,7 @@ All were Complete in the uploaded 2026-10-25 13:36 snapshot.
 - [x] Focused Support/merchant-notice integration with two concurrent matching Woo denial callbacks and shop isolation, where test DB is configured.
 - [x] Fault-injection tests for Redis/DB/notifier exceptions and shared logger sink failure isolation; run repository-declared typecheck and focused unit/integration scripts relevant to modified files.
 - [x] `git diff --check` after patch application and `git diff --cached --check` before commit; Completion Report records exact changed files and supplied validation results.
-**Review-provenance caveat:** The historical start-of-attempt launcher mapping/synchronization/submodule preparation packet was not supplied. Current dedicated worktree mapping, clean task-branch publication, implementation synchronization and exact database gitlink were verified during review. This caveat was assessed and accepted as non-blocking for this bounded adapter task.
+      **Review-provenance caveat:** The historical start-of-attempt launcher mapping/synchronization/submodule preparation packet was not supplied. Current dedicated worktree mapping, clean task-branch publication, implementation synchronization and exact database gitlink were verified during review. This caveat was assessed and accepted as non-blocking for this bounded adapter task.
 
 ## Stop Condition
 

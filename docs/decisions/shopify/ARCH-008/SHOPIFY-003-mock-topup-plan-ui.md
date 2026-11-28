@@ -165,21 +165,21 @@ Do not create a second translation runtime or locale mechanism.
       of direct billing/provider calls.
 - [ ] Shop resolution does not reset an existing shop to `ACTIVE`.
 - [ ] Only the explicit installation lifecycle path reactivates an uninstalled
-  shop; suspended shops remain suspended.
+      shop; suspended shops remain suspended.
 - [ ] Focused shop lifecycle tests cover the status transitions and preservation
-  rules above.
+      rules above.
 - [ ] Access-policy checks receive route/capability context and an explicit
-  redirect destination.
+      redirect destination.
 - [ ] Suspended operational denials redirect to merchant support instead of
-  returning a raw forbidden response.
+      returning a raw forbidden response.
 - [ ] Uninstalled support denials redirect to the login/start flow.
 - [ ] Incomplete first-install onboarding still redirects to `/app/billing`.
 - [ ] Merchant-support UI strings are rendered through the merchant i18n
-  runtime, with no hard-coded merchant-visible English copy.
+      runtime, with no hard-coded merchant-visible English copy.
 - [ ] Merchant-support locale keys exist in every declared locale and preserve
-  the required ICU placeholders.
+      the required ICU placeholders.
 - [ ] Merchant-support i18n tests validate catalogue completeness and the
-  localized page/action states.
+      localized page/action states.
 
 ## Validation
 
@@ -203,52 +203,66 @@ When the implementation and validation are complete, use
 ## Completion Report
 
 ### Status
+
 Changes Requested — Attempt 1
 
 ### Files Changed
+
 - Implementation branch commit `d265060` changes 44 files, including the new dashboard billing components, 20 locale catalogues, billing routes, shop lifecycle/access-policy code, and related tests.
 - The implementation worktree also contains uncommitted changes to `app/i18n/locales/zh-Hant.json`, `app/routes/app/merchant-support/route.jsx`, `.vscode/`, and `merge-locales.sh`; these were not modified or discarded during review.
 
 ### Work Completed
+
 - The published implementation adds a dashboard billing/options surface and locale keys, plus partial shop lifecycle and access-policy changes.
 - It does not yet implement the required onboarding prototype or the complete interaction/access/i18n contract.
 
 ### Validation Results
+
 - `npm test`: 216 passed, 1 skipped.
 - `npm run build`: passed.
 - `git diff --check`: passed.
 - `npm run typecheck`: failed with 175 diagnostics, including errors in each new billing prototype component, billing options route, merchant-support route, shop service, and related tests.
 
 ### Deviations
+
 - The implementation is materially broader than the declared prototype scope and places the UI in `app/components/dashboard` and `/app/billing/options` while leaving `app/components/onboarding/Onboarding.jsx` unchanged.
 
 ### Assumptions
+
 - None accepted for this review; the required onboarding integration and task-surface type safety remain unresolved.
 
 ### Unresolved Issues
+
 - See Developer Self-Review - Changes Requested below.
 
 ### Architectural Concerns
+
 - The task currently mixes a mock billing surface with production billing-route and merchant-support changes without proving the required no-network/local-state boundary.
 
 ### Architect Review
 
 #### Review Status
+
 Changes Requested
 
 #### Review Notes
+
 - See Developer Self-Review - Changes Requested below.
 
 #### Reviewed Files
+
 None
 
 #### Validation Reviewed
+
 - Full tests, build, diff check, and typecheck were run in the canonical implementation worktree.
 
 #### Architecture Conformance
+
 Changes Requested
 
 #### Follow-up
+
 The developer must address the explicit corrections below and re-run the required validation before the next reconciliation.
 
 ## Developer Self-Review - Changes Requested

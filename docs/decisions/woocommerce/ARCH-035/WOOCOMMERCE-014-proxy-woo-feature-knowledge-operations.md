@@ -14,7 +14,14 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: [ARCH-035-API-014, ARCH-035-API-015, ARCH-035-API-016, ARCH-035-API-017, ARCH-035-API-018]
+depends_on:
+  [
+    ARCH-035-API-014,
+    ARCH-035-API-015,
+    ARCH-035-API-016,
+    ARCH-035-API-017,
+    ARCH-035-API-018,
+  ]
 enables: [ARCH-035-WOOCOMMERCE-015]
 created: 2026-10-16
 updated: 2026-10-19
@@ -28,7 +35,6 @@ updated: 2026-10-19
 - Owner: `moda_woocommerce`, repository `moda-interact-woocommerce`; coordinator: `moda_architect`.
 - **Initial dependency-ready state (2026-10-17).** The canonical parent task worktree recorded dependency eligibility at Attempt 0 before the developer takeover and claim below.
 - **18 October architectural scope reconciliation:** the later approved browser-direct R2 transport replaces the original PHP binary uploader. API-018 is recorded Complete in the 18 October architecture snapshot and is now a declared dependency. The existing developer-owned `in_progress` Attempt 1 claim, physical worktree evidence and completion authority are preserved; do not reset the claim to Attempt 0 or revert execution to `agent`.
-
 
 ## Objective
 

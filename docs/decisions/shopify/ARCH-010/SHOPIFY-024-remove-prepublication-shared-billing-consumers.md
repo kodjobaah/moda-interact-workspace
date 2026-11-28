@@ -253,34 +253,34 @@ Shared package version used: `@modainteract/moda-interact-shared` `^0.10.0`.
 Task branch: `task/ARCH-010-SHOPIFY-024`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-024`
-  parent branch: `task/ARCH-010-SHOPIFY-024`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-024`
-  implementation branch: `task/ARCH-010-SHOPIFY-024`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-024`
+parent branch: `task/ARCH-010-SHOPIFY-024`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-024`
+implementation branch: `task/ARCH-010-SHOPIFY-024`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact`
-  commit: `5768912`
-  remote branch: `origin/task/ARCH-010-SHOPIFY-024`
-  pushed: yes
+repository: `moda-interact`
+commit: `5768912`
+remote branch: `origin/task/ARCH-010-SHOPIFY-024`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-024-remove-prepublication-shared-billing-consumers.md`
-  claim commit: `4470853`
-  report commit: `64f84b6`
-  remote branch: `origin/task/ARCH-010-SHOPIFY-024`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-024-remove-prepublication-shared-billing-consumers.md`
+claim commit: `4470853`
+report commit: `64f84b6`
+remote branch: `origin/task/ARCH-010-SHOPIFY-024`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

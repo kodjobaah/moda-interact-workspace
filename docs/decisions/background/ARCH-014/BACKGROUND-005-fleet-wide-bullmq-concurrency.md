@@ -15,11 +15,11 @@ executor:
 claimed_at:
 attempt: 1
 depends_on:
-- ARCH-014-BACKGROUND-002
-- ARCH-014-BACKGROUND-003
-- ARCH-014-BACKGROUND-004
+  - ARCH-014-BACKGROUND-002
+  - ARCH-014-BACKGROUND-003
+  - ARCH-014-BACKGROUND-004
 enables:
-- ARCH-014-SYSTEM-TEST-003
+  - ARCH-014-SYSTEM-TEST-003
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -202,6 +202,7 @@ Validation:
 - Implementation worktree is clean after commit and push.
 
 Limitations: the repository integration runner does not currently include a live two-Worker BullMQ Redis-cap test or an active-job cap-decrease test. The controller unit suite covers mocked lease contention, fresh post-lease reads, ordered mapping, Redis verification, healing retry, and strict config-version updates; the two live BullMQ scenarios remain explicit review coverage gaps.
+
 ## Architect Review
 
 ### Review Status

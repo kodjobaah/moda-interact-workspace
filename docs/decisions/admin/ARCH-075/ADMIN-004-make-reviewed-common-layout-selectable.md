@@ -87,7 +87,6 @@ After scope and required checks complete, set review, submit mirrored Completion
 
 You are not alone; preserve other changes. Canonical prepared packet owns startup/claim. Existing accepted tasks must not be rewritten. Root owns merges and live verification.
 
-
 ## Completion Report
 
 ### Status

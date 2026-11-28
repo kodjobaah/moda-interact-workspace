@@ -167,35 +167,37 @@ Stop if exact promo-grant reservation ownership cannot be added without conflict
 ## Work Items
 
 - [x] Extend `PromotionalCreditGrant` with nullable campaign provenance, exact
-  reservation/commitment counters, selection/use/exhaustion timestamps, version,
-  composite campaign/shop uniqueness, and quantity integrity checks.
+      reservation/commitment counters, selection/use/exhaustion timestamps, version,
+      composite campaign/shop uniqueness, and quantity integrity checks.
 - [x] Add one-row-per-Shop `billing.MerchantPromotionSelection` with unique Shop
-  and grant ownership plus the composite Shop/grant foreign key.
+      and grant ownership plus the composite Shop/grant foreign key.
 - [x] Add nullable exact promotional grant ownership to `UsageReservation`, its
-  index, and a compatibility-preserving foreign key.
+      index, and a compatibility-preserving foreign key.
 - [x] Preserve aggregate promotional counter compatibility and campaign-less
-  historical grants; do not add migration data writes or automatic selection.
+      historical grants; do not add migration data writes or automatic selection.
 - [x] Update the generated Prisma ERD and add focused schema assertions.
 
 ## Acceptance Criteria
 
 - [x] Campaign/shop claims are exactly-once through
-  `UNIQUE(campaignId, shopId)`, including reopened campaigns without replenishmen
+      `UNIQUE(campaignId, shopId)`, including reopened campaigns without replenishmen
 - [x] Add nullable exact promotional grant ownership to `UsageReservation` with an indexed relation, preserving existing rows as `NULL`.
 - [x] A Shop has at most one current promotion and a selection cannot reference
-  another Shop's grant through the composite foreign key.
+      another Shop's grant through the composite foreign key.
 - [x] Grant counters reject negative or over-allocated values, and exact promo
-  grant reservation ownership is indexed and nullable for historical rows.
+      grant reservation ownership is indexed and nullable for historical rows.
 - [x] Migration SQL contains no data backfill, auto-selection, or capacity grant;
-  existing campaign-less grants/reservations remain compatible.
+      existing campaign-less grants/reservations remain compatible.
 - [x] Prisma schema, migration, focused validators, adjacent schema validators,
-  ERD generation, and whitespace checks were run; local database deployment was
-  attempted and blocked only by unavailable PostgreSQL.
+      ERD generation, and whitespace checks were run; local database deployment was
+      attempted and blocked only by unavailable PostgreSQL.
 - [x] Add the additive migration, ERD update, package script, and deterministic schema/migration validator without creating selections, grants, capacity, or rewriting historical rows.
 - [x] Run the repository-declared Prisma, schema, compatibility, ERD, migration-status, and diff checks.
 
 ## Acceptance Criteria
+
 Ready for Review.
+
 - [x] `(campaignId, shopId)` is unique, while nullable campaign IDs preserve historical campaign-less grants and reopened campaigns cannot create a second grant.
 - [x] `MerchantPromotionSelection.shopId` and `promotionalCreditGrantId` are individually unique, and the composite foreign key prevents cross-Shop grant pointers.
 - `prisma/schema.prisma`
@@ -218,6 +220,7 @@ Ready for Review.
   `PromotionalCreditGrant`; strengthen the focused validator to prove that
   index in both Prisma schema and DATABASE-011 migration; record complete
   physical-worktree and start-of-attempt synchronization evidence.
+
 ## Completion Report
 
 Ready for Review.
@@ -244,33 +247,33 @@ Ready for Review.
 ### Attempt 2 Git / VCS Evidence
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011
-  parent branch: task/ARCH-010-DATABASE-011
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011
-  implementation branch: task/ARCH-010-DATABASE-011
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011
+parent branch: task/ARCH-010-DATABASE-011
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011
+implementation branch: task/ARCH-010-DATABASE-011
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: yes
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: yes
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: yes
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: moda-interact-database
-  commit: cae6787
-  remote branch: origin/task/ARCH-010-DATABASE-011
-  pushed: yes
+repository: moda-interact-database
+commit: cae6787
+remote branch: origin/task/ARCH-010-DATABASE-011
+pushed: yes
 
 Parent workspace:
-  task file: docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
-  commit: to be reported after this Completion Report commit
-  remote branch: origin/task/ARCH-010-DATABASE-011
-  pushed: pending
-  submodule gitlink staged: no
+task file: docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
+commit: to be reported after this Completion Report commit
+remote branch: origin/task/ARCH-010-DATABASE-011
+pushed: pending
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -301,12 +304,14 @@ Merged to workspace main: no
 - `docs/generated/prisma-erd.puml`
 
 ### Work Completed
+
 - Added campaign-aware promotional grant lot fields and durable lifecycle accounting while preserving DATABASE-009 provenance and campaign-less compatibility rows.
 - Added unique campaign/shop claim enforcement, current merchant selection persistence, composite Shop/grant identity enforcement, and exact promotional reservation ownership.
 - Added deterministic validation for uniqueness, quantity integrity, exact reservation ownership, compatibility migration behavior, and no automatic selection or capacity grant.
 - Regenerated the PlantUML ERD and added the `test:promotion-selection` package command.
 
 ### Validation Results
+
 - Passed: `npm run format`.
 - Passed: `npm run validate`.
 - Passed: `npm run prisma:validate`.
@@ -323,6 +328,7 @@ Merged to workspace main: no
 - Blocked by environment: `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact" npm run status` returned Prisma `P1001` because PostgreSQL was unavailable at `localhost:5432`; no migration was applied.
 
 ### Git / VCS
+
 - Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011`.
 - Parent branch: `task/ARCH-010-DATABASE-011`; prior claim commit: `b9d8e1b`.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011`.
@@ -363,35 +369,35 @@ Merged to workspace main: no
 ### Attempt 3 Git / VCS Evidence
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011
-  parent branch: task/ARCH-010-DATABASE-011
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011
-  implementation branch: task/ARCH-010-DATABASE-011
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-011
+parent branch: task/ARCH-010-DATABASE-011
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-011
+implementation branch: task/ARCH-010-DATABASE-011
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes
-  parent origin/main incorporated: yes, merged current origin/main into the task branch
-  implementation remote task branch fast-forwarded: yes
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: yes
+parent origin/main incorporated: yes, merged current origin/main into the task branch
+implementation remote task branch fast-forwarded: yes
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: moda-interact-database
-  commits: `91b1b1f`, `6a463a3`, `33c567f`
-  implementation head: `33c567f`
-  remote branch: origin/task/ARCH-010-DATABASE-011
-  pushed: yes
+repository: moda-interact-database
+commits: `91b1b1f`, `6a463a3`, `33c567f`
+implementation head: `33c567f`
+remote branch: origin/task/ARCH-010-DATABASE-011
+pushed: yes
 
 Parent workspace:
-  task file: docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
-  claim commit: `cdfebdb`
-  final report commit: to be recorded after this report metadata correction
-  remote branch: origin/task/ARCH-010-DATABASE-011
-  pushed: pending
-  submodule gitlink staged: no
+task file: docs/decisions/database/ARCH-010/DATABASE-011-merchant-promotion-selection-and-grant-lots.md
+claim commit: `cdfebdb`
+final report commit: to be recorded after this report metadata correction
+remote branch: origin/task/ARCH-010-DATABASE-011
+pushed: pending
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

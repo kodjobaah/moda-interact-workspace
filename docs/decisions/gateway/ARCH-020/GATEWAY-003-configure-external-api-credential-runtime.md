@@ -90,9 +90,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-COMMERCE-029
 
 ## Enables
+
 - ARCH-020-COMMERCE-012
 - ARCH-020-SYSTEM-TEST-002
-
 
 ## Acceptance Criteria
 
@@ -179,7 +179,7 @@ Passed in the dedicated Gateway implementation worktree:
 - `bash tests/validate-render-blueprints.sh render.production.yaml`: PASS.
 - `bash tests/validate-render-blueprints-negative.sh`: PASS.
 - `bash -n docker/entrypoint.sh tests/run-tests.sh
-  tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`:
+tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`:
   PASS.
 - `git diff --check` in both task worktrees: PASS.
 
@@ -315,6 +315,7 @@ and select a replica plan with sufficient headroom. This non-blocking operationa
 does not reduce the four-worker contract. Recalculate the dependency frontier:
 COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 may become Ready where their
 other dependencies are Complete.
+
 ### Architect scope clarification — 2026-09-22
 
 C21 was added after the original GATEWAY-001 U01–U14 route contract. This task now
@@ -668,6 +669,7 @@ review.
 - Reopen transition: `review` to `ready`; executor and claimed_at remain null;
   attempt remains 2. The next authorized `/moda-task` claim increments it once to
   Attempt 3.
+
 ## Attempt 2 — Changes Requested (2026-10-02)
 
 Attempt 2 closed A1-R1, A1-R3 and A1-R4. The only remaining acceptance gate is C21

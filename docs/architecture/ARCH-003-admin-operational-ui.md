@@ -117,7 +117,6 @@ Observability
 The large queue-monitor card must be removed from `Tenant Directory` after the
 compact overview cards exist.
 
-
 ### Left navigation shell parity
 
 The approved reference includes a substantially richer left navigation shell
@@ -320,7 +319,6 @@ ARCH-003-ADMIN-006   [Complete] Add selected failed-job server detail reader
 ARCH-003-ADMIN-007   [Complete] Add failed-job detail panel UI
 ```
 
-
 ### Visual parity correction
 
 ```text
@@ -350,8 +348,8 @@ ARCH-003-ADMIN-013   [Pending] Integrate paginated filtered queue-job diagnostic
 
 ## Tasks
 
-| Task | Owner | Status | Depends On |
-|------|-------|--------|------------|
+| Task               | Owner      | Status   | Depends On         |
+| ------------------ | ---------- | -------- | ------------------ |
 | ARCH-003-ADMIN-001 | moda_admin | Complete | ARCH-002-ADMIN-011 |
 | ARCH-003-ADMIN-002 | moda_admin | Complete | ARCH-003-ADMIN-001 |
 | ARCH-003-ADMIN-008 | moda_admin | Complete | ARCH-003-ADMIN-002 |
@@ -408,7 +406,6 @@ Observability > Shopify Queues
 
 `ARCH-003` is Complete.
 
-
 ## Reopen decision
 
 ARCH-003 is reopened because the approved visual reference was not converted
@@ -423,7 +420,6 @@ ARCH-003 must not return to Complete until the Shopify Queues screen is compared
 against `ARCH-003-shopify-queues-approved-reference.png` and the approved
 table-plus-right-drawer composition is visibly present.
 
-
 ## ADMIN-010 acceptance
 
 ADMIN-010 is architect-accepted Complete after Attempt 1.
@@ -434,7 +430,6 @@ bottom administrator role treatment. Dashboard/Billing/Settings remain
 intentionally absent because no real destinations exist.
 
 `ARCH-003-ADMIN-011` is now Ready.
-
 
 ## Detailed snapshot runtime prerequisite
 
@@ -448,7 +443,6 @@ queue data or weaken fail-fast Redis settings.
 
 ADMIN-011 remains in Review until ADMIN-014 is accepted and the drawer can be
 visually exercised against the approved reference.
-
 
 ## Drawer overlay clarification
 
@@ -479,7 +473,6 @@ Queue/sort/direction changes reset to page 1. Pagination must reuse the bounded
 ADMIN-004 API contract and must not make false exact-total claims when the
 server's bounded scan ceiling is reached.
 
-
 ## ADMIN-011 resizable overlay clarification
 
 The accepted final Queue details interaction is not a fixed-width 560px drawer.
@@ -504,7 +497,6 @@ Pagination remains separate:
 
 - ADMIN-012 summary: at most 5 recent failures;
 - ADMIN-013 full browser: default 10 rows/page with Previous/Page/Next.
-
 
 ## ADMIN-011 final acceptance
 
@@ -618,7 +610,6 @@ Shop/status changes reset pagination to page 1.
 
 Pagination and total metadata must remain truthful under bounded Redis scans.
 
-
 ## ADMIN-015 acceptance
 
 ADMIN-015 is architect-accepted Complete after live verification of:
@@ -634,7 +625,6 @@ ADMIN-015 is architect-accepted Complete after live verification of:
 Future producer-side enrichment of Shopify BullMQ jobs is deliberately owned by
 the separate ARCH-004 initiative so ARCH-003 does not mutate producer contracts
 inside an Admin architecture task.
-
 
 ## Producer tenant metadata clarification
 
@@ -660,7 +650,6 @@ inference from opaque job IDs or unrelated payload fields.
 ARCH-004 separately improves the readability of future Shopify BullMQ `jobId`
 values. It does not change the job-data envelope.
 
-
 ## ADMIN-016 acceptance
 
 ADMIN-016 is architect-accepted Complete.
@@ -681,7 +670,6 @@ The remaining ARCH-003 sequence is:
 ADMIN-012   Ready
     -> ADMIN-013   Pending
 ```
-
 
 ## ADMIN-012 architecture amendment: Waiting and Delayed are first-class job states
 
@@ -828,7 +816,6 @@ contract.
 This amendment does not reopen ADMIN-015 or ADMIN-016 as separate tasks and does
 not introduce queue mutation.
 
-
 ## ADMIN-012 acceptance and final ARCH-003 task
 
 ADMIN-012 Attempt 1, including Waiting/Delayed Amendment 001, is
@@ -845,7 +832,6 @@ states, and the final screenshot-level runtime comparison.
 
 The delayed pending-recovery screenshot that was previously requested from
 ADMIN-012 is explicitly deferred into ADMIN-013 final visual acceptance.
-
 
 ## Architecture scope correction — fold tenant-attribution follow-up into ARCH-003
 
@@ -931,7 +917,6 @@ It is superseded by this correction and its files must be removed from the
 workspace after this overlay is applied so deterministic task resolution does
 not retain stale ARCH-005 work.
 
-
 ## ADMIN-013 acceptance
 
 ADMIN-013 Attempt 1 is architect-accepted Complete.
@@ -960,7 +945,6 @@ ARCH-003-SYSTEM-TEST-001  Pending
 The final system test owns the real delayed pending-recovery proof before
 ARCH-003 closure.
 
-
 ## BACKGROUND-001 acceptance
 
 `ARCH-003-BACKGROUND-001` is architect-accepted Complete.
@@ -987,7 +971,6 @@ ARCH-003-ADMIN-018        Pending
 ARCH-003-SYSTEM-TEST-001  Pending
 ```
 
-
 ## ADMIN-017 acceptance
 
 `ARCH-003-ADMIN-017` is architect-accepted Complete.
@@ -1011,7 +994,6 @@ ARCH-003-ADMIN-018        Ready
         v
 ARCH-003-SYSTEM-TEST-001  Pending
 ```
-
 
 ## Observability navigation simplification
 
@@ -1042,7 +1024,6 @@ configuration/status fallback, but it must not contain a Shopify Queues
 promotional card/CTA.
 
 This final UI correction is owned by `ARCH-003-ADMIN-019`.
-
 
 ## Shopify dashboard Prisma relation correction
 
@@ -1108,7 +1089,6 @@ No Prisma schema change or migration is required.
 `ARCH-003-SHOPIFY-001` is independently Ready and may execute in parallel with
 the remaining Admin task(s). ARCH-003 must not be closed until this correction
 has been architect-reviewed if it remains part of the initiative.
-
 
 ## Shopify dashboard conversation correction accepted
 
@@ -1287,7 +1267,6 @@ ARCH-003-SHOPIFY-002       Pending
 ARCH-003-SYSTEM-TEST-002   Pending
 ```
 
-
 ## BACKGROUND-002 acceptance
 
 `ARCH-003-BACKGROUND-002` is architect-accepted Complete.
@@ -1318,7 +1297,6 @@ ARCH-003-SHOPIFY-002   Ready
         v
 ARCH-003-SYSTEM-TEST-002   Pending
 ```
-
 
 ## SHOPIFY-002 Amendment 001 — merchant manual refresh
 
@@ -1362,7 +1340,6 @@ page to exceed the new page count, move to the last valid page.
 
 No automatic polling is introduced.
 
-
 ## SHOPIFY-002 resolver coordination correction
 
 The first Amendment 001 handoff accidentally set:
@@ -1387,7 +1364,6 @@ The next repository claim will create execution Attempt 2 for the same
 `ARCH-003-SHOPIFY-002` task.
 
 No runtime or architectural scope has changed.
-
 
 ## SHOPIFY-002 Amendment 002 — pagination/local-state synchronisation
 
@@ -1424,7 +1400,6 @@ page used by the next manual Refresh
 This is a local Shopify UI-state correction only. The Background index,
 shop-scoped read contract, tenant isolation and server-only Redis architecture
 remain unchanged.
-
 
 ## SHOPIFY-002 architect acceptance
 
@@ -1477,7 +1452,6 @@ The remaining integrated gate for this merchant extension is:
 ARCH-003-SYSTEM-TEST-002   Ready
 ```
 
-
 ## SYSTEM-TEST-002 evidence-gate clarification
 
 The merchant pending-recovery system-test task has two distinct stages:
@@ -1502,7 +1476,6 @@ before use:
 
 After the validator correction is accepted, live evidence remains mandatory
 before `ARCH-003-SYSTEM-TEST-002` can be marked Complete.
-
 
 ## SYSTEM-TEST-002 validator accepted / live evidence pending
 
@@ -1533,7 +1506,6 @@ ARCH-003-SYSTEM-TEST-002   Blocked — developer live evidence
 No additional runtime implementation is requested at this point.
 
 The final gate is evidence collection and architect review.
-
 
 ## SHOPIFY-003 accepted
 

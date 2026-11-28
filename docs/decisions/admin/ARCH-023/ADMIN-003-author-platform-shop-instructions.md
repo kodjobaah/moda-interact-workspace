@@ -377,14 +377,13 @@ In one transaction:
    editVersion += 1
    ```
 10. create/update configuration:
-   ```text
-   activePromptRevisionId = published revision.id
-   promptEditVersion = previous + 1
-   ```
-   while preserving `modelId` and `modelEditVersion`;
-11. write `PUBLISH_AGENT_PROMPT_REVISION` audit;
-12. write `SET_AGENT_PROMPT` audit referencing `agentConfigurationId`;
-13. commit.
+
+```text
+activePromptRevisionId = published revision.id
+promptEditVersion = previous + 1
+```
+
+while preserving `modelId` and `modelEditVersion`; 11. write `PUBLISH_AGENT_PROMPT_REVISION` audit; 12. write `SET_AGENT_PROMPT` audit referencing `agentConfigurationId`; 13. commit.
 
 Do not publish first and activate in a separate request.
 
@@ -547,7 +546,7 @@ SET_AGENT_PROMPT
 For a pending-category publish, `PUBLISH_AGENT_PROMPT_REVISION` metadata must include:
 
 ```json
-{"changeKind":"PENDING_STORE_CATEGORY_PROMOTION"}
+{ "changeKind": "PENDING_STORE_CATEGORY_PROMOTION" }
 ```
 
 and the pointer audit remains `SET_AGENT_PROMPT`.
@@ -680,18 +679,26 @@ Do not begin Shopify or Commerce follow-up work.
 ## Completion Report
 
 ### Status
+
 Attempt 3 completed the sole Architect-Requested correction (A2-R1 through A2-R3); returned for Architect Review.
+
 ### Attempt
+
 Attempt 2 completed on 2026-09-30. Its parent claim commit was `9064a23ed43983f2ec5797b5c7af2356ccb0d896`, claimed at `2026-09-30T13:32:26Z` and pushed to `origin/task/ARCH-023-ADMIN-003`. Attempt 3 was claimed at `2026-09-30T19:50:45Z`; launcher claim commit `9e6c7bfec2d35f5e4292b787ebc28a2562a6028a` is pushed.
+
 ### Worktree and Claim Evidence
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-003`, branch `task/ARCH-023-ADMIN-003`.
 - Implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-003`, branch `task/ARCH-023-ADMIN-003`.
 - The shared workspace and implementation checkouts were not switched, and no other task worktree was reused.
 - Start synchronization: parent remote fast-forward `not-needed`; parent `origin/main` `already-current`. Implementation remote fast-forward `not-needed`; implementation `origin/main` `yes`.
 - Recursive submodule sync and update both passed. The database submodule was initialized at accepted commit `2eb17ee910491e8f9df82736fc0a843844415947`.
+
 ### Files Changed
+
 Implementation repository `moda-interact-admin`:
+
 - `src/app/(protected)/system-controls/agent-instructions/page.tsx`
 - `src/app/actions/agent-instructions.ts`
 - `src/components/admin/agent-instructions/agent-instructions-console.tsx`
@@ -703,7 +710,9 @@ Implementation repository `moda-interact-admin`:
 - `tests/unit/agent-instructions.test.ts` (Attempt 3: changed-default read/publish regressions)
 
 Parent workspace: this task report only. No other task, index, architecture, or implementation-repository file was changed for this report submission.
+
 ### Work Completed
+
 - **A1-R1 implemented:** each `CommerceAuditEvent` receives its own fresh, non-null `operationId`; focused regressions verify paired audit rows have distinct IDs.
 - **A1-R2 implemented:** server validation and UI `maxLength` enforce 32,000 characters; tests confirm 32,000 is accepted and 32,001 is rejected before database calls.
 - **A1-R3 implemented and proven against PostgreSQL:** a disposable local-only `pgvector/pgvector:pg17` container was launched at host `127.0.0.1:32778`, database `admin_test`; all 21 actual Prisma migrations were applied. The production `mutateAgentInstructions` path ran inside SERIALIZABLE Prisma transactions. Successful pending-category publish verified the exact reviewed prompt and hash, configuration pointer update, category promotion, pending-field clearing, `pendingSelectionGeneration` preserved at 42, both required audit actions, distinct unique operation IDs, and pending-promotion audit metadata. Two rollback cases injected stale configuration CAS and stale profile CAS with transaction-local test triggers; each verified the DRAFT, prior pointer, pending category/profile fields, and zero audits remained unchanged. The container was stopped and removed after validation.
@@ -714,7 +723,9 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 - Implementation commit `1cd8557a5d8317758e96487aa52ebd6d3393657a` is pushed to `origin/task/ARCH-023-ADMIN-003` in `moda-interact-admin`.
 - **A2-R3 proven against disposable PostgreSQL:** the production `mutateAgentInstructions` path ran inside SERIALIZABLE Prisma transactions against local-only `pgvector/pgvector:pg17`, after all 21 accepted migrations were applied. The successful case changed the category default from template A to B before calling the Admin read model and publish path; it verified exact DRAFT text/hash, unchanged A/edit-version provenance, active configuration pointer, promoted category, cleared pending fields, preserved generation 42 and both uniquely identified audit rows. Separate trigger-injected stale-configuration and stale-profile CAS failures verified rollback of revision, configuration, profile and audits. No remote database was used; the named disposable container was removed and a post-cleanup query returned no matching container.
 - No dependency or schema changes were made. During validation, stale `node_modules` contained Shared 0.12.1 while the lockfile pins 1.0.1; `npm ci` restored lockfile dependencies and Prisma Client was regenerated before full unit, typecheck, and build validation. The import-resolution issue was cleared and is not outstanding.
+
 ### Validation Results
+
 - Focused Agent Instructions tests: 18/18 passed, including paired audit IDs, length boundaries, and existing Agent Instructions regressions.
 - Attempt 3 focused Agent Instructions tests: 16/16 passed, including the pending-read and pending-publish template-A-to-B regressions.
 - Attempt 3 disposable PostgreSQL A2-R3 proof: passed with all 21 accepted migrations applied; successful pinned-template promotion and stale-configuration/stale-profile transaction rollback cases all passed, as detailed above.
@@ -729,17 +740,26 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 - `git diff --check`: passed.
 - Attempt 3 `npx tsc --noEmit --pretty false`: passed. Focused ESLint for `src/lib/admin/agent-instructions.ts`: passed. `npm run build`: passed and includes `/system-controls/agent-instructions`; existing optional BullMQ dependency/critical-dependency warnings remain.
 - Attempt 3 `npm run test:unit`: 190 total, 188 passed; the same two unrelated existing failures remain in `merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`. No Agent Instructions test failed.
+
 ### Deviations
+
 - Deterministic stale-CAS races in the real PostgreSQL proof were induced with transaction-local test triggers. This added no permanent test harness, schema, or database changes.
+
 ### Assumptions
+
 - Existing platform-admin read/page guards are sufficient for authenticated reads; all mutation actions additionally require the `SUPER_ADMIN` role.
 - Existing ARCH-023 database models and audit actions are authoritative; no schema change is necessary.
+
 ### Unresolved Issues
+
 - The two unrelated unit-test failures and repository-wide lint errors/warnings listed above remain outside this task's changed files.
+
 ### Architectural Concerns
+
 - No product, schema, or cross-repository change was introduced.
 
 ### Attempt 3 Launcher and Worktree Evidence
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-003`, branch `task/ARCH-023-ADMIN-003`.
 - Implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-003`, branch `task/ARCH-023-ADMIN-003`.
@@ -752,6 +772,7 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 3
 
 ### Review Notes
@@ -844,9 +865,11 @@ not claim or start it.
 #### Historical Attempt 2 — Changes Requested — 2026-09-30
 
 ##### Review Status
+
 Changes Requested — Attempt 2
 
 ##### Review Notes
+
 Attempt 2 resolves A1-R1 through A1-R4: distinct audit `operationId` values are used,
 the 32,000-character prompt bound matches the accepted database guard, the required
 disposable PostgreSQL pending-category transaction proof passed, and exact launcher/worktree
@@ -882,6 +905,7 @@ No database/schema migration, template CRUD change, Shopify change, Commerce cha
 translation lifecycle, or follow-on task is authorised by this review.
 
 ##### Reviewed Files
+
 - `moda-interact-admin/src/lib/admin/agent-instructions.ts`
 - `moda-interact-admin/src/app/actions/agent-instructions.ts`
 - `moda-interact-admin/src/lib/admin/commerce-environment.ts`
@@ -893,6 +917,7 @@ translation lifecycle, or follow-on task is authorised by this review.
 - this task Completion Report
 
 ##### Validation Reviewed
+
 - Attempt 2 focused Agent Instructions tests: 18/18 reported passed.
 - Attempt 2 live PostgreSQL pending-category success plus stale configuration/profile rollback proof: reported passed.
 - TypeScript, Prisma validate/generate, production build, focused changed-file ESLint, diagnostics and `git diff --check`: reported passed.
@@ -900,23 +925,25 @@ translation lifecycle, or follow-on task is authorised by this review.
 - The new A2-R1 snapshot-provenance scenario is not covered by the submitted tests/proof and remains required.
 
 ##### Architecture Conformance
+
 The implementation conforms to the Admin ownership, authorization, CAS, audit and additive
 Platform/Shop prompt model, but its current-default-template comparison conflicts with the
 parent ARCH-023 snapshot-provenance invariant. Attempt 2 therefore cannot be accepted yet.
 
 ##### Follow-up
+
 Return the same task to `ready` with `attempt: 2` preserved and the execution claim
 cleared. The next authorized claim becomes Attempt 3. No dependent task is promoted by
 this review.
 
-
 ### Historical Architect Review — Attempt 1
 
-
 ### Review Status
+
 Changes Requested — Attempt 1
 
 ### Review Notes
+
 The protected route, environment mapping, lineage/DRAFT handling, CAS mutations, pending-category promotion shape, revision history, SUPER_ADMIN mutation gate and additive Platform/Shop configuration model are substantively aligned with the task. Attempt 1 is not acceptable yet because the submitted implementation conflicts with accepted database invariants and the required live transaction proof remains open.
 
 Correction contract for Attempt 2:
@@ -929,6 +956,7 @@ Correction contract for Attempt 2:
 No unrelated refactor, database migration, Commerce change, Shopify change or follow-on task is authorized by this review.
 
 ### Reviewed Files
+
 - `moda-interact-admin/src/app/(protected)/system-controls/agent-instructions/page.tsx`
 - `moda-interact-admin/src/app/actions/agent-instructions.ts`
 - `moda-interact-admin/src/components/admin/agent-instructions/agent-instructions-console.tsx`
@@ -944,6 +972,7 @@ No unrelated refactor, database migration, Commerce change, Shopify change or fo
 - this task Completion Report
 
 ### Validation Reviewed
+
 - Submitted focused Agent Instructions result: 15/15 passed.
 - Submitted TypeScript, changed-production-file ESLint, Prisma validation, production build and `git diff --check`: passed.
 - Submitted broad-suite failures were inspected as reported and are outside the Agent Instructions changed surface.
@@ -951,7 +980,9 @@ No unrelated refactor, database migration, Commerce change, Shopify change or fo
 - The supplied review archive contains no installed dependency tree or live PostgreSQL runtime, so dependency-backed validation was not represented as independently rerun by the architect.
 
 ### Architecture Conformance
+
 The implementation follows the intended Admin ownership boundary and reuses the existing Commerce prompt/revision/configuration tables rather than introducing duplicate durable state or a private Commerce HTTP API. However, Attempt 1 cannot be accepted while its audit writes violate an accepted database uniqueness constraint, its prompt length validation exceeds the accepted database constraint, and the explicitly required real transaction proof remains incomplete.
 
 ### Follow-up
+
 Return the same task to `ready` with `attempt: 1` preserved and the execution claim cleared. The next authorized claim becomes Attempt 2. No downstream task becomes Ready from this review.

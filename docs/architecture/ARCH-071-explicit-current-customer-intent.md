@@ -65,11 +65,11 @@ Exact public package `@modainteract/moda-interact-shared@5.13.6` was published o
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Dependencies |
-|---|---|---|---|
-| ARCH-071-SHARED-001 | moda_shared | Complete | None |
-| ARCH-071-SHARED-002 | moda_shared | Complete | ARCH-071-SHARED-001; explicit public-release approval obtained |
-| ARCH-071-BACKGROUND-001 | moda_background | Complete | ARCH-071-SHARED-002 |
+| Task                    | Owner           | Status   | Dependencies                                                   |
+| ----------------------- | --------------- | -------- | -------------------------------------------------------------- |
+| ARCH-071-SHARED-001     | moda_shared     | Complete | None                                                           |
+| ARCH-071-SHARED-002     | moda_shared     | Complete | ARCH-071-SHARED-001; explicit public-release approval obtained |
+| ARCH-071-BACKGROUND-001 | moda_background | Complete | ARCH-071-SHARED-002                                            |
 
 ## Validation
 

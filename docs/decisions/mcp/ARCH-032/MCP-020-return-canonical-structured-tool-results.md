@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-032-MCP-019
+  - ARCH-032-MCP-019
 enables:
-- ARCH-032-BACKGROUND-001
-- ARCH-032-COMMERCE-006
-- ARCH-032-SYSTEM-TEST-002
-created: '2026-10-15'
-updated: '2026-10-15'
+  - ARCH-032-BACKGROUND-001
+  - ARCH-032-COMMERCE-006
+  - ARCH-032-SYSTEM-TEST-002
+created: "2026-10-15"
+updated: "2026-10-15"
 ---
 
 # ARCH-032-MCP-020 — Return canonical structured Commerce results from MCP tools/call
@@ -232,10 +232,10 @@ not authorize advancing the Database submodule.
   `5f6c7d473771ca7beac8dd64729f228438d95bc4`. Do not edit or commit the Database
   repository itself.
 - Keep the `src/mcp/registration.ts` structured-result behavior and
-	`tests/unit/mcp/structured-results.test.ts` coverage intact.
+  `tests/unit/mcp/structured-results.test.ts` coverage intact.
 - Rerun `git diff --check`, `npm run typecheck`, `npm run lint`, the focused
-	structured-results SDK test, `npm test`, and `npm run build` after the
-	correction; confirm the final task diff contains only MCP-owned files.
+  structured-results SDK test, `npm test`, and `npm run build` after the
+  correction; confirm the final task diff contains only MCP-owned files.
 
 ### Attempt State
 

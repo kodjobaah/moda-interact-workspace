@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Move detailed queue diagnostics to Observability page shell
 
 ## Architecture
@@ -122,9 +123,11 @@ experience. Return those to the following tasks.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/app/(protected)/page.tsx`
 - `moda-interact-admin/src/app/(protected)/observability/queues/page.tsx`
 - `moda-interact-admin/src/components/admin/observability-panel.tsx`
@@ -132,6 +135,7 @@ Ready for Review.
 - `docs/decisions/admin/ARCH-003/ADMIN-002-move-queue-monitor-to-observability.md`
 
 ### Work Completed
+
 - Removed the detailed `QueueMonitor` mount from Tenant Directory while retaining
   the compact queue overview cards.
 - Added the protected `/observability/queues` page and reused the existing
@@ -141,6 +145,7 @@ Ready for Review.
 - Preserved the existing platform-admin page guard and server-side Redis access.
 
 ### Validation Results
+
 - `node --test tests/security/grafana-observability.test.mjs tests/security/admin-queue-monitor.test.mjs` — 12 passed, 0 failed.
 - `npm test` — 36 passed, 0 failed.
 - `npm exec tsc -- --noEmit` — passed.
@@ -150,21 +155,26 @@ Ready for Review.
 - `git diff --check` — passed.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The existing detailed monitor is the intended interim presentation until the
 later compact-table task; no queue-reader or data-contract redesign is needed.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted
 
 ### Review Notes

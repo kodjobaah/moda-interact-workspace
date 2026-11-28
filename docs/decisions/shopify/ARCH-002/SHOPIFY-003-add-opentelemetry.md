@@ -12,12 +12,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-GATEWAY-001
-- ARCH-002-SHARED-010
+  - ARCH-002-GATEWAY-001
+  - ARCH-002-SHARED-010
 enables: []
 created: 2026-08-29
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Add OpenTelemetry to Shopify Ingress
 
 ## Superseded — Granular Replacement (2026-08-31)
@@ -208,21 +209,21 @@ The moda-interact Shopify service consumes only standard OpenTelemetry
 environment variables plus one deployment-environment override. GATEWAY-006
 must wire the following for test and production:
 
-| Variable | Purpose | Required |
-| --- | --- | --- |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Base OTLP/HTTP collector URL (the SDK appends `/v1/traces` and `/v1/metrics` unless the per-signal variables below are set). | Yes, when telemetry is enabled |
-| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | Per-signal traces endpoint override. | No |
-| `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | Per-signal metrics endpoint override. | No |
-| `OTEL_TRACES_EXPORTER` | Defaults to `otlp`; any other value (e.g. `console`) disables OTLP traces. | No |
-| `OTEL_METRICS_EXPORTER` | Defaults to `otlp`; any other value disables OTLP metrics. | No |
-| `OTEL_SDK_DISABLED` | `true` forces the SDK off even when an endpoint is configured. | No |
-| `OTEL_BSP_SCHEDULE_DELAY` | Trace batch span schedule delay (ms). Default `5000`. | No |
-| `OTEL_BSP_MAX_QUEUE_SIZE` | Trace batch span queue size. Default `2048`. | No |
-| `OTEL_BSP_MAX_EXPORT_BATCH_SIZE` | Trace batch size. Default `512`. | No |
-| `OTEL_BSP_EXPORT_TIMEOUT` | Trace export timeout (ms). Default `30000`. | No |
-| `OTEL_METRIC_EXPORT_INTERVAL` | Metric export interval (ms). Default `60000`. | No |
-| `OTEL_METRIC_EXPORT_TIMEOUT` | Metric export timeout (ms). Default `30000`. | No |
-| `DEPLOYMENT_ENVIRONMENT_NAME` | Canonical `deployment.environment.name` (`test`, `production`, or a named environment). Falls back to `NODE_ENV`. | Yes, for canonical identity |
+| Variable                              | Purpose                                                                                                                      | Required                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`         | Base OTLP/HTTP collector URL (the SDK appends `/v1/traces` and `/v1/metrics` unless the per-signal variables below are set). | Yes, when telemetry is enabled |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`  | Per-signal traces endpoint override.                                                                                         | No                             |
+| `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | Per-signal metrics endpoint override.                                                                                        | No                             |
+| `OTEL_TRACES_EXPORTER`                | Defaults to `otlp`; any other value (e.g. `console`) disables OTLP traces.                                                   | No                             |
+| `OTEL_METRICS_EXPORTER`               | Defaults to `otlp`; any other value disables OTLP metrics.                                                                   | No                             |
+| `OTEL_SDK_DISABLED`                   | `true` forces the SDK off even when an endpoint is configured.                                                               | No                             |
+| `OTEL_BSP_SCHEDULE_DELAY`             | Trace batch span schedule delay (ms). Default `5000`.                                                                        | No                             |
+| `OTEL_BSP_MAX_QUEUE_SIZE`             | Trace batch span queue size. Default `2048`.                                                                                 | No                             |
+| `OTEL_BSP_MAX_EXPORT_BATCH_SIZE`      | Trace batch size. Default `512`.                                                                                             | No                             |
+| `OTEL_BSP_EXPORT_TIMEOUT`             | Trace export timeout (ms). Default `30000`.                                                                                  | No                             |
+| `OTEL_METRIC_EXPORT_INTERVAL`         | Metric export interval (ms). Default `60000`.                                                                                | No                             |
+| `OTEL_METRIC_EXPORT_TIMEOUT`          | Metric export timeout (ms). Default `30000`.                                                                                 | No                             |
+| `DEPLOYMENT_ENVIRONMENT_NAME`         | Canonical `deployment.environment.name` (`test`, `production`, or a named environment). Falls back to `NODE_ENV`.            | Yes, for canonical identity    |
 
 Behaviour notes for GATEWAY-006:
 
@@ -369,6 +370,7 @@ Pending.
 Pending.
 
 <!-- ARCH-002-SHARED-LOGGING-COORDINATION:START -->
+
 ## Architect Coordination Amendment — Shared Structured Logging
 
 ### Coordination Status
@@ -408,8 +410,7 @@ Then:
 1. consume:
 
    ```ts
-   import { createLogger } from
-     "@modainteract/moda-interact-shared/logging";
+   import { createLogger } from "@modainteract/moda-interact-shared/logging";
    ```
 
 2. remove the local generic logger implementation, including the direct
@@ -520,6 +521,7 @@ SHOPIFY-003 cannot be accepted until:
 <!-- ARCH-002-SHARED-LOGGING-COORDINATION:END -->
 
 <!-- ARCH-002-SHARED-LOGGING-RELEASE:START -->
+
 ## Architect Coordination Amendment — Published Shared Logging Release
 
 SHOPIFY-003 remains **Blocked** after SHARED-002 implementation.
@@ -544,6 +546,7 @@ Do not resume against an unpublished workspace-only logging export.
 <!-- ARCH-002-SHARED-LOGGING-RELEASE:END -->
 
 <!-- ARCH-002-SHARED-LOGGING-PUBLISHED-VERSION -->
+
 ## Architect-Approved Shared Logging Package Version
 
 The shared implementation and public release dependencies are Complete.

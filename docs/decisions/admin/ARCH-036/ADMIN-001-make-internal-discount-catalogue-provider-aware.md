@@ -35,7 +35,6 @@ Make Admin discount catalogue and recovery policy presentation provider-aware wi
 
 ## Context
 
-
 The existing Admin console reads discount rows and ShopSettings/override FK. BACKGROUND-001 adds **Woo rows only** into the same table. For Woo, `providerStatus` is provider lifecycle and `isAvailable` is merchant selection; for Shopify, accepted ARCH-052-BACKGROUND-009 also makes `isAvailable` merchant selection; provider availability is represented separately. Background owns Woo provider synchronisation; API-002 owns Woo merchant checkbox changes. Admin must keep merchant selection and provider validity distinct on both platforms.
 
 ## Scope
@@ -64,7 +63,6 @@ Update internal list/filter/badges and recovery override presentation for **Woo*
 - [x] Test merchant/Admin isolation and Shopify regression.
 
 ## Interfaces / Contracts
-
 
 Existing Prisma discount/policy rows and shop/role authorisation. No API-001 read proxy or new Shared contract; no new schema.
 
@@ -157,7 +155,6 @@ Admin main 420b86a still filters running/selectable discounts using isAvailable:
 
 Ready, Attempt 0, unclaimed. The accepted Background prerequisite is complete. Implement only Admin queries, UI and server-side override validation; neither Commerce work nor new provider fetching is a prerequisite. Keep developer-controlled completion: submit for architect acceptance, then await the explicit developer completion decision.
 
-
 ## Architect local implementation review — Attempt 1, 2 November 2026
 
 ### Decision and lifecycle
@@ -186,7 +183,6 @@ Fix the provider guard and add behavioral read/write coverage. Correct the new S
 
 Reviewed working-tree fingerprint (SHA-256 of the ordered eight relative paths and file bytes, NUL-separated): `edaad7bfef545031d882bd0a4e9f256dd6734dcfae97a5f7421be3de761f6932`.
 
-
 ## Architect local correction review — Attempt 1, 2 November 2026
 
 ### Decision
@@ -212,7 +208,6 @@ Ran under Node 24.19.0:
 The ten reviewed implementation files remain local and unchanged by the reviewer. Reconcile the stale Completion Report placeholders and publish through the developer workflow after required validation is complete. ARCH-036-SYSTEM-TEST-001 remains unpromoted. Historical findings and evidence are preserved above.
 
 Reviewed working-tree fingerprint (SHA-256 of the ordered ten paths listed in this review's inspection and file bytes, NUL-separated): `b4579a46f0c8b4a5d3eff3cd7b9b8f4fe24e6835f5ff14c3829f73ccb87e0cb2`.
-
 
 ## Architect local validation recheck — Attempt 1, 2 November 2026
 
@@ -262,7 +257,6 @@ Implementation base: `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. Reviewed files 
 SHA-256 of the ordered paths and file bytes, NUL-separated: `d502430f07b08c9d6bdc11ce56f82c1d46ea5e44d2f080646bdf85d8f8896f55`.
 
 Independent PostgreSQL output: [review log](evidence/ADMIN-001-local-validation-postgres.md).
-
 
 ### Viewport evidence clarification — 2 November 2026
 

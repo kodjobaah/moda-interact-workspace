@@ -221,7 +221,6 @@ Partial. Historical routing, persistence and concurrency safeguards appear align
 
 Correct platform-specific candidate selection, add and run focused Shopify regression coverage alongside the Woo routing tests, then update this review section with the resulting evidence. Do not mark the task accepted until that finding is resolved.
 
-
 ## Architect Review — Attempt 1 (Changes Requested; logging finding superseded)
 
 ### Decision
@@ -252,7 +251,6 @@ The Woo generation selection is platform-scoped and the reported Shopify regress
 ### Required Follow-up
 
 Sanitize the routing and processing failure log fields, preserve exception propagation, and add the sensitive-sentinel regression coverage. Keep Attempt 1 unchanged; no source or test correction for this finding is included in this review update.
-
 
 ## Architect Review — Attempt 1 (Accepted)
 

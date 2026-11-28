@@ -252,16 +252,16 @@ Resolution precedence is binding:
 
 Legend: `Y` = route/read surface allowed; `N` = denied by route policy.
 
-| Experience state | `/app` | `/app/usage` | `/app/billing/options` | purchase history | promotions | support | `/app/billing/select` | pending recoveries |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| ONBOARDING | Y | N | Y | N | N | Y | Y | N |
-| ACTIVE | Y | Y | Y | Y | Y | Y | Y | Y |
-| NO_CONTRACT | Y | Y | Y | Y | N | Y | Y | N |
-| FROZEN | Y | Y | Y | Y | N | Y | N | N |
-| BILLING_ATTENTION | Y | Y | Y | Y | N | Y | Y | N |
-| SUPPORT_ONLY | N | N | N | N | N | Y | N | N |
-| REINSTALLING | N | N | N | N | N | Y | N | N |
-| SIGNED_OUT | N | N | N | N | N | N | N | N |
+| Experience state  | `/app` | `/app/usage` | `/app/billing/options` | purchase history | promotions | support | `/app/billing/select` | pending recoveries |
+| ----------------- | -----: | -----------: | ---------------------: | ---------------: | ---------: | ------: | --------------------: | -----------------: |
+| ONBOARDING        |      Y |            N |                      Y |                N |          N |       Y |                     Y |                  N |
+| ACTIVE            |      Y |            Y |                      Y |                Y |          Y |       Y |                     Y |                  Y |
+| NO_CONTRACT       |      Y |            Y |                      Y |                Y |          N |       Y |                     Y |                  N |
+| FROZEN            |      Y |            Y |                      Y |                Y |          N |       Y |                     N |                  N |
+| BILLING_ATTENTION |      Y |            Y |                      Y |                Y |          N |       Y |                     Y |                  N |
+| SUPPORT_ONLY      |      N |            N |                      N |                N |          N |       Y |                     N |                  N |
+| REINSTALLING      |      N |            N |                      N |                N |          N |       Y |                     N |                  N |
+| SIGNED_OUT        |      N |            N |                      N |                N |          N |       N |                     N |                  N |
 
 `/app?view=detail` is part of the `/app` surface. Therefore it is available for ACTIVE, NO_CONTRACT, FROZEN and BILLING_ATTENTION once onboarding is complete, and unavailable to ONBOARDING.
 
@@ -561,7 +561,6 @@ ARCH-013 routing work is complete only when:
 9. suspended/restoring support pages do not show Home/Billing/Promotions links;
 10. breadcrumbs contain no inaccessible or semantically false parent link;
 11. focused route/access/navigation tests and repository validation pass with no task regression.
-
 
 ## Post-review update — SHOPIFY-001 Attempt 1 Changes Requested
 

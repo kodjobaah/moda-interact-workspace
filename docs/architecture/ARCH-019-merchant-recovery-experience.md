@@ -52,13 +52,13 @@ Date inputs are merchant-local calendar dates. Default is the last 30 calendar d
 
 All performance measures refer to distinct recovery records with detectedAt in that cohort and their latest known outcomes; outcomes may change after the range. They are not completion-date sales, every abandoned Shopify checkout, or billing consumption.
 
-| Measure | Definition |
-|---|---|
-| Recoveries started | Count of cohort CheckoutRecovery records |
-| Recovered checkouts | Cohort records currently COMPLETED |
-| Recovery rate | Recovered / started; null and em dash when denominator is zero |
+| Measure                  | Definition                                                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Recoveries started       | Count of cohort CheckoutRecovery records                                                                  |
+| Recovered checkouts      | Cohort records currently COMPLETED                                                                        |
+| Recovery rate            | Recovered / started; null and em dash when denominator is zero                                            |
 | Recovered checkout value | Sum recorded totalPrice for completed cohort rows per known currency; decimal-safe; no cross-currency sum |
-| Ongoing in range | DETECTED + MESSAGE_SENT + ENGAGED within cohort |
+| Ongoing in range         | DETECTED + MESSAGE_SENT + ENGAGED within cohort                                                           |
 
 Unknown totalPrice/currency is not silently zero: report omitted/unknown record count and a localized incomplete-value hint. Zero known completed rows may display no recovered value; unknown-only value displays unavailable. The UI shows currency groups separately and wraps them. The label is checkout value, not verified net revenue or causal uplift. Rates are rounded once for display using existing i18n helpers.
 
@@ -128,19 +128,18 @@ Required terminal system validation follows all accepted implementation tasks an
 
 ## Task plan
 
-| Task | Owner | Status | Depends on |
-|---|---|---|---|
-| [ARCH-019-DATABASE-001](../decisions/database/ARCH-019/DATABASE-001-index-merchant-recovery-read-paths.md) | moda_database | Complete | None |
-| [ARCH-019-SHOPIFY-001](../decisions/shopify/ARCH-019/SHOPIFY-001-bounded-recovery-cohort-readers.md) | moda_app | Complete | ARCH-019-DATABASE-001 |
-| [ARCH-019-SHOPIFY-002](../decisions/shopify/ARCH-019/SHOPIFY-002-bounded-recovery-detail-readers.md) | moda_app | Complete | ARCH-019-DATABASE-001 |
-| [ARCH-019-SHOPIFY-003](../decisions/shopify/ARCH-019/SHOPIFY-003-recovery-list-page.md) | moda_app | Complete | ARCH-019-SHOPIFY-001 |
-| [ARCH-019-SHOPIFY-004](../decisions/shopify/ARCH-019/SHOPIFY-004-recovery-conversation-detail-page.md) | moda_app | Complete | ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003 |
-| [ARCH-019-SHOPIFY-005](../decisions/shopify/ARCH-019/SHOPIFY-005-recovery-performance-overview.md) | moda_app | Complete | ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004 |
-| [ARCH-019-SHOPIFY-006](../decisions/shopify/ARCH-019/SHOPIFY-006-merchant-navigation-and-billing-history.md) | moda_app | Complete | ARCH-019-SHOPIFY-005 |
-| [ARCH-019-SYSTEM-TEST-001](../decisions/system-test/ARCH-019/SYSTEM-TEST-001-validate-merchant-recovery-experience.md) | moda_system_test | Ready | ARCH-019-DATABASE-001, ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004, ARCH-019-SHOPIFY-005, ARCH-019-SHOPIFY-006 |
+| Task                                                                                                                   | Owner            | Status   | Depends on                                                                                                                                                |
+| ---------------------------------------------------------------------------------------------------------------------- | ---------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [ARCH-019-DATABASE-001](../decisions/database/ARCH-019/DATABASE-001-index-merchant-recovery-read-paths.md)             | moda_database    | Complete | None                                                                                                                                                      |
+| [ARCH-019-SHOPIFY-001](../decisions/shopify/ARCH-019/SHOPIFY-001-bounded-recovery-cohort-readers.md)                   | moda_app         | Complete | ARCH-019-DATABASE-001                                                                                                                                     |
+| [ARCH-019-SHOPIFY-002](../decisions/shopify/ARCH-019/SHOPIFY-002-bounded-recovery-detail-readers.md)                   | moda_app         | Complete | ARCH-019-DATABASE-001                                                                                                                                     |
+| [ARCH-019-SHOPIFY-003](../decisions/shopify/ARCH-019/SHOPIFY-003-recovery-list-page.md)                                | moda_app         | Complete | ARCH-019-SHOPIFY-001                                                                                                                                      |
+| [ARCH-019-SHOPIFY-004](../decisions/shopify/ARCH-019/SHOPIFY-004-recovery-conversation-detail-page.md)                 | moda_app         | Complete | ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003                                                                                                                |
+| [ARCH-019-SHOPIFY-005](../decisions/shopify/ARCH-019/SHOPIFY-005-recovery-performance-overview.md)                     | moda_app         | Complete | ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004                                                                                          |
+| [ARCH-019-SHOPIFY-006](../decisions/shopify/ARCH-019/SHOPIFY-006-merchant-navigation-and-billing-history.md)           | moda_app         | Complete | ARCH-019-SHOPIFY-005                                                                                                                                      |
+| [ARCH-019-SYSTEM-TEST-001](../decisions/system-test/ARCH-019/SYSTEM-TEST-001-validate-merchant-recovery-experience.md) | moda_system_test | Ready    | ARCH-019-DATABASE-001, ARCH-019-SHOPIFY-001, ARCH-019-SHOPIFY-002, ARCH-019-SHOPIFY-003, ARCH-019-SHOPIFY-004, ARCH-019-SHOPIFY-005, ARCH-019-SHOPIFY-006 |
 
 Current frontier: all ARCH-019 implementation tasks are architect-accepted/Complete: DATABASE-001 and SHOPIFY-001/003/006 at Attempt 1, SHOPIFY-002 at Attempt 3, SHOPIFY-004/005 at Attempt 2. SHOPIFY-006 accepted `39054cec`. SYSTEM-TEST-001 Ready at Attempt 0, explicitly developer-invoked after manual validation; not started. Architecture remains In Progress pending terminal integrated validation and final architect acceptance. Accepted dependency records are reconciled into SYSTEM-TEST-001; readiness does not authorize execution, deployment or unmerged dependency consumption.
-
 
 ## Risks and evidence gaps
 

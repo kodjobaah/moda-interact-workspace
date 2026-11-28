@@ -82,7 +82,6 @@ Changing placement policy, catalogue ordering/CAS, server action, economics calc
   - `tests/unit/merchant-pricing-translations.test.ts` — SHA-256 `90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92`
   - `tests/unit/merchant-pricing-translation-workbook.test.ts` — SHA-256 `385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8`
 
-
 ### R1 — presentation-only extraction
 
 Move the full step-1 select, FREE-first explanatory copy and edit current-position display into `catalogue-placement-step.tsx`.

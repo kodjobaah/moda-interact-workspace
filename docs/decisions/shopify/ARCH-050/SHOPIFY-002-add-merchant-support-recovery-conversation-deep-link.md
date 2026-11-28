@@ -180,12 +180,14 @@ None identified. The action does not introduce a new query endpoint, permission,
 ### Task Branch / Worktree Evidence
 
 Physical worktree isolation:
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-SHOPIFY-002`, `task/ARCH-050-SHOPIFY-002`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-SHOPIFY-002`, `task/ARCH-050-SHOPIFY-002`.
 - Shared workspace and shared implementation checkouts were not switched or used for task edits; no other task worktree was reused.
 
 Start-of-attempt synchronization:
+
 - Parent remote task branch fast-forwarded: not needed; parent `origin/main` was already incorporated.
 - Implementation remote task branch fast-forwarded: not needed; implementation `origin/main` was already incorporated.
 - Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` was initialized at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.

@@ -4,15 +4,15 @@
 
 This package defines seven canonical tasks. None has been claimed, implemented, accepted or materialised in the developer's real Git workspace by this architecture session. Four have snapshot-derived `ready` status; the three consumers are `pending`. The normal launcher must recheck the current task states, source changes and architecture-ID allocation.
 
-| Phase | Task | Required direct predecessors | Start condition |
-|---|---|---|---|
-| 1 | ARCH-056-API-001 | ARCH-055-DATABASE-001; ARCH-055-API-005 | Both existing tasks Complete; inspect actual accepted Database history |
-| 1 | ARCH-056-BACKGROUND-001 | ARCH-054-BACKGROUND-001 | Existing task Complete |
-| 1 | ARCH-056-BACKGROUND-002 | ARCH-028-BACKGROUND-004; ARCH-028-BACKGROUND-009 | Both existing tasks Complete |
-| 1 | ARCH-056-BACKGROUND-003 | ARCH-040-BACKGROUND-008; ARCH-046-BACKGROUND-004; ARCH-052-BACKGROUND-018 | All existing tasks Complete |
-| 2 | ARCH-056-BACKGROUND-004 | New BACKGROUND-002 and BACKGROUND-003, plus its named existing accepted owners | Both new interfaces accepted and Complete |
-| 3 | ARCH-056-SYSTEM-TEST-001 | All five ARCH-056 implementation tasks | All five accepted and Complete, exact executed revisions available |
-| 4 | ARCH-056-SYSTEM-TEST-002 | ARCH-056-SYSTEM-TEST-001 | Integrated pass accepted and Complete; semantic naming and coverage checks run last |
+| Phase | Task                     | Required direct predecessors                                                   | Start condition                                                                     |
+| ----- | ------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| 1     | ARCH-056-API-001         | ARCH-055-DATABASE-001; ARCH-055-API-005                                        | Both existing tasks Complete; inspect actual accepted Database history              |
+| 1     | ARCH-056-BACKGROUND-001  | ARCH-054-BACKGROUND-001                                                        | Existing task Complete                                                              |
+| 1     | ARCH-056-BACKGROUND-002  | ARCH-028-BACKGROUND-004; ARCH-028-BACKGROUND-009                               | Both existing tasks Complete                                                        |
+| 1     | ARCH-056-BACKGROUND-003  | ARCH-040-BACKGROUND-008; ARCH-046-BACKGROUND-004; ARCH-052-BACKGROUND-018      | All existing tasks Complete                                                         |
+| 2     | ARCH-056-BACKGROUND-004  | New BACKGROUND-002 and BACKGROUND-003, plus its named existing accepted owners | Both new interfaces accepted and Complete                                           |
+| 3     | ARCH-056-SYSTEM-TEST-001 | All five ARCH-056 implementation tasks                                         | All five accepted and Complete, exact executed revisions available                  |
+| 4     | ARCH-056-SYSTEM-TEST-002 | ARCH-056-SYSTEM-TEST-001                                                       | Integrated pass accepted and Complete; semantic naming and coverage checks run last |
 
 Phase 1 production touchpoints do not overlap. The shared logical `moda_background` owner may execute its tasks in separate launcher-prepared physical worktrees; each executor works only its claimed task. A read-only dependency is not edit permission. Merge/rebase coordination follows the existing workflow and does not broaden any allowlist.
 

@@ -15,32 +15,32 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-ADMIN-003
-- ARCH-052-BACKGROUND-014
-- ARCH-052-SHARED-012
-- ARCH-052-BACKGROUND-008
-- ARCH-052-BACKGROUND-015
-- ARCH-052-GATEWAY-001
-- ARCH-052-ADMIN-001
-- ARCH-052-ADMIN-002
-- ARCH-052-SHARED-003
-- ARCH-052-MCP-001
-- ARCH-052-MCP-002
-- ARCH-052-MCP-003
-- ARCH-052-MCP-006
-- ARCH-052-COMMERCE-006
-- ARCH-052-COMMERCE-007
-- ARCH-052-BACKGROUND-010
-- ARCH-052-SHARED-010
-- ARCH-052-BACKGROUND-007
-- ARCH-052-BACKGROUND-012
-- ARCH-052-SHARED-014
-- ARCH-052-BACKGROUND-016
-- ARCH-052-BACKGROUND-018
-- ARCH-052-ADMIN-004
-- ARCH-052-BACKGROUND-017
+  - ARCH-052-ADMIN-003
+  - ARCH-052-BACKGROUND-014
+  - ARCH-052-SHARED-012
+  - ARCH-052-BACKGROUND-008
+  - ARCH-052-BACKGROUND-015
+  - ARCH-052-GATEWAY-001
+  - ARCH-052-ADMIN-001
+  - ARCH-052-ADMIN-002
+  - ARCH-052-SHARED-003
+  - ARCH-052-MCP-001
+  - ARCH-052-MCP-002
+  - ARCH-052-MCP-003
+  - ARCH-052-MCP-006
+  - ARCH-052-COMMERCE-006
+  - ARCH-052-COMMERCE-007
+  - ARCH-052-BACKGROUND-010
+  - ARCH-052-SHARED-010
+  - ARCH-052-BACKGROUND-007
+  - ARCH-052-BACKGROUND-012
+  - ARCH-052-SHARED-014
+  - ARCH-052-BACKGROUND-016
+  - ARCH-052-BACKGROUND-018
+  - ARCH-052-ADMIN-004
+  - ARCH-052-BACKGROUND-017
 enables: []
-created: '2026-10-29'
+created: "2026-10-29"
 updated: 2026-11-02
 ---
 
@@ -70,7 +70,6 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 **ARCH-053 is external ownership:** no Woo link issuance/restore implementation, validation or dependency belongs in this system test. Use an already-populated `CheckoutRecovery.checkoutUrl` fixture (including a Woo fixture) as input and assert the existing approved checkout CTA binds that value without any ARCH-052 link-generation call. ARCH-053 has its own terminal tests for restoring the URL.
 
-
 - Run end-to-end WooCommerce fixtures for NONE/FIXED/AI and two-stage promotion decisions: checkout coupon qualifies; checkout coupon fails but related alternative product qualifies; only an unrelated product has genuine current offer; none verified; partial catalogue and provider timeouts. Assert exact approved Meta wording distinguishes alternative product from abandoned basket and does not invent an offer.
 - Verify `tools/list` exposes system discount tools only to an authenticated shop and authorised outreach purpose, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/purpose, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, truthful 50-offer `truncated` handling, model invalid/timeout fallback and stale MCP catalogue evidence.
 - For Woo, test **MCP -> WooCommerce REST** direct product search/detail, encrypted grant rotation, DNS/SSRF protection, variant image/category/permalink, and no hosted Moda API proxy or checkout-link generation call. For Shopify, test **MCP -> Shopify GraphQL** product search and detail. Discount discovery is sourced from current shop-scoped PostgreSQL catalogue records with no separate proof endpoint.
@@ -92,11 +91,9 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - Inject a late Meta timeout/unknown acknowledgment and a duplicate BullMQ job. Assert no second provider call under a new fallback attempt, no second credit, no false confirmed `recoveryPromise`, and reconciliation of the existing idempotency key `recovery-outreach:<attemptId>`.
 - Assert the fallback path does not invoke model/MCP product/discount calls, new checkout URL generation, new image/R2 processing or ARCH-054 customer-reply delay. Preserve the true provider/SDK error in bounded redacted shared logs with a separate internal fallback trigger.
 
-
 ### Multi-discount certification — normative 30 October 2026
 
 Certify WooCommerce current merchant multi-selection against a source-backed 1..3 checkout offer group, each code/offer identity, pairwise supported combinations, incompatible/unknown partner fallback, approved plural Meta template revision, a single initial send/credit and the persisted confirmed outbound offer set. No forced application or savings guarantee at send time. Verify attempts, duplicates, messages, STOP/consent, moderator/billing and tenant isolation. Shopify same-line Plus/reciprocal tags must fail closed when unknown; Woo `individualUse` and post-restore apply behavior are separately certified in ARCH-053-SYSTEM-TEST-003.
-
 
 - Never claim live end-to-end approval based only on mocked Meta or development-local Woo HTTPS; list manual provider verification separately.
 - No customer data leakage in fixture logs or screenshots.
@@ -197,8 +194,8 @@ Built-in MCP `commerce_get_discount_options`, published `commerce_search_product
 - ARCH-052-COMMERCE-007
 - ARCH-052-BACKGROUND-010
 
-
 - ARCH-052-SHARED-014
+
 ## Enables
 
 None.
@@ -218,7 +215,6 @@ None.
 - [ ] No invented coupon/product/category link or checkout discount when conditions are unknown/incomplete; a related product promotion is worded separately.
 - [ ] Both CTA bindings are carried only when Meta-approved and ordered by actual provider indices; absent approved media does not block text-only flow.
 - [ ] No ARCH-052 checkout URL issuance, extra validation or ARCH-053 reverse dependency.
-
 
 - [ ] Every WooCommerce offer advertised has contemporaneous checkout or alternative-product MCP catalogue evidence.
 - [ ] Direct MCP product search needs no hosted Moda API call.
@@ -288,7 +284,6 @@ None established by implementation.
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/MCP-catalogue issues to `moda_architect`.
-
 
 ## Architect Review
 

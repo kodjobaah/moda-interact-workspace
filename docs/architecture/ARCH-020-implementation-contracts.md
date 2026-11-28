@@ -148,11 +148,11 @@ helper accepts a validated inbound event and a closed reason enum, never arbitra
 caller/model text, recipient or URL. Only raw-abuse-admitted text/audio events can
 trigger it; route before audio download. Ignore unsupported inputs/status events.
 
-| reason | English v1 text |
-|---|---|
-| MULTIPLE_RECOVERIES | Please use WhatsApp's Reply option on the basket message you'd like help with, so I can identify the right checkout. |
+| reason                          | English v1 text                                                                                                                                                                          |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MULTIPLE_RECOVERIES             | Please use WhatsApp's Reply option on the basket message you'd like help with, so I can identify the right checkout.                                                                     |
 | NO_RECOVERY / INVALID_REFERENCE | Please use WhatsApp's Reply option on the basket message you'd like help with, so I can identify the right checkout. If you cannot find that message, please contact the store directly. |
-| SHOP_UNAVAILABLE | Please contact the store directly for help with your basket. |
+| SHOP_UNAVAILABLE                | Please contact the store directly for help with your basket.                                                                                                                             |
 
 No model language detection, merchant inference or basket listing. Normal agent
 referrals keep their existing language contract. A reply to this guidance does
@@ -222,15 +222,15 @@ Named contracts:
 Revision configuration is a strict object with optional maxRecommendations (integer1..3, default3) and maxSearchResults (integer1..20, default10); no other keys in v1. These settings only lower C6/C8 ceilings. Capability prompts are literal text with no template expression engine.
 
 Common basket: {basketId,source:'RECOVERY_SNAPSHOT'|'PROPOSED',observedAt,
-  currency,lines:[{lineId,productId,variantId,quantity,unitPrice}],fingerprint,
-  unknownFields}. productId/variantId/unitPrice/currency and quantity can be null when provider data is
-  unavailable; lineId remains a required stable snapshot identifier. Nonnull quantity
-  is integer1..999; max100 lines, unknownFields a
-  bounded array of schema field paths. Zero lines is a missing snapshot, never a
-  free basket. basketId is a server-generated opaque fingerprint reference.
+currency,lines:[{lineId,productId,variantId,quantity,unitPrice}],fingerprint,
+unknownFields}. productId/variantId/unitPrice/currency and quantity can be null when provider data is
+unavailable; lineId remains a required stable snapshot identifier. Nonnull quantity
+is integer1..999; max100 lines, unknownFields a
+bounded array of schema field paths. Zero lines is a missing snapshot, never a
+free basket. basketId is a server-generated opaque fingerprint reference.
 Product: {productId,variantId,title,url,available,unitPrice,currency,
-  productType,vendor,observedAt}; unknown fields explicitly null, title <=512,
-  URL HTTPS on verified canonical shop/store domain, no arbitrary provider hosts.
+productType,vendor,observedAt}; unknown fields explicitly null, title <=512,
+URL HTTPS on verified canonical shop/store domain, no arbitrary provider hosts.
 ProductId/variantId/title/observedAt are required. url/productType/vendor/unitPrice/
 currency are nullable; available is boolean or null. Null availability is not
 eligible for a recommendation. extraSpend is max(0, proposed gross basket total
@@ -240,14 +240,14 @@ The baseline operation schemas below exclude shop/customer/recovery/token/domain
 C14 database definitions choose the actual exposed tool name/schema and may narrow
 these inputs with mappings/literals; these are not six hard-coded MCP registrations:
 
-| Tool | Exact arguments | Successful data |
-|---|---|---|
-| commerce_get_basket | {} | basket |
-| commerce_search_products | {query:string 1..200,maximumPrice?:decimal string,availableOnly:boolean default true,limit:int1..20 default10,cursor:string<=2048 or null default null} | {products:max20,cursor:null or opaque string,truncated:boolean} |
-| commerce_get_discount_options | {} | {mode:'NONE'|'FIXED'|'AI_BEST_APPLICABLE',offers:max50,truncated:boolean} |
-| commerce_evaluate_discount | {offerId,proposal:null or Proposal} | Evidence |
-| commerce_find_qualifying_products | {offerId,query:string1..200 or null,limit:int1..3 default3} | {alternatives:max3,truncated:boolean} |
-| commerce_find_similar_products | {variantId,offerId:null or ID,limit:int1..3 default3} | {alternatives:max3,truncated:boolean} |
+| Tool                              | Exact arguments                                                                                                                                         | Successful data                                                 |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| commerce_get_basket               | {}                                                                                                                                                      | basket                                                          |
+| commerce_search_products          | {query:string 1..200,maximumPrice?:decimal string,availableOnly:boolean default true,limit:int1..20 default10,cursor:string<=2048 or null default null} | {products:max20,cursor:null or opaque string,truncated:boolean} |
+| commerce_get_discount_options     | {}                                                                                                                                                      | {mode:'NONE'                                                    | 'FIXED' | 'AI_BEST_APPLICABLE',offers:max50,truncated:boolean} |
+| commerce_evaluate_discount        | {offerId,proposal:null or Proposal}                                                                                                                     | Evidence                                                        |
+| commerce_find_qualifying_products | {offerId,query:string1..200 or null,limit:int1..3 default3}                                                                                             | {alternatives:max3,truncated:boolean}                           |
+| commerce_find_similar_products    | {variantId,offerId:null or ID,limit:int1..3 default3}                                                                                                   | {alternatives:max3,truncated:boolean}                           |
 
 Proposal = {operations:[{kind:'ADD',variantId,quantity} OR
 {kind:'REPLACE',lineId,variantId,quantity}]}, 1..3 operations, unique target line
@@ -434,14 +434,14 @@ Ownership and composition:
 
 Mandatory recovery instruction matrix:
 
-| Persisted status | Required behaviour |
-| --- | --- |
-| COMPLETED | Never call this an abandoned or active checkout. Acknowledge the completed purchase when relevant. Continue only within the original tool grant; completion does not grant order-management capabilities. |
-| EXPIRED | Never imply the original checkout is active. Current product facts require originally granted tools; otherwise refer to the store. |
-| CANCELLED | Never imply the original checkout is active or restored. Current product facts require originally granted tools; otherwise refer to the store. |
-| MESSAGE_SENT | Help with the identified recovery and only the product questions supported by the original grant. Do not infer current stock, prices or checkout validity from the message status. |
-| ENGAGED | Apply the same bounded assistance as MESSAGE_SENT; engagement does not expand permissions. |
-| Any other valid persisted status | State only supported recovery facts; do not infer active, abandoned or completed status or broaden the grant. Preserve existing admission checks. |
+| Persisted status                 | Required behaviour                                                                                                                                                                                        |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| COMPLETED                        | Never call this an abandoned or active checkout. Acknowledge the completed purchase when relevant. Continue only within the original tool grant; completion does not grant order-management capabilities. |
+| EXPIRED                          | Never imply the original checkout is active. Current product facts require originally granted tools; otherwise refer to the store.                                                                        |
+| CANCELLED                        | Never imply the original checkout is active or restored. Current product facts require originally granted tools; otherwise refer to the store.                                                            |
+| MESSAGE_SENT                     | Help with the identified recovery and only the product questions supported by the original grant. Do not infer current stock, prices or checkout validity from the message status.                        |
+| ENGAGED                          | Apply the same bounded assistance as MESSAGE_SENT; engagement does not expand permissions.                                                                                                                |
+| Any other valid persisted status | State only supported recovery facts; do not infer active, abandoned or completed status or broaden the grant. Preserve existing admission checks.                                                         |
 
 Mandatory language and final-output instructions:
 
@@ -463,9 +463,9 @@ Mandatory language and final-output instructions:
   or merchant policy. Persist detection only through existing host validation and
   confidence/precedence handling, never on stale or cancelled turns. Background
   accepts detection updates only for a stable language signal and confidence
-  >=0.85 and <=1, preserving existing tag canonicalisation. Reuse
-  conversation-language.service.ts; do not introduce a
-  second detector, threshold or persistence path.
+  > =0.85 and <=1, preserving existing tag canonicalisation. Reuse
+  > conversation-language.service.ts; do not introduce a
+  > second detector, threshold or persistence path.
 - Finish by calling host-local finalResponse exactly once, using the C4 schema.
   Include customer-facing replyText and either two null detection fields or one
   valid tag/confidence pair. No reasoning in replyText, no ordinary assistant text
@@ -737,15 +737,15 @@ payload on errors. Every call rechecks active ADMIN/SUPER_ADMIN and owner identi
 Cross-admin conversation/run IDs return NOT_FOUND, including cancellation/status.
 Preview conversation/run IDs below are client-generated UUIDs; scope Redis state by environment and admin.
 
-| Method/path | Strict input | Success |
-|---|---|---|
-| GET /api/studio/preview/fixtures | no body | 200 `{fixtures}`: bounded catalogue of synthetic `{id,label,recoveryStatus,shopLanguage}` entries |
-| POST /api/studio/preview/tool-tests | `{previewRunId,toolRevisionId,fixtureId,arguments}`; arguments satisfy the selected revision schema | 200 `{previewRunId,status,result}`; fixture-only structured data, rendered text and validation trace |
-| GET /api/studio/preview/tool-tests/[runId] | no body | 200 `{previewRunId,status,result}` with the same owner/replay rules |
-| POST /api/studio/preview/conversations | `{previewConversationId,mode,selection,fixtureId}`; mode FIXTURE or MODEL; fixtureId from the server's synthetic catalogue | 201 `{previewConversationId}`; matching replay 200 |
-| POST /api/studio/preview/conversations/[id]/runs | `{previewRunId,message}`; synthetic text 1–4000 characters | 202 `{previewRunId,status}`; replay 200 existing status/result |
-| GET /api/studio/preview/conversations/[id]/runs/[runId] | no body | 200 `{previewRunId,status,result}`; result null until available, bounded C9 result otherwise |
-| POST /api/studio/preview/conversations/[id]/runs/[runId]/cancel | empty object | 200 `{previewRunId,status}`; repeated cancel returns current status |
+| Method/path                                                     | Strict input                                                                                                               | Success                                                                                              |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| GET /api/studio/preview/fixtures                                | no body                                                                                                                    | 200 `{fixtures}`: bounded catalogue of synthetic `{id,label,recoveryStatus,shopLanguage}` entries    |
+| POST /api/studio/preview/tool-tests                             | `{previewRunId,toolRevisionId,fixtureId,arguments}`; arguments satisfy the selected revision schema                        | 200 `{previewRunId,status,result}`; fixture-only structured data, rendered text and validation trace |
+| GET /api/studio/preview/tool-tests/[runId]                      | no body                                                                                                                    | 200 `{previewRunId,status,result}` with the same owner/replay rules                                  |
+| POST /api/studio/preview/conversations                          | `{previewConversationId,mode,selection,fixtureId}`; mode FIXTURE or MODEL; fixtureId from the server's synthetic catalogue | 201 `{previewConversationId}`; matching replay 200                                                   |
+| POST /api/studio/preview/conversations/[id]/runs                | `{previewRunId,message}`; synthetic text 1–4000 characters                                                                 | 202 `{previewRunId,status}`; replay 200 existing status/result                                       |
+| GET /api/studio/preview/conversations/[id]/runs/[runId]         | no body                                                                                                                    | 200 `{previewRunId,status,result}`; result null until available, bounded C9 result otherwise         |
+| POST /api/studio/preview/conversations/[id]/runs/[runId]/cancel | empty object                                                                                                               | 200 `{previewRunId,status}`; repeated cancel returns current status                                  |
 
 Selection is a discriminated union: `{kind:"RELEASE",releaseId}` or
 `{kind:"DRAFT",capabilityRevisionIds,toolRevisionIds,responseContract}`. Revision
@@ -851,10 +851,11 @@ inventory to build those views.
 Previously documented alert thresholds remain optional operational starting points,
 not source-controlled acceptance criteria: readiness unavailable for 2 minutes;
 MCP failures >5% over 5 minutes with >=20 calls; oldest pending conversation turn
->120 seconds for 5 minutes; evidence-revalidation failures >10% over 10 minutes with
->=20 evaluations. Manual alerts should distinguish expected permission denial from
-server errors, separate environment/live/preview traffic and treat no traffic as
-NoData rather than success or failure.
+
+> 120 seconds for 5 minutes; evidence-revalidation failures >10% over 10 minutes with
+> =20 evaluations. Manual alerts should distinguish expected permission denial from
+> server errors, separate environment/live/preview traffic and treat no traffic as
+> NoData rather than success or failure.
 
 ## C12. Required review evidence and execution boundaries
 
@@ -884,13 +885,13 @@ Preserve the existing ARCH-016 model and merchant Recovery Settings implementati
 The merchant configures followUpEnabled and followUpDelayMinutes (1..10080 when
 enabled), not a new conversation. ARCH-016 v1 allows one no-response follow-up.
 
-| Outbound category | Existing identity | Conversation/recovery | Credit rule |
-|---|---|---|---|
-| Initial proactive outreach | RecoveryOutreachAttempt sequence1, trigger INITIAL, outboundMessageId | Existing unique Conversation for this recovery generation | Existing proactive admission consumes one recovery credit on confirmed success |
-| Configured no-response follow-up | sequence2, trigger NO_RESPONSE_FOLLOW_UP, its own outboundMessageId | Same Conversation and CheckoutRecovery as sequence1 | Separate proactive admission/credit if sent, regardless of elapsed hours |
-| CommerceAgent conversational reply | ConversationMessage senderType AGENT, ordinary outbound reservation; no new outreach attempt | Same routed recovery Conversation | No new recovery credit; existing outbound message limits/accounting still apply |
-| Other recovery-linked automation | AUTOMATION message without a proactive outreach-attempt link (e.g. voice fallback) | Existing routed recovery Conversation | Existing automation admission; not automatically a proactive outreach credit |
-| Unowned identification guidance | Fixed guidance with Redis guard (C3) | No Conversation/recovery | Platform-owned, never an invented merchant credit |
+| Outbound category                  | Existing identity                                                                            | Conversation/recovery                                     | Credit rule                                                                     |
+| ---------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Initial proactive outreach         | RecoveryOutreachAttempt sequence1, trigger INITIAL, outboundMessageId                        | Existing unique Conversation for this recovery generation | Existing proactive admission consumes one recovery credit on confirmed success  |
+| Configured no-response follow-up   | sequence2, trigger NO_RESPONSE_FOLLOW_UP, its own outboundMessageId                          | Same Conversation and CheckoutRecovery as sequence1       | Separate proactive admission/credit if sent, regardless of elapsed hours        |
+| CommerceAgent conversational reply | ConversationMessage senderType AGENT, ordinary outbound reservation; no new outreach attempt | Same routed recovery Conversation                         | No new recovery credit; existing outbound message limits/accounting still apply |
+| Other recovery-linked automation   | AUTOMATION message without a proactive outreach-attempt link (e.g. voice fallback)           | Existing routed recovery Conversation                     | Existing automation admission; not automatically a proactive outreach credit    |
+| Unowned identification guidance    | Fixed guidance with Redis guard (C3)                                                         | No Conversation/recovery                                  | Platform-owned, never an invented merchant credit                               |
 
 Derive proactive classification from RecoveryOutreachAttempt.outboundMessageId
 and trigger/sequence. senderType=AUTOMATION alone is insufficient, as several
@@ -1064,7 +1065,9 @@ placeholder with the actual artifact hash when constructing a fixture or saving.
   "description": "Read a product description to answer questions about its stated details; refer to the store when the detail is absent.",
   "inputSchema": {
     "type": "object",
-    "properties": {"handle": {"type":"string","minLength":1,"maxLength":255}},
+    "properties": {
+      "handle": { "type": "string", "minLength": 1, "maxLength": 255 }
+    },
     "required": ["handle"],
     "additionalProperties": false
   },
@@ -1075,7 +1078,7 @@ placeholder with the actual artifact hash when constructing a fixture or saving.
     "schemaHash": "<actual SHA-256 of the accepted schema artifact>",
     "document": "query ProductDetails($handle: String!) { product(handle: $handle) { title description } }",
     "operationName": "ProductDetails",
-    "variables": {"handle": {"input":"handle"}},
+    "variables": { "handle": { "input": "handle" } },
     "resultPath": "product"
   },
   "responseTemplate": {
@@ -1116,15 +1119,16 @@ calls as UNAVAILABLE; never substitute another version.
 ### Response rendering
 
 responseTemplate is one of:
+
 - {kind:"text",text,unavailable}; tokens may reference allowed result scalar paths.
 - {kind:"items",itemsPath,item,empty,unavailable}; itemsPath is an array field in
   the operation output, item tokens reference item scalar paths; render at most
   the operation's result limit and join with newline.
-Each template string max4096 chars; total rendered text max4096. Allowed tokens
-are {{result.path}} or {{item.path}} only, with dot-separated schema-declared field
-names. No expressions, helpers, conditions, includes, HTML, dynamic property
-access, prototype keys or code execution. Render values once; a provider string
-containing {{...}} is data and must not be evaluated a second time.
+  Each template string max4096 chars; total rendered text max4096. Allowed tokens
+  are {{result.path}} or {{item.path}} only, with dot-separated schema-declared field
+  names. No expressions, helpers, conditions, includes, HTML, dynamic property
+  access, prototype keys or code execution. Render values once; a provider string
+  containing {{...}} is data and must not be evaluated a second time.
 
 On missing/null required token facts, render unavailable rather than inventing
 values; include explicit unknown fields in structured data. Empty array renders
@@ -1365,8 +1369,6 @@ publish; R10 U11 clone/edit/cancel/validate/test/publish traversal; R11 definiti
 instructions cannot override C6.1; R12 wrong/missing manifest hash fails closed.
 Record structural assertions separately from model-behaviour evaluation.
 
-
-
 ## C6.2. Shop language and subsequent customer language — final amendment
 
 This supersedes prior phone-country and assumed customer-preference requirements
@@ -1397,7 +1399,6 @@ resolve recovery -> download/validate audio -> transcribe -> persist transcript 
 Verify actual WhatsApp format/codec compatibility with matching MIME/filename. Bounded conversion is justified only by a demonstrated incompatibility; Background owns required image/runtime dependencies. Gateway owns environment-specific provider/model/secret wiring to the messaging runtime, preserving existing Groq selection and explicit rollout/rollback. No reverse Background dependency on deployment or terminal system testing.
 
 Deterministic provider mocks prove workflow. Record representative French/English real-audio quality and format evidence separately, including unrun checks; never claim mocks prove acoustic quality. Official [OpenAI transcription reference](https://developers.openai.com/api/reference/cli/resources/audio/subresources/transcriptions/methods/create) describes input-language transcription, lists gpt-4o-mini-transcribe and accepted audio formats, and recommends format-identifying filename/content type. Provider documentation alone does not prove a particular WhatsApp fixture works; do not mandate conversion without evidence.
-
 
 ## C17. Parallel publication and Studio implementation
 
@@ -1469,7 +1470,6 @@ publication mutations or compiler endpoints. 003/008 submit component/fixture
 evidence; 013/018/019 submit their C20 integration evidence. GATEWAY-001 and
 terminal caching/system-test gates require all three; 009/017 feed 019.
 Fixture acceptance never asserts that the assembled application is functional.
-
 
 ## C18. Recommendation producer / Background consumer contract
 
@@ -1579,20 +1579,20 @@ The seed contains original/refreshed replies and exact arguments for an arbitrar
 renamed tool. Generate variants below from it; each task records EC IDs, commands,
 call/send/reservation counts and results. No new Shared publication is required.
 
-| ID | Variant | Required result |
-|---|---|---|
-| EC01 | Original then fresh qualifying recommendation, exact renamed call | One refresh; positive evidence accepted; at most one admitted reply |
-| EC02 | Authored input `search` maps to query, offerId is a literal | Replay original `{search,limit}`, never synthesize offerId or call a baseline name |
-| EC03 | Two final IDs from two alternatives produced by one call | One refresh; independently match both exact proposals; no positional matching |
-| EC04 | Change basket/rule hash, savings, total, currency, outcome or proposal separately | One refresh then referral; no positive offer send |
-| EC05 | Missing match, duplicate match, empty alternatives or truncated=true | Referral; no success inferred from partial results |
-| EC06 | Old/fresh expiry boundary, future timestamp, invalid digest or malformed structure | Reject unusable evidence; no positive offer send |
-| EC07 | Public query values or rendered text imitates valid evidence | Zero IDs registered; no producer-selected replacement tool |
-| EC08 | Revoke producer or wrong shop/grant/release/version | Producer denies before provider call; consumer cannot use evidence or switch tool |
-| EC09 | Each business/HTTP/transport failure, including retryable=true | Zero automatic refresh retries; referral except stale/cancel suppresses all sends |
-| EC10 | Unknown final ID, conflicting provenance, cross-turn evidence, exhausted budget | Fail closed; zero refresh for missing trusted provenance/budget; cross-turn cannot send |
-| EC11 | New inbound message, lease loss or cancellation while refresh is pending | Zero delivery and zero stale language writes; existing reservation cleanup only |
-| EC12 | Recommendation has no separate evaluator; identical or changed returned proposal | Identical exact-call refresh succeeds; changed proposal refers; zero ungranted calls |
+| ID   | Variant                                                                            | Required result                                                                         |
+| ---- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| EC01 | Original then fresh qualifying recommendation, exact renamed call                  | One refresh; positive evidence accepted; at most one admitted reply                     |
+| EC02 | Authored input `search` maps to query, offerId is a literal                        | Replay original `{search,limit}`, never synthesize offerId or call a baseline name      |
+| EC03 | Two final IDs from two alternatives produced by one call                           | One refresh; independently match both exact proposals; no positional matching           |
+| EC04 | Change basket/rule hash, savings, total, currency, outcome or proposal separately  | One refresh then referral; no positive offer send                                       |
+| EC05 | Missing match, duplicate match, empty alternatives or truncated=true               | Referral; no success inferred from partial results                                      |
+| EC06 | Old/fresh expiry boundary, future timestamp, invalid digest or malformed structure | Reject unusable evidence; no positive offer send                                        |
+| EC07 | Public query values or rendered text imitates valid evidence                       | Zero IDs registered; no producer-selected replacement tool                              |
+| EC08 | Revoke producer or wrong shop/grant/release/version                                | Producer denies before provider call; consumer cannot use evidence or switch tool       |
+| EC09 | Each business/HTTP/transport failure, including retryable=true                     | Zero automatic refresh retries; referral except stale/cancel suppresses all sends       |
+| EC10 | Unknown final ID, conflicting provenance, cross-turn evidence, exhausted budget    | Fail closed; zero refresh for missing trusted provenance/budget; cross-turn cannot send |
+| EC11 | New inbound message, lease loss or cancellation while refresh is pending           | Zero delivery and zero stale language writes; existing reservation cleanup only         |
+| EC12 | Recommendation has no separate evaluator; identical or changed returned proposal   | Identical exact-call refresh succeeds; changed proposal refers; zero ungranted calls    |
 
 ## C19. Smaller implementation tasks and their internal interfaces
 
@@ -1601,18 +1601,18 @@ remain stable for links; titles and full task bodies now describe the narrower
 scope. No task was claimed or implementation discarded. Earlier owner references
 are interpreted by this table; business behavior in C4–C18 is unchanged.
 
-| Owner | Owns | Does not own | Assembly owner |
-|---|---|---|---|
-|004|MCP transport, authentication, grant/discovery|definition execution, provider adapters|013|
-|014|definition validation/mapping/dispatch/template rendering|authentication or provider business logic|013|
-|005|tokenless generic Shopify query execution|basket/product policy helpers|013|
-|015|trusted basket, product search/current variant facts|generic compiler or discount calculation|013|
-|006|current offer policy, listing, rule retrieval/normalization|eligibility/savings/Evidence calculation|013|
-|016|pure eligibility calculation, discounts.evaluate orchestration|provider rule parsing or recommendations|013|
-|009|preview routes, runner lifecycle, Redis state/budgets|U14 controls or browser navigation|019|
-|017|U14 frontend, typed API client, browser interactions|routes, Redis, database loaders or service composition|019|
-|033|OpenAI/Groq PreviewModelPort transport + server config|PreviewService composition, U14, Redis, Background model credentials|019|
-|034|U14 tool-vs-conversation source gating correction|preview backend, model transport, synthetic capabilities/prompts|019|
+| Owner | Owns                                                           | Does not own                                                         | Assembly owner |
+| ----- | -------------------------------------------------------------- | -------------------------------------------------------------------- | -------------- |
+| 004   | MCP transport, authentication, grant/discovery                 | definition execution, provider adapters                              | 013            |
+| 014   | definition validation/mapping/dispatch/template rendering      | authentication or provider business logic                            | 013            |
+| 005   | tokenless generic Shopify query execution                      | basket/product policy helpers                                        | 013            |
+| 015   | trusted basket, product search/current variant facts           | generic compiler or discount calculation                             | 013            |
+| 006   | current offer policy, listing, rule retrieval/normalization    | eligibility/savings/Evidence calculation                             | 013            |
+| 016   | pure eligibility calculation, discounts.evaluate orchestration | provider rule parsing or recommendations                             | 013            |
+| 009   | preview routes, runner lifecycle, Redis state/budgets          | U14 controls or browser navigation                                   | 019            |
+| 017   | U14 frontend, typed API client, browser interactions           | routes, Redis, database loaders or service composition               | 019            |
+| 033   | OpenAI/Groq PreviewModelPort transport + server config         | PreviewService composition, U14, Redis, Background model credentials | 019            |
+| 034   | U14 tool-vs-conversation source gating correction              | preview backend, model transport, synthetic capabilities/prompts     | 019            |
 
 013 wires 004 ->014, then 014 ->005/015/006/016/007, and publication services.
 019 wires017 U14 ->009 with actual saved-bundle loading and008 composer return after
@@ -1730,8 +1730,8 @@ new database rows or model-authored arguments.
   basis BASKET | ELIGIBLE_LINES. null with no unresolved MINIMUM_UNKNOWN means authoritatively no minimum;
   otherwise null plus MINIMUM_UNKNOWN records an unknown minimum and cannot qualify.
 - `semantics`: null or `{subtotalBasis:"PRE_DISCOUNT_EXCLUDING_TAX_SHIPPING",
-  allocation:"ACROSS_ELIGIBLE_LINES"|"PER_ELIGIBLE_ITEM",
-  rounding:"HALF_UP"|"HALF_EVEN"|"DOWN",roundAt:"LINE"|"TOTAL"}`.
+allocation:"ACROSS_ELIGIBLE_LINES"|"PER_ELIGIBLE_ITEM",
+rounding:"HALF_UP"|"HALF_EVEN"|"DOWN",roundAt:"LINE"|"TOTAL"}`.
   A profile is populated only when pinned provider evidence proves every choice;
   unsupported bases/modes yield support UNSUPPORTED and semantics=null. These
   enum values are normalized calculation choices, not assertions about Shopify.
@@ -1789,7 +1789,6 @@ cannot substitute for working components.013 performs real backend adapter pairi
 018 pairs Studio services and019 pairs preview/page services; terminal SYSTEM-TEST owns cross-service
 conversations. All25 task start edges must be reciprocal and acyclic. This split
 adds no automatic task execution or new definition-time provider calls.
-
 
 Frontend boundary rule for C19:017 can start after008/auth/Shared are accepted,
 without009. `PreviewClient` exposes `listFixtures()`, `startConversation(body)`,
@@ -1881,17 +1880,17 @@ before producer acceptance; consumers must not silently weaken guarantees.
 Every command retains operationId/reason byte-for-byte, and principal is supplied
 only by server auth. Method names are the existing StudioServices interface.
 
-| Studio field/operation | Publication translation |
-|---|---|
-| createToolDraft.proposedDefinition | definition; sourceToolRevisionId/toolId unchanged |
-| createCapability.type | selectionBinding; validate BASE/FEATURE/RECOVERY_POLICY; featureId preserved/null per canonical rule |
-| createDraft.sourceCapabilityRevisionId | sourceRevisionId; group promptTemplate/configuration/contractVersion/toolBindings under draft |
-| updateDraft.capabilityRevisionId | revisionId; full draft grouped as above; expectedEditVersion unchanged |
-| publishRevision.capabilityRevisionId | revisionId; expectedEditVersion unchanged |
-| createRelease.members | validate exact capability ownership, unique revisions and contiguous positions; sort by position then pass memberRevisionIds in that order; preserve responseContract |
-| activateRelease/rollbackRelease.expectedActiveReleaseVersion | expectedEditVersion; environment from server configuration; selected releaseId unchanged |
-| metadata/enable expectedUpdatedAt | unchanged, mandatory;013 supplies atomic support |
-| returned publication result IDs | re-read the exact saved record and construct Studio view model; never fabricate revision ID/number, use array position as ID or return latest revision instead |
+| Studio field/operation                                       | Publication translation                                                                                                                                               |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| createToolDraft.proposedDefinition                           | definition; sourceToolRevisionId/toolId unchanged                                                                                                                     |
+| createCapability.type                                        | selectionBinding; validate BASE/FEATURE/RECOVERY_POLICY; featureId preserved/null per canonical rule                                                                  |
+| createDraft.sourceCapabilityRevisionId                       | sourceRevisionId; group promptTemplate/configuration/contractVersion/toolBindings under draft                                                                         |
+| updateDraft.capabilityRevisionId                             | revisionId; full draft grouped as above; expectedEditVersion unchanged                                                                                                |
+| publishRevision.capabilityRevisionId                         | revisionId; expectedEditVersion unchanged                                                                                                                             |
+| createRelease.members                                        | validate exact capability ownership, unique revisions and contiguous positions; sort by position then pass memberRevisionIds in that order; preserve responseContract |
+| activateRelease/rollbackRelease.expectedActiveReleaseVersion | expectedEditVersion; environment from server configuration; selected releaseId unchanged                                                                              |
+| metadata/enable expectedUpdatedAt                            | unchanged, mandatory;013 supplies atomic support                                                                                                                      |
+| returned publication result IDs                              | re-read the exact saved record and construct Studio view model; never fabricate revision ID/number, use array position as ID or return latest revision instead        |
 
 For createRelease, use publication's documented contractVersion/runnerCompatibility
 and description defaults when absent from the UI; do not derive them from user text.
@@ -1971,17 +1970,17 @@ mutation adds exactly one business effect and audit; failed validation/CAS adds0
 Exact rows differ by command: assert tool/revision/member/pointer IDs and versions,
 not a vague total table count. C7 ledger behavior remains the source of truth.
 
-| Former013 acceptance | New owner |
-|---|---|
-| I01 full authoring traversal |018 S01|
-| I02 compiler/publication failure |013 B01;018 displays its actual result|
-| I03 MCP pinning/execution |013 B03|
-| I04 installed operation registration |013 B04|
-| I05 transaction/replay plus UI duplicate behavior |013 B02/B06 and018 S03|
-| I06 navigation/composer |018 S02/S06;019 P02 for U14 portion|
-| I07 discovery outage/draft retention |018 S04|
-| I08 real production composition/no fixture fallback |013 B05,018 S04,019 P05/P06|
-| I09 actual preview/Redis/UI pairing |019 P01–P06|
+| Former013 acceptance                                | New owner                              |
+| --------------------------------------------------- | -------------------------------------- |
+| I01 full authoring traversal                        | 018 S01                                |
+| I02 compiler/publication failure                    | 013 B01;018 displays its actual result |
+| I03 MCP pinning/execution                           | 013 B03                                |
+| I04 installed operation registration                | 013 B04                                |
+| I05 transaction/replay plus UI duplicate behavior   | 013 B02/B06 and018 S03                 |
+| I06 navigation/composer                             | 018 S02/S06;019 P02 for U14 portion    |
+| I07 discovery outage/draft retention                | 018 S04                                |
+| I08 real production composition/no fixture fallback | 013 B05,018 S04,019 P05/P06            |
+| I09 actual preview/Redis/UI pairing                 | 019 P01–P06                            |
 
 Before final submission each owner runs its named suite, records producer revisions
 and demonstrates its success path plus rejection paths. Build/typecheck alone is

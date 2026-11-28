@@ -374,7 +374,6 @@ When moda_architect assigns a task, the task file and its parent architecture
 document are authoritative for scope, dependencies, contracts and acceptance
 criteria.
 
-
 ===============================================================================
 PREPARED /MODA-TASK EXECUTION FAST PATH
 ===============================================================================
@@ -472,7 +471,7 @@ The repository agent MUST NOT edit `## Architect Review`; only
 
 If asked to execute architecture work without a specific task ID:
 
-1. inspect docs/decisions/woocommerce/*/*.md;
+1. inspect docs/decisions/woocommerce/_/_.md;
 2. ignore _index.md files;
 3. select only tasks where assigned_agent is moda_woocommerce;
 4. require status: ready;
@@ -496,9 +495,9 @@ Before claiming a task, normalize the current execution runtime to the canonical
 Moda executor vocabulary:
 
 GitHub Copilot / github-copilot / copilot -> copilot
-Codex                                  -> codex
-Claude Code / claude-code / claude     -> claude
-Continue                               -> continue
+Codex -> codex
+Claude Code / claude-code / claude -> claude
+Continue -> continue
 
 Then update the task YAML metadata together to:
 
@@ -568,7 +567,6 @@ If the task cannot be completed safely, set status to blocked and document why.
 Never mark your own architecture task Complete.
 
 Only moda_architect may change a reviewed task to status: complete.
-
 
 When changing WooCommerce Admin UI:
 

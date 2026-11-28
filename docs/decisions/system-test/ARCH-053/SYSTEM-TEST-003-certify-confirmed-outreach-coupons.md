@@ -15,18 +15,18 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-SHARED-012
-- ARCH-053-SHARED-003
-- ARCH-053-SYSTEM-TEST-001
-- ARCH-053-SYSTEM-TEST-002
-- ARCH-053-API-003
-- ARCH-053-WOOCOMMERCE-008
-- ARCH-053-BACKGROUND-003
-- ARCH-053-BACKGROUND-004
-- ARCH-053-WOOCOMMERCE-003
-- ARCH-052-BACKGROUND-008
-- ARCH-048-BACKGROUND-011
-- ARCH-046-WOOCOMMERCE-003
+  - ARCH-052-SHARED-012
+  - ARCH-053-SHARED-003
+  - ARCH-053-SYSTEM-TEST-001
+  - ARCH-053-SYSTEM-TEST-002
+  - ARCH-053-API-003
+  - ARCH-053-WOOCOMMERCE-008
+  - ARCH-053-BACKGROUND-003
+  - ARCH-053-BACKGROUND-004
+  - ARCH-053-WOOCOMMERCE-003
+  - ARCH-052-BACKGROUND-008
+  - ARCH-048-BACKGROUND-011
+  - ARCH-046-WOOCOMMERCE-003
 enables: []
 created: 2026-10-30
 updated: 2026-11-02
@@ -40,11 +40,11 @@ updated: 2026-11-02
 
 ## Objective
 
-Independently certify original-coupon + confirmed outreach-coupon restoration end-to-end across the *real* WooCommerce checkout runtime (Classic and Blocks), authenticated API, the provider-confirmed WhatsApp receipt, recovery generations and native discount validity/stacking.
+Independently certify original-coupon + confirmed outreach-coupon restoration end-to-end across the _real_ WooCommerce checkout runtime (Classic and Blocks), authenticated API, the provider-confirmed WhatsApp receipt, recovery generations and native discount validity/stacking.
 
 ## Context
 
-SYSTEM-TEST-001 certifies recovery-link/basket fundamentals and SYSTEM-TEST-002 certifies **original** coupons. This terminal task covers **ARCH-052-recommended checkout discounts** interacting with them. The source of the recommendation is the recorded *confirmed initial outbound message*, not ARCH-052's current merchant settings or the immutable original snapshot. No new services or database objects are created by this test task.
+SYSTEM-TEST-001 certifies recovery-link/basket fundamentals and SYSTEM-TEST-002 certifies **original** coupons. This terminal task covers **ARCH-052-recommended checkout discounts** interacting with them. The source of the recommendation is the recorded _confirmed initial outbound message_, not ARCH-052's current merchant settings or the immutable original snapshot. No new services or database objects are created by this test task.
 
 ## Scope
 
@@ -59,7 +59,6 @@ No production Meta sends, coupon issuance, CommerceAgent model selection, reimpl
 ### Multi-discount Woo checkout-restoration certification — 30 October 2026
 
 Exercise `woo.restore.resolve.v1` with confirmed initial CHECKOUT_OFFERS group (2..3 items) and original customer coupon set, plus original single, automatic, alternative and no-offer branches. Assert only confirmed initial source-grounded codes are returned, read-only API remains tenant/generation safe, customer confirm is required, current Woo native coupon stacking determines every result, and a partial/expired/unverifiable group never silently removes original coupons or claims guaranteed savings. Verify explicit 10-minute nonce/session/cart-hash group choice, rollback of a partially applied group, changed merchant setting after confirmed send, retry/idempotency, Classic and Blocks **storefront-silent failure handling**, optional non-error conflict choice and true totals. No v2 resolver or checkout-link generation in ARCH-052.
-
 
 - Test API-003 actual authenticated **single v1** resolver request/response, with the mandatory `outreachOffer` union; no v2 resolver is accepted. Invalid/expired/superseded/tenant-mismatched link never returns basket or offer.
 - Test a real sequence-one `RecoveryOutreachAttempt.sentAt + outboundMessageId` joined to a provider-confirmed `ConversationMessage` carrying approved `recoveryPromise` and explicit `promotionTarget`; no message, unconfirmed, failed, untagged, corrupt, wrong-recovery and wrong-tenant receipts never produce a checkout code. Test DB outage separately (503, not 200 NONE).
@@ -79,7 +78,6 @@ Exercise `woo.restore.resolve.v1` with confirmed initial CHECKOUT_OFFERS group (
 - Keep checkout restoration read-only in the hosted API and cart-local in WooCommerce. Never have PHP query Moda PostgreSQL/Redis or an API handler change a visitor cart. Never create a new discount, extend an expired coupon, use ARCH-052 discovery code, bypass merchant consent/STOP/order/final provider gates or impose a cross-generation outreach cap.
 - When the specified receipt/provider contract is absent, conflicting or untestable, **stop and return the gap to moda_architect**; do not invent an approximation, copy a Shared schema locally or broaden the task to another repo. System-test tasks are terminal and may not gate implementation tasks.
 
-
 ## Work Items
 
 - [ ] Build two merchant fixtures, generation-1+generation-2 recovery fixtures, confirmed outbound receipt fixtures and current Woo original/recommended coupons.
@@ -94,20 +92,20 @@ Exercise `woo.restore.resolve.v1` with confirmed initial CHECKOUT_OFFERS group (
 
 **Mandatory evidence matrix (every row in Classic and Blocks unless API-only):**
 
-| Original basket coupons | Confirmed outreach | Current provider state | Expected result |
-|---|---|---|---|
-| `SAVE10` | `EXTRA15` checkout CODE | both stack | both applied, current total |
-| `SAVE10` | `EXTRA15` checkout CODE | original expired | offer applied, original rejected privately, no storefront error |
-| `SAVE10` | `EXTRA15` checkout CODE | offer expired | original retained, offer rejected privately, no storefront error |
-| `SAVE10` | `EXTRA15` checkout CODE | individual-use conflict | original remains; explicit choice available |
-| `SAVE10` | `EXTRA15` checkout CODE | user opts in; offer valid | native recompute; original removed only by choice |
-| `SAVE10` | `EXTRA15` checkout CODE | offer expires before opt-in | originals safely restored, private error evidence only |
-| no coupons | checkout AUTOMATIC | eligible / ineligible | no fabricated code or guaranteed-savings claim |
-| `SAVE10` | ALTERNATIVE_PRODUCT code | any | no promoted product/code applied to old basket |
-| `SAVE10` | NO_OFFER | any | original attempted only |
-| `SAVE10` | corrupt confirmed receipt | any | no offered code, private UNVERIFIABLE diagnostic, original attempted |
-| `SAVE10` | checkout CODE promised | new generation supersedes link | link refused, no cart overwrite |
-| `SAVE10` | checkout CODE promised | message pending/failed/no provider ID | no offered code supplied |
+| Original basket coupons | Confirmed outreach        | Current provider state                | Expected result                                                      |
+| ----------------------- | ------------------------- | ------------------------------------- | -------------------------------------------------------------------- |
+| `SAVE10`                | `EXTRA15` checkout CODE   | both stack                            | both applied, current total                                          |
+| `SAVE10`                | `EXTRA15` checkout CODE   | original expired                      | offer applied, original rejected privately, no storefront error      |
+| `SAVE10`                | `EXTRA15` checkout CODE   | offer expired                         | original retained, offer rejected privately, no storefront error     |
+| `SAVE10`                | `EXTRA15` checkout CODE   | individual-use conflict               | original remains; explicit choice available                          |
+| `SAVE10`                | `EXTRA15` checkout CODE   | user opts in; offer valid             | native recompute; original removed only by choice                    |
+| `SAVE10`                | `EXTRA15` checkout CODE   | offer expires before opt-in           | originals safely restored, private error evidence only               |
+| no coupons              | checkout AUTOMATIC        | eligible / ineligible                 | no fabricated code or guaranteed-savings claim                       |
+| `SAVE10`                | ALTERNATIVE_PRODUCT code  | any                                   | no promoted product/code applied to old basket                       |
+| `SAVE10`                | NO_OFFER                  | any                                   | original attempted only                                              |
+| `SAVE10`                | corrupt confirmed receipt | any                                   | no offered code, private UNVERIFIABLE diagnostic, original attempted |
+| `SAVE10`                | checkout CODE promised    | new generation supersedes link        | link refused, no cart overwrite                                      |
+| `SAVE10`                | checkout CODE promised    | message pending/failed/no provider ID | no offered code supplied                                             |
 
 Run additional negative tests for post-only offer fields, failed bearer, mismatched installation, duplicate nonce submits, scanner GET, tampered session and unbounded log payloads. Record test command/output and screenshots for real WC Blocks.
 

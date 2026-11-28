@@ -53,13 +53,13 @@ Do not build another bucket/proxy. Use validated `shopBrand.publicMedia` for buc
 interface ShopBrandMediaProcessor {
   process(input: {
     shopId: string;
-    role: 'LOGO' | 'SQUARE_LOGO' | 'COVER_IMAGE';
+    role: "LOGO" | "SQUARE_LOGO" | "COVER_IMAGE";
     sourceUrl: string;
     sourceFingerprint: string;
     sourceGeneration: number;
   }): Promise<{
     objectKey: string;
-    contentType: 'image/jpeg' | 'image/png';
+    contentType: "image/jpeg" | "image/png";
     width: number;
     height: number;
     sizeBytes: number;
@@ -173,19 +173,19 @@ Complete — Developer Attempt 1. The developer explicitly invoked `/moda_develo
 
 ### Validation Results
 
-Developer terminal transcript: `typescript(20261027-115118)`, supplied alongside `moda-interact-workspace-ARCH-049-BACKGROUND-001.zip` (27 October 2026). The archive includes the resulting implementation and canonical parent task file; archive reconstruction is *not* proof of Git metadata beyond the supplied terminal log.
+Developer terminal transcript: `typescript(20261027-115118)`, supplied alongside `moda-interact-workspace-ARCH-049-BACKGROUND-001.zip` (27 October 2026). The archive includes the resulting implementation and canonical parent task file; archive reconstruction is _not_ proof of Git metadata beyond the supplied terminal log.
 
-| Command / evidence | Result |
-| --- | --- |
-| `git submodule update --init --recursive -- database` and `ls database/prisma/schema.prisma` | **PASS**; nested database schema materialised, recorded gitlink `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`. |
-| `npm ci` | **PASS** in the developer's Background task worktree; earlier Attempt 1 lockfile error corrected. |
-| `npm run prisma:generate` | **PASS**; Prisma Client v6.19.3 generated. |
-| `npm test -- tests/unit/services/shop-brand-media tests/unit/services/platform-configuration/service.test.ts` | **PASS**; **5 test files, 53 tests passed, 0 failures** (13.92 s reported). Covers transform, SSRF/DNS, R2 race/failure, public delivery mismatch and config default-read cases. |
-| `npm run lint` | **PASS**; ESLint exited without errors. |
-| `npm run build` | **PASS**; Prisma generation and TypeScript `tsc` completed without reported errors. |
-| `git diff --check` | **PASS in independent isolated reconstruction** of the uploaded 20-file implementation delta against the earlier snapshot, including the final developer lockfile. A separate `git show --check 75c93f5` in the actual implementation worktree is recommended to confirm the committed diff. |
-| `git commit` and `git push --set-upstream origin task/ARCH-049-BACKGROUND-001` | **PASS**; implementation commit `75c93f5` pushed and upstream set, per terminal log. |
-| Live Cloudflare R2 write and public custom-domain GET | **NOT RUN**; no live bucket/domain/worker-secret evidence supplied. R4 explicitly permits injected-adapter validation with external preflight outstanding. The implementation must fail closed until public bytes are provably served. |
+| Command / evidence                                                                                            | Result                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `git submodule update --init --recursive -- database` and `ls database/prisma/schema.prisma`                  | **PASS**; nested database schema materialised, recorded gitlink `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`.                                                                                                                                                                                  |
+| `npm ci`                                                                                                      | **PASS** in the developer's Background task worktree; earlier Attempt 1 lockfile error corrected.                                                                                                                                                                                            |
+| `npm run prisma:generate`                                                                                     | **PASS**; Prisma Client v6.19.3 generated.                                                                                                                                                                                                                                                   |
+| `npm test -- tests/unit/services/shop-brand-media tests/unit/services/platform-configuration/service.test.ts` | **PASS**; **5 test files, 53 tests passed, 0 failures** (13.92 s reported). Covers transform, SSRF/DNS, R2 race/failure, public delivery mismatch and config default-read cases.                                                                                                             |
+| `npm run lint`                                                                                                | **PASS**; ESLint exited without errors.                                                                                                                                                                                                                                                      |
+| `npm run build`                                                                                               | **PASS**; Prisma generation and TypeScript `tsc` completed without reported errors.                                                                                                                                                                                                          |
+| `git diff --check`                                                                                            | **PASS in independent isolated reconstruction** of the uploaded 20-file implementation delta against the earlier snapshot, including the final developer lockfile. A separate `git show --check 75c93f5` in the actual implementation worktree is recommended to confirm the committed diff. |
+| `git commit` and `git push --set-upstream origin task/ARCH-049-BACKGROUND-001`                                | **PASS**; implementation commit `75c93f5` pushed and upstream set, per terminal log.                                                                                                                                                                                                         |
+| Live Cloudflare R2 write and public custom-domain GET                                                         | **NOT RUN**; no live bucket/domain/worker-secret evidence supplied. R4 explicitly permits injected-adapter validation with external preflight outstanding. The implementation must fail closed until public bytes are provably served.                                                       |
 
 ### Deviations
 

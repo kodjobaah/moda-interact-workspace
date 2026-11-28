@@ -15,16 +15,15 @@ executor: null
 claimed_at: null
 attempt: 5
 depends_on:
-- ARCH-010-ADMIN-007
-- ARCH-010-ADMIN-008
+  - ARCH-010-ADMIN-007
+  - ARCH-010-ADMIN-008
 enables:
-- ARCH-010-SYSTEM-TEST-005
+  - ARCH-010-SYSTEM-TEST-005
 created: 2026-09-12
-updated: '2026-09-13T17:52:07Z'
+updated: "2026-09-13T17:52:07Z"
 ---
 
 # ARCH-010-ADMIN-009: Hard-enforce upgrade economics on plan and recovery-pack configuration
-
 
 > **Readiness release — 2026-09-13:** `ARCH-010-ADMIN-008` is architect-accepted Complete at Attempt 2. `ARCH-010-ADMIN-007` was already Complete, so every dependency of this task is now Complete and this task is Ready.
 
@@ -215,9 +214,11 @@ Stop if ADMIN-007 reference semantics would need to be changed, if DATABASE-013 
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/app/actions/billing-plan.ts`
 - `moda-interact-admin/src/app/actions/billing-economics.ts`
 - `moda-interact-admin/src/components/admin/billing-plan-catalog.tsx`
@@ -229,6 +230,7 @@ Ready for Review.
 - `moda-interact-admin/src/app/(protected)/billing/page.tsx`
 
 ### Work Completed
+
 - Reused the accepted ADMIN-007 single-pack evaluator through a shared Admin adapter.
 - Re-read current policy, active adjacent edges, latest verified snapshots, and proposed plan values inside the mutation transaction.
 - Blocked `FAIL` and `UNVERIFIED` outcomes before plan, feature, pack, or edge activation writes.
@@ -242,6 +244,7 @@ Ready for Review.
 - Attempt 2 correction: added behavioral regression coverage for exact pack evidence, stale size/handle rejection, and top-ups-off semantics while preserving the accepted evaluator arithmetic.
 
 ### Validation Results
+
 - `npm test`: 164 passed, 0 failed.
 - `node --experimental-strip-types --test tests/security/admin-billing-plan.test.mjs`: 12 passed, 0 failed.
 - `npx tsc --noEmit --pretty false`: passed.
@@ -251,6 +254,7 @@ Ready for Review.
 - Focused Prettier check for changed files and `git diff --check`: passed. Repository-wide Prettier check remains noisy on 267 existing files and was not used as a failure gate.
 
 ### Git / VCS
+
 - Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-ADMIN-009`.
 - Branch: `task/ARCH-010-ADMIN-009`.
 - Claim commit: `97bed1e`.
@@ -261,6 +265,7 @@ Ready for Review.
 - No Admin submodule gitlink or unrelated repository was staged or modified by the parent report update.
 
 ### Architect Review
+
 Pending Architect Review.
 
 ## Architect Review
@@ -970,26 +975,26 @@ Review.
 #### Attempt 3 Workflow And Synchronization Evidence
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
-  parent branch: task/ARCH-010-ADMIN-009
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
-  implementation branch: task/ARCH-010-ADMIN-009
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+parent branch: task/ARCH-010-ADMIN-009
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+implementation branch: task/ARCH-010-ADMIN-009
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Parent history reconciliation:
-  Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
-  Attempt-1 report 5a17755... ancestor of parent HEAD: yes
-  Attempt-2 claim 645574c... ancestor of parent HEAD: yes
-  Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+Attempt-2 report eda0f87... ancestor of parent HEAD: yes
 
 #### Architect Review
 
@@ -1779,10 +1784,12 @@ export function billingUpgradeTopUpPath(
 ): BillingUpgradeTopUpPathItem[] {
   // Existing multi-offer evidence, if present, remains authoritative.
   if (evaluation.result.details.packSummary?.length) {
-    return evaluation.result.details.packSummary.map(({ quantity, creditsGranted }) => ({
-      quantity,
-      creditsGranted,
-    }));
+    return evaluation.result.details.packSummary.map(
+      ({ quantity, creditsGranted }) => ({
+        quantity,
+        creditsGranted,
+      }),
+    );
   }
 
   const quantity = evaluation.result.details.packUnitsNeeded;
@@ -2177,51 +2184,51 @@ None. ADMIN-007 arithmetic, the Prisma schema, Shopify charging, merchant admiss
 Task branch: `task/ARCH-010-ADMIN-009`
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
-  parent branch: task/ARCH-010-ADMIN-009
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
-  implementation branch: task/ARCH-010-ADMIN-009
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-009
+parent branch: task/ARCH-010-ADMIN-009
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-009
+implementation branch: task/ARCH-010-ADMIN-009
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Parent history reconciliation:
-  Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
-  Attempt-1 report 5a17755... ancestor of parent HEAD: yes
-  Attempt-2 claim 645574c... ancestor of parent HEAD: yes
-  Attempt-2 report eda0f87... ancestor of parent HEAD: yes
-  Attempt-3 claim 869c761... ancestor of parent HEAD: yes
-  Attempt-3 report 24083ae... ancestor of parent HEAD: yes
-  Attempt-4 claim 3fd37db... ancestor of parent HEAD: yes
-  Attempt-4 report cbea546... ancestor of parent HEAD: yes
+Attempt-1 claim 97bed1e... ancestor of parent HEAD: yes
+Attempt-1 report 5a17755... ancestor of parent HEAD: yes
+Attempt-2 claim 645574c... ancestor of parent HEAD: yes
+Attempt-2 report eda0f87... ancestor of parent HEAD: yes
+Attempt-3 claim 869c761... ancestor of parent HEAD: yes
+Attempt-3 report 24083ae... ancestor of parent HEAD: yes
+Attempt-4 claim 3fd37db... ancestor of parent HEAD: yes
+Attempt-4 report cbea546... ancestor of parent HEAD: yes
 
 Implementation repository:
-  repository: moda-interact-admin
-  commit: 70dbfe72c3eeaa9052300e11bace381dd3d2bb84
-  remote branch: origin/task/ARCH-010-ADMIN-009
-  pushed: yes
+repository: moda-interact-admin
+commit: 70dbfe72c3eeaa9052300e11bace381dd3d2bb84
+remote branch: origin/task/ARCH-010-ADMIN-009
+pushed: yes
 
 Parent workspace:
-  task file: docs/decisions/admin/ARCH-010/ADMIN-009-enforce-upgrade-economics-guardrail.md
-  claim commit: 1296955
-  report commit: c1ae524357dbb322e81c6c41291b9657820968f0
-  remote branch: origin/task/ARCH-010-ADMIN-009
-  pushed: yes
-  submodule gitlink staged: no
+task file: docs/decisions/admin/ARCH-010/ADMIN-009-enforce-upgrade-economics-guardrail.md
+claim commit: 1296955
+report commit: c1ae524357dbb322e81c6c41291b9657820968f0
+remote branch: origin/task/ARCH-010-ADMIN-009
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
 
 Handoff:
-  parent worktree clean: yes
-  implementation worktree clean: yes
+parent worktree clean: yes
+implementation worktree clean: yes
 
 ### Architect Review
 
@@ -2400,4 +2407,3 @@ Both canonical task worktrees were reported clean at handoff.
 It remains terminal/manual-gated and currently also depends on
 `ARCH-010-SYSTEM-TEST-004`, which remains Pending. Therefore no automatic system-test
 promotion or execution is performed here.
-

@@ -19,22 +19,30 @@ enables: ["ARCH-068-SHARED-002"]
 created: 2026-11-09
 updated: 2026-11-09
 ---
+
 # Define shared optional image binding and one-message delivery plan
 
 ## Architecture and objective
+
 Implement the owned portion of [binding ARCH-068](../../../architecture/ARCH-068-optional-conversation-product-image.md). The entire contract is normative, including exact schemas, transport/failure rules, initialization, rollout and acceptance matrix. Read it before execution.
 
 ## Context and scope
+
 Own `src/commerce/presentation/product-image.ts` (new), wrapper-contracts.ts, wrapper-projection.ts, wrapper-render.ts, compose.ts, index.ts and their tests. Keep this export browser-safe. Reuse the existing Zod version, CommerceProductSchema native identity validators, canonical JSON/digest utilities and envelope validators. Export the following exact schemas/types (imports abbreviated only):
+
 ```ts
 const NativeProductId = CommerceProductSchema.shape.productId;
 const NativeVariantId = CommerceProductSchema.shape.variantId;
 const BoundId = z.string().min(1).max(256);
 const Sha256 = z.string().regex(/^[a-f0-9]{64}$/);
-const HttpsUrl = z.string().max(2048).url().refine(v => new URL(v).protocol === 'https:');
+const HttpsUrl = z
+  .string()
+  .max(2048)
+  .url()
+  .refine((v) => new URL(v).protocol === "https:");
 export const ConversationProductImageBindingSchema = z.strictObject({
-  variable: z.literal('response.productImage'),
-  placement: z.literal('BEFORE_BODY'),
+  variable: z.literal("response.productImage"),
+  placement: z.literal("BEFORE_BODY"),
   optional: z.literal(true),
 });
 export const ConversationPreparedProductImageSchema = z.strictObject({
@@ -43,21 +51,46 @@ export const ConversationPreparedProductImageSchema = z.strictObject({
   productId: NativeProductId,
   variantId: NativeVariantId,
   publicUrl: HttpsUrl,
-  objectKey: z.string().max(300).regex(/^conversation-products\/v1\/[a-f0-9]{64}\/[a-f0-9]{64}\/[a-f0-9]{64}\.jpg$/),
+  objectKey: z
+    .string()
+    .max(300)
+    .regex(
+      /^conversation-products\/v1\/[a-f0-9]{64}\/[a-f0-9]{64}\/[a-f0-9]{64}\.jpg$/,
+    ),
   contentSha256: Sha256,
-  contentType: z.literal('image/jpeg'),
-  byteLength: z.number().int().min(1).max(5 * 1024 * 1024 - 1),
-  width: z.literal(1125), height: z.literal(600),
+  contentType: z.literal("image/jpeg"),
+  byteLength: z
+    .number()
+    .int()
+    .min(1)
+    .max(5 * 1024 * 1024 - 1),
+  width: z.literal(1125),
+  height: z.literal(600),
 });
-export const ConversationDeliveryPlanSchema = z.discriminatedUnion('kind', [
-  z.strictObject({schemaVersion:z.literal(1),kind:z.literal('TEXT'),body:z.string().min(1).max(4096)}),
-  z.strictObject({schemaVersion:z.literal(1),kind:z.literal('IMAGE'),body:z.string().min(1).max(4096),
-    image:ConversationPreparedProductImageSchema}),
-]).superRefine((v,ctx) => {
-  if(v.kind==='IMAGE' && Array.from(v.body).length>1024)
-    ctx.addIssue({code:'custom',path:['body'],message:'CAPTION_TOO_LONG'});
-});
+export const ConversationDeliveryPlanSchema = z
+  .discriminatedUnion("kind", [
+    z.strictObject({
+      schemaVersion: z.literal(1),
+      kind: z.literal("TEXT"),
+      body: z.string().min(1).max(4096),
+    }),
+    z.strictObject({
+      schemaVersion: z.literal(1),
+      kind: z.literal("IMAGE"),
+      body: z.string().min(1).max(4096),
+      image: ConversationPreparedProductImageSchema,
+    }),
+  ])
+  .superRefine((v, ctx) => {
+    if (v.kind === "IMAGE" && Array.from(v.body).length > 1024)
+      ctx.addIssue({
+        code: "custom",
+        path: ["body"],
+        message: "CAPTION_TOO_LONG",
+      });
+  });
 ```
+
 All control-character and existing text validation still applies before constructing a plan; these snippets do not waive those checks. Export z.infer types. No new model-visible image URL/selection field: reuse existing verified product selections and exact displayed pairs.
 
 Add `productImage?: ConversationProductImageBinding` to PreparedWrapper and wrapper authoring projection. Omitted property is legacy text-only and must not be materialized as null/default (preserve all old hashes). readPreparedWrapper allows only this additional key, validates it with the shared schema, preserves it in returned projection and hash. Duplicate/unknown placement/nonoptional/model URL fields refuse PREPARED_INVALID. Export the schema for Admin validation rather than duplicating it.
@@ -69,9 +102,11 @@ Export `buildConversationDeliveryPlan({body,binding,image,shopId,displayedPairs}
 Finish the partial responseStyle AGENT work in compose.ts: explicit `responseStyle:'AGENT'` preserves normalized envelope.replyText for all valid answer dispositions, after existing fact/selection validation, with no deterministic product fact substitution. Do not infer displayed identities by matching generated prose against deterministic fact strings. Consumers retain verified selected pair order associated with this complete, unsliced reply; invalid/unobserved selection still refuses. Existing legacy style remains unchanged for unrelated consumers. No added model call or body truncation.
 
 ## Interfaces and contracts
+
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
+
 - [x] Verify dependencies and current owned source against binding touch points.
 - [x] Implement every requirement in the owned scope and binding contract.
 - [x] Add deterministic success/failure/compatibility tests specified above.
@@ -79,15 +114,19 @@ The named exported schemas/APIs and exact JSON shapes in the binding contract ar
 - [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
+
 None; Ready for normal agent launch. No claim yet.
 
 ## Acceptance criteria
+
 All owned scope above is complete, exact contract tests pass and no TODO/placeholder or unresolved cross-service choice remains. For this Shared task, validate its owned source and built public exports; publication evidence is owned by SHARED-003; no sibling source imports/copied mechanics. Record actual changed paths and checks. Preserve existing grounded text, product identity, moderation/send fences, initial/proactive Meta flows.
 
 ## Out of Scope
+
 No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write, unrelated cleanup, budget increase, production mutation or automatic live initializer.
 
 ## Agent execution and review
+
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
@@ -160,27 +199,32 @@ The developer explicitly requested moda_architect review and, if passing, comple
 
 Dependency frontier: SHARED002 Pending→Ready, Attempt0 unclaimed, because its sole explicit prerequisite is now Complete. Its canonical parent receives this complete record and exact accepted source0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822. Do NOT assume unmerged main contains those contracts. No Shared002 implementation worktree/claim is created here. SHARED003 remains Pending on002, other consumers retain their release/database/consumer prerequisites, terminal system task remains gated. Architecture is in_progress, not implemented. No main integration, package publication, database mutation, live initialization, activation, R2 operation or real message.
 
-
 ## Coherence amendment — exact handoff and precedence
 
 This section resolves terminology in earlier sections; it does not authorize another implementation. The original Background product transformer is the only product preset. Its output is strictly less than 5MiB, uses contain/white padding (not crop), and retains its quality ladder. Host configuration readers and credential loading stay in their host repositories. Only the generic media operations move to Shared.
 
 Shared SHARED-001 also exports these exact strict provenance schemas, reusing the validators already defined above:
+
 ```ts
 export const ConversationProductPairSchema = z.strictObject({
-  productId: NativeProductId, variantId: NativeVariantId,
+  productId: NativeProductId,
+  variantId: NativeVariantId,
 });
 export const ConversationVerifiedProductsSchema = z.strictObject({
   shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
   products: z.array(CommerceProductSchema).max(3),
 });
 export const ConversationProductImageSourceSchema = z.strictObject({
-  kind: z.literal('SOURCE'), shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
-  productId: NativeProductId, variantId: NativeVariantId, sourceUrl: HttpsUrl,
+  kind: z.literal("SOURCE"),
+  shopId: BoundId,
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
+  productId: NativeProductId,
+  variantId: NativeVariantId,
+  sourceUrl: HttpsUrl,
 });
 ```
+
 Selector input is exactly `{shopId, platform, displayedPairs, verifiedProducts}`; displayedPairs is an array of ConversationProductPairSchema with maximum 3 and uniqueness by canonical productId/variantId tuple. Verified product array pairs must also be unique. Schema/provenance mismatch throws an Error with code PRODUCT_IMAGE_IDENTITY_INVALID; missing exact first pair returns PRODUCT_NOT_VERIFIED. No new native-ID format validation is introduced. This result is internal and is never accepted from a browser or model as proof of authorization. Shared task tests must cover WooCommerce simple products (`variantId:null`) and both platforms' native variant IDs.
 
 Plan construction first validates the body and binding. Omitted binding produces TEXT/BINDING_DISABLED. A present invalid binding throws PREPARED_INVALID; it cannot silently become text. With a valid binding, precedence is NO_PRESENTED_PRODUCT, CAPTION_TOO_LONG, IMAGE_UNAVAILABLE, IMAGE_IDENTITY_MISMATCH, then IMAGE success. Host source/preparation omissions are logged with their original reason; buildConversationDeliveryPlan's IMAGE_UNAVAILABLE is the delivery-level summary. IMAGE_IDENTITY_MISMATCH logs at error severity and never dispatches that URL. Source absence or optional preparation failure still allows valid text. Hosts skip media configuration/network work when the first two applicable omission conditions already determine TEXT.

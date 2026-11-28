@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-052-SHARED-003
-created: '2026-10-29'
+  - ARCH-052-SHARED-003
+created: "2026-10-29"
 updated: 2026-10-29
 ---
 
@@ -87,8 +87,9 @@ export const RecoveryDiscountTargetSchema = z.discriminatedUnion("kind", [
     variantId: IdSchema.nullable(),
   }),
 ]);
-export type RecoveryDiscountTarget =
-  z.infer<typeof RecoveryDiscountTargetSchema>;
+export type RecoveryDiscountTarget = z.infer<
+  typeof RecoveryDiscountTargetSchema
+>;
 
 const RecoveryProofIdentityShape = {
   schemaVersion: z.literal(1),
@@ -104,8 +105,9 @@ const RecoveryProofIdentityShape = {
 export const RecoveryDiscountProofRequestSchema = z.strictObject({
   ...RecoveryProofIdentityShape,
 });
-export type RecoveryDiscountProofRequest =
-  z.infer<typeof RecoveryDiscountProofRequestSchema>;
+export type RecoveryDiscountProofRequest = z.infer<
+  typeof RecoveryDiscountProofRequestSchema
+>;
 
 export const RecoveryEligibleDiscountProofSchema = z.strictObject({
   ...RecoveryProofIdentityShape,
@@ -123,9 +125,7 @@ export const RecoveryEligibleDiscountProofSchema = z.strictObject({
 export const RecoveryNonEligibleDiscountProofSchema = z.strictObject({
   ...RecoveryProofIdentityShape,
   checkedAt: DateSchema,
-  outcome: z.enum([
-    "ineligible", "unsupported", "unavailable", "stale",
-  ]),
+  outcome: z.enum(["ineligible", "unsupported", "unavailable", "stale"]),
   reasonCodes: z.array(z.string()),
 });
 
@@ -133,8 +133,9 @@ export const RecoveryDiscountProofResultSchema = z.union([
   RecoveryEligibleDiscountProofSchema,
   RecoveryNonEligibleDiscountProofSchema,
 ]);
-export type RecoveryDiscountProofResult =
-  z.infer<typeof RecoveryDiscountProofResultSchema>;
+export type RecoveryDiscountProofResult = z.infer<
+  typeof RecoveryDiscountProofResultSchema
+>;
 ```
 
 **Package entrypoint additions (do not replace the existing export map):**
@@ -218,13 +219,13 @@ export type RecoveryDiscountProofResult =
 
 **Business checks explicitly delegated to the owning runtime (not Zod):**
 
-| Rule | Owning runtime |
-|---|---|
-| `shopId`, recovery, attempt and target represent the current authorised operation | MCP |
-| Request/result IDs and fingerprint are equal; no cross-shop contamination | MCP/provider adapter |
-| A `CODE` offer has a real redeemable code, an `AUTOMATIC` offer has no code | Provider-specific eligibility implementation |
-| Dates describe an acceptable evidence lifetime; selected discount still current | MCP/Background send boundary |
-| Savings reflect actual provider rules, not an AI guess | Provider-specific eligibility implementation |
+| Rule                                                                                       | Owning runtime                               |
+| ------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| `shopId`, recovery, attempt and target represent the current authorised operation          | MCP                                          |
+| Request/result IDs and fingerprint are equal; no cross-shop contamination                  | MCP/provider adapter                         |
+| A `CODE` offer has a real redeemable code, an `AUTOMATIC` offer has no code                | Provider-specific eligibility implementation |
+| Dates describe an acceptable evidence lifetime; selected discount still current            | MCP/Background send boundary                 |
+| Savings reflect actual provider rules, not an AI guess                                     | Provider-specific eligibility implementation |
 | Claiming “eligible” is supported by known conditions; unsupported restrictions fail safely | Provider-specific eligibility implementation |
 
 These rules **must not be reintroduced as Zod refinements**. In particular, a structurally valid `eligible` result with `method: "CODE", code: null` may pass the schema but **must not** be authorised for sending by the MCP/provider business layer.
@@ -308,7 +309,6 @@ Full Shared-suite validation requires an environment that permits the existing l
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
-
 
 ## Architect Review
 

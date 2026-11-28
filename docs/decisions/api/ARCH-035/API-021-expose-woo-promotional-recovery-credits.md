@@ -20,6 +20,7 @@ enables:
 created: 2026-10-22
 updated: 2026-10-22
 ---
+
 # ARCH-035-API-021: Expose real WooCommerce promotional recovery-credit offers, selection and history
 
 ## Architecture
@@ -52,7 +53,25 @@ Provide authenticated Woo merchants with real promotional recovery-credit offers
 1. Hosted endpoints: `GET /v1/merchant/promotions?offerPage=1&historyPage=1&locale=<supported-locale>` and `PUT /v1/merchant/promotions/selection`. Both require the **active authenticated Woo installation**, not a Shopify session or browser-supplied Shop ID. `offerPage` and `historyPage` are integers 1–1000; offer/history page size is 6. `locale` is an optional validated merchant **display** locale; missing/unsupported translations fall back safely without changing shop/customer language.
 2. GET returns a validated, versioned, no-store JSON response:
    ```json
-   {"schemaVersion":1,"revision":"opaque","offers":[],"offersPagination":{"page":1,"pageSize":6,"totalEntries":0,"totalPages":1},"selection":null,"history":{"entries":[],"page":1,"pageSize":6,"totalEntries":0,"totalPages":1}}
+   {
+     "schemaVersion": 1,
+     "revision": "opaque",
+     "offers": [],
+     "offersPagination": {
+       "page": 1,
+       "pageSize": 6,
+       "totalEntries": 0,
+       "totalPages": 1
+     },
+     "selection": null,
+     "history": {
+       "entries": [],
+       "page": 1,
+       "pageSize": 6,
+       "totalEntries": 0,
+       "totalPages": 1
+     }
+   }
    ```
    Each `offers[]` item has `id`, `merchantTitle`, `merchantDescription`, `quantity`, `expiresAt`, `exhausted`, `previouslyClaimed`, `currentlySelected` and any explicit eligibility/denial state needed by the existing UI. `selection` when present has `campaignId`, `merchantTitle`, `remainingQuantity`, `expiresAt`, `locked`, plus authoritative reserved/committed state if displayed. Each `history.entries[]` item has `campaignId`, `campaignTitle`, `status`, `quantityGranted`, `committedQuantity`, `remainingQuantity`, `lastSelectedAt`, `expiresAt`. History status must follow established lifecycle values; it must not be reduced to invented labels by the API.
 3. PUT accepts **only** `{ "campaignId": "opaque-id", "expectedRevision": "opaque" }` with bounded IDs/revision. It returns an authoritative `{schemaVersion:1,revision,selection}` on success. A stale revision or competing differing selection yields `409` with a stable error code; invalid input `400`; invalid/revoked installation `401`; ineligible, expired, closed, exhausted, mismatched plan/shop or locked different selection yields bounded denied/conflict responses. Do not leak other-shop records.
@@ -152,12 +171,12 @@ Parent workspace task/report file (this review-preparation update):
 
 Evidence supplied in the developer's 22 October 2026 terminal logs:
 
-| Command | Outcome | Evidence |
-| --- | --- | --- |
-| `npm run typecheck` | **PASS** | Prisma Client generated and TypeScript exited without diagnostics. |
-| `npm run lint` | **PASS** | `eslint . --max-warnings=0`; no errors or warnings reported. |
-| `npm run build` | **PASS** | Prisma Client generated; `tsc -p tsconfig.build.json` completed. |
-| `npm test` | **PASS** | 555 passed, 0 failed, 0 skipped. |
+| Command                                    | Outcome              | Evidence                                                                                                                                                         |
+| ------------------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run typecheck`                        | **PASS**             | Prisma Client generated and TypeScript exited without diagnostics.                                                                                               |
+| `npm run lint`                             | **PASS**             | `eslint . --max-warnings=0`; no errors or warnings reported.                                                                                                     |
+| `npm run build`                            | **PASS**             | Prisma Client generated; `tsc -p tsconfig.build.json` completed.                                                                                                 |
+| `npm test`                                 | **PASS**             | 555 passed, 0 failed, 0 skipped.                                                                                                                                 |
 | `npm run test:arch035-promotions:postgres` | **PASS (Attempt 3)** | 58 Prisma migrations applied to a disposable PostgreSQL database; 1/1 integration tests passed, including concurrency, history, revocation and tenant isolation. |
 
 Earlier validation failures were corrected in later patches: Attempt 1 TypeScript errors and invalid campaign quantity; Attempt 2 expiry fixture violated `PromotionCampaign_expiry_after_start` (`23514`); Attempt 3 completed without a PostgreSQL integration failure.

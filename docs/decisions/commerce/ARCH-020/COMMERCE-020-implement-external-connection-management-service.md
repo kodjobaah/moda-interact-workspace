@@ -198,23 +198,23 @@ Architect review should confirm the accepted C21 field/error contracts and the b
 ### Git / VCS
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent branch: `task/ARCH-020-COMMERCE-020`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-020`
-  implementation branch: `task/ARCH-020-COMMERCE-020`
-  shared workspace checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent branch: `task/ARCH-020-COMMERCE-020`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-020`
+implementation branch: `task/ARCH-020-COMMERCE-020`
+shared workspace checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded submodule commit: `database` at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded submodule commit: `database` at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
 
 Logical agent: `moda_commerce`; canonical executor: `copilot`; attempt: 2.
 Dependencies accepted before execution: DATABASE-003, SHARED-002, COMMERCE-002.
@@ -222,6 +222,7 @@ Implementation commit/push: `d2b7154` on `task/ARCH-020-COMMERCE-020`.
 Parent claim commit/push: `bb2d70a` from launcher; claim cleared for review handoff.
 
 ## Architect Review
+
 ### Review Status
 
 Pending.
@@ -303,6 +304,7 @@ Required implementation:
    in `package.json`; reconcile `package-lock.json` so the root dependency and
    `node_modules/@modainteract/moda-interact-shared` resolve exactly `0.14.2`.
    Do not use a range and do not republish Shared.
+
 2. Consume/re-export the canonical connection exports from exactly:
 
    ```ts
@@ -337,6 +339,7 @@ Required implementation:
 
    Do not expose an internal exception message by adding a `message` field to a strict
    Shared result variant. Invalid issues remain bounded by the Shared schema.
+
 5. Internal `LifecycleError` messages may remain server-internal for control flow; they
    must not change the Shared response shape.
 
@@ -456,10 +459,11 @@ Required implementation:
 1. Reuse, do not copy, the accepted COMMERCE-002 helper:
 
    ```ts
-   ensureDevelopmentStudioAdmin(transaction, principal)
+   ensureDevelopmentStudioAdmin(transaction, principal);
    ```
 
    from the existing server-only auth module.
+
 2. For `principal.developmentBypass === true`, call that helper inside the command
    transaction before replay lookup and before any revision/audit FK write. Let the
    helper enforce the development environment and exact reserved identity.

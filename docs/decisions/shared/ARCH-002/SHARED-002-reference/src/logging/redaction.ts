@@ -130,7 +130,10 @@ function sanitizeValue(
     }
 
     const result: Record<string, unknown> = {};
-    const entries = Object.entries(value).slice(0, LOG_VALUE_LIMITS.maxObjectKeys);
+    const entries = Object.entries(value).slice(
+      0,
+      LOG_VALUE_LIMITS.maxObjectKeys,
+    );
 
     for (const [key, item] of entries) {
       result[key] = isSensitiveLogKey(key)
@@ -151,5 +154,8 @@ function sanitizeValue(
 export function sanitizeLogFields(
   fields: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
-  return sanitizeValue(fields, 0, new WeakSet<object>()) as Record<string, unknown>;
+  return sanitizeValue(fields, 0, new WeakSet<object>()) as Record<
+    string,
+    unknown
+  >;
 }

@@ -323,15 +323,20 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
+
 Review
+
 ### Files Changed
+
 Implementation commit `787b62a5c27c6d732503c02476eb094ae5258ffa` changes:
 
 - `app/services/billing/billing.service.ts`
 - `tests/unit/services/billing.service.test.ts`
 
 The database gitlink and exact Shared `1.0.1` dependency were already present in the prepared baseline and were not changed.
+
 ### Work Completed
+
 Implemented attempt 2 against the prepared canonical app baseline, which includes the accepted ARCH-017 `resolveOrMaterializeBillingPlan` resolver. The launcher confirmed the accepted database revision `2eb17ee910491e8f9df82736fc0a843844415947`, exact Shared `1.0.1`, synchronized implementation branch, and initialized recursive submodule.
 
 The existing resolver now loads feature configuration and validates a single `merchant_knowledge` mapping with `MerchantKnowledgeFeatureConfigurationSchema` and the active Purpose/Data Format compatibility catalogue before creating the operational BillingPlan. Invalid or duplicate Merchant Knowledge mappings return `INVALID_CATALOGUE_PLAN` with reason `INVALID_MERCHANT_KNOWLEDGE_CONFIGURATION` before plan creation. The existing generic feature projection copies each mapping's configuration unchanged; reuse of an existing operational plan remains unchanged.
@@ -379,17 +384,27 @@ Submitted heads:
 implementation: 787b62a5c27c6d732503c02476eb094ae5258ffa
 parent report: 548175c859458d77d87b0df7f3d1111c6a07f2b3
 ```
+
 ### Validation Results
+
 Passed: focused billing materialisation and billing callback regression tests (247 tests); `npm run prisma:validate`; `npm run typecheck`; changed-file lint; `npm run build` (which runs `npm run prisma:generate`); changed-file diagnostics; and `git diff --check`.
 
 Full `npm run lint` was run but reports 17 errors in unrelated files. No changed-file lint or diagnostic errors were reported.
+
 ### Deviations
+
 No scope deviations. No source changes were needed in the database submodule or dependency manifests because the prepared baseline already had the accepted database and exact Shared revisions.
+
 ### Assumptions
+
 The launcher-prepared canonical app baseline is authoritative for the accepted ARCH-017 integration; it contains the single resolver required by R2.
+
 ### Unresolved Issues
+
 Repository-wide lint remains red for 17 unrelated errors; the changed files pass focused lint and diagnostics.
+
 ### Architectural Concerns
+
 None identified in the implemented scope. The pre-existing Attempt 1 `Architect Review` and Developer Override were left unchanged.
 
 ## Architect Review
@@ -444,6 +459,7 @@ Accepted. One ARCH-017 materialiser remains authoritative; Merchant Knowledge va
 `ARCH-023-SHOPIFY-001` is now Complete. `ARCH-023-SHOPIFY-002` is already Complete / Accepted Attempt 2, so `ARCH-023-SHOPIFY-003` now has all declared dependencies satisfied and becomes Ready. `ARCH-023-SHOPIFY-004` also has all declared dependencies satisfied (`SHOPIFY-001` + `SHARED-002`) and becomes Ready. `ARCH-023-SHOPIFY-005` remains Pending behind SHOPIFY-004. No downstream task is started implicitly.
 
 ### Review Status
+
 Blocked
 
 ### Review Notes
@@ -506,13 +522,17 @@ declared dependencies are satisfied and it does not depend on SHOPIFY-001.
 ## Developer Override
 
 ### Decision
+
 Reopened on 2026-09-30 by explicit developer request: `/moda_developer_update ARCH-023-SHOPIFY-001 reopen`.
 
 ### Previous Attempt
+
 Attempt 1 is the prior attempt. There is no previously accepted attempt; Attempt 1 ended Blocked. The existing Architect Review remains unchanged and records the missing accepted ARCH-017 resolver/base integration prerequisite.
 
 ### Reason
+
 The developer explicitly requested reopening; no further reason was supplied. This override changes workflow state only and does not claim that the Architect Review blocker has been cleared. No implementation work was performed and no new attempt was claimed.
 
 ### Downstream Dependency Reconciliation
+
 `ARCH-023-SHOPIFY-003` and `ARCH-023-SHOPIFY-004` remain `pending` because they depend on SHOPIFY-001, which is not Complete. Both were already pending, so no downstream status regression was needed. `ARCH-023-SHOPIFY-002` remains Complete and independent of SHOPIFY-001; its task record was inspected and left untouched. `ARCH-023-SHOPIFY-005` remains pending behind SHOPIFY-004 and was left untouched.

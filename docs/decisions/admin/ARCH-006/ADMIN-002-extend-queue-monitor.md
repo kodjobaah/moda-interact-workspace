@@ -18,6 +18,7 @@ enables: []
 created: 2026-09-05
 updated: 2026-09-06T19:30:00Z
 ---
+
 # ARCH-006-ADMIN-002: Add merchant-communications to the existing Admin queue monitor
 
 ## Architecture

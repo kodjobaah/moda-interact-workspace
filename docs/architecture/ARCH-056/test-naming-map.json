@@ -226,15 +226,9 @@
         "layer": "L1",
         "evidenceClass": "CONTRACT",
         "requiredEvidenceClass": "CONTRACT",
-        "case_ids": [
-          "D1",
-          "D2"
-        ],
+        "case_ids": ["D1", "D2"],
         "logging_assertions": {
-          "D2": [
-            "consumed-package-provenance",
-            "real-factory-wire-contract"
-          ]
+          "D2": ["consumed-package-provenance", "real-factory-wire-contract"]
         },
         "implementation_module": "src/harness/background-persistence/dependency-scenario.js"
       },
@@ -245,11 +239,7 @@
         "layer": "L2",
         "evidenceClass": "INTEGRATION",
         "requiredEvidenceClass": "INTEGRATION",
-        "case_ids": [
-          "I1",
-          "I2",
-          "I3"
-        ],
+        "case_ids": ["I1", "I2", "I3"],
         "logging_assertions": {
           "I2": [
             "original-ingress-message",
@@ -268,11 +258,7 @@
         "layer": "L3",
         "evidenceClass": "BLACK_BOX",
         "requiredEvidenceClass": "BLACK_BOX",
-        "case_ids": [
-          "C1",
-          "C2",
-          "C3"
-        ],
+        "case_ids": ["C1", "C2", "C3"],
         "logging_assertions": {
           "C2": [
             "source-error-before-typed-retry",
@@ -288,12 +274,7 @@
         "layer": "L2",
         "evidenceClass": "INTEGRATION",
         "requiredEvidenceClass": "INTEGRATION",
-        "case_ids": [
-          "A1",
-          "A2",
-          "A3",
-          "A4"
-        ],
+        "case_ids": ["A1", "A2", "A3", "A4"],
         "logging_assertions": {
           "A2": [
             "original-cleanup-message",
@@ -314,16 +295,9 @@
         "layer": "L3",
         "evidenceClass": "BLACK_BOX",
         "requiredEvidenceClass": "BLACK_BOX",
-        "case_ids": [
-          "U1",
-          "U2",
-          "U3"
-        ],
+        "case_ids": ["U1", "U2", "U3"],
         "logging_assertions": {
-          "U1": [
-            "truthful-held-outcome",
-            "no-fabricated-provider-error"
-          ],
+          "U1": ["truthful-held-outcome", "no-fabricated-provider-error"],
           "U2": [
             "real-sdk-message-and-available-cause",
             "once-at-source-per-request",
@@ -344,22 +318,10 @@
         "layer": "L2",
         "evidenceClass": "INTEGRATION",
         "requiredEvidenceClass": "INTEGRATION",
-        "case_ids": [
-          "B1",
-          "B2",
-          "B3",
-          "B4",
-          "B5",
-          "B6"
-        ],
+        "case_ids": ["B1", "B2", "B3", "B4", "B5", "B6"],
         "logging_assertions": {
-          "B3": [
-            "hold-versus-technical-error",
-            "original-settlement-message"
-          ],
-          "B5": [
-            "original-woo-permit-error"
-          ]
+          "B3": ["hold-versus-technical-error", "original-settlement-message"],
+          "B5": ["original-woo-permit-error"]
         },
         "implementation_module": "src/harness/background-persistence/settlement-scenario.js"
       },
@@ -370,21 +332,13 @@
         "layer": "L3",
         "evidenceClass": "BLACK_BOX",
         "requiredEvidenceClass": "BLACK_BOX",
-        "case_ids": [
-          "F1",
-          "F2",
-          "F3",
-          "F4"
-        ],
+        "case_ids": ["F1", "F2", "F3", "F4"],
         "logging_assertions": {
           "F1": [
             "original-finalization-boundary-error",
             "confirmed-replay-stage"
           ],
-          "F2": [
-            "original-status-boundary-error",
-            "confirmed-replay-stage"
-          ],
+          "F2": ["original-status-boundary-error", "confirmed-replay-stage"],
           "F3": [
             "original-follow-up-publication-error",
             "persisted-identity-correlation"
@@ -399,17 +353,10 @@
         "layer": "L2",
         "evidenceClass": "INTEGRATION",
         "requiredEvidenceClass": "INTEGRATION",
-        "case_ids": [
-          "W1",
-          "W2"
-        ],
+        "case_ids": ["W1", "W2"],
         "logging_assertions": {
-          "W1": [
-            "disabled-gate-without-fabricated-provider-error"
-          ],
-          "W2": [
-            "confirmed-before-gate-or-truthful-lineage-hold"
-          ]
+          "W1": ["disabled-gate-without-fabricated-provider-error"],
+          "W2": ["confirmed-before-gate-or-truthful-lineage-hold"]
         },
         "implementation_module": "src/harness/background-persistence/woo-scenario.js"
       },
@@ -420,11 +367,7 @@
         "layer": "L3",
         "evidenceClass": "BLACK_BOX",
         "requiredEvidenceClass": "BLACK_BOX",
-        "case_ids": [
-          "R1",
-          "R2",
-          "R3"
-        ],
+        "case_ids": ["R1", "R2", "R3"],
         "logging_assertions": {
           "R1": [
             "finite-retry-original-diagnostics",
@@ -445,9 +388,7 @@
       "add_only_two_arch056_scripts": "add_only_two_background_persistence_scripts"
     },
     "fixtures_and_symbols_not_yet_implemented": "No frozen concrete ARCH056 fixture values exist in the source snapshot. Use background-persistence / BackgroundPersistence / BACKGROUND_PERSISTENCE for new test-owned namespaces; do not invent or rename production keys.",
-    "enables": [
-      "ARCH-056-SYSTEM-TEST-002"
-    ],
+    "enables": ["ARCH-056-SYSTEM-TEST-002"],
     "invariants": {
       "scenario_count": 9,
       "case_count": 30,
@@ -458,9 +399,7 @@
       "governance_ids_unchanged": true
     },
     "governance_traceability": {
-      "initial_source_requirements": [
-        "ARCH-056-SYSTEM-TEST-001"
-      ],
+      "initial_source_requirements": ["ARCH-056-SYSTEM-TEST-001"],
       "requires_original_source_requirement": true,
       "exclusive_singleton_required": false,
       "later_approved_source_requirements_allowed_when_symmetric": true,
@@ -471,9 +410,7 @@
   "legacy_final_task": {
     "owner": "ARCH-056-SYSTEM-TEST-002",
     "repository": "moda-interact-system-test",
-    "depends_on": [
-      "ARCH-056-SYSTEM-TEST-001"
-    ],
+    "depends_on": ["ARCH-056-SYSTEM-TEST-001"],
     "status": "pending",
     "renames": [
       {
@@ -483,15 +420,11 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
-            "lines": [
-              10
-            ]
+            "lines": [10]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              7
-            ]
+            "lines": [7]
           }
         ],
         "source_sha256": "0684824d0c9639d3436b97f7fc52859490ee6e60f10e831ef57cabf2fe461f7f"
@@ -503,34 +436,23 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
-            "lines": [
-              8
-            ]
+            "lines": [8]
           },
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              150,
-              268
-            ]
+            "lines": [150, 268]
           },
           {
             "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
-            "lines": [
-              11
-            ]
+            "lines": [11]
           },
           {
             "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
-            "lines": [
-              8
-            ]
+            "lines": [8]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              15
-            ]
+            "lines": [15]
           }
         ],
         "source_sha256": "f1efb4dab0b3f64cd1a5fcecdecbba63fde6fbb9b0f6055eaeff6d92725211ef"
@@ -542,49 +464,31 @@
         "references": [
           {
             "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
-            "lines": [
-              208,
-              209,
-              210
-            ]
+            "lines": [208, 209, 210]
           },
           {
             "path": "scripts/run-credit-source-compensation.js",
-            "lines": [
-              9
-            ]
+            "lines": [9]
           },
           {
             "path": "catalogue/scenarios.json",
-            "lines": [
-              3569,
-              3632,
-              3696
-            ]
+            "lines": [3569, 3632, 3696]
           },
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              6
-            ]
+            "lines": [6]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              8
-            ]
+            "lines": [8]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
-            "lines": [
-              3
-            ]
+            "lines": [3]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              4
-            ]
+            "lines": [4]
           }
         ],
         "source_sha256": "069178dcaaa217086a382a57d0cd3689b0fcfc8bac13167b158fe2e9476e57dd"
@@ -596,15 +500,11 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
-            "lines": [
-              7
-            ]
+            "lines": [7]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              6
-            ]
+            "lines": [6]
           }
         ],
         "source_sha256": "813c790197a2b7c3c52d8d57cade37be1e8e2cbbe9e7a43648a977405f0a8011"
@@ -616,15 +516,11 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              10
-            ]
+            "lines": [10]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              4
-            ]
+            "lines": [4]
           }
         ],
         "source_sha256": "d2d4278239d42ab0605b031051921d34cd4505416fc1b514b2757e1cbdd041e6"
@@ -636,43 +532,27 @@
         "references": [
           {
             "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
-            "lines": [
-              208,
-              209,
-              210
-            ]
+            "lines": [208, 209, 210]
           },
           {
             "path": "catalogue/scenarios.json",
-            "lines": [
-              3570,
-              3633,
-              3698
-            ]
+            "lines": [3570, 3633, 3698]
           },
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              8
-            ]
+            "lines": [8]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              11
-            ]
+            "lines": [11]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
-            "lines": [
-              6
-            ]
+            "lines": [6]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              3
-            ]
+            "lines": [3]
           }
         ],
         "source_sha256": "739b70347cbe91c118aa97ceb201e67153008eeb836c2eb0696c7e3d654356c7"
@@ -684,21 +564,15 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
-            "lines": [
-              7
-            ]
+            "lines": [7]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-checkout-diagnostics.js",
-            "lines": [
-              5
-            ]
+            "lines": [5]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              5
-            ]
+            "lines": [5]
           }
         ],
         "source_sha256": "2dde8cb81ea347484ad83de89b8d95e91705b3df08954baf756d195bfbd2c0bd"
@@ -710,37 +584,23 @@
         "references": [
           {
             "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
-            "lines": [
-              208,
-              209,
-              210
-            ]
+            "lines": [208, 209, 210]
           },
           {
             "path": "catalogue/scenarios.json",
-            "lines": [
-              3571,
-              3634,
-              3699
-            ]
+            "lines": [3571, 3634, 3699]
           },
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              289
-            ]
+            "lines": [289]
           },
           {
             "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
-            "lines": [
-              132
-            ]
+            "lines": [132]
           },
           {
             "path": "src/harness/recovery/index.js",
-            "lines": [
-              16
-            ]
+            "lines": [16]
           }
         ],
         "source_sha256": "2025c6315104106687a90ebbbede9819b33353a049689e201ac353a243fffc60"
@@ -752,27 +612,19 @@
         "references": [
           {
             "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
-            "lines": [
-              210
-            ]
+            "lines": [210]
           },
           {
             "path": "catalogue/scenarios.json",
-            "lines": [
-              3697
-            ]
+            "lines": [3697]
           },
           {
             "path": "test/harness/arch028-purchased-source-fixture.test.js",
-            "lines": [
-              5
-            ]
+            "lines": [5]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              4
-            ]
+            "lines": [4]
           }
         ],
         "source_sha256": "c8ff172c347fe08c261d5cd7fe6ca149f5dc612f58e62d4bf002c6bebaa0c1ac"
@@ -854,9 +706,7 @@
         "references": [
           {
             "path": "package.json",
-            "lines": [
-              16
-            ]
+            "lines": [16]
           }
         ],
         "source_sha256": "df3a1afd09afe49d535df8c0afdb85fcdb755db36d82960e8c37659a04f02a4d"
@@ -868,9 +718,7 @@
         "references": [
           {
             "path": "package.json",
-            "lines": [
-              17
-            ]
+            "lines": [17]
           }
         ],
         "source_sha256": "bd15bb2a5581e6fdd3a82738a97af949e5e23aa0acd29c9b720f05e7b5e5105e"
@@ -890,21 +738,15 @@
         "references": [
           {
             "path": "docs/ARCH-028-COMPENSATION-SMOKE.md",
-            "lines": [
-              6
-            ]
+            "lines": [6]
           },
           {
             "path": "scripts/run-arch028-compensation-smoke.js",
-            "lines": [
-              72
-            ]
+            "lines": [72]
           },
           {
             "path": "test/harness/arch028-compensation-smoke.test.js",
-            "lines": [
-              5
-            ]
+            "lines": [5]
           }
         ],
         "source_sha256": "1cc6ecd837f43f66b8600e80b64d20dc06a5d5df3dccfbf5b59037bd0913b9fb"
@@ -1056,30 +898,19 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              6,
-              193
-            ]
+            "lines": [6, 193]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              8,
-              25
-            ]
+            "lines": [8, 25]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              16,
-              138
-            ]
+            "lines": [16, 138]
           },
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              12
-            ]
+            "lines": [12]
           }
         ]
       },
@@ -1089,25 +920,15 @@
         "references": [
           {
             "path": "test/harness/arch028-purchased-source-fixture.test.js",
-            "lines": [
-              5,
-              18,
-              45
-            ]
+            "lines": [5, 18, 45]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              4,
-              111
-            ]
+            "lines": [4, 111]
           },
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              16,
-              112
-            ]
+            "lines": [16, 112]
           }
         ]
       },
@@ -1117,25 +938,15 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              10,
-              93
-            ]
+            "lines": [10, 93]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              24,
-              227,
-              240
-            ]
+            "lines": [24, 227, 240]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              3,
-              24
-            ]
+            "lines": [3, 24]
           }
         ]
       },
@@ -1145,33 +956,19 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              7,
-              85,
-              88,
-              111,
-              116
-            ]
+            "lines": [7, 85, 88, 111, 116]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              9,
-              59
-            ]
+            "lines": [9, 59]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
-            "lines": [
-              12
-            ]
+            "lines": [12]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              124,
-              240
-            ]
+            "lines": [124, 240]
           }
         ]
       },
@@ -1181,30 +978,15 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              7,
-              86,
-              91,
-              94,
-              97,
-              112,
-              121
-            ]
+            "lines": [7, 86, 91, 94, 97, 112, 121]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              9,
-              86
-            ]
+            "lines": [9, 86]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              159,
-              214,
-              241
-            ]
+            "lines": [159, 214, 241]
           }
         ]
       },
@@ -1214,25 +996,15 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              8,
-              87,
-              100
-            ]
+            "lines": [8, 87, 100]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              10,
-              94
-            ]
+            "lines": [10, 94]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              213,
-              241
-            ]
+            "lines": [213, 241]
           }
         ]
       },
@@ -1242,18 +1014,11 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              10,
-              58,
-              85
-            ]
+            "lines": [10, 58, 85]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              225,
-              241
-            ]
+            "lines": [225, 241]
           }
         ]
       },
@@ -1263,27 +1028,15 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              10,
-              113,
-              117,
-              129,
-              141
-            ]
+            "lines": [10, 113, 117, 129, 141]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
-            "lines": [
-              14,
-              82
-            ]
+            "lines": [14, 82]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              4,
-              65
-            ]
+            "lines": [4, 65]
           }
         ]
       },
@@ -1293,50 +1046,27 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
-            "lines": [
-              8,
-              95,
-              112
-            ]
+            "lines": [8, 95, 112]
           },
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              150,
-              154,
-              268,
-              270
-            ]
+            "lines": [150, 154, 268, 270]
           },
           {
             "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
-            "lines": [
-              11,
-              119,
-              127
-            ]
+            "lines": [11, 119, 127]
           },
           {
             "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
-            "lines": [
-              8,
-              101,
-              107
-            ]
+            "lines": [8, 101, 107]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              15,
-              107
-            ]
+            "lines": [15, 107]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              22,
-              85
-            ]
+            "lines": [22, 85]
           }
         ]
       },
@@ -1346,18 +1076,11 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              289,
-              292
-            ]
+            "lines": [289, 292]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              22,
-              119,
-              125
-            ]
+            "lines": [22, 119, 125]
           }
         ]
       },
@@ -1367,17 +1090,11 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              117,
-              125
-            ]
+            "lines": [117, 125]
           },
           {
             "path": "src/harness/recovery/index.js",
-            "lines": [
-              16,
-              46
-            ]
+            "lines": [16, 46]
           }
         ]
       }
@@ -1389,46 +1106,31 @@
         "references": [
           {
             "path": "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
-            "lines": [
-              9,
-              32
-            ]
+            "lines": [9, 32]
           },
           {
             "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
-            "lines": [
-              208
-            ]
+            "lines": [208]
           },
           {
             "path": "catalogue/scenarios.json",
-            "lines": [
-              3513
-            ]
+            "lines": [3513]
           },
           {
             "path": "test/harness/selection.test.js",
-            "lines": [
-              42
-            ]
+            "lines": [42]
           },
           {
             "path": "test/harness/recovery-executors.test.js",
-            "lines": [
-              132
-            ]
+            "lines": [132]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              7
-            ]
+            "lines": [7]
           },
           {
             "path": "src/harness/recovery/constants.js",
-            "lines": [
-              15
-            ]
+            "lines": [15]
           }
         ],
         "preserve_fields": {
@@ -1440,13 +1142,8 @@
           "layer": "L3",
           "evidenceClass": "BLACK_BOX",
           "requiredEvidenceClass": "BLACK_BOX",
-          "providers": [
-            "shared",
-            "shopify"
-          ],
-          "requiredFor": [
-            "shopify-release"
-          ],
+          "providers": ["shared", "shopify"],
+          "requiredFor": ["shopify-release"],
           "preconditions": [
             "Disposable migrated PostgreSQL and Redis",
             "Real local Shopify and Messaging ingress, production Background recovery, Shopify-event and Messaging workers",
@@ -1505,46 +1202,31 @@
         "references": [
           {
             "path": "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
-            "lines": [
-              10,
-              38
-            ]
+            "lines": [10, 38]
           },
           {
             "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
-            "lines": [
-              209
-            ]
+            "lines": [209]
           },
           {
             "path": "catalogue/scenarios.json",
-            "lines": [
-              3576
-            ]
+            "lines": [3576]
           },
           {
             "path": "test/harness/selection.test.js",
-            "lines": [
-              42
-            ]
+            "lines": [42]
           },
           {
             "path": "test/harness/recovery-executors.test.js",
-            "lines": [
-              132
-            ]
+            "lines": [132]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              8
-            ]
+            "lines": [8]
           },
           {
             "path": "src/harness/recovery/constants.js",
-            "lines": [
-              16
-            ]
+            "lines": [16]
           }
         ],
         "preserve_fields": {
@@ -1556,13 +1238,8 @@
           "layer": "L3",
           "evidenceClass": "BLACK_BOX",
           "requiredEvidenceClass": "BLACK_BOX",
-          "providers": [
-            "shared",
-            "shopify"
-          ],
-          "requiredFor": [
-            "shopify-release"
-          ],
+          "providers": ["shared", "shopify"],
+          "requiredFor": ["shopify-release"],
           "preconditions": [
             "Disposable migrated PostgreSQL and Redis",
             "Real local Shopify and Messaging ingress, production Background recovery, Shopify-event and Messaging workers",
@@ -1621,46 +1298,31 @@
         "references": [
           {
             "path": "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
-            "lines": [
-              11,
-              38
-            ]
+            "lines": [11, 38]
           },
           {
             "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
-            "lines": [
-              210
-            ]
+            "lines": [210]
           },
           {
             "path": "catalogue/scenarios.json",
-            "lines": [
-              3639
-            ]
+            "lines": [3639]
           },
           {
             "path": "test/harness/selection.test.js",
-            "lines": [
-              42
-            ]
+            "lines": [42]
           },
           {
             "path": "test/harness/recovery-executors.test.js",
-            "lines": [
-              132
-            ]
+            "lines": [132]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              9
-            ]
+            "lines": [9]
           },
           {
             "path": "src/harness/recovery/constants.js",
-            "lines": [
-              17
-            ]
+            "lines": [17]
           }
         ],
         "preserve_fields": {
@@ -1672,13 +1334,8 @@
           "layer": "L3",
           "evidenceClass": "BLACK_BOX",
           "requiredEvidenceClass": "BLACK_BOX",
-          "providers": [
-            "shared",
-            "shopify"
-          ],
-          "requiredFor": [
-            "shopify-release"
-          ],
+          "providers": ["shared", "shopify"],
+          "requiredFor": ["shopify-release"],
           "preconditions": [
             "Disposable migrated PostgreSQL and Redis",
             "Real local Shopify and Messaging ingress, production Background recovery, Shopify-event and Messaging workers",
@@ -1743,9 +1400,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              42
-            ]
+            "lines": [42]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1757,9 +1412,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              43
-            ]
+            "lines": [43]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1771,9 +1424,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              83
-            ]
+            "lines": [83]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1785,9 +1436,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              84
-            ]
+            "lines": [84]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1799,9 +1448,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              85
-            ]
+            "lines": [85]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1813,9 +1460,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              107
-            ]
+            "lines": [107]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1827,9 +1472,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              23
-            ]
+            "lines": [23]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1841,9 +1484,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              24
-            ]
+            "lines": [24]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1855,9 +1496,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              25
-            ]
+            "lines": [25]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1869,9 +1508,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              26
-            ]
+            "lines": [26]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1883,9 +1520,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              27
-            ]
+            "lines": [27]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1897,9 +1532,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              28
-            ]
+            "lines": [28]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1911,15 +1544,11 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              47
-            ]
+            "lines": [47]
           },
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              5
-            ]
+            "lines": [5]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1931,9 +1560,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              6
-            ]
+            "lines": [6]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1945,9 +1572,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              85
-            ]
+            "lines": [85]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1959,9 +1584,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              89
-            ]
+            "lines": [89]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1973,9 +1596,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              107
-            ]
+            "lines": [107]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -1987,9 +1608,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              42
-            ]
+            "lines": [42]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2001,9 +1620,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              89
-            ]
+            "lines": [89]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2015,9 +1632,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              55
-            ]
+            "lines": [55]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2029,9 +1644,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              44
-            ]
+            "lines": [44]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2043,9 +1656,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              95
-            ]
+            "lines": [95]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2057,9 +1668,7 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              193
-            ]
+            "lines": [193]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2071,9 +1680,7 @@
         "references": [
           {
             "path": "test/harness/approved-template-fixtures.test.js",
-            "lines": [
-              9
-            ]
+            "lines": [9]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2085,9 +1692,7 @@
         "references": [
           {
             "path": "src/render-test-topology.js",
-            "lines": [
-              104
-            ]
+            "lines": [104]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2099,9 +1704,7 @@
         "references": [
           {
             "path": "scripts/validate-render-deployment.js",
-            "lines": [
-              97
-            ]
+            "lines": [97]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2113,17 +1716,11 @@
         "references": [
           {
             "path": "scripts/validate-render-deployment.js",
-            "lines": [
-              71,
-              82,
-              97
-            ]
+            "lines": [71, 82, 97]
           },
           {
             "path": "src/render-test-topology.js",
-            "lines": [
-              104
-            ]
+            "lines": [104]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2135,9 +1732,7 @@
         "references": [
           {
             "path": "test/harness/language-recovery-runtime-wiring.test.js",
-            "lines": [
-              8
-            ]
+            "lines": [8]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2149,9 +1744,7 @@
         "references": [
           {
             "path": "test/harness/language-provider-runtime-setup.test.js",
-            "lines": [
-              60
-            ]
+            "lines": [60]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2163,44 +1756,27 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
-            "lines": [
-              103,
-              118
-            ]
+            "lines": [103, 118]
           },
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              163
-            ]
+            "lines": [163]
           },
           {
             "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
-            "lines": [
-              121
-            ]
+            "lines": [121]
           },
           {
             "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
-            "lines": [
-              103,
-              109
-            ]
+            "lines": [103, 109]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              61,
-              87,
-              96,
-              111
-            ]
+            "lines": [61, 87, 96, 111]
           },
           {
             "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
-            "lines": [
-              82
-            ]
+            "lines": [82]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2212,13 +1788,7 @@
         "references": [
           {
             "path": "scripts/run-arch028-compensation-smoke.js",
-            "lines": [
-              45,
-              49,
-              54,
-              58,
-              62
-            ]
+            "lines": [45, 49, 54, 58, 62]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2230,9 +1800,7 @@
         "references": [
           {
             "path": "test/harness/arch028-compensation-smoke.test.js",
-            "lines": [
-              7
-            ]
+            "lines": [7]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2244,9 +1812,7 @@
         "references": [
           {
             "path": "test/harness/arch028-compensation-smoke.test.js",
-            "lines": [
-              15
-            ]
+            "lines": [15]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2258,9 +1824,7 @@
         "references": [
           {
             "path": "test/harness/arch028-compensation-smoke.test.js",
-            "lines": [
-              25
-            ]
+            "lines": [25]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2272,9 +1836,7 @@
         "references": [
           {
             "path": "test/harness/arch028-compensation-smoke.test.js",
-            "lines": [
-              40
-            ]
+            "lines": [40]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2286,9 +1848,7 @@
         "references": [
           {
             "path": "test/harness/arch028-compensation-smoke.test.js",
-            "lines": [
-              48
-            ]
+            "lines": [48]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2300,9 +1860,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              18
-            ]
+            "lines": [18]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2314,9 +1872,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-            "lines": [
-              30
-            ]
+            "lines": [30]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2328,9 +1884,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
-            "lines": [
-              20
-            ]
+            "lines": [20]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2342,9 +1896,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-scenario.js",
-            "lines": [
-              29
-            ]
+            "lines": [29]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2356,9 +1908,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              178
-            ]
+            "lines": [178]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2370,9 +1920,7 @@
         "references": [
           {
             "path": "src/harness/recovery/arch028-credit-source-observation.js",
-            "lines": [
-              226
-            ]
+            "lines": [226]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2384,9 +1932,7 @@
         "references": [
           {
             "path": "src/harness/messaging/terminal-recipient-merchant-ui.js",
-            "lines": [
-              56
-            ]
+            "lines": [56]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2398,9 +1944,7 @@
         "references": [
           {
             "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
-            "lines": [
-              29
-            ]
+            "lines": [29]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2412,9 +1956,7 @@
         "references": [
           {
             "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
-            "lines": [
-              106
-            ]
+            "lines": [106]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2426,16 +1968,11 @@
         "references": [
           {
             "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
-            "lines": [
-              132,
-              151
-            ]
+            "lines": [132, 151]
           },
           {
             "path": "src/harness/messaging/terminal-recipient-merchant-ui.js",
-            "lines": [
-              56
-            ]
+            "lines": [56]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2447,9 +1984,7 @@
         "references": [
           {
             "path": "test/harness/arch028-credit-sources.test.js",
-            "lines": [
-              249
-            ]
+            "lines": [249]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2461,9 +1996,7 @@
         "references": [
           {
             "path": "test/harness/language-recovery-provider-setup.test.js",
-            "lines": [
-              50
-            ]
+            "lines": [50]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2475,9 +2008,7 @@
         "references": [
           {
             "path": "test/harness/platform-configuration-fixture.test.js",
-            "lines": [
-              128
-            ]
+            "lines": [128]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2489,9 +2020,7 @@
         "references": [
           {
             "path": "test/harness/platform-configuration-fixture.test.js",
-            "lines": [
-              159
-            ]
+            "lines": [159]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2503,9 +2032,7 @@
         "references": [
           {
             "path": "src/merchant-scenario.js",
-            "lines": [
-              37
-            ]
+            "lines": [37]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2517,9 +2044,7 @@
         "references": [
           {
             "path": "src/merchant-scenario.js",
-            "lines": [
-              1480
-            ]
+            "lines": [1480]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2531,9 +2056,7 @@
         "references": [
           {
             "path": "src/merchant-scenario.js",
-            "lines": [
-              1488
-            ]
+            "lines": [1488]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2545,9 +2068,7 @@
         "references": [
           {
             "path": "src/merchant-scenario.js",
-            "lines": [
-              1505
-            ]
+            "lines": [1505]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2559,9 +2080,7 @@
         "references": [
           {
             "path": "src/merchant-scenario.js",
-            "lines": [
-              1659
-            ]
+            "lines": [1659]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2573,9 +2092,7 @@
         "references": [
           {
             "path": "src/merchant-scenario.js",
-            "lines": [
-              1684
-            ]
+            "lines": [1684]
           }
         ],
         "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
@@ -2691,9 +2208,7 @@
       {
         "literal": "ARCH-028-SYSTEM-TEST-001 worktree fixture",
         "kind": "launcher_governance_route_fixture",
-        "where": [
-          "test/harness/run-system-tests-script.test.js:92"
-        ],
+        "where": ["test/harness/run-system-tests-script.test.js:92"],
         "rule": "Preserve route-format coverage; it is an input fixture of the real task launcher, not the executable test name."
       },
       {
@@ -2726,17 +2241,9 @@
         "test/scenario-catalogue.test.js",
         "test/harness/source-structure.test.js"
       ],
-      "scenario_fields": [
-        "id",
-        "name",
-        "title"
-      ],
+      "scenario_fields": ["id", "name", "title"],
       "check_implementation_owned_paths": true,
-      "source_structure_name_roots": [
-        "src",
-        "test",
-        "scripts"
-      ],
+      "source_structure_name_roots": ["src", "test", "scripts"],
       "name_only_file_extensions": [
         ".js",
         ".mjs",
@@ -2757,10 +2264,7 @@
       ],
       "full_text_architecture_scan": false,
       "new_parser_framework": false,
-      "preserve_line_limit_roots": [
-        "src/harness",
-        "test/harness"
-      ],
+      "preserve_line_limit_roots": ["src/harness", "test/harness"],
       "preserve_limits": {
         "source_test_max": 300,
         "domain_index_max": 120
@@ -2839,9 +2343,7 @@
       },
       "snapshot_note": "Counts are conditional on the supplied172-row baseline plus the9 accepted producer rows. Compare actual accepted baseline and exact bijection; do not force these numbers by deleting approved intervening coverage."
     },
-    "production_create": [
-      "docs/TEST-NAMING.md"
-    ],
+    "production_create": ["docs/TEST-NAMING.md"],
     "tests_create": [],
     "additional_owned_scope": {
       "test/render-test-topology.test.js": "Local subprocess regression for both renamed tombstones: exact stderr, exit64 and no execution of suggested live commands; preserve existing input contract tests.",
@@ -2873,59 +2375,27 @@
   "evidence_sources": [
     {
       "path": "src/scenario-catalogue.js",
-      "lines": [
-        8,
-        9,
-        81,
-        87,
-        94,
-        145,
-        170,
-        309
-      ],
+      "lines": [8, 9, 81, 87, 94, 145, 170, 309],
       "finding": "Capability ID syntax/governance metadata separation; declared anti-architecture rule currently unenforced."
     },
     {
       "path": "scripts/validate-source-structure.js",
-      "lines": [
-        6,
-        7,
-        8,
-        30,
-        45
-      ],
+      "lines": [6, 7, 8, 30, 45],
       "finding": "Existing line-limit validator can add bounded path/suite/npm-name checks without a new framework or expanding line-limit scope."
     },
     {
       "path": "test/scenario-catalogue.test.js",
-      "lines": [
-        16,
-        19,
-        20
-      ],
+      "lines": [16, 19, 20],
       "finding": "Existing permanent-catalogue tests with stale recorded totals need controlled reconciliation."
     },
     {
       "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
-      "lines": [
-        6,
-        7,
-        8,
-        9
-      ],
+      "lines": [6, 7, 8, 9],
       "finding": "Three existing architecture-labeled runtime scenario IDs."
     },
     {
       "path": "src/render-test-topology.js",
-      "lines": [
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11
-      ],
+      "lines": [5, 6, 7, 8, 9, 10, 11],
       "finding": "Input field names are explicitly retained by an existing architect migration policy."
     },
     {
@@ -2995,9 +2465,7 @@
       "references": [
         {
           "path": "docs/decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md",
-          "lines": [
-            128
-          ]
+          "lines": [128]
         }
       ],
       "reason": "Harmless test-only source-message marker should name the scenario, not the architecture; retain exact original-message assertions."

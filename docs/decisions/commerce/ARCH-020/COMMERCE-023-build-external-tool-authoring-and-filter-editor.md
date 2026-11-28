@@ -84,9 +84,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-COMMERCE-017
 
 ## Enables
+
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
-
 
 ## Acceptance Criteria
 
@@ -216,7 +216,7 @@ cannot be performed through the UI.
 Also, `ExternalHttpEditor` currently defaults to:
 
 ```ts
-port = createExternalHttpFixturePort()
+port = createExternalHttpFixturePort();
 ```
 
 and its default execution contains the synthetic ID
@@ -497,7 +497,7 @@ canonicalJson({
   execution,
   sampleId,
   sample,
-})
+});
 ```
 
 `execution` already includes query, connection revision, response format,
@@ -977,7 +977,7 @@ const returnTo = `/tools/${tool.id}?revision=${selected.id}`;
 
 selectedConnection
   ? `/connections/${selectedConnection.id}?returnTo=${encodeURIComponent(returnTo)}`
-  : `/connections?returnTo=${encodeURIComponent(returnTo)}`
+  : `/connections?returnTo=${encodeURIComponent(returnTo)}`;
 ```
 
 Pass that destination through `composer.requestNavigation(...)` so the existing
@@ -985,6 +985,7 @@ Stay/Discard blocker still owns dirty navigation. Returning must reopen the same
 tool revision.
 
 Required focused proof:
+
 - new tool -> External API -> Create tool creates a valid EXTERNAL_HTTP draft;
 - the draft contains the exact injected connection revision ID;
 - no external port / no authorized revision creates no synthetic draft;
@@ -999,12 +1000,14 @@ Files:
 `tests/external-tools-ui.test.tsx`.
 
 The current query editor still cannot author the Shared v1 contract:
+
 - query keys are not editable;
 - source cannot be switched between Agent input and Literal;
 - literal string/number/boolean cannot be authored;
 - editing an input mapping reconstructs `{input: ...}` and drops `omitIfMissing`.
 
 The visual editor also still:
+
 - cannot rename an output field;
 - cannot edit projection `omitIfMissing`;
 - does not offer `IN`;
@@ -1060,6 +1063,7 @@ For `IN`, edit 1..20 same-type scalar values and write the Shared `{op:'IN',valu
 member. Preserve numbers, booleans and null as typed values; never stringify them.
 
 Enforce the existing Shared/UI bounds:
+
 - projections <= 32;
 - filters <= 8;
 - IN values 1..20;
@@ -1075,6 +1079,7 @@ row set mutates the persisted execution.
 
 Advanced JSON and visual controls are two views of the same
 `ResponseProcessing` value:
+
 - successful visual edits immediately replace Advanced JSON text;
 - valid Advanced JSON immediately replaces visual state;
 - invalid Advanced JSON remains visible and leaves the persisted execution unchanged;
@@ -1096,7 +1101,7 @@ No silent conversion.
 Fix the typed slot contract. `ExternalCodePanelSlotProps.processing` must be:
 
 ```ts
-Extract<ResponseProcessing, { kind: 'JAVASCRIPT' }>
+Extract<ResponseProcessing, { kind: "JAVASCRIPT" }>;
 ```
 
 not `Extract<VisualResponseProcessing, ...>` (which is `never`).
@@ -1112,6 +1117,7 @@ mode. COMMERCE-023 must not import COMMERCE-027's implementation directly.
 
 Required focused proof should build the execution through UI controls and assert exact
 stored JSON for:
+
 - editable query key;
 - input + omitIfMissing;
 - string literal;
@@ -1147,11 +1153,13 @@ Use Shared `canonicalJson` plus browser Web Crypto SHA-256. The lowercase-hex cu
 sample-validation hash is exactly:
 
 ```ts
-SHA256(canonicalJson({
-  execution,
-  sampleId,
-  sample
-}))
+SHA256(
+  canonicalJson({
+    execution,
+    sampleId,
+    sample,
+  }),
+);
 ```
 
 where `sample` is the current editable `TransformSample`.
@@ -1193,12 +1201,14 @@ A late result for hash A after any edit to hash B is discarded and must not chan
 status, values or publication admission.
 
 Keep the sample synthetic and editable in U06:
+
 - status;
 - content type;
 - raw body text.
-No live HTTP/decryption.
+  No live HTTP/decryption.
 
 Response shape section must also include:
+
 - the bounded supported keyword reference (`object`, `properties`, `required`,
   `additionalProperties:false`, `string/maxLength`, `number`, `boolean`,
   `array/items/maxItems`);
@@ -1223,6 +1233,7 @@ current sample-validation state
 Never display credential values.
 
 Publication remains:
+
 - ADMIN: Save/Test only;
 - SUPER_ADMIN: Save/Test/Publish;
 - exact draft revision + current editVersion + reason;
@@ -1234,6 +1245,7 @@ Publish is enabled only while the current editor/sample state still corresponds 
 `validatedHash`.
 
 Required focused proof:
+
 - start Apply/Validate for hash A, edit before resolve, late A result discarded;
 - sample selection/body/contentType edit immediately makes validation stale;
 - invalid schema retains schema/sample/source and shows exact issue path;
@@ -1258,17 +1270,17 @@ Add a typed fixture test port, for example:
 ```ts
 type ExternalFixtureRunResult =
   | {
-      kind: 'ok';
+      kind: "ok";
       values: Record<string, unknown>;
       renderedReply: string;
     }
   | {
-      kind: 'invalid';
+      kind: "invalid";
       path: string;
       message: string;
     }
   | {
-      kind: 'unavailable';
+      kind: "unavailable";
       message: string;
     };
 
@@ -1290,6 +1302,7 @@ reply. `provider-failure` must come from the injected fixture port; do not speci
 the fixture ID in the UI and do not make a network call.
 
 When `frozen=true`:
+
 - fixture selector is disabled;
 - editable sample controls, if rendered, are disabled;
 - Run fixture is disabled;
@@ -1299,6 +1312,7 @@ When the host resets/unfreezes, selection can change. COMMERCE-023 does not impl
 Redis/reset itself.
 
 Required focused proof:
+
 - success, empty, missing-field and provider-failure all flow through the injected port;
 - the port observes the exact tool revision ID and saved definition;
 - success renders processed values + rendered reply;
@@ -1339,6 +1353,7 @@ Create tool
 ```
 
 Assert:
+
 - `createToolDraft` receives a Shared-valid EXTERNAL_HTTP definition;
 - stored execution equals the exact expected C21 JSON;
 - agent descriptor fields remain unchanged;
@@ -1514,7 +1529,7 @@ const returnTo = `/tools/${tool.id}?revision=${selected.id}`;
 
 selectedConnection
   ? `/connections/${selectedConnection.id}?returnTo=${encodeURIComponent(returnTo)}`
-  : `/connections?returnTo=${encodeURIComponent(returnTo)}`
+  : `/connections?returnTo=${encodeURIComponent(returnTo)}`;
 ```
 
 Always pass the destination through `composer.requestNavigation(...)`.
@@ -1660,12 +1675,12 @@ Change the type to:
 
 ```ts
 export type ExternalCodePanelSlotProps = {
-  processing: Extract<ResponseProcessing, {kind:'JAVASCRIPT'}>;
+  processing: Extract<ResponseProcessing, { kind: "JAVASCRIPT" }>;
   responseFormat: ExternalResponseFormat;
-  resultSchema: ExternalHttpExecution['resultSchema'];
+  resultSchema: ExternalHttpExecution["resultSchema"];
   disabled: boolean;
   onChange(
-    processing: Extract<ResponseProcessing, {kind:'JAVASCRIPT'}>
+    processing: Extract<ResponseProcessing, { kind: "JAVASCRIPT" }>,
   ): void;
 };
 ```
@@ -1715,8 +1730,8 @@ Attempt 3 now hashes:
 canonicalJson({
   execution,
   sampleId,
-  sample
-})
+  sample,
+});
 ```
 
 and uses a generation guard, which is correct. However, the "sample" is still the
@@ -1877,17 +1892,17 @@ Use one result union such as:
 ```ts
 export type ExternalFixtureRunResult =
   | {
-      kind: 'ok';
+      kind: "ok";
       values: Record<string, unknown>;
       renderedReply: string;
     }
   | {
-      kind: 'invalid';
+      kind: "invalid";
       path: string;
       message: string;
     }
   | {
-      kind: 'unavailable';
+      kind: "unavailable";
       message: string;
     };
 
@@ -2135,11 +2150,9 @@ remain in the committed source. These are the complete Attempt 4 rework contract
 the slot with the old three-positional-argument call:
 
 ```ts
-renderCodePanel(
-  execution.responseProcessing,
-  !editable,
-  processing => updateProcessing(processing),
-)
+renderCodePanel(execution.responseProcessing, !editable, (processing) =>
+  updateProcessing(processing),
+);
 ```
 
 The declared contract is one object:
@@ -2157,7 +2170,7 @@ renderCodePanel?.({
   resultSchema: execution.resultSchema,
   disabled: !editable,
   onChange: updateProcessing,
-})
+});
 ```
 
 If no code-panel slot is supplied while the selected processing kind is JAVASCRIPT,
@@ -2345,7 +2358,7 @@ invalidate();
 without replacing the editable sample. Change it to the existing:
 
 ```ts
-changeSample(event.target.value)
+changeSample(event.target.value);
 ```
 
 so selected fixture identity and processed sample cannot diverge.
@@ -2426,7 +2439,7 @@ Do not drop return context.
 Attempt 4 declares:
 
 ```ts
-const [publishReason, setPublishReason] = useState('');
+const [publishReason, setPublishReason] = useState("");
 ```
 
 but never renders or consumes it. Publish still sends the hard-coded reason:
@@ -2458,7 +2471,7 @@ services.publishToolRevision({
   toolRevisionId: selected.id,
   expectedEditVersion: selected.editVersion,
   reason: publishReason.trim(),
-})
+});
 ```
 
 Known failure retains the entered reason and displays no success. ADMIN still has no
@@ -2520,7 +2533,7 @@ review panel
 All committed focused tests still begin by calling:
 
 ```ts
-externalDraft(services)
+externalDraft(services);
 ```
 
 before rendering U06. That bypasses the central owned X06/XN02 path.
@@ -2901,9 +2914,7 @@ Do not widen Shared query literals.
 The current IN same-type check is also not exact:
 
 ```ts
-values.every(
-  value => value === null || typeof value === typeof values[0]
-)
+values.every((value) => value === null || typeof value === typeof values[0]);
 ```
 
 For example:
@@ -3231,6 +3242,7 @@ edit external definition
 ```
 
 That violates the existing A5-R1 rule that validation may survive Save only when:
+
 1. the candidate was already current/validated before Save; and
 2. the persisted returned definition is exactly the same candidate that was validated.
 
@@ -3318,11 +3330,8 @@ Files:
 Attempt 7 improved the same-type check, but the current helper still does:
 
 ```ts
-const kind = (value: unknown):
-  "string" | "number" | "boolean" | "null" =>
-  value === null
-    ? "null"
-    : (typeof value as "string" | "number" | "boolean");
+const kind = (value: unknown): "string" | "number" | "boolean" | "null" =>
+  value === null ? "null" : (typeof value as "string" | "number" | "boolean");
 ```
 
 For JSON objects/arrays, `typeof value === "object"` is merely cast into the scalar
@@ -3351,6 +3360,7 @@ function scalarKind(value: unknown): ScalarKind | null {
 ```
 
 Require:
+
 - 1..20 values;
 - every value has a non-null supported scalar kind;
 - every value has exactly the same kind as the first;
@@ -3358,6 +3368,7 @@ Require:
 - strings satisfy the existing 2048-byte bound.
 
 On failure:
+
 - preserve the exact entered text in `inDrafts[index]`;
 - set the bounded row error in `inErrors[index]`;
 - do not call `setVisual(...)`;
@@ -3447,6 +3458,7 @@ changes are present, but A7-R1 and A7-R2 above remain observable in production s
 
 The U06/U14 design is now close to acceptance. No architecture redesign is required.
 The remaining work is limited to:
+
 - correct validation preservation across Save/persisted refresh;
 - exact scalar-only IN validation and draft reconciliation;
 - current Completion Report metadata.
@@ -3477,6 +3489,7 @@ If repository-wide commands retain only the documented unrelated baseline, recor
 accurately and do not repair unrelated files.
 
 Before handoff:
+
 1. complete only A7-R1 through A7-R3;
 2. update the canonical Completion Report truthfully;
 3. set `status: review`;
@@ -3547,6 +3560,7 @@ The bounded Attempt 7 correction contract is satisfied.
      cleared before architect disposition.
 
 Previously accepted COMMERCE-023 behavior remains intact:
+
 - External API is a first-class U06 tool-purpose choice;
 - valid EXTERNAL_HTTP starter drafts use an explicit authorized connection revision;
 - connection/revision metadata and guarded Manage-connections return context are

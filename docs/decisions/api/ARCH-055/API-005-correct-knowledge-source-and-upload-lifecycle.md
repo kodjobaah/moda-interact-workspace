@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-055-DATABASE-001
+  - ARCH-055-DATABASE-001
 enables:
-- ARCH-055-API-009
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-API-009
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -56,15 +56,15 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/merchant/merchant-knowledge/commands.service.ts` | RETURN locked principal fields rather than reread; use a writer entitlement projection without the unused preference lookup. For web PATCH/refresh/URL-change/DELETE mutations use id+shopId+currentGeneration=expectedGeneration and exact-one result; keep source/revision atomicity and existing no-op/replay rules. |
-| `src/merchant/merchant-knowledge/read.service.ts` | REPLACE ACTIVE groupBy+fetch with direct ACTIVE findMany for the page source IDs. Preserve latest-vs-ACTIVE distinction and best-effort multi-query contract; no new encompassing transaction. |
-| `src/merchant/merchant-knowledge/commands.service.ts` | ORDER/compact only rows whose final position changes; stage positive unique positions above current maximum, then final positions in deterministic order. Require safe integer range and no intermediate collision; full membership and atomic rollback remain. Untouched row updatedAt stays unchanged. |
-| `src/merchant/merchant-knowledge/upload.service.ts` | INTENT: write intentPurposeKey once and compare it with all existing format/file/MIME/hash/size retry metadata. PENDING null legacy purpose conflicts; never infer/bind it. New key stays based on original Shop/request identity, not purpose. |
-| `src/merchant/merchant-knowledge/upload.service.ts` | FINALISE: in committing transaction keep Shop/installation checks, then SELECT the same-Shop asset FOR NO KEY UPDATE, recheck state/expiry/purpose/file metadata/MIME after lock wait. For replacement next lock/revalidate the source generation. Hold asset/source coordination through AVAILABLE+original revision insert. Cleanup takes asset FOR UPDATE; the entitlement writer locks source and inserts a revision whose FK can take asset KEY SHARE. NO KEY UPDATE is selected to avoid an incompatible asset-key lock while waiting for that source; test this exact competing writer. Do not wait on provider/R2 under these locks. |
-| `src/merchant/merchant-knowledge/upload.service.ts` | AVAILABLE replay: find original intake using uploadedAssetId + reason IN (CREATE,FILE_REPLACE), take2 and require exactly one valid same-Shop/source/format/purpose binding; return its persisted sourceId/revisionId/generation. Do not select arbitrary/latest REPROCESS. Legacy completed null-purpose assets require original source purpose to prove the request binding. |
-| `src/merchant/merchant-knowledge/upload.service.ts; openapi/merchant-knowledge-v1.yaml` | Bound existing-upload eligibility to first K eligible sources with target fields, including web sources in rank; skip identical metadata after validation. Keep reprocess generation CAS/two writes and preflight contract; document existing 409 and sequential append, no new request field. |
+| File / symbol touchpoint                                                                | Deterministic edit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/merchant/merchant-knowledge/commands.service.ts`                                   | RETURN locked principal fields rather than reread; use a writer entitlement projection without the unused preference lookup. For web PATCH/refresh/URL-change/DELETE mutations use id+shopId+currentGeneration=expectedGeneration and exact-one result; keep source/revision atomicity and existing no-op/replay rules.                                                                                                                                                                                                                                                                                                                      |
+| `src/merchant/merchant-knowledge/read.service.ts`                                       | REPLACE ACTIVE groupBy+fetch with direct ACTIVE findMany for the page source IDs. Preserve latest-vs-ACTIVE distinction and best-effort multi-query contract; no new encompassing transaction.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `src/merchant/merchant-knowledge/commands.service.ts`                                   | ORDER/compact only rows whose final position changes; stage positive unique positions above current maximum, then final positions in deterministic order. Require safe integer range and no intermediate collision; full membership and atomic rollback remain. Untouched row updatedAt stays unchanged.                                                                                                                                                                                                                                                                                                                                     |
+| `src/merchant/merchant-knowledge/upload.service.ts`                                     | INTENT: write intentPurposeKey once and compare it with all existing format/file/MIME/hash/size retry metadata. PENDING null legacy purpose conflicts; never infer/bind it. New key stays based on original Shop/request identity, not purpose.                                                                                                                                                                                                                                                                                                                                                                                              |
+| `src/merchant/merchant-knowledge/upload.service.ts`                                     | FINALISE: in committing transaction keep Shop/installation checks, then SELECT the same-Shop asset FOR NO KEY UPDATE, recheck state/expiry/purpose/file metadata/MIME after lock wait. For replacement next lock/revalidate the source generation. Hold asset/source coordination through AVAILABLE+original revision insert. Cleanup takes asset FOR UPDATE; the entitlement writer locks source and inserts a revision whose FK can take asset KEY SHARE. NO KEY UPDATE is selected to avoid an incompatible asset-key lock while waiting for that source; test this exact competing writer. Do not wait on provider/R2 under these locks. |
+| `src/merchant/merchant-knowledge/upload.service.ts`                                     | AVAILABLE replay: find original intake using uploadedAssetId + reason IN (CREATE,FILE_REPLACE), take2 and require exactly one valid same-Shop/source/format/purpose binding; return its persisted sourceId/revisionId/generation. Do not select arbitrary/latest REPROCESS. Legacy completed null-purpose assets require original source purpose to prove the request binding.                                                                                                                                                                                                                                                               |
+| `src/merchant/merchant-knowledge/upload.service.ts; openapi/merchant-knowledge-v1.yaml` | Bound existing-upload eligibility to first K eligible sources with target fields, including web sources in rank; skip identical metadata after validation. Keep reprocess generation CAS/two writes and preflight contract; document existing 409 and sequential append, no new request field.                                                                                                                                                                                                                                                                                                                                               |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
 
@@ -156,14 +156,14 @@ The public API remains unchanged except documentation corrections explicitly aut
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| E01 | Pause API after source read, actual-equivalent worker advances generation | Metadata PATCH/DELETE reject stale; URL/refresh rollback; no deletion of newer revision. |
-| E02 | Expired cleanup wins after pre-network read but before finalisation asset lock | No resurrection, no new revision; finalisation conflicts. Reverse schedule commits reference and cleanup skips deletion. |
-| E03 | Wait for asset lock across expiry; policy MIME changes during R2 | Recheck rejects current invalid state, no forged expiry, all writes roll back. |
-| E04 | Intent retry changes only purpose; legacy unbound pending; replay after REPROCESS | Changed purpose/unbound pending conflict; original source/revision/generation replay remains exact after later revisions. |
-| E05 | Swap adjacent pair among100; delete last source; unchanged metadata | 4 position writes for swap,0 for delete-tail compaction,0 metadata update; untouched timestamps preserved. |
-| E06 | Commit succeeds then response projection throws | Log committed outcome separately; no assumed rollback or blind new generation. |
+| Case | Fixture / operation                                                               | Required result                                                                                                           |
+| ---- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| E01  | Pause API after source read, actual-equivalent worker advances generation         | Metadata PATCH/DELETE reject stale; URL/refresh rollback; no deletion of newer revision.                                  |
+| E02  | Expired cleanup wins after pre-network read but before finalisation asset lock    | No resurrection, no new revision; finalisation conflicts. Reverse schedule commits reference and cleanup skips deletion.  |
+| E03  | Wait for asset lock across expiry; policy MIME changes during R2                  | Recheck rejects current invalid state, no forged expiry, all writes roll back.                                            |
+| E04  | Intent retry changes only purpose; legacy unbound pending; replay after REPROCESS | Changed purpose/unbound pending conflict; original source/revision/generation replay remains exact after later revisions. |
+| E05  | Swap adjacent pair among100; delete last source; unchanged metadata               | 4 position writes for swap,0 for delete-tail compaction,0 metadata update; untouched timestamps preserved.                |
+| E06  | Commit succeeds then response projection throws                                   | Log committed outcome separately; no assumed rollback or blind new generation.                                            |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -256,7 +256,6 @@ Accepted against ARCH-055 revision 3 and this task's definition revision 2. No s
 ### Follow-up
 
 No dependant is promoted: API-009 still requires API-001/002/003/004/006/007/008 to complete, and SYSTEM-TEST-001 requires its complete cross-service implementation set. Recalculate those frontiers after later prerequisite acceptances.
-
 
 ## Dependency readiness — 3 November 2026
 

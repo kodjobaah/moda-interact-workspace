@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 5
 depends_on: []
 enables:
-- ARCH-055-API-009
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-API-009
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -68,14 +68,14 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/merchant/promotions/read.ts` | KEEP counts and snapshot; if offerCount/historyCount=0 return that empty page without corresponding findMany. Keep selected grant independent of page. |
-| `src/merchant/discount-offers/service.ts` | Save validates full submitted ID set, computes removed/added set differences and updates only those flags with count checks. Reuse settings write return and locked onboarding value; retain final selected-set/override reads. Narrow GET catalogue/settings/override projections; no CURRENT gating for saved settings or Save. |
-| `src/merchant/usage-history/history.service.ts; src/merchant/usage-history/periods.ts` | Combine count/_sum into one aggregate. Historical view skips unused current-linked period; retain internal period rows to reuse default/matching requested period. Preserve cursor-anchor validation and off-page explicit period lookup. |
-| `src/billing/presentation/billing-read.service.ts` | Reuse pending catalogue row only on an exact operational-plan handle match. Keep latest versus unresolved purchases and confirmed cancellation evidence. |
-| `src/billing/presentation/plan-catalogue-read.service.ts` | Build requested/base/default/base/en candidate set after Shop lookup; constrain both translation relations to it. Choose one complete locale for whole catalogue; preserve overflow101. |
-| `src/billing/purchase-history/service.ts` | Skip page query only after zero count inside same snapshot; preserve refund overflow11 and latest/completed distinction. |
+| File / symbol touchpoint                                                               | Deterministic edit                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/merchant/promotions/read.ts`                                                      | KEEP counts and snapshot; if offerCount/historyCount=0 return that empty page without corresponding findMany. Keep selected grant independent of page.                                                                                                                                                                            |
+| `src/merchant/discount-offers/service.ts`                                              | Save validates full submitted ID set, computes removed/added set differences and updates only those flags with count checks. Reuse settings write return and locked onboarding value; retain final selected-set/override reads. Narrow GET catalogue/settings/override projections; no CURRENT gating for saved settings or Save. |
+| `src/merchant/usage-history/history.service.ts; src/merchant/usage-history/periods.ts` | Combine count/_sum into one aggregate. Historical view skips unused current-linked period; retain internal period rows to reuse default/matching requested period. Preserve cursor-anchor validation and off-page explicit period lookup.                                                                                         |
+| `src/billing/presentation/billing-read.service.ts`                                     | Reuse pending catalogue row only on an exact operational-plan handle match. Keep latest versus unresolved purchases and confirmed cancellation evidence.                                                                                                                                                                          |
+| `src/billing/presentation/plan-catalogue-read.service.ts`                              | Build requested/base/default/base/en candidate set after Shop lookup; constrain both translation relations to it. Choose one complete locale for whole catalogue; preserve overflow101.                                                                                                                                           |
+| `src/billing/purchase-history/service.ts`                                              | Skip page query only after zero count inside same snapshot; preserve refund overflow11 and latest/completed distinction.                                                                                                                                                                                                          |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
 
@@ -85,8 +85,6 @@ Paths are relative to the owning implementation repository. These steps are mand
 **Test registration:** Append history to scripts/test-arch041-billing-postgres.mjs and usage to scripts/test-arch035-usage-history-postgres.mjs. Retain promotion/discount suites. Measure-first items below are evidence-only, not discretionary source changes.
 
 **Task-local parent evidence exception — Attempt 3:** The executor may create, stage, commit and push only `docs/decisions/api/ARCH-055/evidence/API-006-attempt-3-commercial.jsonl` in addition to this task file on the dedicated parent task branch. Retain actual raw M11–M14 normalized SQL/client-call/transaction/row/timing records and descriptive summaries there. Include only bounded review metadata; exclude connection URLs, credentials, raw SQL parameter values and customer bodies. This is a directly task-owned review artifact, not a production metric or standalone benchmark framework; its measurements and limits must be identified in the Completion Report.
-
-
 
 **Opt-in comparison orchestration exception — Attempt 3:** `scripts/test-arch041-billing-postgres.mjs` may additionally implement the explicit opt-in `ARCH055_COMMERCIAL_COMPARE_BASELINE=1` solely to execute fixed M11–M14 comparison cases in the existing exact authorized file `tests/integration/billing/purchase-history/arch055-history.postgres.test.ts`. These test cases may import the existing API-owned commercial services named in this task; no new implementation/test path or production benchmark utility is authorized. The runner may archive pinned baseline `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0` to a temporary isolated checkout, copy identical test instrumentation, use the same installed dependencies, and clone equivalent disposable databases from one canonical migrated empty template. Preserve normal `initialSuites`, additional-suite path validation and every billing-command registration exactly; default execution and API-007 command ownership remain unchanged. Record both versions, matching fixtures, actual SQL/control/call/row evidence, two discarded warm-ups and five recorded samples per version/profile, cleanup and measurement limits. This narrow test-only exception supersedes the billing runner's presentation/history-registration-only qualifier solely for that opt-in orchestration.
 
@@ -169,13 +167,13 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| F01 | Offers/history independently empty | Correct totals/page defaults; only corresponding page fetch omitted. |
-| F02 | 50 unchanged coupons + mode change; one replaced coupon; invalid foreign ID | 0/2 flag row assignments; full validation/anchor/rollback unchanged. |
-| F03 | Current/past/explicit period, signed negative corrections, v1/v2 ambiguity | Exact accounting/DTOs unchanged; aggregate one call; no lost cursor-anchor check. |
-| F04 | Whole-catalogue fallback and no complete locale | One chosen locale or original failure; not mixed per-plan language. |
-| F05 | Empty/nonempty history,>10refunds, concurrent refund changes | Same count/page snapshot, no silently truncated invalid refund evidence. |
+| Case | Fixture / operation                                                         | Required result                                                                   |
+| ---- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| F01  | Offers/history independently empty                                          | Correct totals/page defaults; only corresponding page fetch omitted.              |
+| F02  | 50 unchanged coupons + mode change; one replaced coupon; invalid foreign ID | 0/2 flag row assignments; full validation/anchor/rollback unchanged.              |
+| F03  | Current/past/explicit period, signed negative corrections, v1/v2 ambiguity  | Exact accounting/DTOs unchanged; aggregate one call; no lost cursor-anchor check. |
+| F04  | Whole-catalogue fallback and no complete locale                             | One chosen locale or original failure; not mixed per-plan language.               |
+| F05  | Empty/nonempty history,>10refunds, concurrent refund changes                | Same count/page snapshot, no silently truncated invalid refund evidence.          |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -294,7 +292,6 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 No schema, transaction-boundary, public contract or ownership change was required. The documented evidence gap and unrelated broad-suite failures require architect disposition before acceptance.
 
-
 ## Completion Report — Attempt 3
 
 ### Status
@@ -331,37 +328,37 @@ Ready for Review. Both architect correction items are implemented: the complete 
 
 Every row below held across all five recorded samples per version. Values are baseline→candidate. Coupon assignments count actual updateMany affected rows; net target rows count distinct persisted changes, including settings and timestamps, not repeated assignments. Read/no-op snapshots remain identical. Expected billing mismatch and unavailable-locale errors account for 28 rolled-back operations; all other 378 operations commit.
 
-| Profile | Logical DB calls | SQL statements | Coupon assignments | Net target rows |
-|---|---:|---:|---:|---:|
-| M11-promo-0-0 | 9→7 | 12→10 | 0→0 | 0→0 |
-| M11-promo-0-7 | 9→8 | 15→14 | 0→0 | 0→0 |
-| M11-promo-7-0 | 9→8 | 14→13 | 0→0 | 0→0 |
-| M11-promo-7-7 | 9→9 | 17→17 | 0→0 | 0→0 |
-| M11-purchase-0 | 4→3 | 6→5 | 0→0 | 0→0 |
-| M11-purchase-5 | 4→4 | 9→9 | 0→0 | 0→0 |
-| M12-mode | 13→10 | 14→11 | 100→0 | 51→1 |
-| M12-replace | 13→12 | 14→13 | 100→2 | 52→3 |
-| M12-noop | 10→10 | 11→11 | 0→0 | 0→0 |
-| M12-first | 14→11 | 15→12 | 50→50 | 51→51 |
-| M13-current-v1 | 10→9 | 13→12 | 0→0 | 0→0 |
-| M13-current-v2 | 12→11 | 15→14 | 0→0 | 0→0 |
-| M13-default-v1 | 12→9 | 15→12 | 0→0 | 0→0 |
-| M13-default-v2 | 14→11 | 17→14 | 0→0 | 0→0 |
-| M13-rank2-v1 | 12→9 | 15→12 | 0→0 | 0→0 |
-| M13-rank2-v2 | 14→11 | 17→14 | 0→0 | 0→0 |
-| M13-rank30-v1 | 12→10 | 15→13 | 0→0 | 0→0 |
-| M13-rank30-v2 | 14→12 | 17→15 | 0→0 | 0→0 |
-| M14-billing-match | 11→10 | 16→15 | 0→0 | 0→0 |
-| M14-billing-mismatch | 11→11 | 16→16 | 0→0 | 0→0 |
-| M14-catalogue-fr-CA | 3→3 | 8→8 | 0→0 | 0→0 |
-| M14-catalogue-unavailable | 3→3 | 8→8 | 0→0 | 0→0 |
-| M14-settings-CURRENT | 7→7 | 9→9 | 0→0 | 0→0 |
-| M14-settings-ERROR | 7→7 | 9→9 | 0→0 | 0→0 |
-| E-batch-clean-fixed | 2→2 | 4→4 | 0→0 | 0→0 |
-| E-batch-clean-small | 2→2 | 4→4 | 0→0 | 0→0 |
-| E-batch-invalid-fixed | 2→2 | 4→4 | 0→0 | 0→0 |
-| E-batch-invalid-small | 3→3 | 5→5 | 0→0 | 0→0 |
-| E-promotion-select | 10→10 | 18→18 | 0→0 | 2→2 |
+| Profile                   | Logical DB calls | SQL statements | Coupon assignments | Net target rows |
+| ------------------------- | ---------------: | -------------: | -----------------: | --------------: |
+| M11-promo-0-0             |              9→7 |          12→10 |                0→0 |             0→0 |
+| M11-promo-0-7             |              9→8 |          15→14 |                0→0 |             0→0 |
+| M11-promo-7-0             |              9→8 |          14→13 |                0→0 |             0→0 |
+| M11-promo-7-7             |              9→9 |          17→17 |                0→0 |             0→0 |
+| M11-purchase-0            |              4→3 |            6→5 |                0→0 |             0→0 |
+| M11-purchase-5            |              4→4 |            9→9 |                0→0 |             0→0 |
+| M12-mode                  |            13→10 |          14→11 |              100→0 |            51→1 |
+| M12-replace               |            13→12 |          14→13 |              100→2 |            52→3 |
+| M12-noop                  |            10→10 |          11→11 |                0→0 |             0→0 |
+| M12-first                 |            14→11 |          15→12 |              50→50 |           51→51 |
+| M13-current-v1            |             10→9 |          13→12 |                0→0 |             0→0 |
+| M13-current-v2            |            12→11 |          15→14 |                0→0 |             0→0 |
+| M13-default-v1            |             12→9 |          15→12 |                0→0 |             0→0 |
+| M13-default-v2            |            14→11 |          17→14 |                0→0 |             0→0 |
+| M13-rank2-v1              |             12→9 |          15→12 |                0→0 |             0→0 |
+| M13-rank2-v2              |            14→11 |          17→14 |                0→0 |             0→0 |
+| M13-rank30-v1             |            12→10 |          15→13 |                0→0 |             0→0 |
+| M13-rank30-v2             |            14→12 |          17→15 |                0→0 |             0→0 |
+| M14-billing-match         |            11→10 |          16→15 |                0→0 |             0→0 |
+| M14-billing-mismatch      |            11→11 |          16→16 |                0→0 |             0→0 |
+| M14-catalogue-fr-CA       |              3→3 |            8→8 |                0→0 |             0→0 |
+| M14-catalogue-unavailable |              3→3 |            8→8 |                0→0 |             0→0 |
+| M14-settings-CURRENT      |              7→7 |            9→9 |                0→0 |             0→0 |
+| M14-settings-ERROR        |              7→7 |            9→9 |                0→0 |             0→0 |
+| E-batch-clean-fixed       |              2→2 |            4→4 |                0→0 |             0→0 |
+| E-batch-clean-small       |              2→2 |            4→4 |                0→0 |             0→0 |
+| E-batch-invalid-fixed     |              2→2 |            4→4 |                0→0 |             0→0 |
+| E-batch-invalid-small     |              3→3 |            5→5 |                0→0 |             0→0 |
+| E-promotion-select        |            10→10 |          18→18 |                0→0 |             2→2 |
 
 M12 mode-only changes preserve all coupon flags, dropping 100 flag assignments and 50 timestamp-touched coupon rows. One replacement still changes exactly two flags, but avoids the baseline's redundant rewrites of the other 49 coupons. New settings still select 50 coupons and preserve locked Shop onboarding data. Invalid foreign IDs, anchors, rollback and last-writer behavior remain covered by the full migrated discount suite.
 
@@ -380,37 +377,37 @@ M14 matching pending-plan handles remove one lookup; mismatched handles preserve
 
 Each cell is min/median/max over five recorded executions; raw warm-ups, samples and full-precision summaries remain in the artifact. Experimental batch-loop boundaries are distinct as described above.
 
-| Profile | Baseline operation | Baseline transaction | Candidate operation | Candidate transaction |
-|---|---:|---:|---:|---:|
-| M11-promo-0-0 | 235.73/466.07/637.98 | 235.67/466.03/637.94 | 51.62/74.90/155.68 | 51.59/74.86/155.64 |
-| M11-promo-0-7 | 178.88/532.11/1138.34 | 178.85/531.96/1138.29 | 78.04/86.58/133.72 | 77.96/86.36/133.70 |
-| M11-promo-7-0 | 144.96/232.77/405.42 | 144.94/232.74/405.40 | 64.82/67.38/236.03 | 64.80/67.36/236.01 |
-| M11-promo-7-7 | 271.33/381.90/1219.63 | 271.31/381.85/1219.60 | 101.16/134.03/193.08 | 101.14/134.01/193.05 |
-| M11-purchase-0 | 85.70/135.81/376.34 | 85.66/135.77/376.30 | 20.24/21.73/27.38 | 20.17/21.70/27.35 |
-| M11-purchase-5 | 218.18/648.15/8753.94 | 218.13/648.12/8753.89 | 24.92/34.64/39.00 | 24.90/34.61/38.97 |
-| M12-mode | 211.46/213.31/315.26 | 211.40/213.26/315.22 | 46.43/47.91/66.96 | 46.20/47.88/66.93 |
-| M12-replace | 399.24/1212.34/1414.19 | 399.19/1212.29/1414.14 | 49.55/54.83/64.03 | 49.52/54.80/64.00 |
-| M12-noop | 81.65/414.59/807.60 | 81.61/414.54/807.56 | 40.71/43.81/50.88 | 40.64/43.77/50.85 |
-| M12-first | 172.36/499.23/880.93 | 172.33/499.20/880.89 | 46.63/53.88/58.67 | 46.61/53.85/58.64 |
-| M13-current-v1 | 154.06/796.17/1372.45 | 154.01/796.10/1372.39 | 38.17/40.87/57.47 | 38.13/40.84/57.42 |
-| M13-current-v2 | 336.94/531.83/1468.02 | 336.68/531.78/1467.98 | 44.39/55.78/60.12 | 44.36/55.74/60.07 |
-| M13-default-v1 | 371.76/855.94/2445.65 | 371.73/855.90/2445.62 | 46.32/46.86/74.35 | 46.30/46.84/74.32 |
-| M13-default-v2 | 124.55/147.70/300.69 | 124.52/147.66/300.66 | 116.90/168.17/255.50 | 116.88/168.15/255.48 |
-| M13-rank2-v1 | 64.33/71.82/86.11 | 64.30/71.79/86.08 | 100.76/408.29/845.80 | 100.73/408.24/845.78 |
-| M13-rank2-v2 | 95.15/117.09/196.30 | 95.13/117.07/196.28 | 247.05/500.48/1885.81 | 247.02/500.45/1885.78 |
-| M13-rank30-v1 | 55.29/61.21/84.17 | 55.25/61.19/84.14 | 105.06/455.32/2286.96 | 105.04/455.29/2286.93 |
-| M13-rank30-v2 | 68.00/71.96/110.16 | 67.98/71.94/110.14 | 191.41/357.16/1966.48 | 191.32/357.09/1966.45 |
-| M14-billing-match | 49.80/52.82/59.21 | 49.78/52.80/59.19 | 134.33/256.09/935.62 | 134.30/256.06/935.58 |
-| M14-billing-mismatch | 47.29/60.47/77.91 | 47.24/60.33/77.86 | 388.09/507.23/640.40 | 388.02/507.15/640.34 |
-| M14-catalogue-fr-CA | 28.10/33.14/39.05 | 28.03/33.08/38.98 | 42.71/104.48/676.71 | 42.64/104.40/676.64 |
-| M14-catalogue-unavailable | 29.28/34.15/36.59 | 29.19/34.04/36.49 | 101.60/149.96/397.34 | 101.48/149.82/397.14 |
-| M14-settings-CURRENT | 28.10/31.88/51.31 | 28.07/31.85/51.28 | 98.37/439.63/841.18 | 98.33/439.59/841.14 |
-| M14-settings-ERROR | 33.00/34.08/37.91 | 32.97/34.05/37.88 | 119.37/285.61/852.78 | 119.33/285.57/852.71 |
-| E-batch-clean-fixed | 15.21/21.88/68.99 | 15.19/21.87/68.97 | 105.32/191.25/402.41 | 105.29/191.22/402.33 |
-| E-batch-clean-small | 9.14/13.42/90.49 | 9.12/13.41/90.47 | 34.65/56.07/133.31 | 34.56/55.43/133.29 |
-| E-batch-invalid-fixed | 14.98/16.97/20.43 | 14.96/16.95/20.41 | 43.78/62.67/300.27 | 43.76/62.58/300.24 |
-| E-batch-invalid-small | 20.72/23.33/33.05 | 20.70/23.31/33.03 | 74.34/265.62/740.42 | 74.32/265.60/740.39 |
-| E-promotion-select | 63.40/82.26/98.99 | 63.36/82.23/98.93 | 172.02/228.17/2614.28 | 171.98/228.08/2614.24 |
+| Profile                   |     Baseline operation |   Baseline transaction |   Candidate operation | Candidate transaction |
+| ------------------------- | ---------------------: | ---------------------: | --------------------: | --------------------: |
+| M11-promo-0-0             |   235.73/466.07/637.98 |   235.67/466.03/637.94 |    51.62/74.90/155.68 |    51.59/74.86/155.64 |
+| M11-promo-0-7             |  178.88/532.11/1138.34 |  178.85/531.96/1138.29 |    78.04/86.58/133.72 |    77.96/86.36/133.70 |
+| M11-promo-7-0             |   144.96/232.77/405.42 |   144.94/232.74/405.40 |    64.82/67.38/236.03 |    64.80/67.36/236.01 |
+| M11-promo-7-7             |  271.33/381.90/1219.63 |  271.31/381.85/1219.60 |  101.16/134.03/193.08 |  101.14/134.01/193.05 |
+| M11-purchase-0            |    85.70/135.81/376.34 |    85.66/135.77/376.30 |     20.24/21.73/27.38 |     20.17/21.70/27.35 |
+| M11-purchase-5            |  218.18/648.15/8753.94 |  218.13/648.12/8753.89 |     24.92/34.64/39.00 |     24.90/34.61/38.97 |
+| M12-mode                  |   211.46/213.31/315.26 |   211.40/213.26/315.22 |     46.43/47.91/66.96 |     46.20/47.88/66.93 |
+| M12-replace               | 399.24/1212.34/1414.19 | 399.19/1212.29/1414.14 |     49.55/54.83/64.03 |     49.52/54.80/64.00 |
+| M12-noop                  |    81.65/414.59/807.60 |    81.61/414.54/807.56 |     40.71/43.81/50.88 |     40.64/43.77/50.85 |
+| M12-first                 |   172.36/499.23/880.93 |   172.33/499.20/880.89 |     46.63/53.88/58.67 |     46.61/53.85/58.64 |
+| M13-current-v1            |  154.06/796.17/1372.45 |  154.01/796.10/1372.39 |     38.17/40.87/57.47 |     38.13/40.84/57.42 |
+| M13-current-v2            |  336.94/531.83/1468.02 |  336.68/531.78/1467.98 |     44.39/55.78/60.12 |     44.36/55.74/60.07 |
+| M13-default-v1            |  371.76/855.94/2445.65 |  371.73/855.90/2445.62 |     46.32/46.86/74.35 |     46.30/46.84/74.32 |
+| M13-default-v2            |   124.55/147.70/300.69 |   124.52/147.66/300.66 |  116.90/168.17/255.50 |  116.88/168.15/255.48 |
+| M13-rank2-v1              |      64.33/71.82/86.11 |      64.30/71.79/86.08 |  100.76/408.29/845.80 |  100.73/408.24/845.78 |
+| M13-rank2-v2              |    95.15/117.09/196.30 |    95.13/117.07/196.28 | 247.05/500.48/1885.81 | 247.02/500.45/1885.78 |
+| M13-rank30-v1             |      55.29/61.21/84.17 |      55.25/61.19/84.14 | 105.06/455.32/2286.96 | 105.04/455.29/2286.93 |
+| M13-rank30-v2             |     68.00/71.96/110.16 |     67.98/71.94/110.14 | 191.41/357.16/1966.48 | 191.32/357.09/1966.45 |
+| M14-billing-match         |      49.80/52.82/59.21 |      49.78/52.80/59.19 |  134.33/256.09/935.62 |  134.30/256.06/935.58 |
+| M14-billing-mismatch      |      47.29/60.47/77.91 |      47.24/60.33/77.86 |  388.09/507.23/640.40 |  388.02/507.15/640.34 |
+| M14-catalogue-fr-CA       |      28.10/33.14/39.05 |      28.03/33.08/38.98 |   42.71/104.48/676.71 |   42.64/104.40/676.64 |
+| M14-catalogue-unavailable |      29.28/34.15/36.59 |      29.19/34.04/36.49 |  101.60/149.96/397.34 |  101.48/149.82/397.14 |
+| M14-settings-CURRENT      |      28.10/31.88/51.31 |      28.07/31.85/51.28 |   98.37/439.63/841.18 |   98.33/439.59/841.14 |
+| M14-settings-ERROR        |      33.00/34.08/37.91 |      32.97/34.05/37.88 |  119.37/285.61/852.78 |  119.33/285.57/852.71 |
+| E-batch-clean-fixed       |      15.21/21.88/68.99 |      15.19/21.87/68.97 |  105.32/191.25/402.41 |  105.29/191.22/402.33 |
+| E-batch-clean-small       |       9.14/13.42/90.49 |       9.12/13.41/90.47 |    34.65/56.07/133.31 |    34.56/55.43/133.29 |
+| E-batch-invalid-fixed     |      14.98/16.97/20.43 |      14.96/16.95/20.41 |    43.78/62.67/300.27 |    43.76/62.58/300.24 |
+| E-batch-invalid-small     |      20.72/23.33/33.05 |      20.70/23.31/33.03 |   74.34/265.62/740.42 |   74.32/265.60/740.39 |
+| E-promotion-select        |      63.40/82.26/98.99 |      63.36/82.23/98.93 | 172.02/228.17/2614.28 | 171.98/228.08/2614.24 |
 
 ### Validation and F01–F05 results
 
@@ -433,12 +430,13 @@ Each cell is min/median/max over five recorded executions; raw warm-ups, samples
 
 Both baseline and candidate use the declared Node 24.19.0/npm 11.17.0 toolchain and the same accepted canonical client/schema. The baseline ran from a temporary archive with Database/node_modules links; it was never run in the shared checkout.
 
-| Run | Tests | Passed | Failed |
-|---|---:|---:|---:|
-| Pinned fa2a857 full npm test |657|648|9|
-| Final candidate full npm test |669|662|7|
+| Run                           | Tests | Passed | Failed |
+| ----------------------------- | ----: | -----: | -----: |
+| Pinned fa2a857 full npm test  |   657 |    648 |      9 |
+| Final candidate full npm test |   669 |    662 |      7 |
 
 Six failures occur in both:
+
 - `billing/commands/recovery-credit-routes.test.ts`: provider-error bounded-log assertion.
 - `billing/commands/subscription-routes.test.ts`: provider-error bounded-log assertion.
 - `composition/real-route-registration.test.ts`: route-registration expectation.
@@ -565,7 +563,6 @@ The source changes are within the revision-2 edit map, and the implementation br
 
 Keep the same task branch and Attempt 1. Complete M11–M14 with the fixed baseline/candidate procedure and F01–F05 regression outcomes, record raw samples and measured SQL/calls/rows/timings, classify broad validation failures against the task-start baseline using the declared runtime, and reconcile the unchecked task criteria. Do not begin API-009 or SYSTEM-TEST-001. Both remain Pending because API-006 is not Complete. No implementation source was changed by this review.
 
-
 ## Architect Review — Recovery of Attempt 2, 3 November 2026
 
 ### Review Status
@@ -586,16 +583,13 @@ The complete Attempt 1 Review Notes remain authoritative. Finish M11–M14 with 
 
 The stranded tests are incomplete supporting work, not a replacement for those required measurements. Reconcile unchecked Work Items, Acceptance Criteria and Validation only from actual results. Keep the existing task branches, scope and contracts; do not change migrations, add discretionary optimisations or start API-009/SYSTEM-TEST-001. Parent task recovery publication is mechanically delegated for this current-task-only overlay; implementation checkpoint publication remains with the repository owner.
 
-
 ## Architect Review — Evidence retention amendment, Attempt 3, 3 November 2026
 
 Authorize the single parent task-owned JSONL artifact named in Scope for durable M11–M14 sample retention. This narrowly supersedes prior no-new-files wording only for that evidence artifact; it does not authorize additional implementation/test paths, runtime behavior, index DDL, another repository or broader runner registrations. The repository executor may publish the actual artifact and this report together on parent `task/ARCH-055-API-006`. Preserve explicit unmeasured fields and descriptive-only timing limits. This amendment does not accept the task, change its claim or promote dependants.
 
-
 ### Opt-in orchestration clarification — Attempt 3
 
 The fixed M11–M14 evidence protocol may be orchestrated centrally by the existing billing runner only through the explicit opt-in exception now named in Scope. Keeping the cases in the exact existing authorized test file avoids adding a standalone benchmark framework or scattered duplicated orchestration. The opt-in may exercise only this task's named commercial services and profiles; it does not expand production ownership or alter the default billing-command suite list/path checks. No measurements are waived, no baseline history is rewritten, and actual baseline incompatibility must be reported rather than inferred. The authorized parent evidence filename is `API-006-attempt-3-commercial.jsonl`. No claim, acceptance or dependency state changes are made by this clarification.
-
 
 ## Architect Review — Attempt 3, 3 November 2026
 
@@ -626,7 +620,6 @@ Independent reproduction invoked both actual route handlers with a wrapped datab
 
 Correct the two diagnostic helpers and add meaningful safe-cause/code/redaction regressions on the same branch. Rerun affected route/focused tests, typecheck, changed-file lint and diff checks; update the report with actual results. Preserve the passing commercial evidence and historical baseline classifications, revisiting only evidence invalidated by subsequent code changes. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain Pending because API-006 is not Complete. The next launcher claim owns Attempt 4.
 
-
 ## Architect Review — Accepted Database consumer-pin reconciliation, Attempt 4, 3 November 2026
 
 ### Disposition
@@ -642,7 +635,6 @@ Under this task's existing Common execution contract and DATABASE-001's accepted
 Record the prepared `7c37728` pin separately from the post-reconciliation `8e74634` pin, exact tree-equivalence evidence, regenerated canonical client and actual typecheck/affected validation results in the Completion Report. Keep any baseline comparison results obtained before adoption explicit; do not describe an unavailable check as passed. The commercial measurement artifact remains historical evidence against the identical accepted schema/migration tree; this gitlink correction and diagnostic-only rework do not themselves require rerunning unaffected commercial profiles.
 
 The complete Attempt 3 diagnostic Changes Requested contract remains mandatory. This amendment grants no test waiver, acceptance, claim change or downstream promotion. A failed check after alignment must still be investigated and reported on its actual evidence.
-
 
 ## Architect Review — Attempt 4, 3 November 2026
 
@@ -669,7 +661,6 @@ Independent reproduction constructed a `PrismaClientKnownRequestError` with a no
 ### Follow-up
 
 Apply the bounded message-preservation correction in the existing two routes and tests, run affected/focused regressions, typecheck, changed-file lint and diff checks, and resubmit with actual results. Preserve historical reports and commercial evidence. API-009 and SYSTEM-TEST-001 remain Pending because API-006 is not Complete. The next launcher claim owns Attempt 5. No implementation edits/commits/pushes, parent gitlink changes, deployment or main merge were made by this review.
-
 
 ## Architect Review — Attempt 5, 3 November 2026
 

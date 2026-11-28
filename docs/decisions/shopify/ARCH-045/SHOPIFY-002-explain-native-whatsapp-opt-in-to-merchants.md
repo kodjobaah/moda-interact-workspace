@@ -20,6 +20,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-22
 ---
+
 # Explain Shopify WhatsApp recovery consent to merchants
 
 ## Architecture
@@ -117,7 +118,7 @@ No database schema, Background Support-notice implementation, Shopify checkout c
 - Provided native Shopify **Settings → Checkout → Marketing opt-in** guidance with a link to Shopify customer-contact documentation, and a Shopify Forms link for collecting WhatsApp opt-in before checkout submission. Warned that early abandonment and guest checkouts may lack a saved permission/identity.
 - Described abandoned-basket WhatsApp outreach as **marketing**, distinct from order/utility messages, phone-number collection and Shopify Customer Privacy **tracking** consent.
 - Explained that missing verified WhatsApp marketing permission means no `CheckoutRecovery`, outbound message or recovery credit; the separately owned Background reconciliation is expected to create a checkout-keyed Moda Support notice when it detects missing consent.
-- Distinguished *missing permission* from *Shopify verification unavailable*: a verification outage is not equivalent to a customer's refusal and does not justify bypassing the gate.
+- Distinguished _missing permission_ from _Shopify verification unavailable_: a verification outage is not equivalent to a customer's refusal and does not justify bypassing the gate.
 - Explained that later opt-in updates current phone permission but does **not** itself replay or revive old checkouts; only subsequent ordinary reconciliation may encounter an otherwise eligible checkout. No arbitrary 72-hour expiry or guaranteed later recovery.
 - Documented Moda-local WhatsApp STOP suppression and merchant Support notice; a later Shopify consent grant cannot override STOP.
 - Added deterministic rendering/document-link/no-bypass guidance tests and 15 populated, non-fallback translation keys in all 20 supported locales.

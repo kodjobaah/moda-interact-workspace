@@ -249,8 +249,11 @@ The Shopify Toolkit helps prove the compiler; it is not a runtime dependency for
 ## Completion Report
 
 ### Status
+
 Ready for Review
+
 ### Files Changed
+
 Implementation commits `db18555446f0c8f3a9601397941451bdb20b3714`, synchronization merge `ed0b0e9e2226d5d133d25de73fb2b9e13b57278e`, and merge repair `bcb61f6` on `task/ARCH-021-COMMERCE-018`:
 
 - `app/api/studio/discovery/route.ts`
@@ -265,13 +268,17 @@ Implementation commits `db18555446f0c8f3a9601397941451bdb20b3714`, synchronizati
 - `scripts/validate-shopify-admin-local.ts`
 - `tests/admin-graphql-compiler.test.ts`
 - `tests/discovery-route.test.ts`
+
 ### Work Completed
+
 - Added deterministic Admin 2026-07 introspection artifact and exact provenance for `@shopify/dev-mcp@1.15.4`, including SHA-256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`.
 - Added offline query-only Admin compiler with schema validation, named-operation enforcement, variable/input compatibility, bounded selection/depth/cost/pagination rules, and closed result-path/schema compatibility checks.
 - Added explicit `storefront-graphql`/`admin-graphql` discovery validation dispatch without changing Storefront behavior.
 - Added the explicit Dev MCP oracle using `learn_shopify_api` and `validate_graphql_codeblocks`; normal request validation remains local and artifact-backed.
 - Prepared launcher evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-018`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-018`; implementation submodule `database` at recorded `98fdf715e54fe6df92ac6951facd104e410068f2`.
+
 ### Validation Results
+
 - `npm run test:arch021-shopify-admin-compiler`: PASS, 2 files and 17 tests.
 - `npm run validate:arch021-shopify-admin-oracle`: PASS; valid products query matched valid, unknown field/argument and wrong variable type matched invalid, and mutation was locally rejected while upstream schema accepted it.
 - Focused ESLint over all changed source/scripts/tests: PASS with no warnings or errors.
@@ -287,21 +294,31 @@ Implementation commits `db18555446f0c8f3a9601397941451bdb20b3714`, synchronizati
 - Attempt 3 implementation branch local/remote parity: PASS at `48d6ab0`; accepted Storefront/discovery files and Admin artifact/provenance were unchanged.
 - Attempt 2 typecheck: full `npm run typecheck` remains non-zero on unrelated repository diagnostics; filtered output contains no diagnostics in the touched Admin compiler, discovery schema/service/route, scripts, or tests.
 - Attempt 2 implementation branch local/remote parity: PASS at `bcb61f6`.
+
 ### Deviations
+
 - Full repository typecheck and production build are reported as baseline failures because their diagnostics are outside the task files and were present independently of this compiler change.
+
 ### Assumptions
+
 - `@shopify/dev-mcp@1.15.4` is the available pinned developer validation environment; the oracle is not part of runtime request handling.
+
 ### Unresolved Issues
+
 - Existing repository-wide typecheck/build baseline remains for the owning tasks; no Admin compiler or discovery-slice diagnostics remain.
+
 ### Architectural Concerns
+
 None
 
 ### Attempt 4 Completion Addendum
 
 #### Status
+
 Ready for Review
 
 #### Correction Checklist
+
 - CR-1 implemented in `lib/discovery/admin-compiler.ts`: compiled variable metadata now preserves the schema-backed expected type and whether the GraphQL variable is non-null without a default. Optional/defaulted variables may omit mappings; required variables still fail closed; unknown mapping keys remain rejected.
 - CR-1 regressions added in `tests/admin-graphql-compiler.test.ts` for omitted nullable, omitted non-null-with-default, and omitted required non-null variables.
 - CR-2 implemented in `lib/discovery/admin-compiler.ts`: nullable input-schema branches are accepted only for nullable GraphQL variables, while non-null variables reject any schema that admits `null`; all non-null branch compatibility checks remain unchanged.
@@ -309,6 +326,7 @@ Ready for Review
 - CR-3 accepted Attempt 3 boundaries preserved: no changes to the oracle bridge/scripts, Storefront compiler or artifact, discovery dispatch, Admin artifact/provenance, or query safety limits.
 
 #### Implementation Evidence
+
 - Implementation commit: `a6df0f193606bd14d31d3a46989ad284a81a6b3c`.
 - Implementation branch: `task/ARCH-021-COMMERCE-018`, local/remote parity at the implementation commit.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-018`.
@@ -317,6 +335,7 @@ Ready for Review
 - Artifact integrity preserved: `admin-2026-07.json` SHA-256 remains `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`, matching `admin-2026-07.provenance.json`.
 
 #### Attempt 4 Validation
+
 - `npm run test:arch021-shopify-admin-compiler`: PASS, 2 files and 22 tests.
 - `npm run validate:arch021-shopify-admin-oracle`: PASS; valid products, unknown field, unknown argument, mutation safety divergence, and wrong variable type all matched the expected local/upstream outcomes; local verdicts used the production compiler bridge.
 - Exact architect-requested `npm exec eslint` command over all compiler/discovery/scripts/tests: PASS with no warnings or errors.
@@ -327,19 +346,23 @@ Ready for Review
 - Implementation worktree was clean after commit and push; no live Shopify request, credential execution, mutation, or out-of-scope UI/publication work was performed.
 
 #### Attempt 4 Report State
+
 The task is ready for Architect Review. No downstream task was started.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted
 
 ### Review Notes
+
 Attempt 4 satisfies the complete remaining R2 correction contract. The compiler now preserves per-variable `mappingRequired` metadata from the GraphQL variable definition, permits omitted mappings for nullable variables and non-null variables with GraphQL defaults, still requires mappings for non-null variables without defaults, rejects unknown mapping keys, and preserves the accepted mapped input/literal compatibility rules. Nullable input-schema unions are accepted only for nullable GraphQL variables; non-null variables still reject any schema that admits `null`.
 
 The previously accepted Attempt 2/3 boundaries remain intact: the Dev MCP oracle gets every local verdict from the production Admin compiler through the bounded `vite-node` bridge; mapped enum/scalar/object/list compatibility remains fail-closed; Storefront behavior and explicit `storefront-graphql` / `admin-graphql` discovery dispatch are unchanged; `lib/discovery/schema.ts` is conflict-marker clean; and the committed Admin 2026-07 artifact still matches its recorded SHA-256 provenance exactly.
 
 ### Reviewed Files
+
 - `lib/discovery/admin-compiler.ts`
 - `scripts/validate-shopify-admin-oracle.mjs`
 - `scripts/validate-shopify-admin-local.ts`
@@ -350,6 +373,7 @@ The previously accepted Attempt 2/3 boundaries remain intact: the Dev MCP oracle
 - `docs/decisions/commerce/ARCH-021/COMMERCE-018-implement-shopify-admin-graphql-compiler.md`
 
 ### Validation Reviewed
+
 - `npm run test:arch021-shopify-admin-compiler`: PASS, 2 files / 22 tests.
 - Attempt 4 regressions prove omitted nullable variables are accepted, omitted non-null variables with GraphQL defaults are accepted, omitted required non-null variables are rejected, nullable input schemas are accepted for nullable GraphQL variables, and the same nullable schemas are rejected for non-null variables.
 - `npm run validate:arch021-shopify-admin-oracle`: PASS, all five bounded fixtures; local verdicts use the production compiler bridge.
@@ -361,9 +385,11 @@ The previously accepted Attempt 2/3 boundaries remain intact: the Dev MCP oracle
 - Implementation commit: `a6df0f193606bd14d31d3a46989ad284a81a6b3c`; parent report commit: `8d74e8b8`; implementation and parent worktrees reported clean and synchronized with their remotes.
 
 ### Architecture Conformance
+
 Conformant. R1-R8 are satisfied for the bounded Shopify Admin GraphQL authoring compiler. Validation is local/artifact-backed at runtime, query-only safety is preserved, optional/defaulted GraphQL variables follow GraphQL semantics without weakening required-variable checks, and the Dev MCP remains development conformance evidence only.
 
 ### Follow-up
+
 Mark `ARCH-021-COMMERCE-018` Complete. `ARCH-021-COMMERCE-024` remains Pending because `ARCH-021-COMMERCE-019` is still Ready rather than Complete. Do not start COMMERCE-024 from this acceptance.
 
 ## Developer Override

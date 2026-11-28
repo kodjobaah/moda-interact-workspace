@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 5
 depends_on:
-- ARCH-014-DATABASE-001
+  - ARCH-014-DATABASE-001
 enables:
-- ARCH-014-SYSTEM-TEST-001
+  - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -531,7 +531,6 @@ Status: Ready for Review; implementation commit pushed and claim cleared.
   pushed to `origin/task/ARCH-014-SHOPIFY-001`.
 - Parent report commit: `f5e43a0538fb97b10acc7d9ee4a439e5cb3e04b0`.
 - Claim cleared; task status set to `review`.
-
 
 ## Architect Review — Attempt 3
 

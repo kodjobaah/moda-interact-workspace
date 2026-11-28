@@ -90,10 +90,7 @@ test("generic endpoint appends /v1/logs", () => {
   delete process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT;
 
   try {
-    assert.equal(
-      resolveLogsEndpoint(),
-      "https://otel.example.test/v1/logs",
-    );
+    assert.equal(resolveLogsEndpoint(), "https://otel.example.test/v1/logs");
   } finally {
     if (previousGeneric === undefined) {
       delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;

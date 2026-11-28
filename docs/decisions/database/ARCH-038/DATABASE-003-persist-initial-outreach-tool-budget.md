@@ -104,6 +104,7 @@ Ready for Review — ARCH-038-DATABASE-003, attempt 1, executor codex.
 ### Files Changed
 
 Implementation commit `85c051a` on mirrored `task/ARCH-038-DATABASE-003`:
+
 - `prisma/migrations/20261111090000_arch038_initial_outreach_tool_call_budget/migration.sql`.
 - `scripts/test-arch038-model-policy-postgres.mjs`.
 - `scripts/validate-arch038-model-policy-schema.mjs`.
@@ -121,6 +122,7 @@ Implementation commit `85c051a` on mirrored `task/ARCH-038-DATABASE-003`:
 ### Validation Results
 
 Passed using workspace bootstrap Node24.19.0 / npm11.17.0:
+
 - `npm ci`; `node --check scripts/test-arch038-model-policy-postgres.mjs`.
 - `npm run test:arch038-model-policy-schema`: historical schema/ownership/audit invariants and new SQL transaction, exactly one function definition, bound/default/missing-only selector, trigger restoration ordering/checksum.
 - `npm run lint` (zero warnings); `npm run prisma:validate`; `npm run prisma:generate` (client6.19.3); `git diff --check` and task-owned whitelist/checksum comparison.

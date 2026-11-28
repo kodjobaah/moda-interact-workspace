@@ -15,19 +15,19 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-SHOPIFY-009
-- ARCH-010-SHOPIFY-013
-- ARCH-010-SHOPIFY-018
-- ARCH-010-SHOPIFY-014
-- ARCH-010-SHOPIFY-015
-- ARCH-010-SHOPIFY-007
-- ARCH-008-SHOPIFY-001
+  - ARCH-010-SHOPIFY-009
+  - ARCH-010-SHOPIFY-013
+  - ARCH-010-SHOPIFY-018
+  - ARCH-010-SHOPIFY-014
+  - ARCH-010-SHOPIFY-015
+  - ARCH-010-SHOPIFY-007
+  - ARCH-008-SHOPIFY-001
 enables:
-- ARCH-010-SHOPIFY-008
-- ARCH-010-SHOPIFY-016
-- ARCH-010-SHOPIFY-026
-- ARCH-010-SHOPIFY-020
-- ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-SHOPIFY-008
+  - ARCH-010-SHOPIFY-016
+  - ARCH-010-SHOPIFY-026
+  - ARCH-010-SHOPIFY-020
+  - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -308,9 +308,11 @@ STOP if `requestRecoveryCreditPack` cannot be reused without changing its accept
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `app/components/dashboard/BillingPurchaseHub.jsx`
 - `app/components/dashboard/SubscriptionChangePanel.jsx`
 - `app/i18n/locales/cs.json` through `app/i18n/locales/zh-Hant.json` (two Attempt-2 catalogue keys in all 20 merchant locales)
@@ -318,12 +320,14 @@ Ready for Review.
 - `tests/unit/subscription-change-panel.test.tsx`
 
 ### Work Completed
+
 - Preserved the accepted Attempt-1 production mechanics and implemented every Attempt-2 correction: Paid-included and lifetime-Free balances now render as separate ICU-formatted items, with promotional and purchased balances remaining separate.
 - Mapped provider verification failure to its dedicated merchant copy and unavailable current-plan value, while preserving mapping-specific copy for verified `UNMAPPED` contracts.
 - Added the exact provider-verification and configured-but-ineligible top-up messages to all 20 merchant catalogues; the Free top-up explanation is shown only for the required ACTIVE/missing-cycle conditions and remains suppressed for pending, FROZEN, DRAINING and RECONCILING states.
 - Capacity `null` now renders one bounded unavailable summary without fabricated zero balances. Added the required direct-render regression coverage; no route, service, provider, shared, database or lifecycle contract files were changed.
 
 ### Validation Results
+
 - Focused billing tests: `npm test -- --run tests/unit/billing-purchase-hub.test.tsx tests/unit/subscription-change-panel.test.tsx tests/unit/billing-ui.test.ts` -> 3 files passed, 25 tests passed.
 - Full tests: `npm test` -> 40 files passed, 2 skipped; 494 tests passed, 3 skipped.
 - Typecheck: `npm run typecheck` retains the documented unrelated JSX baseline diagnostics in dashboard/home/merchant-support/pending-recoveries/usage files; no diagnostics referenced Attempt-2 touched files.
@@ -331,6 +335,7 @@ Ready for Review.
 - Whitespace: `git diff --check` passed.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-012`
 - Implementation branch: `task/ARCH-010-SHOPIFY-012`
 - Implementation commits: `ee310ac` (`feat(shopify): integrate production billing options`) and `012b88e` (`fix(shopify): correct billing capacity presentation`), both pushed to `origin/task/ARCH-010-SHOPIFY-012`.
@@ -341,6 +346,7 @@ Ready for Review.
 ### Attempt-3 Correction Report
 
 #### Correction Mapping
+
 - Implemented the revised callback contract: mismatch and Partner-verification-failure redirects preserve only URL-encoded `requested_plan_handle`; verification-fence failure recording and bounded reconciliation scheduling remain unchanged.
 - Added bounded transient selection derivation in the options loader, with `mismatch`/`unverified` gating and suppression when fresh Shopify current or pending state confirms the handle.
 - Added explicit `requestedSelection` and `mappingStatus` composition. Confirmed current/pending plans remain authoritative; the transient target is greyed out, has only the raw handle plus localized waiting copy, and receives no price, cycle, allowance, credit or mutation semantics.
@@ -348,6 +354,7 @@ Ready for Review.
 - Added the exact awaiting-Shopify-confirmation catalogue key to all 20 merchant locales and focused regression coverage for redirect context and transient presentation.
 
 #### Files Changed
+
 - `app/routes/app/billing/callback/route.tsx`
 - `app/routes/app/billing/options/route.tsx`
 - `app/components/dashboard/BillingPurchaseHub.jsx`
@@ -359,6 +366,7 @@ Ready for Review.
 - `tests/unit/subscription-change-panel.test.tsx`
 
 #### Validation Results
+
 - Focused billing tests: `npm test -- --run tests/unit/routes/billing-callback.test.ts tests/unit/billing-purchase-hub.test.tsx tests/unit/subscription-change-panel.test.tsx tests/unit/billing-ui.test.ts` -> 4 files passed, 53 tests passed.
 - Full tests: `npm test` -> 40 files passed, 2 skipped; 495 tests passed, 3 skipped.
 - Typecheck: `npm run typecheck` exits nonzero only on the existing unrelated JSX implicit-any/session diagnostics in dashboard/home/merchant-support/pending-recoveries/usage files; no Attempt-3 touched file has a diagnostic.
@@ -366,24 +374,23 @@ Ready for Review.
 - Whitespace: `git diff --check` passed.
 
 #### Git / VCS
+
 - Implementation commit: `b15580e` (`fix(shopify): preserve hosted billing selection context`) pushed to `origin/task/ARCH-010-SHOPIFY-012`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-012`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-012`.
 - Launcher evidence: prepared Attempt 3 reused the exact canonical worktrees, passed all seven dependencies, initialized submodules, and durably claimed executor `copilot` before implementation.
 
 ### Architect Review
-Pending.
 
+Pending.
 
 ## Final lifecycle composition
 
 Compose SHOPIFY-018 lifecycle state with SHOPIFY-013 commercial state. A provider FROZEN result is neither `NO_ACTIVE_SUBSCRIPTION` nor ordinary verification failure. Render frozen billing-management state and keep mutations disabled until durable Background reconciliation restores an executable subscription.
 
-
 ## Final promotional balance composition
 
 When SHOPIFY-009 exposes promotional capacity, compose it into the production billing-options read model as a separate Moda-owned balance. Do not treat it as Shopify commercial truth, price it, make it purchasable/refundable, or expose internal grant provenance. SHOPIFY-020 owns the detailed merchant-facing wording/components.
-
 
 ## Architect Review — Attempt 1
 
@@ -555,28 +562,28 @@ When `capacity != null`, render the actual four independent Moda balances as des
 
 Use these strings exactly. Do not ask the implementation model to invent translations.
 
-| Locale | `billing.verificationUnavailableDescription` | `billingCommerce.topup.verificationUnavailable` |
-| --- | --- | --- |
-| `cs` | Nepodařilo se ověřit aktuální fakturační údaje Shopify. Změny fakturace jsou na této obrazovce vypnuté. Obnovte stránku a zkuste to znovu. | Nákup doplňkových kreditů není dostupný, dokud nebude ověřen aktuální fakturační cyklus a měřič kreditů pro obnovu. |
-| `da` | Vi kunne ikke bekræfte dine aktuelle Shopify-faktureringsoplysninger. Faktureringsændringer er deaktiveret på denne side. Genindlæs siden for at prøve igen. | Køb af ekstra kreditter er ikke tilgængeligt, før den aktuelle faktureringscyklus og måleren for genoprettelseskreditter er bekræftet. |
-| `de` | Wir konnten deine aktuellen Shopify-Abrechnungsdaten nicht bestätigen. Abrechnungsänderungen sind auf dieser Seite deaktiviert. Lade die Seite neu, um es erneut zu versuchen. | Der Kauf zusätzlicher Guthaben ist nicht verfügbar, bis der aktuelle Abrechnungszyklus und der Zähler für Wiederherstellungsguthaben bestätigt wurden. |
-| `en` | We couldn't verify your current Shopify billing details. Billing changes are disabled on this screen. Reload the page to try again. | Top-up purchase is unavailable until the current billing cycle and recovery-credit meter are verified. |
-| `es` | No pudimos verificar los datos de facturación actuales de Shopify. Los cambios de facturación están deshabilitados en esta pantalla. Recarga la página para volver a intentarlo. | La compra de créditos adicionales no está disponible hasta que se verifiquen el ciclo de facturación actual y el medidor de créditos de recuperación. |
-| `fi` | Emme voineet vahvistaa nykyisiä Shopify-laskutustietojasi. Laskutusmuutokset on poistettu käytöstä tällä näytöllä. Lataa sivu uudelleen ja yritä uudelleen. | Lisäkrediittien ostaminen ei ole käytettävissä, ennen kuin nykyinen laskutusjakso ja palautuskrediittien mittari on vahvistettu. |
-| `fr` | Nous n’avons pas pu vérifier vos informations de facturation Shopify actuelles. Les modifications de facturation sont désactivées sur cet écran. Rechargez la page pour réessayer. | L’achat de crédits supplémentaires n’est pas disponible tant que le cycle de facturation actuel et le compteur de crédits de récupération ne sont pas vérifiés. |
-| `it` | Non è stato possibile verificare i dati di fatturazione Shopify correnti. Le modifiche alla fatturazione sono disabilitate in questa schermata. Ricarica la pagina per riprovare. | L’acquisto di crediti aggiuntivi non è disponibile finché non vengono verificati il ciclo di fatturazione corrente e il contatore dei crediti di recupero. |
-| `ja` | 現在の Shopify 請求情報を確認できませんでした。この画面では請求に関する変更が無効になっています。ページを再読み込みして、もう一度お試しください。 | 現在の請求サイクルとリカバリークレジットメーターが確認されるまで、追加クレジットを購入できません。 |
-| `ko` | 현재 Shopify 결제 정보를 확인할 수 없습니다. 이 화면에서는 결제 변경이 비활성화되어 있습니다. 페이지를 새로고침한 후 다시 시도하세요. | 현재 결제 주기와 복구 크레딧 미터가 확인될 때까지 추가 크레딧을 구매할 수 없습니다. |
-| `nb` | Vi kunne ikke bekrefte de gjeldende Shopify-faktureringsopplysningene dine. Faktureringsendringer er deaktivert på denne siden. Last inn siden på nytt for å prøve igjen. | Kjøp av ekstra kreditter er ikke tilgjengelig før gjeldende faktureringssyklus og måleren for gjenopprettingskreditter er bekreftet. |
-| `nl` | We konden je huidige Shopify-factureringsgegevens niet verifiëren. Factureringswijzigingen zijn op dit scherm uitgeschakeld. Laad de pagina opnieuw om het opnieuw te proberen. | Extra credits kopen is niet beschikbaar totdat de huidige factureringscyclus en de meter voor herstelcredits zijn geverifieerd. |
-| `pl` | Nie udało się zweryfikować bieżących danych rozliczeniowych Shopify. Zmiany rozliczeń są wyłączone na tym ekranie. Odśwież stronę, aby spróbować ponownie. | Zakup dodatkowych kredytów jest niedostępny, dopóki bieżący cykl rozliczeniowy i licznik kredytów odzyskiwania nie zostaną zweryfikowane. |
-| `pt-BR` | Não foi possível verificar seus dados atuais de cobrança da Shopify. As alterações de cobrança estão desativadas nesta tela. Recarregue a página para tentar novamente. | A compra de créditos adicionais não está disponível até que o ciclo de cobrança atual e o medidor de créditos de recuperação sejam verificados. |
-| `pt-PT` | Não foi possível verificar os seus dados atuais de faturação da Shopify. As alterações de faturação estão desativadas neste ecrã. Recarregue a página para tentar novamente. | A compra de créditos adicionais não está disponível até que o ciclo de faturação atual e o medidor de créditos de recuperação sejam verificados. |
-| `sv` | Vi kunde inte verifiera dina aktuella Shopify-faktureringsuppgifter. Faktureringsändringar är inaktiverade på den här sidan. Ladda om sidan och försök igen. | Köp av extra krediter är inte tillgängligt förrän den aktuella faktureringscykeln och mätaren för återställningskrediter har verifierats. |
-| `th` | เราไม่สามารถยืนยันข้อมูลการเรียกเก็บเงิน Shopify ปัจจุบันของคุณได้ การเปลี่ยนแปลงการเรียกเก็บเงินถูกปิดใช้งานบนหน้าจอนี้ โปรดโหลดหน้าใหม่แล้วลองอีกครั้ง | ยังไม่สามารถซื้อเครดิตเพิ่มเติมได้จนกว่าจะยืนยันรอบการเรียกเก็บเงินปัจจุบันและมิเตอร์เครดิตการกู้คืนแล้ว |
-| `tr` | Mevcut Shopify faturalandırma bilgilerinizi doğrulayamadık. Bu ekranda faturalandırma değişiklikleri devre dışı bırakıldı. Yeniden denemek için sayfayı yenileyin. | Mevcut faturalandırma dönemi ve kurtarma kredisi sayacı doğrulanana kadar ek kredi satın alınamaz. |
-| `zh-Hans` | 我们无法验证您当前的 Shopify 账单信息。此页面已禁用账单更改。请重新加载页面后重试。 | 在当前账单周期和恢复额度计量项验证完成之前，无法购买额外额度。 |
-| `zh-Hant` | 我們無法驗證您目前的 Shopify 帳單資訊。此頁面已停用帳單變更。請重新載入頁面後再試一次。 | 在目前的帳單週期和恢復額度計量項驗證完成之前，無法購買額外額度。 |
+| Locale    | `billing.verificationUnavailableDescription`                                                                                                                                       | `billingCommerce.topup.verificationUnavailable`                                                                                                                 |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cs`      | Nepodařilo se ověřit aktuální fakturační údaje Shopify. Změny fakturace jsou na této obrazovce vypnuté. Obnovte stránku a zkuste to znovu.                                         | Nákup doplňkových kreditů není dostupný, dokud nebude ověřen aktuální fakturační cyklus a měřič kreditů pro obnovu.                                             |
+| `da`      | Vi kunne ikke bekræfte dine aktuelle Shopify-faktureringsoplysninger. Faktureringsændringer er deaktiveret på denne side. Genindlæs siden for at prøve igen.                       | Køb af ekstra kreditter er ikke tilgængeligt, før den aktuelle faktureringscyklus og måleren for genoprettelseskreditter er bekræftet.                          |
+| `de`      | Wir konnten deine aktuellen Shopify-Abrechnungsdaten nicht bestätigen. Abrechnungsänderungen sind auf dieser Seite deaktiviert. Lade die Seite neu, um es erneut zu versuchen.     | Der Kauf zusätzlicher Guthaben ist nicht verfügbar, bis der aktuelle Abrechnungszyklus und der Zähler für Wiederherstellungsguthaben bestätigt wurden.          |
+| `en`      | We couldn't verify your current Shopify billing details. Billing changes are disabled on this screen. Reload the page to try again.                                                | Top-up purchase is unavailable until the current billing cycle and recovery-credit meter are verified.                                                          |
+| `es`      | No pudimos verificar los datos de facturación actuales de Shopify. Los cambios de facturación están deshabilitados en esta pantalla. Recarga la página para volver a intentarlo.   | La compra de créditos adicionales no está disponible hasta que se verifiquen el ciclo de facturación actual y el medidor de créditos de recuperación.           |
+| `fi`      | Emme voineet vahvistaa nykyisiä Shopify-laskutustietojasi. Laskutusmuutokset on poistettu käytöstä tällä näytöllä. Lataa sivu uudelleen ja yritä uudelleen.                        | Lisäkrediittien ostaminen ei ole käytettävissä, ennen kuin nykyinen laskutusjakso ja palautuskrediittien mittari on vahvistettu.                                |
+| `fr`      | Nous n’avons pas pu vérifier vos informations de facturation Shopify actuelles. Les modifications de facturation sont désactivées sur cet écran. Rechargez la page pour réessayer. | L’achat de crédits supplémentaires n’est pas disponible tant que le cycle de facturation actuel et le compteur de crédits de récupération ne sont pas vérifiés. |
+| `it`      | Non è stato possibile verificare i dati di fatturazione Shopify correnti. Le modifiche alla fatturazione sono disabilitate in questa schermata. Ricarica la pagina per riprovare.  | L’acquisto di crediti aggiuntivi non è disponibile finché non vengono verificati il ciclo di fatturazione corrente e il contatore dei crediti di recupero.      |
+| `ja`      | 現在の Shopify 請求情報を確認できませんでした。この画面では請求に関する変更が無効になっています。ページを再読み込みして、もう一度お試しください。                                  | 現在の請求サイクルとリカバリークレジットメーターが確認されるまで、追加クレジットを購入できません。                                                              |
+| `ko`      | 현재 Shopify 결제 정보를 확인할 수 없습니다. 이 화면에서는 결제 변경이 비활성화되어 있습니다. 페이지를 새로고침한 후 다시 시도하세요.                                              | 현재 결제 주기와 복구 크레딧 미터가 확인될 때까지 추가 크레딧을 구매할 수 없습니다.                                                                             |
+| `nb`      | Vi kunne ikke bekrefte de gjeldende Shopify-faktureringsopplysningene dine. Faktureringsendringer er deaktivert på denne siden. Last inn siden på nytt for å prøve igjen.          | Kjøp av ekstra kreditter er ikke tilgjengelig før gjeldende faktureringssyklus og måleren for gjenopprettingskreditter er bekreftet.                            |
+| `nl`      | We konden je huidige Shopify-factureringsgegevens niet verifiëren. Factureringswijzigingen zijn op dit scherm uitgeschakeld. Laad de pagina opnieuw om het opnieuw te proberen.    | Extra credits kopen is niet beschikbaar totdat de huidige factureringscyclus en de meter voor herstelcredits zijn geverifieerd.                                 |
+| `pl`      | Nie udało się zweryfikować bieżących danych rozliczeniowych Shopify. Zmiany rozliczeń są wyłączone na tym ekranie. Odśwież stronę, aby spróbować ponownie.                         | Zakup dodatkowych kredytów jest niedostępny, dopóki bieżący cykl rozliczeniowy i licznik kredytów odzyskiwania nie zostaną zweryfikowane.                       |
+| `pt-BR`   | Não foi possível verificar seus dados atuais de cobrança da Shopify. As alterações de cobrança estão desativadas nesta tela. Recarregue a página para tentar novamente.            | A compra de créditos adicionais não está disponível até que o ciclo de cobrança atual e o medidor de créditos de recuperação sejam verificados.                 |
+| `pt-PT`   | Não foi possível verificar os seus dados atuais de faturação da Shopify. As alterações de faturação estão desativadas neste ecrã. Recarregue a página para tentar novamente.       | A compra de créditos adicionais não está disponível até que o ciclo de faturação atual e o medidor de créditos de recuperação sejam verificados.                |
+| `sv`      | Vi kunde inte verifiera dina aktuella Shopify-faktureringsuppgifter. Faktureringsändringar är inaktiverade på den här sidan. Ladda om sidan och försök igen.                       | Köp av extra krediter är inte tillgängligt förrän den aktuella faktureringscykeln och mätaren för återställningskrediter har verifierats.                       |
+| `th`      | เราไม่สามารถยืนยันข้อมูลการเรียกเก็บเงิน Shopify ปัจจุบันของคุณได้ การเปลี่ยนแปลงการเรียกเก็บเงินถูกปิดใช้งานบนหน้าจอนี้ โปรดโหลดหน้าใหม่แล้วลองอีกครั้ง                           | ยังไม่สามารถซื้อเครดิตเพิ่มเติมได้จนกว่าจะยืนยันรอบการเรียกเก็บเงินปัจจุบันและมิเตอร์เครดิตการกู้คืนแล้ว                                                        |
+| `tr`      | Mevcut Shopify faturalandırma bilgilerinizi doğrulayamadık. Bu ekranda faturalandırma değişiklikleri devre dışı bırakıldı. Yeniden denemek için sayfayı yenileyin.                 | Mevcut faturalandırma dönemi ve kurtarma kredisi sayacı doğrulanana kadar ek kredi satın alınamaz.                                                              |
+| `zh-Hans` | 我们无法验证您当前的 Shopify 账单信息。此页面已禁用账单更改。请重新加载页面后重试。                                                                                                | 在当前账单周期和恢复额度计量项验证完成之前，无法购买额外额度。                                                                                                  |
+| `zh-Hant` | 我們無法驗證您目前的 Shopify 帳單資訊。此頁面已停用帳單變更。請重新載入頁面後再試一次。                                                                                            | 在目前的帳單週期和恢復額度計量項驗證完成之前，無法購買額外額度。                                                                                                |
 
 ### Attempt 2 allowed files
 
@@ -709,8 +716,6 @@ claimed_at: null
 The next `/moda-task ARCH-010-SHOPIFY-012` claim MUST increment to Attempt 2 exactly once.
 
 Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-016`, `ARCH-010-SHOPIFY-026`, `ARCH-010-SHOPIFY-020` or `ARCH-010-SYSTEM-TEST-001` from this review.
-
-
 
 ## Architect Review — Attempt 2 (Revised after flow clarification)
 
@@ -1006,28 +1011,28 @@ This is the only part of the earlier provisional `UNMAPPED` review that remains 
 
 Add this key to all 20 merchant catalogues exactly as follows:
 
-| Locale | `billingCommerce.plans.awaitingShopifyConfirmation` |
-| --- | --- |
-| `cs` | Čekáme na potvrzení od Shopify. |
-| `da` | Venter på bekræftelse fra Shopify. |
-| `de` | Warten auf Bestätigung von Shopify. |
-| `en` | Waiting for confirmation from Shopify. |
-| `es` | Esperando la confirmación de Shopify. |
-| `fi` | Odotetaan vahvistusta Shopifylta. |
-| `fr` | En attente de confirmation de Shopify. |
-| `it` | In attesa della conferma di Shopify. |
-| `ja` | Shopify からの確認を待っています。 |
-| `ko` | Shopify 확인을 기다리는 중입니다. |
-| `nb` | Venter på bekreftelse fra Shopify. |
-| `nl` | Wachten op bevestiging van Shopify. |
-| `pl` | Oczekiwanie na potwierdzenie od Shopify. |
-| `pt-BR` | Aguardando confirmação da Shopify. |
-| `pt-PT` | A aguardar confirmação da Shopify. |
-| `sv` | Väntar på bekräftelse från Shopify. |
-| `th` | กำลังรอการยืนยันจาก Shopify |
-| `tr` | Shopify onayı bekleniyor. |
-| `zh-Hans` | 正在等待 Shopify 确认。 |
-| `zh-Hant` | 正在等待 Shopify 確認。 |
+| Locale    | `billingCommerce.plans.awaitingShopifyConfirmation` |
+| --------- | --------------------------------------------------- |
+| `cs`      | Čekáme na potvrzení od Shopify.                     |
+| `da`      | Venter på bekræftelse fra Shopify.                  |
+| `de`      | Warten auf Bestätigung von Shopify.                 |
+| `en`      | Waiting for confirmation from Shopify.              |
+| `es`      | Esperando la confirmación de Shopify.               |
+| `fi`      | Odotetaan vahvistusta Shopifylta.                   |
+| `fr`      | En attente de confirmation de Shopify.              |
+| `it`      | In attesa della conferma di Shopify.                |
+| `ja`      | Shopify からの確認を待っています。                  |
+| `ko`      | Shopify 확인을 기다리는 중입니다.                   |
+| `nb`      | Venter på bekreftelse fra Shopify.                  |
+| `nl`      | Wachten op bevestiging van Shopify.                 |
+| `pl`      | Oczekiwanie na potwierdzenie od Shopify.            |
+| `pt-BR`   | Aguardando confirmação da Shopify.                  |
+| `pt-PT`   | A aguardar confirmação da Shopify.                  |
+| `sv`      | Väntar på bekräftelse från Shopify.                 |
+| `th`      | กำลังรอการยืนยันจาก Shopify                         |
+| `tr`      | Shopify onayı bekleniyor.                           |
+| `zh-Hans` | 正在等待 Shopify 确认。                             |
+| `zh-Hant` | 正在等待 Shopify 確認。                             |
 
 Do not ask the implementation model to invent translations.
 
@@ -1295,8 +1300,7 @@ derive exactly:
 
 ```ts
 const mappingUnavailable =
-  verificationState === "ACTIVE_SUBSCRIPTION" &&
-  mappingStatus === "UNMAPPED";
+  verificationState === "ACTIVE_SUBSCRIPTION" && mappingStatus === "UNMAPPED";
 ```
 
 The page-level explanatory copy must use:
@@ -1418,4 +1422,3 @@ claimed_at: null
 The next `/moda-task ARCH-010-SHOPIFY-012` claim MUST increment to Attempt 4 exactly once.
 
 Do not start `ARCH-010-SHOPIFY-008`, `ARCH-010-SHOPIFY-016`, `ARCH-010-SHOPIFY-026`, `ARCH-010-SHOPIFY-020` or `ARCH-010-SYSTEM-TEST-001` from this review.
-

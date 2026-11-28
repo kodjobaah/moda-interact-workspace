@@ -166,6 +166,7 @@ Produces the authoritative External HTTP validation/preview boundary consumed by
 - [x] Validation creates no evidence that can satisfy the Phase 3 publication gate.
 
 ### Validation
+
 - [x] `npm run test:arch021-external-tool-authoring-validation` (2 files, 37 tests passed, zero skipped)
 - [x] `npm run test:arch020-external-publication` (1 file, 13 tests passed)
 - [x] required Commerce-016/017/019 contract and authorization suite (6 files, 42 tests passed)
@@ -185,9 +186,11 @@ Keep historical fixture utilities available for automated regressions only; they
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `package.json`
 - `src/commerce/integration/external/index.ts`
 - `src/commerce/tool-authoring/external-validation.ts`
@@ -196,6 +199,7 @@ Ready for Review
 - `tests/external-tool-authoring-server-actions.test.ts`
 
 ### Work Completed
+
 - Added authoritative, zero-provider-I/O EXTERNAL_HTTP definition validation with canonical schema parsing, immutable connection-revision metadata checks, request/response processor compilation, visual/DIRECT structural validation, and bounded common authoring issues.
 - Added the platform-role-authorized request-construction Server Action. It validates CommerceAgent arguments before declarative or JavaScript construction, returns only the safe external request descriptor, and maps explicit action errors without creating mutation evidence.
 - Exposed the validator through the existing external integration facade without adding a transport, credential, or publication receipt path.
@@ -205,6 +209,7 @@ Ready for Review
 - Attempt 3 adds the canonical 16,384 UTF-8-byte preview-source ceiling, representative forbidden top-level DTO rejection, missing/invalid/absent JavaScript descriptor coverage, full-definition compiler infrastructure error classification, LIST projection diagnostics, and credential-read non-access proof.
 
 ### Validation Results
+
 - Fresh Attempt 3 launcher packet: prepare succeeded with `prepared_execution: true`, `status: in_progress`, dependency gate passed, execution state claimed, and claim commit `29ef7fabe444984963f617c826aef8d7d9b6d06b` pushed. Claim changed status from `ready` to `in_progress`, incremented attempt from 2 to 3, and recorded executor `copilot` at `2026-09-25T14:39:30Z`.
 - Start synchronization evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, was reused at launcher head `76c461c4617ff402fe75d9fb65666bde48579b71`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, was reused at launcher head `3874a282ce400dac444aa86e9f4a4ce0431b9358`; both incorporated current `origin/main` and required no task-branch fast-forward.
 - Recursive submodule evidence: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; recursive status was ready and database submodule commit was `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
@@ -218,23 +223,28 @@ Ready for Review
 - Final parent report publication: parent branch remains `task/ARCH-021-COMMERCE-023`; the final report commit is published after this reconciliation, with local/remote parity and a clean parent worktree recorded at handoff.
 
 ### Deviations
+
 - None from the bounded Commerce-023 scope. No Shopify Admin validation, live HTTP request, credential display/decryption, live-test receipt, or Tool UI was added.
 
 ### Assumptions
+
 - The existing `requireStudioPlatformRole('ADMIN')` hierarchy helper is the authoritative admission contract for platform administrators and super administrators and denial for merchant roles.
 - The Attempt 3 implementation branch commit is `1b1e3484eb4446c5ae2e002ec7f85706c073a2db`.
 
 ### Unresolved Issues
+
 - Repository-wide typecheck remains non-zero because of 15 unrelated existing diagnostics in untouched files: the code-response preview route imports, agent-configuration tests, C20 fixture test, external wiring test, local MCP diagnostic test, and selected-shop-context tests.
 - Repository-wide typecheck remains non-zero because of 15 unrelated existing diagnostics in untouched preview, agent-configuration, C20 fixture, external-wiring, local MCP diagnostic, and selected-shop-context files.
 - No C023-owned unresolved issue remains. The previously recorded Commerce-013 integration failures were not part of the Attempt 3 required validation command and remain outside this task-owned diff.
 
 ### Architectural Concerns
+
 No new architectural concerns. Attempt 3 preserves the accepted Attempt 2 behavior and adds the canonical UTF-8 source bound, complete preview invalid-input proofs, full-definition runtime classification, credential boundary proof, and LIST projection coverage.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 3
 
 ### Review Notes
@@ -395,14 +405,14 @@ tests/external-tool-authoring-server-actions.test.ts
 The current preview DTO uses:
 
 ```ts
-source: z.string().max(16_384).optional()
+source: z.string().max(16_384).optional();
 ```
 
 `z.string().max()` bounds JavaScript string length, not UTF-8 bytes. COMMERCE-016
 defines the persisted request-JavaScript source ceiling as:
 
 ```ts
-new TextEncoder().encode(source).length <= 16_384
+new TextEncoder().encode(source).length <= 16_384;
 ```
 
 The preview trust boundary MUST use the same observable ceiling.

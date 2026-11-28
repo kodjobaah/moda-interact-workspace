@@ -181,7 +181,6 @@ None. Phase-1 repository formatting tasks are intentionally independent.
 - [ ] `npm run build`
 - [ ] `git diff --check`
 
-
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set

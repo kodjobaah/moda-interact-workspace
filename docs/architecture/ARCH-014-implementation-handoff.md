@@ -85,7 +85,6 @@ This delta defines tasks against the supplied 2026-09-15 current snapshot in whi
 
 DATABASE-002 is accepted on the implemented runtime/database contract. Broader SQL-spelling mutation coverage in `validate-arch014-plan-highlights.mjs` is optional tooling hardening and does not gate ADMIN-004, SHOPIFY-002 or SYSTEM-TEST-001.
 
-
 ## Post-ADMIN-005 queued work (15 Sep 2026)
 
 The following tasks supersede any previously generated but unapplied standalone ADMIN-006 overlay:
@@ -120,7 +119,6 @@ ARCH-014-SYSTEM-TEST-003 READY
 ```
 
 `BACKGROUND-005` is architect-accepted Complete. The automatic Background implementation frontier is now empty. `SYSTEM-TEST-003` is Ready and remains terminal/developer-gated; it must be invoked explicitly to validate live multi-replica lease/concurrency convergence, including shared-Redis fleet caps and active-job cap decreases.
-
 
 ## Corrective runtime-control frontier (16 Sep 2026 snapshot audit)
 

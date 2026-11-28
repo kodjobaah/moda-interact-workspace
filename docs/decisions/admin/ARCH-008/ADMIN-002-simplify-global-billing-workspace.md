@@ -365,30 +365,30 @@ Review
 Task branch: `task/ARCH-008-ADMIN-002`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-002`
-  parent branch: `task/ARCH-008-ADMIN-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-002`
-  implementation branch: `task/ARCH-008-ADMIN-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-002`
+parent branch: `task/ARCH-008-ADMIN-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-002`
+implementation branch: `task/ARCH-008-ADMIN-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent origin/main incorporated: already-current
-  implementation origin/main incorporated: already-current
+parent origin/main incorporated: already-current
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-admin`
-  commit: `52440be`
-  remote branch: `origin/task/ARCH-008-ADMIN-002`
-  pushed: yes
+repository: `moda-interact-admin`
+commit: `52440be`
+remote branch: `origin/task/ARCH-008-ADMIN-002`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/admin/ARCH-008/ADMIN-002-simplify-global-billing-workspace.md`
-  claim commit: `322b602`
-  remote branch: `origin/task/ARCH-008-ADMIN-002`
-  pushed: yes
+task file: `docs/decisions/admin/ARCH-008/ADMIN-002-simplify-global-billing-workspace.md`
+claim commit: `322b602`
+remote branch: `origin/task/ARCH-008-ADMIN-002`
+pushed: yes
 
 ### Validation Results
 

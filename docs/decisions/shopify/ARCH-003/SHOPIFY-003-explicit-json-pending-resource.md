@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
+
 # Make pending-recovery resource an explicit JSON response
 
 ## Architecture
@@ -130,9 +131,7 @@ Conceptually:
 ```js
 return Response.json({
   pendingRecoveries,
-  refreshedAt: pendingRecoveries.available
-    ? new Date().toISOString()
-    : null,
+  refreshedAt: pendingRecoveries.available ? new Date().toISOString() : null,
 });
 ```
 
@@ -150,8 +149,8 @@ The body must be consumable with an ordinary browser:
 const result = await fetch("/app/pending-recoveries?pendingPage=1");
 const data = await result.json();
 
-data.pendingRecoveries
-data.refreshedAt
+data.pendingRecoveries;
+data.refreshedAt;
 ```
 
 without React Router/Turbo Stream decoding.
@@ -318,9 +317,7 @@ The resource route now returns:
 ```js
 Response.json({
   pendingRecoveries,
-  refreshedAt: pendingRecoveries.available
-    ? new Date().toISOString()
-    : null,
+  refreshedAt: pendingRecoveries.available ? new Date().toISOString() : null,
 });
 ```
 
@@ -382,4 +379,3 @@ The source-level resource encoding blocker for
 `ARCH-003-SYSTEM-TEST-002` remains Blocked only on developer-owned deployed
 live evidence. After this Shopify change is deployed, rerun the existing CDP
 collector against the authenticated merchant app.
-

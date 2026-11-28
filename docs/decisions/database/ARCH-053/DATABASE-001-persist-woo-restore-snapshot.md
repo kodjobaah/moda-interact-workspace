@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-053-API-002
-- ARCH-053-BACKGROUND-002
+  - ARCH-053-API-002
+  - ARCH-053-BACKGROUND-002
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -126,13 +126,13 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 **New database field:**
 
-| Layer | Exact name/type | Semantics |
-|---|---|---|
-| Prisma | `CheckoutRecovery.wooRestoreSnapshot: Prisma.JsonValue \| null` | `Json?` column, absent when no evidence |
-| PostgreSQL | `commerce."CheckoutRecovery"."wooRestoreSnapshot" JSONB NULL` | SQL NULL by default; no index or default |
-| Background writer | `ARCH-053-BACKGROUND-002` | Sets validated snapshot **on admission** for the correct shop/checkout/generation |
-| Hosted API reader | `ARCH-053-API-002` | Reads only after authenticating shop and resolving eligible generation |
-| Schema authority | `ARCH-053-SHARED-001` | `WooCartRestoreSnapshotV1Schema`; Database does not duplicate it |
+| Layer             | Exact name/type                                                 | Semantics                                                                         |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Prisma            | `CheckoutRecovery.wooRestoreSnapshot: Prisma.JsonValue \| null` | `Json?` column, absent when no evidence                                           |
+| PostgreSQL        | `commerce."CheckoutRecovery"."wooRestoreSnapshot" JSONB NULL`   | SQL NULL by default; no index or default                                          |
+| Background writer | `ARCH-053-BACKGROUND-002`                                       | Sets validated snapshot **on admission** for the correct shop/checkout/generation |
+| Hosted API reader | `ARCH-053-API-002`                                              | Reads only after authenticating shop and resolving eligible generation            |
+| Schema authority  | `ARCH-053-SHARED-001`                                           | `WooCartRestoreSnapshotV1Schema`; Database does not duplicate it                  |
 
 **Representative persisted JSON fixtures** (illustrative test values that conform to the planned Shared v1 structure):
 

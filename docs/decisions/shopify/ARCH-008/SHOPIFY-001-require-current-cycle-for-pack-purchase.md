@@ -351,37 +351,37 @@ Task branch: `task/ARCH-008-SHOPIFY-001`
 
 Physical worktree isolation:
 
-   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-   parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-SHOPIFY-001`
-   parent branch: `task/ARCH-008-SHOPIFY-001`
-   implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-SHOPIFY-001`
-   implementation branch: `task/ARCH-008-SHOPIFY-001`
-   shared workspace checkout switched/mutated for task work: no
-   shared implementation checkout switched/mutated for task work: no
-   another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-SHOPIFY-001`
+parent branch: `task/ARCH-008-SHOPIFY-001`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-SHOPIFY-001`
+implementation branch: `task/ARCH-008-SHOPIFY-001`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
 
-   parent remote task branch fast-forward: already up to date
-   parent `origin/main` merge: already unnecessary
-   implementation remote task branch fast-forward: already up to date
-   implementation `origin/main` merge: already unnecessary
-   unexpected divergence/conflict: none
+parent remote task branch fast-forward: already up to date
+parent `origin/main` merge: already unnecessary
+implementation remote task branch fast-forward: already up to date
+implementation `origin/main` merge: already unnecessary
+unexpected divergence/conflict: none
 
 Implementation repository:
 
-   repository: `moda-interact`
-   correction commit: `3960b75`
-   remote branch: `origin/task/ARCH-008-SHOPIFY-001`
-   pushed: yes
+repository: `moda-interact`
+correction commit: `3960b75`
+remote branch: `origin/task/ARCH-008-SHOPIFY-001`
+pushed: yes
 
 Parent workspace:
 
-   task file: `docs/decisions/shopify/ARCH-008/SHOPIFY-001-require-current-cycle-for-pack-purchase.md`
-   claim commit: `5482bf8`
-   remote branch: `origin/task/ARCH-008-SHOPIFY-001`
-   completion-report commit: pending
-   submodule gitlink staged: no
+task file: `docs/decisions/shopify/ARCH-008/SHOPIFY-001-require-current-cycle-for-pack-purchase.md`
+claim commit: `5482bf8`
+remote branch: `origin/task/ARCH-008-SHOPIFY-001`
+completion-report commit: pending
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -415,7 +415,7 @@ Required corrections for Attempt 2:
      boundaries.
 
    The current implementation combines local and provider validation in
-   `hasMatchingBillingCycle()` only *after* the provider call. This violates the
+   `hasMatchingBillingCycle()` only _after_ the provider call. This violates the
    task's required ordering and causes a locally invalid request to contact
    Shopify unnecessarily. Add a regression proving the provider is not called
    when local durable-cycle admission fails.
@@ -507,6 +507,5 @@ incomplete, and mandatory worktree evidence is absent.
 
 ### Follow-up
 
-Return `ARCH-008-SHOPIFY-001` to the same `moda_app` execution path for Attempt
-2. `ARCH-008-BACKGROUND-002` remains Pending until this task is architect-
+Return `ARCH-008-SHOPIFY-001` to the same `moda_app` execution path for Attempt 2. `ARCH-008-BACKGROUND-002` remains Pending until this task is architect-
 accepted Complete.

@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-011
 enables:
-- ARCH-057-SYSTEM-TEST-001
+  - ARCH-057-SYSTEM-TEST-001
 created: 2026-11-04
 updated: 2026-11-05
 ---
@@ -46,21 +46,21 @@ Paths relative to `moda-interact`.
 
 ### Existing files to modify
 
-| Path | Exact change |
-|---|---|
-| `app/services/webhooks/webhook-normalization-utils.ts` | Replace task-ID comment with its normalization responsibility |
-| `app/services/platform-configuration/contracts.server.ts` | Replace architecture-ID comment with server-only configuration ownership/security rule |
-| `app/services/platform-configuration/seal.server.ts` | Replace ADMIN-002 comment with the actual AAD field/ordering contract; keep that unrelated encryption contract unchanged |
-| `app/services/recoveries/recovery-follow-up-catalogue.server.ts` | Replace ADMIN-003 comment with SOURCE_SAVED draft provenance |
-| `app/services/platform-configuration/composition.server.ts` | Replace SHOPIFY-002 comment with service composition description |
-| `app/services/merchant-knowledge/r2-config.server.ts` | Replace two SHOPIFY-001 references with sealed operation-scoped configuration semantics |
-| `app/services/recoveries/recovery-follow-up-sender.server.ts` | Replace architecture reference with configuration/AAD ownership description |
-| `app/services/recoveries/recovery-human-commands.server.ts` | State actual Shop→Conversation→command/attempt ordering without DATABASE-001 label |
-| `app/services/billing/shopify-billing-operation.service.ts` | Replace exactly the three hash namespace literals using the fixed map below; retain current input validation, field order, framing, algorithms and operation behaviour |
-| `tests/unit/services/billing/shopify-billing-operation.service.test.ts` | Update any affected expected keys/fingerprints and prove fresh canonical operation replay through the actual service |
-| `tests/integration/billing-activation.postgres.integration.test.ts` | Prerequisite-created suite: use fresh canonical fixtures and assert initial-operation replay still creates one operation/grant |
-| `tests/integration/recovery-credit-purchases.postgres.integration.test.ts` | Prerequisite-created suite: use fresh canonical fixtures and assert purchase replay and fingerprint-conflict semantics |
-| `package.json` | Add the naming and identity commands below |
+| Path                                                                       | Exact change                                                                                                                                                           |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/webhooks/webhook-normalization-utils.ts`                     | Replace task-ID comment with its normalization responsibility                                                                                                          |
+| `app/services/platform-configuration/contracts.server.ts`                  | Replace architecture-ID comment with server-only configuration ownership/security rule                                                                                 |
+| `app/services/platform-configuration/seal.server.ts`                       | Replace ADMIN-002 comment with the actual AAD field/ordering contract; keep that unrelated encryption contract unchanged                                               |
+| `app/services/recoveries/recovery-follow-up-catalogue.server.ts`           | Replace ADMIN-003 comment with SOURCE_SAVED draft provenance                                                                                                           |
+| `app/services/platform-configuration/composition.server.ts`                | Replace SHOPIFY-002 comment with service composition description                                                                                                       |
+| `app/services/merchant-knowledge/r2-config.server.ts`                      | Replace two SHOPIFY-001 references with sealed operation-scoped configuration semantics                                                                                |
+| `app/services/recoveries/recovery-follow-up-sender.server.ts`              | Replace architecture reference with configuration/AAD ownership description                                                                                            |
+| `app/services/recoveries/recovery-human-commands.server.ts`                | State actual Shop→Conversation→command/attempt ordering without DATABASE-001 label                                                                                     |
+| `app/services/billing/shopify-billing-operation.service.ts`                | Replace exactly the three hash namespace literals using the fixed map below; retain current input validation, field order, framing, algorithms and operation behaviour |
+| `tests/unit/services/billing/shopify-billing-operation.service.test.ts`    | Update any affected expected keys/fingerprints and prove fresh canonical operation replay through the actual service                                                   |
+| `tests/integration/billing-activation.postgres.integration.test.ts`        | Prerequisite-created suite: use fresh canonical fixtures and assert initial-operation replay still creates one operation/grant                                         |
+| `tests/integration/recovery-credit-purchases.postgres.integration.test.ts` | Prerequisite-created suite: use fresh canonical fixtures and assert purchase replay and fingerprint-conflict semantics                                                 |
+| `package.json`                                                             | Add the naming and identity commands below                                                                                                                             |
 
 Audit final `app/**` source, actual production configuration, entry files and deployment scripts for architecture-labelled runtime filenames, symbols, events, environment/queue/route names and comments. Earlier tasks already require domain names. Return any undeclared predecessor naming defect for its owning correction; do not create a permanent allowlist.
 
@@ -82,11 +82,11 @@ No schema/migration/history renaming, task renumbering, unrelated public DTO/API
 
 Use this exact canonical map in `shopify-billing-operation.service.ts`:
 
-| Current literal to remove | Sole canonical replacement |
-|---|---|
+| Current literal to remove          | Sole canonical replacement         |
+| ---------------------------------- | ---------------------------------- |
 | `arch027-shopify-operation-key-v1` | `shopify-billing-operation-key-v1` |
-| `arch027-recurring-v1` | `shopify-billing-recurring-v1` |
-| `arch027-topup-v1` | `shopify-billing-topup-v1` |
+| `arch027-recurring-v1`             | `shopify-billing-recurring-v1`     |
+| `arch027-topup-v1`                 | `shopify-billing-topup-v1`         |
 
 Replace the actual complete literals in place. Keep UTF-8 encoding, newline framing, SHA-256, field ordering and input/control-character validation. Keep the ordinary `shopify:<kind>:<digest>` request-key format. The already descriptive one-time charge key `shopify:one-time-charge:<purchaseId>` stays as it is; its fingerprint uses the new top-up namespace. Do not expose the private request-key builder merely for testing.
 

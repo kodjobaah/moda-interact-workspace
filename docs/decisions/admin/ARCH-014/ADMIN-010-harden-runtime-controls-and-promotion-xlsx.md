@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-014-ADMIN-008
-- ARCH-014-ADMIN-009
+  - ARCH-014-ADMIN-008
+  - ARCH-014-ADMIN-009
 enables:
-- ARCH-014-SYSTEM-TEST-002
-- ARCH-014-SYSTEM-TEST-003
+  - ARCH-014-SYSTEM-TEST-002
+  - ARCH-014-SYSTEM-TEST-003
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -208,6 +208,7 @@ Ready for architect review.
 
 - Returned only ADMIN-010 to `review`.
 - Dependent system-test work was not started.
+
 ## Architect Review
 
 ### Review Status

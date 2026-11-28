@@ -12,9 +12,9 @@ priority: 40
 executor: null
 claimed_at: null
 attempt: 6
-depends_on: 
+depends_on:
   - ARCH-007-DATABASE-003
-enables: 
+enables:
   - ARCH-007-SHARED-002
 created: 2026-09-07
 updated: 2026-09-07T20:59:00+01:00
@@ -101,7 +101,6 @@ Inspect the repository `package.json` first. Run the focused tests required by t
 
 ## Implementation Notes
 
-
 Luna deterministic-execution guardrails:
 
 - Treat this task file as the complete implementation contract. Do not infer additional product policy from old billing code.
@@ -112,7 +111,6 @@ Luna deterministic-execution guardrails:
 - Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
 - Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-SHARED-001` branch and the mirrored parent-workspace `task/ARCH-007-SHARED-001` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
 - Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
-
 
 ## Completion Report
 
@@ -429,7 +427,7 @@ Accepted corrections:
    tuple of the six architecture-approved values. `BillingSystemMessageCode`
    therefore remains the exact literal union, and the compile-time assertion in
    `src/billing.test.ts` fails if the type widens so that `string extends
-   BillingSystemMessageCode` becomes true.
+BillingSystemMessageCode` becomes true.
 2. `createMerchantBillingSystemSourceKey` now requires
    `(shopId, code, eventIdentity, version?)`. `eventIdentity` represents the
    durable business occurrence, while `version` remains the independent
@@ -466,4 +464,3 @@ SHARED-002 itself is architect-accepted Complete.
 Mark `ARCH-007-SHARED-002` Ready with `attempt: 0`. Do not unblock SHOPIFY,
 MESSAGING, BACKGROUND or ADMIN consumers until the Shared publication task has
 completed and been architect-accepted.
-

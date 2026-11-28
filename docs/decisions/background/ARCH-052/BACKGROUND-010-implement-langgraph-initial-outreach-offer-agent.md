@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-052-SHARED-012
-- ARCH-052-MCP-002
-- ARCH-052-COMMERCE-007
-- ARCH-052-SHARED-010
-- ARCH-052-SHARED-014
-- ARCH-052-BACKGROUND-016
+  - ARCH-052-SHARED-012
+  - ARCH-052-MCP-002
+  - ARCH-052-COMMERCE-007
+  - ARCH-052-SHARED-010
+  - ARCH-052-SHARED-014
+  - ARCH-052-BACKGROUND-016
 enables:
-- ARCH-052-BACKGROUND-008
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
+  - ARCH-052-BACKGROUND-008
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
 created: 2026-10-29
 updated: 2026-10-31
 ---
@@ -86,7 +86,6 @@ Implement this **single** dedicated Background LangGraph agent and Background-ow
 - Partial/unknown required conditions, unsupported discount type, provider-read uncertainty, budget exhaustion or expired/revoked selection => remove the unproven candidate and fall back to a single supportable offer or existing no-offer/alternative path. Do not claim all discounts globally absent because pages were truncated. Do not add a bulk pre-model eligibility scan.
 - Preserve the chosen **ordered** set and source-verified `providerDiscountId`/code in the Background-local decision. Use a deterministic bounded compatibility checker and tests after LangGraph selection, not a second model-provided eligibility boolean. The details response must explicitly supply the providerDiscountId; if absent, group/member eligibility cannot be promoted to a Woo-restorable claim. No sum of percentage discounts or invented final monetary savings.
 
-
 ### Deterministic checkout eligibility and stacking contract — **normative 31 October 2026**
 
 This entire subsection is **mandatory implementation scope for BACKGROUND-010**. An implementation that lets the LLM decide eligibility, tests only `combinesWith`, blindly accepts `facts.completeness:COMPLETE`, or emits offers without matching line IDs **fails acceptance**. Implement **pure, injected helpers within this agent**, not a new service/MCP API/repository. All positive decisions are evidence-backed recommendations only; Shopify/Woo native checkout validates actual redemption.
@@ -100,11 +99,11 @@ type CheckoutEligibilityDecision = Readonly<{
   offerId: string;
   verdict: "SUPPORTED" | "NOT_APPLICABLE" | "UNVERIFIABLE";
   eligibleLineKeys: readonly string[]; // unique, in trusted checkout line order; [] for order/shipping scope
-  reasonCodes: readonly string[];       // bounded source-derived codes, no sensitive payloads
+  reasonCodes: readonly string[]; // bounded source-derived codes, no sensitive payloads
 }>;
 type CheckoutOfferGroupDecision = Readonly<{
   verdict: "SUPPORTED" | "UNVERIFIABLE" | "INCOMPATIBLE";
-  offerIds: readonly string[];          // 1..3, unique, source-ordered; only validated members
+  offerIds: readonly string[]; // 1..3, unique, source-ordered; only validated members
   reasonCodes: readonly string[];
 }>;
 ```
@@ -117,7 +116,7 @@ type CheckoutOfferGroupDecision = Readonly<{
 4. **Optional exact product enrichment:** if the trusted recovery snapshot lacks category, collection or sale status required for the candidate, the agent **may** call current-shop `commerce_get_product` for that exact product/variant through its existing tool budget, verify returned identity against the checkout and enrich that line only. Absent fields, mismatches, unavailable permission or exhausted call budget => `UNVERIFIABLE`; never fabricate a category ID from a label or perform a separate provider/hosted-API call. Cache exact reads within this invocation; do not bulk-fetch all basket products.
 5. **Basket conditions (superseded price-input rule):** take a **current, equivalent-checkout-context** pre-discount merchandise subtotal only from BG016 `currentMerchandiseSubtotal`. When it is `null`, mark any **effective** minimum/maximum subtotal condition `UNVERIFIABLE`; do **not** compute a new current subtotal from historical recovery prices, `totalMinor` (may include shipping/tax), shop catalogue values or the model's quoted amount. Compare source `minimumSubtotal`/`maximumSubtotal` with the verified current subtotal **only** if `subtotalRequirementCurrency` from the new **SHARED-014 published contract** equals basket currency and amounts convert exactly to minor units using the currency's precision (no JS floats, no rounding assumptions). For WooCommerce core coupons, an empty or numeric zero `minimum_amount` or `maximum_amount` means **no effective minimum/maximum threshold**; never treat `maximum_amount: 0` as a failing £0 ceiling or require a threshold currency solely for these no-limit sentinels. A genuinely positive threshold requires observed store currency. Unknown amount, currency, sign, rate, basket subtotal or source scope for an **effective** restriction => `UNVERIFIABLE`. Failed known boundary => `NOT_APPLICABLE`; inclusive equal boundary passes. For `minimumQuantity`, use the provider's documented eligible-line vs all-cart semantics; if source information does not establish the scope, `UNVERIFIABLE`, never substitute a guessed quantity.
 6. **Other conditions:** known exhausted usage (`usageLimit > 0 && usageCount >= usageLimit`, with both counters observed) => `NOT_APPLICABLE`; positive limits with missing usage count => `UNVERIFIABLE`. Woo core `usage_limit: 0` and `usage_limit_per_user: 0` are **unrestricted** (not exhausted); `null` means unobserved and must not be silently treated as zero. Known customer-restricted scopes or **positive** per-customer limits without provider-backed identity/usage proof => `UNVERIFIABLE`, not unrestricted. `excludesSaleItems=true` requires a source-confirmed non-sale line; unknown sale status => `UNVERIFIABLE`. Unsupported BxGy requirements, unknown shipping qualification, Woo email/extension restrictions, `expiryUnverified` or `unrepresentedConditions` affecting eligibility => `UNVERIFIABLE`. Do not infer special provider restrictions are absent solely from `null` fields or ACTIVE status.
-7. **Completeness:** if `facts.completeness === "UNKNOWN"`, no positive decision. `PARTIAL` may yield `SUPPORTED` **only for a singleton** when *every* unknown/reason code has been positively classified as combination-only (e.g. the old `COMBINATION_POLICY_NOT_REPRESENTED_IN_SHARED_FACTS`) and all eligibility fields above are explicitly observed; an unknown or unclassified reason blocks even the singleton. Combination facts are evaluated separately. Record the classification in unit fixtures; never ignore an arbitrary reason list.
+7. **Completeness:** if `facts.completeness === "UNKNOWN"`, no positive decision. `PARTIAL` may yield `SUPPORTED` **only for a singleton** when _every_ unknown/reason code has been positively classified as combination-only (e.g. the old `COMBINATION_POLICY_NOT_REPRESENTED_IN_SHARED_FACTS`) and all eligibility fields above are explicitly observed; an unknown or unclassified reason blocks even the singleton. Combination facts are evaluated separately. Record the classification in unit fixtures; never ignore an arbitrary reason list.
 
 Return `SUPPORTED` only for a source-proven order/shipping rule or at least one exact, nonexcluded source-matched line. A `SUPPORTED` eligibility verdict does **not** mean the provider has reserved a coupon or will accept redemption at checkout.
 
@@ -125,30 +124,30 @@ Return `SUPPORTED` only for a source-proven order/shipping rule or at least one 
 
 - Filter to individually `SUPPORTED` candidates. Use the model's ordered `offerIds` (max 3), deduplicate **by both `offerId` and providerDiscountId/code** without changing source identity, and check all unordered pairs of the candidate set (`n=3` requires A–B, A–C and B–C). No passing pair can be inferred transitively from another pair. Unknown or unsupported group facts must never yield `SUPPORTED`.
 - **Shopify:** for each declared class of discount A, discount B must explicitly allow that class; vice versa (ORDER/PRODUCT/SHIPPING). `combinesWith` missing/null or class unknown => `UNVERIFIABLE`; a known false => `INCOMPATIBLE`. For PRODUCT+PRODUCT, use `eligibleLineKeys` intersection: disjoint supported lines need only reciprocal product-class booleans; any overlapping line additionally requires authenticated `shopifyPlus === true`, both `productDiscounts === true`, and for **both directions** at least one exact tag match between A's own `discountTags` and B's `allowedSameLineProductTags`, and between B's own tags and A's allowed tags. `false` Plus, one-way tags, empty tag intersection, or known false class policy => `INCOMPATIBLE`; missing Plus, unknown overlap or truncated tags => `UNVERIFIABLE`. Handle mixed discount classes conservatively (validate every applicable declared class pair), never guess a single class from title.
-- **WooCommerce:** each member must have observed `individualUse === false`; `true` => `INCOMPATIBLE`, `null` => `UNVERIFIABLE`. All per-coupon restrictions must already be independently supported, and an observed coupon/extension rule forbidding a combination blocks the group. Missing extension-aware compatibility information cannot establish guaranteed stacking; present the supported core recommendation only with **checkout validation disclaimer**, never a guaranteed applied-coupon claim. Distinguish independently compatible new codes from *original shopper-applied codes*, which ARCH-053 preserves/handles separately; do not promise the original and new sets all stack.
-- **Selection/fallback:** enumerate only subsets of the at-most-three model-proposed candidate IDs (bounded seven nonempty subsets). Choose the **largest** fully supported subset, then the lexicographically earliest member-index sequence in the model's proposal, then stable provider-backed offer IDs. Preserve model member order in the output. If none of size >=2 is proven compatible, use the first individually supported singleton. If there is no supported singleton, continue to the existing separate-product Stage 2 or typed NO_VERIFIED_OFFER/unavailable. The *best* claim is model ranking within this validated set, not an invented numerical maximum discount; never sum percentages or invent savings. A singleton may be selected without combination proof, but not without its own eligibility proof.
+- **WooCommerce:** each member must have observed `individualUse === false`; `true` => `INCOMPATIBLE`, `null` => `UNVERIFIABLE`. All per-coupon restrictions must already be independently supported, and an observed coupon/extension rule forbidding a combination blocks the group. Missing extension-aware compatibility information cannot establish guaranteed stacking; present the supported core recommendation only with **checkout validation disclaimer**, never a guaranteed applied-coupon claim. Distinguish independently compatible new codes from _original shopper-applied codes_, which ARCH-053 preserves/handles separately; do not promise the original and new sets all stack.
+- **Selection/fallback:** enumerate only subsets of the at-most-three model-proposed candidate IDs (bounded seven nonempty subsets). Choose the **largest** fully supported subset, then the lexicographically earliest member-index sequence in the model's proposal, then stable provider-backed offer IDs. Preserve model member order in the output. If none of size >=2 is proven compatible, use the first individually supported singleton. If there is no supported singleton, continue to the existing separate-product Stage 2 or typed NO_VERIFIED_OFFER/unavailable. The _best_ claim is model ranking within this validated set, not an invented numerical maximum discount; never sum percentages or invent savings. A singleton may be selected without combination proof, but not without its own eligibility proof.
 - **Source-constrained group:** build the published `InitialOutreachCheckoutOfferSet` **from the original typed MCP results**, not model arguments. `method`, deliverable `code`, `providerDiscountId`, ordered IDs and schema version are all host-sourced. No new Shared group certificate/DB proof or expanded MCP protocol. If a code/ID cannot be source-bound, drop that candidate and re-run subset selection. The host's final decision must carry `basket.fingerprint`/generation and the evaluation results to BACKGROUND-008 as **Background-local data**, not as customer copy or Redis-only authority.
 
 **E. Required deterministic test matrix.** Each item is a named fixture and assertion in the two new helper test files, as well as relevant agent integration tests:
 
-| Fixture | Required evaluator outcome |
-|---|---|
-| Exact product match; variant mismatch; excluded variant/product | First SUPPORTED; variant mismatch NOT_APPLICABLE; exclusion wins even when included |
-| Two identical product entries on distinct lines | Distinct `lineKey`s retained, no accidental deduplication or false disjointness |
-| Provider category ID match; only category text; collection ID unknown | Exact ID SUPPORTED; text/unknown UNVERIFIABLE |
-| Target list `hasNextPage=true`; incomplete exclusion list; unknown variant ID | UNVERIFIABLE, never ALL or a proven nonmatch |
-| Subtotal exactly minimum; one minor unit short; wrong/unknown threshold currency; order total high but merchandise subtotal low | Supported boundary / NOT_APPLICABLE / UNVERIFIABLE / NOT_APPLICABLE respectively |
-| Min quantity at documented boundary; unknown quantity scope; missing line amount | Support only with documented scope; otherwise UNVERIFIABLE |
-| Expired; future; revoked FIXED; unsupported CODE; merchant NONE | NOT_APPLICABLE or no-agent outcome, no coupon send |
-| Restricted customer, per-user usage unknown, missing usage count, unknown sale status, Woo expiry unverified | UNVERIFIABLE, never unrestricted |
-| Basic facts PARTIAL solely because combination fields missing vs arbitrary unrepresented rule | Proven **singleton only** versus UNVERIFIABLE |
-| Two Shopify PRODUCT discounts on different lines with reciprocal class booleans | SUPPORTED without requiring Plus/tags |
-| Two Shopify PRODUCT discounts on same line, Plus + reciprocal tags | SUPPORTED only when *both* tag intersections and booleans pass |
-| Same-line non-Plus, one-way tags, unknown Plus, unknown overlap | INCOMPATIBLE, INCOMPATIBLE, UNVERIFIABLE, UNVERIFIABLE respectively |
-| Shopify ORDER+PRODUCT, PRODUCT+SHIPPING, false/unknown reciprocal permissions | SUPPORTED if all explicit permissions; otherwise INCOMPATIBLE/UNVERIFIABLE |
-| Woo two `individualUse:false`, one true, one null | Supported *core* pair only when both false and no conflicting facts; true INCOMPATIBLE; null UNVERIFIABLE |
-| Three candidates where B is incompatible with A and C is compatible with A | Preserve supported A+C subset (if pair proven), never advertise all three |
-| Model-invented code/provider ID/offer ID; cross-shop detail; exhausted MCP budget | No supported fabricated offer, typed failure or verified fallback |
+| Fixture                                                                                                                         | Required evaluator outcome                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Exact product match; variant mismatch; excluded variant/product                                                                 | First SUPPORTED; variant mismatch NOT_APPLICABLE; exclusion wins even when included                       |
+| Two identical product entries on distinct lines                                                                                 | Distinct `lineKey`s retained, no accidental deduplication or false disjointness                           |
+| Provider category ID match; only category text; collection ID unknown                                                           | Exact ID SUPPORTED; text/unknown UNVERIFIABLE                                                             |
+| Target list `hasNextPage=true`; incomplete exclusion list; unknown variant ID                                                   | UNVERIFIABLE, never ALL or a proven nonmatch                                                              |
+| Subtotal exactly minimum; one minor unit short; wrong/unknown threshold currency; order total high but merchandise subtotal low | Supported boundary / NOT_APPLICABLE / UNVERIFIABLE / NOT_APPLICABLE respectively                          |
+| Min quantity at documented boundary; unknown quantity scope; missing line amount                                                | Support only with documented scope; otherwise UNVERIFIABLE                                                |
+| Expired; future; revoked FIXED; unsupported CODE; merchant NONE                                                                 | NOT_APPLICABLE or no-agent outcome, no coupon send                                                        |
+| Restricted customer, per-user usage unknown, missing usage count, unknown sale status, Woo expiry unverified                    | UNVERIFIABLE, never unrestricted                                                                          |
+| Basic facts PARTIAL solely because combination fields missing vs arbitrary unrepresented rule                                   | Proven **singleton only** versus UNVERIFIABLE                                                             |
+| Two Shopify PRODUCT discounts on different lines with reciprocal class booleans                                                 | SUPPORTED without requiring Plus/tags                                                                     |
+| Two Shopify PRODUCT discounts on same line, Plus + reciprocal tags                                                              | SUPPORTED only when _both_ tag intersections and booleans pass                                            |
+| Same-line non-Plus, one-way tags, unknown Plus, unknown overlap                                                                 | INCOMPATIBLE, INCOMPATIBLE, UNVERIFIABLE, UNVERIFIABLE respectively                                       |
+| Shopify ORDER+PRODUCT, PRODUCT+SHIPPING, false/unknown reciprocal permissions                                                   | SUPPORTED if all explicit permissions; otherwise INCOMPATIBLE/UNVERIFIABLE                                |
+| Woo two `individualUse:false`, one true, one null                                                                               | Supported _core_ pair only when both false and no conflicting facts; true INCOMPATIBLE; null UNVERIFIABLE |
+| Three candidates where B is incompatible with A and C is compatible with A                                                      | Preserve supported A+C subset (if pair proven), never advertise all three                                 |
+| Model-invented code/provider ID/offer ID; cross-shop detail; exhausted MCP budget                                               | No supported fabricated offer, typed failure or verified fallback                                         |
 
 Add a Woo core **no-limit sentinel** fixture (`minimum_amount:"0"`, `maximum_amount:"0"`, `usage_limit:0`, `usage_limit_per_user:0`) which remains eligible when other conditions pass; contrast genuine positive maximum and usage-limit exceedance. An absent/null restriction value must remain unknown unless the source explicitly certifies unrestricted behaviour.
 
@@ -158,22 +157,22 @@ Do not satisfy these tests with mocked positive eligibility booleans. Construct 
 
 Expected owning repository files (paths below are relative to `moda-interact-background/`):
 
-| File | Required change |
-|---|---|
-| `package.json`, `package-lock.json` | Declare `@langchain/langgraph` directly, pinned to the existing tested version `1.4.15`; update the repository's actual lockfile, without copying graph sources from Shared. Do not rely on transitive hoisting. |
-| `src/agents/initial-outreach-offer.agent.ts` (new) | Export `runInitialOutreachOfferAgent(context, dependencies)` as the **pure agent entrypoint** and enforce input validation, mode policy, result contract, deadline and failure/fallback semantics. No Prisma or provider imports. |
-| `src/agents/initial-outreach-offer.instructions.ts` (new) | Version-controlled generic discount-discovery instructions, merchant-instruction precedence and model-safe prompt construction. No Commerce Studio prompt publication. |
-| `src/agents/initial-outreach-offer.graph.ts` (new) | `Annotation.Root` state, `StateGraph` nodes, conditional edges, recursion and budget enforcement. Own the graph; do not extend Shared graph. |
-| `src/agents/initial-outreach-offer.eligibility.ts` (new) | Pure three-state per-coupon, per-line targeting and eligibility checker from section D above; zero database/MCP/LLM calls. |
-| `src/agents/initial-outreach-offer.combinations.ts` (new) | Pure pairwise Shopify/Woo class/tag/core-policy checker and deterministic 1..3 compatible subset selection; zero network calls. |
-| `src/agents/initial-outreach-offer.types.ts` (new) | Background-local trusted input, graph state, model-choice validator and typed decision/failure shapes; use published Shared schemas for cross-service MCP feature data and a strictly Background-local final offer-choice type; no duplicate MCP protocol. |
-| `src/services/recovery-offers/initial-outreach-agent-context.service.ts` (new) | Compose trusted context **outside** the agent from existing recovery, sequence-one attempt identity, current merchant settings/selected discount rows and active published merchant/platform instruction records. Reuse existing policy reader; do not persist or parse a frozen selection snapshot. No discount/provider queries here. |
-| `src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts` (new) | Small injected adapter to list, filter, validate and call authorised MCP tools; it owns the MCP client lifecycle, no separate product search or candidate-evaluation algorithm. |
-| `src/commerce/mcp-client.ts` (existing) | Minimal transport/context union for MCP-001 `INITIAL_RECOVERY_OUTREACH` assertion; preserve current conversation encode/manifest/grant path unchanged. |
-| `tests/unit/agents/initial-outreach-offer.agent.test.ts`, `tests/unit/agents/initial-outreach-offer.graph.test.ts` (new) | Deterministic graph, model, instructions, decision and budget tests. |
-| `tests/unit/agents/initial-outreach-offer.eligibility.test.ts`, `tests/unit/agents/initial-outreach-offer.combinations.test.ts` (new) | The exact required positive/negative table in section E; line-level source evidence, pure helpers, no AI permission to override verdicts. |
-| `tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` (new) | Tool discovery, identity scope, typed data, failures and transport lifecycle tests. |
-| `tests/integration/initial-outreach-agent-context.integration.test.ts` (new) | Real PostgreSQL checks **only** for the Background context assembly; the agent itself must remain database-independent. |
+| File                                                                                                                                  | Required change                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`, `package-lock.json`                                                                                                   | Declare `@langchain/langgraph` directly, pinned to the existing tested version `1.4.15`; update the repository's actual lockfile, without copying graph sources from Shared. Do not rely on transitive hoisting.                                                                                                                        |
+| `src/agents/initial-outreach-offer.agent.ts` (new)                                                                                    | Export `runInitialOutreachOfferAgent(context, dependencies)` as the **pure agent entrypoint** and enforce input validation, mode policy, result contract, deadline and failure/fallback semantics. No Prisma or provider imports.                                                                                                       |
+| `src/agents/initial-outreach-offer.instructions.ts` (new)                                                                             | Version-controlled generic discount-discovery instructions, merchant-instruction precedence and model-safe prompt construction. No Commerce Studio prompt publication.                                                                                                                                                                  |
+| `src/agents/initial-outreach-offer.graph.ts` (new)                                                                                    | `Annotation.Root` state, `StateGraph` nodes, conditional edges, recursion and budget enforcement. Own the graph; do not extend Shared graph.                                                                                                                                                                                            |
+| `src/agents/initial-outreach-offer.eligibility.ts` (new)                                                                              | Pure three-state per-coupon, per-line targeting and eligibility checker from section D above; zero database/MCP/LLM calls.                                                                                                                                                                                                              |
+| `src/agents/initial-outreach-offer.combinations.ts` (new)                                                                             | Pure pairwise Shopify/Woo class/tag/core-policy checker and deterministic 1..3 compatible subset selection; zero network calls.                                                                                                                                                                                                         |
+| `src/agents/initial-outreach-offer.types.ts` (new)                                                                                    | Background-local trusted input, graph state, model-choice validator and typed decision/failure shapes; use published Shared schemas for cross-service MCP feature data and a strictly Background-local final offer-choice type; no duplicate MCP protocol.                                                                              |
+| `src/services/recovery-offers/initial-outreach-agent-context.service.ts` (new)                                                        | Compose trusted context **outside** the agent from existing recovery, sequence-one attempt identity, current merchant settings/selected discount rows and active published merchant/platform instruction records. Reuse existing policy reader; do not persist or parse a frozen selection snapshot. No discount/provider queries here. |
+| `src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts` (new)                                                        | Small injected adapter to list, filter, validate and call authorised MCP tools; it owns the MCP client lifecycle, no separate product search or candidate-evaluation algorithm.                                                                                                                                                         |
+| `src/commerce/mcp-client.ts` (existing)                                                                                               | Minimal transport/context union for MCP-001 `INITIAL_RECOVERY_OUTREACH` assertion; preserve current conversation encode/manifest/grant path unchanged.                                                                                                                                                                                  |
+| `tests/unit/agents/initial-outreach-offer.agent.test.ts`, `tests/unit/agents/initial-outreach-offer.graph.test.ts` (new)              | Deterministic graph, model, instructions, decision and budget tests.                                                                                                                                                                                                                                                                    |
+| `tests/unit/agents/initial-outreach-offer.eligibility.test.ts`, `tests/unit/agents/initial-outreach-offer.combinations.test.ts` (new) | The exact required positive/negative table in section E; line-level source evidence, pure helpers, no AI permission to override verdicts.                                                                                                                                                                                               |
+| `tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` (new)                                            | Tool discovery, identity scope, typed data, failures and transport lifecycle tests.                                                                                                                                                                                                                                                     |
+| `tests/integration/initial-outreach-agent-context.integration.test.ts` (new)                                                          | Real PostgreSQL checks **only** for the Background context assembly; the agent itself must remain database-independent.                                                                                                                                                                                                                 |
 
 Use the existing `src/commerce/model-environment.ts`, credential resolver (`src/commerce/openrouter-credential.ts`), `src/commerce/credential-keyring.ts`, `createProductionCommerceModelInvoker`, `CommerceMcpClient`, and `@modainteract/moda-interact-shared/logging`. Production composition belongs in the Background context/agent invocation seam, with fake invoker/client for tests. New functions must not construct a second generic model client or logger.
 
@@ -185,30 +184,30 @@ The Background caller (not MCP) must supply the agent with the following fully c
 interface InitialOutreachAgentContext {
   shopId: string;
   checkoutRecoveryId: string;
-  outreachAttemptId: string;     // sequence-one attempt, never a conversation ID
+  outreachAttemptId: string; // sequence-one attempt, never a conversation ID
   environment: CommerceEnvironment;
   mode: "NONE" | "FIXED" | "AI_BEST_APPLICABLE";
   authorisedDiscountIds: readonly string[]; // current, 1..50 for FIXED, [] otherwise
   basket: {
     currency: string; // trusted ISO currency, not derived from locale
     subtotalMinor: number | null; // PRE-discount merchandise subtotal, never order total
-    totalMinor: number | null;    // retained for presentation only
-    fingerprint: string;         // verified against current recovery generation before send
+    totalMinor: number | null; // retained for presentation only
+    fingerprint: string; // verified against current recovery generation before send
     generation: number;
     items: readonly {
-      lineKey: string;             // unique in this fingerprint, source ID or deterministic ordinal
-      productId: string | null;   // exact provider identity
-      variantId: string | null;   // exact provider identity, nullable for simple product
-      categoryIds: readonly string[] | null;   // provider IDs; null = not established
+      lineKey: string; // unique in this fingerprint, source ID or deterministic ordinal
+      productId: string | null; // exact provider identity
+      variantId: string | null; // exact provider identity, nullable for simple product
+      categoryIds: readonly string[] | null; // provider IDs; null = not established
       collectionIds: readonly string[] | null; // provider IDs; null = not established
-      isSaleItem: boolean | null;  // source observed, null = unknown
-      title: string;              // ranking/presentation only
-      category: string | null;    // ranking/presentation only, NEVER targeting proof
+      isSaleItem: boolean | null; // source observed, null = unknown
+      title: string; // ranking/presentation only
+      category: string | null; // ranking/presentation only, NEVER targeting proof
       quantity: number;
       lineTotalMinor: number | null; // source-derived merchandise line subtotal
     }[];
   };
-  platformInstructions: string;  // active PUBLISHED platform revision
+  platformInstructions: string; // active PUBLISHED platform revision
   merchantInstructions: string | null; // active PUBLISHED SHOP revision, if any
 }
 ```
@@ -282,7 +281,7 @@ Apply the existing Shared `RUNTIME_DATA_AUTHORITY_INSTRUCTION` (not the conversa
 
 ### F. Error, retry, safety and logging semantics
 
-- Model failure/timeout/malformed output: log the **actual originating provider/SDK/MCP error** when supplied, plus a separate bounded Moda reason code; do not substitute a fixed explanation. If the graph already possesses at least one **same-shop, source-supported observed candidate**, use a deterministic fallback: source-supported CHECKOUT offers first, else source-supported ALTERNATIVE offers; highest *source-supported* savings in the same currency, then stable `offerId`, then stable product/variant identity. If observed catalogue/product facts lack comparable savings, order by stable offer/product IDs; never calculate or invent savings. No model invocation is required to choose a deterministic fallback after failure.
+- Model failure/timeout/malformed output: log the **actual originating provider/SDK/MCP error** when supplied, plus a separate bounded Moda reason code; do not substitute a fixed explanation. If the graph already possesses at least one **same-shop, source-supported observed candidate**, use a deterministic fallback: source-supported CHECKOUT offers first, else source-supported ALTERNATIVE offers; highest _source-supported_ savings in the same currency, then stable `offerId`, then stable product/variant identity. If observed catalogue/product facts lack comparable savings, order by stable offer/product IDs; never calculate or invent savings. No model invocation is required to choose a deterministic fallback after failure.
 - No source-backed MCP information supporting an applicable discount: `NO_VERIFIED_OFFER` with reason `NO_APPLICABLE_OFFER` and correct incomplete flag; absence of evidence due to provider/tool failure, revocation or budget exhaustion must retain typed **operational** failure (so existing send workflow can retry/suppress) rather than be silently converted to a positive "nothing exists" conclusion.
 - `CommerceHostError` errors preserve `DENIED`, `INCOMPATIBLE_VERSION`, `UNAVAILABLE`, `CANCELLED`, `DEADLINE`; unexpected errors are logged and propagated to the owning Background retry boundary, not swallowed. Do not convert denied tool access to a fallback suggestion from another shop.
 - Use `createLogger`/`StructuredLogger` from `@modainteract/moda-interact-shared/logging`. Record at least `outreach.offer_agent.started`, `outreach.offer_agent.tool_called`, `outreach.offer_agent.model_step`, `outreach.offer_agent.completed`, `outreach.offer_agent.failed`, with shop/recovery/attempt ID, reason code, mode, selected outcome, model-step/tool-call counts and duration. On failures additionally preserve the **source-supplied original** provider/SDK/MCP error (subject only to explicit redaction/truncation) under the mandatory policy in `docs/observability/shared-logging.md`. Never log raw MCP headers, complete successful responses, customer names/contact data, coupon codes, checkout/product URLs, product descriptions, prompts, model free text or credentials. No competing logging utilities and no unobserved catch-and-continue.
@@ -299,7 +298,7 @@ Apply the existing Shared `RUNTIME_DATA_AUTHORITY_INSTRUCTION` (not the conversa
    inspect the bounded original cause chain and log the **actual** upstream
    `Error.name`, `Error.message`, provider `error.code`/message and status/request
    ID when supplied. Keep `failure.diagnostic.reasonCode` and the existing fixed
-   `reasonMessage` as *separate internal fields*, never as
+   `reasonMessage` as _separate internal fields_, never as
    `providerError.message`. Do not catch and replace the original cause with a
    new generic-only error. If the error originated locally (configuration,
    request validation or cancellation), log `origin:internal` with the actual
@@ -453,6 +452,7 @@ After Work Items, Acceptance Criteria and required Validation, complete the task
 **Attempt 12 architecture correction:** The agent uses MCP discount catalogue facts and MCP product search, reasons about relevance itself, and never requires a bulk or per-candidate Commerce/Woo provider-proof endpoint. It must not claim exact checkout eligibility, savings or restrictions unless supported by the actual MCP response.
 Use paths relative to the parent workspace when editing, and confirm the canonical task worktree before writing. Current repository files already present: `src/commerce/mcp-client.ts`, `src/commerce/production-model.ts`, `src/commerce/model-environment.ts`, `src/commerce/openrouter-credential.ts`, `src/commerce/credential-keyring.ts`, `src/services/recovery-policy.service.ts`, `src/services/recovery-outreach-attempt.service.ts`, `src/agents/commerce.agent.ts`. The new agent must not change `src/agents/commerce.agent.ts` or the Shared graph. This task's runtime changes are wholly Background-owned; review cross-repository contract gaps with `moda_architect` rather than inventing adapters or new published schemas. Logging must use the published Shared structured logger and no exception may be silently suppressed.
 **Attempt 13 architecture correction:** The agent uses MCP discount catalogue facts and MCP product search, and reasons about relevance itself. No separate `commerce_evaluate_discount` tool, provider-proof request or eligibility-scan engine is required. SHARED-010 now explicitly supplies generic discount-page and detail contracts. Never claim exact checkout eligibility, savings or restrictions unsupported by the actual MCP response.
+
 ## Completion Report
 
 ### Status

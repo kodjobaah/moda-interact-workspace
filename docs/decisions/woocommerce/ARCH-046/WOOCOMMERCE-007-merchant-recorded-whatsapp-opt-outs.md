@@ -20,9 +20,10 @@ depends_on:
 enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
-created: '2026-10-21'
+created: "2026-10-21"
 updated: 2026-10-23
 ---
+
 # Manage merchant Woo customer recovery selection
 
 ## Architecture
@@ -213,21 +214,27 @@ Implementation commit `3bfa02658e2ba45df69745b906bd4eaa11ba9e0f` contains exactl
 ## Architect Review
 
 ### Review Status
+
 Pending — no implementation reviewed.
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Not assessed.
 
 ### Follow-up
+
 None.
 
 ## Developer Self-Review - Accepted (2026-10-23)

@@ -76,18 +76,18 @@ moda_architect
 
 Each logical agent has a bounded responsibility.
 
-| Agent | Primary responsibility |
-| --- | --- |
-| `moda_architect` | Cross-repository architecture, decomposition, dependencies, sequencing, review and integration coordination; never Git merge/push of `main` |
-| `moda_app` | Shopify app, merchant UI, Shopify ingress, onboarding, billing and subscriptions |
-| `moda_background` | BullMQ workers, event processing, recovery workflows, CommerceAgent and retryable background work |
-| `moda_database` | Prisma schema, PostgreSQL migrations, constraints, indexes, canonical/reference seed data and durable integrity |
-| `moda_gateway` | Public ingress, reverse proxy, Render topology, infrastructure-as-code, scaling configuration and infrastructure wiring |
-| `moda_messaging` | Meta/WhatsApp webhook ingress, validation, normalisation and queue publication |
-| `moda_shared` | Canonical cross-service runtime contracts and shared primitives |
-| `moda_admin` | Platform administration, reporting and operational visibility |
-| `moda_site` | Public website, product content and SEO |
-| `moda_system_test` | Architecture-level system tests, architecture-specific test fixtures/seed data, environment orchestration and integrated validation |
+| Agent              | Primary responsibility                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `moda_architect`   | Cross-repository architecture, decomposition, dependencies, sequencing, review and integration coordination; never Git merge/push of `main` |
+| `moda_app`         | Shopify app, merchant UI, Shopify ingress, onboarding, billing and subscriptions                                                            |
+| `moda_background`  | BullMQ workers, event processing, recovery workflows, CommerceAgent and retryable background work                                           |
+| `moda_database`    | Prisma schema, PostgreSQL migrations, constraints, indexes, canonical/reference seed data and durable integrity                             |
+| `moda_gateway`     | Public ingress, reverse proxy, Render topology, infrastructure-as-code, scaling configuration and infrastructure wiring                     |
+| `moda_messaging`   | Meta/WhatsApp webhook ingress, validation, normalisation and queue publication                                                              |
+| `moda_shared`      | Canonical cross-service runtime contracts and shared primitives                                                                             |
+| `moda_admin`       | Platform administration, reporting and operational visibility                                                                               |
+| `moda_site`        | Public website, product content and SEO                                                                                                     |
+| `moda_system_test` | Architecture-level system tests, architecture-specific test fixtures/seed data, environment orchestration and integrated validation         |
 
 Repository ownership is explicit.
 
@@ -1420,31 +1420,31 @@ reasoning rather than rediscovering stable workspace facts.
 
 A useful maturity spectrum is:
 
-| Level | Typical usage |
-| --- | --- |
-| 1 | AI autocomplete |
-| 2 | Chat about code |
-| 3 | Agent given a feature or issue |
-| 4 | Repo-aware agent with rules/instructions |
-| 5 | Durable tasks, dependencies and review |
-| 6 | Multi-agent engineering workflow with specialist ownership and coordination |
+| Level | Typical usage                                                               |
+| ----- | --------------------------------------------------------------------------- |
+| 1     | AI autocomplete                                                             |
+| 2     | Chat about code                                                             |
+| 3     | Agent given a feature or issue                                              |
+| 4     | Repo-aware agent with rules/instructions                                    |
+| 5     | Durable tasks, dependencies and review                                      |
+| 6     | Multi-agent engineering workflow with specialist ownership and coordination |
 
 Many developer workflows currently sit around levels 2-4.
 
 Moda Interact is intentionally moving toward levels 5-6.
 
-| Typical agent workflow | Moda Interact workflow |
-| --- | --- |
-| Prompt is the main instruction | Task file is authoritative |
-| Agent explores freely | Repository ownership is explicit |
-| Developer coordinates manually | Architect coordinates |
-| State lives mainly in chat | State lives in version-controlled files |
-| Dependencies are implicit | Dependencies are machine-readable |
-| Agent may edit multiple domains | Changes are bounded by logical ownership |
-| Agent declares work finished | Architect accepts completion |
+| Typical agent workflow                    | Moda Interact workflow                                                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------ |
+| Prompt is the main instruction            | Task file is authoritative                                                     |
+| Agent explores freely                     | Repository ownership is explicit                                               |
+| Developer coordinates manually            | Architect coordinates                                                          |
+| State lives mainly in chat                | State lives in version-controlled files                                        |
+| Dependencies are implicit                 | Dependencies are machine-readable                                              |
+| Agent may edit multiple domains           | Changes are bounded by logical ownership                                       |
+| Agent declares work finished              | Architect accepts completion                                                   |
 | Integrated testing is often ad hoc/manual | Dedicated `moda_system_test` phase validates integrated architecture behaviour |
-| Interfaces may be recreated locally | Shared contracts have canonical ownership |
-| Workflow often depends on one AI vendor | Logical agents are runtime-independent |
+| Interfaces may be recreated locally       | Shared contracts have canonical ownership                                      |
+| Workflow often depends on one AI vendor   | Logical agents are runtime-independent                                         |
 
 ---
 
@@ -1538,20 +1538,20 @@ independence, with a growing deterministic automation layer.
 
 Approximate assessment:
 
-| Area | Assessment |
-| --- | ---: |
-| Logical agent separation | 9.5 / 10 |
-| Repository ownership | 9 / 10 |
-| Architecture/task decomposition | 9 / 10 |
-| Durable coordination state | 9.5 / 10 |
-| Shared contract governance | 9 / 10 |
-| Review/acceptance model | 9 / 10 |
-| Architecture-level system validation design | 9 / 10 |
-| AI-provider independence | 9.5 / 10 |
-| Deterministic task routing | 9 / 10 |
-| Agent-definition synchronization | 9 / 10 |
-| Workflow automation | 8 / 10 |
-| Overhead/context control | 8 / 10 |
+| Area                                        | Assessment |
+| ------------------------------------------- | ---------: |
+| Logical agent separation                    |   9.5 / 10 |
+| Repository ownership                        |     9 / 10 |
+| Architecture/task decomposition             |     9 / 10 |
+| Durable coordination state                  |   9.5 / 10 |
+| Shared contract governance                  |     9 / 10 |
+| Review/acceptance model                     |     9 / 10 |
+| Architecture-level system validation design |     9 / 10 |
+| AI-provider independence                    |   9.5 / 10 |
+| Deterministic task routing                  |     9 / 10 |
+| Agent-definition synchronization            |     9 / 10 |
+| Workflow automation                         |     8 / 10 |
+| Overhead/context control                    |     8 / 10 |
 
 Overall:
 

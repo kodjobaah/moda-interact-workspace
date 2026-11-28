@@ -41,7 +41,6 @@ Coordinator:
 
 `moda_architect`
 
-
 ## Objective
 
 Remove prompt-template draft/publish/revision machinery while keeping first-class template categories, current template content, platform-admin authoring, audit, CAS, and copy-on-use into immutable Agent Prompt revisions.
@@ -211,7 +210,6 @@ Consumes `CommercePromptTemplateCategory`, `CommercePromptTemplate.promptText`, 
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
 
-
 ## Implementation Notes
 
 Do not remove categories and do not move templates into a JSON blob. The simplification removes template revision lifecycle only.
@@ -245,7 +243,6 @@ Attempt 3 changed `src/commerce/agent-configuration/prompt-template-service.ts`,
 Removed template revision lifecycle and DTOs; direct `promptText` authoring now uses edit-version CAS. Audit operations use `CommerceAuditEvent.operationId` for correlation only, with independent audit IDs, explicit committed-operation/CAS/database/internal error semantics, and bounded structured logging. Enabled-state changes use the explicit CAS operation and cannot discard dirty prompt/metadata edits. Agent Prompt copy-on-use reads current template content and preserves immutable prompt revisions; the task-owned picker no longer requests or displays `sourceTemplateRevisionId`.
 
 Attempt 3 corrected the stale PostgreSQL CAS assertion, classifies Prisma codes from structured error objects, reconciles CAS/P2002 losers exactly once after rollback, and logs translated mutation/reconciliation failures through the shared logger with raw errors and bounded operation IDs.
-
 
 ### Validation Results
 
@@ -341,9 +338,10 @@ Attempt 3 is deliberately narrow. Execute the following correction contract exac
 
    ```ts
    function prismaErrorCode(error: unknown): string | undefined {
-     if (typeof error !== 'object' || error === null || !('code' in error)) return undefined;
+     if (typeof error !== "object" || error === null || !("code" in error))
+       return undefined;
      const code = (error as { code?: unknown }).code;
-     return typeof code === 'string' ? code : undefined;
+     return typeof code === "string" ? code : undefined;
    }
    ```
 
@@ -376,7 +374,7 @@ Attempt 3 is deliberately narrow. Execute the following correction contract exac
    import {
      createLogger,
      type StructuredLogger,
-   } from '@modainteract/moda-interact-shared/logging';
+   } from "@modainteract/moda-interact-shared/logging";
    ```
 
    Keep the existing constructor injection seam so tests can supply a logger:
@@ -397,10 +395,10 @@ Attempt 3 is deliberately narrow. Execute the following correction contract exac
    When an infrastructure/unexpected exception is converted into `DATABASE_UNAVAILABLE` or `INTERNAL_ERROR`, emit exactly one mutation failure record before returning the result:
 
    ```ts
-   this.logger.error('commerce.prompt_template.mutation_failed', {
+   this.logger.error("commerce.prompt_template.mutation_failed", {
      action,
      operationId: input.operationId.slice(0, 128),
-     resultCode: 'DATABASE_UNAVAILABLE', // or 'INTERNAL_ERROR'
+     resultCode: "DATABASE_UNAVAILABLE", // or 'INTERNAL_ERROR'
      prismaCode: prismaErrorCode(error),
      error,
    });
@@ -411,7 +409,7 @@ Attempt 3 is deliberately narrow. Execute the following correction contract exac
    If the post-rollback reconciliation lookup itself throws, that exception must also be visible. Do not use `.catch(() => null)` or any equivalent silent fallback. Emit:
 
    ```ts
-   this.logger.error('commerce.prompt_template.reconciliation_lookup_failed', {
+   this.logger.error("commerce.prompt_template.reconciliation_lookup_failed", {
      action,
      operationId: input.operationId.slice(0, 128),
      triggerPrismaCode: prismaErrorCode(triggerError),
@@ -429,8 +427,8 @@ Attempt 3 is deliberately narrow. Execute the following correction contract exac
    ```ts
    const records: LogRecord[] = [];
    const logger = createLogger({
-     serviceName: 'moda-interact-commerce',
-     environment: 'test',
+     serviceName: "moda-interact-commerce",
+     environment: "test",
      sink: (record) => records.push(record),
    });
    const service = new PromptTemplateService(db, logger);

@@ -19,6 +19,7 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T14:47:00Z
 ---
+
 # ARCH-006-SHARED-003: Correct merchant-communications Node package export
 
 ## Architecture
@@ -82,9 +83,7 @@ Also verify the packed artifact contains the exact runtime and declaration files
 The public import remains unchanged:
 
 ```ts
-import {
-  createTranslationBatchSubmitJobId,
-} from "@modainteract/moda-interact-shared/merchant-communications/node";
+import { createTranslationBatchSubmitJobId } from "@modainteract/moda-interact-shared/merchant-communications/node";
 ```
 
 No consumer-facing API shape or helper semantics change.

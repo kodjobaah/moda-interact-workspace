@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add sortable failed-job browser UI
 
 ## Architecture
@@ -123,13 +124,16 @@ existing Admin visual system rather than introducing a new design library.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/components/admin/queue-monitor.tsx`
 - `moda-interact-admin/tests/security/admin-queue-monitor.test.mjs`
 
 ### Work Completed
+
 - Connected queue `View details` selection to the ADMIN-004 failed-job API.
 - Added bounded failed-job rendering with queue context, job ID, name, failed
   time, attempts and truncated reason text.
@@ -141,6 +145,7 @@ Ready for Review.
   payload/stacktrace rendering or mutations.
 
 ### Validation Results
+
 - `npm exec -- node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-failed-jobs.test.mjs` passed (15 tests).
 - `npm test` passed (44 tests).
 - `npm exec tsc -- --noEmit` passed.
@@ -150,19 +155,23 @@ Ready for Review.
 - `git diff --check` passed.
 
 ### Deviations
+
 The task file was externally reverted to its pre-claim state during execution;
 the claim metadata was restored before returning the task to review. The
 production build retains existing warnings for Next.js multiple-lockfile
 workspace-root inference and BullMQ's optional `@valkey/valkey-glide` module.
 
 ### Assumptions
+
 The existing ADMIN-004 API response is the sole source for failed-job list
 data; selected rows intentionally do not trigger a detail request.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

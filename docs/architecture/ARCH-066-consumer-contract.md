@@ -12,14 +12,14 @@ Canonical field names retained from5.6.0: options, selectedOptions, optionFacts,
 
 MCP and Commerce local reads implement the same mapping; duplicate provider adapters are allowed, divergent schemas/normalization are not. Use Shared006 normalization helpers for all new fields. No API version/scope change. Pinned query artifact validation must pass before committing queries; update the corresponding existing discovery/query artefact in the owning repository, never replace the provider schema version.
 
-| Native input | Canonical result |
-|---|---|
-| Shopify product.description | description from plain text |
-| Shopify product.options, in native order | attributes name/values and options name/values, usedForVariants=true |
-| Shopify exact variant.selectedOptions | selectedOptions; never infer variant from parent list |
-| Woo parent.description, else short_description only when normalized description empty | description from HTML-to-text helper |
-| Woo parent.attributes name/options, including variation=false | attributes, and options with usedForVariants equal to native variation boolean |
-| Woo variation.attributes name/option | selectedOptions after exact parent membership validation |
+| Native input                                                                          | Canonical result                                                               |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Shopify product.description                                                           | description from plain text                                                    |
+| Shopify product.options, in native order                                              | attributes name/values and options name/values, usedForVariants=true           |
+| Shopify exact variant.selectedOptions                                                 | selectedOptions; never infer variant from parent list                          |
+| Woo parent.description, else short_description only when normalized description empty | description from HTML-to-text helper                                           |
+| Woo parent.attributes name/options, including variation=false                         | attributes, and options with usedForVariants equal to native variation boolean |
+| Woo variation.attributes name/option                                                  | selectedOptions after exact parent membership validation                       |
 
 Keep existing5.6 option mapping semantics; product attributes independently describe facts and do not imply stock or variant availability. For variant outputs derive parent facts only from the same authorized parent read; no arbitrary extra metadata/metafields. Extend Woo field allowlists in both adapters with description,short_description,attributes and variant attributes. Shopify defaults such as Title/Default Title remain native data; do not add English-specific suppression. Missing new fields remain legacy-valid; freshly normalized outputs supply explicit statuses. Existing search/get result cardinality, cursor, category, currency, stock, saleEvidence and URL checks unchanged.
 
@@ -88,8 +88,8 @@ Published once on2026-11-08, then registry metadata/download hashes and isolated
 SHARED-005 is explicitly Complete at accepted Attempt1 after passing review `a2590514fd2d75db56391015ef5460feaefdb0f5`. The exact accepted consumer artifact is Shared5.7.0 with the integrity/SHA256/source recorded above. BACKGROUND-001 and COMMERCE-001 have all explicit prerequisites Complete and are Ready, Attempt0/unclaimed. Historical DATABASE-001/MCP-001 Complete records are preserved; no new MCP scope acceptance is inferred. BACKGROUND-002 waits for BACKGROUND-001; COMMERCE-002 waits for COMMERCE-001/BACKGROUND-002; system tests retain consumer dependency and manual gates. Consumer execution remains a separate claim; no rollout or production send occurs here.
 
 ## Controlling checkout-led scope amendment — 2026-11-08
-Developer explicitly withdrew independent standalone production conversations. This overrides C1 standalone admission language: production owner must be real CheckoutRecovery.shopId/customer; optional Conversation.shopId must agree, missing/mismatched recovery denies before model/provider. Subsequent product discussion retains same recovery identity. Isolated synthetic Studio preview may use existing preview identity only, never fabricated production records or weakened live grants. All generic reference/fresh facts/composer/CAS/send-fence/byte-parity rules remain. SHARED007/008/MCP002 standalone objectives superseded, no standalone publication. Independent009/010 productDetailSelections/PRODUCT_DETAILS correction remains required; inspect actual Background/Commerce on same task branches for unused standalone-only code and checkout-led acceptance before review, preserve historical reports and immutable artifacts.
 
+Developer explicitly withdrew independent standalone production conversations. This overrides C1 standalone admission language: production owner must be real CheckoutRecovery.shopId/customer; optional Conversation.shopId must agree, missing/mismatched recovery denies before model/provider. Subsequent product discussion retains same recovery identity. Isolated synthetic Studio preview may use existing preview identity only, never fabricated production records or weakened live grants. All generic reference/fresh facts/composer/CAS/send-fence/byte-parity rules remain. SHARED007/008/MCP002 standalone objectives superseded, no standalone publication. Independent009/010 productDetailSelections/PRODUCT_DETAILS correction remains required; inspect actual Background/Commerce on same task branches for unused standalone-only code and checkout-led acceptance before review, preserve historical reports and immutable artifacts.
 
 Dependency handoff2026-11-08: canonical Background001 Complete atb9470dd27/AcceptedAttempt2; Background002 Ready Attempt0/unclaimed, developer execution/completion. No standalone release/main/live/follow-on action.
 

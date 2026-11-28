@@ -39,7 +39,6 @@ The adopted ARCH-047 design is **Moda Admin-only authoring**. A saved English so
 
 The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**. They own separate route/action/service/component modules, use stable documented persistence payloads, and must prove their capability with fixtures or injected dependencies when a sibling Admin/Background implementation is not yet complete. The end-to-end system test, not an artificial task chain, verifies their integration.
 
-
 ## Scope
 
 - Own `wrappers/` module and `/system-controls/whatsapp-templates/wrappers/` route/panel. Consume existing definition/locale records and the **Admin-compiled prepared runtime wrapper projection** in `TemplateLocale.localeAst`; never implement a second editor, translation extraction or AST compiler.
@@ -48,7 +47,6 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Explicit SUPER_ADMIN action selects activation audience(s): `SHARED` default, optional `AI` and `HUMAN` override. For each audience update `WhatsAppConversationWrapperActiveSlot.definitionId` with an optimistic compare-and-swap `editVersion` and transactional audit; no database business CHECK or second pointer table. Do not overwrite a concurrent newer activation without re-review.
 - Show existing versus proposed full wrapper (header, response slot, footer and conditional checkout link) in the selected language with audience, first-published time and rollback/replace impact. A new version is created with Clone as New; changing an active template's content in place is forbidden. An older already-reviewed definition can be reactivated through an explicit audited action without modifying its content.
 - Publishing is a platform-level pointer change, **not** copying 20 wrappers into every Shop. Background owns SHARED/AI/HUMAN fallback precedence and final rendering/send eligibility. Admin must not create out-of-window Meta sends or modify the customer checkout.
-
 
 ### Required React component decomposition
 
@@ -65,16 +63,13 @@ Place interactive audience/preview/confirmation state in a dedicated `useWrapper
 
 - No Meta template submission/status, per-shop recovery assignments, Background AST rendering, AI generation, human message authorship, moderation or checkout mutations.
 
-
 ## Requirements
 
 - [x] Exactly one row per activated audience is maintained via technical `audience` PK and versioned CAS; semantic audience-kind/approval checks live in Admin.
 - [x] No `response.body` insertion slot, invalid projection, unmatched 20 languages or incorrect family prevents activation; existing pointer remains unchanged on failure.
 - [x] The global `SHARED` pointer is fallback; optional AI/HUMAN overrides are explicitly selected and the UI shows which audience resolves to which definition.
 
-
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
-
 
 ## Work Items
 
@@ -82,14 +77,11 @@ All server reads/mutations of template management require the existing authentic
 - [x] Create review/activation preview and concurrency/conflict UI without duplicating `authoring/` or `compilation/`.
 - [x] Add audited activation/replacement/reactivation and unsafe/invalid projection tests using stubbed compiled locale records.
 
-
 ## Interfaces / Contracts
 
 **Reads:** `WhatsAppTemplateDefinition`/20 reviewed `WhatsAppTemplateLocale` prepared `localeAst` projections and existing `WhatsAppConversationWrapperActiveSlot`. Prepared projections carry canonical `shopBrand.*` references for the eligible wrapper sections; any optional merchant-context preview reads `ShopBrand` only under the requested shop scope and never persists its values into centrally activated content. **Writes:** slot `definitionId`, `editVersion`, `updatedByAdminId`, `updatedAt`, optionally definition `publishedAt` for first successful activation, and bounded `CommerceAuditEvent`. No `MetaRegistration`, `PublicationTarget` or `WhatsAppTemplateVariant` writes. Consumer `BACKGROUND-005` reads the prepared projection only; no Background authoring AST parser is required.
 
-
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/wrappers/`, components under `src/components/admin/whatsapp-templates/wrappers/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-wrapper-publication.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
-
 
 ## Dependencies
 
@@ -105,12 +97,10 @@ None at task-definition time. Completion of this task does not grant permission 
 - [x] Stale CAS, wrong kind/audience or incomplete translations cannot silently replace a current wrapper; no Meta call is made.
 - [x] Activating new or previous immutable definition changes pointers/audit only; already sent AI/human response contents and checkout records are untouched.
 
-
 ## Validation
 
 - [x] Schema-backed CAS race/replay tests, semantic eligibility and complete-locale fixture tests, exact preview/conditional section UI tests.
 - [x] Auth/audit/rollback and no-provider-network tests; declared lint/typecheck and `git diff --check`.
-
 
 ## Stop Condition
 
@@ -119,7 +109,6 @@ After task-scoped work, acceptance criteria, validation and Completion Report ar
 ## Implementation Notes
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md`, `docs/developer-task-workflow.md`, the revised parent ARCH-047 architecture and current Admin repository instructions. Use launcher-prepared dedicated parent/implementation task worktrees and mirrored `task/<TASK_ID>` branches. In the Completion Report record prepared physical worktree isolation, start sync, recursive submodule materialisation, exact test commands/outcomes, changed paths and commits. The implementing agent must not modify `docs/decisions/**/_index.md`, another task, the parent architecture, another repository, or follow-on work. Reuse existing Admin Store Category AST authoring and Merchant Pricing translation UX patterns without copying their domain services or creating a competing generic runtime. Inspect the actual worktree state before implementation; the attached snapshot is not a live Git-branch guarantee.
-
 
 ## Completion Report
 
@@ -197,7 +186,6 @@ Developer reconciliation update (2026-10-25): the evidence gaps noted above are 
 ### Architectural Concerns
 
 No new database tables, shared contracts, Meta submission calls, merchant assignments or Background delivery semantics were introduced. Runtime fallback precedence and final WhatsApp send eligibility remain Background responsibilities. This is submitted for architect verification, not architect acceptance.
-
 
 ## Architect Review
 

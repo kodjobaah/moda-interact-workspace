@@ -13,13 +13,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-BACKGROUND-008
+  - ARCH-002-BACKGROUND-008
 enables:
-- ARCH-002-GATEWAY-006
-- ARCH-002-SYSTEM-TEST-002
+  - ARCH-002-GATEWAY-006
+  - ARCH-002-SYSTEM-TEST-002
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Integrate bounded GenAI operational metrics in messaging worker
 
 ## Objective
@@ -97,50 +98,50 @@ Ready for Review
 ### Work Completed
 
 - Removed the explicit `recordMetrics: false` suppression from the accepted
-	conversation-turn, CommerceAgent invocation and product-search tool helper
-	boundaries, activating the shared default-on operational metrics.
+  conversation-turn, CommerceAgent invocation and product-search tool helper
+  boundaries, activating the shared default-on operational metrics.
 - Preserved all three bounded `mapException` callbacks and the accepted Worker
-	-> turn -> agent -> tool active-context span structure.
+  -> turn -> agent -> tool active-context span structure.
 - Added isolated in-memory OpenTelemetry metric evidence for all six exact
-	shared metric names, duration aggregation, success/error counts and exact
-	bounded attribute sets.
+  shared metric names, duration aggregation, success/error counts and exact
+  bounded attribute sets.
 - Fuzzed 40 distinct agent/provider/model/tool names and proved they produce no
-	additional metric series or sensitive metric attributes.
+  additional metric series or sensitive metric attributes.
 - Proved the six shared instruments are constructed once per module load and
-	are not recreated across invocations.
+  are not recreated across invocations.
 - Proved synchronous duration-histogram and operation-counter failures cannot
-	replace successful application results or original application errors.
+  replace successful application results or original application errors.
 
 ### Validation Results
 
 - Initial `npm test -- --run
-	tests/unit/observability/genai-observability.test.ts`: expected discriminating
-	result, 2 existing span tests passed and only the obsolete metric-suppression
-	assertion failed before it was updated.
+tests/unit/observability/genai-observability.test.ts`: expected discriminating
+  result, 2 existing span tests passed and only the obsolete metric-suppression
+  assertion failed before it was updated.
 - `npm test -- --run tests/unit/observability/genai-observability.test.ts
-	tests/unit/observability/genai-metrics.test.ts`: passed, 2 files and 4 tests.
+tests/unit/observability/genai-metrics.test.ts`: passed, 2 files and 4 tests.
 - `npm test -- --run tests/unit/agent/commerce.agent.pipeline.test.ts
-	tests/unit/observability/genai-observability.test.ts
-	tests/unit/observability/genai-metrics.test.ts
-	tests/unit/runtime/observability-startup.test.ts`: passed, 4 files and 13
-	tests, including the final post-edit run.
+tests/unit/observability/genai-observability.test.ts
+tests/unit/observability/genai-metrics.test.ts
+tests/unit/runtime/observability-startup.test.ts`: passed, 4 files and 13
+  tests, including the final post-edit run.
 - `npm test -- --run tests/unit/observability/genai-metrics.test.ts`: passed, 1
-	file and 1 test after strengthening duration histogram assertions.
+  file and 1 test after strengthening duration histogram assertions.
 - `./node_modules/.bin/tsc --noEmit`: passed.
 - `npm test`: 16 files passed, 1 failed and 2 skipped; 89 tests passed, 1 failed
-	and 4 skipped. The sole failure is the unchanged, unrelated
-	`recovery-routing.service.test.ts` mock omission for
-	`prisma.customerPhone.findMany` recorded by BACKGROUND-008.
+  and 4 skipped. The sole failure is the unchanged, unrelated
+  `recovery-routing.service.test.ts` mock omission for
+  `prisma.customerPhone.findMany` recorded by BACKGROUND-008.
 - `npm run build`: passed, including Prisma Client generation and TypeScript
-	production compilation.
+  production compilation.
 - `"$MODA_WORKSPACE_ROOT/scripts/workspace-doctor.sh" --quick`: passed 7 checks;
-	retained the existing `moda-interact/.npmrc` `shamefully-hoist` warning and
-	reported the workspace development baseline acceptable.
+  retained the existing `moda-interact/.npmrc` `shamefully-hoist` warning and
+  reported the workspace development baseline acceptable.
 - `git diff --check`: passed for `moda-interact-background`.
 - VS Code diagnostics: no errors in changed production or test files.
 - Exact source scans: zero `recordMetrics: false` suppressions, three canonical
-	shared GenAI helper boundaries, three safe exception mappers and no local
-	GenAI metric instruments/helpers.
+  shared GenAI helper boundaries, three safe exception mappers and no local
+  GenAI metric instruments/helpers.
 
 ### Deviations
 
@@ -149,17 +150,17 @@ None.
 ### Assumptions
 
 - The accepted BACKGROUND-006 BullMQ active-context guarantee remains the
-	Worker parent boundary for the turn helper, as accepted in BACKGROUND-008.
+  Worker parent boundary for the turn helper, as accepted in BACKGROUND-008.
 
 ### Unresolved Issues
 
 - The existing recovery-routing unit-test mock still lacks
-	`prisma.customerPhone.findMany`, leaving the unrelated full suite one test
-	short of green.
+  `prisma.customerPhone.findMany`, leaving the unrelated full suite one test
+  short of green.
 - `npm install` continues to report three high-severity audit findings and five
-	pending install-script approvals already observed in BACKGROUND-008. They did
-	not block focused tests, typecheck, build or workspace validation and were not
-	remediated within this bounded task.
+  pending install-script approvals already observed in BACKGROUND-008. They did
+  not block focused tests, typecheck, build or workspace validation and were not
+  remediated within this bounded task.
 
 ### Architectural Concerns
 
@@ -278,4 +279,3 @@ The background dependency contribution to `ARCH-002-GATEWAY-006` and
 Do not transition either cross-domain task to Ready from this background-only
 archive. `moda_architect` must evaluate their remaining dependencies against the
 current full ARCH-002 coordination documents.
-

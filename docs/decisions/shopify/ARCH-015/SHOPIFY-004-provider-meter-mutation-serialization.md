@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-015-SHARED-001
-- ARCH-015-DATABASE-002
-- ARCH-015-SHOPIFY-003
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-SHARED-001
+  - ARCH-015-DATABASE-002
+  - ARCH-015-SHOPIFY-003
+  - ARCH-015-BACKGROUND-003
 enables:
-- ARCH-015-BACKGROUND-004
+  - ARCH-015-BACKGROUND-004
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -375,7 +375,7 @@ automaticCorrectionUsageEventId: string | null;
 In `reactivateRefund(...)`, the initial eligibility check MUST include:
 
 ```ts
-refund.automaticCorrectionUsageEventId !== null
+refund.automaticCorrectionUsageEventId !== null;
 ```
 
 as a blocking condition.
@@ -596,7 +596,7 @@ Per-card purchase reporting messages MUST use `offer.pendingPurchase`, not `topU
 For `offer.blockReason === "REFUND_PENDING"`, render:
 
 ```js
-i18n.t("billingCommerce.topup.meterBusy")
+i18n.t("billingCommerce.topup.meterBusy");
 ```
 
 The existing bottom-of-panel latest-purchase summary may remain; it is informational only and MUST NOT control all offer buttons.
@@ -653,7 +653,8 @@ function calculateProviderUsageCost(price, quantity) {
     quantity.lt(0) ||
     !Array.isArray(price.tiers) ||
     price.tiers.length === 0
-  ) return null;
+  )
+    return null;
 
   const tiers = price.tiers.map((tier) => ({
     upTo: tier.upTo === null ? null : new Prisma.Decimal(tier.upTo),
@@ -661,7 +662,11 @@ function calculateProviderUsageCost(price, quantity) {
     flat: parseProviderDecimal(tier.amount),
   }));
 
-  if (tiers.some((tier) => !tier.unit || !tier.flat || tier.unit.lt(0) || tier.flat.lt(0))) {
+  if (
+    tiers.some(
+      (tier) => !tier.unit || !tier.flat || tier.unit.lt(0) || tier.flat.lt(0),
+    )
+  ) {
     return null;
   }
 
@@ -741,7 +746,9 @@ const providerPrice = offer.providerNextUnitCost
 and:
 
 ```jsx
-{providerPrice ? <p>{providerPrice}</p> : null}
+{
+  providerPrice ? <p>{providerPrice}</p> : null;
+}
 ```
 
 Do NOT append `billingCommerce.perConversation` or any other per-conversation wording.

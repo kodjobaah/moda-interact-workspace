@@ -6,10 +6,7 @@ import {
   LoggerProvider,
 } from "@opentelemetry/sdk-logs";
 
-export {
-  getNodeLokiLoggingRuntime,
-  initNodeLokiLogging,
-} from "./node/loki.js";
+export { getNodeLokiLoggingRuntime, initNodeLokiLogging } from "./node/loki.js";
 export type {
   NodeLokiLoggingOptions,
   NodeLokiLoggingRuntime,
@@ -154,9 +151,7 @@ export function initNodeOpenTelemetryLogging(
   return runtime;
 }
 
-export function getNodeOpenTelemetryLoggingRuntime():
-  | NodeOpenTelemetryLoggingRuntime
-  | null {
+export function getNodeOpenTelemetryLoggingRuntime(): NodeOpenTelemetryLoggingRuntime | null {
   return runtime;
 }
 
@@ -185,9 +180,9 @@ export function resolveLogsEndpoint(
   return `${normalized}/v1/logs`;
 }
 
-export function parseOtlpHeaders(value: string | undefined):
-  | Record<string, string>
-  | undefined {
+export function parseOtlpHeaders(
+  value: string | undefined,
+): Record<string, string> | undefined {
   const raw = nonEmpty(value);
   if (!raw) {
     return undefined;
@@ -208,8 +203,7 @@ export function parseOtlpHeaders(value: string | undefined):
       continue;
     }
 
-    headers[safeDecodeURIComponent(rawKey)] =
-      safeDecodeURIComponent(rawValue);
+    headers[safeDecodeURIComponent(rawKey)] = safeDecodeURIComponent(rawValue);
   }
 
   return Object.keys(headers).length > 0 ? headers : undefined;
@@ -285,9 +279,7 @@ function envInt(name: string, fallback: number): number {
   }
 
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0
-    ? Math.floor(parsed)
-    : fallback;
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }
 
 function safeDecodeURIComponent(value: string): string {

@@ -167,9 +167,11 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
+
 Review ready — ADMIN-004 implementation and validation are complete. The implementation task branch is committed and pushed; the parent task report is committed and pushed separately. Architect Review remains pending.
 
 ### Files Changed
+
 - Implementation commit `dc6641249225857404192aff72ced80647c1d2d8` on `task/ARCH-023-ADMIN-004`:
   - `src/lib/admin/merchant-knowledge-plan-policy.ts`
   - `src/app/actions/feature-catalogue.ts`
@@ -177,31 +179,39 @@ Review ready — ADMIN-004 implementation and validation are complete. The imple
 - Parent task report: this file only.
 
 ### Work Completed
+
 Updated the fixed `merchant_knowledge` descriptor to `MERCHANT_OPT_IN`, keeping `active=true` and `systemRequired=false`. The existing authenticated Merchant Pricing Plan save path now accepts the target state without a mode mutation, and transitions only the exact legacy `ALWAYS_ENABLED`/active/non-system-required state by changing `activationMode` only and writing one normal `PLAN_CATALOG_CHANGED` audit. Other incompatible states fail closed, including a compare-and-set race. The generic feature catalogue cannot create a duplicate fixed Feature or deactivate it. The transition preserves plan mappings and C2 configuration and never creates or mutates `ShopFeaturePreference` rows.
 
 ### Validation Results
+
 Passed: 11 focused ADMIN-004 unit tests; 12 existing Admin security regressions; changed-file ESLint and diagnostics; `npm run build` (including TypeScript validation); and `git diff --check`. The repository does not declare an `npm run typecheck` script, so that exact command is unavailable; the production build completed its TypeScript validation successfully.
 
 Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-004`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-004`; both task branches are `task/ARCH-023-ADMIN-004`. The parent claim commit was `357d10223fa5461aa5021bcd2c1f8371dbf3d6ee`; parent and implementation branches were already current with `origin/main` at preparation. Recursive submodule synchronization and initialization passed, with `database` at `2eb17ee910491e8f9df82736fc0a843844415947`. No shared implementation checkout was switched or mutated. Implementation commit `dc6641249225857404192aff72ced80647c1d2d8` is pushed to `origin/task/ARCH-023-ADMIN-004`.
 
 ### Deviations
+
 No schema/migration changes or per-shop preference seeding were required. The repository lacks the requested standalone typecheck script; TypeScript validation was provided by the successful production build.
 
 ### Assumptions
+
 The existing authenticated plan create/update flow is the supported operational path for reconciling a previously accepted legacy Feature row, as specified by R3.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None. The task is handed off for architect review; no Architect Review fields have been edited.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1.
 
 ### Review Notes
+
 The implementation satisfies the bounded merchant-opt-in reconciliation contract. The fixed `merchant_knowledge` descriptor is now `MERCHANT_OPT_IN`, `systemRequired=false`, `active=true`; the exact previously accepted `ALWAYS_ENABLED` state is transitioned with a compare-and-set `updateMany` that changes only `activationMode`, and the transition writes one normal `PLAN_CATALOG_CHANGED` audit event in the existing authenticated pricing-plan transaction. Already-target state is idempotent and incompatible state fails closed.
 
 The generic Feature catalogue cannot create a competing `merchant_knowledge` Feature and cannot deactivate an active one. No `ShopFeaturePreference` row is created or modified by the reconciliation, so missing preference remains OFF as required. Existing Merchant Pricing Plan mappings and C2 configuration remain owned by the unchanged generic plan persistence path.
@@ -209,6 +219,7 @@ The generic Feature catalogue cannot create a competing `merchant_knowledge` Fea
 The submitted task frontmatter still carried the launcher claim while the body had already been moved to `review`; this architect reconciliation clears `executor` / `claimed_at` while completing the task. No implementation retry is required for that metadata mismatch.
 
 ### Reviewed Files
+
 - `src/lib/admin/merchant-knowledge-plan-policy.ts`
 - `src/app/actions/feature-catalogue.ts`
 - `tests/unit/merchant-knowledge-plan-policy.test.ts`
@@ -217,6 +228,7 @@ The submitted task frontmatter still carried the launcher claim while the body h
 - this task definition / Completion Report
 
 ### Validation Reviewed
+
 - 11 focused ADMIN-004 tests passed.
 - 12 existing Admin security regressions passed.
 - `npm run build` passed; this repository has no standalone `typecheck` script and `next.config.ts` does not disable Next.js build-time TypeScript validation.
@@ -225,7 +237,9 @@ The submitted task frontmatter still carried the launcher claim while the body h
 - implementation commit `dc6641249225857404192aff72ced80647c1d2d8` and parent report commit `b55a7e8e` were reported pushed with clean task worktrees.
 
 ### Architecture Conformance
+
 Conformant. This task changes only the fixed Feature product-policy mode and supported reconciliation path. It does not seed merchant activation, alter billing materialisation, change C2 plan configuration, or implement Shopify/Background/Commerce activation behaviour.
 
 ### Follow-up
+
 `ARCH-023-SHOPIFY-004` and `ARCH-023-BACKGROUND-006` are promoted to Ready. `ARCH-023-COMMERCE-004` remains Pending because `ARCH-023-COMMERCE-002` is not Complete. `ARCH-023-BACKGROUND-004` is corrected to Pending until its newly declared `BACKGROUND-006` dependency completes.

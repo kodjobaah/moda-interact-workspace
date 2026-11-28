@@ -101,9 +101,7 @@ test("sink failure never escapes to caller", () => {
     },
   });
 
-  assert.doesNotThrow(() =>
-    logger.error("log.sink.failure", { safe: true }),
-  );
+  assert.doesNotThrow(() => logger.error("log.sink.failure", { safe: true }));
 });
 
 test("handles circular structures without throwing", () => {

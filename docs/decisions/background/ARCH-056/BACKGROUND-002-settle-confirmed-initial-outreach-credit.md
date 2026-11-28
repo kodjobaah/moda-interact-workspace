@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-028-BACKGROUND-004
-- ARCH-028-BACKGROUND-009
+  - ARCH-028-BACKGROUND-004
+  - ARCH-028-BACKGROUND-009
 enables:
-- ARCH-056-BACKGROUND-004
-- ARCH-056-SYSTEM-TEST-001
-created: '2026-11-03'
+  - ARCH-056-BACKGROUND-004
+  - ARCH-056-SYSTEM-TEST-001
+created: "2026-11-03"
 updated: 2026-11-04
 ---
 
@@ -48,20 +48,20 @@ BS-04 is a smaller edit in the same paid owner: its successful Shopify commit re
 
 One repository: `moda-interact-background`. Paths below are relative to that repository. The matching JSON manifest is the machine-readable allowlist; it contains no additional implementation scope.
 
-| Production path | Operation | Purpose |
-|---|---|---|
-| `src/services/recovery-billing.service.ts` | Modify | Add the two public ports and re-export their types; preserve existing call signatures |
-| `src/services/recovery-billing/recovery-billing.types.ts` | Modify | Define the exact public input/result unions below |
-| `src/services/recovery-billing/recovery-reservation-lifecycle.service.ts` | Modify | Require a positive committed outcome and own final legacy-commit diagnostics |
-| `src/services/recovery-billing/initial-outreach-credit.service.ts` | Create | Own transaction, evidence classification, exact-owner dispatch, retry and emitted diagnostics for the two ports |
-| `src/services/recovery-billing/initial-outreach-credit-evidence.ts` | Create | Read and validate tenant, initial-attempt, message, usage and credit-owner evidence |
-| `src/services/recovery-delivery-compensation/lineage.ts` | Modify narrowly | Extract the existing exact source lookup for reuse; preserve compensation's missing-source rejection |
-| `src/services/recovery-delivery-compensation/reconcile.service.ts` | Modify narrowly | Lock the owned Shop before the message for the correction event's implicit FK; own final/retry compensation diagnostics |
-| `src/services/whatsapp-provider-status.service.ts` | Modify narrowly | Order Shop before status/usage writes; own truthful status and after-commit diagnostics while preserving status policy |
-| `src/services/free-recovery-reservation.service.ts` | Modify narrowly | Add a same-transaction commit wrapper around the existing ledger owner |
-| `src/services/purchased-recovery-reservation.service.ts` | Modify narrowly | Add the same wrapper; preserve purchase-lot/refund behavior |
-| `src/services/promotional-recovery-reservation.service.ts` | Modify narrowly | Add the same wrapper and a read-only retained-source eligibility wrapper |
-| `src/services/paid-included-recovery-reservation.service.ts` | Modify narrowly | Add the same wrapper, a typed existing-period rejection, and remove BS-04's duplicate read |
+| Production path                                                           | Operation       | Purpose                                                                                                                 |
+| ------------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `src/services/recovery-billing.service.ts`                                | Modify          | Add the two public ports and re-export their types; preserve existing call signatures                                   |
+| `src/services/recovery-billing/recovery-billing.types.ts`                 | Modify          | Define the exact public input/result unions below                                                                       |
+| `src/services/recovery-billing/recovery-reservation-lifecycle.service.ts` | Modify          | Require a positive committed outcome and own final legacy-commit diagnostics                                            |
+| `src/services/recovery-billing/initial-outreach-credit.service.ts`        | Create          | Own transaction, evidence classification, exact-owner dispatch, retry and emitted diagnostics for the two ports         |
+| `src/services/recovery-billing/initial-outreach-credit-evidence.ts`       | Create          | Read and validate tenant, initial-attempt, message, usage and credit-owner evidence                                     |
+| `src/services/recovery-delivery-compensation/lineage.ts`                  | Modify narrowly | Extract the existing exact source lookup for reuse; preserve compensation's missing-source rejection                    |
+| `src/services/recovery-delivery-compensation/reconcile.service.ts`        | Modify narrowly | Lock the owned Shop before the message for the correction event's implicit FK; own final/retry compensation diagnostics |
+| `src/services/whatsapp-provider-status.service.ts`                        | Modify narrowly | Order Shop before status/usage writes; own truthful status and after-commit diagnostics while preserving status policy  |
+| `src/services/free-recovery-reservation.service.ts`                       | Modify narrowly | Add a same-transaction commit wrapper around the existing ledger owner                                                  |
+| `src/services/purchased-recovery-reservation.service.ts`                  | Modify narrowly | Add the same wrapper; preserve purchase-lot/refund behavior                                                             |
+| `src/services/promotional-recovery-reservation.service.ts`                | Modify narrowly | Add the same wrapper and a read-only retained-source eligibility wrapper                                                |
+| `src/services/paid-included-recovery-reservation.service.ts`              | Modify narrowly | Add the same wrapper, a typed existing-period rejection, and remove BS-04's duplicate read                              |
 
 Own the unit and integration paths listed under Validation. Existing finalization, Shopify initiation, Woo orchestration and outbound fence files belong to `ARCH-056-BACKGROUND-004` and `ARCH-056-BACKGROUND-003`, respectively; they are read-only dependencies here. No file has two implementation owners.
 
@@ -101,16 +101,16 @@ Inside one Serializable transaction, read a routing-only message/Conversation/Sh
 
 Confirmation means durable status `SENT`, `DELIVERED` or `READ`, nonnull actual `sentAt`, and no contradictory failure evidence. A missing/PENDING/FAILED message yields `message-not-confirmed`; inconsistent ownership yields `lineage-conflict`. A permit timestamp or provider ID alone is insufficient. Settlement does not require the attempt to still have a particular scheduler status, because confirmed replay may follow progress already recorded by its consumer.
 
-| Exact reservation state/evidence | Result and mutation boundary |
-|---|---|
-| `RESERVED`, positive message, coherent owner | Commit through that owner's same-transaction wrapper; verify resulting reservation and original positive UsageEvent before returning `settled/committed` |
-| `COMMITTED`, exact valid positive event, no correction/compensation | Return `settled/already-committed`; preserve the original event/provider/period, even after a plan or period change |
-| `AMBIGUOUS` | `held/reservation-ambiguous`; no state change |
-| `RELEASED` | `held/reservation-released`; no reactivation, fresh reserve or charge |
-| Any compensation field or exact correction evidence | `held/reservation-compensated`; never overwrite or recharge |
-| Paid `RESERVED` with original period no longer current/open | `held/paid-period-not-current`; do not choose a new period or credit kind |
-| Missing/nonunique/wrong-owner/wrong-event lineage | `held/lineage-conflict`; no guessed source |
-| Owner does not positively return the expected committed state | `held/settlement-not-committed`; no successful finalization permission |
+| Exact reservation state/evidence                                    | Result and mutation boundary                                                                                                                             |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RESERVED`, positive message, coherent owner                        | Commit through that owner's same-transaction wrapper; verify resulting reservation and original positive UsageEvent before returning `settled/committed` |
+| `COMMITTED`, exact valid positive event, no correction/compensation | Return `settled/already-committed`; preserve the original event/provider/period, even after a plan or period change                                      |
+| `AMBIGUOUS`                                                         | `held/reservation-ambiguous`; no state change                                                                                                            |
+| `RELEASED`                                                          | `held/reservation-released`; no reactivation, fresh reserve or charge                                                                                    |
+| Any compensation field or exact correction evidence                 | `held/reservation-compensated`; never overwrite or recharge                                                                                              |
+| Paid `RESERVED` with original period no longer current/open         | `held/paid-period-not-current`; do not choose a new period or credit kind                                                                                |
+| Missing/nonunique/wrong-owner/wrong-event lineage                   | `held/lineage-conflict`; no guessed source                                                                                                               |
+| Owner does not positively return the expected committed state       | `held/settlement-not-committed`; no successful finalization permission                                                                                   |
 
 Validate the committed event using the existing positive-usage helper: exact reservation event ID, Shop, recovery metric, positive quantity, source type, source ID/key, idempotency key, allowed original provider, and absence of correction. Additionally verify paid event billing-period identity against the original counter, and provider against the durable Shop platform. A `COMMITTED` label or nonnull event ID alone is insufficient. An invalid original event must not be replaced.
 
@@ -128,12 +128,12 @@ An existing source is reusable only if it is the single exact original source, `
 
 Resolve current eligibility through transaction-bound existing `EffectiveBillingPolicyResolver` and, on its exact `NO_CONTRACT` branch, `PostContractRecoveryPolicyResolver`. Keep existing feature/new-recoveries-pause and subscription eligibility gates. Map recognized domain denials to the declared held reasons; other resolver/infrastructure errors propagate unchanged. Preserve the existing Woo frozen/post-coverage durable-credit exception; it does not authorize paid-included reuse. Final outbound policy/consent/pause checks remain with the final fence.
 
-| Stored source | Reconstructed admission and eligibility |
-|---|---|
-| Lifetime-free counter | `kind: "lifetime-free"`, same key and reservation, current accepted effective or verified post-contract durable policy; no second allowance check for an already reserved unit |
-| Purchased counter and exact lot | `kind: "purchased"`, same key/lot/reservation, current accepted effective or verified post-contract durable policy; preserve owner-supported ACTIVE/WITHDRAWN retained-reservation accounting and require its reserved unit still exists |
-| Promotional grant | `kind: "promotional"`, same selected grant/key/reservation, current effective policy and the owner's read-only current selection/campaign/scope/date eligibility; mismatch holds |
-| Paid period counter | `kind: "paid"`, same period/key/reservation, current paid plan with nonfrozen subscription, current policy phase `ACTIVE` (`policy.billingPeriod.phase`) and persisted period status `OPEN` (`BillingPeriod.status`), plus valid provider coverage under existing policy; old/draining/expired period holds |
+| Stored source                   | Reconstructed admission and eligibility                                                                                                                                                                                                                                                                     |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lifetime-free counter           | `kind: "lifetime-free"`, same key and reservation, current accepted effective or verified post-contract durable policy; no second allowance check for an already reserved unit                                                                                                                              |
+| Purchased counter and exact lot | `kind: "purchased"`, same key/lot/reservation, current accepted effective or verified post-contract durable policy; preserve owner-supported ACTIVE/WITHDRAWN retained-reservation accounting and require its reserved unit still exists                                                                    |
+| Promotional grant               | `kind: "promotional"`, same selected grant/key/reservation, current effective policy and the owner's read-only current selection/campaign/scope/date eligibility; mismatch holds                                                                                                                            |
+| Paid period counter             | `kind: "paid"`, same period/key/reservation, current paid plan with nonfrozen subscription, current policy phase `ACTIVE` (`policy.billingPeriod.phase`) and persisted period status `OPEN` (`BillingPeriod.status`), plus valid provider coverage under existing policy; old/draining/expired period holds |
 
 Physical source ownership is authoritative. Mapping the lifetime-free counter to the existing `lifetime-free` admission label does not change its source. Post-contract free/purchased reuse requires the existing verified-ended-subscription rule; no new entitlement is inferred. Do not call `admit`, `reserve` or `revalidateBeforeProvider` to implement retained-source reuse: the latter can release and switch sources.
 
@@ -168,15 +168,15 @@ Use the installed `@modainteract/moda-interact-shared/logging` `createLogger` an
 
 The following ownership is fixed. A material source failure has one detailed service-owned diagnostic. Downstream records may add job/stage correlation, but must not blindly repeat full source diagnostics at every layer. Existing generic worker failure records are context, not a substitute for these selected direct-service guarantees.
 
-| Owner and operation | Stable event | Required behavior |
-|---|---|---|
-| `InitialOutreachCreditService.settleConfirmedInitialOutreach` / `revalidateExistingInitialOutreach` | `recovery.initial_outreach_credit.failed` | Emit `error` once for an unexpected final failure or exhausted transaction retry, after its transaction has rolled back; rethrow the same object |
-| The same two operations, semantic result | `recovery.initial_outreach_credit.held` | Emit `warn` with the exact held reason and stage; when a caught policy/lineage/period error produced the hold, include its original safe name/message and known cause rather than just the reason. With no originating exception, omit exception/provider fields |
-| The same operations, recognized conflict followed by another attempt | `recovery.initial_outreach_credit.retry` | Emit `warn` with actual attempt, configured limit, stage and recognized conflict reason/code; preserve an actually supplied original message. The exhausted attempt belongs to `.failed`, not another retry event |
-| Legacy `RecoveryReservationLifecycleService.commit` | `recovery.credit_commit.failed` | Own final errors of the compatibility successful-commit path, including `RecoveryCreditNotCommittedError`; log expected source identity and observed outcome/status when known, then rethrow the same object. This path is separate from the new coordinator's direct same-transaction owner calls |
-| `RecoveryDeliveryCompensationService.withRetry`, used by both `reconcile` and `reconcileMessage` | `recovery.delivery_compensation.failed` / `recovery.delivery_compensation.retry` | Own original final/retried compensation errors for asynchronous and synchronous callers. Log after rollback, with the exact input identity and last attempted stage; keep existing outcome and retry semantics |
-| Provider-status SQL transaction and its existing bounded retry | `whatsapp.provider_status.failed` / `whatsapp.provider_status.retry` | Own original status-transaction failures with `stage: "status_transaction"`; exhaustion is a final error, not successful application. Keep the actual provider-message ID and incoming normalized status |
-| Provider-status continuation after a committed status transaction | `whatsapp.provider_status.downstream_failed` | Record `statusTransactionCommitted: true` and exact stage. For `compensation`, reference `sourceDiagnosticEvent: "recovery.delivery_compensation.failed"` and the same provider-message ID; the compensation owner already emits the original error, so this is context only. For failure/positive reachability or merchant notification, this existing status caller owns the original error diagnostic because those selected calls have no lower service failure-log owner. Rethrow unchanged in every case |
+| Owner and operation                                                                                 | Stable event                                                                     | Required behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InitialOutreachCreditService.settleConfirmedInitialOutreach` / `revalidateExistingInitialOutreach` | `recovery.initial_outreach_credit.failed`                                        | Emit `error` once for an unexpected final failure or exhausted transaction retry, after its transaction has rolled back; rethrow the same object                                                                                                                                                                                                                                                                                                                                                               |
+| The same two operations, semantic result                                                            | `recovery.initial_outreach_credit.held`                                          | Emit `warn` with the exact held reason and stage; when a caught policy/lineage/period error produced the hold, include its original safe name/message and known cause rather than just the reason. With no originating exception, omit exception/provider fields                                                                                                                                                                                                                                               |
+| The same operations, recognized conflict followed by another attempt                                | `recovery.initial_outreach_credit.retry`                                         | Emit `warn` with actual attempt, configured limit, stage and recognized conflict reason/code; preserve an actually supplied original message. The exhausted attempt belongs to `.failed`, not another retry event                                                                                                                                                                                                                                                                                              |
+| Legacy `RecoveryReservationLifecycleService.commit`                                                 | `recovery.credit_commit.failed`                                                  | Own final errors of the compatibility successful-commit path, including `RecoveryCreditNotCommittedError`; log expected source identity and observed outcome/status when known, then rethrow the same object. This path is separate from the new coordinator's direct same-transaction owner calls                                                                                                                                                                                                             |
+| `RecoveryDeliveryCompensationService.withRetry`, used by both `reconcile` and `reconcileMessage`    | `recovery.delivery_compensation.failed` / `recovery.delivery_compensation.retry` | Own original final/retried compensation errors for asynchronous and synchronous callers. Log after rollback, with the exact input identity and last attempted stage; keep existing outcome and retry semantics                                                                                                                                                                                                                                                                                                 |
+| Provider-status SQL transaction and its existing bounded retry                                      | `whatsapp.provider_status.failed` / `whatsapp.provider_status.retry`             | Own original status-transaction failures with `stage: "status_transaction"`; exhaustion is a final error, not successful application. Keep the actual provider-message ID and incoming normalized status                                                                                                                                                                                                                                                                                                       |
+| Provider-status continuation after a committed status transaction                                   | `whatsapp.provider_status.downstream_failed`                                     | Record `statusTransactionCommitted: true` and exact stage. For `compensation`, reference `sourceDiagnosticEvent: "recovery.delivery_compensation.failed"` and the same provider-message ID; the compensation owner already emits the original error, so this is context only. For failure/positive reachability or merchant notification, this existing status caller owns the original error diagnostic because those selected calls have no lower service failure-log owner. Rethrow unchanged in every case |
 
 Use fixed stage values local to the operation. For initial credit: `identity`, `policy`, `source_lookup`, `source_commit`, `committed_usage_verification`. For compensation: `identity`, `source_lookup`, `source_release`, `source_correction`, `outbound_usage_cleanup`. For post-status work: `compensation`, `failure_reachability`, `positive_reachability`, `merchant_notification`. Keep stage and correlation state local to the current invocation/attempt, never in shared mutable fields on a singleton service or logger. Update the diagnostic stage immediately before the operation it describes. A transaction commit failure remains attached to its enclosing operation/last attempted stage; do not claim a later stage executed. Reset per-attempt diagnostic context before retrying so an earlier failed attempt cannot misattribute a later failure to stale Shop/source evidence.
 
@@ -189,7 +189,6 @@ For database failures, separately copy only actually supplied, allowlisted diagn
 Move the existing `whatsapp.provider_status.applied` emission to after the status transaction and its retry wrapper have successfully returned. Keep its event name/outcome semantics, but do not emit it for a transaction that rolls back or whose commit fails. A later compensation/reachability/notification failure may follow this committed-status event and must clearly carry `statusTransactionCommitted: true`; it cannot relabel committed status persistence as rolled back or acknowledge the whole provider job as successful.
 
 Every exception-to-hold translation, the legacy nonpositive commit guard, exhausted retry, and selected after-commit failure must be covered by an emitted-record test below. Do not suppress a material original diagnostic because the caller will receive `held` or because SQL status persistence already committed.
-
 
 The purchased reserve P2002-to-empty-conflict conversion and existing empty internal conflict classes are recorded baseline limitations, not authorized reserve/retry-helper changes. Preserve an actually supplied original message; when it is empty, report explicit internal reason, stage and real retry state without inventing provider wording. The four source services remain ledger owners and do not each gain an identical catch-and-log wrapper. No new production/test path, Shared release, generic sanitizer, logger, cause-graph walker or transport is authorized. The selected WhatsApp worker diagnostic boundary belongs to BG001; this task does not edit that worker.
 
@@ -219,13 +218,15 @@ export type InitialOutreachCreditIdentity = {
   outreachAttemptId: string;
 };
 
-export type ConfirmedInitialOutreachCreditInput = InitialOutreachCreditIdentity & {
-  outboundMessageId: string;
-};
+export type ConfirmedInitialOutreachCreditInput =
+  InitialOutreachCreditIdentity & {
+    outboundMessageId: string;
+  };
 
-export type ExistingInitialOutreachCreditInput = InitialOutreachCreditIdentity & {
-  outboundMessageId: string | null;
-};
+export type ExistingInitialOutreachCreditInput =
+  InitialOutreachCreditIdentity & {
+    outboundMessageId: string | null;
+  };
 
 export type ConfirmedInitialOutreachSettlement =
   | {
@@ -699,7 +700,6 @@ The required preservation gate still fails before exercising twelve owner-concur
 
 Changes Requested. Set `status: ready`, clear executor/claimed_at, preserve Attempt 2. The next normal launcher claim creates Attempt 3. BG004 and SYSTEM-TEST-001 remain gated. Preserve historical reports and do not claim BS-05 or ARCH-028-BACKGROUND-013 is resolved. No implementation source was changed, and no branch was merged. This parent review/scope overlay is local and uncommitted/unpushed pending publication.
 
-
 ## Architect Re-review — Changes Requested (Attempt 2 follow-up, 2026-11-04)
 
 ### Resolved findings
@@ -725,7 +725,6 @@ Continue diagnosis using the existing fixture read-only and BG002-owned regressi
 
 Changes Requested for the remaining required validation failure; no additional production defect was identified in this correction. Keep `status: ready`, Attempt 2, executor/claimed_at null. No downstream task is promoted: BG004 and SYSTEM-TEST-001 remain gated. The implementation correction is still uncommitted/unpushed, so this review does not identify it as published or complete. Reconcile implementation-owned checklist/report text and publish the corrected implementation before resubmission. This architect addendum is local; no implementation files were changed, no commits or pushes were performed, and nothing was merged.
 
-
 ## Architect Review — Changes Requested (Attempt 3, 2026-11-04)
 
 ### Resolved implementation and fixture findings
@@ -734,7 +733,7 @@ Reviewed the nine local implementation-file changes on `a5953b9def12b91b79b02b58
 
 ### P2 — Complete the required final-permit/settlement evidence
 
-The open acceptance item is still an explicit BG002 validation obligation. Validation case 8 requires honest winner predicates: a PENDING permit winner makes settlement hold, and a confirmed-settlement winner makes the fence refuse another provider request. The task says full actual-fence integration is *also* checked in BG003; it does not transfer all BG002 proof to that task.
+The open acceptance item is still an explicit BG002 validation obligation. Validation case 8 requires honest winner predicates: a PENDING permit winner makes settlement hold, and a confirmed-settlement winner makes the fence refuse another provider request. The task says full actual-fence integration is _also_ checked in BG003; it does not transfer all BG002 proof to that task.
 
 BG003 is accepted and its code is incorporated in this worktree. Its `initial-outreach-admission-races.integration.test.ts` uses a synthetic owner transaction that directly mutates counters/reservations and inserts a fixture ledger event; it does not invoke `InitialOutreachCreditService.settleConfirmedInitialOutreach`. BG002's parent-FK test proves one Shop-lock-before-message ordering, but does not exercise the two specified final-permit/settlement outcomes. The passing unit message-not-confirmed case does not replace the required PostgreSQL interaction evidence.
 
@@ -781,7 +780,6 @@ The outstanding Attempt 3 interaction-evidence request is satisfied. The impleme
 ### Follow-up
 
 No correction is requested. This task is accepted and complete. BG004 and SYSTEM-TEST-001 were not executed, claimed, or edited. This architect disposition changes no implementation code and does not commit, push, merge, or otherwise publish the parent task branch; publication remains the developer's responsibility.
-
 
 ## Architect Verification and Dependency Reconciliation (2026-11-04)
 

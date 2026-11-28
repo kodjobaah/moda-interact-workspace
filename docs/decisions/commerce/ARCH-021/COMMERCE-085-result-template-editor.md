@@ -253,7 +253,7 @@ current generatedFromContractFingerprint != current Response fingerprint
 call exactly:
 
 ```ts
-generateDefaultResultTemplate(currentOutputSchema, currentUnavailable)
+generateDefaultResultTemplate(currentOutputSchema, currentUnavailable);
 ```
 
 and replace the local Result Template with the returned `nunjucks.v1` template.

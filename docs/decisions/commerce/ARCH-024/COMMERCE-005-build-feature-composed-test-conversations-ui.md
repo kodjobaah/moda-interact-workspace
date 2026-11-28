@@ -211,7 +211,7 @@ export type TestConversationConfigurationSummary = {
     shopifyOfflineSessionAvailable: boolean;
   };
   model: {
-    source: 'PLATFORM' | 'PRICING_PLAN' | 'SHOP';
+    source: "PLATFORM" | "PRICING_PLAN" | "SHOP";
     id: string;
     displayName: string;
     provider: string;
@@ -230,9 +230,9 @@ export type TestConversationConfigurationSummary = {
 };
 
 export type TestConversationConfigurationState =
-  | { kind: 'NO_SHOP' }
-  | { kind: 'UNAVAILABLE'; message: string }
-  | { kind: 'READY'; value: TestConversationConfigurationSummary };
+  | { kind: "NO_SHOP" }
+  | { kind: "UNAVAILABLE"; message: string }
+  | { kind: "READY"; value: TestConversationConfigurationSummary };
 ```
 
 The browser-facing configuration summary MUST NOT contain:
@@ -302,13 +302,13 @@ This display order does not redefine ARCH-024-COMMERCE-004 composition order. Th
 `app/preview/page.tsx` MUST continue to call:
 
 ```ts
-resolveStudioShopSelection(query.shopId)
+resolveStudioShopSelection(query.shopId);
 ```
 
 and MUST treat only:
 
 ```ts
-shopSelection.selectedShop
+shopSelection.selectedShop;
 ```
 
 as the selected Shop.
@@ -318,7 +318,7 @@ Never pass the raw `searchParams.shopId` through to Preview execution after vali
 When no validated Shop is selected:
 
 ```ts
-configurationState = { kind: 'NO_SHOP' }
+configurationState = { kind: "NO_SHOP" };
 ```
 
 The Feature catalogue MAY still be displayed, but Start Conversation MUST remain disabled.
@@ -328,7 +328,7 @@ The Feature catalogue MAY still be displayed, but Start Conversation MUST remain
 When a validated Shop is selected, `app/preview/page.tsx` MUST call the accepted effective configuration read:
 
 ```ts
-getEffectiveAgentConfiguration(selectedShop.id)
+getEffectiveAgentConfiguration(selectedShop.id);
 ```
 
 After ARCH-023-COMMERCE-003 and ARCH-024-COMMERCE-002, a Test Conversation is startable only when all of these are true:
@@ -444,15 +444,22 @@ In `src/commerce/preview/types.ts`, define the complete authored snapshot from t
 
 ```ts
 const PreviewFrozenSnapshotBaseSchema = z.strictObject({
-  definitions: z.array(z.strictObject({
-    revisionId: SavedIdSchema,
-    definition: z.unknown(),
-  })).max(32),
+  definitions: z
+    .array(
+      z.strictObject({
+        revisionId: SavedIdSchema,
+        definition: z.unknown(),
+      }),
+    )
+    .max(32),
   prompts: PreviewPromptsSchema,
 });
 
 function validateFrozenSnapshotComposition(
-  value: { definitions: Array<{ revisionId: string; definition: unknown }>; prompts: PreviewPrompt[] },
+  value: {
+    definitions: Array<{ revisionId: string; definition: unknown }>;
+    prompts: PreviewPrompt[];
+  },
   context: z.RefinementCtx,
 ): void {
   // Move the existing PreviewFrozenSnapshotSchema superRefine body here unchanged:
@@ -462,39 +469,57 @@ function validateFrozenSnapshotComposition(
 }
 
 export const PreviewFrozenSnapshotSchema =
-  PreviewFrozenSnapshotBaseSchema.superRefine(validateFrozenSnapshotComposition);
+  PreviewFrozenSnapshotBaseSchema.superRefine(
+    validateFrozenSnapshotComposition,
+  );
 
 export const PreviewConversationShopSnapshotSchema = z.strictObject({
   id: SavedIdSchema,
   domain: z.string().trim().min(1).max(255),
 });
 
-export type PreviewConversationShopSnapshot =
-  z.infer<typeof PreviewConversationShopSnapshotSchema>;
+export type PreviewConversationShopSnapshot = z.infer<
+  typeof PreviewConversationShopSnapshotSchema
+>;
 
-export const PreviewConversationModelSnapshotSchema = z.strictObject({
-  selectionSource: CommerceModelSelectionSourceSchema,
-  merchantPricingPlanId: SavedIdSchema.nullable(),
-  shopifyPlanHandle: z.string().trim().min(1).max(255).nullable(),
-  catalogueEntryId: SavedIdSchema,
-  provider: CommerceModelProviderSchema,
-  providerModelId: CommerceProviderModelIdSchema,
-  configurationSchemaVersion: z.number().int().positive(),
-  configuration: CommerceModelConfigurationSchema,
-}).superRefine((value, context) => {
-  if (value.selectionSource === 'PRICING_PLAN') {
-    if (value.merchantPricingPlanId === null || value.shopifyPlanHandle === null) {
-      context.addIssue({ code: 'custom', message: 'price plan model provenance is incomplete' });
+export const PreviewConversationModelSnapshotSchema = z
+  .strictObject({
+    selectionSource: CommerceModelSelectionSourceSchema,
+    merchantPricingPlanId: SavedIdSchema.nullable(),
+    shopifyPlanHandle: z.string().trim().min(1).max(255).nullable(),
+    catalogueEntryId: SavedIdSchema,
+    provider: CommerceModelProviderSchema,
+    providerModelId: CommerceProviderModelIdSchema,
+    configurationSchemaVersion: z.number().int().positive(),
+    configuration: CommerceModelConfigurationSchema,
+  })
+  .superRefine((value, context) => {
+    if (value.selectionSource === "PRICING_PLAN") {
+      if (
+        value.merchantPricingPlanId === null ||
+        value.shopifyPlanHandle === null
+      ) {
+        context.addIssue({
+          code: "custom",
+          message: "price plan model provenance is incomplete",
+        });
+      }
+      return;
     }
-    return;
-  }
-  if (value.merchantPricingPlanId !== null || value.shopifyPlanHandle !== null) {
-    context.addIssue({ code: 'custom', message: 'non-price-plan model has price plan provenance' });
-  }
-});
+    if (
+      value.merchantPricingPlanId !== null ||
+      value.shopifyPlanHandle !== null
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "non-price-plan model has price plan provenance",
+      });
+    }
+  });
 
-export type PreviewConversationModelSnapshot =
-  z.infer<typeof PreviewConversationModelSnapshotSchema>;
+export type PreviewConversationModelSnapshot = z.infer<
+  typeof PreviewConversationModelSnapshotSchema
+>;
 
 export const PreviewInstructionRevisionSnapshotSchema = z.strictObject({
   revisionId: SavedIdSchema,
@@ -514,8 +539,9 @@ export const PreviewConversationSnapshotSchema =
     instructions: PreviewConversationInstructionsSnapshotSchema,
   }).superRefine(validateFrozenSnapshotComposition);
 
-export type PreviewConversationSnapshot =
-  z.infer<typeof PreviewConversationSnapshotSchema>;
+export type PreviewConversationSnapshot = z.infer<
+  typeof PreviewConversationSnapshotSchema
+>;
 ```
 
 For the human Feature Test Conversation, `StoredConversation.snapshot` MUST use `PreviewConversationSnapshot`. Do not add a parallel `StoredConversation.shop`, `StoredConversation.model` or `StoredConversation.instructions` authored-state object.
@@ -986,11 +1012,8 @@ TestConversationFeatureOption[]
 Produces the single server-side authored-state contract consumed by C006/C007:
 
 ```ts
-PreviewConversationSnapshot
-  = PreviewFrozenSnapshot
-    + shop
-    + model
-    + instructions
+PreviewConversationSnapshot =
+  PreviewFrozenSnapshot + shop + model + instructions;
 ```
 
 No new cross-repository runtime contract is introduced.

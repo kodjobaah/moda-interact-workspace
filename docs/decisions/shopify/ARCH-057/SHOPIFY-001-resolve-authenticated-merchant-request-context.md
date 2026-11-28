@@ -16,14 +16,14 @@ claimed_at: null
 attempt: 2
 depends_on: []
 enables:
-- ARCH-057-SHOPIFY-002
-- ARCH-057-SHOPIFY-004
-- ARCH-057-SHOPIFY-005
-- ARCH-057-SHOPIFY-006
-- ARCH-057-SHOPIFY-007
-- ARCH-057-SHOPIFY-008
-- ARCH-057-SHOPIFY-009
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-002
+  - ARCH-057-SHOPIFY-004
+  - ARCH-057-SHOPIFY-005
+  - ARCH-057-SHOPIFY-006
+  - ARCH-057-SHOPIFY-007
+  - ARCH-057-SHOPIFY-008
+  - ARCH-057-SHOPIFY-009
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -50,39 +50,39 @@ All paths below are relative to `moda-interact`.
 
 ### Existing files to modify
 
-| Path | Exact responsibility |
-|---|---|
-| `app/services/shop/shop.service.ts` | Refactor existing resolution to return useful local rows once; preserve bootstrap/profile/lifecycle behaviour |
-| `app/routes/app/route.jsx` | Export page middleware and consume cached merchant context; use scalar subscription for existing navigation projection |
-| `app/routes/app/home/route.jsx` | Replace own auth/resolution with context; retain its existing rich billing projection/current and pending plan names until SHOPIFY-004 owns that composition |
-| `app/routes/app/pending-recoveries/route.jsx` | Local authenticated context and cached scalar subscription; retain queue reader |
-| `app/routes/app/billing/status/route.ts` | Local authenticated context; retain status DTO and admission |
-| `app/routes/app/reinstalling/route.jsx` | Fresh context for loader/action; retain existing reconciliation and redirects |
-| `app/routes/auth/catchall/route.jsx` | Keep explicit authenticated profile/provisioning refresh and reinstall entry |
-| `app/services/feature-preferences/access.server.ts` | Accept optional framework context; preserve result/policy and expose server-only merchant context |
-| `app/routes/app/recoveries/access.server.ts` | Same context threading, preserving independent access checks and returned public fields |
-| `tests/unit/services/shop.service.test.ts` | Update resolution/bootstrap/profile expectations and diagnostic assertions |
-| `tests/unit/routes/auth-catchall.test.ts` | Preserve reinstall/authentication behaviour |
-| `tests/unit/merchant-route-access-policy.test.ts` | Preserve existing lifecycle/surface matrix |
-| `tests/unit/home-route.test.ts` | Adapt the declared home consumer's fixture to merchant request context; preserve its billing/onboarding assertions |
-| `tests/unit/pending-recoveries-route.test.ts` | Adapt the declared resource consumer's fixture to local context and scalar subscription; preserve admission/queue-reader assertions |
-| `tests/unit/routes/app-layout-access.test.ts` | Adapt the declared parent consumer's context fixture; preserve lifecycle/surface assertions |
-| `tests/unit/routes/billing-status.test.ts` | Adapt the declared billing-status consumer's context fixture; preserve DTO/admission assertions |
-| `tests/unit/routes/reinstalling-route.test.ts` | Adapt the declared reinstall loader/action context fixture; preserve reconciliation and redirect assertions |
-| `tests/unit/recovery-list-route.test.ts` | Adapt fixture wiring through the changed recovery access helper; preserve independent tenant/lifecycle/reader assertions |
-| `tests/unit/recovery-detail-route.test.ts` | Adapt fixture wiring through the changed recovery access helper; preserve independent tenant/lifecycle/reader assertions |
-| `react-router.config.ts` | Read-only unless typing requires a precise existing middleware declaration; do not change flags/origin policy |
-| `package.json` | Add exactly the test entrypoints below; no dependency change |
+| Path                                                | Exact responsibility                                                                                                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app/services/shop/shop.service.ts`                 | Refactor existing resolution to return useful local rows once; preserve bootstrap/profile/lifecycle behaviour                                                |
+| `app/routes/app/route.jsx`                          | Export page middleware and consume cached merchant context; use scalar subscription for existing navigation projection                                       |
+| `app/routes/app/home/route.jsx`                     | Replace own auth/resolution with context; retain its existing rich billing projection/current and pending plan names until SHOPIFY-004 owns that composition |
+| `app/routes/app/pending-recoveries/route.jsx`       | Local authenticated context and cached scalar subscription; retain queue reader                                                                              |
+| `app/routes/app/billing/status/route.ts`            | Local authenticated context; retain status DTO and admission                                                                                                 |
+| `app/routes/app/reinstalling/route.jsx`             | Fresh context for loader/action; retain existing reconciliation and redirects                                                                                |
+| `app/routes/auth/catchall/route.jsx`                | Keep explicit authenticated profile/provisioning refresh and reinstall entry                                                                                 |
+| `app/services/feature-preferences/access.server.ts` | Accept optional framework context; preserve result/policy and expose server-only merchant context                                                            |
+| `app/routes/app/recoveries/access.server.ts`        | Same context threading, preserving independent access checks and returned public fields                                                                      |
+| `tests/unit/services/shop.service.test.ts`          | Update resolution/bootstrap/profile expectations and diagnostic assertions                                                                                   |
+| `tests/unit/routes/auth-catchall.test.ts`           | Preserve reinstall/authentication behaviour                                                                                                                  |
+| `tests/unit/merchant-route-access-policy.test.ts`   | Preserve existing lifecycle/surface matrix                                                                                                                   |
+| `tests/unit/home-route.test.ts`                     | Adapt the declared home consumer's fixture to merchant request context; preserve its billing/onboarding assertions                                           |
+| `tests/unit/pending-recoveries-route.test.ts`       | Adapt the declared resource consumer's fixture to local context and scalar subscription; preserve admission/queue-reader assertions                          |
+| `tests/unit/routes/app-layout-access.test.ts`       | Adapt the declared parent consumer's context fixture; preserve lifecycle/surface assertions                                                                  |
+| `tests/unit/routes/billing-status.test.ts`          | Adapt the declared billing-status consumer's context fixture; preserve DTO/admission assertions                                                              |
+| `tests/unit/routes/reinstalling-route.test.ts`      | Adapt the declared reinstall loader/action context fixture; preserve reconciliation and redirect assertions                                                  |
+| `tests/unit/recovery-list-route.test.ts`            | Adapt fixture wiring through the changed recovery access helper; preserve independent tenant/lifecycle/reader assertions                                     |
+| `tests/unit/recovery-detail-route.test.ts`          | Adapt fixture wiring through the changed recovery access helper; preserve independent tenant/lifecycle/reader assertions                                     |
+| `react-router.config.ts`                            | Read-only unless typing requires a precise existing middleware declaration; do not change flags/origin policy                                                |
+| `package.json`                                      | Add exactly the test entrypoints below; no dependency change                                                                                                 |
 
 ### New files
 
-| Path | Purpose |
-|---|---|
-| `app/services/shop/merchant-request-context.server.ts` | Server-only typed context, request-local promises, page middleware |
-| `tests/unit/merchant-request-context.test.ts` | Authentication/tenant/lazy read/cache boundary and failure fixtures |
-| `tests/integration/merchant-request-context-router.test.ts` | Actual pinned router parent/child, direct resource and POST→loader lifecycle |
-| `tests/integration/merchant-shop-bootstrap.postgres.test.ts` | Canonical migrated bootstrap/profile/no-op/missing-row recovery |
-| `tests/helpers/merchant-request-fixtures.ts` | Small synthetic authenticated-context fixtures used by the new suites |
+| Path                                                         | Purpose                                                                      |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `app/services/shop/merchant-request-context.server.ts`       | Server-only typed context, request-local promises, page middleware           |
+| `tests/unit/merchant-request-context.test.ts`                | Authentication/tenant/lazy read/cache boundary and failure fixtures          |
+| `tests/integration/merchant-request-context-router.test.ts`  | Actual pinned router parent/child, direct resource and POST→loader lifecycle |
+| `tests/integration/merchant-shop-bootstrap.postgres.test.ts` | Canonical migrated bootstrap/profile/no-op/missing-row recovery              |
+| `tests/helpers/merchant-request-fixtures.ts`                 | Small synthetic authenticated-context fixtures used by the new suites        |
 
 No other existing route/service refactor is selected here. Other task owners migrate their routes against this API.
 
@@ -172,15 +172,15 @@ None. Real launcher still verifies latest integrated source and no ARCH-057 allo
 
 ### Required cases and log owners
 
-| Case | Required result |
-|---|---|
-| Parent + child started concurrently, same context | One SDK authentication and profile observation; no repeated subscription/settings existence reads |
-| Two contexts, same Shop; two Shops | Independent observations; no cross-request/cache reuse |
-| Direct command/status route | Authenticated local Shop + required admission, no parent dependence or GraphQL |
-| Action updates lifecycle/settings followed by document and SPA revalidation | Loader observes committed result, never action/pre-action cache |
-| Provider GraphQL errors, network failure, invalid JSON, domain mismatch | Source marker/cause logged at resolver; correct provider/internal origin; no writes |
-| DB lookup/bootstrap failure | Original Prisma message/code/cause; no partial bootstrap state |
-| Log sink throws | Auth outcome/rollback/redirect behaviour unchanged |
+| Case                                                                        | Required result                                                                                   |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Parent + child started concurrently, same context                           | One SDK authentication and profile observation; no repeated subscription/settings existence reads |
+| Two contexts, same Shop; two Shops                                          | Independent observations; no cross-request/cache reuse                                            |
+| Direct command/status route                                                 | Authenticated local Shop + required admission, no parent dependence or GraphQL                    |
+| Action updates lifecycle/settings followed by document and SPA revalidation | Loader observes committed result, never action/pre-action cache                                   |
+| Provider GraphQL errors, network failure, invalid JSON, domain mismatch     | Source marker/cause logged at resolver; correct provider/internal origin; no writes               |
+| DB lookup/bootstrap failure                                                 | Original Prisma message/code/cause; no partial bootstrap state                                    |
+| Log sink throws                                                             | Auth outcome/rollback/redirect behaviour unchanged                                                |
 
 ## Validation
 
@@ -207,12 +207,12 @@ Accepted and Complete — Attempt 2, 2026-11-04. The implementation correction i
 
 ### Correction Checklist
 
-| Requested correction | Disposition | Changed paths / focused proof |
-|---|---|---|
-| Pass actual framework context through every production settings access chain | implemented | Recovery settings GET, settings-save action and all eight merchant-knowledge actions now destructure `context` from router arguments and pass `settingsAccess(request, context)` |
-| Thread context through every recovery chain, including intermediate helpers | implemented | Recovery list/detail loaders, section loader and three command/status handlers pass the original context to `requireRecoveryHistory`; section wrappers already forward complete router args and command exports remain direct aliases |
-| Prove settings and recovery GET sharing under app middleware | implemented | Two new cases in `merchant-request-context-router.test.ts` execute real production route exports, real access helpers, real request context/profile resolver and installed router middleware |
-| Rerun required focused validation and record evidence | implemented | 97 unit, 9 router, 7 PostgreSQL and 164 consumer regression tests passed; typecheck/build/focused ESLint/diff checks passed |
+| Requested correction                                                         | Disposition | Changed paths / focused proof                                                                                                                                                                                                         |
+| ---------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pass actual framework context through every production settings access chain | implemented | Recovery settings GET, settings-save action and all eight merchant-knowledge actions now destructure `context` from router arguments and pass `settingsAccess(request, context)`                                                      |
+| Thread context through every recovery chain, including intermediate helpers  | implemented | Recovery list/detail loaders, section loader and three command/status handlers pass the original context to `requireRecoveryHistory`; section wrappers already forward complete router args and command exports remain direct aliases |
+| Prove settings and recovery GET sharing under app middleware                 | implemented | Two new cases in `merchant-request-context-router.test.ts` execute real production route exports, real access helpers, real request context/profile resolver and installed router middleware                                          |
+| Rerun required focused validation and record evidence                        | implemented | 97 unit, 9 router, 7 PostgreSQL and 164 consumer regression tests passed; typecheck/build/focused ESLint/diff checks passed                                                                                                           |
 
 The production call-site audit finds ten `settingsAccess` calls and six `requireRecoveryHistory` calls, all supplied with the router context. No production caller constructs an isolated provider. Optional isolated defaults remain only in the existing access-helper API for direct helper/test compatibility.
 
@@ -249,16 +249,16 @@ The Architect Review follow-up authorises the additional production argument-for
 
 ### Validation Results
 
-| Command / gate | Attempt 2 result |
-|---|---|
-| `npm run test:merchant-request:unit` | 97 passed |
-| `npm run test:merchant-request:router` | 9 passed |
-| `npm run test:merchant-request:postgres` | 7 passed, zero skipped |
-| Twelve affected consumer regression suites | 164 passed |
-| `npm run typecheck` | passed |
-| `npm run build` | passed |
-| Focused ESLint of all sixteen changed paths | passed |
-| `git diff --check` and staged diff check | passed |
+| Command / gate                              | Attempt 2 result       |
+| ------------------------------------------- | ---------------------- |
+| `npm run test:merchant-request:unit`        | 97 passed              |
+| `npm run test:merchant-request:router`      | 9 passed               |
+| `npm run test:merchant-request:postgres`    | 7 passed, zero skipped |
+| Twelve affected consumer regression suites  | 164 passed             |
+| `npm run typecheck`                         | passed                 |
+| `npm run build`                             | passed                 |
+| Focused ESLint of all sixteen changed paths | passed                 |
+| `git diff --check` and staged diff check    | passed                 |
 
 277 focused tests passed in this attempt. Regression coverage included the original seven consumer suites and the five settings/knowledge/HTTP consumer suites affected by the new argument forwarding:
 
@@ -268,10 +268,10 @@ npx vitest run tests/unit/home-route.test.ts tests/unit/pending-recoveries-route
 
 The new GET assertions are per request, through the real production routes:
 
-| Actual page chain | SDK authentication | Profile GraphQL observation | Local Shop lookup | Scalar subscription read | Scalar settings read |
-|---|---:|---:|---:|---:|---:|
-| app layout → recovery settings loader → settingsAccess | 1 | 1 | 1 | 1 | 1 |
-| app layout → recoveries route → list loader → requireRecoveryHistory | 1 | 1 | 1 | 1 | 1 |
+| Actual page chain                                                    | SDK authentication | Profile GraphQL observation | Local Shop lookup | Scalar subscription read | Scalar settings read |
+| -------------------------------------------------------------------- | -----------------: | --------------------------: | ----------------: | -----------------------: | -------------------: |
+| app layout → recovery settings loader → settingsAccess               |                  1 |                           1 |                 1 |                        1 |                    1 |
+| app layout → recoveries route → list loader → requireRecoveryHistory |                  1 |                           1 |                 1 |                        1 |                    1 |
 
 Both cases verify successful child DTOs and that the submitted foreign Shop ID, authentication object and private credential fixture do not reach loader JSON. The recovery reader receives the authenticated Shop ID. These are installed-router call-count assertions with labelled synthetic ports, not emitted-SQL measurements.
 
@@ -381,16 +381,16 @@ tests/unit/services/shop.service.test.ts
 
 ### Validation Results
 
-| Command / gate | Result |
-|---|---|
-| `npm run test:merchant-request:unit` | 92 passed |
-| `npm run test:merchant-request:router` | 7 passed |
-| `npm run test:merchant-request:postgres` on pushed implementation | 7 passed; zero skipped |
-| Seven architect-authorised existing consumer suites | 117 passed |
-| `npm run typecheck` | passed |
-| `npm run build` | passed; server-only imports accepted |
-| Focused ESLint across all changed implementation/test paths | passed |
-| `git diff --check` | passed before implementation commit |
+| Command / gate                                                    | Result                               |
+| ----------------------------------------------------------------- | ------------------------------------ |
+| `npm run test:merchant-request:unit`                              | 92 passed                            |
+| `npm run test:merchant-request:router`                            | 7 passed                             |
+| `npm run test:merchant-request:postgres` on pushed implementation | 7 passed; zero skipped               |
+| Seven architect-authorised existing consumer suites               | 117 passed                           |
+| `npm run typecheck`                                               | passed                               |
+| `npm run build`                                                   | passed; server-only imports accepted |
+| Focused ESLint across all changed implementation/test paths       | passed                               |
+| `git diff --check`                                                | passed before implementation commit  |
 
 The additional regression command was:
 
@@ -418,11 +418,11 @@ The original resolver was executed from `3d581bb87b8ed93358ed6a16216bebd1e39d3be
 
 Both runs use a fresh migrated container with the same authenticated domain/profile, locale/country/timezone and no-contract scalar fixture. These numbers describe the selected scalar composition, not all home-page commercial/support/overview work.
 
-| Fixture | Repository calls | Emitted SQL reads | Write statements | Transaction control | Provider calls | Related-row expansion |
-|---|---:|---:|---:|---:|---:|---:|
-| Original two-reader scalar composition | 8 | 4 | 0 | 0 | 2 | 0 |
-| Candidate two-reader scalar composition | 3 | 3 | 0 | 0 | 1 | 0 |
-| Candidate direct local context + subscription | 2 | 2 | 0 | 0 | 0 | 0 |
+| Fixture                                       | Repository calls | Emitted SQL reads | Write statements | Transaction control | Provider calls | Related-row expansion |
+| --------------------------------------------- | ---------------: | ----------------: | ---------------: | ------------------: | -------------: | --------------------: |
+| Original two-reader scalar composition        |                8 |                 4 |                0 |                   0 |              2 |                     0 |
+| Candidate two-reader scalar composition       |                3 |                 3 |                0 |                   0 |              1 |                     0 |
+| Candidate direct local context + subscription |                2 |                 2 |                0 |                   0 |              0 |                     0 |
 
 Prisma batches duplicate `findUnique` calls in the baseline: eight repository calls are four actual SQL reads, not eight. First install remains three write statements with one durable row in each of the three tables; profile change uses two successful single-row updates and no subscription write; unchanged replay has no write or transaction. The home rich plan/pending-plan/period composition remains separate and is covered by existing consumer regressions. No throughput or latency claim is made.
 
@@ -477,10 +477,7 @@ Actual captured query text and call order for the measured fixtures follow; SQL 
   },
   {
     "label": "after-direct-status",
-    "calls": [
-      "Shop.findUnique",
-      "Subscription.findUnique"
-    ],
+    "calls": ["Shop.findUnique", "Subscription.findUnique"],
     "sql": [
       "SELECT \"commerce\".\"Shop\".\"id\", \"commerce\".\"Shop\".\"domain\", \"commerce\".\"Shop\".\"shopifyShopId\", \"commerce\".\"Shop\".\"platform\"::text, \"commerce\".\"Shop\".\"onboardingCompleted\", \"commerce\".\"Shop\".\"storeLocale\", \"commerce\".\"Shop\".\"defaultLanguageTag\", \"commerce\".\"Shop\".\"defaultTimeZone\", \"commerce\".\"Shop\".\"defaultCountryCode\", \"commerce\".\"Shop\".\"status\"::text, \"commerce\".\"Shop\".\"installedAt\", \"commerce\".\"Shop\".\"uninstalledAt\", \"commerce\".\"Shop\".\"reinstallPendingAt\", \"commerce\".\"Shop\".\"createdAt\", \"commerce\".\"Shop\".\"updatedAt\" FROM \"commerce\".\"Shop\" WHERE (\"commerce\".\"Shop\".\"domain\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
       "SELECT \"billing\".\"Subscription\".\"id\", \"billing\".\"Subscription\".\"shopId\", \"billing\".\"Subscription\".\"planId\", \"billing\".\"Subscription\".\"observedShopifyPlanHandle\", \"billing\".\"Subscription\".\"status\"::text, \"billing\".\"Subscription\".\"billingPeriodId\", \"billing\".\"Subscription\".\"currentPeriodStart\", \"billing\".\"Subscription\".\"currentPeriodEnd\", \"billing\".\"Subscription\".\"trialEndsAt\", \"billing\".\"Subscription\".\"cancelAtPeriodEnd\", \"billing\".\"Subscription\".\"providerSubscriptionId\", \"billing\".\"Subscription\".\"providerCoverageEndAt\", \"billing\".\"Subscription\".\"lastSyncedAt\", \"billing\".\"Subscription\".\"lastSyncErrorCode\", \"billing\".\"Subscription\".\"lastSyncErrorAt\", \"billing\".\"Subscription\".\"pendingShopifyPlanHandle\", \"billing\".\"Subscription\".\"pendingPlanId\", \"billing\".\"Subscription\".\"pendingEffectiveAt\", \"billing\".\"Subscription\".\"nextReconcileAt\", \"billing\".\"Subscription\".\"lastProviderLifecycleState\"::text, \"billing\".\"Subscription\".\"lastProviderLifecycleEventId\", \"billing\".\"Subscription\".\"lastProviderLifecycleEventAt\", \"billing\".\"Subscription\".\"createdAt\", \"billing\".\"Subscription\".\"updatedAt\" FROM \"billing\".\"Subscription\" WHERE (\"billing\".\"Subscription\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
@@ -498,19 +495,19 @@ Actual captured query text and call order for the measured fixtures follow; SQL 
 
 #### Diagnostic and failure ownership
 
-| Injection / owner | Emitted Shared evidence and outcome |
-|---|---|
-| Errors-only GraphQL / profile resolver | Original `profile-original-marker`, actual provider code/request ID, provider_response origin; no bootstrap writes |
-| Installed SDK GraphqlQueryError / profile resolver | Original SDK and provider messages/code/request ID retained; data body excluded |
-| Installed SDK HttpResponseError / profile resolver | Original SDK/upstream markers, actual 503/request ID, explicit redaction flag |
-| SDK transport exception / profile resolver | Actual HttpRequestError marker and cause; transport origin; same source exception propagated |
-| Invalid JSON / profile resolver | Original parse failure and cause; internal origin; no fabricated providerError |
-| Malformed or mismatched identity / profile resolver | Distinct internal rejection; no tenant creation, update or switch |
-| Local Shop lookup / Shop service | Original multiline Prisma reason, P2021 and cause survive real Shared JSON; following safe failure reason remains visible after URL redaction |
-| Both lazy scalar reads / request context | Original DB marker/P2021/cause and trusted Shop ID in real Shared JSON; no provider field fabrication or refresh |
-| Bootstrap constraint failure / resolver + real transaction | Original P2003 propagated and rollback verified |
-| Throwing real Shared console sink / resolver | Original failure identity and successful bootstrap result unchanged |
-| SDK redirect Response / request context | Same Response object, Location and Shopify security header retained; no local reads |
+| Injection / owner                                          | Emitted Shared evidence and outcome                                                                                                           |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Errors-only GraphQL / profile resolver                     | Original `profile-original-marker`, actual provider code/request ID, provider_response origin; no bootstrap writes                            |
+| Installed SDK GraphqlQueryError / profile resolver         | Original SDK and provider messages/code/request ID retained; data body excluded                                                               |
+| Installed SDK HttpResponseError / profile resolver         | Original SDK/upstream markers, actual 503/request ID, explicit redaction flag                                                                 |
+| SDK transport exception / profile resolver                 | Actual HttpRequestError marker and cause; transport origin; same source exception propagated                                                  |
+| Invalid JSON / profile resolver                            | Original parse failure and cause; internal origin; no fabricated providerError                                                                |
+| Malformed or mismatched identity / profile resolver        | Distinct internal rejection; no tenant creation, update or switch                                                                             |
+| Local Shop lookup / Shop service                           | Original multiline Prisma reason, P2021 and cause survive real Shared JSON; following safe failure reason remains visible after URL redaction |
+| Both lazy scalar reads / request context                   | Original DB marker/P2021/cause and trusted Shop ID in real Shared JSON; no provider field fabrication or refresh                              |
+| Bootstrap constraint failure / resolver + real transaction | Original P2003 propagated and rollback verified                                                                                               |
+| Throwing real Shared console sink / resolver               | Original failure identity and successful bootstrap result unchanged                                                                           |
+| SDK redirect Response / request context                    | Same Response object, Location and Shopify security header retained; no local reads                                                           |
 
 Tests capture actual Shared JSON output, rather than only mocked logger calls, and assert that injected credential, email, signed-URL and provider-data sentinels are absent from emitted records. Error causes are bounded to four Error entries; no global diagnostic registry, telemetry or replacement generic logger was added.
 

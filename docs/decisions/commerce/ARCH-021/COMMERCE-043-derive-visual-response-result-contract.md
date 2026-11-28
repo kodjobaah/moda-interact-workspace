@@ -313,14 +313,16 @@ After deterministic Visual result-contract derivation, persisted-draft reconstru
 
 The runtime Visual processor already emits scalar projected values and LIST results as `{ items: rows }`. Keep the generated schema aligned to those accepted runtime semantics.
 
-This task removes duplicated *authoring*, not the durable `resultSchema` field. The canonical definition still persists `resultSchema` because downstream validation/templates require a durable output contract.
+This task removes duplicated _authoring_, not the durable `resultSchema` field. The canonical definition still persists `resultSchema` because downstream validation/templates require a durable output contract.
 
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `src/commerce/tool-authoring/visual-result-contract.ts` (new)
 - `src/commerce/tool-definition/publication.ts`
 - `src/studio/external-http/response-tab.tsx`
@@ -328,11 +330,13 @@ Ready for Review
 - `tests/external-tools-ui.test.tsx`
 
 ### Work Completed
+
 - Added a Commerce-owned deterministic helper for Visual OBJECT/LIST result-schema derivation, bounded scalar types, `omitIfMissing` requiredness, and compatible persisted-schema reconstruction.
 - Integrated the helper with publication compatibility and minimal Response authoring controls; Visual mode no longer exposes independently editable result-shape JSON, while Direct/JavaScript behavior remains unchanged.
 - Added focused derivation, compatibility, reconstruction, incompatibility, and production UI round-trip coverage.
 
 ### Validation Results
+
 - Focused Visual/UI/publication suite: 41 tests passed.
 - Common Tool-authoring packet: 85 tests passed.
 - External Tool authoring validation packet: 45 tests passed.
@@ -340,20 +344,25 @@ Ready for Review
 - `npm run typecheck` generated route types, then reported 16 errors across eight unchanged files (missing code-response modules, existing service/test typing issues); no diagnostics referenced changed files.
 
 ### Deviations
+
 - Repository-wide typecheck is not green because of the unrelated existing diagnostics listed above; implementation scope was not expanded to repair them.
 
 ### Assumptions
+
 - Persisted Visual LIST schemas with a bounded `items.maxItems` at least as large as the current Visual limit remain reconstructable; newly derived schemas use the exact current limit.
 
 ### Unresolved Issues
+
 - The unrelated repository-wide TypeScript diagnostics remain for their owning tasks.
 
 ### Architectural Concerns
+
 None
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1
 
 ### Review Notes
@@ -369,6 +378,7 @@ The minimal Response-tab integration is within scope: Visual mode no longer expo
 The submitted validation packet is accepted: focused Visual/UI/publication 41/41, common Tool-authoring 85/85, External authoring validation 45/45, targeted ESLint and `git diff --check` clean. Repository-wide typecheck retains 16 diagnostics in eight unchanged files and no task-owned diagnostic was reported.
 
 ### Reviewed Files
+
 - `src/commerce/tool-authoring/visual-result-contract.ts`
 - `src/commerce/tool-definition/publication.ts`
 - `src/studio/external-http/response-tab.tsx`
@@ -377,6 +387,7 @@ The submitted validation packet is accepted: focused Visual/UI/publication 41/41
 - `tests/arch021-commerce-tool-contract.test.ts`
 
 ### Validation Reviewed
+
 Accepted submitted evidence:
 
 ```text
@@ -392,7 +403,9 @@ Task-owned type diagnostics:        none reported
 Architect source inspection also confirmed the task changes are confined to the new Visual helper, publication compatibility, minimal Response Visual integration and focused tests; no Shared/Prisma/provider-execution implementation was introduced.
 
 ### Architecture Conformance
+
 Conforms. The implementation keeps the persisted runtime contract unchanged, removes duplicate Visual shape authoring through deterministic derivation, preserves Direct/JavaScript schema semantics, and stays within the bounded COMMERCE-043 ownership boundary.
 
 ### Follow-up
+
 `ARCH-021-COMMERCE-044` is promoted to `ready`. `ARCH-021-COMMERCE-045` remains Pending on COMMERCE-044.

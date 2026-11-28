@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-BACKGROUND-008
+  - ARCH-052-BACKGROUND-008
 enables:
-- ARCH-053-API-003
+  - ARCH-053-API-003
 created: 2026-10-30
 updated: 2026-11-01
 ---
@@ -57,7 +57,6 @@ No new model invocation, MCP tool, offer selection, Woo provider-proof checks, t
 
 When ARCH-052-BACKGROUND-008 sends a checkout group, the confirmed initial `ConversationMessage.content.recoveryPromise` must retain the exact ordered `InitialOutreachCheckoutOfferSet` from Shared-011, including each provider identity/code, along with `promotionTarget:CHECKOUT`. Do not infer the group from follow-up copy, current merchant settings or an unconfirmed prepared message. Do not write a duplicate offer snapshot, change checkout URLs or modify ARCH-052 task/source files. This task can still be accepted as evidence-only if BG008 demonstrates the complete group receipt contract; otherwise require a precise correction from the owning ARCH-052 task before completing this ARCH-053 checkpoint.
 
-
 - Preserve current `ConversationMessage.content` receipt format, the exact prepared Meta parameter array and all existing final-send, moderation, consent/STOP, credit, retry and provider-acceptance gates.
 - A verified **checkout coupon** requires `kind: 'CODE_OFFER'`, `promotionTarget: 'CHECKOUT'`, nonblank verified `providerDiscountId` and `code`. A verified checkout automatic discount requires `kind: 'AUTOMATIC_OFFER'`, same target and provider ID, **without a coupon code**.
 - For a verified alternative-product promotion, persist `promotionTarget: 'ALTERNATIVE_PRODUCT'`. Preserve the ARCH-052-approved product identity evidence, but do **not** translate its code into a discount on the original checkout.
@@ -73,7 +72,6 @@ When ARCH-052-BACKGROUND-008 sends a checkout group, the confirmed initial `Conv
 - Keep checkout restoration read-only in the hosted API and cart-local in WooCommerce. Never have PHP query Moda PostgreSQL/Redis or an API handler change a visitor cart. Never create a new discount, extend an expired coupon, use ARCH-052 discovery code, bypass merchant consent/STOP/order/final provider gates or impose a cross-generation outreach cap.
 - When the specified receipt/provider contract is absent, conflicting or untestable, **stop and return the gap to moda_architect**; do not invent an approximation, copy a Shared schema locally or broaden the task to another repo. System-test tasks are terminal and may not gate implementation tasks.
 
-
 ## Work Items
 
 - [x] Inspect accepted ARCH-052-BACKGROUND-008, record the exact confirmed-receipt field shape, accepted commit and test evidence. The accepted receipt retained the group but lacked explicit target; this task added the missing trust tag.
@@ -88,15 +86,29 @@ When ARCH-052-BACKGROUND-008 sends a checkout group, the confirmed initial `Conv
 ```typescript
 // Illustrative additive trust tag on the existing Background-local promise.
 type WooOfferPromiseForRestore =
-  | { kind: 'NO_OFFER' }
-  | { kind: 'CODE_OFFER'; promotionTarget: 'CHECKOUT';
-      providerDiscountId: string; code: string }
-  | { kind: 'AUTOMATIC_OFFER'; promotionTarget: 'CHECKOUT';
-      providerDiscountId: string }
-  | { kind: 'CODE_OFFER'; promotionTarget: 'ALTERNATIVE_PRODUCT';
-      providerDiscountId: string; code: string }
-  | { kind: 'AUTOMATIC_OFFER'; promotionTarget: 'ALTERNATIVE_PRODUCT';
-      providerDiscountId: string };
+  | { kind: "NO_OFFER" }
+  | {
+      kind: "CODE_OFFER";
+      promotionTarget: "CHECKOUT";
+      providerDiscountId: string;
+      code: string;
+    }
+  | {
+      kind: "AUTOMATIC_OFFER";
+      promotionTarget: "CHECKOUT";
+      providerDiscountId: string;
+    }
+  | {
+      kind: "CODE_OFFER";
+      promotionTarget: "ALTERNATIVE_PRODUCT";
+      providerDiscountId: string;
+      code: string;
+    }
+  | {
+      kind: "AUTOMATIC_OFFER";
+      promotionTarget: "ALTERNATIVE_PRODUCT";
+      providerDiscountId: string;
+    };
 ```
 
 ARCH-052 may have **additional already-verified alternative-product fields**. Preserve them; this structural subset is the exact information ARCH-053 API-003 needs and is not a replacement for ARCH-052's full implementation model. Do not create a new Shared export for this internal sent-receipt format.
@@ -110,7 +122,10 @@ ARCH-052 may have **additional already-verified alternative-product fields**. Pr
   "languageCode": "en",
   "bodyParameters": ["Customer", "EXTRA15"],
   "imageHeader": null,
-  "dynamicUrlButton": {"index": 0, "text": "opaque_checkout_button_parameter"},
+  "dynamicUrlButton": {
+    "index": 0,
+    "text": "opaque_checkout_button_parameter"
+  },
   "recoveryPromise": {
     "kind": "CODE_OFFER",
     "promotionTarget": "CHECKOUT",
@@ -164,6 +179,7 @@ Correction implemented and resubmitted for Architect review — Attempt 1. Addre
 ### Files Changed
 
 Implementation repository (`moda-interact-background`):
+
 - `src/services/recovery-template-integration/prepared-template-send.ts`
 - `src/services/recovery-template-integration/automated-recovery-template.service.ts`
 - `src/services/recovery-offers/recovery-offer.types.ts`

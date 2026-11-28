@@ -30,7 +30,6 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 **SUPERSEDED by `ARCH-040-BACKGROUND-001` (service/policy implementation) and `ARCH-040-BACKGROUND-002` (runtime integration). Do not execute this task.** Its detailed requirements are historical context; all required behaviour and tests were folded into the two active tasks.
 
-
 Screen merchant-originated WhatsApp messages for deterministic spam/rate abuse, persist decision outcomes, and surface repeat abuse for platform-admin review without silently suspending stores.
 
 ## Context
@@ -108,45 +107,59 @@ Do not add heavy synchronous LLM classification to the hot send path. Prefer ver
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The initiative is proposed; work has not begun.
 
 ### Unresolved Issues
+
 None recorded.
 
 ### Architectural Concerns
+
 None recorded.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.

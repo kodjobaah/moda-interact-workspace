@@ -15,24 +15,24 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-043-DATABASE-001
-- ARCH-043-ADMIN-001
-- ARCH-043-ADMIN-002
-- ARCH-043-BACKGROUND-001
-- ARCH-043-BACKGROUND-002
-- ARCH-043-API-001
-- ARCH-043-API-002
-- ARCH-043-COMMERCE-001
-- ARCH-043-COMMERCE-002
-- ARCH-043-SHOPIFY-001
-- ARCH-043-SHOPIFY-002
-- ARCH-043-MCP-001
-- ARCH-043-ADMIN-004
-- ARCH-043-API-004
-- ARCH-043-GATEWAY-001
-- ARCH-043-MESSAGING-001
+  - ARCH-043-DATABASE-001
+  - ARCH-043-ADMIN-001
+  - ARCH-043-ADMIN-002
+  - ARCH-043-BACKGROUND-001
+  - ARCH-043-BACKGROUND-002
+  - ARCH-043-API-001
+  - ARCH-043-API-002
+  - ARCH-043-COMMERCE-001
+  - ARCH-043-COMMERCE-002
+  - ARCH-043-SHOPIFY-001
+  - ARCH-043-SHOPIFY-002
+  - ARCH-043-MCP-001
+  - ARCH-043-ADMIN-004
+  - ARCH-043-API-004
+  - ARCH-043-GATEWAY-001
+  - ARCH-043-MESSAGING-001
 enables: []
-created: '2026-10-17'
+created: "2026-10-17"
 updated: 2026-11-02
 ---
 
@@ -67,10 +67,10 @@ The system test is terminal and begins after architect acceptance of every imple
 - No new implementation code outside test harness; no new deployment secrets, no direct merchant WordPress DB access.
 
 ## Requirements
+
 ### 17 October 2026 reconciliation acceptance extension
 
 Terminal certification additionally covers `woocommerce.billing`, `shopify.partner` (all three consumers), `shopify.appEvents`, `messaging.sender`, `ai.providers` (both Background operations), explicit reveal/redacted-log checks, and retained Auth.js absent-row-only fallback. Do not claim cursor signing or EmbeddingConfiguration replacement as certified by this extension. System-test execution begins only after all implementation, Gateway and Admin dependencies are architect-accepted Complete.
-
 
 - No non-system-test task may depend on this test.
 - Test should exercise actual supported endpoints/workflows, not only mocks.
@@ -89,7 +89,6 @@ Terminal certification additionally covers `woocommerce.billing`, `shopify.partn
 - `PlatformConfiguration` and `PlatformConfigurationAudit` are owned by `ARCH-043-DATABASE-001`; schema supports typed non-secret objects and sealed envelopes; environment-scoped and redacted in audit.
 - Closed policy shapes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`. Admin validates before writes; each service independently validates the configuration it consumes. No ARCH-043 Shared publication is required.
 - Existing billing, tenant, provider credential and bootstrap contracts retain their established owners.
-
 
 ### 18 October Background consolidation gate
 
@@ -123,7 +122,6 @@ None
 - On a fresh database, only `merchant.knowledge.r2` controls endpoint, bucket, all R2 credentials and both size limits for API/Shopify/Background; the old `merchantKnowledge.upload` key is absent from the Admin registry. Missing/invalid R2 fails without signing/upload.
 - Support-message translation uses the **existing Translations** encrypted OpenAI provider credential plus enabled automatic model. Neither `support.translation` nor `ai.providers.openAiTranslationApiKey` can be authored through Admin. An existing queued job retains its selected model; disabled/missing defaults/credentials fail without choosing a second source. Merchant Pricing/Store Category regression workflows retain their own existing behaviour.
 - Platform Configuration never displays duplicate Merchant Knowledge uploads or Support-message translation tabs; Admin still offers one R2 editor, speech controls and existing System Controls → Translations model/credential pages. No logs/audit/history leak secrets; no new database model/migration or duplicate Background resolver method is required.
-
 
 ### Shopify consolidation certification
 

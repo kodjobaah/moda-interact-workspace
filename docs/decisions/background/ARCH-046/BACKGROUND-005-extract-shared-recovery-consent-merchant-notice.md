@@ -108,8 +108,7 @@ export type RecoveryConsentNoticeReason =
   | "RECIPIENT_AMBIGUOUS"
   | "VERIFICATION_UNAVAILABLE";
 export type RecoveryConsentBlockedOperation =
-  | "CREATE_FIRST_RECOVERY"
-  | "SEND_INITIAL_RECOVERY";
+  "CREATE_FIRST_RECOVERY" | "SEND_INITIAL_RECOVERY";
 
 export type RecoveryConsentCheckoutContext = Readonly<{
   customerName?: string;
@@ -131,13 +130,15 @@ export type RecoveryConsentNoticeInput = Readonly<{
 
 export type RecoveryConsentNoticeResult = "created" | "duplicate";
 export interface RecoveryConsentMerchantNotifier {
-  notify(input: RecoveryConsentNoticeInput): Promise<RecoveryConsentNoticeResult>;
+  notify(
+    input: RecoveryConsentNoticeInput,
+  ): Promise<RecoveryConsentNoticeResult>;
 }
 ```
 
 **Identifier and persistence invariants:**
 
-- Construct `digest = sha256(JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, reason]))` in that **exact element order**, encoded as lowercase hex. Use `sourceKey = "recovery-consent:v1:" + digest`. Each `(platform, shop, checkout, reason)` produces **one** notice. `blockedOperation` is deliberately *not* part of the key, avoiding repeat notices if the same checkout/reason is later observed at another entrypoint. The first successfully committed message remains authoritative and is **not rewritten** on duplicates.
+- Construct `digest = sha256(JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, reason]))` in that **exact element order**, encoded as lowercase hex. Use `sourceKey = "recovery-consent:v1:" + digest`. Each `(platform, shop, checkout, reason)` produces **one** notice. `blockedOperation` is deliberately _not_ part of the key, avoiding repeat notices if the same checkout/reason is later observed at another entrypoint. The first successfully committed message remains authoritative and is **not rewritten** on duplicates.
 - Use `MerchantSupportMessage.kind = SYSTEM`, `state = AVAILABLE`, `systemCode = "RECOVERY_CONSENT_ADMISSION"`, `systemVersion = "1"`, `sourceLanguageTag = "en-GB"`, `availableAt = now()`, and a bounded plain-text `originalBody`.
 - Within **one PostgreSQL transaction**, upsert the thread by `shopId`, insert with `createMany({ skipDuplicates: true })`, and update `lastMessageAt` only if `count === 1`. Return `created` iff `count === 1`; `duplicate` iff `count === 0` for a verified duplicate. Fail/throw on unexpected database or cardinality outcomes. No Redis, network, provider, translation request or logging sink operation inside the transaction.
 - Render a single canonical heading (e.g. **Checkout recovery could not proceed**), labelled optional customer/checkout fields, a precise reason and an operation-specific outcome. `CREATE_FIRST_RECOVERY` may say no recovery was created; `SEND_INITIAL_RECOVERY` must say only that initial outreach was not sent/charged. Do not confuse these two states.

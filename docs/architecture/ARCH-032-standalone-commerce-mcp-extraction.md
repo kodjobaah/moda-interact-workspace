@@ -110,7 +110,6 @@ HAProxy only, not MCP runtime code.
 
 No `docs/decisions/**/_index.md` reconciliation in this architecture session.
 
-
 ## Agreed 2026-10-12: mandatory platform execution policy
 
 The MCP executor no longer owns fixed business-execution budgets. An explicit,
@@ -142,7 +141,7 @@ any MCP execution limits.
 
 The JSON value, when present, is a versioned object whose `environments` map is
 keyed by existing `CommerceEnvironment` names (`LOCAL`, `TEST`, `DEVELOPMENT`,
-`STAGING`, `PRODUCTION`). Example shape (illustrative *keys*, not default data):
+`STAGING`, `PRODUCTION`). Example shape (illustrative _keys_, not default data):
 
 ```json
 {
@@ -185,7 +184,7 @@ execution) and MCP-016 (real PostgreSQL certification). Their task IDs and
 
 Commerce Studio owns tool/feature authoring, GraphQL validation, publication
 and orchestration of test conversations. Both published tests and frozen draft
-previews must execute using the *same* standalone private MCP providers and
+previews must execute using the _same_ standalone private MCP providers and
 renderer as Background, with the same platform policy. Preview references are
 server-resolved and bound to the selected administrator, shop and environment.
 There is no separate preview-specific 30-minute TTL or second local execution
@@ -202,20 +201,19 @@ traffic or remove fallback prematurely.
 
 ### Newly defined tasks (portable; not yet materialised)
 
-| Task | Owner | Initial state | Depends on |
-| --- | --- | --- | --- |
-| ARCH-032-DATABASE-001 | moda_database | Ready | None |
-| ARCH-032-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
-| ARCH-032-MCP-015 | moda_mcp | Pending | DATABASE-001 |
-| ARCH-032-MCP-016 | moda_mcp | Pending | MCP-015 |
-| ARCH-032-MCP-017 | moda_mcp | Ready | None (requires validated preview-core baseline) |
-| ARCH-032-COMMERCE-001 | moda_commerce | Pending | MCP-017, MCP-016, ADMIN-001 |
-| ARCH-032-COMMERCE-002 | moda_commerce | Pending | COMMERCE-001 |
+| Task                  | Owner         | Initial state | Depends on                                      |
+| --------------------- | ------------- | ------------- | ----------------------------------------------- |
+| ARCH-032-DATABASE-001 | moda_database | Ready         | None                                            |
+| ARCH-032-ADMIN-001    | moda_admin    | Pending       | DATABASE-001                                    |
+| ARCH-032-MCP-015      | moda_mcp      | Pending       | DATABASE-001                                    |
+| ARCH-032-MCP-016      | moda_mcp      | Pending       | MCP-015                                         |
+| ARCH-032-MCP-017      | moda_mcp      | Ready         | None (requires validated preview-core baseline) |
+| ARCH-032-COMMERCE-001 | moda_commerce | Pending       | MCP-017, MCP-016, ADMIN-001                     |
+| ARCH-032-COMMERCE-002 | moda_commerce | Pending       | COMMERCE-001                                    |
 
 Canonical task files determine execution eligibility; the previous ARCH-032
 task YAML may still need explicit reconciliation with already validated patches.
 Do not modify `docs/decisions/**/_index.md` until user sign-off.
-
 
 ## 2026-10-12 — final Commerce Studio extraction boundaries and prerequisites
 
@@ -223,7 +221,7 @@ Do not modify `docs/decisions/**/_index.md` until user sign-off.
 - Standalone MCP remains the only owner of tool provider execution, tool result rendering and configured execution policies. Commerce’s injected callback becomes a thin server-side private MCP SDK client; **no Commerce local execution fallback**.
 - Studio selected-feature conversation tests can use a composition that is not the currently active shop release. Saved-tool tests may target draft revisions and use synthetic fixtures/External HTTP response samples. These MUST remain testable but MUST NOT appear in Background’s normal published `tools/list` or `tools/call`.
 - Commerce freezes the selected definitions and writes a separately versioned immutable preview execution snapshot to PostgreSQL, using a canonical published Shared contract. Do not let MCP decode Commerce’s existing aggregate preview Redis key. MCP accepts only a short reference and loads/verifies owner, shop, environment, state, revision and hash server-side; callers cannot submit executable definitions during tool invocation.
-- Preview snapshots have explicit CLOSE/invalidate lifecycle with **no arbitrary 30-minute TTL**; retain per-call cancellation and use the *same mandatory platform execution policy* as normal MCP calls. Fix the previously offered isolated preview core before wiring transport; that core does not appear in the 16:07 snapshot.
+- Preview snapshots have explicit CLOSE/invalidate lifecycle with **no arbitrary 30-minute TTL**; retain per-call cancellation and use the _same mandatory platform execution policy_ as normal MCP calls. Fix the previously offered isolated preview core before wiring transport; that core does not appear in the 16:07 snapshot.
 - Only after remote conversation, draft and fixture parity certification may Commerce remove its legacy `/api/mcp` route, `src/commerce/mcp` and proven-obsolete execution modules. Do not delete still-required authoring/publication/Shared runner/preview orchestration code.
 - Background URL cutover is configuration-only and held until explicit approval and SYSTEM-TEST-001 evidence. Test environment before production; private ingress remains private.
 
@@ -239,7 +237,6 @@ Do not modify `docs/decisions/**/_index.md` until user sign-off.
 8. `ARCH-032-GATEWAY-002` is a separately approved Render Test then production endpoint cutover, not an automatic result of previous tasks.
 
 No decisions `_index.md` files may be created/updated until explicit architecture session closure.
-
 
 ## 2026-10-12 — AUTHORITATIVE CORRECTION: mock-first Commerce removal (supersedes remote-first Studio preview plan)
 
@@ -263,7 +260,6 @@ The Shared CommerceAgent runner, Background `CommerceMcpClient`, standalone MCP 
 - Explicitly blocked/deferred: `ARCH-032-SHARED-001/002`, `ARCH-032-DATABASE-002`, `ARCH-032-MCP-017/018`, `ARCH-032-SYSTEM-TEST-001`, and `ARCH-032-GATEWAY-002`. Unblock only after a separate design and developer decision.
 - No work in `moda-interact-background`, `moda-interact-mcp`, `moda-interact-shared`, `moda-interact-database`, Admin or Gateway is implied by the Commerce tasks. No `docs/decisions/**/_index.md` edits until explicit session closure.
 
-
 ## 2026-10-13 — Final Commerce Studio execution model and task reconciliation
 
 **Authoritative override:** This section supersedes the previous mock-only and
@@ -273,7 +269,7 @@ sequences remain documentary context, not new implementation instructions.
 - Commerce Studio continues to author Features → Capabilities → Tools, validate
   and publish definitions, and drive the real Shared `runCommerceTurn()` with
   model invocation, selected-shop state and conversation history.
-- **Local Preview (default):** a local MCP-*client-shaped* adapter discovers
+- **Local Preview (default):** a local MCP-_client-shaped_ adapter discovers
   tools from the frozen selected-feature composition and executes those tool
   definitions against **real authorised providers** (including Shopify and
   External HTTP) directly, without contacting the standalone MCP server.
@@ -310,7 +306,6 @@ Those checks remain outstanding for a separate verification pass.
 
 Do not reconcile or edit `docs/decisions/**/_index.md` until explicit
 architecture-session completion approval.
-
 
 ## 2026-10-15 — ARCH-032 snapshot reconciliation (review evidence; no task-state promotion)
 
@@ -375,7 +370,7 @@ portable review artifact, not a canonical Git document unless separately added.
 
 ## 2026-10-15 — Developer-approved ARCH-032-DATABASE-001 migration seeding (ACTIVE)
 
-The developer has explicitly chosen **reset-safe default provisioning** instead of the prior *column-only, never-seed* requirement. This decision supersedes the no-seed statements in the 2026-10-12 policy discussion and 2026-10-15 JSONB storage correction **only with respect to initial platform-policy migration/seed behaviour**. Their remaining service-ownership, security and fail-closed requirements remain in force.
+The developer has explicitly chosen **reset-safe default provisioning** instead of the prior _column-only, never-seed_ requirement. This decision supersedes the no-seed statements in the 2026-10-12 policy discussion and 2026-10-15 JSONB storage correction **only with respect to initial platform-policy migration/seed behaviour**. Their remaining service-ownership, security and fail-closed requirements remain in force.
 
 - Keep exactly one canonical `billing.PlatformBillingPolicy` singleton (`id = "default"`), with `mcpExecutionPolicy Json? @db.JsonB` and existing shared `version`. Create no new MCP policy table/model.
 - On **fresh migration or database reset**, provision the singleton's existing billing defaults and MCP `schemaVersion: 1` defaults for `LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`: `toolDeadlineMs=10000`, `providerResponseTimeoutMs=10000`, `maxProviderRequests=12`, `maxResponseBytes=262144` for each environment.
@@ -385,11 +380,10 @@ The developer has explicitly chosen **reset-safe default provisioning** instead 
 
 The historical Changes Requested review of DATABASE-001 was valid against the superseded contract and remains preserved in its task file. Reassess the pushed Attempt 1 implementation against the updated task criteria rather than removing seed logic simply to satisfy the prior wording. Task statuses and dependency directions do not change. No `_index.md` files are touched.
 
-
 ## 2026-10-15 — Active MCP-015 execution ownership clarification
 
 The 2026-10-13 **three-mode Commerce Studio execution model** supersedes earlier ARCH-032 wording that required the standalone MCP policy reader to cover direct Studio draft/Local Preview execution. MCP-015 is bounded to `moda-interact-mcp`: every **published** standalone MCP `tools/call`, whether invoked by Background or Commerce Live Test, must read and strictly enforce `PlatformBillingPolicy.mcpExecutionPolicy` for its canonical environment. Missing/invalid/unavailable policy fails closed before provider operations and uses standalone MCP's platform-scoped ARCH-033 incident semantics. MCP-016 certifies this standalone boundary against disposable PostgreSQL.
 
 **Commerce Local Preview is not an MCP call.** It executes real authorised providers directly inside `moda-interact-commerce`, with separate ARCH-038 Preview runner budgets and existing Commerce-owned provider safeguards. Neither those budgets nor Commerce Fixture mode must be routed through MCP-015. Commerce Live Test does call MCP and receives MCP policy enforcement; its client must not bypass published MCP validation. Commerce retains its Shared-logger-only error contract; MCP retains its own ARCH-033 incident ownership.
 
-This is an **ownership/scope clarification**, not a waiver of bounded execution or a change to MCP production code. The earlier requirement for one *cross-repository* published/preview execution-enforcement path is superseded. No new Commerce policy task or cross-repository prerequisite is created by this decision. Preserve the existing MCP-015 historical Changes Requested review and self-review. MCP-015 remains `ready` at Attempt 1 with Architect Review Pending until the already-pushed standalone implementation is reviewed under the corrected contract and the developer explicitly completes the task. No task status, dependency, gitlink, `_index.md`, deployment configuration or implementation files change in this patch.
+This is an **ownership/scope clarification**, not a waiver of bounded execution or a change to MCP production code. The earlier requirement for one _cross-repository_ published/preview execution-enforcement path is superseded. No new Commerce policy task or cross-repository prerequisite is created by this decision. Preserve the existing MCP-015 historical Changes Requested review and self-review. MCP-015 remains `ready` at Attempt 1 with Architect Review Pending until the already-pushed standalone implementation is reviewed under the corrected contract and the developer explicitly completes the task. No task status, dependency, gitlink, `_index.md`, deployment configuration or implementation files change in this patch.

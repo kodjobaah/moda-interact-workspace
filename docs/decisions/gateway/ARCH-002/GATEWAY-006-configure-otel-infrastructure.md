@@ -12,18 +12,19 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-GATEWAY-002
-- ARCH-002-SHOPIFY-006
-- ARCH-002-MESSAGING-003
-- ARCH-002-ADMIN-009
-- ARCH-002-BACKGROUND-005
+  - ARCH-002-GATEWAY-002
+  - ARCH-002-SHOPIFY-006
+  - ARCH-002-MESSAGING-003
+  - ARCH-002-ADMIN-009
+  - ARCH-002-BACKGROUND-005
 enables:
-- ARCH-002-GATEWAY-003
-- ARCH-002-ADMIN-004
-- ARCH-002-SYSTEM-TEST-002
+  - ARCH-002-GATEWAY-003
+  - ARCH-002-ADMIN-004
+  - ARCH-002-SYSTEM-TEST-002
 created: 2026-08-29
 updated: 2026-09-02
 ---
+
 # Configure OpenTelemetry transport and environment wiring
 
 ## Architecture
@@ -137,52 +138,52 @@ Accepted / Complete
 
 ### Files Changed
 
- - `moda-interact-gateway/docs/observability.md` — independent signal routing,
-	Grafana Cloud/Loki backend selection, shared-runtime log capability,
-	environment identity evidence, secret handling, cost assumptions and failure
-	isolation.
- - `moda-interact-gateway/README.md` — observability contract link.
- - `moda-interact-gateway/docs/gateway.md` — GATEWAY-006 observability scope
-	and GATEWAY-003 Blueprint boundary.
- - `moda-interact-gateway/tests/validate-observability-config.sh` — static
-	contract and no-secret validation.
- - `docs/decisions/gateway/ARCH-002/GATEWAY-006-configure-otel-infrastructure.md`
-	— completion report.
+- `moda-interact-gateway/docs/observability.md` — independent signal routing,
+  Grafana Cloud/Loki backend selection, shared-runtime log capability,
+  environment identity evidence, secret handling, cost assumptions and failure
+  isolation.
+- `moda-interact-gateway/README.md` — observability contract link.
+- `moda-interact-gateway/docs/gateway.md` — GATEWAY-006 observability scope
+  and GATEWAY-003 Blueprint boundary.
+- `moda-interact-gateway/tests/validate-observability-config.sh` — static
+  contract and no-secret validation.
+- `docs/decisions/gateway/ARCH-002/GATEWAY-006-configure-otel-infrastructure.md`
+  — completion report.
 
 ### Work Completed
 
- - Recorded traces and metrics as OpenTelemetry -> OTLP -> Grafana Cloud and
-	logs as shared structured logging -> Loki-compatible transport -> Grafana
-	Cloud/Loki, with each signal independently configurable.
- - Inspected the accepted shared runtime: the same record can reach Loki and
-	OTLP Logs when both are enabled, but ARCH-002 enables Loki logs and disables
-	OTLP Logs by default to avoid duplicate persistence and cost. Shared Logs
-	capability remains intact.
- - Recorded the accepted runtime identity input: each preload supplies only its
-	canonical service name; shared resolution consumes
-	`DEPLOYMENT_ENVIRONMENT_NAME`, then `OTEL_DEPLOYMENT_ENVIRONMENT`, then
-	`NODE_ENV`, with `development` fallback.
- - Documented separate test/production endpoint and credential wiring using
-	Render secret mechanisms; Blueprint placement remains GATEWAY-003 scope.
- - Documented direct exporter transport with no initial OpenTelemetry Collector,
-	NGINX structured logs, request/correlation IDs, bounded data policy and
-	failure isolation.
- - Added revision-focused static validation without introducing a local
-	telemetry provider, exporter, application instrumentation or committed secret.
+- Recorded traces and metrics as OpenTelemetry -> OTLP -> Grafana Cloud and
+  logs as shared structured logging -> Loki-compatible transport -> Grafana
+  Cloud/Loki, with each signal independently configurable.
+- Inspected the accepted shared runtime: the same record can reach Loki and
+  OTLP Logs when both are enabled, but ARCH-002 enables Loki logs and disables
+  OTLP Logs by default to avoid duplicate persistence and cost. Shared Logs
+  capability remains intact.
+- Recorded the accepted runtime identity input: each preload supplies only its
+  canonical service name; shared resolution consumes
+  `DEPLOYMENT_ENVIRONMENT_NAME`, then `OTEL_DEPLOYMENT_ENVIRONMENT`, then
+  `NODE_ENV`, with `development` fallback.
+- Documented separate test/production endpoint and credential wiring using
+  Render secret mechanisms; Blueprint placement remains GATEWAY-003 scope.
+- Documented direct exporter transport with no initial OpenTelemetry Collector,
+  NGINX structured logs, request/correlation IDs, bounded data policy and
+  failure isolation.
+- Added revision-focused static validation without introducing a local
+  telemetry provider, exporter, application instrumentation or committed secret.
 
 ### Validation Results
 
- - `tests/validate-observability-config.sh`: pass after revision; signal routing,
-	deployment policy, collector policy, unknown retention and estimated cost
-	assumptions are present.
- - `tests/run-tests.sh`: pass, 44 passed, 0 failed, including request/correlation
-	IDs, structured logging, sensitive-query safety, upstream failure isolation and
-	NGINX configuration rendering.
- - Secret/configuration review: pass; no OTLP or Loki credentials/token values
-	committed.
- - Hosted OTLP/Loki connectivity test: not run and intentionally unchecked
-	because real hosted credentials/endpoints were unavailable; no backend arrival
-	is claimed.
+- `tests/validate-observability-config.sh`: pass after revision; signal routing,
+  deployment policy, collector policy, unknown retention and estimated cost
+  assumptions are present.
+- `tests/run-tests.sh`: pass, 44 passed, 0 failed, including request/correlation
+  IDs, structured logging, sensitive-query safety, upstream failure isolation and
+  NGINX configuration rendering.
+- Secret/configuration review: pass; no OTLP or Loki credentials/token values
+  committed.
+- Hosted OTLP/Loki connectivity test: not run and intentionally unchecked
+  because real hosted credentials/endpoints were unavailable; no backend arrival
+  is claimed.
 
 ### Deviations
 
@@ -203,6 +204,7 @@ None.
 None.
 
 ## Architect Review
+
 ### Review Status
 
 Accepted / Complete

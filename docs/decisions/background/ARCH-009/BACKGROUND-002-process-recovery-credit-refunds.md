@@ -221,31 +221,46 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
+
 Ready for Review
+
 ### Files Changed
+
 - `moda-interact-background/src/services/recovery-credit-refund.service.ts`
 - `moda-interact-background/tests/unit/services/purchased-recovery-reservation.service.test.ts`
 - `moda-interact-background/tests/unit/services/recovery-credit-refund.service.test.ts`
+
 ### Work Completed
+
 - Preserved the accepted hold, correction, reconciliation, release, and finalization behavior from Attempt 2.
 - Restricted `advance()` to freshly re-read `PROCESSING` and `PROVIDER_PENDING` rows; stale Admin-owned terminal/provider-confirmed states now no-op without correction creation or lifecycle overwrite.
 - Made status transitions require exact `id + version + expected status` and checked `count`; correction linking now also requires the current version/status and increments the refund version, with Serializable conflict retry.
 - Added deterministic races for REJECTED, WITHDRAWN, and PROVIDER_CONFIRMED state changes after selection, plus correction-link CAS loss and all requested hold, correction, release, finalization, message, reconciliation, paid-cycle, and free-counter proofs.
 - Added direct admission coverage proving `refundingQuantity` blocks reservation and cannot overspend in a concurrent refund-hold versus reservation race.
 - Added the missing original UsageEvent meter snapshot guard so a held correction fails closed to `NEEDS_ATTENTION`.
+
 ### Validation Results
+
 - `npx vitest run tests/unit/services/recovery-credit-refund.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/billing-reconciliation.service.test.ts`: passed, 4 files and 65 tests.
 - `npm run test:unit`: passed, 44 files and 470 tests.
 - `npm run build`: passed, including Prisma client generation and TypeScript compilation.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
+
 ### Deviations
+
 Attempt 3 remained within the requested narrow scope but included one justified production correction: the required source-identity regression exposed that an already-held correction path did not revalidate the original UsageEvent meter snapshot. No unrelated task, sibling implementation, schema, queue, or contract changes were made.
+
 ### Assumptions
+
 Admin confirmation writes `PROVIDER_CONFIRMED` and the provider confirmation fields before Background finalization, as defined by ARCH-009. Existing accepted ARCH-009 database and Shared 0.9.0 prerequisites remain authoritative.
+
 ### Unresolved Issues
+
 None.
+
 ### Architectural Concerns
+
 None.
 
 ### Git / VCS
@@ -253,35 +268,35 @@ None.
 Task branch: `task/ARCH-009-BACKGROUND-002`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-BACKGROUND-002`
-  parent branch: `task/ARCH-009-BACKGROUND-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-BACKGROUND-002`
-  implementation branch: `task/ARCH-009-BACKGROUND-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-BACKGROUND-002`
+parent branch: `task/ARCH-009-BACKGROUND-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-BACKGROUND-002`
+implementation branch: `task/ARCH-009-BACKGROUND-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-background`
-  commit: `d2b7977c28b878d2cfadd251ecf72ad71fd24863`
-  remote branch: `origin/task/ARCH-009-BACKGROUND-002`
-  pushed: yes
+repository: `moda-interact-background`
+commit: `d2b7977c28b878d2cfadd251ecf72ad71fd24863`
+remote branch: `origin/task/ARCH-009-BACKGROUND-002`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/background/ARCH-009/BACKGROUND-002-process-recovery-credit-refunds.md`
-  review/report content commit: `cb8fa8cbe98969411c66cbe965c33537794b3ad2`
-  pre-final metadata handoff commit: `d13f1aa5ef9b7d14f12d9ee5196e3d19f70650a3`
-  reviewed published parent branch tip: `c3f5f92be0775b4fe441e03e9755874f0f19f06d`
-  remote branch: `origin/task/ARCH-009-BACKGROUND-002`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/background/ARCH-009/BACKGROUND-002-process-recovery-credit-refunds.md`
+review/report content commit: `cb8fa8cbe98969411c66cbe965c33537794b3ad2`
+pre-final metadata handoff commit: `d13f1aa5ef9b7d14f12d9ee5196e3d19f70650a3`
+reviewed published parent branch tip: `c3f5f92be0775b4fe441e03e9755874f0f19f06d`
+remote branch: `origin/task/ARCH-009-BACKGROUND-002`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -289,6 +304,7 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
+
 Accepted
 
 ### Review Notes
@@ -394,6 +410,7 @@ c3f5f92be0775b4fe441e03e9755874f0f19f06d
 The final parent commit is metadata-only and follows the recorded Attempt-3 report/handoff commits.
 
 ### Architecture Conformance
+
 Accepted.
 
 ### Follow-up

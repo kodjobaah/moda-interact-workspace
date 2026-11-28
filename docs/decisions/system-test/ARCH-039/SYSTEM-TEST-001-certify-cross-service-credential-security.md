@@ -31,7 +31,6 @@ created: 2026-10-14
 updated: 2026-11-02
 ---
 
-
 # Certify unified credential encryption and least-privilege configuration end-to-end
 
 ## Architecture

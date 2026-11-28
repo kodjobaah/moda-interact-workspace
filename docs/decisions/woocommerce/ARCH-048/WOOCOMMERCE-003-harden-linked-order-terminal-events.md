@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-035-WOOCOMMERCE-008
-- ARCH-035-API-019
+  - ARCH-035-WOOCOMMERCE-008
+  - ARCH-035-API-019
 enables:
-- ARCH-048-BACKGROUND-003
-- ARCH-048-SYSTEM-TEST-001
-created: '2026-10-23'
-updated: '2026-10-27'
+  - ARCH-048-BACKGROUND-003
+  - ARCH-048-SYSTEM-TEST-001
+created: "2026-10-23"
+updated: "2026-10-27"
 ---
 
 # ARCH-048-WOOCOMMERCE-003 — Harden checkout-linked Woo paid and cancellation event coverage

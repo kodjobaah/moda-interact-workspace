@@ -27,18 +27,18 @@ The smallest useful direction is to share narrow trusted context within one requ
 
 ### Evidence and priorities
 
-| Finding | Priority | Evidence |
-|---|---|---|
-| F01: wrong initial paid lock relation; related lock order | Correctness first | Source/schema contradiction and emitted-SQL probe; concurrent deadlock is a source-derived risk, not reproduced |
-| F02: malformed provider body becomes no contract | Correctness first | Unchanged-source probe plus concrete caller trace |
-| F03: refund crosses transaction boundary | Correctness first | Unchanged-source probe records root DB/provider work during transaction |
-| F04: duplicate uninstall deletes replacement session | Correctness first | Actual route/service/token-reader control flow with mocked boundaries |
-| F05: webhook configuration drift | Correctness first | Parsed files and existing-test-equivalent assertion |
-| F06–F14: repeated reads, writes and refresh work | Simplification next | Static branch ledgers; resolver and purchase-history counts additionally probed |
-| F15: queue pre-reads and incomplete deadline | Reliability next | Static trace and stalled-pre-read source probe |
-| F16: suppressed or misclassified operational failures | Cross-cutting correction | Source trace |
-| F17: privacy handlers and restrictive deletion graph | Separate functional scope | Source/schema trace; no legal or compliance conclusion |
-| F18: category lifecycle check during commit | Confirm policy and race | Static candidate, conditional on active-at-commit requirement |
+| Finding                                                   | Priority                  | Evidence                                                                                                        |
+| --------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| F01: wrong initial paid lock relation; related lock order | Correctness first         | Source/schema contradiction and emitted-SQL probe; concurrent deadlock is a source-derived risk, not reproduced |
+| F02: malformed provider body becomes no contract          | Correctness first         | Unchanged-source probe plus concrete caller trace                                                               |
+| F03: refund crosses transaction boundary                  | Correctness first         | Unchanged-source probe records root DB/provider work during transaction                                         |
+| F04: duplicate uninstall deletes replacement session      | Correctness first         | Actual route/service/token-reader control flow with mocked boundaries                                           |
+| F05: webhook configuration drift                          | Correctness first         | Parsed files and existing-test-equivalent assertion                                                             |
+| F06–F14: repeated reads, writes and refresh work          | Simplification next       | Static branch ledgers; resolver and purchase-history counts additionally probed                                 |
+| F15: queue pre-reads and incomplete deadline              | Reliability next          | Static trace and stalled-pre-read source probe                                                                  |
+| F16: suppressed or misclassified operational failures     | Cross-cutting correction  | Source trace                                                                                                    |
+| F17: privacy handlers and restrictive deletion graph      | Separate functional scope | Source/schema trace; no legal or compliance conclusion                                                          |
+| F18: category lifecycle check during commit               | Confirm policy and race   | Static candidate, conditional on active-at-commit requirement                                                   |
 
 ## 1. Scope, baseline and counting rules
 
@@ -50,18 +50,18 @@ The nested and canonical Prisma schema files are byte-identical. All 72 migratio
 
 **Source baseline:**
 
-| Item | Value |
-|---|---|
-| Uploaded ZIP SHA-256 | `6890c8d7cfbc68d9814920ef154d0d18b4aca7af8e1e6cc9dd9a95ff04239c6e` |
-| Architect TOML SHA-256 | `1b5548a98a9c899a9f44e442d86df2e2510b0827ecd2fa742a829b07d00dec3e` |
-| Canonical/nested schema SHA-256 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` |
-| Locked Prisma / client | 6.19.3 |
-| Locked React Router | 7.18.2 |
-| Locked Shopify app React Router integration | 1.2.1 |
-| Locked Shopify Prisma session storage | 9.0.1 |
-| Locked BullMQ | 6.3.1 |
-| Locked Vitest | 4.1.11 |
-| Source-probe runtime | Node 24.22.1 |
+| Item                                        | Value                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------ |
+| Uploaded ZIP SHA-256                        | `6890c8d7cfbc68d9814920ef154d0d18b4aca7af8e1e6cc9dd9a95ff04239c6e` |
+| Architect TOML SHA-256                      | `1b5548a98a9c899a9f44e442d86df2e2510b0827ecd2fa742a829b07d00dec3e` |
+| Canonical/nested schema SHA-256             | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` |
+| Locked Prisma / client                      | 6.19.3                                                             |
+| Locked React Router                         | 7.18.2                                                             |
+| Locked Shopify app React Router integration | 1.2.1                                                              |
+| Locked Shopify Prisma session storage       | 9.0.1                                                              |
+| Locked BullMQ                               | 6.3.1                                                              |
+| Locked Vitest                               | 4.1.11                                                             |
+| Source-probe runtime                        | Node 24.22.1                                                       |
 
 These versions describe the supplied lockfile, not the latest packages or a verified deployed environment. The app resolves Shared 3.1.0 while the Background package declares 3.0.0. That difference alone does not prove an incompatibility or justify a package upgrade.
 
@@ -73,15 +73,15 @@ The reference workload of 20,000 inbound Shopify events per minute in the archit
 
 ## 2. Current ownership and request shape
 
-| Boundary | Current responsibility | Architectural judgement |
-|---|---|---|
-| Shopify SDK authentication | Verify admin/webhook requests and supply authenticated Shopify context/session | Preserve at every independently callable endpoint; internal SDK query cost remains unmeasured |
-| `ShopService.resolveShopifyShop` | Remote profile read, local identity lookup, optional profile update/provisioning, subscription/settings existence | Too much repeated work for routine read composition |
-| Merchant loaders/read services | Access projection, page data and presentation | Share immutable request facts; keep standalone resource guards |
-| Billing mutation services | Current provider evidence, local subscription/cycle checks, accounting transitions and idempotency | Preserve fresh admission and atomicity; shorten transaction duration |
-| Generic webhook ingress | Authentication, metadata validation, Shop admission, normalization and BullMQ publication | Already lean on business DB work |
-| Background consumers | Re-read state at later execution time and perform asynchronous work | These reads are across a process/time boundary, not automatic duplicates |
-| Canonical database repository | Schema and migrations | Verified aligned with app's nested copy |
+| Boundary                         | Current responsibility                                                                                            | Architectural judgement                                                                       |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Shopify SDK authentication       | Verify admin/webhook requests and supply authenticated Shopify context/session                                    | Preserve at every independently callable endpoint; internal SDK query cost remains unmeasured |
+| `ShopService.resolveShopifyShop` | Remote profile read, local identity lookup, optional profile update/provisioning, subscription/settings existence | Too much repeated work for routine read composition                                           |
+| Merchant loaders/read services   | Access projection, page data and presentation                                                                     | Share immutable request facts; keep standalone resource guards                                |
+| Billing mutation services        | Current provider evidence, local subscription/cycle checks, accounting transitions and idempotency                | Preserve fresh admission and atomicity; shorten transaction duration                          |
+| Generic webhook ingress          | Authentication, metadata validation, Shop admission, normalization and BullMQ publication                         | Already lean on business DB work                                                              |
+| Background consumers             | Re-read state at later execution time and perform asynchronous work                                               | These reads are across a process/time boundary, not automatic duplicates                      |
+| Canonical database repository    | Schema and migrations                                                                                             | Verified aligned with app's nested copy                                                       |
 
 A normal established-Shop resolution executes one Shopify Admin GraphQL request, one Shop read, one Subscription existence read and one ShopSettings read. The parent app loader then adds a full support reader and another subscription projection. Its baseline is therefore **seven data calls and one resolver GraphQL request**. A child loader that resolves the shop independently starts another three-call/one-GraphQL sequence.
 
@@ -196,13 +196,13 @@ Composition also upserts a thread and later updates it again. Fold only fields t
 
 The healthy billing-options branch, with an active current cycle and no pending provider plan, performs **17 data calls after Shop resolution**:
 
-| Component | Calls |
-|---|---:|
-| Access subscription projection | 1 |
-| Live commercial context: Shop, provider credential, plan | 3 |
-| Recovery capacity | 5 |
-| Merchant billing state | 8 |
-| Total after resolver | 17 |
+| Component                                                | Calls |
+| -------------------------------------------------------- | ----: |
+| Access subscription projection                           |     1 |
+| Live commercial context: Shop, provider credential, plan |     3 |
+| Recovery capacity                                        |     5 |
+| Merchant billing state                                   |     8 |
+| Total after resolver                                     |    17 |
 
 The route therefore costs 20 calls including its resolver, or 27 when the seven-call app parent also executes. The branch makes one Partner request, separately from resolver GraphQL requests.
 
@@ -223,10 +223,10 @@ Evidence: `routes/app/billing/options/route.tsx`; `routes/app/billing/select/rou
 The unchanged-source probe confirms:
 
 | Eligible rows N | Service data calls | Partner requests |
-|---:|---:|---:|
-| 1 | 5 | 1 |
-| 5 | 17 | 5 |
-| 20 | 62 | 20 |
+| --------------: | -----------------: | ---------------: |
+|               1 |                  5 |                1 |
+|               5 |                 17 |                5 |
+|              20 |                 62 |               20 |
 
 The service formula is `2 + 3N`: count/page reads plus three reads per qualifying row. The route adds one access-subscription read and resolver three reads, producing `6 + 3N`. Including the parent produces `13 + 3N`: 28 calls for five rows and 73 for twenty. An out-of-range page clamp adds a page reread. The route also makes a development-store Admin GraphQL request.
 
@@ -235,7 +235,6 @@ The service formula is `2 + 3N`: count/page reads plus three reads per qualifyin
 Keep separate fresh verification when the merchant actually requests a refund.
 
 The nested refund relation is unbounded even though the outer purchase page is bounded. The UI needs latest and latest-completed refund information. Retrieve those precise summaries; an arbitrary `take: 2` can hide an older completed refund and change behaviour.
-
 
 ### F10. Recovery detail reloads the same large ownership projection
 
@@ -268,11 +267,11 @@ Knowledge's source list includes dormant sources after a plan downgrade. Capping
 
 Three narrow changes can reduce writes without weakening safety:
 
-| Path | Current behaviour | Minimal correction |
-|---|---|---|
-| Recovery-policy no-op | `services/recovery-policy/recovery-policy.server.ts:157–172` clears selected discounts, sets requested selections, then checks no-op | Compare complete desired/current state under the existing lock/revision boundary first; update only added/removed selections |
-| Confirmed hosted paid plan change | `shopify-billing-operation.service.ts:321–339` calls a CONFIRMED `ensureOperation` that already confirms at 677–678, then confirms again; each confirmation updates and rereads | Retain one guarded confirmation and its result |
-| Exact current billing-period projection | `billing-period-projection.ts:215–230` computes `repaired: false` but still updates the unchanged period | Skip identical period UPDATE; retain conflicts and missing-counter repair |
+| Path                                    | Current behaviour                                                                                                                                                               | Minimal correction                                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Recovery-policy no-op                   | `services/recovery-policy/recovery-policy.server.ts:157–172` clears selected discounts, sets requested selections, then checks no-op                                            | Compare complete desired/current state under the existing lock/revision boundary first; update only added/removed selections |
+| Confirmed hosted paid plan change       | `shopify-billing-operation.service.ts:321–339` calls a CONFIRMED `ensureOperation` that already confirms at 677–678, then confirms again; each confirmation updates and rereads | Retain one guarded confirmation and its result                                                                               |
+| Exact current billing-period projection | `billing-period-projection.ts:215–230` computes `repaired: false` but still updates the unchanged period                                                                        | Skip identical period UPDATE; retain conflicts and missing-counter repair                                                    |
 
 The existing `tests/unit/recovery-policy-save.test.ts:93–106` explicitly expects two discount updates in its no-op case. That test needs a changed behavioural expectation alongside the eventual fix. Provider selection ownership, concurrent sync and revision rejection remain required.
 
@@ -332,15 +331,15 @@ The existing Shared logger should remain the diagnostic boundary. Keep merchant-
 
 Concrete examples:
 
-| Boundary | Current loss or misclassification | Needed behaviour |
-|---|---|---|
-| Billing callback | Catches at `callback/route.tsx:159,208` discard errors; a database failure can be recorded as `PARTNER_API_ERROR` | Log/classify original DB versus provider failure |
-| Provider HTTP | `shopify-billing.provider.ts:155–158,398–399` keeps status but drops other safe failure context | Preserve available safe response/request diagnostic and cause without credentials |
-| Webhook publication | Wrappers drop cause; ingress catches and returns 503 with only a reason code | One shared structured error retaining original Redis/provider failure; keep retry response |
-| Discount webhook success | Returns before the common ENQUEUED/DUPLICATE outcome log | Route success through the same final outcome recording |
-| Knowledge entitlement | Reader returns retryable `unavailable` after a DB error; mutators map every non-entitled result to 403 `DENIED` | Distinguish unavailable from actual plan denial |
-| Upload HEAD | Every R2 error becomes `UPLOAD_OBJECT_NOT_FOUND` | Distinguish genuine missing object from service/transport/credential failure |
-| Recovery and billing read fallbacks | Safe UI state returned without original server diagnostic | Keep safe display and add bounded diagnostic at the owning boundary |
+| Boundary                            | Current loss or misclassification                                                                                 | Needed behaviour                                                                           |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Billing callback                    | Catches at `callback/route.tsx:159,208` discard errors; a database failure can be recorded as `PARTNER_API_ERROR` | Log/classify original DB versus provider failure                                           |
+| Provider HTTP                       | `shopify-billing.provider.ts:155–158,398–399` keeps status but drops other safe failure context                   | Preserve available safe response/request diagnostic and cause without credentials          |
+| Webhook publication                 | Wrappers drop cause; ingress catches and returns 503 with only a reason code                                      | One shared structured error retaining original Redis/provider failure; keep retry response |
+| Discount webhook success            | Returns before the common ENQUEUED/DUPLICATE outcome log                                                          | Route success through the same final outcome recording                                     |
+| Knowledge entitlement               | Reader returns retryable `unavailable` after a DB error; mutators map every non-entitled result to 403 `DENIED`   | Distinguish unavailable from actual plan denial                                            |
+| Upload HEAD                         | Every R2 error becomes `UPLOAD_OBJECT_NOT_FOUND`                                                                  | Distinguish genuine missing object from service/transport/credential failure               |
+| Recovery and billing read fallbacks | Safe UI state returned without original server diagnostic                                                         | Keep safe display and add bounded diagnostic at the owning boundary                        |
 
 Evidence includes `webhooks/shopify-webhook-queue.server.ts:246–249,474–477,514–517`; `shopify-webhook-ingress.service.ts:236–264,401–431`; `shopify-webhook-observability.server.ts:117–143`; `merchant-knowledge-entitlement.server.ts:50–58`; `merchant-knowledge.server.ts:360–361`; `upload.server.ts:268–272`; and recovery loaders' catch blocks.
 
@@ -374,39 +373,38 @@ Do not conflate this with onboarding milestone ordering. `ARCH-017-SHOPIFY-002` 
 
 A `NO_PENDING` or `SUBSCRIPTION_NOT_ACTIVE` category result combined with a later resume short-circuit is worth lifecycle policy coverage. It does not authorize moving the milestone after category activation. The missing Background activation hook is already acknowledged cross-repository work in ARCH-023, not a newly discovered task to recreate.
 
-
 ## 6. Route and mutation ledger
 
 These ledgers make future changes reviewable. They are branch-specific source counts, not production measurements. `S = 3` for the unchanged-Shop resolver, `P = 7` for the matched parent, `G = 4` for recovery access and `K = 5` for settings access. Each S also makes one Admin GraphQL request. Authentication SDK work is additional and unmeasured.
 
 ### Pages and read resources
 
-| Route or branch | Child/resource data calls | Parent + child when both run | Important condition |
-|---|---:|---:|---|
-| Ordinary active home | 12 | 19 | Current plan handle, valid overview range |
-| Onboarding home | 8 | 15 | Also taxonomy-suggestion GraphQL |
-| Legacy home usage redirect | 5 / 6 | 12 / 13 | Extra call only for valid explicit bill lookup |
-| Recovery list | 5 / 6 | 12 / 13 | Nonempty / empty result |
-| Recovery detail | 11 | 18 | Customer/conversation present, both sections nonempty |
-| Detail with eligible follow-up catalogue | 15 | 22 | Successful candidate catalogue |
-| Standalone messages or related section | 7 / 6 / 5 | — | Nonempty / empty / no conversation or customer |
-| Command status resource | 5 | — | Status projection after recovery access |
-| Pending recoveries resource | 4 | — | Further work is Redis, not Prisma |
-| Recovery settings | 21 | 28 | Active opt-in knowledge feature and at least one source |
-| Compatibility features redirect | 0 | Parent may execute | No own business read |
-| Merchant support | 7 | 14 | Bounded page, default 25/max 50 |
-| Promotions | 11 | 18 | Authorized shop |
-| Billing options | 20 | 27 | Active current cycle, no pending provider plan |
-| Billing status | 4 | — | One subscription read after resolver |
-| Billing select | 9 | — | Capacity's full healthy branch |
-| Purchase history | `6 + 3N` | `13 + 3N` | N qualifying ACTIVE rows; clamp adds one read |
-| Usage with selected period | 10 | 17 | Nonempty source IDs |
-| Usage with no selected period | 6 | 13 | No event page/source projection |
-| Reinstall loader | 4 | — | Mutation/reconciliation branch differs |
-| Authentication callback/catchall | SDK cost + S where resolved | — | Reinstall/provisioning adds branch work |
-| Liveness | 0 | — | No dependency probe |
-| Readiness | 1 direct pg SELECT | — | Plus Redis PING, not Prisma |
-| Public/privacy static pages; public telemetry probe | 0 | — | No business DB work |
+| Route or branch                                     |   Child/resource data calls | Parent + child when both run | Important condition                                     |
+| --------------------------------------------------- | --------------------------: | ---------------------------: | ------------------------------------------------------- |
+| Ordinary active home                                |                          12 |                           19 | Current plan handle, valid overview range               |
+| Onboarding home                                     |                           8 |                           15 | Also taxonomy-suggestion GraphQL                        |
+| Legacy home usage redirect                          |                       5 / 6 |                      12 / 13 | Extra call only for valid explicit bill lookup          |
+| Recovery list                                       |                       5 / 6 |                      12 / 13 | Nonempty / empty result                                 |
+| Recovery detail                                     |                          11 |                           18 | Customer/conversation present, both sections nonempty   |
+| Detail with eligible follow-up catalogue            |                          15 |                           22 | Successful candidate catalogue                          |
+| Standalone messages or related section              |                   7 / 6 / 5 |                            — | Nonempty / empty / no conversation or customer          |
+| Command status resource                             |                           5 |                            — | Status projection after recovery access                 |
+| Pending recoveries resource                         |                           4 |                            — | Further work is Redis, not Prisma                       |
+| Recovery settings                                   |                          21 |                           28 | Active opt-in knowledge feature and at least one source |
+| Compatibility features redirect                     |                           0 |           Parent may execute | No own business read                                    |
+| Merchant support                                    |                           7 |                           14 | Bounded page, default 25/max 50                         |
+| Promotions                                          |                          11 |                           18 | Authorized shop                                         |
+| Billing options                                     |                          20 |                           27 | Active current cycle, no pending provider plan          |
+| Billing status                                      |                           4 |                            — | One subscription read after resolver                    |
+| Billing select                                      |                           9 |                            — | Capacity's full healthy branch                          |
+| Purchase history                                    |                    `6 + 3N` |                    `13 + 3N` | N qualifying ACTIVE rows; clamp adds one read           |
+| Usage with selected period                          |                          10 |                           17 | Nonempty source IDs                                     |
+| Usage with no selected period                       |                           6 |                           13 | No event page/source projection                         |
+| Reinstall loader                                    |                           4 |                            — | Mutation/reconciliation branch differs                  |
+| Authentication callback/catchall                    | SDK cost + S where resolved |                            — | Reinstall/provisioning adds branch work                 |
+| Liveness                                            |                           0 |                            — | No dependency probe                                     |
+| Readiness                                           |          1 direct pg SELECT |                            — | Plus Redis PING, not Prisma                             |
+| Public/privacy static pages; public telemetry probe |                           0 |                            — | No business DB work                                     |
 
 Settings subtracts one call when there are no knowledge sources, and another activation-preference call when the opt-in feature is absent/inactive. Failed, denied, first-install, profile-change, stale-revision and retry branches have different counts. Onboarding resume is intentionally branch-dependent: an already-complete milestone can return after S; other branches perform projection/sync/category work.
 
@@ -414,25 +412,25 @@ Primary route evidence is enumerated in `route-inventory.csv`. Service-level can
 
 ### Mutations, excluding subsequent page revalidation
 
-| Action or branch | Data calls including its access guard | Additional work or qualification |
-|---|---:|---|
-| Mark one owned support message read | 5 | One resolver GraphQL |
-| Compose support message | 7 / 8 | No translation / translation; queue hint after commit |
-| Recovery control to HUMAN / AI | 12 / 9 | Different outbound admission requirements |
-| Human command idempotent replay | 8 | Keep replay identity and scoped lookup |
-| New permitted human text | 15 | Successful open-window branch |
-| New eligible follow-up | 21 / 22 | Existing / newly created sequence-two attempt |
-| Recovery policy no-op | 10 / 11 | Empty / nonempty selected IDs; includes two avoidable updates |
-| Recovery policy changed | 11 / 12 | Same selected-ID distinction |
-| Feature preferences unchanged / n changed | 8 / `10 + n` | Current entitlement and output refresh |
-| AI delay unchanged / changed | 7 / 8 | Already skips identical update |
-| Category pending selection | 12 / 15 | Existing profile/lineage / initial missing rows |
-| Active category reselection | 14 / 15 | Existing draft / create draft |
-| New promotion selection | 10 | First successful attempt; retries additional |
-| New fixed-price credit purchase | 27 | 20 reads + 3 writes + raw lock after S; three Partner requests |
-| Existing purchase receipt replay through current route | 13 | One avoidable pre-service Partner request |
-| Eligible refund request | 12 | Partner work inside current transaction; development-store GraphQL also |
-| Reactivate held credit | 9 | Positive held balance; first successful attempt |
+| Action or branch                                       | Data calls including its access guard | Additional work or qualification                                        |
+| ------------------------------------------------------ | ------------------------------------: | ----------------------------------------------------------------------- |
+| Mark one owned support message read                    |                                     5 | One resolver GraphQL                                                    |
+| Compose support message                                |                                 7 / 8 | No translation / translation; queue hint after commit                   |
+| Recovery control to HUMAN / AI                         |                                12 / 9 | Different outbound admission requirements                               |
+| Human command idempotent replay                        |                                     8 | Keep replay identity and scoped lookup                                  |
+| New permitted human text                               |                                    15 | Successful open-window branch                                           |
+| New eligible follow-up                                 |                               21 / 22 | Existing / newly created sequence-two attempt                           |
+| Recovery policy no-op                                  |                               10 / 11 | Empty / nonempty selected IDs; includes two avoidable updates           |
+| Recovery policy changed                                |                               11 / 12 | Same selected-ID distinction                                            |
+| Feature preferences unchanged / n changed              |                          8 / `10 + n` | Current entitlement and output refresh                                  |
+| AI delay unchanged / changed                           |                                 7 / 8 | Already skips identical update                                          |
+| Category pending selection                             |                               12 / 15 | Existing profile/lineage / initial missing rows                         |
+| Active category reselection                            |                               14 / 15 | Existing draft / create draft                                           |
+| New promotion selection                                |                                    10 | First successful attempt; retries additional                            |
+| New fixed-price credit purchase                        |                                    27 | 20 reads + 3 writes + raw lock after S; three Partner requests          |
+| Existing purchase receipt replay through current route |                                    13 | One avoidable pre-service Partner request                               |
+| Eligible refund request                                |                                    12 | Partner work inside current transaction; development-store GraphQL also |
+| Reactivate held credit                                 |                                     9 | Positive held balance; first successful attempt                         |
 
 High mutation counts are not automatically waste. Human command admission and payment accounting deliberately perform current checks after acquiring locks.
 
@@ -440,18 +438,18 @@ High mutation counts are not automatically waste. Human command admission and pa
 
 Each current action begins with K=5. These branches assume an available active opt-in feature and no retry/failure. Provider/R2 requests and postcommit queue hints are excluded from data-call counts.
 
-| Action or branch | Calls including K |
-|---|---:|
-| Create web source | 14 |
-| Edit web source, unchanged / changed URL | 15 / 16 |
-| Edit uploaded source | 13 |
-| Refresh web source | 15 |
-| Reorder N sources | `9 + N` |
-| Delete leaving N sources | `11 + N` |
-| Upload intent | 13 |
-| Finalize new / replacement uploaded source | 18 / 19 |
-| Reprocess uploaded source | 17 |
-| Upload-failure telemetry | 5 |
+| Action or branch                           | Calls including K |
+| ------------------------------------------ | ----------------: |
+| Create web source                          |                14 |
+| Edit web source, unchanged / changed URL   |           15 / 16 |
+| Edit uploaded source                       |                13 |
+| Refresh web source                         |                15 |
+| Reorder N sources                          |           `9 + N` |
+| Delete leaving N sources                   |          `11 + N` |
+| Upload intent                              |                13 |
+| Finalize new / replacement uploaded source |           18 / 19 |
+| Reprocess uploaded source                  |                17 |
+| Upload-failure telemetry                   |                 5 |
 
 Sources: `services/merchant-knowledge/merchant-knowledge.server.ts:343–512` and `upload.server.ts:126–481`. The ledger intentionally exposes both the discarded access-row read and the distinct locked admission inside the service.
 
@@ -459,21 +457,21 @@ Sources: `services/merchant-knowledge/merchant-knowledge.server.ts:343–512` an
 
 These counts exclude `authenticate.webhook` and its SDK session work.
 
-| Handler or branch | Explicit application data calls |
-|---|---:|
-| Generic invalid/conflicting delivery metadata | 0 |
-| Generic supported active-shop event | 1 Shop read; no DB writes |
-| Generic unknown/inactive or unsupported topic | 1 Shop read |
-| Uninstall known Shop | 7, plus session deletion if SDK supplied a session |
-| Uninstall unknown Shop | 1, plus conditional session deletion |
-| Scopes update, known eligible Shop, SDK session present | 6 |
-| Scopes update, missing discount permission, SDK session present | 8 |
-| Scopes update, otherwise ineligible with permission | 5 with SDK session, 4 without |
-| Scopes update, unknown Shop | 1 |
-| Customer redact, found customer | 4 |
-| Customer redact, no ID / unknown Shop / unknown customer | 0 / 1 / 2 |
-| Customer data request | 1 |
-| Shop redact | 2; cascade/restrict work is not included |
+| Handler or branch                                               |                    Explicit application data calls |
+| --------------------------------------------------------------- | -------------------------------------------------: |
+| Generic invalid/conflicting delivery metadata                   |                                                  0 |
+| Generic supported active-shop event                             |                          1 Shop read; no DB writes |
+| Generic unknown/inactive or unsupported topic                   |                                        1 Shop read |
+| Uninstall known Shop                                            | 7, plus session deletion if SDK supplied a session |
+| Uninstall unknown Shop                                          |               1, plus conditional session deletion |
+| Scopes update, known eligible Shop, SDK session present         |                                                  6 |
+| Scopes update, missing discount permission, SDK session present |                                                  8 |
+| Scopes update, otherwise ineligible with permission             |                      5 with SDK session, 4 without |
+| Scopes update, unknown Shop                                     |                                                  1 |
+| Customer redact, found customer                                 |                                                  4 |
+| Customer redact, no ID / unknown Shop / unknown customer        |                                          0 / 1 / 2 |
+| Customer data request                                           |                                                  1 |
+| Shop redact                                                     |           2; cascade/restrict work is not included |
 
 A missing SDK session removes its conditional Session update. A known-shop scope update with no usable offline session follows the unavailable branch and costs seven calls. Those conditional branches should not be collapsed into a single universal number.
 
@@ -507,17 +505,17 @@ The evidence scripts execute the **unchanged source** with synthetic imports/in-
 
 ### Completed checks
 
-| Check | Result and limit |
-|---|---|
-| Schema/migration comparison | Canonical and nested schema plus 72 migration-directory files match |
-| Raw relation inventory | Initial paid `shopify.Shop` reference absent from supplied schema; other inventoried literal relations resolve |
-| Resolver source probe | 3 reads/1 GraphQL for unchanged shop; 6/2 for two concurrent calls; conditional profile writes |
-| Resolver diagnostic probe | If an errors-only GraphQL body reaches this service, its provider marker is lost in a generic error without cause; real SDK handling remains unmeasured |
-| Lock source probe | Actual paid SQL names `shopify.Shop`; free lock schemas correctly identify ShopSettings and Subscription |
-| Billing source probe | Purchase-history formula at 1/5/20 rows; eligible fixture outcomes; refund root/provider work during transaction; malformed successful provider body becomes null |
-| Webhook source probe | Duplicate uninstall removes replacement Session while preserving marker; consent config expectation false; stalled getJob has no active timeout |
-| Evidence-package replay | All three probes reproduce recorded JSON; lexical inventories reproduce against the same snapshot |
-| Source integrity | Review package contains documentation, inventory and probes; no runtime/schema/task-index changes are part of the intended patch |
+| Check                       | Result and limit                                                                                                                                                  |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schema/migration comparison | Canonical and nested schema plus 72 migration-directory files match                                                                                               |
+| Raw relation inventory      | Initial paid `shopify.Shop` reference absent from supplied schema; other inventoried literal relations resolve                                                    |
+| Resolver source probe       | 3 reads/1 GraphQL for unchanged shop; 6/2 for two concurrent calls; conditional profile writes                                                                    |
+| Resolver diagnostic probe   | If an errors-only GraphQL body reaches this service, its provider marker is lost in a generic error without cause; real SDK handling remains unmeasured           |
+| Lock source probe           | Actual paid SQL names `shopify.Shop`; free lock schemas correctly identify ShopSettings and Subscription                                                          |
+| Billing source probe        | Purchase-history formula at 1/5/20 rows; eligible fixture outcomes; refund root/provider work during transaction; malformed successful provider body becomes null |
+| Webhook source probe        | Duplicate uninstall removes replacement Session while preserving marker; consent config expectation false; stalled getJob has no active timeout                   |
+| Evidence-package replay     | All three probes reproduce recorded JSON; lexical inventories reproduce against the same snapshot                                                                 |
+| Source integrity            | Review package contains documentation, inventory and probes; no runtime/schema/task-index changes are part of the intended patch                                  |
 
 The snapshot has no Git history and no installed app `node_modules`. No packages were installed. No real PostgreSQL, Redis, Shopify SDK/provider, R2, integration suite, complete Vitest suite, browser runtime or load benchmark was executed. Existing test code was inspected; a test's presence is not a passed test.
 
@@ -552,18 +550,18 @@ The recorded runtime is Node 24.22.1. The probes need Node's built-in TypeScript
 
 ### Targeted verification needed with implementation
 
-| Change area | Necessary check |
-|---|---|
-| Paid activation/schema/order | Migrated PostgreSQL initial-paid callback; concurrent callback lock interleaving; correct free path retained |
-| Provider parser | Missing data/field, malformed values and explicit null; malformed input makes no subscription-state write |
-| Refund | Provider preflight failure leaves no hold; lifecycle/cycle changes before transaction reject safely; concurrent CAS accounting |
-| Uninstall/reinstall | Route+service+Session duplicate/concurrent cases; cleanup failure and retry; fresh credential retained |
-| Request composition | Count actual SQL and provider calls for representative authenticated routes; preserve independent resource authorization |
-| Support batching | Owned/foreign/already-read/unseen IDs, bounded batch, first timestamp and idempotence |
-| Read/no-op changes | One badge query; one detail owner projection; zero discount writes on true no-op; unchanged order produces no position writes |
-| Knowledge UI | Exact-version mounted router after successful action; stable deadline and no overlapping polls; plain-fetch upload refresh retained |
-| Webhook queue | Deadline includes stalled pre-read/add; duplicate and legacy transitions; retry after ambiguous acceptance and completed-job replay |
-| Privacy | Retention/fulfilment contract first; then populated restrictive graph, partial failure/retry and rehydration cases |
+| Change area                  | Necessary check                                                                                                                     |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Paid activation/schema/order | Migrated PostgreSQL initial-paid callback; concurrent callback lock interleaving; correct free path retained                        |
+| Provider parser              | Missing data/field, malformed values and explicit null; malformed input makes no subscription-state write                           |
+| Refund                       | Provider preflight failure leaves no hold; lifecycle/cycle changes before transaction reject safely; concurrent CAS accounting      |
+| Uninstall/reinstall          | Route+service+Session duplicate/concurrent cases; cleanup failure and retry; fresh credential retained                              |
+| Request composition          | Count actual SQL and provider calls for representative authenticated routes; preserve independent resource authorization            |
+| Support batching             | Owned/foreign/already-read/unseen IDs, bounded batch, first timestamp and idempotence                                               |
+| Read/no-op changes           | One badge query; one detail owner projection; zero discount writes on true no-op; unchanged order produces no position writes       |
+| Knowledge UI                 | Exact-version mounted router after successful action; stable deadline and no overlapping polls; plain-fetch upload refresh retained |
+| Webhook queue                | Deadline includes stalled pre-read/add; duplicate and legacy transitions; retry after ambiguous acceptance and completed-job replay |
+| Privacy                      | Retention/fulfilment contract first; then populated restrictive graph, partial failure/retry and rehydration cases                  |
 
 The existing PostgreSQL recovery query-plan suite is useful: `tests/integration/recovery-detail-query-plans.test.ts` uses real query builders and checks bounded arms/index behaviour behind its explicit environment gate. Run it when changing those queries; it was not run here.
 

@@ -128,47 +128,61 @@ Use the approved system-test fixture/executor/assertion/orchestration split with
 ## Completion Report
 
 ### Status
+
 Not Started — pending terminal validation.
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 Text-only ARCH-047 can be certified independently of ARCH-049 image readiness.
 
 ### Unresolved Issues
+
 Actual provider-specific read-only checkout discount eligibility remains unverified for positive-offer certification in the snapshot.
 
 ### Architectural Concerns
+
 Source had legacy merchant allowlists and automated per-send Meta template metadata paths.
 
 ## Architect Review
 
 ### Review Status
+
 Pending — no implementation reviewed.
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Not assessed.
 
 ### Follow-up
+
 Reconcile verified implementation evidence and final architecture only after all required tests pass.
 
 ## Definition reconciliation — 2026-11-02

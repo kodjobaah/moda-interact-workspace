@@ -143,26 +143,26 @@ transcript is shown.
 
 ### Page register
 
-| ID | Route | Entry points | Main content | Back/exit |
-|---|---|---|---|---|
-| U01 | /sign-in | Unauthenticated route, Sign out | Google sign-in; pending/error feedback | Successful auth to validated return path or U03 |
-| U02 | /access-denied | Valid login without current staff permission | Access denied and Sign out | Sign out to U01; no business navigation |
-| U03 | /features | Root redirect, sidebar | Admin feature catalogue, availability and Commerce configuration status | Sidebar; Platform configurations to U08 |
-| U04 | /features/[id] | U03 feature row/Configure behaviour | Read-only feature metadata and all linked configurations | Back to Features U03 |
-| U05 | /tools | Sidebar, tool editor Back | Searchable reusable tool library | Sidebar |
-| U06 | /tools/[id] | U05 tool row, New tool, feature association link | Tool metadata, revision editor/history, usage by features | Back to Tools U05, or validated return context U09 |
-| U07 | /explore | Sidebar or Browse Shopify from U06 | Documentation search, schema browser, examples and query builder | Sidebar or Return to tool U06 |
-| U08 | /capabilities | U03 Platform configurations | BASE/RECOVERY_POLICY configurations | Back to Features U03 |
-| U09 | /capabilities/[id] | U04 configuration row/create, U08 row | Behaviour prompt, settings, exact tool revision associations, history | Feature U04 for FEATURE; U08 otherwise |
-| U10 | /releases | Sidebar, release-stage completion | Active release and immutable release history; Create release | Sidebar |
-| U11 | /releases/[id] | U10 row, completed Create release | Members, exact revisions, response contract, diff, activation/rollback | Back to Releases U10 |
-| U12 | /shops | Merchants sidebar | Read-only merchant search/list | Sidebar |
-| U13 | /shops/[id] | U12 row | Eligibility breakdown and tool list for a new conversation | Back to Merchants U12 |
-| U14 | /preview | Sidebar, Test from U06/U09/U11/U13 | Synthetic tool test and isolated conversation sandbox | Validated source page, or Features U03 |
+| ID  | Route              | Entry points                                     | Main content                                                            | Back/exit                                          |
+| --- | ------------------ | ------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------- |
+| U01 | /sign-in           | Unauthenticated route, Sign out                  | Google sign-in; pending/error feedback                                  | Successful auth to validated return path or U03    |
+| U02 | /access-denied     | Valid login without current staff permission     | Access denied and Sign out                                              | Sign out to U01; no business navigation            |
+| U03 | /features          | Root redirect, sidebar                           | Admin feature catalogue, availability and Commerce configuration status | Sidebar; Platform configurations to U08            |
+| U04 | /features/[id]     | U03 feature row/Configure behaviour              | Read-only feature metadata and all linked configurations                | Back to Features U03                               |
+| U05 | /tools             | Sidebar, tool editor Back                        | Searchable reusable tool library                                        | Sidebar                                            |
+| U06 | /tools/[id]        | U05 tool row, New tool, feature association link | Tool metadata, revision editor/history, usage by features               | Back to Tools U05, or validated return context U09 |
+| U07 | /explore           | Sidebar or Browse Shopify from U06               | Documentation search, schema browser, examples and query builder        | Sidebar or Return to tool U06                      |
+| U08 | /capabilities      | U03 Platform configurations                      | BASE/RECOVERY_POLICY configurations                                     | Back to Features U03                               |
+| U09 | /capabilities/[id] | U04 configuration row/create, U08 row            | Behaviour prompt, settings, exact tool revision associations, history   | Feature U04 for FEATURE; U08 otherwise             |
+| U10 | /releases          | Sidebar, release-stage completion                | Active release and immutable release history; Create release            | Sidebar                                            |
+| U11 | /releases/[id]     | U10 row, completed Create release                | Members, exact revisions, response contract, diff, activation/rollback  | Back to Releases U10                               |
+| U12 | /shops             | Merchants sidebar                                | Read-only merchant search/list                                          | Sidebar                                            |
+| U13 | /shops/[id]        | U12 row                                          | Eligibility breakdown and tool list for a new conversation              | Back to Merchants U12                              |
+| U14 | /preview           | Sidebar, Test from U06/U09/U11/U13               | Synthetic tool test and isolated conversation sandbox                   | Validated source page, or Features U03             |
 
 No unlisted product pages or workflow routes are required. Creation, association,
-publication and confirmations below are dialogs on these pages. /api/auth/*,
-/api/studio/*, static assets and private health/MCP routes are transport routes,
+publication and confirmations below are dialogs on these pages. /api/auth/_,
+/api/studio/_, static assets and private health/MCP routes are transport routes,
 not Studio pages. Query selection of revisionId must belong to its route entity;
 mismatches are404, never silently switch to another entity or latest revision.
 
@@ -335,7 +335,6 @@ choosing a previous compatible release from U10, opening U11 and confirming
 history. Existing conversations retain their original versions. A missing schema
 or executor prevents activation with its exact reason.
 
-
 ### Response contract authoring (C16; U10 composer and U11 detail)
 
 U11 adds a **Response contract** tab beside Overview, Changes and Versions. Show
@@ -414,11 +413,9 @@ conversations use today's release. Empty selection shows **No remote tools
 available** and the specific exclusion reasons. The global U05 library has a
 **Inspect a merchant's tool list** link to U12; it is not the merchant-filtered list.
 
-
 **Test this configuration** -> U14 with copied feature flags/release selection
 as synthetic input (no customer/shop credential). Label that tests use fixtures,
 not the merchant's live inventory. Back returns U13.
-
 
 ## Interfaces / Contracts
 
@@ -482,21 +479,21 @@ COMMERCE-008 owns N01–N09, N12 and the composer/handoff portion of N13;
 COMMERCE-009 owns N10–N11 and the real U14 round trip in N13; COMMERCE-011
 owns discovery service contract fixtures consumed by N04. Shared checks are reused.
 
-| Case | Traversal | Required result |
-|---|---|---|
-| N01 | Deep link U06 -> U01 -> Google success -> U06; revoked user -> U02 | Safe return path and current role checks, no data before authorization |
-| N02 | U03 arbitrary Admin feature -> U04 -> Add behaviour -> U09 -> Back U04 | One configuration references existing Feature.id; no Feature/plan/preference writes |
-| N03 | U05 New tool -> U06 Create draft -> six steps -> Save -> History -> exact revision | One tool/draft/save per deliberate action; no implicit publication |
-| N04 | U06 Browse Shopify -> U07 search -> document -> schema builder -> Validate -> Use -> U06 Save | Complete inside Studio; invalid mapping/field blocks validation, failure retains input |
-| N05 | U06 publish -> U09 attach exact version -> Save -> publish | Shared tool remains reusable; original feature revisions do not change |
-| N06 | U09 Create release -> U10 dialog -> U11 -> Activate | Distinct replay-safe stages; active pointer changes once after confirmation |
-| N07 | U10 previous release -> U11 Rollback | Only pointer changes; existing grants and published rows unchanged |
-| N08 | U12 -> U13 -> feature/tool link -> Back | Dynamic eligibility and exact versions; no live grant or provider execution |
-| N09 | Any dirty editor -> Back/Sidebar/Cancel -> Stay or Discard | Correct destination/focus, saved drafts retained, no accidental writes |
-| N10 | U06/U09/U13 Test -> U14 fixture run -> Return | Correct source context, no live credentials/shop writes; results visibly synthetic |
-| N11 | U14 start -> Send -> duplicate Send -> Cancel/timeout -> reconcile -> reset | One run, frozen preview grant, budgets enforced, no hidden retry |
-| N12 | Save/publish/activate/disable/attach/create double-click, tap or Enter | One intended persisted effect, immediate busy state; unknown outcomes reconcile |
-| N13 | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate | C16 validation, immutable release, roles; stubbed preview handoff here, real preview in009 and production pinning in SYSTEM-TEST-001 |
+| Case | Traversal                                                                                     | Required result                                                                                                                      |
+| ---- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| N01  | Deep link U06 -> U01 -> Google success -> U06; revoked user -> U02                            | Safe return path and current role checks, no data before authorization                                                               |
+| N02  | U03 arbitrary Admin feature -> U04 -> Add behaviour -> U09 -> Back U04                        | One configuration references existing Feature.id; no Feature/plan/preference writes                                                  |
+| N03  | U05 New tool -> U06 Create draft -> six steps -> Save -> History -> exact revision            | One tool/draft/save per deliberate action; no implicit publication                                                                   |
+| N04  | U06 Browse Shopify -> U07 search -> document -> schema builder -> Validate -> Use -> U06 Save | Complete inside Studio; invalid mapping/field blocks validation, failure retains input                                               |
+| N05  | U06 publish -> U09 attach exact version -> Save -> publish                                    | Shared tool remains reusable; original feature revisions do not change                                                               |
+| N06  | U09 Create release -> U10 dialog -> U11 -> Activate                                           | Distinct replay-safe stages; active pointer changes once after confirmation                                                          |
+| N07  | U10 previous release -> U11 Rollback                                                          | Only pointer changes; existing grants and published rows unchanged                                                                   |
+| N08  | U12 -> U13 -> feature/tool link -> Back                                                       | Dynamic eligibility and exact versions; no live grant or provider execution                                                          |
+| N09  | Any dirty editor -> Back/Sidebar/Cancel -> Stay or Discard                                    | Correct destination/focus, saved drafts retained, no accidental writes                                                               |
+| N10  | U06/U09/U13 Test -> U14 fixture run -> Return                                                 | Correct source context, no live credentials/shop writes; results visibly synthetic                                                   |
+| N11  | U14 start -> Send -> duplicate Send -> Cancel/timeout -> reconcile -> reset                   | One run, frozen preview grant, budgets enforced, no hidden retry                                                                     |
+| N12  | Save/publish/activate/disable/attach/create double-click, tap or Enter                        | One intended persisted effect, immediate busy state; unknown outcomes reconcile                                                      |
+| N13  | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate     | C16 validation, immutable release, roles; stubbed preview handoff here, real preview in009 and production pinning in SYSTEM-TEST-001 |
 
 Each page is inspected at desktop and narrow viewport with keyboard focus,
 loading/empty/error states. Tool/template/feature editing does not require an IDE,
@@ -538,17 +535,17 @@ Production pages resolve 404 ownership through protected server reads and render
 
 ### Requirement-to-Fixture Evidence
 
-| Cases | Fixture result and asserted side effects |
-|---|---|
-| N02 / N12 | Add behaviour is submitted twice in one tick; fixture records `createCapability=1`, preserves the arbitrary `feat_01ARBITRARY` binding and navigation uses the returned `cap_*` ID. |
-| N03 / N12 | New tool records one `createTool`, zero implicit revisions/publications and navigation uses the returned opaque `tool_*` ID. Service replay with one operation ID yields one persisted effect; conflicting reuse returns `CONFLICTING_REPLAY`. |
-| N04 | Component traversal opens U06 -> U07, searches documentation, opens the in-page document, selects schema fields, validates the complete definition and returns to the exact arbitrary tool/revision context. |
-| N05 | Capability editor loads published versions from `listTools`, never a seeded option; ADMIN cannot publish. Direct service evidence preserves full prompt/configuration/contract/tool bindings through publication. |
-| N06 / N07 | Release composer selects exact published revisions/positions and validates/sends the complete response contract. Create is separate from confirmed activate/rollback with `expectedActiveReleaseVersion`. |
-| N08 | Canonical descriptors contain explicit `toolId`, `toolRevisionId`, SemVer and public schema. Links never split or infer IDs and no execution/credential field is exposed. |
-| N09 | Stale CAS retains tool definition input. Stay restores focus and Discard navigates the exact `/shops/shop_01LINEN` destination. U06-to-U07 applies the same save/discard boundary. |
-| N12 | Unknown command leaves zero persisted effects, blocks new writes and same-ID reconciliation records exactly one effect/input when certainty is restored. |
-| N13 composer handoff | Context retains exact members, response contract, validation hash, reason and return path across U10 -> U14 -> Back. Preview execution remains COMMERCE-009-owned. |
+| Cases                | Fixture result and asserted side effects                                                                                                                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| N02 / N12            | Add behaviour is submitted twice in one tick; fixture records `createCapability=1`, preserves the arbitrary `feat_01ARBITRARY` binding and navigation uses the returned `cap_*` ID.                                                            |
+| N03 / N12            | New tool records one `createTool`, zero implicit revisions/publications and navigation uses the returned opaque `tool_*` ID. Service replay with one operation ID yields one persisted effect; conflicting reuse returns `CONFLICTING_REPLAY`. |
+| N04                  | Component traversal opens U06 -> U07, searches documentation, opens the in-page document, selects schema fields, validates the complete definition and returns to the exact arbitrary tool/revision context.                                   |
+| N05                  | Capability editor loads published versions from `listTools`, never a seeded option; ADMIN cannot publish. Direct service evidence preserves full prompt/configuration/contract/tool bindings through publication.                              |
+| N06 / N07            | Release composer selects exact published revisions/positions and validates/sends the complete response contract. Create is separate from confirmed activate/rollback with `expectedActiveReleaseVersion`.                                      |
+| N08                  | Canonical descriptors contain explicit `toolId`, `toolRevisionId`, SemVer and public schema. Links never split or infer IDs and no execution/credential field is exposed.                                                                      |
+| N09                  | Stale CAS retains tool definition input. Stay restores focus and Discard navigates the exact `/shops/shop_01LINEN` destination. U06-to-U07 applies the same save/discard boundary.                                                             |
+| N12                  | Unknown command leaves zero persisted effects, blocks new writes and same-ID reconciliation records exactly one effect/input when certainty is restored.                                                                                       |
+| N13 composer handoff | Context retains exact members, response contract, validation hash, reason and return path across U10 -> U14 -> Back. Preview execution remains COMMERCE-009-owned.                                                                             |
 
 The exact C16 runtime response evaluation remains COMMERCE-009-owned. This task supplies the response-contract preview handoff and immutable release mechanics required by its assigned half of N13.
 
@@ -617,22 +614,22 @@ Architect Review.
 #### Correction checklist
 
 - [x] **A4-R1 — full query structure:** `StudioWorkspace` now parses and
-  structure-merges selected schema paths into the existing GraphQL AST. It
-  preserves existing operation names, aliases, arguments, variables, nesting,
-  result semantics and unrelated selections instead of rebuilding a hard-coded
-  ProductDetails query. The deterministic schema fixture includes the nested
-  `product.priceRange.minVariantPrice.amount` path and validates parsed field
-  paths plus the required product handle mapping; an unsupported sibling is
-  rejected and does not enable Use in tool.
+      structure-merges selected schema paths into the existing GraphQL AST. It
+      preserves existing operation names, aliases, arguments, variables, nesting,
+      result semantics and unrelated selections instead of rebuilding a hard-coded
+      ProductDetails query. The deterministic schema fixture includes the nested
+      `product.priceRange.minVariantPrice.amount` path and validates parsed field
+      paths plus the required product handle mapping; an unsupported sibling is
+      rejected and does not enable Use in tool.
 - [x] **A4-R2 — record identity reset:** tool and capability editors are keyed
-  by record ID plus resolved selected revision ID, including default draft
-  selection. Route-identity load gating prevents stale page/detail data from
-  rendering during transitions. A same-mounted two-record fixture asserts
-  heading, description, target revision ID and edit version belong to record two.
+      by record ID plus resolved selected revision ID, including default draft
+      selection. Route-identity load gating prevents stale page/detail data from
+      rendering during transitions. A same-mounted two-record fixture asserts
+      heading, description, target revision ID and edit version belong to record two.
 - [x] **A4-R3 — admitted replay revision:** unknown commands retain the original
-  operation ID, closure/input and admitted content revision through
-  reconciliation. A newer edit remains dirty after the original operation
-  succeeds; the fixture asserts the discard guard remains available.
+      operation ID, closure/input and admitted content revision through
+      reconciliation. A newer edit remains dirty after the original operation
+      succeeds; the fixture asserts the discard guard remains available.
 
 #### Files changed
 
@@ -643,13 +640,13 @@ Architect Review.
 
 #### Requirement-to-fixture matrix
 
-| Correction / case | Fixture and asserted side effects | Result |
-|---|---|---|
-| A4-R1 nested discovery | `preserves nested query structure and mappings during discovery` selects `product.priceRange.minVariantPrice.amount`, validates, returns U07 -> U06, and asserts the nested query, preserved handle mapping and result path. | Pass |
-| A4-R1 invalid sibling | `supports documentation, schema browse and full-definition validation` submits `unknownField` under the nested path and asserts `UNKNOWN_FIELD`, `valid: false`. | Pass |
-| A4-R2 identity switch | `resets editor state when a mounted detail changes to another record` switches from `tool_01GLOBAL/toolrev_FIRST` to `tool_02SECOND/toolrev_SECOND`, asserts `SECOND CONTENT`, then asserts `updateToolDraft.toolRevisionId=toolrev_SECOND`. | Pass |
-| A4-R3 unknown replay | `keeps newer editor content dirty after unknown save reconciliation` saves in timeout mode, edits newer text, reconciles the same operation ID, and asserts one effect plus the dirty discard dialog and newer input. | Pass |
-| Duplicate protection / replay | Existing connected suite asserts double form submission creates one capability; service fixture asserts same-ID replay creates one effect and conflicting command reuse returns `CONFLICTING_REPLAY`. | Pass |
+| Correction / case             | Fixture and asserted side effects                                                                                                                                                                                                            | Result |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| A4-R1 nested discovery        | `preserves nested query structure and mappings during discovery` selects `product.priceRange.minVariantPrice.amount`, validates, returns U07 -> U06, and asserts the nested query, preserved handle mapping and result path.                 | Pass   |
+| A4-R1 invalid sibling         | `supports documentation, schema browse and full-definition validation` submits `unknownField` under the nested path and asserts `UNKNOWN_FIELD`, `valid: false`.                                                                             | Pass   |
+| A4-R2 identity switch         | `resets editor state when a mounted detail changes to another record` switches from `tool_01GLOBAL/toolrev_FIRST` to `tool_02SECOND/toolrev_SECOND`, asserts `SECOND CONTENT`, then asserts `updateToolDraft.toolRevisionId=toolrev_SECOND`. | Pass   |
+| A4-R3 unknown replay          | `keeps newer editor content dirty after unknown save reconciliation` saves in timeout mode, edits newer text, reconciles the same operation ID, and asserts one effect plus the dirty discard dialog and newer input.                        | Pass   |
+| Duplicate protection / replay | Existing connected suite asserts double form submission creates one capability; service fixture asserts same-ID replay creates one effect and conflicting command reuse returns `CONFLICTING_REPLAY`.                                        | Pass   |
 
 #### Validation results
 
@@ -693,31 +690,31 @@ record identity and admitted replay fixes.
 #### Correction checklist
 
 - [x] **A5-R1.1 — alias-aware AST merge:** Discovery now resolves selected schema
-  paths by GraphQL field name while preserving an existing response alias,
-  arguments, directives, operation name, variables and result path. The aliased
-  `selected: product(handle: $handle)` field is extended in place rather than
-  creating an unbound `product` root.
+      paths by GraphQL field name while preserving an existing response alias,
+      arguments, directives, operation name, variables and result path. The aliased
+      `selected: product(handle: $handle)` field is extended in place rather than
+      creating an unbound `product` root.
 - [x] **A5-R1.2 — ambiguity rejection:** Multiple same-name AST fields fail
-  closed with an actionable ambiguity error; no arbitrary first match or
-  argument-free duplicate is generated.
+      closed with an actionable ambiguity error; no arbitrary first match or
+      argument-free duplicate is generated.
 - [x] **A5-R1.3 — complete fixture validation:** The injectable in-memory
-  validator checks every product occurrence and requires exactly one response
-  root matching the declared result path. Every product occurrence must retain
-  the mapped handle variable, so malformed duplicate/unbound branches are
-  invalid and cannot enable Use in tool.
+      validator checks every product occurrence and requires exactly one response
+      root matching the declared result path. Every product occurrence must retain
+      the mapped handle variable, so malformed duplicate/unbound branches are
+      invalid and cannot enable Use in tool.
 - [x] **A5-R1.4 — connected regressions:** Added the aliased nested-selection
-  traversal through U06 -> U07 -> U06, asserting one product root, preserved
-  alias/handle argument, nested amount selection and `selected` result path, plus
-  direct rejection of an unbound duplicate. The prior A4 regressions remain in
-  the focused suite.
+      traversal through U06 -> U07 -> U06, asserting one product root, preserved
+      alias/handle argument, nested amount selection and `selected` result path, plus
+      direct rejection of an unbound duplicate. The prior A4 regressions remain in
+      the focused suite.
 
 #### Requirement-to-fixture evidence
 
-| Requirement | Fixture and asserted result | Outcome |
-|---|---|---|
-| A5-R1.1 | `merges nested discovery fields into an aliased product and rejects an unbound duplicate` selects `product.priceRange.minVariantPrice.amount` from `selected: product(handle: $handle) { title }`; returned U06 query contains one `product(`, the original handle argument, alias and nested path; result path remains `selected`. | Pass |
-| A5-R1.2/R1.3 | The same regression validates a second unbound `product` occurrence through the injectable fixture validator and asserts invalid `REQUIRED_ARGUMENT`; result-root validation also rejects mismatches. | Pass |
-| A4 preservation | Existing focused connected tests retain record-switch reset, unknown replay with newer dirty input, nested unaliased structure, stale validation, duplicate suppression and navigation handoffs. | Pass |
+| Requirement     | Fixture and asserted result                                                                                                                                                                                                                                                                                                         | Outcome |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| A5-R1.1         | `merges nested discovery fields into an aliased product and rejects an unbound duplicate` selects `product.priceRange.minVariantPrice.amount` from `selected: product(handle: $handle) { title }`; returned U06 query contains one `product(`, the original handle argument, alias and nested path; result path remains `selected`. | Pass    |
+| A5-R1.2/R1.3    | The same regression validates a second unbound `product` occurrence through the injectable fixture validator and asserts invalid `REQUIRED_ARGUMENT`; result-root validation also rejects mismatches.                                                                                                                               | Pass    |
+| A4 preservation | Existing focused connected tests retain record-switch reset, unknown replay with newer dirty input, nested unaliased structure, stale validation, duplicate suppression and navigation handoffs.                                                                                                                                    | Pass    |
 
 #### Validation results
 
@@ -768,7 +765,9 @@ In components/studio-workspace.tsx, addPath deliberately excludes every field wi
 
 ```graphql
 query ProductDetails($handle: String!) {
-  selected: product(handle: $handle) { title }
+  selected: product(handle: $handle) {
+    title
+  }
 }
 ```
 
@@ -870,7 +869,6 @@ Tests: dirty sidebar departure, revision change, list-editor departure and compo
 ### Attempt 3 resubmission gate
 
 Implement A3-R1–R4 on the same mirrored branches; these finish the previous four corrections, not new provider scope. Promote the three reproduced regressions to permanent tests, add connected navigation/authoring cases above, and run focused/full local checks plus type/lint/build/diff. Update the report with actual command payloads, preserved content and effect counts; distinguish static screenshot evidence from exercised traversal. Preserve prepared isolation/dependency evidence. Commit/push then return to Review. This parent overlay is published before handoff; no main merge or dependent execution is authorized by the review.
-
 
 ### Changes Requested — Attempt 2 — 2026-09-21
 

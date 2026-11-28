@@ -594,54 +594,54 @@ for URL/target/rel, invalid/stale visibility and zero authoring-state mutation.
 
 Attempt 2:
 
- - Launcher claim: Attempt 2 by `copilot`, dependency gate passed with C084,
-   C085, C093 and C094 complete; claim commit
-   `e170cec45246ad3d4ec3b56bc289ef8c19c26ec6` was pushed.
- - Confirmed `public/manuals/` did not exist before `npm run build`.
- - `npm run build`: passed end to end. The build packaged and smoked the manual,
-   packaged and smoked the code runtime, generated Prisma Client, completed
-   Next.js TypeScript validation, generated static pages, collected traces and
-   finalized optimization. The existing Nunjucks critical-dependency warning
-   was emitted during compilation.
- - Confirmed `public/manuals/result-template-guide.html` exists after build;
-   `npm run manuals:smoke` passed and source/package bytes match. The generated
-   output remains ignored by Git.
- - Bounded production-start smoke using `npm run start` on port 43186:
-   `GET /manuals/result-template-guide.html` returned HTTP 200,
-   `Content-Type: text/html; charset=UTF-8`, and contained the exact
-   `<title>Result Template Guide | Moda Commerce Studio</title>`. The spawned
-   server was terminated after the assertion.
- - The first build attempt used stale installed Shared 0.14.2 although the
-   committed package and lockfile pin 1.0.0; it failed with cascading legacy
-   manifest diagnostics. `npm ci` restored the locked dependency state without
-   modifying manifests/lockfile, after which the clean build and route smoke
-   passed. Existing npm peer/engine/deprecation/audit warnings were reported by
-   the clean install.
+- Launcher claim: Attempt 2 by `copilot`, dependency gate passed with C084,
+  C085, C093 and C094 complete; claim commit
+  `e170cec45246ad3d4ec3b56bc289ef8c19c26ec6` was pushed.
+- Confirmed `public/manuals/` did not exist before `npm run build`.
+- `npm run build`: passed end to end. The build packaged and smoked the manual,
+  packaged and smoked the code runtime, generated Prisma Client, completed
+  Next.js TypeScript validation, generated static pages, collected traces and
+  finalized optimization. The existing Nunjucks critical-dependency warning
+  was emitted during compilation.
+- Confirmed `public/manuals/result-template-guide.html` exists after build;
+  `npm run manuals:smoke` passed and source/package bytes match. The generated
+  output remains ignored by Git.
+- Bounded production-start smoke using `npm run start` on port 43186:
+  `GET /manuals/result-template-guide.html` returned HTTP 200,
+  `Content-Type: text/html; charset=UTF-8`, and contained the exact
+  `<title>Result Template Guide | Moda Commerce Studio</title>`. The spawned
+  server was terminated after the assertion.
+- The first build attempt used stale installed Shared 0.14.2 although the
+  committed package and lockfile pin 1.0.0; it failed with cascading legacy
+  manifest diagnostics. `npm ci` restored the locked dependency state without
+  modifying manifests/lockfile, after which the clean build and route smoke
+  passed. Existing npm peer/engine/deprecation/audit warnings were reported by
+  the clean install.
 
- - `npm run predev`: passed; manual package/smoke preceded existing code-runtime
-   packaging.
- - Clean `npm run manuals:package && npm run manuals:smoke`: passed; generated
-   output is ignored by Git.
- - Focused packaging, C085 UI and C084 authoring/generator/renderer/optionality
-   regressions: 6 files, 43 tests passed.
- - Targeted ESLint and `git diff --check`: passed.
- - Changed-file TypeScript output has no C086-introduced diagnostics. The only
-   remaining diagnostics in the touched UI file are the pre-existing C085
-   `CommerceResultSchema.properties`/`required` errors in `ResultTreeNode`; the
-   same lines exist at the C086 starting commit.
- - Canonical guide resource scan found no script, iframe, image, external
-   stylesheet or remote URL reference.
- - Attempt 1 clean `npm run build` passed manual packaging/smoke, code-runtime
-   packaging/smoke and Prisma generation, then failed during Next compilation
-   on three imports in the untouched
-   `app/api/studio/code-response/validate/route.ts`:
-   `../../../../../../lib/preview/http`,
-   `../../../../../../lib/preview/runtime`, and
-   `../../../../../../src/commerce/preview/types`. The referenced modules
-   exist in the Commerce repository; the route's six parent traversals resolve
-   outside the repository (one level too far).
- - Attempt 1 R11/R12 production build and `npm run start` HTTP smoke remained
-   unverified; Attempt 2 completes both validations above.
+- `npm run predev`: passed; manual package/smoke preceded existing code-runtime
+  packaging.
+- Clean `npm run manuals:package && npm run manuals:smoke`: passed; generated
+  output is ignored by Git.
+- Focused packaging, C085 UI and C084 authoring/generator/renderer/optionality
+  regressions: 6 files, 43 tests passed.
+- Targeted ESLint and `git diff --check`: passed.
+- Changed-file TypeScript output has no C086-introduced diagnostics. The only
+  remaining diagnostics in the touched UI file are the pre-existing C085
+  `CommerceResultSchema.properties`/`required` errors in `ResultTreeNode`; the
+  same lines exist at the C086 starting commit.
+- Canonical guide resource scan found no script, iframe, image, external
+  stylesheet or remote URL reference.
+- Attempt 1 clean `npm run build` passed manual packaging/smoke, code-runtime
+  packaging/smoke and Prisma generation, then failed during Next compilation
+  on three imports in the untouched
+  `app/api/studio/code-response/validate/route.ts`:
+  `../../../../../../lib/preview/http`,
+  `../../../../../../lib/preview/runtime`, and
+  `../../../../../../src/commerce/preview/types`. The referenced modules
+  exist in the Commerce repository; the route's six parent traversals resolve
+  outside the repository (one level too far).
+- Attempt 1 R11/R12 production build and `npm run start` HTTP smoke remained
+  unverified; Attempt 2 completes both validations above.
 
 ### Deviations
 
@@ -785,7 +785,6 @@ C086 has no dependent implementation task to promote.
 The historical Attempt 1 architect review is preserved below for audit continuity.
 
 ### Historical Attempt 1 Architect Review
-
 
 #### Historical Review Status
 

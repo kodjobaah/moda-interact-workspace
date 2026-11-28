@@ -16,14 +16,14 @@ claimed_at: null
 attempt: 2
 depends_on: []
 enables:
-- ARCH-016-SHOPIFY-001
-- ARCH-016-BACKGROUND-001
-- ARCH-016-SHOPIFY-002
-- ARCH-016-ADMIN-001
-- ARCH-016-ADMIN-002
-- ARCH-016-BACKGROUND-002
-- ARCH-016-BACKGROUND-003
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SHOPIFY-001
+  - ARCH-016-BACKGROUND-001
+  - ARCH-016-SHOPIFY-002
+  - ARCH-016-ADMIN-001
+  - ARCH-016-ADMIN-002
+  - ARCH-016-BACKGROUND-002
+  - ARCH-016-BACKGROUND-003
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -712,12 +712,12 @@ DROP CONSTRAINT "CheckoutRecovery_shopId_checkoutToken_key"
 ```
 
 2. both follow-up constraints contain an explicit enabled-branch
-`"followUpDelayMinutes" IS NOT NULL` guard before/rationally together with the
-`BETWEEN 1 AND 10080` bound;
+   `"followUpDelayMinutes" IS NOT NULL` guard before/rationally together with the
+   `BETWEEN 1 AND 10080` bound;
 3. the single-code predicate explicitly requires `"codeCount" IS NOT NULL` when
-`singleRedeemCode` is present;
+   `singleRedeemCode` is present;
 4. the fixed-selectable CODE predicate explicitly requires both
-`"codeCount" IS NOT NULL` and `"singleRedeemCode" IS NOT NULL`.
+   `"codeCount" IS NOT NULL` and `"singleRedeemCode" IS NOT NULL`.
 
 A static migration-contract validator is sufficient for this correction while the
 pre-existing P3009 prevents executing ARCH-016. Do not build a new database-test

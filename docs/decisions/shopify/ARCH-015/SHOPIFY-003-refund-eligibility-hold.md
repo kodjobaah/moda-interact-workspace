@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-015-SHARED-001
-- ARCH-015-SHOPIFY-002
-- ARCH-015-BACKGROUND-001
+  - ARCH-015-SHARED-001
+  - ARCH-015-SHOPIFY-002
+  - ARCH-015-BACKGROUND-001
 enables:
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-BACKGROUND-003
 created: 2026-09-15
 updated: 2026-09-16
 ---
@@ -120,11 +120,13 @@ and `ARCH-015-BACKGROUND-003` processes it asynchronously.
 History remains visible.
 
 Historical ACTIVE purchase:
+
 - show remaining credits as usable;
 - hide/disable normal refund action with generic explanation that it is no longer refundable under the current subscription;
 - do not imply credits expired.
 
 REQUESTED/WITHDRAWN:
+
 - show refund requested/processing state.
 
 ## Required tests
@@ -182,24 +184,24 @@ Reworked and pushed on `task/ARCH-015-SHOPIFY-003` at commit `8c5a953`.
 ### Preparation evidence
 
 Physical worktree isolation:
-	canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-	parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-003`
-	parent branch: `task/ARCH-015-SHOPIFY-003`
-	implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-003`
-	implementation branch: `task/ARCH-015-SHOPIFY-003`
-	shared workspace checkout switched/mutated for task work: no
-	another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-015-SHOPIFY-003`
+parent branch: `task/ARCH-015-SHOPIFY-003`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-015-SHOPIFY-003`
+implementation branch: `task/ARCH-015-SHOPIFY-003`
+shared workspace checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-	parent remote task branch fast-forwarded: not-needed
-	parent origin/main incorporated: already-current
-	implementation remote task branch fast-forwarded: not-needed
-	implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-	`git submodule sync --recursive`: passed
-	`git submodule update --init --recursive`: passed
-	recorded submodule commit: `database` at `d44b621cdcc3635127b91601be648b61c0eff1e2`
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded submodule commit: `database` at `d44b621cdcc3635127b91601be648b61c0eff1e2`
 
 Returned to `moda_architect` for review after attempt-2 rework.
 
@@ -311,7 +313,7 @@ and ARCH-015-SHOPIFY-002 explicitly permits purchase admission under an
 `isCurrentProviderContext(...)` currently requires:
 
 ```ts
-providerSubscription.status === "ACTIVE"
+providerSubscription.status === "ACTIVE";
 ```
 
 so a valid positive-value purchase made under a current `TRIALING` Shopify contract
@@ -380,7 +382,6 @@ clear the claim and return to `moda_architect`.
 
 Do not mark `ARCH-015-BACKGROUND-003` Ready. Dependency promotion belongs to architect
 acceptance of SHOPIFY-003.
-
 
 ## Architect Review — Attempt 2
 

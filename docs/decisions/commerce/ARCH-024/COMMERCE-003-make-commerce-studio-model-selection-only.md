@@ -190,19 +190,19 @@ The Studio MUST NOT expose or call Catalogue/Availability/Credential administrat
 Remove the Studio-facing global Catalogue read:
 
 ```ts
-listModelCatalogue()
+listModelCatalogue();
 ```
 
 The Platform selector MUST use only:
 
 ```ts
-listPlatformAvailableModels()
+listPlatformAvailableModels();
 ```
 
 The Shop selector MUST use only:
 
 ```ts
-listEffectiveAvailableModels(shopId)
+listEffectiveAvailableModels(shopId);
 ```
 
 Do not fetch the complete catalogue and filter it in React.
@@ -214,9 +214,9 @@ Do not add another endpoint that returns all Catalogue Entries to Commerce Studi
 Remove these Studio contracts if they still exist after ARCH-024-COMMERCE-002:
 
 ```ts
-CreateModelCatalogueEntryInput
-UpdateModelCatalogueEntryInput
-SetModelEnabledInput
+CreateModelCatalogueEntryInput;
+UpdateModelCatalogueEntryInput;
+SetModelEnabledInput;
 ```
 
 Remove these Studio Server Actions:
@@ -259,10 +259,7 @@ If `getPlatformModelSelection` / `getShopModelSelection` have no remaining sourc
 Load exactly:
 
 ```ts
-Promise.all([
-  listPlatformAvailableModels(),
-  getPlatformAgentConfiguration(),
-]);
+Promise.all([listPlatformAvailableModels(), getPlatformAgentConfiguration()]);
 ```
 
 Do not call `listModelCatalogue()` or a replacement global catalogue action.
@@ -318,7 +315,7 @@ When the user selects a valid available model, call:
 ```ts
 setPlatformModelSelection({
   operationId,
-  reason: 'Set platform default model',
+  reason: "Set platform default model",
   modelId,
   expectedEditVersion: configuration?.modelEditVersion ?? 1,
 });
@@ -377,6 +374,7 @@ No Platform models are available. Configure Model Availability in Admin.
 - do not query the global catalogue as fallback.
 
 ### R9 — Shop model UI uses effective Shop availability only
+
 ### R9A — Shop UI must display inherited model provenance
 
 When the Shop Agent Configuration has `modelId = NULL`, the UI MUST call/use the COMMERCE-002 effective model result for the same Shop/environment and render the inherited winner explicitly.
@@ -393,11 +391,10 @@ For a Price Plan winner, show the current pricing-plan display identity when alr
 
 The clear/null option remains a single choice. Do NOT add separate `Use Price Plan model` and `Use Platform model` choices because those are not merchant/Shop selections; they are the deterministic inheritance chain.
 
-
 `ShopAgentConfiguration` MUST load model data with:
 
 ```ts
-listEffectiveAvailableModels(shopId)
+listEffectiveAvailableModels(shopId);
 ```
 
 and MUST NOT call `listModelCatalogue()`.

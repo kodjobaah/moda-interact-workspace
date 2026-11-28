@@ -72,6 +72,7 @@ Translation is asynchronous and cost-sensitive. Redis/BullMQ, workers and provid
 Before this revision, ARCH-006 tasks treated translation as one broad background task with `translate-message`/`reconcile-message-translations`, 1..10,000-character UI compose and no durable provider Batch/submission/poll state. Admin/Shopify UI tasks also owned too much message/translation orchestration. Those task definitions are superseded/re-scoped before execution.
 
 The existing platform already provides:
+
 - Prisma/PostgreSQL repositories and `Shop`, `ShopSettings`, `PlatformAdmin`;
 - ARCH-005 canonical BCP-47 merchant/admin language settings;
 - BullMQ/Redis worker conventions and independently deployed background worker entrypoints;
@@ -185,7 +186,6 @@ READY
 ```
 
 `SUBMISSION_UNKNOWN` means provider create may have succeeded but the worker did not safely persist the returned provider ID. It is never automatically changed back to READY for blind resubmission.
-
 
 ### Disposable integration-test infrastructure
 
@@ -415,15 +415,15 @@ Admin clicks Retry/Reconcile
 
 ## Repository Responsibilities
 
-| Repository | Responsibility |
-|---|---|
-| moda-interact-database | support/message schema; translation/Batch/reconciliation durable lifecycle + indexes |
-| moda-interact-shared | canonical language/body/queue schemas and deterministic BullMQ IDs |
-| moda-interact-background | OpenAI Batch adapter; batch assembly; single submission; polling/results; self-healing runtime |
-| moda-interact-gateway | deploy independently scalable background worker + env/secret wiring; no webhook route |
-| moda-interact-admin | protected support server capabilities, ownership/pending commands, UI, durable manual reconciliation request, queue monitor |
-| moda-interact | tenant-safe merchant support server/UI; authoritative subscription-ended SYSTEM producer |
-| moda-interact-system-test | integrated inbox/system/resilience validation |
+| Repository                | Responsibility                                                                                                              |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| moda-interact-database    | support/message schema; translation/Batch/reconciliation durable lifecycle + indexes                                        |
+| moda-interact-shared      | canonical language/body/queue schemas and deterministic BullMQ IDs                                                          |
+| moda-interact-background  | OpenAI Batch adapter; batch assembly; single submission; polling/results; self-healing runtime                              |
+| moda-interact-gateway     | deploy independently scalable background worker + env/secret wiring; no webhook route                                       |
+| moda-interact-admin       | protected support server capabilities, ownership/pending commands, UI, durable manual reconciliation request, queue monitor |
+| moda-interact             | tenant-safe merchant support server/UI; authoritative subscription-ended SYSTEM producer                                    |
+| moda-interact-system-test | integrated inbox/system/resilience validation                                                                               |
 
 ## Data Model
 
@@ -459,6 +459,7 @@ one currentBatchId pointer per translation
 Owner: `moda-interact-shared`, package `@modainteract/moda-interact-shared`.
 
 Producer/consumers:
+
 - Admin/Shopify produce translation-dispatch/reconcile hints;
 - background produces/consumes dispatch/submit/poll/results/reconcile execution;
 - all validate shared schemas at runtime.
@@ -535,35 +536,35 @@ Stateless development workers may be recreated from infrastructure-as-code; Post
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-006-DATABASE-001 | moda_database | Complete | - |
-| ARCH-006-DATABASE-002 | moda_database | Complete | DATABASE-001 |
-| ARCH-006-SHARED-001 | moda_shared | Complete | ARCH-005-SHARED-001, DATABASE-002 |
-| ARCH-006-SHARED-002 | moda_shared | Complete | SHARED-001 |
-| ARCH-006-SHARED-003 | moda_shared | Complete | SHARED-002 |
-| ARCH-006-SHARED-004 | moda_shared | Complete | SHARED-003 |
-| ARCH-006-SHARED-005 | moda_shared | Ready | SHARED-004 |
-| ARCH-006-SHARED-006 | moda_shared | Pending | SHARED-005 |
-| ARCH-006-BACKGROUND-001 | moda_background | Complete | DATABASE-002, SHARED-002 |
-| ARCH-006-BACKGROUND-004 | moda_background | Complete | BACKGROUND-001, SHARED-004 |
-| ARCH-006-BACKGROUND-005 | moda_background | Ready | BACKGROUND-004 |
-| ARCH-006-BACKGROUND-006 | moda_background | Pending | BACKGROUND-005 |
-| ARCH-006-BACKGROUND-007 | moda_background | Pending | BACKGROUND-006 |
-| ARCH-006-BACKGROUND-008 | moda_background | Pending | BACKGROUND-004, SHARED-006 |
-| ARCH-006-GATEWAY-001 | moda_gateway | Pending | BACKGROUND-007 |
-| ARCH-006-ADMIN-001 | moda_admin | Ready — Attempt 3 bounded correction | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-ADMIN-001 |
-| ARCH-006-ADMIN-003 | moda_admin | Pending | ADMIN-001 |
-| ARCH-006-ADMIN-004 | moda_admin | Pending | ADMIN-003, BACKGROUND-007 |
-| ARCH-006-ADMIN-002 | moda_admin | Pending | BACKGROUND-007 |
-| ARCH-006-SHOPIFY-001 | moda_app | Ready | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-DATABASE-001 |
-| ARCH-006-SHOPIFY-002 | moda_app | Pending | SHOPIFY-001 |
-| ARCH-006-SHOPIFY-003 | moda_app | Pending | SHOPIFY-001, BACKGROUND-007, ARCH-005-SHOPIFY-002 |
-| ARCH-006-SYSTEM-TEST-001 | moda_system_test | Pending | ADMIN-004, SHOPIFY-003, GATEWAY-001 |
-| ARCH-006-SYSTEM-TEST-002 | moda_system_test | Pending | SHOPIFY-002, SHOPIFY-003, GATEWAY-001 |
-| ARCH-006-SYSTEM-TEST-003 | moda_system_test | Pending | BACKGROUND-007, GATEWAY-001, ADMIN-001, SHOPIFY-001 |
-| ARCH-006-BACKGROUND-002 | moda_background | Superseded | - |
-| ARCH-006-BACKGROUND-003 | moda_background | Superseded | - |
+| Task                     | Owner            | Status                               | Depends On                                                  |
+| ------------------------ | ---------------- | ------------------------------------ | ----------------------------------------------------------- |
+| ARCH-006-DATABASE-001    | moda_database    | Complete                             | -                                                           |
+| ARCH-006-DATABASE-002    | moda_database    | Complete                             | DATABASE-001                                                |
+| ARCH-006-SHARED-001      | moda_shared      | Complete                             | ARCH-005-SHARED-001, DATABASE-002                           |
+| ARCH-006-SHARED-002      | moda_shared      | Complete                             | SHARED-001                                                  |
+| ARCH-006-SHARED-003      | moda_shared      | Complete                             | SHARED-002                                                  |
+| ARCH-006-SHARED-004      | moda_shared      | Complete                             | SHARED-003                                                  |
+| ARCH-006-SHARED-005      | moda_shared      | Ready                                | SHARED-004                                                  |
+| ARCH-006-SHARED-006      | moda_shared      | Pending                              | SHARED-005                                                  |
+| ARCH-006-BACKGROUND-001  | moda_background  | Complete                             | DATABASE-002, SHARED-002                                    |
+| ARCH-006-BACKGROUND-004  | moda_background  | Complete                             | BACKGROUND-001, SHARED-004                                  |
+| ARCH-006-BACKGROUND-005  | moda_background  | Ready                                | BACKGROUND-004                                              |
+| ARCH-006-BACKGROUND-006  | moda_background  | Pending                              | BACKGROUND-005                                              |
+| ARCH-006-BACKGROUND-007  | moda_background  | Pending                              | BACKGROUND-006                                              |
+| ARCH-006-BACKGROUND-008  | moda_background  | Pending                              | BACKGROUND-004, SHARED-006                                  |
+| ARCH-006-GATEWAY-001     | moda_gateway     | Pending                              | BACKGROUND-007                                              |
+| ARCH-006-ADMIN-001       | moda_admin       | Ready — Attempt 3 bounded correction | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-ADMIN-001    |
+| ARCH-006-ADMIN-003       | moda_admin       | Pending                              | ADMIN-001                                                   |
+| ARCH-006-ADMIN-004       | moda_admin       | Pending                              | ADMIN-003, BACKGROUND-007                                   |
+| ARCH-006-ADMIN-002       | moda_admin       | Pending                              | BACKGROUND-007                                              |
+| ARCH-006-SHOPIFY-001     | moda_app         | Ready                                | DATABASE-002, SHARED-002, SHARED-004, ARCH-005-DATABASE-001 |
+| ARCH-006-SHOPIFY-002     | moda_app         | Pending                              | SHOPIFY-001                                                 |
+| ARCH-006-SHOPIFY-003     | moda_app         | Pending                              | SHOPIFY-001, BACKGROUND-007, ARCH-005-SHOPIFY-002           |
+| ARCH-006-SYSTEM-TEST-001 | moda_system_test | Pending                              | ADMIN-004, SHOPIFY-003, GATEWAY-001                         |
+| ARCH-006-SYSTEM-TEST-002 | moda_system_test | Pending                              | SHOPIFY-002, SHOPIFY-003, GATEWAY-001                       |
+| ARCH-006-SYSTEM-TEST-003 | moda_system_test | Pending                              | BACKGROUND-007, GATEWAY-001, ADMIN-001, SHOPIFY-001         |
+| ARCH-006-BACKGROUND-002  | moda_background  | Superseded                           | -                                                           |
+| ARCH-006-BACKGROUND-003  | moda_background  | Superseded                           | -                                                           |
 
 ### Execution graph
 

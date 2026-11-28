@@ -158,7 +158,6 @@ Do not invoke OpenAI in PHP or React. The existing WordPress REST facade passes 
 
 The WordPress plugin owns only WordPress permission/nonce validation, installation-credential forwarding to existing hosted Woo endpoints, and the Recovery Detail UI; hosted API-003/004 perform the canonical PostgreSQL control/command transactions. PHP and React must **not** publish BullMQ jobs, poll the PostgreSQL command table, invoke Meta directly, or implement Woo-only message abuse/follow-up/billing policy. The single BG002 platform-neutral dispatcher processes commands accepted by Woo API or Shopify server identically. WordPress command-status UI polling is for presentation only; it must stop when no longer selected/visible. Preserve existing two-stage WordPress navigation, 20 merchant locales, all desktop/mobile ASCII diagrams and separate developer-owned post-implementation validation.
 
-
 ## Work Items
 
 - [x] Extend existing Woo PHP recovery-detail read facade and client for the enriched basket/conversation/restriction response.
@@ -184,10 +183,10 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 - ARCH-035-API-013
 - ARCH-035-WOOCOMMERCE-013
 
-
 - ARCH-040-DATABASE-005
 
 - ARCH-040-BACKGROUND-006
+
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-003
@@ -205,6 +204,7 @@ The existing Recovery Detail composer must show HUMAN free-text availability onl
 - [x] Merchant Take Over / Resume AI, in-window HUMAN free-text, durable idempotent command/status UI and safe closed-window unavailability are implemented using the existing hosted/Background authorities, without exposing a speculative approved-template chooser or a second follow-up/credit path.
 
 **Architectural deferral (2026-10-24):** The approved closed-window recovery-template **selection UI**, the trusted shop-assigned template/options read contract and the effective configured due-time projection are **excluded from ARCH-040-WOOCOMMERCE-001 completion** and assigned to a future ARCH-047 design/task decomposition. This does **not** waive the existing server-side consent, STOP, 24-hour window, single sequence-2, billing, moderation or final-send guards. The prior unchecked criterion is narrowed by this explicit amendment, not treated as implemented.
+
 - [x] The UI correctly represents AI, HUMAN, closed-window, follow-up-used, suspended, rejected, queued and provider-confirmed status states; no duplicate conversation or independent WhatsApp delivery path is added.
 - [x] Existing navigation, modular code organisation and all twenty WordPress-admin locale paths are accommodated by the implementation.
 
@@ -346,18 +346,23 @@ Developer-performed validation, provided for review evidence **without becoming 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 Developer-owned follow-up; not required for this task's implementation acceptance.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up

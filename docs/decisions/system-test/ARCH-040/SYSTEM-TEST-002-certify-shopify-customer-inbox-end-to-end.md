@@ -70,11 +70,9 @@ Using the same existing Recovery Detail page and fake provider, show pending -> 
 - Exercise authenticated Shopify Recovery Detail with Admin-suspended shop: basket/transcript remain readable, Take Over and reply/template controls disable and server rejects forged requests, Resume AI is allowed. Verify accepted-before-suspended command is stopped by Background; safe typed error and recovery credit are correct.
 - Verify independent Shopify actor never calls Woo hosted API and this certification does not depend on Woo tasks/system tests.
 
-
 ### Shopify producer boundary certification
 
 Verify the Shopify action writes the canonical persisted command and does not enqueue a Shopify-specific BullMQ job or send WhatsApp directly. Exercise takeover, HUMAN message draft and idempotent submission in the existing recovery detail, then have the shared Background dispatcher process the command with the same status/credit semantics as a producer-neutral fixture. Assert `RECOVERY_HISTORY` is not treated as human-send entitlement, terminal recovery is read-only, and a provider permit admitted just before takeover is displayed honestly as not recallable. Preserve the task's existing ASCII screen/layout coverage and developer validation separation.
-
 
 ### Service-window and configured follow-up certification (2026-10-20 policy)
 
@@ -131,47 +129,61 @@ After only this task's Work Items, Acceptance Criteria and Validation are comple
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
+
 None recorded at definition time.
 
 ### Architectural Concerns
+
 Return newly discovered contract or ownership gaps to moda_architect.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.
 
 ## Definition reconciliation — 2026-11-02

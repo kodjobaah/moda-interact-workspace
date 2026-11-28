@@ -15,15 +15,15 @@ claimed_at: null
 priority: 43
 attempt: 5
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-BACKGROUND-001
-- ARCH-010-BACKGROUND-007
-- ARCH-010-SHARED-008
-- ARCH-007-BACKGROUND-008
+  - ARCH-010-DATABASE-013
+  - ARCH-010-BACKGROUND-001
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-SHARED-008
+  - ARCH-007-BACKGROUND-008
 enables:
-- ARCH-010-BACKGROUND-006
-- ARCH-010-BACKGROUND-010
-- ARCH-010-SHOPIFY-003
+  - ARCH-010-BACKGROUND-006
+  - ARCH-010-BACKGROUND-010
+  - ARCH-010-SHOPIFY-003
 created: 2026-09-11
 updated: 2026-09-13
 ---
@@ -109,11 +109,11 @@ Once provider verification is valid, perform one transaction that:
 7. on replay, never reset committed/reserved/forfeited quantities;
 8. if an existing period snapshot or counter grant disagrees with the expected current plan/grant, fail closed rather than rewriting it;
 9. ensure `ShopEntitlementCounter(LIFETIME_FREE_RECOVERY_CREDITS)` exists; create it only when absent with `grantedQuantity = PlatformBillingPolicy.lifetimeFreeRecoveryAllowance`, otherwise preserve its grant/usage exactly;
-9. update Subscription current plan, observed handle, ACTIVE status, exact cycle, provider fields, and current billing period pointer;
-10. clear pending initial-selection fields;
-11. set `nextReconcileAt = max(now, currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS)` for canonical rollover scheduling;
-12. clear transient sync-error metadata on success;
-13. set `ShopSettings.onboardingCompleted = true` last within the same transaction.
+10. update Subscription current plan, observed handle, ACTIVE status, exact cycle, provider fields, and current billing period pointer;
+11. clear pending initial-selection fields;
+12. set `nextReconcileAt = max(now, currentPeriodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS)` for canonical rollover scheduling;
+13. clear transient sync-error metadata on success;
+14. set `ShopSettings.onboardingCompleted = true` last within the same transaction.
 
 If any step fails, the transaction rolls back and the merchant remains unavailable for paid recovery.
 
@@ -164,7 +164,7 @@ Prove at least:
 13. paid TRIALING/no-cycle does not grant access and emits the explicit unsupported-trial error;
 14. invalid cycle start >= end fails closed;
 15. null/negative/non-integer included allowance fails closed;
-15a. direct-to-Paid first activation creates the lifetime Free grant exactly once;
+    15a. direct-to-Paid first activation creates the lifetime Free grant exactly once;
 16. existing period counter with conflicting grant is not rewritten;
 17. stale BullMQ job remains no-op;
 18. uninstalled shop remains no-op;
@@ -204,15 +204,18 @@ STOP if:
 ## Completion Report
 
 ### Status
+
 Implementation complete; Attempt 5 evidence correction is complete and the task is returned to architect review. Downstream tasks remain blocked pending architect review.
 
 ### Files Changed
+
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 - `moda-interact-background/tests/unit/services/billing-reconciliation.service.test.ts`
 
 ### Work Completed
+
 - Added a queued-path `PENDING_PLAN_HANDLE_MISMATCH` guard for same-local-plan Shopify handle drift before `applyOtherCurrentPlan`, preserving the pending target and bounded retry.
 - Added a rotating-path fail-closed guard for the same drift, preventing legacy BillingPeriod projection and preserving durable pending intent.
 - Added permanent evidence for the real queued drift state, rotating drift, CLOSED exact periods, incompatible period snapshots, conflicting included-credit grants, and successful Paid activation queue failure followed by `reconstruct()` repair.
@@ -220,6 +223,7 @@ Implementation complete; Attempt 5 evidence correction is complete and the task 
 - Preserved all Attempt 1-3 production corrections: transactional plan revalidation, nullable unsupported-trial recovery, canonical rotating activation, exact cycle/meter/allowance validation, and replay usage preservation.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - Focused reconciliation suites: passed, 2 files / 91 tests, including the strengthened Attempt 5 queued drift evidence.
@@ -296,6 +300,7 @@ Handoff:
 - Implementation worktree clean after implementation commit: yes.
 
 ### Git / VCS
+
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-003`.
 - Implementation branch: `task/ARCH-010-BACKGROUND-003`.
 - Implementation commits: `c6d5c0a66de67cded04d8f60c2d268644286bb13` (`feat(background): activate first paid subscriptions`), `3172334` (`fix(background): harden paid activation revalidation`), `110b6f5` (`test(ARCH-010-BACKGROUND-003): prove rotating paid activation recovery`), and `fbd24668b0a32ee085f8d02c219fd7d505a68a1e` (`fix(ARCH-010-BACKGROUND-003): guard paid activation handle drift`), pushed.
@@ -305,6 +310,7 @@ Handoff:
 - Attempt 5 claim is cleared in this report; parent report commit/push follows. No merge to `main` performed.
 
 ### Architect Review
+
 Requested. Focused task behavior and integration validation pass; unrelated full-suite and build baseline blockers are documented above. Attempt 5 awaits architect review.
 
 ## Architect Review — Attempt 1
@@ -507,14 +513,14 @@ However `BillingReconciliationService` currently enters the initial-Paid branch
 without requiring `existing.nextReconcileAt` and passes:
 
 ```ts
-nextReconcileAt: existing.nextReconcileAt!
+nextReconcileAt: existing.nextReconcileAt!;
 ```
 
 The paid activation helper currently types `nextReconcileAt` as non-null and later
 calls:
 
 ```ts
-expected.nextReconcileAt.toISOString()
+expected.nextReconcileAt.toISOString();
 ```
 
 Therefore a merchant previously placed into `UNSUPPORTED_PAID_TRIAL` can be seen by
@@ -1585,13 +1591,11 @@ After provider handle -> local BillingPlan lookup, but **before**
 
 ```ts
 const samePendingPlanHandleDrift =
-  plan?.active === true
-  && plan.kind === BillingPlanKind.PAID_METERED
-  && plan.id === row.subscription.pendingPlanId
-  && (
-    provider.planHandle !== row.subscription.pendingShopifyPlanHandle
-    || plan.shopifyPlanHandle !== row.subscription.pendingShopifyPlanHandle
-  );
+  plan?.active === true &&
+  plan.kind === BillingPlanKind.PAID_METERED &&
+  plan.id === row.subscription.pendingPlanId &&
+  (provider.planHandle !== row.subscription.pendingShopifyPlanHandle ||
+    plan.shopifyPlanHandle !== row.subscription.pendingShopifyPlanHandle);
 ```
 
 Equivalent code is allowed, but the predicate must preserve these semantics.
@@ -2024,8 +2028,6 @@ publish Completion Report;
 STOP for moda_architect.
 ```
 
-
-
 ## Architect Review — Attempt 4
 
 ### Changes Requested
@@ -2117,7 +2119,7 @@ Production resolves the local plan with:
 ```ts
 billingPlan.findUnique({
   where: { shopifyPlanHandle: provider.planHandle },
-})
+});
 ```
 
 Therefore the current mock says, in effect:

@@ -449,7 +449,7 @@ The previously reviewed implementation remains architecture-conformant:
   reconciliation/classification/queue and discount-eligibility reads;
 - no production code reads the legacy ShopSettings milestone as authority;
 - successful initial activation and reinstall completion atomically write shared Shop
-  + retained ShopSettings compatibility state;
+  - retained ShopSettings compatibility state;
 - no production path resets the shared milestone to false;
 - `lockShop(...)` targets canonical `"commerce"."Shop"`;
 - completion paths preserve the authorised

@@ -476,7 +476,7 @@ Required validation categories:
 - [x] static audit proving no Redis/BullMQ, Woo billing/provider or merchant business route was introduced;
 - [x] `git diff --check`;
 - [x] repository clean-state check after commit/push.
-Canonical bootstrap selected Node `24.19.0` and npm `11.17.0`. API implementation commit `6635491` was pushed to `origin/task/ARCH-026-API-001`; the API worktree is clean and tracks that task branch.
+      Canonical bootstrap selected Node `24.19.0` and npm `11.17.0`. API implementation commit `6635491` was pushed to `origin/task/ARCH-026-API-001`; the API worktree is clean and tracks that task branch.
 
 The Completion Report MUST record:
 

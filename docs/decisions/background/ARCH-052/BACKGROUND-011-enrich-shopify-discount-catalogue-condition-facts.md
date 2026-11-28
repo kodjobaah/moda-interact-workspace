@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 6
 depends_on:
-- ARCH-052-BACKGROUND-009
-- ARCH-052-SHARED-010
+  - ARCH-052-BACKGROUND-009
+  - ARCH-052-SHARED-010
 enables:
-- ARCH-052-MCP-002
-created: '2026-10-30'
+  - ARCH-052-MCP-002
+created: "2026-10-30"
 updated: 2026-10-31
 ---
 
@@ -326,7 +326,6 @@ Changes Requested. Source-backed targeting, bounded pagination, retry behavior, 
 
 Return the same task to `ready` for Attempt 2. Preserve Attempt 1 history and do not promote ARCH-052-MCP-002 until this task is accepted and its other dependencies are complete.
 
-
 ## Architect Review — Attempt 2
 
 ### Review Status
@@ -353,7 +352,6 @@ The bounded Shopify provider snapshot and conservative PARTIAL completeness beha
 ### Follow-up
 
 Return the task to `ready` for Attempt 3. Preserve the Attempt 1 and Attempt 2 history. Keep ARCH-052-MCP-002 unpromoted until this task is accepted and its other dependencies are complete.
-
 
 ## Architect Review — Attempt 3
 
@@ -385,7 +383,6 @@ The combination policy is now source-backed and projected through the available 
 
 Return the task to `ready` for Attempt 4. Preserve prior attempt history and keep ARCH-052-MCP-002 unpromoted until this task is accepted and its other dependencies are complete.
 
-
 ## Architect Review — Attempt 4
 
 ### Review Status
@@ -416,7 +413,6 @@ Accepted. The bounded provider snapshot preserves source-backed combination and 
 
 Mark ARCH-052-BACKGROUND-011 Complete. The separate, unmaterialized ARCH-052-BACKGROUND-013 task is superseded because its tags, discount classes, and Plus entitlement requirements are delivered by this accepted implementation. Remove that redundant dependency from MCP-002 and SYSTEM-TEST-001. MCP-002 is dependency-ready; do not start it as part of this review.
 
-
 ## Architect Review — Post-Acceptance Logging Finding
 
 ### Review Status
@@ -443,7 +439,6 @@ Changes Requested. Provider failures are not silently swallowed, but current log
 ### Follow-up
 
 Return the task to `ready` for Attempt 5. Preserve Attempts 1–4 and the prior acceptance record as history. Keep `ARCH-052-MCP-002` pending until this logging gap is corrected and the task is accepted again.
-
 
 ## Architect Review — Attempt 5
 
@@ -476,7 +471,6 @@ Changes Requested. Attempt 5 resolves the provider diagnostic and sensitive non-
 ### Follow-up
 
 Return the task to `ready` for Attempt 6. Preserve Attempts 1–5 and the Attempt 5 implementation/report history. Keep `ARCH-052-MCP-002` pending until this task is accepted and its other dependencies are complete.
-
 
 ## Architect Review — Attempt 6
 

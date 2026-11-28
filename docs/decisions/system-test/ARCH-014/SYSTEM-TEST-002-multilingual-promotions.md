@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-014-DATABASE-003
-- ARCH-014-ADMIN-008
-- ARCH-014-SHOPIFY-003
-- ARCH-014-ADMIN-010
+  - ARCH-014-DATABASE-003
+  - ARCH-014-ADMIN-008
+  - ARCH-014-SHOPIFY-003
+  - ARCH-014-ADMIN-010
 enables: []
 created: 2026-09-15
 updated: 2026-09-16
@@ -128,7 +128,7 @@ DATABASE-003 migration must create only the translation table/constraints and mu
 Completion report table:
 
 | Scenario | PASS/FAIL | DB evidence | Admin/XLSX evidence | Merchant evidence | Isolation evidence |
-|---|---|---|---|---|---|
+| -------- | --------- | ----------- | ------------------- | ----------------- | ------------------ |
 
 Record exact integrated repository commits.
 

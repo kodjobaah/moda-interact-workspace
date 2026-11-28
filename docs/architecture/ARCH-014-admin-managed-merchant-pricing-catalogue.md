@@ -200,7 +200,6 @@ flatAmountMinor                 non-negative Int
 
 Tiered modes require 1..6 rows, strictly increasing finite `upTo` values and final `upTo=null`.
 
-
 ### `MerchantPricingPlanHighlight` (DATABASE-002)
 
 ```text
@@ -492,18 +491,18 @@ System test is terminal/manual-gated and enables no implementation task.
 
 ## Current implementation state
 
-| Task | Status | Depends On |
-|---|---|---|
-| `ARCH-014-DATABASE-001` | Complete | `ARCH-010-DATABASE-013` |
-| `ARCH-014-ADMIN-001` | Complete | `ARCH-010-ADMIN-009` |
-| `ARCH-014-ADMIN-002` | Complete | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001` |
-| `ARCH-014-ADMIN-003` | Complete | `ARCH-014-ADMIN-002` |
-| `ARCH-014-SHOPIFY-001` | Complete | `ARCH-014-DATABASE-001` |
-| `ARCH-014-DATABASE-002` | Complete | `ARCH-014-DATABASE-001` |
-| `ARCH-014-ADMIN-004` | Complete | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-003` |
-| `ARCH-014-SHOPIFY-002` | Complete | `ARCH-014-DATABASE-002`, `ARCH-014-SHOPIFY-001` |
-| `ARCH-014-ADMIN-005` | Complete | `ARCH-014-ADMIN-004` |
-| `ARCH-014-ADMIN-006` | Complete | `ARCH-014-ADMIN-005` |
+| Task                       | Status                  | Depends On                                                                                                        |
+| -------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `ARCH-014-DATABASE-001`    | Complete                | `ARCH-010-DATABASE-013`                                                                                           |
+| `ARCH-014-ADMIN-001`       | Complete                | `ARCH-010-ADMIN-009`                                                                                              |
+| `ARCH-014-ADMIN-002`       | Complete                | `ARCH-014-DATABASE-001`, `ARCH-014-ADMIN-001`                                                                     |
+| `ARCH-014-ADMIN-003`       | Complete                | `ARCH-014-ADMIN-002`                                                                                              |
+| `ARCH-014-SHOPIFY-001`     | Complete                | `ARCH-014-DATABASE-001`                                                                                           |
+| `ARCH-014-DATABASE-002`    | Complete                | `ARCH-014-DATABASE-001`                                                                                           |
+| `ARCH-014-ADMIN-004`       | Complete                | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-003`                                                                     |
+| `ARCH-014-SHOPIFY-002`     | Complete                | `ARCH-014-DATABASE-002`, `ARCH-014-SHOPIFY-001`                                                                   |
+| `ARCH-014-ADMIN-005`       | Complete                | `ARCH-014-ADMIN-004`                                                                                              |
+| `ARCH-014-ADMIN-006`       | Complete                | `ARCH-014-ADMIN-005`                                                                                              |
 | `ARCH-014-SYSTEM-TEST-001` | Ready (developer-gated) | `ARCH-014-DATABASE-002`, `ARCH-014-ADMIN-004`, `ARCH-014-ADMIN-005`, `ARCH-014-ADMIN-006`, `ARCH-014-SHOPIFY-002` |
 
 The pricing-catalogue implementation chain is Complete through `ARCH-014-ADMIN-006`; `ARCH-014-SYSTEM-TEST-001` is now Ready and remains terminal/developer-gated, so it must not auto-start. DATABASE-002, ADMIN-004, ADMIN-005, ADMIN-006 and SHOPIFY-002 are Complete. Architecture status remains In Progress until the terminal system-test gate is accepted.

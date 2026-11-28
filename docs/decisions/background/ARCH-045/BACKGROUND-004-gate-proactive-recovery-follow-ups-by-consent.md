@@ -23,6 +23,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-23
 ---
+
 # Guard scheduled and merchant post-window recovery follow-ups
 
 ## Developer Ownership Amendment
@@ -194,6 +195,7 @@ No architecture scope or database schema deviation identified. Existing ARCH-040
 Task branch: `task/ARCH-045-BACKGROUND-004`
 
 Physical worktree isolation, from the Attempt 2 launcher packet:
+
 - Canonical primary workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-BACKGROUND-004`.
 - Parent branch: `task/ARCH-045-BACKGROUND-004`.
@@ -204,6 +206,7 @@ Physical worktree isolation, from the Attempt 2 launcher packet:
 - Another task worktree reused: no.
 
 Start-of-attempt synchronization, from the Attempt 2 launcher packet:
+
 - Parent remote task branch fast-forward: `not-needed`.
 - Parent `origin/main` incorporated: `already-current`.
 - Implementation remote task branch fast-forward: `not-needed`.
@@ -212,11 +215,13 @@ Start-of-attempt synchronization, from the Attempt 2 launcher packet:
 - Database submodule: initialized at `2e009298612133aace095db5d57245a5b01e773a`.
 
 Implementation repository:
+
 - Repository: `moda-interact-background`.
 - Commit: `e33215009dbd4ee74170afdfdb3b9de39e8891b9` (Attempt 2 synchronization merge; original implementation commit `5e3cecda856eaa2d12d589d6e838ff16911a46f3` remains its first parent).
 - Published remote: `origin/task/ARCH-045-BACKGROUND-004` — **yes**.
 
 Parent workspace:
+
 - Task file: `docs/decisions/background/ARCH-045/BACKGROUND-004-gate-proactive-recovery-follow-ups-by-consent.md`.
 - Baseline parent claim commit: `543dd0551b8d070f5b5f18a93dacb9ddc2b52cf7`.
 - Parent claim commit: `55c6bba43968c1c704c0ec1ebd0e5cfcd4a5a9ad`, pushed by the canonical launcher.

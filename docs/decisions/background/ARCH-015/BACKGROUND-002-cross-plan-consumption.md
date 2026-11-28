@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-015-SHARED-001
-- ARCH-015-BACKGROUND-001
+  - ARCH-015-SHARED-001
+  - ARCH-015-BACKGROUND-001
 enables:
-- ARCH-015-SYSTEM-TEST-001
+  - ARCH-015-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-16
 ---
@@ -147,7 +147,6 @@ Implementation commit: `7a1ae9f` (`fix(background): fail closed on malformed con
 - Broader baseline failures were not modified because they are outside this task's authorized implementation surface.
 
 Returned to `moda_architect` for review after Attempt 3 correction.
-
 
 ## Architect Review — Attempt 2
 

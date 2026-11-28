@@ -22,23 +22,23 @@ Fifteen repository-owned tasks deliver standard product discovery, native shippi
 
 ## Task graph and current frontier
 
-| Task | Repository | Concrete responsibility | Prerequisites | Current state |
-| --- | --- | --- | --- | --- |
-| [DATABASE-001](../decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md) | `moda-interact-database` | Accepted taxonomy schema, policy and original grant guard | - | Complete; historical baseline |
-| [SHARED-001](../decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md) | `moda-interact-shared` | Accepted product/shipping/recommendation contracts and runner | - | Complete; historical baseline |
-| [SHARED-002](../decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md) | `moda-interact-shared` | Historical immutable 4.0.0 publication | SHARED-001 | Complete; receipt preserved |
-| [SHARED-003](../decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md) | `moda-interact-shared` | Remove hash-based built-in identity | SHARED-002 | Complete; accepted Attempt 2 |
-| [SHARED-004](../decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md) | `moda-interact-shared` | Remove obsolete MCP conversation-context export | SHARED-003 | Complete; accepted |
-| [SHARED-005](../decisions/shared/ARCH-058/SHARED-005-freeze-commerce-datetime-wire-syntax.md) | `moda-interact-shared` | Freeze explicit discount built-in UTC timestamp syntax and bump both discount built-ins to 2.0.0 | SHARED-004 | Complete; accepted |
-| [SHARED-006](../decisions/shared/ARCH-058/SHARED-006-publish-corrected-commerce-contracts.md) | `moda-interact-shared` | Publish/verify combined corrected package, target 5.0.0 | SHARED-003, SHARED-004, SHARED-005 | Complete; accepted |
-| [DATABASE-002](../decisions/database/ARCH-058/DATABASE-002-remove-built-in-contract-hash-storage.md) | `moda-interact-database` | Forward-convert persisted built-in grants from hashed 1.0.0 to no-hash 2.0.0 identity | DATABASE-001, SHARED-005 | Complete; accepted |
-| [MCP-001](../decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md) | `moda-interact-mcp` | Accepted importer, resolver and required-feature selection | DATABASE-001, SHARED-002 | Complete, Attempt 3 |
-| [MCP-002](../decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md) | `moda-interact-mcp` | Preserve WIP; consume corrected Shared/Database and finish product/discount work | MCP-001, DATABASE-002, SHARED-006 | Complete; accepted |
-| [SHOPIFY-001](../decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md) | `moda-interact` | Accepted native policy permission declaration | - | Complete |
-| [MCP-003](../decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md) | `moda-interact-mcp` | Native shipping reader | MCP-002, SHOPIFY-001 | Complete; accepted |
-| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md) | `moda-interact-commerce` | Consume Shared 5.0.0; publish standard tools/instructions | MCP-002, MCP-003, SHARED-006 | Complete; accepted Attempt 3 |
-| [BACKGROUND-001](../decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md) | `moda-interact-background` | Consume Shared 5.0.0; implement grounded host composition | MCP-002, MCP-003, COMMERCE-001, SHARED-006 | Ready; unclaimed, Attempt 0 |
-| [SYSTEM-TEST-001](../decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md) | `moda-interact-system-test` | Verify corrected contracts, migration and integrated customer behavior | All required implementation/publication tasks | Pending |
+| Task                                                                                                                 | Repository                  | Concrete responsibility                                                                          | Prerequisites                                 | Current state                 |
+| -------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------- | ----------------------------- |
+| [DATABASE-001](../decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md) | `moda-interact-database`    | Accepted taxonomy schema, policy and original grant guard                                        | -                                             | Complete; historical baseline |
+| [SHARED-001](../decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md)       | `moda-interact-shared`      | Accepted product/shipping/recommendation contracts and runner                                    | -                                             | Complete; historical baseline |
+| [SHARED-002](../decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md)                         | `moda-interact-shared`      | Historical immutable 4.0.0 publication                                                           | SHARED-001                                    | Complete; receipt preserved   |
+| [SHARED-003](../decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md)                             | `moda-interact-shared`      | Remove hash-based built-in identity                                                              | SHARED-002                                    | Complete; accepted Attempt 2  |
+| [SHARED-004](../decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md)                   | `moda-interact-shared`      | Remove obsolete MCP conversation-context export                                                  | SHARED-003                                    | Complete; accepted            |
+| [SHARED-005](../decisions/shared/ARCH-058/SHARED-005-freeze-commerce-datetime-wire-syntax.md)                        | `moda-interact-shared`      | Freeze explicit discount built-in UTC timestamp syntax and bump both discount built-ins to 2.0.0 | SHARED-004                                    | Complete; accepted            |
+| [SHARED-006](../decisions/shared/ARCH-058/SHARED-006-publish-corrected-commerce-contracts.md)                        | `moda-interact-shared`      | Publish/verify combined corrected package, target 5.0.0                                          | SHARED-003, SHARED-004, SHARED-005            | Complete; accepted            |
+| [DATABASE-002](../decisions/database/ARCH-058/DATABASE-002-remove-built-in-contract-hash-storage.md)                 | `moda-interact-database`    | Forward-convert persisted built-in grants from hashed 1.0.0 to no-hash 2.0.0 identity            | DATABASE-001, SHARED-005                      | Complete; accepted            |
+| [MCP-001](../decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md)                               | `moda-interact-mcp`         | Accepted importer, resolver and required-feature selection                                       | DATABASE-001, SHARED-002                      | Complete, Attempt 3           |
+| [MCP-002](../decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md)                               | `moda-interact-mcp`         | Preserve WIP; consume corrected Shared/Database and finish product/discount work                 | MCP-001, DATABASE-002, SHARED-006             | Complete; accepted            |
+| [SHOPIFY-001](../decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md)                        | `moda-interact`             | Accepted native policy permission declaration                                                    | -                                             | Complete                      |
+| [MCP-003](../decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md)                                   | `moda-interact-mcp`         | Native shipping reader                                                                           | MCP-002, SHOPIFY-001                          | Complete; accepted            |
+| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md)                  | `moda-interact-commerce`    | Consume Shared 5.0.0; publish standard tools/instructions                                        | MCP-002, MCP-003, SHARED-006                  | Complete; accepted Attempt 3  |
+| [BACKGROUND-001](../decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md)     | `moda-interact-background`  | Consume Shared 5.0.0; implement grounded host composition                                        | MCP-002, MCP-003, COMMERCE-001, SHARED-006    | Ready; unclaimed, Attempt 0   |
+| [SYSTEM-TEST-001](../decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md)          | `moda-interact-system-test` | Verify corrected contracts, migration and integrated customer behavior                           | All required implementation/publication tasks | Pending                       |
 
 Execution frontier: DATABASE, Shared, Shopify, MCP and Commerce prerequisites are Complete. BACKGROUND-001 is Ready/unclaimed after Commerce Attempt 3 acceptance; it must use normal launcher preparation when invoked. SYSTEM-TEST-001 remains Pending on Background acceptance and is a terminal, separately invoked validation task. Historical frontier snapshots below remain evidence, not current execution authority.
 
@@ -80,14 +80,14 @@ MCP reads the existing `REFERENCE_TAXONOMY` embedding configuration using the co
 
 The concrete implementation paths are:
 
-| Deliverable | Task |
-| --- | --- |
+| Deliverable                                                                                                           | Task         |
+| --------------------------------------------------------------------------------------------------------------------- | ------------ |
 | `moda-interact-database/prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql` | DATABASE-001 |
-| Targeted canonical seed-policy alignment, without running the destructive broad seed against an existing environment | DATABASE-001 |
-| `moda-interact-mcp/src/data/reference-taxonomy-manifest.json` | MCP-001 |
-| `moda-interact-mcp/scripts/sync-reference-taxonomy.mjs` and `npm run taxonomy:sync` | MCP-001 |
-| Extended `moda-interact-commerce/scripts/sync-system-commerce-tools.mjs` and existing `npm run commerce:sync-tools` | COMMERCE-001 |
-| `moda-interact-commerce/scripts/setup-commerce-product-discovery.mjs` and `npm run commerce:setup-discovery` | COMMERCE-001 |
+| Targeted canonical seed-policy alignment, without running the destructive broad seed against an existing environment  | DATABASE-001 |
+| `moda-interact-mcp/src/data/reference-taxonomy-manifest.json`                                                         | MCP-001      |
+| `moda-interact-mcp/scripts/sync-reference-taxonomy.mjs` and `npm run taxonomy:sync`                                   | MCP-001      |
+| Extended `moda-interact-commerce/scripts/sync-system-commerce-tools.mjs` and existing `npm run commerce:sync-tools`   | COMMERCE-001 |
+| `moda-interact-commerce/scripts/setup-commerce-product-discovery.mjs` and `npm run commerce:setup-discovery`          | COMMERCE-001 |
 
 After these tasks are implemented and compatible runtime versions are available, an operator runs the following from the accepted Commerce checkout, supplying the actual workspace root:
 
@@ -157,11 +157,9 @@ MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb923373
 
 SHARED-003 Attempt 2 is architect-accepted and Complete at `59ea61f34197d64180e46680ac6d552b5e989a36`. Its provenance correction closes the prior documentation finding; implementation and prior independent validation are unchanged. Earlier unmaterialised/ready references are historical. SHARED-004 is now ready and unclaimed. SHARED-006 remains pending on SHARED-004/005; the intermediate source must not be published. Remaining architecture and system-test gates are unchanged.
 
-
 ## Commerce prerequisite reconciliation — 5 November 2026
 
 COMMERCE-001 Attempt 1 preserved its unfinished draft at `0914178` and stopped at a historical Database task-commit ancestry check. The complete tree of `ded8f14a` equals accepted squash merge `395675f`; the accepted Database pin `bd2d090` descends from that merged commit and retains DATABASE-002. Revision 11 uses the merged ancestor, preserves the immutable original Shared 2.7.2 tool fixture, and returns Commerce Ready/unclaimed with Attempt 1 retained. This is prerequisite reconciliation, not implementation acceptance. Background owns downstream model-request instruction/context fixtures; Commerce owns publisher/Shared-parser proof. No reverse dependency, source edit, deployment or downstream execution is authorized by the reconciliation.
-
 
 ## Commerce acceptance and Background frontier — 5 November 2026
 

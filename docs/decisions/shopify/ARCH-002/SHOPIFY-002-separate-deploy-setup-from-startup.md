@@ -17,6 +17,7 @@ enables: []
 created: 2026-08-29
 updated: 2026-08-30
 ---
+
 # Separate Database Setup from Shopify Replica Startup
 
 ## Architecture
@@ -209,7 +210,7 @@ Implementation in `moda-interact`:
   direct runtime dependency so the application root resolves the same zod@4
   major the `@modainteract/moda-interact-shared` production package requires.
 - `moda-interact/package-lock.json` — lockfile updated for the direct `zod
-  ^4.0.0` declaration (root `node_modules/zod` resolves to 4.5.4).
+^4.0.0` declaration (root `node_modules/zod` resolves to 4.5.4).
 - `moda-interact/Dockerfile` — container start command changed from
   `CMD ["npm", "run", "docker-start"]` to `CMD ["npm", "run", "start"]`
   so every replica start launches only the web runtime; documented the
@@ -250,7 +251,7 @@ Task-state file:
   and GATEWAY-003 ownership of environment-specific `preDeployCommand` wiring.
 - Kept all lifecycle commands environment-neutral (no hard-coded database URL).
 - Resolved the previously recorded zod hoisting boot failure by declaring `zod
-  ^4.0.0` as a direct runtime dependency (matching the shared package's zod@4
+^4.0.0` as a direct runtime dependency (matching the shared package's zod@4
   runtime contract). Root zod now resolves to 4.5.4, the ERD-generator's zod
   3.23.8 is isolated, and the SSR bundle boots cleanly.
 
@@ -291,7 +292,7 @@ current source state (direct `zod ^4.0.0`, root zod 4.5.4).
   freshly built artifact): **the application starts successfully**. Pre-deploy
   migration was run once as the separate lifecycle step (`npm run migrate`
   against the local `moda-postgres` Docker container, exit 0), then `npm run
-  start` launched only `react-router-serve ./build/server/index.js` (confirmed
+start` launched only `react-router-serve ./build/server/index.js` (confirmed
   via process tree; no migrate/seed in the log). `GET /health` returned
   **HTTP 200** `{"status":"ok"}`; `GET /ready` returned **HTTP 503**
   `{"status":"not_ready","checks":{"redis":false,"postgres":true}}`

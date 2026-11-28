@@ -23,6 +23,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T19:38:00Z
 ---
+
 # Persist merchant and conversation international context
 
 ## Objective
@@ -122,7 +123,7 @@ Do not infer language from phone/country during migration.
 - [x] migration is reversible/consistent with repository policy.
 - [x] Prisma/schema generation succeeds.
 - [ ] database tests/typecheck/diff checks pass; this repository does not
-  provide database test or typecheck scripts, while `git diff --check` passes.
+      provide database test or typecheck scripts, while `git diff --check` passes.
 
 ## Completion Report
 
@@ -339,8 +340,7 @@ Accepted
 The architect reviewed the supplied `moda-interact-database` workspace
 directly.
 
-The previously accepted Prisma schema and migration are unchanged from Attempt
-1.
+The previously accepted Prisma schema and migration are unchanged from Attempt 1.
 
 The required ERD regeneration correction is now present.
 
@@ -459,4 +459,3 @@ These three tasks may proceed independently.
 
 `ARCH-005-MESSAGING-001` remains Pending because it still depends on
 DATABASE-002 and BACKGROUND-001.
-

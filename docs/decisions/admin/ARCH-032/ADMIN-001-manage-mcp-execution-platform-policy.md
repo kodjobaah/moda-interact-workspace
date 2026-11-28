@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-032-DATABASE-001
+  - ARCH-032-DATABASE-001
 enables:
-- ARCH-032-GATEWAY-002
-- ARCH-032-SYSTEM-TEST-002
+  - ARCH-032-GATEWAY-002
+  - ARCH-032-SYSTEM-TEST-002
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-ADMIN-001 — Admin controls for required MCP execution policy
@@ -76,6 +76,7 @@ Consumes the existing Prisma `PlatformBillingPolicy` row and `mcpExecutionPolicy
 - [x] Existing billing fields, other environments, System Controls and merchant-facing UI remain unaffected.
 
 ## Validation
+
 - [x] Admin-focused server security tests
 - [x] `npm run prisma:generate`, `npm run lint`, and `npm run build`
 - [ ] Disposable PostgreSQL policy create/update race tests when feasible; not run because no database was verified as disposable.
@@ -95,6 +96,7 @@ Use the canonical developer workflow and launcher-managed isolated parent and re
 Complete — Attempt 1 was accepted by the developer-as-architect on 2026-10-15 following the explicit direction `Architect Review Accepted`. The null-entry and reproducibility corrections are present in the published implementation branch. No attempt increment, merge to `main`, or implementation-branch change was made for this completion record.
 
 ### Files Changed
+
 - `src/app/(protected)/system-controls/platform-policy/page.tsx`
 - `src/app/actions/billing-controls.ts`
 - `src/app/actions/mcp-execution-policy.ts`
@@ -109,6 +111,7 @@ Complete — Attempt 1 was accepted by the developer-as-architect on 2026-10-15 
 - `database` (submodule gitlink aligned to DATABASE-001 commit `139765042baad3901682cfe9c54a3d6bba73e75c`)
 
 ### Work Completed
+
 - Added an environment-scoped MCP execution policy section to the existing Platform Policy page, visible only to SUPER_ADMIN users.
 - Added bounded policy parsing, audited save/clear actions, shared `PlatformBillingPolicy.version` compare-and-swap, and optimistic-conflict handling.
 - Added focused tests for authorization, bounds, audit behavior, clear/replay, CAS loss, and preservation of the other environment and billing JSONB.
@@ -116,6 +119,7 @@ Complete — Attempt 1 was accepted by the developer-as-architect on 2026-10-15 
 - Align the Admin task branch's `database` gitlink to completed DATABASE-001 commit `139765042baad3901682cfe9c54a3d6bba73e75c`, which contains `PlatformBillingPolicy.mcpExecutionPolicy`.
 
 ### Validation Results
+
 - Passed: focused MCP policy and Platform Policy page tests after correction (12 tests).
 - Passed: focused Admin billing/security tests (11 tests).
 - Passed: `npm run lint` with 0 errors and 1 warning in `database/eslint.config.mjs`.
@@ -127,29 +131,36 @@ Complete — Attempt 1 was accepted by the developer-as-architect on 2026-10-15 
 - Resolved reproducibility gap: implementation HEAD `7c50c1bf99a539877a618078a2f2cb52f678066b` records database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`; Prisma generation, validation and production build pass using this committed revision.
 
 ### Deviations
+
 The follow-up implementation commit is pushed on the canonical implementation task branch. The database submodule revision is now an intentional committed gitlink change, not an uncommitted worktree modification. No implementation changes were made during this reconciliation.
 
 ### Assumptions
+
 No assumption was made that the configured `DATABASE_URL` is disposable.
 
 ### Unresolved Issues
+
 - Accepted non-blocking residuals: full unit and broad security/observability commands still report failures in unrelated Commerce Model, Shopify taxonomy alias resolution, Store Category translation staging, and Tenant Directory KPI expectations; these were not changed by this task.
 - Accepted validation limitation: disposable PostgreSQL race coverage was not run because no database target was verified as disposable.
 
 ### Architectural Concerns
+
 The database dependency pointer is resolved to DATABASE-001 commit `139765042baad3901682cfe9c54a3d6bba73e75c`; Prisma generation, validation and the production build passed from that committed schema.
 
 ## Developer Self-Review — Changes Requested
 
 ### Outcome
+
 Changes Requested for Attempt 1. The scoped UI, server action, shared-row CAS, audit path, and focused tests are present and pushed, but the null-entry acceptance criterion is not met and a clean checkout at the committed database gitlink cannot generate the required Prisma client.
 
 ### Required Corrections
+
 - Normalize an individual environment value of JSON `null` to an unprovisioned/absent entry in `readMcpExecutionPolicy`; add tests showing the null and absent forms render as unconfigured and can be provisioned without changing other environments.
 - Resolve the database schema revision through the authorized developer/architect integration path. Then initialize the canonical Admin worktree at its recorded gitlink and rerun `npm run prisma:generate`, focused tests, lint, and build; record the exact database commit used. Do not stage or alter the database gitlink without that ownership decision.
 - Re-run the full suites after correction and record whether the currently observed failures are baseline or task regressions; do not expand this task to unrelated failures without evidence.
 
 ### Review Evidence
+
 - Focused MCP policy/page tests: 10 passed; focused billing/security tests: 11 passed.
 - Full unit suite: 444 passed, 3 failed. Full `npm test` reported failures in Store Category translation staging and Tenant Directory KPIs.
 - Lint, Prisma generation, and production build passed only with the newer uncommitted database checkout noted above.
@@ -197,21 +208,27 @@ On 2026-10-15, the developer explicitly invoked completion with the direction `A
 ## Architect Review
 
 ### Review Status
+
 Accepted — 2026-10-15, per the developer's explicit direction `Architect Review Accepted`.
 
 ### Review Notes
+
 The corrected implementation satisfies the task acceptance criteria. The two validation residuals listed in the Completion Report are accepted as non-blocking: broad-suite failures are outside this task's changed surfaces, and a disposable PostgreSQL target was not verified.
 
 ### Reviewed Files
+
 Implementation files listed in the Completion Report, including the MCP policy parser/action/UI/tests and the committed database gitlink.
 
 ### Validation Reviewed
+
 Focused policy/page tests 12/12; focused Admin billing/security tests 11/11; Prisma generation and validation, lint (zero errors, one warning), production build, and implementation diff check passed. Full unit suite remains 446/449 with three unrelated failures; disposable PostgreSQL tests were not run because no safe target was verified.
 
 ### Architecture Conformance
+
 Conforms to the accepted scope: reuses the existing `PlatformBillingPolicy` singleton and shared version CAS, with no new policy model/table or merchant-facing changes.
 
 ### Follow-up
+
 No further ADMIN-001 implementation is required. Gateway-002 remains `blocked` under its operational cutover hold and other dependencies; SYSTEM-TEST-002 remains `pending` on its remaining implementation dependencies. Neither downstream status was changed.
 
 ## 2026-10-15 — Architect dependency reconciliation

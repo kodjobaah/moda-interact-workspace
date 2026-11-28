@@ -165,20 +165,20 @@ The registry tarball URL above is the actual recorded dist URL. Size and hashes 
 
 All Node/npm operations used the workspace bootstrap (Node 24.19.0, npm 11.17.0). No SHARED-001 implementation suite was rerun; this gate verified packaging and the retrieved artifact.
 
-| Actual command/check | Result |
-|---|---|
-| Accepted commit ancestry and complete source-tree comparison | Passed; release baseline tree exactly equals accepted SHARED-001. |
-| `npm view @modainteract/moda-interact-shared versions --json` and `dist-tags --json` | Passed before preparation and immediately before publishing: latest 3.1.0, 4.0.0 unoccupied. |
-| `npm ci --no-audit --no-fund` | Installed the committed build dependencies without changing the lockfile. |
-| `npm version 4.0.0 --no-git-tag-version` and structured metadata comparison | Passed; only the three approved version scalars changed. |
-| `npm pack --dry-run` | Passed, including the required tsup JavaScript/declaration prepack build; 131 intended package files. |
-| `npm pack --ignore-scripts --json --pack-destination <temporary-local-directory>` | Produced the actual inspected archive from that completed build. All public export targets and artifact integrity passed. |
-| Local artifact runtime and TypeScript consumer checks | Passed; imports resolved to the extracted package's dist files. |
-| `npm publish <exact-inspected-4.0.0-tarball> --access public` | Passed; existing registry and auth, latest tag, public access. |
-| `npm view <exact-version> dist --json`; `npm pack <exact-version> --prefer-online --ignore-scripts --json --pack-destination <temporary-registry-directory>` | Passed; exact downloadable version and full-byte/integrity equality established. |
-| Downloaded artifact runtime/type checks | Passed for every named contract/type, shipping/search dictionaries, mixed grant branch, canonical descriptor hashes and runner 1.1.0. |
-| `COMMERCE_CONSUMER_DIRECTORY=<extracted-registry-package> npm run validate:commerce-entrypoints` | Passed in its clean process. |
-| `git diff --check` | Passed for release metadata and report. |
+| Actual command/check                                                                                                                                         | Result                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Accepted commit ancestry and complete source-tree comparison                                                                                                 | Passed; release baseline tree exactly equals accepted SHARED-001.                                                                     |
+| `npm view @modainteract/moda-interact-shared versions --json` and `dist-tags --json`                                                                         | Passed before preparation and immediately before publishing: latest 3.1.0, 4.0.0 unoccupied.                                          |
+| `npm ci --no-audit --no-fund`                                                                                                                                | Installed the committed build dependencies without changing the lockfile.                                                             |
+| `npm version 4.0.0 --no-git-tag-version` and structured metadata comparison                                                                                  | Passed; only the three approved version scalars changed.                                                                              |
+| `npm pack --dry-run`                                                                                                                                         | Passed, including the required tsup JavaScript/declaration prepack build; 131 intended package files.                                 |
+| `npm pack --ignore-scripts --json --pack-destination <temporary-local-directory>`                                                                            | Produced the actual inspected archive from that completed build. All public export targets and artifact integrity passed.             |
+| Local artifact runtime and TypeScript consumer checks                                                                                                        | Passed; imports resolved to the extracted package's dist files.                                                                       |
+| `npm publish <exact-inspected-4.0.0-tarball> --access public`                                                                                                | Passed; existing registry and auth, latest tag, public access.                                                                        |
+| `npm view <exact-version> dist --json`; `npm pack <exact-version> --prefer-online --ignore-scripts --json --pack-destination <temporary-registry-directory>` | Passed; exact downloadable version and full-byte/integrity equality established.                                                      |
+| Downloaded artifact runtime/type checks                                                                                                                      | Passed for every named contract/type, shipping/search dictionaries, mixed grant branch, canonical descriptor hashes and runner 1.1.0. |
+| `COMMERCE_CONSUMER_DIRECTORY=<extracted-registry-package> npm run validate:commerce-entrypoints`                                                             | Passed in its clean process.                                                                                                          |
+| `git diff --check`                                                                                                                                           | Passed for release metadata and report.                                                                                               |
 
 The temporary TypeScript consumer ran with `tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --skipLibCheck --types node`; it also checked that unsupported dispositions, numeric shipping IDs and published identity fields on built-in grants remain type errors. Verification used the artifact's own package self-reference. A temporary dependency-resolution link points only to installed third-party build dependencies, not a Shared source checkout or any application consumer.
 
@@ -223,7 +223,6 @@ consumer upgrade or environment deployment: no
 ## Historical Pre-publication Dependency Handoff (2026-11-04)
 
 SHARED-001 Attempt 2 is accepted and complete at implementation `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. Its expanded browse, shipping and answer-presentation contract and original built-in/grant changes passed independent review. This publication task is ready, unclaimed and unexecuted. Use that accepted source and retain the existing registry/version/source checks before publishing 4.0.0; source acceptance alone is not registry publication. Do not advance consumer prerequisites until this task completes.
-
 
 ## Architect Review — Accepted (Attempt 1, 2026-11-04)
 

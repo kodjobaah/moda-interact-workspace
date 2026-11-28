@@ -33,7 +33,7 @@ Coordinator: `moda_architect`.
 
 ## Objective
 
-Finish residual *authenticated* Shopify app-shell and merchant-support
+Finish residual _authenticated_ Shopify app-shell and merchant-support
 internationalisation using the existing Shared ICU runtime and existing 20
 merchant locale catalogues; preserve tenant, messaging and billing behaviour.
 
@@ -55,6 +55,7 @@ Do not recreate, re-internationalise or refactor any of those completed/retired
 mechanisms merely to satisfy the superseded September file list.
 
 Source inspection on 2026-10-08 identified these remaining specific gaps:
+
 - `app/routes/app/route.jsx`: logo `alt` text is still English.
 - `app/routes/app/merchant-support/route.jsx`: heading, support controls,
   sender/status labels and translation toggles still contain English literals.
@@ -130,8 +131,7 @@ message bodies; never translate stored body text again.
 
 Do not expose service exceptions to the UI. For unsupported intents return
 `{ errorCode: "UNSUPPORTED_ACTION" }` with status 400; for exceptions thrown by
-`composeMerchantMessage`, return `{ errorCode: "SEND_FAILED" }` with status
-400. Map both codes at *presentation time* to `support.unsupportedAction`
+`composeMerchantMessage`, return `{ errorCode: "SEND_FAILED" }` with status 400. Map both codes at _presentation time_ to `support.unsupportedAction`
 and `support.sendFailed`. Do not alter the support service validation contract.
 
 ### Add translations to all 20 existing catalogues
@@ -212,6 +212,7 @@ git diff --check
 ```
 
 Focused test obligations:
+
 - `merchant-i18n.test.ts`: reuse the complete-key/ICU check and assert
   meaningful non-English translations of representative `common.logoAlt` and
   `support.*` copy, including ICU placeholder preservation.
@@ -341,7 +342,7 @@ Validation:
     `TypeError` reading `shopifyShopId` from undefined at
     `ShopService.resolveShopifyShop` in unchanged `shop.service.ts`.
 - A1-R3 `git diff --name-status af38bf8c948c213deb857663d85ce34caaf4563a
-  92cd5ca8e024146b14c4167b0df263b30f6cd013` lists the implementation's 25
+92cd5ca8e024146b14c4167b0df263b30f6cd013` lists the implementation's 25
   intended locale/source/test files and does not list
   `shopify.app.moda-interact.toml`. The scoped diff for that file is empty
   (`git diff --quiet` exit 0); its observed difference is not in the submitted
@@ -565,7 +566,7 @@ name glob. No current Shopify implementation rework is requested. No
 The repository agent must read this complete latest Architect Review before
 claiming Attempt 2. Reuse the canonical dedicated parent/implementation task
 worktrees; retain the previous implementation commit where no code churn is
-needed. Once the launcher discovery issue is resolved, claim the *same* task,
+needed. Once the launcher discovery issue is resolved, claim the _same_ task,
 apply only the bounded A1-R1 source/test adjustment, resolve A1-R2 and A1-R3
 with proof, rerun task-relevant validation, update the Completion Report and
 return status to `review`. No `_index.md` reconciliation, system-test execution,

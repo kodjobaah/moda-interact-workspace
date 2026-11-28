@@ -19,6 +19,7 @@ enables:
 created: 2026-08-31
 updated: 2026-08-31
 ---
+
 # Add bounded GenAI operational metrics
 
 ## Architecture
@@ -157,7 +158,7 @@ Ready for Review
   absence.
 - `npm run typecheck` — pass.
 - Focused `npx tsx --test src/observability/genai.test.ts
-  src/observability/genai.metrics.test.ts` — pass, 3/3; accepted span behavior
+src/observability/genai.metrics.test.ts` — pass, 3/3; accepted span behavior
   remains intact alongside metrics.
 - `npm test` — pass, 62 active tests; one existing Redis-gated BullMQ test
   skipped because `TEST_REDIS_URL` was not configured.

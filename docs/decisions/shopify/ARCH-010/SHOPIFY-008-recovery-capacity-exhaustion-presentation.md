@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SHOPIFY-009
-- ARCH-010-SHOPIFY-012
-- ARCH-010-BACKGROUND-009
-- ARCH-010-SHARED-008
+  - ARCH-010-SHOPIFY-009
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-SHARED-008
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-SHOPIFY-008: Present recovery-capacity exhaustion on merchant dashboard and history
@@ -95,7 +95,7 @@ At minimum prove:
 1. Free purchased exhausted + lifetime Free exhausted shows the warning;
 2. Paid selected promotional + included + purchased + lifetime Free all exhausted shows the warning;
 3. purchased available suppresses the full warning even when lifetime Free remains;
-3a. Paid selected promotional unavailable + included/purchased exhausted + lifetime Free available suppresses the full warning;
+   3a. Paid selected promotional unavailable + included/purchased exhausted + lifetime Free available suppresses the full warning;
 4. dashboard/history/usage remain accessible while exhausted;
 5. warning CTA is `/app/billing/options`;
 6. blocked DETECTED recovery shows waiting-for-capacity semantics;
@@ -134,14 +134,16 @@ STOP and return to `moda_architect` if SHOPIFY-009 cannot provide the capacity s
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Files Changed
+
 Populate during implementation.
 
 ### Validation Results
-Populate during implementation.
 
+Populate during implementation.
 
 ## Final promotional capacity presentation
 

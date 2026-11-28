@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-001
 enables:
-- ARCH-057-SHOPIFY-008
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-008
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -45,23 +45,23 @@ SHOPIFY-001 supplies scalar Shop/Subscription/ShopSettings facts. This task owns
 
 Paths are relative to `moda-interact`.
 
-| Existing path | Required edit |
-|---|---|
-| `app/services/feature-preferences/access.server.ts` | Add the explicit no-settings-read mutation guard; retain existing settingsAccess contract and policy |
-| `app/services/feature-preferences/feature-preferences.server.ts` | Extract a pure feature projection consumed by page reads and the existing fresh transactional loader; preserve feature revision bytes |
-| `app/routes/app/recovery-settings/route.tsx` | Pass framework context, construct one settings read context, reuse it for features/policy; keep knowledge invocation for SHOPIFY-008 to migrate |
-| `app/services/recovery-policy/recovery-policy.server.ts` | Accept supplied settings for read composition; implement prewrite no-op and added/removed discount sets; preserve atomic revision fencing |
-| `app/routes/app/settings-save/route.ts` | Use the mutation guard, retain bounded form handling and all current intents, complete operational diagnostics for every intent |
-| `app/services/store-profile/store-category-selection.server.ts` | Enforce ACTIVE and existing Shop under FOR UPDATE; preserve preparation/current-template validation/generation CAS; retain actual render failure cause |
-| `app/routes/app/store-profile/category/route.ts` | Consume request context, map the new lifecycle denial, log operational errors and retain existing safe response shape |
-| `app/components/settings/StoreProfileSection.tsx` | Extend only the typed result union for SHOP_UNAVAILABLE; use the existing localized saveFailed presentation |
-| `tests/unit/recovery-policy-save.test.ts`, `tests/unit/recovery-policy-snapshot.test.ts` | Change true no-op expectations to zero UPDATEs and cover supplied settings/delta writes |
-| `tests/unit/settings-save-recovery-route.test.ts`, `tests/unit/merchant-settings-action.test.ts`, `tests/unit/ai-response-delay-loader.test.ts` | Verify guard/context reuse and unchanged form/error/revision behavior |
-| `tests/unit/store-category-selection.test.ts` | Verify ACTIVE-under-lock and generation/provenance behavior |
-| `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` | Preserve selected-field ownership tests; remove any fixture assumption that every save always makes exactly two updates |
-| `tests/integration/merchant-feature-preferences.test.ts` | Preserve existing feature/revision integration cases; use pgvector/pgvector:pg17 instead of its obsolete postgres:15-alpine fixture |
-| `tests/integration/store-category-selection.postgres.integration.test.ts` | Retain existing initial/active selection, provenance and concurrency cases |
-| `package.json` | Register the exact focused scripts below |
+| Existing path                                                                                                                                   | Required edit                                                                                                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app/services/feature-preferences/access.server.ts`                                                                                             | Add the explicit no-settings-read mutation guard; retain existing settingsAccess contract and policy                                                   |
+| `app/services/feature-preferences/feature-preferences.server.ts`                                                                                | Extract a pure feature projection consumed by page reads and the existing fresh transactional loader; preserve feature revision bytes                  |
+| `app/routes/app/recovery-settings/route.tsx`                                                                                                    | Pass framework context, construct one settings read context, reuse it for features/policy; keep knowledge invocation for SHOPIFY-008 to migrate        |
+| `app/services/recovery-policy/recovery-policy.server.ts`                                                                                        | Accept supplied settings for read composition; implement prewrite no-op and added/removed discount sets; preserve atomic revision fencing              |
+| `app/routes/app/settings-save/route.ts`                                                                                                         | Use the mutation guard, retain bounded form handling and all current intents, complete operational diagnostics for every intent                        |
+| `app/services/store-profile/store-category-selection.server.ts`                                                                                 | Enforce ACTIVE and existing Shop under FOR UPDATE; preserve preparation/current-template validation/generation CAS; retain actual render failure cause |
+| `app/routes/app/store-profile/category/route.ts`                                                                                                | Consume request context, map the new lifecycle denial, log operational errors and retain existing safe response shape                                  |
+| `app/components/settings/StoreProfileSection.tsx`                                                                                               | Extend only the typed result union for SHOP_UNAVAILABLE; use the existing localized saveFailed presentation                                            |
+| `tests/unit/recovery-policy-save.test.ts`, `tests/unit/recovery-policy-snapshot.test.ts`                                                        | Change true no-op expectations to zero UPDATEs and cover supplied settings/delta writes                                                                |
+| `tests/unit/settings-save-recovery-route.test.ts`, `tests/unit/merchant-settings-action.test.ts`, `tests/unit/ai-response-delay-loader.test.ts` | Verify guard/context reuse and unchanged form/error/revision behavior                                                                                  |
+| `tests/unit/store-category-selection.test.ts`                                                                                                   | Verify ACTIVE-under-lock and generation/provenance behavior                                                                                            |
+| `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts`                                                                     | Preserve selected-field ownership tests; remove any fixture assumption that every save always makes exactly two updates                                |
+| `tests/integration/merchant-feature-preferences.test.ts`                                                                                        | Preserve existing feature/revision integration cases; use pgvector/pgvector:pg17 instead of its obsolete postgres:15-alpine fixture                    |
+| `tests/integration/store-category-selection.postgres.integration.test.ts`                                                                       | Retain existing initial/active selection, provenance and concurrency cases                                                                             |
+| `package.json`                                                                                                                                  | Register the exact focused scripts below                                                                                                               |
 
 New files:
 
@@ -107,16 +107,16 @@ No onboarding milestone reorder, category-activation/Background hook, new subscr
 
 Use the mandatory Shared error contract, actual original safe error/code/cause and existing `resolveDeploymentEnvironmentName`. The semantic adapter may expose settings/category event functions; it must not implement a generic serializer/redactor. Never log form values, selected discount titles/code text, rendered prompts/source contexts, taxonomy payloads, customer information or credentials.
 
-| Failure/injection | Diagnostic owner | Required result |
-|---|---|---|
-| SHOPIFY-001 auth/scalar context failure | SHOPIFY-001 source owner | Propagate; no duplicate source error at rethrow-only settings caller |
-| Settings-specific plan/features/preferences/override/catalogue read fails | The owning settings read function | Original safe DB message/code/cause once; no fabricated empty features/catalogue |
-| Policy/feature/AI-delay transaction fails unexpectedly | settings-save action, with actual intent/stage | Original error once for every intent, including features; preserve rollback and safe HTTP behavior |
-| Expected invalid input, revision conflict, inactive Shop, invalid feature/discount ownership | Existing typed business outcome | Preserve current 400/403/409/422 mapping; do not invent provider errors |
-| Category rendering throws | Preparation boundary | Log original safe cause once before wrapping CATEGORY_UNAVAILABLE with `cause`; do not log prompt/context |
-| Category transaction/preflight DB fails | Category action | Original DB error/code/cause; no partial publication/profile/config change |
-| ACTIVE-under-lock finds no Shop | Typed SHOP_UNAVAILABLE | 403, no write; not an invented database outage |
-| Throwing Shared sink | Shared isolation | Read failure, revision winner, rollback and public response unchanged |
+| Failure/injection                                                                            | Diagnostic owner                               | Required result                                                                                           |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| SHOPIFY-001 auth/scalar context failure                                                      | SHOPIFY-001 source owner                       | Propagate; no duplicate source error at rethrow-only settings caller                                      |
+| Settings-specific plan/features/preferences/override/catalogue read fails                    | The owning settings read function              | Original safe DB message/code/cause once; no fabricated empty features/catalogue                          |
+| Policy/feature/AI-delay transaction fails unexpectedly                                       | settings-save action, with actual intent/stage | Original error once for every intent, including features; preserve rollback and safe HTTP behavior        |
+| Expected invalid input, revision conflict, inactive Shop, invalid feature/discount ownership | Existing typed business outcome                | Preserve current 400/403/409/422 mapping; do not invent provider errors                                   |
+| Category rendering throws                                                                    | Preparation boundary                           | Log original safe cause once before wrapping CATEGORY_UNAVAILABLE with `cause`; do not log prompt/context |
+| Category transaction/preflight DB fails                                                      | Category action                                | Original DB error/code/cause; no partial publication/profile/config change                                |
+| ACTIVE-under-lock finds no Shop                                                              | Typed SHOP_UNAVAILABLE                         | 403, no write; not an invented database outage                                                            |
+| Throwing Shared sink                                                                         | Shared isolation                               | Read failure, revision winner, rollback and public response unchanged                                     |
 
 ## Work Items
 
@@ -257,17 +257,17 @@ Installed locked versions: Node 24.19.0, npm 11.17.0, Shared 3.1.0, Prisma/clien
 
 ### Validation Results
 
-| Gate | Final result |
-|---|---|
-| `npm run test:merchant-settings:unit` | 9 files, 106 passed, zero failed/skipped |
-| `npm run test:merchant-settings:postgres -- --maxWorkers=1 --no-file-parallelism --testTimeout=30000 --hookTimeout=60000` | 5 files, 23 passed, zero failed/skipped |
-| Exact six-suite UI/onboarding command in Validation | 6 files, 29 passed, zero failed/skipped |
-| `npm run test:merchant-request:router` | 9 passed, zero failed/skipped; actual settings/recovery route chains retain one authentication and Shop resolution per GET |
-| `npm run typecheck` | Passed |
-| Exact focused eslint command in Validation | Passed, no diagnostics |
-| `npm run build` | Passed; existing large-chunk advisory only |
-| `git diff --check` and staged equivalent | Passed |
-| Temporary same-fixture before/after evidence harness | 2 passed; temporary baseline source and harness removed before final validation/commit |
+| Gate                                                                                                                      | Final result                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:merchant-settings:unit`                                                                                     | 9 files, 106 passed, zero failed/skipped                                                                                   |
+| `npm run test:merchant-settings:postgres -- --maxWorkers=1 --no-file-parallelism --testTimeout=30000 --hookTimeout=60000` | 5 files, 23 passed, zero failed/skipped                                                                                    |
+| Exact six-suite UI/onboarding command in Validation                                                                       | 6 files, 29 passed, zero failed/skipped                                                                                    |
+| `npm run test:merchant-request:router`                                                                                    | 9 passed, zero failed/skipped; actual settings/recovery route chains retain one authentication and Shop resolution per GET |
+| `npm run typecheck`                                                                                                       | Passed                                                                                                                     |
+| Exact focused eslint command in Validation                                                                                | Passed, no diagnostics                                                                                                     |
+| `npm run build`                                                                                                           | Passed; existing large-chunk advisory only                                                                                 |
+| `git diff --check` and staged equivalent                                                                                  | Passed                                                                                                                     |
+| Temporary same-fixture before/after evidence harness                                                                      | 2 passed; temporary baseline source and harness removed before final validation/commit                                     |
 
 PostgreSQL uses task-owned pgvector/pgvector:pg17 and canonical forward migrations, never db push. Distinct connections plus explicit barriers and pg_stat_activity lock-wait observation establish the one stale-policy-writer winner and both category/lifecycle lock orders without sleeps. Tests assert physical selections, timestamps, prompt/profile/configuration state, and rollback on both count mismatch and a genuine P2010 database error after profile/lineage writes.
 
@@ -277,12 +277,12 @@ Initial environment attempts could not discover Docker and then used an invalid 
 
 Comparison used the task start source above for the old policy implementation, the same migrated disposable database/Shop/discount fixture, and exact restoration of initial settings/discount timestamps before each branch. Counts include transaction controls separately and zero provider calls throughout.
 
-| Branch | Before | After |
-|---|---|---|
-| Identical save | 2 discount updateMany calls; 2 discount UPDATE SQL; 2 affected discount rows across those statements; 0 settings UPDATE; 8 total SQL including BEGIN/COMMIT; retained timestamp changed | 0 discount/settings UPDATE calls or SQL; 0 affected rows; 6 total SQL including BEGIN/COMMIT; all timestamps unchanged |
-| Settings-only save | 2 discount updateMany plus 1 settings update; affected discount rows 2, settings rows 1; 9 SQL including BEGIN/COMMIT | 0 discount updates, 1 settings update; affected discount rows 0, settings rows 1; 7 SQL including BEGIN/COMMIT; retained discount timestamp unchanged |
-| Settings read composition, same active plan facts | Subscription.findUnique 2, ShopSettings.findUnique 2, preference list 1, override 1, catalogue 1; 10 SELECT SQL | Subscription.findUnique 1, ShopSettings.findUnique 1, BillingPlan.findUnique 1, preference list 1, override 1, catalogue 1; 7 SELECT SQL; feature output/revision identical |
-| Selection delta | Broad deselect/reselect shape | One removed ID becomes false; one added ID becomes true; retained expired selection and timestamp unchanged; exactly 2 bounded discount UPDATEs and one settings revision update |
+| Branch                                            | Before                                                                                                                                                                                  | After                                                                                                                                                                            |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identical save                                    | 2 discount updateMany calls; 2 discount UPDATE SQL; 2 affected discount rows across those statements; 0 settings UPDATE; 8 total SQL including BEGIN/COMMIT; retained timestamp changed | 0 discount/settings UPDATE calls or SQL; 0 affected rows; 6 total SQL including BEGIN/COMMIT; all timestamps unchanged                                                           |
+| Settings-only save                                | 2 discount updateMany plus 1 settings update; affected discount rows 2, settings rows 1; 9 SQL including BEGIN/COMMIT                                                                   | 0 discount updates, 1 settings update; affected discount rows 0, settings rows 1; 7 SQL including BEGIN/COMMIT; retained discount timestamp unchanged                            |
+| Settings read composition, same active plan facts | Subscription.findUnique 2, ShopSettings.findUnique 2, preference list 1, override 1, catalogue 1; 10 SELECT SQL                                                                         | Subscription.findUnique 1, ShopSettings.findUnique 1, BillingPlan.findUnique 1, preference list 1, override 1, catalogue 1; 7 SELECT SQL; feature output/revision identical      |
+| Selection delta                                   | Broad deselect/reselect shape                                                                                                                                                           | One removed ID becomes false; one added ID becomes true; retained expired selection and timestamp unchanged; exactly 2 bounded discount UPDATEs and one settings revision update |
 
 The read comparison includes request scalar acquisition and settings composition, excludes unchanged knowledge reads assigned to SHOPIFY-008, and uses no provider refresh. These are fixture-level call/row observations, not capacity or latency claims. Temporary local evidence: `/tmp/shopify007-sql-evidence.json`, `/tmp/shopify007-read-evidence.json`, `/tmp/shopify007-before-after.log`. The durable results are recorded above.
 

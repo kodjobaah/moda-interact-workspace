@@ -15,23 +15,23 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-SHARED-002
-- ARCH-052-SHARED-006
-- ARCH-052-SHARED-008
+  - ARCH-052-SHARED-002
+  - ARCH-052-SHARED-006
+  - ARCH-052-SHARED-008
 enables:
-- ARCH-052-ADMIN-001
-- ARCH-052-ADMIN-002
-- ARCH-052-BACKGROUND-005
-- ARCH-052-BACKGROUND-007
-- ARCH-052-BACKGROUND-010
-- ARCH-052-COMMERCE-006
-- ARCH-052-GATEWAY-001
-- ARCH-052-MCP-001
-- ARCH-052-MCP-002
-- ARCH-052-MCP-003
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-created: '2026-10-29'
+  - ARCH-052-ADMIN-001
+  - ARCH-052-ADMIN-002
+  - ARCH-052-BACKGROUND-005
+  - ARCH-052-BACKGROUND-007
+  - ARCH-052-BACKGROUND-010
+  - ARCH-052-COMMERCE-006
+  - ARCH-052-GATEWAY-001
+  - ARCH-052-MCP-001
+  - ARCH-052-MCP-002
+  - ARCH-052-MCP-003
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+created: "2026-10-29"
 updated: 2026-10-30
 ---
 
@@ -217,7 +217,6 @@ None. The package is visible at the intended registry and its published artifact
 ### Architectural Concerns
 
 None identified. The report records publication and registry artifact inspection; this review environment could not independently reach GitHub or npm because external DNS resolution was unavailable.
-
 
 ## Architect Review
 

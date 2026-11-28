@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T19:30:00Z
 ---
+
 # Show last activity for pending recoveries
 
 ## Objective

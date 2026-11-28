@@ -253,7 +253,10 @@ For example:
 ```html
 <h2>Create a customer</h2>
 <p>Use <code>customerCreate</code>.</p>
-<ul><li>Create</li><li>Activate</li></ul>
+<ul>
+  <li>Create</li>
+  <li>Activate</li>
+</ul>
 <pre>mutation Example { ... }</pre>
 ```
 
@@ -352,10 +355,7 @@ Open related schema fields action
 It must invoke the same production named Server Actions directly:
 
 ```ts
-import {
-  searchDocumentation,
-  getDocumentation,
-} from "../server-actions";
+import { searchDocumentation, getDocumentation } from "../server-actions";
 ```
 
 or the correct relative path to that exact module.
@@ -496,14 +496,15 @@ Focused tests must prove search excerpts do not expose raw markup.
 
 At minimum use search content containing all of:
 
-```text
+````text
 <h2>Heading</h2>
 [Product](https://shopify.dev/docs/api/storefront/current/objects/Product)
 `product`
 ```graphql
 query X { shop { name } }
-```
-```
+````
+
+````
 
 and prove the rendered search result:
 
@@ -525,7 +526,7 @@ ordered list
 blockquote
 pre/code with multiple lines
 script/style noise
-```
+````
 
 Prove the normalized block sequence and the React rendering preserve those distinct structures.
 
@@ -705,7 +706,6 @@ Do not add a heavyweight generic HTML/Markdown rendering system unless the bound
 Do not render remote HTML with `dangerouslySetInnerHTML`.
 
 The full-document parser may flatten inline formatting for this checkpoint. Preserving block structure is the required outcome.
-
 
 Do not leave a compatibility copy of the old Documentation-tab implementation in `StudioWorkspace`.
 
@@ -917,7 +917,7 @@ Attempt 5 preserves all accepted documentation behavior from Attempts 1-4:
 - Shopify page chrome/accessibility helpers are filtered server-side;
 - decorative/duplicate generated page blocks are cleaned up conservatively;
 - opened documents remain structured `HEADING | PARAGRAPH | LIST | CODE |
-  BLOCKQUOTE` DTOs;
+BLOCKQUOTE` DTOs;
 - no remote/raw HTML reaches `dangerouslySetInnerHTML`;
 - canonical opened-document origin remains `https://shopify.dev/docs/...`;
 - `StudioWorkspace` does not contain a second documentation implementation;

@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-BACKGROUND-002
-- ARCH-010-SHARED-008
-- ARCH-010-BACKGROUND-019
+  - ARCH-010-BACKGROUND-002
+  - ARCH-010-SHARED-008
+  - ARCH-010-BACKGROUND-019
 enables:
-- ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-007
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-BACKGROUND-008: Make paid recovery initiation safe across the billing-cycle boundary
@@ -270,20 +270,24 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Review.
 
 ### Files Changed
+
 - `moda-interact-background/src/services/paid-included-recovery-reservation.service.ts`
 - `moda-interact-background/tests/unit/services/paid-included-recovery-reservation.service.test.ts`
 - `moda-interact-background/tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
+
 - Attempt 3 corrected all paid recovery test fixtures to provide the accepted sixth promotional reservation dependency.
 - Added boundary proofs for ACTIVE-to-DRAINING fallback/release, EXPIRED paid and purchased release, and ambiguous provider timeout ownership.
 - Added stale-period paid-included release coverage and repaired the missing `requireOpenReservationCounter()` production helper used by ambiguous reservation transitions.
 - Preserved period-boundary routing, pre-provider revalidation, 30-second WhatsApp timeout, and asynchronous usage publication behavior.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed against `database/prisma/schema.prisma`.
 - `npm run prisma:generate`: passed.
 - Required focused suite (`effective-billing-policy`, `paid-included-recovery-reservation`, `recovery-billing`, `whatsapp`): passed, 4 files and 106 tests.
@@ -296,21 +300,22 @@ Review.
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-background`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-008`
-  parent branch: `task/ARCH-010-BACKGROUND-008`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-008`
-  implementation branch: `task/ARCH-010-BACKGROUND-008`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-background`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-008`
+parent branch: `task/ARCH-010-BACKGROUND-008`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-008`
+implementation branch: `task/ARCH-010-BACKGROUND-008`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: yes
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: yes
 
 database submodule initialized: yes
 database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
@@ -323,6 +328,7 @@ Parent report commit: `a8852ad`, pushed to `origin/task/ARCH-010-BACKGROUND-008`
 Implementation worktree was clean after publication; main branches were not modified.
 
 ### Architect Review
+
 Accepted
 
 #### Attempt 3 — Accepted
@@ -634,7 +640,6 @@ STOP and return this same task to `moda_architect` with exact evidence if:
 
 After the scoped correction and validation, set this same task to `status: review`, update the Completion Report with the new implementation commit and parent-report commit, push both task branches, and STOP for `moda_architect`. Do not execute `ARCH-010-BACKGROUND-007`.
 
-
 #### Attempt 2 — Changes Requested after developer validation
 
 Attempt 2 production code at `c369f64` remains **accepted in substance**. Developer-run canonical-worktree validation on 2026-09-13 proved Prisma validation/generation, paid-included reservation identity/release tests, checkout blocked-revalidation no-send/no-commit, WhatsApp timeout-signal tests, outbound ambiguous-failure policy, `git diff --check`, and worktree cleanliness. The remaining correction is **test-harness + missing boundary evidence only**. Do not change production source unless a corrected/new BG8 test demonstrates a genuine defect.
@@ -668,7 +673,7 @@ constructor(
   purchasedReservationService,
   paidIncludedReservationService,
   promotionalReservationService,
-)
+);
 ```
 
 The failing tests pass only five constructor arguments, so the sixth argument falls back to the real singleton `promotionalRecoveryReservationService`. Because paid policies contain `planId`, `admit()` checks promotion first and the real service touches Prisma, producing `NO_CONTRACT`.
@@ -872,7 +877,6 @@ attempt: 2
 The next legitimate claim increments exactly once to Attempt 3. Record actual values in the mandatory evidence block. `canonical workspace root` is the workspace root (expected `/Users/kwadwoadomafriyie/project/moda-interact-workspace` if that is what the launcher resolves), not `/Users/.../moda-interact-workspace/moda-interact-background`.
 
 After validation, set `status: review`, record Attempt 3 commits/evidence, push both task branches, and STOP.
-
 
 ## Final promotional fallback during drain/revalidation
 

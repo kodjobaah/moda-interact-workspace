@@ -19,15 +19,19 @@ enables: ["ARCH-066-COMMERCE-002", "ARCH-066-SYSTEM-TEST-001"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
+
 # Preview verified product context and final WhatsApp message
 
 ## Objective and read first
+
 Implement only the owned work below. Read `docs/architecture/ARCH-066-conversation-product-context-and-whatsapp-preview-parity.md` first: its numbered contract decisions are normative and must not be redesigned by the implementor.
 
 ## Touch points
+
 `package.json`/lockfile; `src/commerce/preview/{types,service,tool-activity,product-discovery-instructions}.ts`; `src/commerce/preview/product-reads/{shopify-core,ports,registrations}.ts`; `src/commerce/integration/preview/{adapters,runtime}.ts`; Studio `src/studio/test-conversations/{contracts,client,conversation-panel,test-conversation-view-types,test-conversations-screen}.tsx/ts` as existing file extensions dictate; existing preview Redis store/finalization and wrapper database readers; NEW `src/commerce/preview/{product-context,presentation}.ts` and `src/commerce/integration/preview/whatsapp-wrapper-reader.ts`.
 
 ## Exact work
+
 - Mirror MCP provider field mapping and validation using the exact published Shared schemas (not imported MCP source). Adopt public context reducer and pure composer, no Background cross-repository imports.
 - Extend Redis conversation payload with optional typed productContext defaulting empty for old snapshots. Merge only successful validated observations and commit atomically with terminal conversation history under existing run fencing. Preserve separate-record storage caps/TTL/purge and activity accounting; no new global mutable cache. References never bypass current grant/provider checks.
 - Select live current deployment AI wrapper via read-only existing DB slot/locale definitions using the same Shared pure selection logic as Background. Compose synthetic preview wrapper context using selected tenant's saved brand/language and fixture customer firstName 'Test customer'; no checkout URL by default, checkoutAvailable false. A synthetic context is explicitly labelled Preview context in UI. Checkout-specific preview is outside this task; no customer/outreach records are created.
@@ -37,23 +41,28 @@ Implement only the owned work below. Read `docs/architecture/ARCH-066-conversati
 - Followup 'yes' without product identity asks clarification. On sizing use exact current-shop references, never guess numeric IDs from title/position. Keep existing price/stock/discount safety and model choice.
 
 ## Acceptance / validation
+
 - [x] Multi-message fixture matches Background common fixture; options present/missing/partial; stale/wrong-shop refs rejected; unchanged legacy conversation loads with empty context.
 - [x] Final WhatsApp body equals Background for same verified facts, wrapper revision, locale and context. Plain-text normalization removes Markdown markup without corrupting prices/URLs. No dangerouslySetInnerHTML.
 - [x] Oversized wrapper refuses or chooses same bounded candidate as Background; live moderation/billing/send not invoked. Configured invalid wrapper cannot silently show raw message as final.
 - [x] Existing preview/storage/purge/activity/lifecycle tests, new parity tests, production typecheck and scoped lint pass. Update `src/commerce/bootstrap/system-product-tools.ts`, its canonical product/shipping output-schema projections, the default conversational profile response details schema and the existing `scripts/sync-system-commerce-tools.mjs` publication path to include optional productOptionSelections and additive option outputs. Create new immutable revisions via the existing deterministic sync; never mutate published revisions or widen arbitrary unknown fields. Keep unchanged content idempotent; changed content receives the normal next revision/release. Record TEST dry-run/apply receipt and repeat unchanged sync proof. Existing active releases keep their old schema until the new release is activated. No live rollout in this task. Product option support is not accepted until the real default profile compiles and the published tool descriptors accept actual size outputs.
 
 ## Execution boundary
+
 Definition only. Do not claim or implement until explicit dependency tasks are Complete. Use the canonical launcher-resolved parent and implementation task worktrees; execution_mode is agent and completion_mode remains developer. Do not change unrelated work or another repository. Record exact Shared package version/integrity, database migration and provider schema artifact used. No production customer messages, Meta registrations or live mutations are authorized by this task.
 
 ## Completion Report
 
 ### Status
+
 Ready for Review — Attempt3. Required standalone TEST publication evidence now passes under the authorized local validation amendment. No Accepted/Complete decision by repository agent; completion_mode developer remains.
 
 ### Files Changed
+
 Implementation4c17318 (26 paths): lib/preview/runtime.ts; package/lock; bootstrap system-product-response/system-product-tools; integration preview adapters/new whatsapp-wrapper-reader; preview local-policy-providers, new presentation/product-context/recommendation-presentation, product-discovery-instructions, types, service, store/redis-store; Studio conversation client/panel/views/screen/tool-activity; new arch066-preview-presentation and recommendation-presentation tests; Redis and response-contract tests. Provider work from Attempt1 ac44a5a preserved.
 
 ### Work Completed
+
 - Pinned exact accepted Shared5.8.0 integrity sha512-LS6Tj4Jwsupe0qvsjcfrbt4vhGJkxfHm70bQvSbBdeOKpwsOpCoHRKvmyI4Tg4/lBDxH5QTSEF9fbGLjDnIifw==. No local cross-service schema forks.
 - Added optional typed product references using public reducer; legacy absent context/platform stays absent/empty without invented provider identity. Successful composed turns publish context with terminal history under existing memory/Redis owner fence, tenant/conversation/platform check and existing caps/TTL. Cancellation winning finalize stores CANCELLED, clears active run and publishes neither history nor references.
 - Added fresh authorized exact-product reads for details/options and current-turn product-only recommendation verification; canonical selection verifier refuses mixed/duplicate/unobserved references. Reuses current read-only discount policy adapter extracted without changing its precedence, verifies current product/offer facts, required prior discount inspection, safe same-shop URLs/stock/prices and compatible supported offer subsets. Shipping requires prior matching authorized observation and distinct fresh read via Shared selector. Each actual post-run provider call consumes remaining runner remote-call budget and common deadline and appears as PRESENTATION_VERIFY activity; no second budget.
@@ -61,6 +70,7 @@ Implementation4c17318 (26 paths): lib/preview/runtime.ts; package/lock; bootstra
 - Updated canonical strict output projections through Shared dependency, default response selection fields and owned instructions, bootstrap product descriptions and existing deterministic sync source path. Exact legacy owned response content can upgrade without admitting arbitrary manual fields. Existing immutable descriptors/releases are not edited. At Attempt2 TEST publication was not performed because environment identity/actor were unavailable; Attempt3 supersedes that validation limitation with the authorized standalone proof below. No activation was performed.
 
 ### Validation Results
+
 - `npm run test:arch066-preview`: PASS,11 files/145 tests. Includes existing lifecycle/integration/Redis/routes/publication/default-profile/UI tests plus fresh fact/body parity, wrong-shop/stale references, missing/partial options, wrapper hash/provenance/oversize/refusal, deadline/call budget, current recommendation inspection/policy/offer combinations and atomic Redis cancellation/fencing. Registered task script in package.json.
 - `npm run typecheck:build`: PASS after final source integration; provider artifact Admin2026-07 from @shopify/dev-mcp1.15.4 SHA2562b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b unchanged.
 - Scoped eslint across all changed production TS/TSX and new/changed tests: PASS. `git diff --check`: PASS.
@@ -69,12 +79,15 @@ Implementation4c17318 (26 paths): lib/preview/runtime.ts; package/lock; bootstra
 - Historical Attempt2: TEST apply and unchanged dry-run/apply repeats were NOT RUN because verified TEST configuration/actor were unavailable; Attempt3 below supersedes this with actual isolated receipts. No LIVE release activation, provider execution, real messages, customer mutations or deployment performed by validation.
 
 ### Deviations / Assumptions
+
 Synthetic preview cannot establish production basket/customer/billing/delivery admission: basket-specific recommendation proposals refuse BASKET_ADMISSION_NOT_EVALUATED and UI explicitly states those admissions are not evaluated. Product-only facts and offers are independently verified; unknown restrictions never become promotional claims. Read-only helper accepts only existing current policy, not model-supplied mode. No production records fabricated. Final pure host fixtures prove Shared byte composition for identical verified inputs; no deployed Background or integrated system-test parity claimed.
 
 ### Unresolved Issues / Architectural Concerns
+
 The prior TEST configuration blocker is resolved by the explicitly authorized invocation-owned standalone TEST harness, not by reusing or relabelling the unknown inherited database. See Attempt3 evidence below. Architect review and explicit developer completion remain pending; terminal cross-service system tests and production rollout remain separate manual gates.
 
 ### Physical worktree / synchronization evidence
+
 Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-COMMERCE-001; implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-COMMERCE-001. Both task/ARCH-066-COMMERCE-001. Prepared Attempt2 packet /tmp/ARCH-066-COMMERCE-001-prepared-attempt2.json: dependency gate passed SHARED010/MCP001 Complete; both correct worktrees reused, remote task FF not-needed, origin/main already-current. Recursive submodule sync/update passed ready, database039778a4a472db7d09e6b077bb8c8d7c82a58129 unchanged; no migration/pin change. Claim889a118de6fd4436e66ff7454566e5eddc34eadb pushed. Implementation4c17318 pushed origin/task/ARCH-066-COMMERCE-001; report publication in this commit/history. No shared/default checkout implementation, another task worktree reuse, parent gitlink staging, force push or main integration.
 
 ### Attempt3 standalone TEST completion — 2026-11-08
@@ -88,9 +101,11 @@ Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; pa
 - Packet `/tmp/ARCH-066-COMMERCE-001-prepared-attempt3.json`: Attempt3 durable claime991a37fccba3233b46416ace262be41ed4dc754 pushed, dependenciesSHARED010/MCP001 Complete, canonical parent+implementation reused, both remote FF not-needed/origin-main already-current, recursive submodule sync/update ready at database039778a4. No shared/default worktree implementation, gitlink staging or main merge/push. Changes Requested addressed: standalone validation implemented; immutable existing revision upgrade corrected; exact descriptor/default-profile acceptance proven; prior host implementation4c17318 preserved.
 
 ## Release / Dependency Handoff - 2026-11-08
+
 SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interact-shared exactly5.6.0; dist.integrity sha512-tDuW+C8MdteWMJWwmuFI2cTAugMejOJwTk0KkemBMwpN/lL92WPI8CX/A5dDa2nhG0RYiIeHSR490WPCrTz42w==. Downloadable archive and isolated public-import/browser checks verified in release record. Remain Pending until other explicit dependencies Complete. No claim or execution performed.
 
 ## Dependency Reconciliation - 2026-11-08
+
 SHARED-003 and MCP-001 accepted/explicitly Complete. All explicit dependencies satisfied; Ready at unchanged Attempt0, executor/claimed_at null, no execution. Shared remains exact5.6.0; MCP implementation fd53bb52acaf6426b1a1e1793b8d4fc8ae54c2a4 published.
 
 ## Release dependency reconciliation — 2026-11-08
@@ -116,30 +131,45 @@ This amendment supersedes earlier standalone-production-conversation requirement
 Review BACKGROUND-001 and COMMERCE-001 against this amendment before acceptance. Inspect the actual implementation and require corrections on their same task branches: remove newly introduced standalone-only routing/budget/authorization code that has no checkout-led or isolated-preview caller; retain real recovery ownership rejection; confirm product-context persistence and verified WhatsApp body composition; prove missing recovery is rejected and a later product question retains the original recovery. For Commerce also prove synthetic preview stays isolated, real-checkout outreach preview remains separate, and no fabricated production records or weakened grants were added. Preserve and re-run relevant existing tests after corrections; report exact files, package pin/integrity, call order and final body evidence. A historical standalone blocker alone is no longer grounds to reject recovery-linked behaviour. Other genuine blockers, unfinished acceptance work and manual system-test gates remain in force. Do not declare acceptance from partial provider tests.
 
 ## Architect Review
+
 ### Review Status
+
 Accepted — Attempt3,2026-11-08. Task remains Review pending explicit developer completion. Prior review contracts/history below are retained.
+
 ### Review Notes
+
 SHARED009 accepted correction and SHARED010 accepted immutable publication Complete. Use exact @modainteract/moda-interact-shared5.8.0, integrity sha512-LS6Tj4Jwsupe0qvsjcfrbt4vhGJkxfHm70bQvSbBdeOKpwsOpCoHRKvmyI4Tg4/lBDxH5QTSEF9fbGLjDnIifw==. This supersedes all earlier5.6/5.7 consumer pins. Preserve Attempt1 partial provider changes/history. Complete all unchecked original work and normative consumer contract A–C/E plus checkout-led amendment above. Use published verifyCommerceAnswerPresentationSelection before host verification; refuse mixed detail/option selections canonically. Implement atomic fenced context persistence, fresh budgeted fact/recommendation/shipping verification, wrapper provenance/refusal, final WhatsApp UI, strict descriptors/default profile publication and complete parity/lifecycle tests. Preserve synthetic preview isolation, no fake production records or standalone-only admission branches. Exact TEST dry-run/apply plus unchanged repeats are explicitly authorized by user; no LIVE activation.
+
 ### Reviewed Files
+
 Attempt1 partial provider source/report, Shared009/010 source/release evidence.
+
 ### Validation Reviewed
+
 Attempt1 focused provider tests; broader original required checks remain pending for Attempt2.
+
 ### Architecture Conformance
+
 Scope unchanged except resolved dependency/pin; compatible checkout-led amendment preserved after review. completion_mode developer remains unchanged.
+
 ### Follow-up
+
 Repository owner implements/validates/pushes both task branches and submits review; no self-completion.
 
 ### Architect review of Attempt2 submission — 2026-11-08
+
 Review Status: Blocked, not Accepted. Independently inspected actual implementation4c17318: Shared selection/fact composer imports and exact5.8 pin, host post-run verification/policy/read budget, current-deployment wrapper reader, fenced memory/Redis context finalization, UI final/raw separation, recommendation promotion/cardinality/compatible-subset paths and task reporta8ed45ff6. Review identified cancellation-finalize race during implementation; owner corrected it atomically in both stores and added real Redis race coverage before final submission. Recorded145 tests/typecheck/scoped lint/diff check pass; these do not establish deployed default-profile/descriptor acceptance.
 
 Required TEST immutable schema/default-profile dry-run/apply and unchanged-repeat receipts are absent. First authorized dry-run refused ENVIRONMENT_MISMATCH before database mutation. Await operator-loaded verified TEST configuration (DEPLOYMENT_ENVIRONMENT_NAME=test tied to actual TEST database) and active SUPER_ADMIN COMMERCE_SYSTEM_TOOL_ACTOR_EMAIL. Never relabel the currently unknown DATABASE_URL. User already authorized the exact commands; no further command permission is needed once verified configuration is supplied. After receipts, complete the remaining acceptance/parity review; no Accepted/Complete or live-rollout assertion is made now. completion_mode developer preserved.
 
 ### Standalone TEST validation amendment — 2026-11-08
+
 Developer explicitly authorized finding or preparing a standalone test environment and using it. Existing Commerce scripts/run-system-commerce-tool-sync-postgres.mjs provides local Unix-Docker invocation-labelled ephemeral pgvector17 database, clean environment whitelist and accepted Prisma migrate deploy. Extend only this existing harness as necessary with task-specific CLI proof mode: seed active local SUPER_ADMIN and required feature, invoke actual authorized dry-run/apply/unchanged repeats against isolated verified TEST database, assert immutable revision/default-profile compilation and no-op receipts, cleanup only invocation-labelled resources. No deployment, unknown DATABASE_URL reuse/relabel or LIVE activation. This dedicated local TEST satisfies task validation environment requirement; no hosted service gate is added.
 
 Architect Changes Requested: finish these remaining validation receipts on same task branch; preserve existing implementation4c17318 and local145-test evidence. Status Ready, Attempt2 unchanged/unclaimed; next canonical preparation claims Attempt3. No unrelated service source edits or generic full stack work. Report exact harness/receipts/resource cleanup and submit review only once required acceptance is satisfied; completion_mode developer remains.
 
 ### Accepted review of Attempt3 — 2026-11-08
+
 Independently reviewed implementation4723e6f51cda9cec970836c715d425d294f7ac22 and reportde12408f5, plus prior4c17318 host/storage/UI review. Inspected actual harness target guard, generated local credentials/clean child environment, invocation-labelled Docker cleanup, accepted migrate deploy, exact historical tool fixture/hash/version allowlist, four actual CLI command calls and DB snapshots, compiled response contract, staged release member-to-published revision-to-operation validation and renderer assertions. Missing TEST evidence from Attempt2 is resolved by the developer-authorized standalone TEST environment; no unknown database was relabelled.
 
 Accepted evidence:147 registered task tests plus focused10/10 presentation fixtures, production typecheck, scoped lint/diff checks; complete four-command TEST receipts; identical staged release release_6e09f1ed-1ac0-4f86-a2a7-ed49a3b00127; read-only dry-runs and unchanged repeat snapshot; six old revisions retained/new search3/get2; actual Size output accepted and malformed required-price/unknown root rejected by production validator/renderer; zero invocation-owned containers after cleanup. Strict MCP cutover correctly stages and does not activate pointers. No source-level schema forks, production standalone identity or fake production records; synthetic preview admissions remain explicitly labelled. Prepared Attempt3 physical isolation/synchronization/submodule/claim evidence inspected and conforms.
@@ -147,6 +177,7 @@ Accepted evidence:147 registered task tests plus focused10/10 presentation fixtu
 Architecture conformance: Accepted within COMMERCE001 scope and checkout-led amendment. No live rollout, protected-main integration or terminal system validation is inferred. completion_mode developer requires task stay status review with executor/claimed_at cleared. Explicit developer completion via /moda_developer_update ARCH-066-COMMERCE-001 complete remains pending; dependants are not newly Ready until that transition. No further changes requested for this submission.
 
 ## Developer Completion Decision — 2026-11-08
+
 The developer explicitly instructed moda_architect to mark ARCH-066-COMMERCE-001 Complete, push the completion decision and reconcile downstream readiness. Durable Accepted Attempt3 reviewefab58fd4 and implementation4723e6f51cda9cec970836c715d425d294f7ac22/reportde12408f5 verified against freshly fetched matching origin/task refs, with clean canonical parent and implementation worktrees. Required acceptance/standalone TEST receipts satisfied; no unresolved mandatory criteria. Complete at unchanged Attempt3, executor/claimed_at null, execution_mode agent/completion_mode developer preserved. No main merge, gitlink update, rollout or task execution authorized by this completion.
 
 Dependency frontier: authoritative BACKGROUND001 Complete accepted Attempt2, BACKGROUND002 Ready (not Complete). SYSTEM-TEST001 now has both explicit prerequisites Complete and becomes Ready but remains developer/manual-gated, not executed. COMMERCE002 remains Pending on BACKGROUND002; SYSTEM-TEST002 remains Pending on COMMERCE002/BACKGROUND002. No other active/review/complete task state is regressed.

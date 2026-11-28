@@ -84,7 +84,6 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - `ARCH-047-DATABASE-001`
 
-
 **Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
 
 ## Enables
@@ -117,8 +116,6 @@ After finishing Work Items, Acceptance Criteria and Validation, fill the Complet
 The existing `src/services/translation-batch-runtime/` and `src/services/merchant-pricing-translation/` are useful implementation references, but Merchant Pricing's domain queries must not be reused for WhatsApp. Inject DB and provider ports. Keep provider adapters, protection/validation functions and orchestration independently testable. Hand Admin a stable result schema, not a provider response blob.
 
 Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and the deterministic `/moda-task` launcher packet. Use launcher-resolved dedicated parent and implementation worktrees, both on `task/ARCH-047-BACKGROUND-002`; synchronise from canonical roots, not a prior task worktree. Preserve exact source semantics and existing test expectations; use the published `@modainteract/moda-interact-shared/logging` for generic structured logs, not a second logger. Prefer small coordinator/repository/pure-helper files over 300+ line catch-all services.
-
-
 
 ## Completion Report
 

@@ -25,7 +25,6 @@ updated: 2026-11-02
 > **Superseded on 2026-11-02 — do not claim or execute.** Current owner: `ARCH-052-SYSTEM-TEST-002`. This deferred task expected one coupon and depends on superseded BACKGROUND-003 live-proof work. Accepted ARCH-052 implements the current multi-offer, source-fenced initial outreach contract and its Woo system certification; the old single-coupon contract must not drive a new test suite. Deferred Commerce conversation/preview evaluator work is not implicitly authorized or completed.
 > Original sections below remain historical provenance; their work items and dependency list are not operative.
 
-
 ## Architecture
 
 - Architecture ID: `ARCH-036`.
@@ -54,7 +53,6 @@ End-to-end authenticated Woo fixture, stored customer checkout, Commerce eligibi
 
 ## Requirements
 
-
 - Test NONE never offers a coupon, FIXED selects only checked CURRENT/ACTIVE/supported candidates and AI considers all supported CURRENT/ACTIVE coupons regardless of checkbox state.
 - Prove Background directly GETs the exact Woo provider coupon at send time using the current authorised grant and trusted checkout/customer facts; expiry, removal, code change, usage exhaustion, unsupported rules, unavailable shop, private-origin/SSRF, stale grant or race fails closed.
 - Prove only one real internal chosen `ShopifyDiscount.id` and immutable provider-verified `offerSnapshot` are persisted, never a fake compatibility anchor, stacked coupon or invalid FIXED NULL-FK attempt. Test duplicate jobs, retries, ordering and credit/billing idempotency.
@@ -69,11 +67,9 @@ End-to-end authenticated Woo fixture, stored customer checkout, Commerce eligibi
 
 ## Interfaces / Contracts
 
-
 Existing Woo provider read grant/REST client, Commerce deterministic evaluator where genuinely invoked, Background send-time eligibility and existing recovery/outreach/WhatsApp integration. No API-003 provider-proof route or ARCH-036 Shared contract.
 
 ## Dependencies
-
 
 - `ARCH-036-SYSTEM-TEST-001`
 - `ARCH-036-COMMERCE-001`

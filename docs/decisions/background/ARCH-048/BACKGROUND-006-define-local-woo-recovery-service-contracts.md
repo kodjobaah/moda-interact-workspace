@@ -22,7 +22,7 @@ enables:
   - ARCH-048-BACKGROUND-002
   - ARCH-048-BACKGROUND-003
   - ARCH-048-BACKGROUND-004
-created: '2026-10-23'
+created: "2026-10-23"
 updated: 2026-10-24
 ---
 
@@ -90,9 +90,20 @@ import type { WooOrderCapture } from "../../events/woo-order-capture.js";
 type WooCheckoutRef = Readonly<{ shopId: string; checkoutToken: string }>;
 
 type WooBasketEvidence =
-  | { kind: "nonempty"; checkout: WooCheckoutCapture["checkout"] & { items: [NonNullable<WooCheckoutCapture["checkout"]["items"]>[number], ...NonNullable<WooCheckoutCapture["checkout"]["items"]>[number][]] } }
+  | {
+      kind: "nonempty";
+      checkout: WooCheckoutCapture["checkout"] & {
+        items: [
+          NonNullable<WooCheckoutCapture["checkout"]["items"]>[number],
+          ...NonNullable<WooCheckoutCapture["checkout"]["items"]>[number][],
+        ];
+      };
+    }
   | { kind: "empty" }
-  | { kind: "unknown"; reason: "items-omitted" | "conflicting-events" | "incomplete-snapshot" };
+  | {
+      kind: "unknown";
+      reason: "items-omitted" | "conflicting-events" | "incomplete-snapshot";
+    };
 
 type WooPendingCandidate = WooCheckoutRef & {
   source: "woocommerce";
@@ -120,16 +131,38 @@ interface WooCheckoutCoordinator {
 type WooCheckoutActivityOutcome =
   | { kind: "scheduled" | "rescheduled"; dueAt: string }
   | { kind: "existing-recovery"; recoveryId: string }
-  | { kind: "cancelled-empty" | "ignored-terminal" | "ignored-stale" | "deferred-ambiguous" | "not-eligible"; reason: string };
+  | {
+      kind:
+        | "cancelled-empty"
+        | "ignored-terminal"
+        | "ignored-stale"
+        | "deferred-ambiguous"
+        | "not-eligible";
+      reason: string;
+    };
 interface WooCheckoutActivityHandler {
-  handleCheckout(event: WooCheckoutCapture): Promise<WooCheckoutActivityOutcome>;
+  handleCheckout(
+    event: WooCheckoutCapture,
+  ): Promise<WooCheckoutActivityOutcome>;
 }
 
 type WooOrderReconciliationOutcome =
-  | { kind: "placed-suppressed" | "paid-terminal" | "cancelled-terminal"; recoveryId?: string }
-  | { kind: "already-terminal" | "ignored-duplicate" | "ignored-stale" | "deferred-conflict"; reason: string };
+  | {
+      kind: "placed-suppressed" | "paid-terminal" | "cancelled-terminal";
+      recoveryId?: string;
+    }
+  | {
+      kind:
+        | "already-terminal"
+        | "ignored-duplicate"
+        | "ignored-stale"
+        | "deferred-conflict";
+      reason: string;
+    };
 interface WooOrderReconciler {
-  reconcileOrder(event: WooOrderCapture): Promise<WooOrderReconciliationOutcome>;
+  reconcileOrder(
+    event: WooOrderCapture,
+  ): Promise<WooOrderReconciliationOutcome>;
 }
 
 type WooAdmissionOutcome =
@@ -137,7 +170,10 @@ type WooAdmissionOutcome =
   | { kind: "already-exists"; recoveryId: string; status: string }
   | { kind: "superseded" | "denied" | "deferred"; reason: string };
 interface WooRecoveryAdmissionEvaluator {
-  evaluateMatured(candidate: WooPendingCandidate, context: { jobId?: string }): Promise<WooAdmissionOutcome>;
+  evaluateMatured(
+    candidate: WooPendingCandidate,
+    context: { jobId?: string },
+  ): Promise<WooAdmissionOutcome>;
 }
 
 type WooOutreachEnqueueOutcome =
@@ -154,15 +190,15 @@ interface WooRecoveryOutreachDispatcher {
 
 **ARCH-048 naming rule:** Use capability-oriented interfaces for contracts and the `Service` suffix for concrete business implementations. Do not append `Port` to newly defined ARCH-048 interfaces. Declare an interface only when another Background capability, the orchestrator or a worker actually consumes it through dependency injection; avoid unused one-to-one class mirrors. The canonical names and ownership are:
 
-| Capability interface | Implementing task | Concrete class/adapter | Consuming task(s) |
-|---|---|---|---|
-| `WooCheckoutActivityHandler` | BG001 | `WooCheckoutActivityService` | BG005 |
-| `WooCandidateManager` | BG001 | Adapter over existing candidate queue/index | BG002, BG005 |
-| `WooOrderReconciler` | BG002 | `WooOrderReconciliationService` | BG005 |
-| `WooObservedOrderStateReader` | BG002 | Observed-order state adapter | BG001, BG003, BG004 |
-| `WooCheckoutCoordinator` | BG002 | Checkout-scoped lock/fencing adapter | BG001–BG004 |
-| `WooRecoveryAdmissionEvaluator` | BG003 | `WooRecoveryAdmissionService` | BG005 |
-| `WooRecoveryOutreachDispatcher` | BG004 | `WooRecoveryOutreachService` | BG005 |
+| Capability interface            | Implementing task | Concrete class/adapter                      | Consuming task(s)   |
+| ------------------------------- | ----------------- | ------------------------------------------- | ------------------- |
+| `WooCheckoutActivityHandler`    | BG001             | `WooCheckoutActivityService`                | BG005               |
+| `WooCandidateManager`           | BG001             | Adapter over existing candidate queue/index | BG002, BG005        |
+| `WooOrderReconciler`            | BG002             | `WooOrderReconciliationService`             | BG005               |
+| `WooObservedOrderStateReader`   | BG002             | Observed-order state adapter                | BG001, BG003, BG004 |
+| `WooCheckoutCoordinator`        | BG002             | Checkout-scoped lock/fencing adapter        | BG001–BG004         |
+| `WooRecoveryAdmissionEvaluator` | BG003             | `WooRecoveryAdmissionService`               | BG005               |
+| `WooRecoveryOutreachDispatcher` | BG004             | `WooRecoveryOutreachService`                | BG005               |
 
 `WooCheckoutCoordinator` is only the checkout-scoped critical-section/fencing abstraction, not another business orchestrator. `WooObservedOrderStateReader` returns **order events that Moda has successfully received**, not live WooCommerce provider state. `WooRecoveryAdmissionEvaluator` still performs the specified idempotent first `CheckoutRecovery` INSERT when eligible; its name does not make admission read-only. All methods and result unions in the contracts above remain unchanged. BG005 may define `WooRecoveryOrchestrator` for worker-facing injection where actually consumed; its concrete implementation is `WooRecoveryOrchestratorService`.
 

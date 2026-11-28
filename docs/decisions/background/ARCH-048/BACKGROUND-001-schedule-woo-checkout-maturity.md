@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-048-BACKGROUND-006
-- ARCH-035-BACKGROUND-001
-- ARCH-035-API-008
+  - ARCH-048-BACKGROUND-006
+  - ARCH-035-BACKGROUND-001
+  - ARCH-035-API-008
 enables:
-- ARCH-048-BACKGROUND-005
-created: '2026-10-23'
+  - ARCH-048-BACKGROUND-005
+created: "2026-10-23"
 updated: 2026-10-24
 ---
 
@@ -85,7 +85,9 @@ The current `woo-checkout-capture.worker.ts` only validates/logs events. Shopify
 
 ```ts
 interface WooCheckoutActivityHandler {
-  handleCheckout(event: WooCheckoutCapture): Promise<WooCheckoutActivityOutcome>;
+  handleCheckout(
+    event: WooCheckoutCapture,
+  ): Promise<WooCheckoutActivityOutcome>;
 }
 // WooCheckoutActivityOutcome is a discriminated union of named domain outcomes.
 ```
@@ -168,18 +170,18 @@ This handoff patch updates **only this parent-workspace task definition**. No wo
 
 ### Validation Results
 
-| Command / evidence | Result |
-| --- | --- |
-| `git apply --check --whitespace=error-all` and application of both incremental implementation patches | Pass, no reported conflicts (`typescript(20261024-010948)`, `typescript(20261024-012223)`) |
-| `npm run prisma:generate` | Pass: Prisma Client 6.19.3 generated from `database/prisma/schema.prisma` (`typescript(20261024-010948)`) |
-| `npx vitest run tests/unit/services/woocommerce-recovery tests/unit/services/pending-recovery-candidate.service.test.ts tests/unit/services/pending-recovery-candidate` | Pass: 9 files, 107 tests; executed before the narrow Attempt 2 logging fix (`typescript(20261024-010948)`) |
-| `npx tsc --noEmit -p tsconfig.json` | Initial Attempt 1 failed TS2339 for `outcome.reason`; after Attempt 2 correction, rerun completed without errors (`typescript(20261024-012223)`) |
-| `npx eslint src/services/pending-recovery-candidate/candidate-index.store.ts src/services/woocommerce-recovery/woo-*.ts tests/unit/services/woocommerce-recovery tests/integration/woo-checkout-activity.integration.test.ts` | No errors shown in initial validation log (`typescript(20261024-010948)`) |
-| `npx eslint src/services/woocommerce-recovery/woo-checkout-activity.service.ts` | Pass, no errors shown in final commit log (`typescript(20261024-012516)`) |
-| `npm run test:integration -- tests/integration/woo-checkout-activity.integration.test.ts` | Pass: 1 test on PostgreSQL + Redis; removed-job/MESSAGE_SENT and competing-checkout-updates (`typescript(20261024-012223)`) |
-| Direct `node scripts/test-integration.mjs` invocation | Initially blocked with `spawn prisma ENOENT`; rerunning via repository npm script resolved executable lookup and passed |
-| `git diff --check`, `git diff --cached --check` | Pass; run before commit (`typescript(20261024-012516)`) |
-| `git commit` then `git push origin task/ARCH-048-BACKGROUND-001` | Pass: `68d20c4` pushed to `https://github.com/kodjobaah/moda-interact-background.git` (`typescript(20261024-012516)`) |
+| Command / evidence                                                                                                                                                                                                            | Result                                                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `git apply --check --whitespace=error-all` and application of both incremental implementation patches                                                                                                                         | Pass, no reported conflicts (`typescript(20261024-010948)`, `typescript(20261024-012223)`)                                                       |
+| `npm run prisma:generate`                                                                                                                                                                                                     | Pass: Prisma Client 6.19.3 generated from `database/prisma/schema.prisma` (`typescript(20261024-010948)`)                                        |
+| `npx vitest run tests/unit/services/woocommerce-recovery tests/unit/services/pending-recovery-candidate.service.test.ts tests/unit/services/pending-recovery-candidate`                                                       | Pass: 9 files, 107 tests; executed before the narrow Attempt 2 logging fix (`typescript(20261024-010948)`)                                       |
+| `npx tsc --noEmit -p tsconfig.json`                                                                                                                                                                                           | Initial Attempt 1 failed TS2339 for `outcome.reason`; after Attempt 2 correction, rerun completed without errors (`typescript(20261024-012223)`) |
+| `npx eslint src/services/pending-recovery-candidate/candidate-index.store.ts src/services/woocommerce-recovery/woo-*.ts tests/unit/services/woocommerce-recovery tests/integration/woo-checkout-activity.integration.test.ts` | No errors shown in initial validation log (`typescript(20261024-010948)`)                                                                        |
+| `npx eslint src/services/woocommerce-recovery/woo-checkout-activity.service.ts`                                                                                                                                               | Pass, no errors shown in final commit log (`typescript(20261024-012516)`)                                                                        |
+| `npm run test:integration -- tests/integration/woo-checkout-activity.integration.test.ts`                                                                                                                                     | Pass: 1 test on PostgreSQL + Redis; removed-job/MESSAGE_SENT and competing-checkout-updates (`typescript(20261024-012223)`)                      |
+| Direct `node scripts/test-integration.mjs` invocation                                                                                                                                                                         | Initially blocked with `spawn prisma ENOENT`; rerunning via repository npm script resolved executable lookup and passed                          |
+| `git diff --check`, `git diff --cached --check`                                                                                                                                                                               | Pass; run before commit (`typescript(20261024-012516)`)                                                                                          |
+| `git commit` then `git push origin task/ARCH-048-BACKGROUND-001`                                                                                                                                                              | Pass: `68d20c4` pushed to `https://github.com/kodjobaah/moda-interact-background.git` (`typescript(20261024-012516)`)                            |
 
 ### Deviations
 

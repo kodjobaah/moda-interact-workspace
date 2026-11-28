@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 2
 depends_on: []
 enables:
-- ARCH-055-API-009
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-API-009
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -53,11 +53,11 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/merchant/support/read.service.ts` | CHOOSE one parameterised data statement (CTEs allowed) for page plus total/unread after existing principal checks; the empty page still returns aggregate. Keep transaction ReadCommitted and existing share locks. Join AVAILABLE translation using unique messageId/targetLanguageTag, not latest-row lateral query. |
-| `src/merchant/support/commands.service.ts` | Compose combines thread create/conflict bookkeeping/version into initial UPSERT RETURNING id, then message/translation writes inside same tx. Replay check remains before write. Mark-read remains unchanged conditional-write/winner-reread algorithm. |
-| `src/merchant/support/translation-queue.ts` | Replace empty Queue error listener with safe original-error logging through injected shared logger. Queue add stays after commit and existing durable repair unchanged. |
+| File / symbol touchpoint                    | Deterministic edit                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/merchant/support/read.service.ts`      | CHOOSE one parameterised data statement (CTEs allowed) for page plus total/unread after existing principal checks; the empty page still returns aggregate. Keep transaction ReadCommitted and existing share locks. Join AVAILABLE translation using unique messageId/targetLanguageTag, not latest-row lateral query. |
+| `src/merchant/support/commands.service.ts`  | Compose combines thread create/conflict bookkeeping/version into initial UPSERT RETURNING id, then message/translation writes inside same tx. Replay check remains before write. Mark-read remains unchanged conditional-write/winner-reread algorithm.                                                                |
+| `src/merchant/support/translation-queue.ts` | Replace empty Queue error listener with safe original-error logging through injected shared logger. Queue add stays after commit and existing durable repair unchanged.                                                                                                                                                |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
 
@@ -135,13 +135,13 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| H01 | Pause former page/count boundary while message is marked read | One data-statement old or new coherent page/unread result, including empty pages. |
-| H02 | Translation missing/pending/AVAILABLE and system recovery link foreign | Existing visibility/body suppression/tenant link rules unchanged. |
-| H03 | Message/translation insertion fails after thread upsert; Admin concurrent reply | Entire transaction rolls back; reply version coordination preserved. |
-| H04 | Redis error event/add timeout after durable compose | Message stays committed; original bounded cause logged; repair can dispatch. |
-| H05 | Two readers mark same message; already-read replay; suspended/foreign message | Winner timestamp returned, no timestamp rewrite, existing permitted/denied policies retained. |
+| Case | Fixture / operation                                                             | Required result                                                                               |
+| ---- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| H01  | Pause former page/count boundary while message is marked read                   | One data-statement old or new coherent page/unread result, including empty pages.             |
+| H02  | Translation missing/pending/AVAILABLE and system recovery link foreign          | Existing visibility/body suppression/tenant link rules unchanged.                             |
+| H03  | Message/translation insertion fails after thread upsert; Admin concurrent reply | Entire transaction rolls back; reply version coordination preserved.                          |
+| H04  | Redis error event/add timeout after durable compose                             | Message stays committed; original bounded cause logged; repair can dispatch.                  |
+| H05  | Two readers mark same message; already-read replay; suspended/foreign message   | Winner timestamp returned, no timestamp rewrite, existing permitted/denied policies retained. |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -206,20 +206,20 @@ H01 forces a commit between the returned Support data statement and response map
 
 **Attempt 2 query-plan comparison:** Captured actual baseline page and count SQL and the emitted candidate statement with `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` on the same disposable PostgreSQL `17.11` + pgvector database and unchanged M16 fixture (105 visible messages, 105 AVAILABLE translations, 21 already read, 84 unread). After fixture insertion, `ANALYZE` refreshed statistics on `MerchantSupportMessage`, `MerchantSupportThread`, `MerchantMessageTranslation` and `CheckoutRecovery` before any measured plan. Baseline first-page and empty-page each execute the page SELECT plus count SELECT; candidate executes one statement in each profile. The temporary diagnostic instrumentation was removed after capture; no source/test change is part of Attempt 2.
 
-| Profile | Baseline emitted plan | Candidate emitted plan | Shared buffers and actual rows |
-|---|---|---|---|
-| First page (50) | Page: `Limit -> Sort -> Nested Loop`, 105 visible message rows; the lateral AVAILABLE-translation subplan scanned 105 translation rows once for each of 105 messages. Separate count: `Aggregate` over 105 messages. | One statement with the materialized scoped CTE, aggregate/page branches, and direct `(messageId,targetLanguageTag)` AVAILABLE join. The page branch returned 50 rows and the aggregate branch one row. | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 8 shared hits, 0 reads, 0 temp blocks. |
-| Empty page (offset 150) | Page still sorted/scanned 105 visible messages and ran the lateral translation subplan 105 times, then returned 0 rows. Separate count returned one row. | One statement scanned the scoped set for its aggregate and page branch; the page returned 0 rows, translation access ran 0 loops, and the outer aggregate returned one row, mapped to an empty item list. | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 4 shared hits, 0 reads, 0 temp blocks. |
+| Profile                 | Baseline emitted plan                                                                                                                                                                                                | Candidate emitted plan                                                                                                                                                                                    | Shared buffers and actual rows                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| First page (50)         | Page: `Limit -> Sort -> Nested Loop`, 105 visible message rows; the lateral AVAILABLE-translation subplan scanned 105 translation rows once for each of 105 messages. Separate count: `Aggregate` over 105 messages. | One statement with the materialized scoped CTE, aggregate/page branches, and direct `(messageId,targetLanguageTag)` AVAILABLE join. The page branch returned 50 rows and the aggregate branch one row.    | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 8 shared hits, 0 reads, 0 temp blocks. |
+| Empty page (offset 150) | Page still sorted/scanned 105 visible messages and ran the lateral translation subplan 105 times, then returned 0 rows. Separate count returned one row.                                                             | One statement scanned the scoped set for its aggregate and page branch; the page returned 0 rows, translation access ran 0 loops, and the outer aggregate returned one row, mapped to an empty item list. | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 4 shared hits, 0 reads, 0 temp blocks. |
 
 The fixture is intentionally small: PostgreSQL selected sequential scans for the tiny relations, so these results do not establish production index selection or scaling. Actual `EXPLAIN ANALYZE` elapsed times varied substantially between sequential statements; they are not used to claim a latency improvement. The existing unique `(messageId,targetLanguageTag)` index remains unchanged, no index was added, and this evidence does not authorize source changes.
 
-| M16 profile | Baseline: five service ms / five SQL-event ms; client calls | Candidate: five service ms / five SQL-event ms; client calls | Rows / state evidence |
-|---|---|---|---|
-| First 50 | `[45.746,73.493,51.896,36.421,50.536]` / `[36,63,42,26,42]`; 7 each | `[67.740,190.473,34.075,255.453,71.923]` / `[58,177,25,248,60]`; 6 each | 50 rows each; 0 affected rows; candidate uses 1 page/count statement vs baseline 2. |
-| Empty page | `[26.608,45.725,35.316,47.791,66.565]` / `[18,35,29,38,59]`; 7 each | `[38.361,30.132,33.234,37.432,34.415]` / `[33,23,28,32,28]`; 6 each | 0 rows each; aggregate still returned; 0 affected rows. |
-| Compose translated | `[173.304,72.962,50.089,61.906,97.744]` / `[161,61,37,51,87]`; 10 each | `[62.841,57.632,104.234,66.226,67.872]` / `[53,47,94,57,58]`; 9 each | 1 message and 1 PENDING translation persisted; thread version 1; one dispatch-port call. Thread bookkeeping SQL: 2→1. |
-| Compose without translation | `[57.147,62.494,101.632,75.627,58.747]` / `[48,52,92,66,49]`; 9 each | `[49.363,107.206,69.986,270.691,272.051]` / `[41,100,61,262,262]`; 8 each | 1 message persisted; thread version 1; 0 dispatch calls. Thread bookkeeping SQL: 2→1. |
-| Matching replay | `[29.890,83.394,41.182,52.208,47.396]` / `[19,76,36,47,41]`; 6 each | `[109.864,485.385,130.307,87.022,86.580]` / `[105,478,124,81,81]`; 6 each | 1 existing message; 0 affected rows; version unchanged; 0 writes in both versions. |
+| M16 profile                 | Baseline: five service ms / five SQL-event ms; client calls            | Candidate: five service ms / five SQL-event ms; client calls              | Rows / state evidence                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| First 50                    | `[45.746,73.493,51.896,36.421,50.536]` / `[36,63,42,26,42]`; 7 each    | `[67.740,190.473,34.075,255.453,71.923]` / `[58,177,25,248,60]`; 6 each   | 50 rows each; 0 affected rows; candidate uses 1 page/count statement vs baseline 2.                                   |
+| Empty page                  | `[26.608,45.725,35.316,47.791,66.565]` / `[18,35,29,38,59]`; 7 each    | `[38.361,30.132,33.234,37.432,34.415]` / `[33,23,28,32,28]`; 6 each       | 0 rows each; aggregate still returned; 0 affected rows.                                                               |
+| Compose translated          | `[173.304,72.962,50.089,61.906,97.744]` / `[161,61,37,51,87]`; 10 each | `[62.841,57.632,104.234,66.226,67.872]` / `[53,47,94,57,58]`; 9 each      | 1 message and 1 PENDING translation persisted; thread version 1; one dispatch-port call. Thread bookkeeping SQL: 2→1. |
+| Compose without translation | `[57.147,62.494,101.632,75.627,58.747]` / `[48,52,92,66,49]`; 9 each   | `[49.363,107.206,69.986,270.691,272.051]` / `[41,100,61,262,262]`; 8 each | 1 message persisted; thread version 1; 0 dispatch calls. Thread bookkeeping SQL: 2→1.                                 |
+| Matching replay             | `[29.890,83.394,41.182,52.208,47.396]` / `[19,76,36,47,41]`; 6 each    | `[109.864,485.385,130.307,87.022,86.580]` / `[105,478,124,81,81]`; 6 each | 1 existing message; 0 affected rows; version unchanged; 0 writes in both versions.                                    |
 
 Each service operation used one Read Committed transaction (BEGIN, isolation SET, COMMIT); no rollback occurred in measured profiles. Candidate SQL evidence is emitted by the named integration test as `ARCH055_M16_EVIDENCE`; the persisted checks above verify one thread version increment and one message/translation per new compose. The fixed correctness scenarios separately verify rollback and the two-reader winner schedule.
 
@@ -281,7 +281,6 @@ The source changes remain within ARCH-055-API-008's API ownership and frozen con
 ### Follow-up
 
 Task returned to `ready` at Attempt 1 with `executor` and `claimed_at` cleared. Dependants remain gated and unchanged. Resubmit after adding the requested plan evidence to Validation/Completion Report and pushing the task record.
-
 
 ## Architect Review — Attempt 2
 

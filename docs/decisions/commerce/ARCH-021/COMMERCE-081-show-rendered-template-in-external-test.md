@@ -96,11 +96,7 @@ It must provide one common Test checkpoint with these semantics:
 
 ```ts
 type AuthoringTestStatus =
-  | "NOT_RUN"
-  | "RUNNING"
-  | "PASSED"
-  | "FAILED"
-  | "STALE";
+  "NOT_RUN" | "RUNNING" | "PASSED" | "FAILED" | "STALE";
 
 type AuthoringTestSnapshot = {
   toolDefinitionRevision: number;
@@ -336,16 +332,14 @@ For a new External Tool:
 
 ```ts
 canCreateExternal =
-  existingC078NewToolSaveEligibility &&
-  isCurrentTestPassed(session);
+  existingC078NewToolSaveEligibility && isCurrentTestPassed(session);
 ```
 
 For a persisted External DRAFT:
 
 ```ts
 canSaveExternalDraft =
-  existingC079PersistedSaveEligibility &&
-  isCurrentTestPassed(session);
+  existingC079PersistedSaveEligibility && isCurrentTestPassed(session);
 ```
 
 `existingC078NewToolSaveEligibility` means the current section-validation/schema-validity/lock/pending rules already accepted in C078.
@@ -397,7 +391,6 @@ src/commerce/tool-authoring/external-live-test.ts
 unless a concrete integration defect in the accepted C080 API is proven. If such a defect is found, stop and return the issue to `moda_architect`; do not silently redesign C080 inside this UI task.
 
 Do not create another renderer, another Test result shape or another provider observation path.
-
 
 ### R6 — drive the C078 common Test checkpoint
 

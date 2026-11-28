@@ -188,9 +188,11 @@ Stop and return to `moda_architect` if the current `BillingPlan`, `Shop`, `Platf
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `prisma/schema.prisma`
 - `prisma/migrations/20260912090000_add_promotion_campaign_catalogue/migration.sql`
 - `scripts/validate-promotion-campaign-schema.mjs`
@@ -198,6 +200,7 @@ Ready for Review.
 - `docs/generated/prisma-erd.puml`
 
 ### Work Completed
+
 - Added `PromotionTargetScope`, `PromotionCampaignStatus`, and `PromotionCampaignEventType` with the exact `GLOBAL`/`PLAN`/`SHOP`, `DRAFT`/`ACTIVE`/`CLOSED`, and lifecycle vocabularies.
 - Added `billing.PromotionCampaign` with fixed quantity, running window, optional merchant description, durable BillingPlan/Shop target relations, PlatformAdmin creator provenance, versioning, and catalogue/running/target indexes.
 - Added `billing.PromotionCampaignEvent` with append-only lifecycle kind, expiry transition fields, campaign provenance, restrictive campaign/admin foreign keys, and audit lookup indexes.
@@ -207,6 +210,7 @@ Ready for Review.
 - Regenerated the PlantUML ERD with both campaign models and their relations.
 
 ### Validation Results
+
 - `npm ci`: passed in the isolated implementation worktree; repository dependencies restored from `package-lock.json`.
 - `npm run format`: passed.
 - `npm run validate`: passed.
@@ -220,6 +224,7 @@ Ready for Review.
 - Database-backed valid/invalid row checks could not run for the same unavailable local PostgreSQL service; static migration assertions cover all required constraints and no-row guards.
 
 ### Git / VCS
+
 - Task branch: `task/ARCH-010-DATABASE-010`.
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-010`.

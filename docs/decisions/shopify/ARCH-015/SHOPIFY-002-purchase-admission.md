@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-015-SHARED-001
-- ARCH-015-DATABASE-001
-- ARCH-015-SHOPIFY-001
+  - ARCH-015-SHARED-001
+  - ARCH-015-DATABASE-001
+  - ARCH-015-SHOPIFY-001
 enables:
-- ARCH-015-BACKGROUND-001
-- ARCH-015-SHOPIFY-003
+  - ARCH-015-BACKGROUND-001
+  - ARCH-015-SHOPIFY-003
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -103,23 +103,27 @@ Do NOT include billingPeriodId/providerSubscriptionId/planId in the single-fligh
 
 19. if unresolved row exists, reject with the existing bounded awaiting-confirmation merchant outcome;
 20. create one `UsageEvent`:
-   - metric `RECOVERY_CREDIT_PACK_PURCHASE`
-   - quantity Decimal `1`
-   - selected event handle
-   - current billingPeriodId
-   - PENDING report state
-   - deterministic idempotency from shop + purchase identity
+
+- metric `RECOVERY_CREDIT_PACK_PURCHASE`
+- quantity Decimal `1`
+- selected event handle
+- current billingPeriodId
+- PENDING report state
+- deterministic idempotency from shop + purchase identity
+
 21. create `RecoveryCreditPurchase` with:
-   - operational current planId for provenance relation only;
-   - current billingPeriodId;
-   - provider plan handle snapshot;
-   - selected event handle snapshot;
-   - derived provider context identity in existing `providerSubscriptionIdSnapshot`;
-   - Decimal quantity-before;
-   - provider cost/currency-before;
-   - provider live price snapshot;
-   - ARCH-014 `creditsGrantedPerUnit`;
-   - currentAmount=0/status REQUESTED;
+
+- operational current planId for provenance relation only;
+- current billingPeriodId;
+- provider plan handle snapshot;
+- selected event handle snapshot;
+- derived provider context identity in existing `providerSubscriptionIdSnapshot`;
+- Decimal quantity-before;
+- provider cost/currency-before;
+- provider live price snapshot;
+- ARCH-014 `creditsGrantedPerUnit`;
+- currentAmount=0/status REQUESTED;
+
 22. commit;
 23. return pending purchase state.
 
@@ -349,7 +353,6 @@ The requested Serializable transaction correction is implemented and pushed. Ret
 - Shared/default checkout switched or mutated: no. Another task worktree reused: no.
 - Recursive submodule synchronization and initialization: passed. Database submodule remains `f202931c58dba7f9fcc53c74333736e978e8b6de`.
 - No database schema or submodule gitlink changes; no merge to `main` and no push to `main`.
-
 
 ## Architect Review — Attempt 3 Accepted
 

@@ -46,14 +46,14 @@ No new service or Gateway topology. Reuse existing Background queue/worker and s
 
 ## Tasks / Rollout
 
-| Task | Owner | State | Dependencies |
-|---|---|---|---|
-| ARCH-075-DATABASE-001 | moda_database | Complete | None |
-| ARCH-075-SHARED-001 | moda_shared | Complete | None |
-| ARCH-075-SHARED-002 | moda_shared | Complete | ARCH-075-SHARED-001 |
-| ARCH-075-BACKGROUND-001 | moda_background | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002, ARCH-075-SHARED-004 |
-| ARCH-075-BACKGROUND-002 | moda_background | Complete | ARCH-075-BACKGROUND-001, ARCH-075-SHARED-004, ARCH-075-ADMIN-001 |
-| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Complete | All implementation/publication tasks |
+| Task                     | Owner            | State    | Dependencies                                                     |
+| ------------------------ | ---------------- | -------- | ---------------------------------------------------------------- |
+| ARCH-075-DATABASE-001    | moda_database    | Complete | None                                                             |
+| ARCH-075-SHARED-001      | moda_shared      | Complete | None                                                             |
+| ARCH-075-SHARED-002      | moda_shared      | Complete | ARCH-075-SHARED-001                                              |
+| ARCH-075-BACKGROUND-001  | moda_background  | Complete | ARCH-075-DATABASE-001, ARCH-075-SHARED-002, ARCH-075-SHARED-004  |
+| ARCH-075-BACKGROUND-002  | moda_background  | Complete | ARCH-075-BACKGROUND-001, ARCH-075-SHARED-004, ARCH-075-ADMIN-001 |
+| ARCH-075-SYSTEM-TEST-001 | moda_system_test | Complete | All implementation/publication tasks                             |
 
 PRODUCTION / COMPATIBLE ROLLOUT. Additive database migration first, accepted Shared public release, Background engine then producer integration; developer deploys/drains old readers before emitting new manifests. No production replay/reset/extra test send without authorization. New format cannot roll back to old readers blindly; stop generation/drain new pending work first, preserve all outcome records. Source tasks never depend on system test. Developer manual checkpoint precedes Ready terminal system-test invocation. Architecture Implemented only after accepted terminal validation and genuine ordered WhatsApp proof with explicit partial/unknown behavior evidence. Public documentation excludes customer/provider identifiers and URLs.
 
@@ -69,8 +69,8 @@ User explicitly extends scope to all Meta templates, AI and HUMAN messages. ONE 
 
 Genuine binding gap: canonical Shared keys lack shop.websiteUrl. Shared003 adds that semantic key to existing template/wrapper validators and public types only; Shared004 publishes the tested artifact after explicit approval. Existing renderer/token contracts are reused. No new reusable frame builder is needed because the saved common projection is authority.
 
-| Task | Owner | State | Dependencies |
-|---|---|---|---|
+| Task                | Owner       | State    | Dependencies        |
+| ------------------- | ----------- | -------- | ------------------- |
 | ARCH-075-SHARED-003 | moda_shared | Complete | ARCH-075-SHARED-002 |
 | ARCH-075-SHARED-004 | moda_shared | Complete | ARCH-075-SHARED-003 |
 
@@ -80,9 +80,9 @@ Common reference contract owner Shared003: exact schemaVersion1/definitionId/sou
 
 ## Common-layout consumer tasks
 
-| Task | Owner | State | Dependencies |
-|---|---|---|---|
-| ARCH-075-ADMIN-001 | moda_admin | Complete | ARCH-075-SHARED-004 |
+| Task               | Owner      | State    | Dependencies                                |
+| ------------------ | ---------- | -------- | ------------------------------------------- |
+| ARCH-075-ADMIN-001 | moda_admin | Complete | ARCH-075-SHARED-004                         |
 | ARCH-075-ADMIN-002 | moda_admin | Complete | ARCH-075-ADMIN-001, ARCH-075-BACKGROUND-002 |
 
 Background002 additionally depends on Shared004 and Admin001. It replaces fixed-prefix decoration for new replies with additive local receiptv2 binding the actual rendered common reference/header/footer and trusted split boundaries; v1 frozen replay remains unchanged. Admin002 coordinates approved global SHARED revision with per-shop Meta assignment safely; actual transaction gap must be returned before unsafe mixed-version activation. All required replacements approved before activation, and consumer deployed first. Terminal system-test additionally depends on Admin001/Admin002/Shared003/Shared004; no implementation depends on system-test.
@@ -182,6 +182,7 @@ Root successfully activated production common frame revision1 and approved NoOff
 | ARCH-075-BACKGROUND-009 | moda_background | Complete | ARCH-075-BACKGROUND-002 |
 
 BG009 accepted exactsource `0f7e4d4f8c293d4413bb1f0dc3df30fe66ae622d`: canonicaldefaultfreeze delegation, defaultfactory/PG69/focused169/full4295/build/scopedlintgreen;4unchangedbaselinelint findings disclosed. RootCI/merge/deployment/newhumandelivery required; no architecture completion.
+
 ## Branded main reply consolidation — 2026-11-13
 
 User observed empty branded header/footer followed by separate answer/footer. Add only Shared HEADER-only order (SHARED005), separately publish after acceptance (SHARED006), then Background010 composes one main logo+header+answer+footer when fullcaption<=1024, followed by separate verified PRODUCT footer-only when present. Existing HEADER+PRODUCT is valid. Above caption limit, complete main TEXT retains shop details/answer/onefooter; logo is omitted due physical caption constraint, never truncation or invented literal. With product, main TEXT uses HEADER then PRODUCT; without product, existing ANSWER-only fulltext. Every physical part keeps trusted checkoutURL; no empty adjacent divider header. Exact new decomposition and legacy frozen-plan guards required. BG010 depends on BG009 and published Shared; old workers must drain before new HEADER-only production. No schema/version fields or authored-common mutation.
@@ -196,7 +197,6 @@ Gateway002 Ready after BG010 mergedsource1b71a7d3582f6f946939ac669a9308f1a0c66b0
 
 Gateway002 accepted exactsource `4c05b55b54aae8e713d67e463b94321dd4f5093d`: operatorownedtest/prodgate, readerfirst/drain/jobpreservation/rollback checks. Positive/completeNegative+96nestedfixtures/syntax passed. Root merge/sync/PhaseB/liveproof remain; architectureInProgress.
 
-
 ## Customer context on handback (BG012)
 
 ARCH-075-BACKGROUND-012 is Pending on accepted/integrated ARCH-075-BACKGROUND-011. It assesses only the existing bounded prior-history window at a genuine AI-owned turn, using canonical customer moderation and existing retry/control guards. HUMAN ingress does not invoke AI or send; unmoderated/blocked context remains excluded. This complements the merchant prepared-body identity correction, with no new infrastructure, queue, schema, Shared release or generic telemetry. Architecture remains In Progress pending actual exchange verification.
@@ -207,45 +207,40 @@ Actualdelivered21:11 humancommonreply has preparedbodyALLOW while rawcommandtext
 
 | ARCH-075-BACKGROUND-011 | moda_background | Ready | ARCH-075-BACKGROUND-010 |
 
-
 ### BG011 accepted source correction
 
 ARCH-075-BACKGROUND-011 is Complete/Accepted at source01702b7ccf86c195f16ba6eee6a21248e1524c30, reporta43d7eb4c7518f50a49ff1d82ce0bf5f6b0cee20. Delivered HUMAN prepared moderation identity is preserved in history with exact tenant/content/lifecycle guards. Actual47 PG and4328 unit tests passed, build/scoped lint passed; unchanged baseline full-lint findings disclosed. BG012 customer-side capture remains Pending on actual integration. Architecture remains In Progress pending live handback proof.
-
 
 ### BG012 execution promotion
 
 ARCH-075-BACKGROUND-012 is Ready after actual BG011 source mainac2ef244a36a63f13cb794bef41a4d7a27207cb2 and accepted parent1309896672d0b80122e99fae30efe8782d995bb9 integration. Earlier Pending notes are historical. Owner must use normal preparation and preserve current-turn moderation/control semantics. No live proof or architecture completion is claimed.
 
-
 ### BG012 accepted bounded customer handback
 
 ARCH-075-BACKGROUND-012 Complete/Accepted at sourcecbe926522d318953217480932c97233eafd61752/report46c139f1feb98ed0a0bc1ddc4286f70fda28fa13.4344 full/48 actualPG/98focused/build/scopedlint passed; existing configured skips and unchanged baseline lint disclosed. Exact prior20 assessment and original-lease timing/control guards retained. Root deployment/live proof remains pending. Architecture stays In Progress.
-
 
 ## User-approved single-bubble composite
 
 User selected deterministic composite bitmap: original logo/product remain separate; logo beside shopdetails, divider, optional verified product below. Actual answer and one canonical footer remain text caption. Shared009 contract →010 Node renderer →011 approval-gated publication →BG014 consumer; no live sends by agents. Unexecuted Shared007/008/BG013 two-bubble plan is superseded. Product-free branding supported; overlong captions/missing media/font/network use one full canonical TEXT reply, no loss/truncation. Native approved template format remains unchanged pending separate decision. Distinct defaultOFF composite writer protects current live flag semantics. Architecture remains In Progress.
 
-
 ### Shared009 accepted
 
 ARCH-075-SHARED-009 Complete/Accepted at source09a195c92f7500597944e26707c5c0a3954b00aa/report4ab6143bf5c5d9efb7037bf63982a57964e240d0. Additive composite contract preserves old bytes/readers and exact authored boundaries. Renderer010 Pending until actual integration; release011 combines accepted009+010 only. No activation or architectural completion.
 
-
 ### Renderer010 promotion
 
 ARCH-075-SHARED-010 Ready after exact accepted009 integration Sharedbc98bf13d8d2596490d9497783637e8eac6f96c6/parente8483ed0f6fb078fb694d946f67ff2cf6ec064a9. Font, runtime, geometry and privateQA prerequisites documented; owner now implements actual renderer without publication/live sends. Architecture remains In Progress.
-
 
 ### Shared010 accepted
 
 ARCH-075-SHARED-010 Complete/Accepted at source483f7a27c654a3a49d6ec4896c616cd0475a938c/report808520a3668d43de5eb576d8adfe5034c6c02099. Renderer/carrier/whole-pipeline and fontless packed Alpine checks passed; root actual product/no-product visual gate passed. After actual integration,011 release preparation and014 defaultOFF draft consumer can proceed; public approval/published readiness/live sends remain gated. Architecture stays In Progress.
 
 ARCH-075-BACKGROUND-014 Changes Requested/Ready next attempt: preserve tested c788 source and add runtime-selected immutable Shared012 V2 profile from messaging.recoveryCompositeLayout. Preparatory source concurrent; accepted contract/pack/publication final gates; no main/live until coherent correction.
+
 ### Configuration-driven composite correction — 2026-11-14
 
 User authorized bounded runtime presentation policy rather than package-bound geometry. SHARED012 Pending depends accepted/integrated SHARED011; additive V2 profile/renderer retains immutable V1. Admin009 existing policy controls and corrected BG014 follow accepted profile API; SHARED013 publication remains separately approved. No new Gateway flag/database schema required by inspected evidence. Native templates unchanged. Architecture remains In Progress; no deployment before coherent tests/integration.
+
 ### Composite publication receipt — 2026-11-14
 
 ARCH-075-SHARED-011 Complete: public5.13.11/latest independently verified against exact approved SHA256d759e34446c8ad4d33bcea8c32abd64b3152303016c003119dd9b30e49083086. Release acceptance is not layout/deployment approval. Consumer/Gateway main merges, deployment and activation remain HELD for the user's presentation-policy boundary review; Background registry-only adoption checks may finish. ARCH075 remains In Progress.

@@ -50,7 +50,6 @@ New continuations are unsigned versioned position envelopes (base64url JSON wher
 
 Compatibility: make a coordinated breaking deployment of these internal pre-production continuations. Old Moda HMAC product v2, encrypted catalogue and Commerce signed tokens are not migrated or verified: return the established bounded INVALID_INPUT restart instruction, allowing the caller to retry from cursor null. Do not infer legacy tokens as arbitrary valid provider cursors. No public tool names, Shared cursor field types or provider cursor protocols change. Rollback restarts pagination; no durable business data migration. Confirm actual deployment context before execution; if production compatibility is now required, return that conflict to the architect rather than inventing a bridge.
 
-
 ## Work Items
 
 - [x] Inventory all owned paginated operations and remove cursor cryptography/binding/secret gates.
@@ -123,12 +122,12 @@ Ready for Review — Attempt 1, codex, 5 November 2026. Implementation committed
 
 ### Work Completed / Pagination Inventory
 
-| Owned operation | Current unsigned position | Preserved current-call authority / bounds |
-| --- | --- | --- |
-| Shopify product text/browse (`products.search`, legacy published `shopify.searchProducts`) | version3 `variants.after` | Fixed provider document/current filters; opaque provider token forwarded unchanged as variable; current authenticated connection and shop |
-| Shopify taxonomy/category product search | version3 `category.productAfter`, `variantAfter` | Current taxonomy membership and category/publication checks; native product/variant provider edges |
-| Woo product/category/variation search | version3 `woo.productPage`, `productIndex`, `variationPage`, `variationIndex` | Parent identity obtained from current connection's returned row; current category/publication/visibility/purchasability filters; no cursor-provided parent/host/tenant |
-| Shopify/Woo discount catalogue options | version2 `afterId` | Current tenant, NONE/FIXED/AI policy and active override; parameterized tenant/afterId query and per-row ownership checks |
+| Owned operation                                                                            | Current unsigned position                                                     | Preserved current-call authority / bounds                                                                                                                              |
+| ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shopify product text/browse (`products.search`, legacy published `shopify.searchProducts`) | version3 `variants.after`                                                     | Fixed provider document/current filters; opaque provider token forwarded unchanged as variable; current authenticated connection and shop                              |
+| Shopify taxonomy/category product search                                                   | version3 `category.productAfter`, `variantAfter`                              | Current taxonomy membership and category/publication checks; native product/variant provider edges                                                                     |
+| Woo product/category/variation search                                                      | version3 `woo.productPage`, `productIndex`, `variationPage`, `variationIndex` | Parent identity obtained from current connection's returned row; current category/publication/visibility/purchasability filters; no cursor-provided parent/host/tenant |
+| Shopify/Woo discount catalogue options                                                     | version2 `afterId`                                                            | Current tenant, NONE/FIXED/AI policy and active override; parameterized tenant/afterId query and per-row ownership checks                                              |
 
 - Removed HMAC/AES cursor cryptography, secret configuration/DI, minimum-length advertisement/execution gates, expiry, query/shop/connection/mode/policy bindings, catalogue generation fingerprint checks and Woo page-content hashes. No alternate secret, cursor database, legacy verifier or generic crypto substitute.
 - Envelopes contain only progress. Strict known-version/shape parsing, canonical base64url and valid UTF-8/JSON checks, Shared2048-character cursor bound,1024-character provider token and128-character discount ID bounds remain. Woo pages1–1000/indexes0–20 require finite safe integers. Provider call/page limits (Shopify3 pages, Woo12 calls and existing page cap), discount250-row batches/5000 scanned-row cap/50-result bound, output limits/deadlines/cancellation retained.
@@ -171,21 +170,27 @@ Unrelated cryptography is retained: Shared credential decryption/AAD/keyring con
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Task definition only; no implementation claim or acceptance.
 
 ### Reviewed Files
+
 None
 
 ### Validation Reviewed
+
 None
 
 ### Architecture Conformance
+
 Pending implementation.
 
 ### Follow-up
+
 None
 
 ## Architect Acceptance — 5 November 2026

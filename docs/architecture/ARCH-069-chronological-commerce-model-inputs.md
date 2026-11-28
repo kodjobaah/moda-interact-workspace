@@ -83,10 +83,10 @@ PRODUCTION / COMPATIBLE ROLLOUT. Shared implementation acceptance -> exact packa
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-069-SHARED-001 | moda_shared | Complete | None |
-| ARCH-069-SHARED-002 | moda_shared | Complete | ARCH-069-SHARED-001 |
+| Task                    | Owner           | Status   | Depends On          |
+| ----------------------- | --------------- | -------- | ------------------- |
+| ARCH-069-SHARED-001     | moda_shared     | Complete | None                |
+| ARCH-069-SHARED-002     | moda_shared     | Complete | ARCH-069-SHARED-001 |
 | ARCH-069-BACKGROUND-001 | moda_background | Complete | ARCH-069-SHARED-002 |
 
 ## System Validation
@@ -106,7 +106,6 @@ None blocking. Paired anonymized probes demonstrated incorrect intent with the o
 - 2026-11-12 publication review: Shared002 Accepted/Complete from exact public registry metadata/integrity and publish receipt; Background Ready with mandatory actual public-registry install/CI integrity gate. Transient tarballCDN404 is not represented as verified deployment availability.
 
 - 2026-11-12 consumer review: Background001 Accepted/Complete at6ccad024; actual public-registry artifact install/hash gate and both3,941-test CI runs passed, resolving CDN propagation. Production customer-answer verification remains pending; no Implemented claim.
-
 
 ## Integrated Production Verification — 2026-11-12
 

@@ -285,7 +285,7 @@ database schema, architecture/index file or Architect Review text was modified.
   the post-registration abort check, and added a cancellation-capacity proof
   that a fifth run remains throttled until a worker termination settles.
 - **A1-R4 implemented:** Added the reusable manifest `{runtimeVersion, artifactSha256,
-  enginePackageVersion, limits}`, deterministic `code-runtime:package` output,
+enginePackageVersion, limits}`, deterministic `code-runtime:package` output,
   and `code-runtime:smoke` that loads only copied worker/loader/WASM files,
   executes a positive transform, and proves the 64 MiB WASM ceiling without a
   source-tree fallback or network download.
@@ -452,7 +452,7 @@ The source at `worker.mjs` is therefore executed before the compile-only branch.
 addition, the error path currently does:
 
 ```js
-if (workerData.kind === 'compile') return error('SYNTAX_ERROR');
+if (workerData.kind === "compile") return error("SYNTAX_ERROR");
 ```
 
 so any top-level runtime failure during that execution is falsely reported as syntax.
@@ -506,7 +506,7 @@ Capturing/fixing the intrinsics closes the earlier mutation cases, but __walk en
 
 ```js
 function transform() {
-  return Object.defineProperty({}, 'toJSON', { value: () => [] });
+  return Object.defineProperty({}, "toJSON", { value: () => [] });
 }
 ```
 
@@ -531,7 +531,6 @@ This is completion of the already-required SB02 scenario, not a request for exha
 Reran `npm run test:arch020-code-runtime-proof`: **8/8 passed**. Reran `npm run code-runtime:package` and `npm run code-runtime:smoke`: **passed**, including copied artifact execution and the 67,108,864-byte ceiling probe. Manifest SHA-256 remains `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`. Temporary architect harness `/tmp/c029-review/review.test.ts`: **1 passed, 1 failed**, reproducing hidden-toJSON acceptance with outputJson `[]` while normal object output passes. Submitted lint/typecheck/build/diff evidence reviewed; no redundant full-suite run.
 
 No implementation edit, main merge, gitlink update, live deployment or downstream promotion. Ready for corrections, Attempt 2 retained, claims cleared. COMMERCE-026 remains Pending until its prerequisites are accepted. SYSTEM-TEST-002 remains explicitly developer-invoked. Prior reviews are retained below.
-
 
 ### Attempt 1 — Changes Requested (2026-09-21)
 
@@ -579,7 +578,6 @@ Keep the 64 MiB imported-memory configuration: static inspection shows the WASM 
 Reran `npm run test:arch020-code-runtime-proof`: **6/6 passed**. Temporary architect harness `/tmp/c029-review/review.test.ts`: **3/3 failed**, reproducing the two output-validation bypasses and exact-interface rejection. Reviewed source, manifest, build configuration and existing artifact traces; read the installed loader and inspected the WASM memory import. Submitted lint/build/manifest evidence reviewed; full typecheck's five unrelated Prisma diagnostics are not an acceptance blocker for these runtime corrections. No live provider, database, container or deployment action performed.
 
 Ready for corrections; Attempt 1 retained, claims cleared. No implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-026 remains Pending until this kernel and its other prerequisite are accepted. SYSTEM-TEST-002 remains explicitly developer-invoked. Preserve historical definition/review notes below.
-
 
 ### Review Status
 

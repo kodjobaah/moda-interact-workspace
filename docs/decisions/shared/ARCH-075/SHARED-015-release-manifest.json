@@ -19,12 +19,8 @@
     "sourceMetadataCommit": "016f660d0a51469233b29552be3acfef637899e7",
     "sameMembers": true,
     "nonmetadataByteIdenticalCount": 160,
-    "changedMembers": [
-      "package/package.json"
-    ],
-    "changedPackageFields": [
-      "version"
-    ],
+    "changedMembers": ["package/package.json"],
+    "changedPackageFields": ["version"],
     "manifestSha256": "ceacc531762b325809cdcba811815a436958c7062817a58655ef170ee99ffa96",
     "publicationAuthorized": false,
     "semver": "patch: unchanged exported/wire/mechanical contracts, accepted common-reader policy-boundary correction"

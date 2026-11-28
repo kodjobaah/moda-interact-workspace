@@ -10,40 +10,40 @@ Phase 8 — Merchant-ready ownership and authorization. This is not necessary to
 Phase 9 — Integrated validation and removal of obsolete production preview behaviour. Run one deterministic but real assembled development scenario: create external connection → credential → tool → request/response processing → live tool test → feature → second feature → selected model → several preview conversation turns → release → conversation grant → Background CommerceAgent → real tool invocation. Verify that Studio and Background use the same model, prompt/tool revisions and results. Validate cancellations, credential failures, provider 4xx/5xx, model failures, stale revisions, history, tenant isolation and secret redaction. Once that passes, remove or hide obsolete fixture-driven production UI paths and hard-coded preview model configuration while retaining fixture infrastructure for automated tests. Exit: there is one coherent production execution model and fixtures are purely test infrastructure.
 
 Phase 0 — architecture contract
-       |
-       +--------------------+
-       |                    |
-       v                    v
-Phase 1                 Phase 2
-real wiring/shop        model catalogue
-       |                    |
-       v                    |
+|
++--------------------+
+| |
+v v
+Phase 1 Phase 2
+real wiring/shop model catalogue
+| |
+v |
 Phase 3 <-------------------+
 tool authoring
-       |
-       v
+|
+v
 Phase 4
 live tool test
-       |
-       +--------------------+
-       |                    |
-       v                    v
-Phase 5                 model selection
-agent composition           |
-       +--------------------+
-       |
-       v
+|
++--------------------+
+| |
+v v
+Phase 5 model selection
+agent composition |
++--------------------+
+|
+v
 Phase 6
 live multi-turn preview
-       |
-       v
+|
+v
 Phase 7
 release/grant + Background parity
-       |
-       v
+|
+v
 Phase 8
 merchant enablement
-       |
-       v
+|
+v
 Phase 9
 integrated validation/cutover

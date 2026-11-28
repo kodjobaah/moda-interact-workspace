@@ -1,4 +1,5 @@
 ---
+
 id: ARCH-020-GATEWAY-002
 architecture_id: ARCH-020
 title: Add Commerce operational dashboards and alerts
@@ -15,10 +16,11 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-  - ARCH-020-GATEWAY-001
-  - ARCH-020-COMMERCE-010
-  - ARCH-020-BACKGROUND-002
-enables: []
+
+- ARCH-020-GATEWAY-001
+- ARCH-020-COMMERCE-010
+- ARCH-020-BACKGROUND-002
+  enables: []
 
 ### Attempt 2 — Superseded by developer architecture decision (2026-09-22)
 

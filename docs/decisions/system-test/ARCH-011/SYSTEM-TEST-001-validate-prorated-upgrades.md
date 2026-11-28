@@ -15,23 +15,26 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-011-DATABASE-002
-- ARCH-011-SHARED-002
-- ARCH-011-BACKGROUND-001
-- ARCH-011-BACKGROUND-002
-- ARCH-011-BACKGROUND-003
-- ARCH-011-SHOPIFY-002
-- ARCH-011-ADMIN-002
+  - ARCH-011-DATABASE-002
+  - ARCH-011-SHARED-002
+  - ARCH-011-BACKGROUND-001
+  - ARCH-011-BACKGROUND-002
+  - ARCH-011-BACKGROUND-003
+  - ARCH-011-SHOPIFY-002
+  - ARCH-011-ADMIN-002
 enables: []
 created: 2026-09-14
 updated: 2026-09-14
 ---
+
 # ARCH-011-SYSTEM-TEST-001
 
 ## Manual execution gate
+
 Do not auto-run. Developer must explicitly claim after all dependencies are integrated/deployed to the Render test environment and a native Shopify App Pricing development/test store is available.
 
 ## Authorized implementation surface
+
 ```text
 src/arch011-prorated-upgrades.js                 # new
 scripts/run-arch011-prorated-upgrades.js         # new
@@ -41,6 +44,7 @@ package.json                                     # only add validate:arch011-pro
 ```
 
 ## Required scenarios — all must record PASS/FAIL with provider/local evidence
+
 1. native App Pricing succeeds with null legacySubscriptionId;
 2. canonical Free->Starter->Growth->Scale topology/direct skips;
 3. Moda requested Scale, Shopify selected Growth => Growth applied, Scale preserved as intent;
@@ -61,6 +65,7 @@ package.json                                     # only add validate:arch011-pro
 18. ARCH-010 purchased/promotional/lifetime-Free/capacity-order regressions remain unchanged.
 
 ## Commands
+
 ```text
 npm test
 npm run typecheck
@@ -68,6 +73,7 @@ npm run lint
 npm run validate:render:test
 npm run validate:arch011-prorated-upgrades
 ```
+
 No non-system-test task may depend on this task. On any provider-behaviour mismatch, record FAIL and return to architect; do not patch production code from system-test task.
 
 ## Completion protocol

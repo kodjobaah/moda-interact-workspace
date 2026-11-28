@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
-created: '2026-10-18'
+created: "2026-10-18"
 updated: 2026-11-01
 ---
 
@@ -125,15 +125,15 @@ Both original failing test identities and neighboring result-template/Nunjucks c
 
 Environment: macOS, Node/npm selected from the workspace toolchain; `npm ci` installed 905 packages from the existing lockfile. npm reported 44 audit findings (27 moderate, 16 high, 1 critical); no dependency changes were made. Install scripts were awaiting approval, so the Prisma client was generated directly from the already-initialized pinned schema before the final typecheck.
 
-| Command | Result |
-|---|---|
-| `npx vitest run tests/agent-contract-validation.test.ts tests/commerce-mcp-extraction-boundary.test.ts tests/result-template-authoring.test.ts tests/nunjucks-template.test.ts` | PASS, 4 files, 26 tests. |
-| `npm run schema:sync` | PASS; Shopify Admin `2026-07` artifact matched the pinned `@shopify/dev-mcp@1.15.4` source (SHA-256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`). |
-| `npm ls @modelcontextprotocol/sdk --all` | PASS; only `@shopify/dev-mcp@1.15.4 -> @modelcontextprotocol/sdk@1.29.0` is present. |
-| `npx prisma generate --schema database/prisma/schema.prisma` | PASS; generated Prisma Client v6.19.3 from the pinned database submodule schema. |
-| `npm run typecheck` | FAIL with one unrelated TS2345 at `tests/system-commerce-tool-sync.test.ts:305`: `{}` omits required `NODE_ENV` from Next.js `ProcessEnv`. Initial generated-client errors disappeared after Prisma generation. |
-| Focused `npx eslint` over the Agent validator, Nunjucks/result-template validators and the four focused tests | PASS, no diagnostics. |
-| `git diff --check` | PASS. |
+| Command                                                                                                                                                                         | Result                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npx vitest run tests/agent-contract-validation.test.ts tests/commerce-mcp-extraction-boundary.test.ts tests/result-template-authoring.test.ts tests/nunjucks-template.test.ts` | PASS, 4 files, 26 tests.                                                                                                                                                                                        |
+| `npm run schema:sync`                                                                                                                                                           | PASS; Shopify Admin `2026-07` artifact matched the pinned `@shopify/dev-mcp@1.15.4` source (SHA-256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`).                                        |
+| `npm ls @modelcontextprotocol/sdk --all`                                                                                                                                        | PASS; only `@shopify/dev-mcp@1.15.4 -> @modelcontextprotocol/sdk@1.29.0` is present.                                                                                                                            |
+| `npx prisma generate --schema database/prisma/schema.prisma`                                                                                                                    | PASS; generated Prisma Client v6.19.3 from the pinned database submodule schema.                                                                                                                                |
+| `npm run typecheck`                                                                                                                                                             | FAIL with one unrelated TS2345 at `tests/system-commerce-tool-sync.test.ts:305`: `{}` omits required `NODE_ENV` from Next.js `ProcessEnv`. Initial generated-client errors disappeared after Prisma generation. |
+| Focused `npx eslint` over the Agent validator, Nunjucks/result-template validators and the four focused tests                                                                   | PASS, no diagnostics.                                                                                                                                                                                           |
+| `git diff --check`                                                                                                                                                              | PASS.                                                                                                                                                                                                           |
 
 The focused validation covers both originally failing tests and the neighboring contract suites. No full repository test suite was run for this bounded task.
 

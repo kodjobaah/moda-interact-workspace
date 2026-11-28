@@ -182,7 +182,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Do not rename public activation methods. Avoid designing a generic state-machine framework; this is extraction of the current pending-selection lifecycle.
 
-
 ## Completion Report
 
 ### Status

@@ -15,18 +15,18 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-057-SHOPIFY-001
-- ARCH-057-SHOPIFY-002
-- ARCH-057-SHOPIFY-003
-- ARCH-057-SHOPIFY-004
-- ARCH-057-SHOPIFY-005
-- ARCH-057-SHOPIFY-006
-- ARCH-057-SHOPIFY-007
-- ARCH-057-SHOPIFY-008
-- ARCH-057-SHOPIFY-009
-- ARCH-057-SHOPIFY-010
+  - ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-002
+  - ARCH-057-SHOPIFY-003
+  - ARCH-057-SHOPIFY-004
+  - ARCH-057-SHOPIFY-005
+  - ARCH-057-SHOPIFY-006
+  - ARCH-057-SHOPIFY-007
+  - ARCH-057-SHOPIFY-008
+  - ARCH-057-SHOPIFY-009
+  - ARCH-057-SHOPIFY-010
 enables:
-- ARCH-057-SHOPIFY-012
+  - ARCH-057-SHOPIFY-012
 created: 2026-11-04
 updated: 2026-11-05
 ---
@@ -53,32 +53,32 @@ Paths relative to `moda-interact`.
 
 ### Existing files to modify
 
-| Path | Selected change |
-|---|---|
-| `app/entry.server.jsx` | Shared diagnostics in SSR callbacks; export framework `handleError` for uncaught loader/action failures; preserve statuses/stream abort/rethrow |
-| `app/shopify.server.js` | Route SDK logger output and bootstrap exceptions through a safe Shared semantic adapter; keep auth/token/storage settings |
-| `app/services/platform-configuration/contracts.server.ts` | Optional actual Error cause on the existing configuration error; same public codes |
-| `app/services/platform-configuration/repository.server.ts` | Preserve original Prisma error as cause on DATABASE_UNAVAILABLE |
-| `app/services/platform-configuration/seal.server.ts` | Preserve actual decode/unseal cause; never expose sealed/keyring values |
-| `app/services/platform-configuration/service.server.ts` | Emit original safe cause/code at the owning failed-read/unseal boundary, including keyring failures |
-| `app/services/health/health-check.server.ts` | Log failed dependency attempts/cleanup with original message/code while preserving Boolean response and deadlines |
-| `app/services/pending-recovery/pending-recovery-reader.server.ts` | Diagnose Redis/BullMQ read/error-event/cleanup failures; retain bounded unavailable projection |
-| `app/services/billing/subscription-ended-notification.service.ts` | Log failed persistence/dispatch by stage; preserve currently accepted best-effort notification semantics |
-| `app/services/billing/billing-reconciliation.service.ts` | Verify/correct message/cause logging for failed postcommit scheduling |
-| `app/services/discounts/shopify-discount-lifecycle.service.ts` | Replace remaining console-only dispatch diagnostic; preserve committed lifecycle result |
-| `app/services/store-profile/shopify-taxonomy-suggestion.server.ts` | Preserve and log actual provider/transport/parser failures before fallback |
-| `app/routes/app/onboarding/resume/route.ts` | Log caught activation/category technical failures; retain milestone/redirect semantics |
-| `app/services/webhooks/shopify-webhook-observability.server.ts` | Reconcile remaining auth/route failure-message gaps from all six handlers without changing admission |
-| `tests/unit/platform-configuration/service.test.ts` | Real emitted error/cause/privacy assertions and unchanged error codes |
-| `tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts` | Missing/revoked/malformed configuration fails closed and logs safe original cause |
-| `tests/unit/pending-recovery-reader.test.ts` | Read, emitter and cleanup diagnostics with no status change |
-| `tests/unit/health/health-check.server.test.ts` | Probe failure/cause and safe Boolean/timeout behaviour |
-| `app/services/merchant-support/merchant-support.service.ts`, `app/services/merchant-knowledge/merchant-knowledge-queue.server.ts` | Attach bounded error listeners to the existing owned producer queues through their semantic adapters |
-| `app/services/merchant-support/merchant-support-observability.server.ts`, `app/services/merchant-knowledge/merchant-knowledge-observability.server.ts` | Add narrowly named producer connection-error diagnostic exports as needed, reusing the existing central projection and Shared logger |
-| `app/services/billing/providers/shopify-billing-diagnostics.server.ts` | Expose the existing safeText projection for runtime adapter reuse and optionally accept known sensitive values/explicit diagnostic cause in the existing boundary logger; retain one existing projection |
-| `tests/unit/merchant-support-service.test.ts`, `tests/unit/merchant-support-observability.test.ts`, `tests/unit/merchant-knowledge-queue.test.ts`, `tests/unit/merchant-knowledge-observability.test.ts`, `tests/unit/services/billing/provider-diagnostics.test.ts` | Existing predecessor queue/emitted-output regression coverage for these narrow changes |
-| `app/routes/system/telemetry-probe/route.ts` | Preserve the existing probe request and HTTP/DTO contract while diagnosing network/non-success attempts and projecting target/error safely in logs and response |
-| `package.json` | Add the exact diagnostic test command below |
+| Path                                                                                                                                                                                                                                                                 | Selected change                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/entry.server.jsx`                                                                                                                                                                                                                                               | Shared diagnostics in SSR callbacks; export framework `handleError` for uncaught loader/action failures; preserve statuses/stream abort/rethrow                                                          |
+| `app/shopify.server.js`                                                                                                                                                                                                                                              | Route SDK logger output and bootstrap exceptions through a safe Shared semantic adapter; keep auth/token/storage settings                                                                                |
+| `app/services/platform-configuration/contracts.server.ts`                                                                                                                                                                                                            | Optional actual Error cause on the existing configuration error; same public codes                                                                                                                       |
+| `app/services/platform-configuration/repository.server.ts`                                                                                                                                                                                                           | Preserve original Prisma error as cause on DATABASE_UNAVAILABLE                                                                                                                                          |
+| `app/services/platform-configuration/seal.server.ts`                                                                                                                                                                                                                 | Preserve actual decode/unseal cause; never expose sealed/keyring values                                                                                                                                  |
+| `app/services/platform-configuration/service.server.ts`                                                                                                                                                                                                              | Emit original safe cause/code at the owning failed-read/unseal boundary, including keyring failures                                                                                                      |
+| `app/services/health/health-check.server.ts`                                                                                                                                                                                                                         | Log failed dependency attempts/cleanup with original message/code while preserving Boolean response and deadlines                                                                                        |
+| `app/services/pending-recovery/pending-recovery-reader.server.ts`                                                                                                                                                                                                    | Diagnose Redis/BullMQ read/error-event/cleanup failures; retain bounded unavailable projection                                                                                                           |
+| `app/services/billing/subscription-ended-notification.service.ts`                                                                                                                                                                                                    | Log failed persistence/dispatch by stage; preserve currently accepted best-effort notification semantics                                                                                                 |
+| `app/services/billing/billing-reconciliation.service.ts`                                                                                                                                                                                                             | Verify/correct message/cause logging for failed postcommit scheduling                                                                                                                                    |
+| `app/services/discounts/shopify-discount-lifecycle.service.ts`                                                                                                                                                                                                       | Replace remaining console-only dispatch diagnostic; preserve committed lifecycle result                                                                                                                  |
+| `app/services/store-profile/shopify-taxonomy-suggestion.server.ts`                                                                                                                                                                                                   | Preserve and log actual provider/transport/parser failures before fallback                                                                                                                               |
+| `app/routes/app/onboarding/resume/route.ts`                                                                                                                                                                                                                          | Log caught activation/category technical failures; retain milestone/redirect semantics                                                                                                                   |
+| `app/services/webhooks/shopify-webhook-observability.server.ts`                                                                                                                                                                                                      | Reconcile remaining auth/route failure-message gaps from all six handlers without changing admission                                                                                                     |
+| `tests/unit/platform-configuration/service.test.ts`                                                                                                                                                                                                                  | Real emitted error/cause/privacy assertions and unchanged error codes                                                                                                                                    |
+| `tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts`                                                                                                                                                                                                  | Missing/revoked/malformed configuration fails closed and logs safe original cause                                                                                                                        |
+| `tests/unit/pending-recovery-reader.test.ts`                                                                                                                                                                                                                         | Read, emitter and cleanup diagnostics with no status change                                                                                                                                              |
+| `tests/unit/health/health-check.server.test.ts`                                                                                                                                                                                                                      | Probe failure/cause and safe Boolean/timeout behaviour                                                                                                                                                   |
+| `app/services/merchant-support/merchant-support.service.ts`, `app/services/merchant-knowledge/merchant-knowledge-queue.server.ts`                                                                                                                                    | Attach bounded error listeners to the existing owned producer queues through their semantic adapters                                                                                                     |
+| `app/services/merchant-support/merchant-support-observability.server.ts`, `app/services/merchant-knowledge/merchant-knowledge-observability.server.ts`                                                                                                               | Add narrowly named producer connection-error diagnostic exports as needed, reusing the existing central projection and Shared logger                                                                     |
+| `app/services/billing/providers/shopify-billing-diagnostics.server.ts`                                                                                                                                                                                               | Expose the existing safeText projection for runtime adapter reuse and optionally accept known sensitive values/explicit diagnostic cause in the existing boundary logger; retain one existing projection |
+| `tests/unit/merchant-support-service.test.ts`, `tests/unit/merchant-support-observability.test.ts`, `tests/unit/merchant-knowledge-queue.test.ts`, `tests/unit/merchant-knowledge-observability.test.ts`, `tests/unit/services/billing/provider-diagnostics.test.ts` | Existing predecessor queue/emitted-output regression coverage for these narrow changes                                                                                                                   |
+| `app/routes/system/telemetry-probe/route.ts`                                                                                                                                                                                                                         | Preserve the existing probe request and HTTP/DTO contract while diagnosing network/non-success attempts and projecting target/error safely in logs and response                                          |
+| `package.json`                                                                                                                                                                                                                                                       | Add the exact diagnostic test command below                                                                                                                                                              |
 
 The coverage inventory reads all server routes/services, provider adapters, queue constructors and framework callbacks. Corrections outside this write list are returned to their prior task owner or require an explicit scope amendment; no broad unreviewed app rewrite.
 
@@ -261,16 +261,13 @@ To be assessed after implementation.
 
 Return the completed task for architect review; do not start enabled tasks.
 
-
 ## Dependency Reconciliation — 2026-11-04
 
 ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete. This task remains Pending: SHOPIFY-010 is Ready but incomplete, and SHOPIFY-004 is still recorded in Review in this branch. No claim or downstream execution is authorized by this update; the normal launcher must check current dependency records and integration before execution.
 
-
 ## Dependency Reconciliation — 2026-11-05
 
 SHOPIFY-010 Attempt 1 is architect-accepted and Complete at `6e8029deb30de8903e937dc092b68f8b304e4dce`. This task remains Pending: SHOPIFY-004 is still recorded in Review in this branch. All other explicit prerequisites are Complete. This note supersedes the earlier frontier note naming SHOPIFY-010 as incomplete; no claim or execution is started.
-
 
 ## Dependency Reconciliation — Published Acceptance Correction (2026-11-05)
 

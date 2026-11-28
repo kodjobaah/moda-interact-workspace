@@ -13,7 +13,7 @@ status: complete
 priority: 90
 attempt: 1
 depends_on:
-- ARCH-013-SHOPIFY-001
+  - ARCH-013-SHOPIFY-001
 enables: []
 created: 2026-09-15
 updated: 2026-09-15
@@ -201,19 +201,21 @@ BillingPurchaseHub.propTypes
 `PropTypes` requirement:
 
 ```js
-purchaseHistoryAvailable: PropTypes.bool.isRequired
+purchaseHistoryAvailable: PropTypes.bool.isRequired;
 ```
 
 Replace the unconditional purchased-credit-history paragraph/link with conditional rendering equivalent to:
 
 ```jsx
-{purchaseHistoryAvailable ? (
-  <p>
-    <a href="/app/billing/recovery-credit-purchases">
-      {i18n.t("billingPurchases.manageLink")}
-    </a>
-  </p>
-) : null}
+{
+  purchaseHistoryAvailable ? (
+    <p>
+      <a href="/app/billing/recovery-credit-purchases">
+        {i18n.t("billingPurchases.manageLink")}
+      </a>
+    </p>
+  ) : null;
+}
 ```
 
 Do not change:
@@ -231,12 +233,12 @@ route URL
 Expected UI result:
 
 | Merchant experience | `/app/billing/options` | Manage purchased credits link |
-|---|---:|---:|
-| ONBOARDING | allowed | hidden |
-| ACTIVE | allowed | shown |
-| NO_CONTRACT | allowed | shown |
-| FROZEN | allowed | shown |
-| BILLING_ATTENTION | allowed | shown |
+| ------------------- | ---------------------: | ----------------------------: |
+| ONBOARDING          |                allowed |                        hidden |
+| ACTIVE              |                allowed |                         shown |
+| NO_CONTRACT         |                allowed |                         shown |
+| FROZEN              |                allowed |                         shown |
+| BILLING_ATTENTION   |                allowed |                         shown |
 
 The direct `/app/billing/recovery-credit-purchases` route remains independently guarded by the existing `BILLING_PURCHASE_HISTORY` policy. Do not weaken or modify that route.
 
@@ -251,7 +253,7 @@ tests/unit/billing-purchase-hub.test.tsx
 In the existing `render(...)` helper, pass:
 
 ```tsx
-purchaseHistoryAvailable
+purchaseHistoryAvailable;
 ```
 
 as the default so existing tests continue to represent an allowed state.

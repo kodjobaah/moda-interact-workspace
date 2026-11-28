@@ -90,7 +90,6 @@ None — the module can be developed in isolation from new ARCH-047 schema; stil
 - `ARCH-047-BACKGROUND-006`
 - `ARCH-047-BACKGROUND-007`
 
-
 ## Acceptance Criteria
 
 - [x] Unit scenarios for NONE (zero LLM calls), valid/expired FIXED, one/multiple candidates, deterministic ranking/tie, wrong-shop/currency restrictions and no verified offer.
@@ -117,8 +116,6 @@ After finishing Work Items, Acceptance Criteria and Validation, fill the Complet
 Use strategy injection for provider-specific eligibility rather than branching through one oversized service. Existing read-only policies remain authoritative; do not change `RecoveryPolicyService` semantics in this task unless its existing public contract explicitly permits the needed read-only snapshot.
 
 Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and the deterministic `/moda-task` launcher packet. Use launcher-resolved dedicated parent and implementation worktrees, both on `task/ARCH-047-BACKGROUND-004`; synchronise from canonical roots, not a prior task worktree. Preserve exact source semantics and existing test expectations; use the published `@modainteract/moda-interact-shared/logging` for generic structured logs, not a second logger. Prefer small coordinator/repository/pure-helper files over 300+ line catch-all services.
-
-
 
 ## Completion Report
 
@@ -157,16 +154,16 @@ Parent-workspace change submitted separately: this canonical task file only. No 
 
 Observed in the uploaded `typescript(20261026-035151)` terminal log on 2026-10-26:
 
-| Command | Observed outcome |
-| --- | --- |
-| `npm ci` | Completed (603 packages added); reported 20 dependency audit advisories (8 moderate, 12 high). No dependency remediation undertaken as part of this task. |
-| `npm run prisma:generate` | Passed; Prisma Client v6.19.3 generated. |
-| `npm test -- tests/unit/services/recovery-offers/` | Passed: 3 test files, **21/21** tests. |
-| `npm run test:integration -- tests/integration/recovery-offer-postgres.integration.test.ts` | Passed: 1 file, **1/1** PostgreSQL integration test. |
-| `npm run build` | Passed: Prisma generation followed by `tsc`; shell returned to prompt with no errors. |
-| `npx eslint src/services/recovery-offers/ tests/unit/services/recovery-offers/ tests/integration/recovery-offer-postgres.integration.test.ts` | Invoked in the logged command sequence; no lint errors reported. |
-| `git diff --check` and `git diff --cached --check` | Invoked; no whitespace errors reported. |
-| `git commit` / `git push -u origin task/ARCH-047-BACKGROUND-004` | Passed: commit `68063bd`, 11 files and 1,112 insertions; remote task branch created and upstream configured. |
+| Command                                                                                                                                       | Observed outcome                                                                                                                                          |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm ci`                                                                                                                                      | Completed (603 packages added); reported 20 dependency audit advisories (8 moderate, 12 high). No dependency remediation undertaken as part of this task. |
+| `npm run prisma:generate`                                                                                                                     | Passed; Prisma Client v6.19.3 generated.                                                                                                                  |
+| `npm test -- tests/unit/services/recovery-offers/`                                                                                            | Passed: 3 test files, **21/21** tests.                                                                                                                    |
+| `npm run test:integration -- tests/integration/recovery-offer-postgres.integration.test.ts`                                                   | Passed: 1 file, **1/1** PostgreSQL integration test.                                                                                                      |
+| `npm run build`                                                                                                                               | Passed: Prisma generation followed by `tsc`; shell returned to prompt with no errors.                                                                     |
+| `npx eslint src/services/recovery-offers/ tests/unit/services/recovery-offers/ tests/integration/recovery-offer-postgres.integration.test.ts` | Invoked in the logged command sequence; no lint errors reported.                                                                                          |
+| `git diff --check` and `git diff --cached --check`                                                                                            | Invoked; no whitespace errors reported.                                                                                                                   |
+| `git commit` / `git push -u origin task/ARCH-047-BACKGROUND-004`                                                                              | Passed: commit `68063bd`, 11 files and 1,112 insertions; remote task branch created and upstream configured.                                              |
 
 The uploaded log does **not** show full repository-wide regression tests or a live provider-eligibility end-to-end test; those are not claimed to have passed. The compiled module was inspected in the uploaded snapshot, but this submission is not an architect acceptance review.
 

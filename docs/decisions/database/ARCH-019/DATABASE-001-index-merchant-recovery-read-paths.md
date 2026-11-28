@@ -145,7 +145,7 @@ Agent-executed (all exit 0):
 3. `bash -n scripts/rehearse-arch019-recovery-indexes.sh` — syntax passed.
 4. `git diff --check` and new-file whitespace checks — passed.
 5. `prisma migrate diff --from-schema-datamodel /tmp/arch019-before.prisma
-   --to-schema-datamodel prisma/schema.prisma --script` — generated exactly the
+--to-schema-datamodel prisma/schema.prisma --script` — generated exactly the
    same four CREATE INDEX statements as the authored migration. Baseline schema
    came from implementation HEAD before the task edits, not a live database.
 
@@ -197,6 +197,7 @@ No additional implementation task is assumed. No other repository was modified.
 Task branch: `task/ARCH-019-DATABASE-001` in both repositories.
 
 Physical worktree isolation (launcher packet):
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-019-DATABASE-001` (reused).
 - Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-019-DATABASE-001` (created).
@@ -204,22 +205,26 @@ Physical worktree isolation (launcher packet):
 - Another task worktree reused: no.
 
 Start-of-attempt synchronization (launcher packet):
+
 - Parent remote task branch fast-forward: not-needed; origin/main: already-current.
 - Implementation remote task branch fast-forward: not-needed; origin/main: already-current.
 - Implementation baseline: `3518f504a3ba1d600d603905a93371f385952cab`.
 - Recursive submodule sync/update/status: passed; no submodules present.
 
 Claim:
+
 - Executor: codex; Attempt 1; claimed_at: 2026-09-20T11:16:05Z.
 - Parent claim commit: `59dca9a95acbd1c7f3b9bb67379aa0d9cc5dff5e`; pushed: yes.
 - Latest pre-implementation Architect Review was Pending; no Changes Requested.
 
 Implementation:
+
 - Repository: moda-interact-database.
 - Commit: `54c0ec2e092cd9db52d76e5bb46899efa4063965`; remote: origin/task/ARCH-019-DATABASE-001; pushed and remote SHA verified: yes.
 - Candidate downstream database revision: `54c0ec2e092cd9db52d76e5bb46899efa4063965`, only after architect acceptance.
 
 Parent report:
+
 - File: `docs/decisions/database/ARCH-019/DATABASE-001-index-merchant-recovery-read-paths.md`.
 - Report commit: the commit containing this Completion Report; exact SHA returned
   with submission evidence (cannot embed a commit's own hash in itself).

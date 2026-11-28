@@ -17,7 +17,7 @@ attempt: 0
 depends_on: []
 enables: []
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-SYSTEM-TEST-001 — Certify Commerce Studio preview parity against standalone MCP before deleting embedded execution code
@@ -90,47 +90,61 @@ Use the canonical developer workflow and launcher-managed isolated parent and re
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None
 
 ### Work Completed
+
 None
 
 ### Validation Results
+
 Not run
 
 ### Deviations
+
 None
 
 ### Assumptions
+
 None recorded
 
 ### Unresolved Issues
+
 None recorded
 
 ### Architectural Concerns
+
 None recorded
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed
 
 ### Reviewed Files
+
 None
 
 ### Validation Reviewed
+
 None
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
+
 None
 
 ## 2026-10-15 — Architect dependency reconciliation

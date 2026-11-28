@@ -339,6 +339,7 @@ Attempt 1 complete; returned to Architect Review with `status: review`, `attempt
 ### Files Changed
 
 Implementation files:
+
 - `prisma/migrations/20260930200000_arch023_release_feature_snapshot_history/migration.sql`
 - `scripts/validate-arch023-release-feature-snapshot-history.mjs`
 - `scripts/test-arch023-release-feature-snapshot-history-postgres.mjs`

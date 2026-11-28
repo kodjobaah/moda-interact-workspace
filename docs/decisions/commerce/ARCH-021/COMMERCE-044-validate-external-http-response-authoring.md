@@ -291,9 +291,11 @@ The authoritative boundary validates the current authoring definition; browser v
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `src/commerce/tool-authoring/external-validation.ts`
 - `src/commerce/integration/external/index.ts`
 - `src/studio/tools/external-validation-server-actions.ts`
@@ -301,6 +303,7 @@ Ready for Review
 - `tests/external-tool-authoring-server-actions.test.ts`
 
 ### Work Completed
+
 - Added a strict Response-only validation input and named validator for Direct, Visual OBJECT/LIST, and JavaScript modes. It does not require Request, Tool description, response template, connection metadata, or Review state.
 - Direct and Visual modes enforce JSON format; all modes validate a safe or empty Source path and bounded result schema. Visual validation reuses COMMERCE-043 reconstruction/derivation, checks projection and filter/sort/limit constraints, and accepts persisted LIST schemas whose `items.maxItems` is greater than or equal to the current limit.
 - JavaScript validation uses the bounded response compiler only, reports compiler diagnostics at the Response source path, and does not execute a transform or claim runtime/result-schema compatibility.
@@ -325,6 +328,7 @@ Ready for Review
   - recorded submodule commit: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`
 
 ### Validation Results
+
 - `npm run test:arch021-external-tool-authoring-validation`: passed, 52 tests across the authoring validation and Server Action suites.
 - Targeted ESLint for all five changed source/test files: passed.
 - `npx tsc --noEmit --pretty false`: repository-wide diagnostics remain in unrelated files due to missing generated Prisma client types and existing unresolved preview-module imports; filtering the run for all five changed files returned no diagnostics.
@@ -333,23 +337,29 @@ Ready for Review
 - Implementation commit `11b8ae6` was pushed to `origin/task/ARCH-021-COMMERCE-044`.
 
 ### Deviations
+
 None. Response-tab UI composition and navigation behavior remain owned by COMMERCE-045; this server-only boundary adds no navigation gating.
 
 ### Assumptions
+
 Persisted Visual LIST schemas remain compatible when their bounded `items.maxItems` is greater than or equal to the current Visual projection limit, as accepted by COMMERCE-043.
 
 ### Unresolved Issues
+
 The repository-wide TypeScript check remains blocked by the unrelated diagnostics recorded above; no diagnostics were reported in changed files.
 
 ### Architectural Concerns
+
 None. JavaScript compilation is treated only as source/runtime validation, not as evidence of transform output compatibility.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1
 
 ### Review Notes
+
 Reviewed implementation `11b8ae6` and parent handoff `b00b3823`. Accepted.
 
 The submitted implementation provides one strict Response-only validation boundary and
@@ -378,6 +388,7 @@ not contain installed dependencies, so dependency-backed commands were not false
 claimed as independently rerun by the architect.
 
 ### Reviewed Files
+
 - `src/commerce/tool-authoring/external-validation.ts`
 - `src/commerce/integration/external/index.ts`
 - `src/studio/tools/external-validation-server-actions.ts`
@@ -387,6 +398,7 @@ claimed as independently rerun by the architect.
 - ARCH-021 Response follow-up contract and COMMERCE-043 dependency contract
 
 ### Validation Reviewed
+
 Submitted evidence accepted:
 
 - `npm run test:arch021-external-tool-authoring-validation` -> PASS, 52 tests.
@@ -401,11 +413,13 @@ Submitted evidence accepted:
   worktrees and synchronized task branches.
 
 ### Architecture Conformance
+
 Conforms. The Response validation boundary is non-mutating, zero-provider-I/O,
 mode-specific and advisory. It preserves the raw-local / canonical-local / durable-state
 separation and does not broaden the runtime or persistence authority of Response
 authoring.
 
 ### Follow-up
+
 `ARCH-021-COMMERCE-045` is promoted to `ready` for final Response-tab composition,
 local raw-state presentation, validation-state staleness and per-mode draft retention.

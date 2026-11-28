@@ -80,14 +80,14 @@ Use the **existing** `POST /webhook/whatsapp` React Router action and `verifyMet
 
 The response contract stays:
 
-| Condition | HTTP outcome | Publication |
-|---|---|---|
-| Wrong method | Existing `405` | None |
-| Missing/invalid Meta signature | Existing `401` | None |
-| Signed syntactically invalid JSON | Existing `400` | None |
-| Signed invalid envelope, invalid inbound message or **invalid matching template-status change** | Existing `400` / `invalid_payload` | **No jobs from that HTTP batch** |
-| Valid signed batch, including mixed template, inbound and delivery-status changes | Existing `200 EVENT_RECEIVED` **after all queue `add` calls succeed** | One job per staged event in source order |
-| Queue/Redis publication throws or is not durably accepted | Failure/retry path, **not `200`** | Existing already-accepted jobs may remain; no false atomicity claim |
+| Condition                                                                                       | HTTP outcome                                                          | Publication                                                         |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Wrong method                                                                                    | Existing `405`                                                        | None                                                                |
+| Missing/invalid Meta signature                                                                  | Existing `401`                                                        | None                                                                |
+| Signed syntactically invalid JSON                                                               | Existing `400`                                                        | None                                                                |
+| Signed invalid envelope, invalid inbound message or **invalid matching template-status change** | Existing `400` / `invalid_payload`                                    | **No jobs from that HTTP batch**                                    |
+| Valid signed batch, including mixed template, inbound and delivery-status changes               | Existing `200 EVENT_RECEIVED` **after all queue `add` calls succeed** | One job per staged event in source order                            |
+| Queue/Redis publication throws or is not durably accepted                                       | Failure/retry path, **not `200`**                                     | Existing already-accepted jobs may remain; no false atomicity claim |
 
 Preflight **all relevant changes before the first queue operation**. Preserve messages-first/statuses-second within each existing `messages` change and preserve the traversal order of `entry[]` and `changes[]`. Do not change the existing policy that malformed **individual ordinary delivery statuses** are skipped; template-status changes instead require complete validated identity to prevent silently losing an approval notification.
 
@@ -97,15 +97,15 @@ In signed payloads, recognise **only** changes where `field === "message_templat
 
 The source-to-v2 mapping is exact:
 
-| Meta path | Outbound property | Required handling |
-|---|---|---|
-| `entry.id` | `wabaId` | Required decimal string, 1–32 chars |
-| `change.value.message_template_id` | `providerTemplateId` | Decimal string 1–32 chars, or `null` if absent |
-| `change.value.message_template_name` | `providerTemplateName` | Required nonempty string, max 255 chars |
-| `change.value.message_template_language` | `providerLanguageCode` | Required nonempty string, max 16 chars; keep Meta form, e.g. `en_GB` |
-| `change.value.event` | `providerStatus` | Required nonempty string, max 32 chars; preserve provider spelling/case |
-| `change.value.reason` | `reasonCode` | String max 128 chars or `null` when absent/null |
-| Local authenticated-receipt time | `receivedAt` | Canonical UTC ISO-8601 string ending `Z`; not provider occurrence time |
+| Meta path                                | Outbound property      | Required handling                                                       |
+| ---------------------------------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `entry.id`                               | `wabaId`               | Required decimal string, 1–32 chars                                     |
+| `change.value.message_template_id`       | `providerTemplateId`   | Decimal string 1–32 chars, or `null` if absent                          |
+| `change.value.message_template_name`     | `providerTemplateName` | Required nonempty string, max 255 chars                                 |
+| `change.value.message_template_language` | `providerLanguageCode` | Required nonempty string, max 16 chars; keep Meta form, e.g. `en_GB`    |
+| `change.value.event`                     | `providerStatus`       | Required nonempty string, max 32 chars; preserve provider spelling/case |
+| `change.value.reason`                    | `reasonCode`           | String max 128 chars or `null` when absent/null                         |
+| Local authenticated-receipt time         | `receivedAt`           | Canonical UTC ISO-8601 string ending `Z`; not provider occurrence time  |
 
 For any numeric provider ID, accept only a **safe nonnegative integer** that can be losslessly converted to a base-10 decimal string; reject an unsafe JavaScript number rather than hash a rounded ID. Reject blank/whitespace-padded strings, arrays, objects, booleans, invalid formats or out-of-range lengths. Preserve validated Meta name, language, status and reason values **exactly**; do not translate, uppercase, truncate, replace, or silently change their spelling. When an ID/reason is absent, emit explicit JSON `null`, not `""` or an omitted key.
 
@@ -140,7 +140,7 @@ eventIdentity = meta-template-status:v2:550e8400-e29b-41d4-a716-446655440000
 jobId         = meta-template-status-v2-550e8400-e29b-41d4-a716-446655440000
 ```
 
-A second independently received identical APPROVED (including APPROVED → PAUSED → APPROVED) must get a **new UUID**, so BullMQ's retained first job cannot coalesce it. A retry of the *same enqueued job* keeps the same ID. A Meta redelivery can lead to duplicate business information under a new UUID; BG003 reconciles current provider state and deduplicates effects. Do **not** hash just WABA/name/language/status/reason for job identity, rely on `removeOnComplete`, or assume provider `receivedAt` orders transitions. A content fingerprint may be logged as bounded diagnostics but is distinct from occurrence identity.
+A second independently received identical APPROVED (including APPROVED → PAUSED → APPROVED) must get a **new UUID**, so BullMQ's retained first job cannot coalesce it. A retry of the _same enqueued job_ keeps the same ID. A Meta redelivery can lead to duplicate business information under a new UUID; BG003 reconciles current provider state and deduplicates effects. Do **not** hash just WABA/name/language/status/reason for job identity, rely on `removeOnComplete`, or assume provider `receivedAt` orders transitions. A content fingerprint may be logged as bounded diagnostics but is distinct from occurrence identity.
 
 ### R5 — Existing publisher and acknowledgement boundary
 
@@ -197,7 +197,7 @@ The eventual cross-service ARCH-047 system test can verify the real Meta webhook
 - [x] The exact Shared R3 payload has **nine** keys and no extra raw webhook/PII, with `schemaVersion = 2`, WABA from `entry.id`, decimal-string/null template ID and ISO `receivedAt`.
 - [x] Shared UUID fixture yields the exact R4 event/job identities; two identical Meta observations with different UUIDs are independently enqueued while a retained completed job exists; safe numeric ID conversion and unsafe-number rejection are demonstrated.
 - [x] The queue name, exact job name and producer retry options match R5, and existing message-received/message-status jobs retain their names, IDs, payloads and retry settings.
-- [x] Missing fields, wrong ID types, unsafe numeric IDs, oversized fields, malformed template observation or outbound payload over 4096 bytes reject the signed batch **before any publication**; malformed *ordinary provider statuses* retain their existing skip semantics.
+- [x] Missing fields, wrong ID types, unsafe numeric IDs, oversized fields, malformed template observation or outbound payload over 4096 bytes reject the signed batch **before any publication**; malformed _ordinary provider statuses_ retain their existing skip semantics.
 - [x] Unknown bounded provider status labels are forwarded unmodified, never interpreted as approved; unrelated fields are ignored, including category/quality/components updates.
 - [x] Invalid signature, malformed JSON, missing-secret and wrong-method behaviour are unchanged; a queue failure does not result in a `200` acknowledgement. No partial jobs are published after preflight rejection (though a sequential mid-publish failure may leave earlier accepted jobs).
 - [x] Tests show no database access, Meta API call, external-template adoption, customer send or changes to consent/STOP, billing, worker-side status interpretation or checkout state.

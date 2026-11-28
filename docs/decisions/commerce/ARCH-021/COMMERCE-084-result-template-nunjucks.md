@@ -593,7 +593,7 @@ Before rendering, convert `result.data` to a JSON-only, getter-free, recursively
 
 ```ts
 {
-  result: sanitizedResultData
+  result: sanitizedResultData;
 }
 ```
 

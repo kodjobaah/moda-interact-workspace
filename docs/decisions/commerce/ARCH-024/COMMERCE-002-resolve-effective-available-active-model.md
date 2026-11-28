@@ -241,7 +241,7 @@ CommercePricingPlanModelAssignmentSchema
 The Commerce repository MUST NOT retain or introduce:
 
 ```ts
-type ModelProvider = 'OPENAI' | 'GROQ';
+type ModelProvider = "OPENAI" | "GROQ";
 ```
 
 or another closed provider allowlist.
@@ -286,7 +286,7 @@ export async function listEffectiveAvailableModels(input: {
 export async function assertModelSelectable(input: {
   db: PrismaClient | Prisma.TransactionClient;
   modelId: string;
-  selectionScope: 'PLATFORM' | 'SHOP';
+  selectionScope: "PLATFORM" | "SHOP";
   shopId: string | null;
 }): Promise<AvailableCommerceModel>;
 ```
@@ -549,16 +549,16 @@ Update `src/studio/agent-configuration/effective-contracts.ts` so `EffectiveMode
 
 ```ts
 export type EffectiveModelUnavailableReason =
-  | 'MODEL_NOT_SELECTED'
-  | 'SELECTED_MODEL_NOT_FOUND'
-  | 'SELECTED_MODEL_INVALID'
-  | 'SELECTED_MODEL_DISABLED'
-  | 'SELECTED_AVAILABILITY_INVALID'
-  | 'SELECTED_AVAILABILITY_DISABLED'
-  | 'SELECTED_MODEL_NOT_AVAILABLE_FOR_SCOPE';
+  | "MODEL_NOT_SELECTED"
+  | "SELECTED_MODEL_NOT_FOUND"
+  | "SELECTED_MODEL_INVALID"
+  | "SELECTED_MODEL_DISABLED"
+  | "SELECTED_AVAILABILITY_INVALID"
+  | "SELECTED_AVAILABILITY_DISABLED"
+  | "SELECTED_MODEL_NOT_AVAILABLE_FOR_SCOPE";
 
 export type EffectiveModel = {
-  source: 'SHOP' | 'PRICING_PLAN' | 'PLATFORM' | 'UNAVAILABLE';
+  source: "SHOP" | "PRICING_PLAN" | "PLATFORM" | "UNAVAILABLE";
   selectionSource: CommerceModelSelectionSource;
   environment: CommerceEnvironment;
   selectionEditVersion: number | null;
@@ -724,9 +724,7 @@ Add server actions with exactly these exported names:
 ```ts
 export async function listPlatformAvailableModels();
 
-export async function listEffectiveAvailableModels(
-  shopId: string,
-);
+export async function listEffectiveAvailableModels(shopId: string);
 ```
 
 These are the read APIs ARCH-024-COMMERCE-003 must consume.
@@ -900,16 +898,16 @@ type AvailableCommerceModel = {
 
 ```ts
 type EffectiveModelUnavailableReason =
-  | 'MODEL_NOT_SELECTED'
-  | 'SELECTED_MODEL_NOT_FOUND'
-  | 'SELECTED_MODEL_INVALID'
-  | 'SELECTED_MODEL_DISABLED'
-  | 'SELECTED_AVAILABILITY_INVALID'
-  | 'SELECTED_AVAILABILITY_DISABLED'
-  | 'SELECTED_MODEL_NOT_AVAILABLE_FOR_SCOPE';
+  | "MODEL_NOT_SELECTED"
+  | "SELECTED_MODEL_NOT_FOUND"
+  | "SELECTED_MODEL_INVALID"
+  | "SELECTED_MODEL_DISABLED"
+  | "SELECTED_AVAILABILITY_INVALID"
+  | "SELECTED_AVAILABILITY_DISABLED"
+  | "SELECTED_MODEL_NOT_AVAILABLE_FOR_SCOPE";
 
 type EffectiveModel = {
-  source: 'SHOP' | 'PRICING_PLAN' | 'PLATFORM' | 'UNAVAILABLE';
+  source: "SHOP" | "PRICING_PLAN" | "PLATFORM" | "UNAVAILABLE";
   selectionSource: CommerceModelSelectionSource;
   environment: CommerceEnvironment;
   selectionEditVersion: number | null;
@@ -925,8 +923,8 @@ type EffectiveModel = {
 ### Available-model server actions
 
 ```ts
-listPlatformAvailableModels()
-listEffectiveAvailableModels(shopId)
+listPlatformAvailableModels();
+listEffectiveAvailableModels(shopId);
 ```
 
 No public merchant route is produced.
@@ -1038,6 +1036,7 @@ arch024-platform-model-availability
 ```
 
 and may be used only for the temporary R14 legacy create compatibility path. Normal availability reads must query by scope, not hard-code the bootstrap ID.
+
 - C003 will remove the legacy Commerce Studio Model Catalogue authoring surface. Do not expand that surface here.
 
 ## Completion Report
@@ -1136,7 +1135,7 @@ Attempt 1 is substantially architecture-conformant across the new model-resoluti
 
 **A1-R1 — Preserve the migration-owned Platform Availability boundary.**
 
-`ModelConfigurationService.createCatalogueEntry(...)` currently calls `commerceModelAvailability.upsert(...)` for `arch024-platform-model-availability`. The accepted ARCH-024 architecture establishes that deterministic Platform Availability in the database migration and makes it non-recreatable; Availability authoring is not owned by Commerce. The legacy Catalogue compatibility bridge may create a Catalogue Entry *inside* that row, but must not create/recreate the Availability itself.
+`ModelConfigurationService.createCatalogueEntry(...)` currently calls `commerceModelAvailability.upsert(...)` for `arch024-platform-model-availability`. The accepted ARCH-024 architecture establishes that deterministic Platform Availability in the database migration and makes it non-recreatable; Availability authoring is not owned by Commerce. The legacy Catalogue compatibility bridge may create a Catalogue Entry _inside_ that row, but must not create/recreate the Availability itself.
 
 Correct the production path so it only reads the deterministic Platform Availability (for example, `findUnique`) and fails closed with the existing bounded database-unavailable error if the row is absent or structurally not the expected `PLATFORM` / `shopId = null` row. Do not create, upsert or repair the Availability from Commerce application code.
 

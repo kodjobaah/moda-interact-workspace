@@ -49,11 +49,11 @@ Compensation authority is durable FAILED/131026 `ConversationMessage` evidence p
 
 The provider-status job must call the compensation orchestrator after its status transaction on every relevant replay. If correction fails, the job fails/retries; if the message is already FAILED the retry still calls compensation.
 
-**22 October source reconciliation:** This task remains executable under the *existing* `FAILED/131026` rule. The new BACKGROUND-013 uncertain-send proposal does not authorise a broader provider-code predicate. Build one reusable, source-owned correction entrypoint so that a separately approved general-`FAILED` policy can extend the caller later without a second accounting engine. Treat durable `ConversationMessage` status as delivery evidence and the original reservation/UsageEvent as credit-source evidence; the pre-HTTP dispatch-admission timestamp alone is not a delivery receipt.
+**22 October source reconciliation:** This task remains executable under the _existing_ `FAILED/131026` rule. The new BACKGROUND-013 uncertain-send proposal does not authorise a broader provider-code predicate. Build one reusable, source-owned correction entrypoint so that a separately approved general-`FAILED` policy can extend the caller later without a second accounting engine. Treat durable `ConversationMessage` status as delivery evidence and the original reservation/UsageEvent as credit-source evidence; the pre-HTTP dispatch-admission timestamp alone is not a delivery receipt.
 
 Committed purchased-credit compensation is deliberately deferred to BACKGROUND-009 because it requires final ARCH-027 refund state. A still-RESERVED purchased source can be safely released here because no provider monetary refund exists yet.
 
-ARCH-027-BACKGROUND-001 makes positive recovery `UsageEvent.provider` explicit for Shopify and Woo. Each new negative correction must preserve the *original committed UsageEvent* `shopId` and `provider` (and exact original correction lineage), not inherit Prisma's default `SHOPIFY` provider. Corrections must remain non-reportable to Shopify regardless of the positive source's reporting state.
+ARCH-027-BACKGROUND-001 makes positive recovery `UsageEvent.provider` explicit for Shopify and Woo. Each new negative correction must preserve the _original committed UsageEvent_ `shopId` and `provider` (and exact original correction lineage), not inherit Prisma's default `SHOPIFY` provider. Corrections must remain non-reportable to Shopify regardless of the positive source's reporting state.
 
 ## Scope
 
@@ -158,7 +158,7 @@ Prefer a thin compensation coordinator delegating to focused eligibility, usage-
 
 Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
-ARCH-028-BACKGROUND-013 owns *uncertain dispatch commitment/repair*, not this task. If the architect later approves non-`131026` provider-FAILED correction, amend the eligibility contract and DATABASE-owned reason/provenance *before* extending this coordinator; do not silently reinterpret `WHATSAPP_RECIPIENT_UNDELIVERABLE`.
+ARCH-028-BACKGROUND-013 owns _uncertain dispatch commitment/repair_, not this task. If the architect later approves non-`131026` provider-FAILED correction, amend the eligibility contract and DATABASE-owned reason/provenance _before_ extending this coordinator; do not silently reinterpret `WHATSAPP_RECIPIENT_UNDELIVERABLE`.
 
 ## Completion Report
 

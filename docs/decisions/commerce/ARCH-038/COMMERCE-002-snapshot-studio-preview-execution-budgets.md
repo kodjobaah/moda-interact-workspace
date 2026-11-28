@@ -22,6 +22,7 @@ enables:
 created: 2026-10-13
 updated: 2026-10-17
 ---
+
 # Execute immutable Studio test execution policies
 
 ## Architecture
@@ -149,7 +150,7 @@ Completed by the developer on 2026-10-17 after accepting the passing Attempt 3 r
 - Final structured full suite: 39 failed, 1,382 passed, 7 skipped. Failures compared with `ARCH025-COMMERCE-TEST-001`:
   - **11 stable baseline test identities**: `admin-explorer.test.tsx` — “builds and validates a representable selection before merging query fields into an existing draft”; `agent-configuration-retained-read.test.ts` — “tracks model and prompt CAS versions on one retained row across clear operations”; `agent-contract-validation.test.ts` — “rejects unknown scalar paths and non-list items paths”; `backend-postgres-rehearsal.test.ts` — “publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure”; `discovery-limits.test.ts` — “allows 60 sequential requests and rejects the 61st in the rolling window”; and all six documented `studio-workspace.test.tsx` failures (unexpected action failure class, reusable tool navigation, incremental invalid JSON, mounted detail reset, newer edits during earlier save, stale CAS input retention). The discovery test continues to time out at 30 seconds, matching the documented identity.
   - **28 non-baseline test identities**: `commerce-mcp-extraction-boundary.test.ts` (expects the MCP SDK dependency to be absent); 19 `shopify-admin-tools-ui.test.tsx` cases (Admin GraphQL authoring/save, current-test gate, stale/live test handling, no-shop/session gates, CAS/save/publication/policy behavior, editable mappings and result-schema behavior); `tool-authoring-request-component-boundaries.test.ts` (WooCommerce authoring boundary expects `<WooCommerceRestTest />`); and seven `tool-authoring-screen.test.tsx` cases (new-tool review/test flow, local definition preservation, exact creation identities, lost-create reconciliation and cancellation). These failures reproduced in an isolated rerun of the affected unchanged test files (29 failures including the baseline discovery timeout, 59 passes); all six inspected failure files match `origin/main` and none is changed by this task. The Shopify/Admin cases predominantly fail because tests expect the “Run Test” control or older target-shop/validation behavior that the current UI does not expose.
-  Exact identities from the final JSON report:
+    Exact identities from the final JSON report:
   ```text
   commerce-mcp-extraction-boundary.test.ts :: ARCH-032-COMMERCE-005 complete MCP extraction boundary does not ship an embedded MCP route or server, and keeps only a private thin live client
   shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI offers Admin GraphQL and saves the exact validated definition
@@ -204,33 +205,33 @@ None identified in this implementation review.
 Task branch: `task/ARCH-038-COMMERCE-002`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-COMMERCE-002`
-  parent branch: `task/ARCH-038-COMMERCE-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-COMMERCE-002`
-  implementation branch: `task/ARCH-038-COMMERCE-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-COMMERCE-002`
+parent branch: `task/ARCH-038-COMMERCE-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-COMMERCE-002`
+implementation branch: `task/ARCH-038-COMMERCE-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes
-  parent `origin/main` incorporated: yes, merge commit `499d047c1c16c5f263f4c030cf85985077aa7c2c`
-  implementation remote task branch fast-forwarded: not needed
-  implementation `origin/main` incorporated: already current at implementation commit
+parent remote task branch fast-forwarded: yes
+parent `origin/main` incorporated: yes, merge commit `499d047c1c16c5f263f4c030cf85985077aa7c2c`
+implementation remote task branch fast-forwarded: not needed
+implementation `origin/main` incorporated: already current at implementation commit
 
 Implementation repository:
-  repository: `moda-interact-commerce`
-  commit: `0db7a7078f3b46192729e1a0463261478fb8a073`
-  remote branch: `origin/task/ARCH-038-COMMERCE-002`
-  pushed: yes
+repository: `moda-interact-commerce`
+commit: `0db7a7078f3b46192729e1a0463261478fb8a073`
+remote branch: `origin/task/ARCH-038-COMMERCE-002`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/commerce/ARCH-038/COMMERCE-002-snapshot-studio-preview-execution-budgets.md`
-  report commit: `ac34c3ed` (initial review record; Attempt 3 report is the current task-branch update)
-  remote branch: `origin/task/ARCH-038-COMMERCE-002`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/commerce/ARCH-038/COMMERCE-002-snapshot-studio-preview-execution-budgets.md`
+report commit: `ac34c3ed` (initial review record; Attempt 3 report is the current task-branch update)
+remote branch: `origin/task/ARCH-038-COMMERCE-002`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

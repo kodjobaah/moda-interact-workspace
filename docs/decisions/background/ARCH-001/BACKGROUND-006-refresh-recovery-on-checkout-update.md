@@ -16,6 +16,7 @@ enables: []
 created: 2026-08-28
 updated: 2026-08-28
 ---
+
 # Refresh Existing Recovery on Checkout Update
 
 ## Architecture
@@ -130,11 +131,13 @@ Do not implement the later 'customer modifies basket then abandons again' behavi
 ### Status
 
 Ready for Review
+
 ### Files Changed
 
 - `moda-interact-background/src/services/checkout-recovery.service.ts`
 - `moda-interact-background/tests/unit/services/checkout-refresh.test.ts`
 - `docs/decisions/background/ARCH-001/BACKGROUND-006-refresh-recovery-on-checkout-update.md`
+
 ### Work Completed
 
 - Replaced the BACKGROUND-001 boundary-only `handleCheckoutUpdatedContract` with a real refresh handler.
@@ -145,12 +148,14 @@ Ready for Review
 - Transient `provider-error` lookup failures are thrown (retryable by BullMQ) and never converted into a discard outcome.
 - Extracted a shared private `serializeLineItems` helper so creation (BACKGROUND-004) and refresh (BACKGROUND-006) store an identical durable line-item snapshot shape.
 - Added a `checkout-refresh.test.ts` suite (8 tests) covering no-recovery discard, active-recovery refresh, webhook-data non-use + lifecycle preservation, no timer restart, terminal-recovery no-reopen, duplicate/stale already-transitioned idempotency, provider-failure retryability, and non-deterministic lookup discard.
+
 ### Validation Results
 
 - `npm test`: 50 unit tests pass, 1 pre-existing unrelated failure (`tests/unit/services/recovery-routing.service.test.ts`) that predates this task. New `checkout-refresh` suite (8/8) and all existing ARCH-001 suites pass.
 - `npm run test:integration`: 1 passed, 2 skipped (Shopify integration guarded by unset `SHOPIFY_TEST_SHOP`/`SHOPIFY_TEST_PRODUCT_QUERY`).
 - `npm run build`: pass (Prisma generate + tsc).
 - `npm run prisma:validate`: pass.
+
 ### Deviations
 
 None.
@@ -161,12 +166,15 @@ None.
 - `CheckoutRecovery.detectedAt` retains the Shopify checkout `createdAt` from materialization (BACKGROUND-004 sets `detectedAt` from the lookup result's `createdAt`), making it an appropriate `checkoutCreatedAt` reference for the bounded lookup window on refresh.
 - For refresh the narrow durable-state lookup input substitutes for the candidate the BACKGROUND-003 lookup expects at materialization, since pending candidates no longer exist after materialization. This is consistent with the task's "lookup by shop/checkout token" and "current Shopify data" acceptance criteria.
 - The pre-existing `recovery-routing.service.test.ts` failure is unrelated to BACKGROUND-006.
+
 ### Unresolved Issues
 
 - Repository-wide `npm test` remains red solely due to the pre-existing `tests/unit/services/recovery-routing.service.test.ts` failure.
+
 ### Architectural Concerns
 
 None. The refresh is scoped to existing `CheckoutRecovery`, uses only current Shopify data, preserves lifecycle, requires no durable schema change, and introduces no new cross-service contract.
+
 ## Architect Review
 
 ### Review Status
@@ -192,5 +200,3 @@ Pending review.
 ### Follow-up
 
 None
-
-

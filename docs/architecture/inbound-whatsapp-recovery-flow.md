@@ -188,9 +188,9 @@ ConversationService.receiveMessage()
 
 Initial raw scopes are:
 
-| Scope | Window | Initial limit |
-| --- | ---: | ---: |
-| sender | 60 seconds | 60 distinct provider messages |
+| Scope  |     Window |                     Initial limit |
+| ------ | ---------: | --------------------------------: |
+| sender | 60 seconds |     60 distinct provider messages |
 | global | 60 seconds | 20,000 distinct provider messages |
 
 The raw sender key uses a SHA-256 hash of the normalized customer phone. Raw
@@ -309,24 +309,24 @@ been coalesced.
 
 Standard scopes are:
 
-| Scope | Window | Initial limit |
-| --- | ---: | ---: |
-| sender | 60 seconds | 12 turns |
-| sender | 10 minutes | 60 turns |
-| conversation | 60 seconds | 12 turns |
-| conversation | 10 minutes | 60 turns |
-| shop | 60 seconds | 600 turns |
-| global | 60 seconds | 5,000 turns |
+| Scope        |     Window | Initial limit |
+| ------------ | ---------: | ------------: |
+| sender       | 60 seconds |      12 turns |
+| sender       | 10 minutes |      60 turns |
+| conversation | 60 seconds |      12 turns |
+| conversation | 10 minutes |      60 turns |
+| shop         | 60 seconds |     600 turns |
+| global       | 60 seconds |   5,000 turns |
 
 For `PRODUCT_DISCOVERY` with no reply context, only the sender/conversation
 limits are lower:
 
-| Scope | Window | Initial discovery limit |
-| --- | ---: | ---: |
-| sender | 60 seconds | 4 turns |
-| sender | 10 minutes | 12 turns |
-| conversation | 60 seconds | 4 turns |
-| conversation | 10 minutes | 12 turns |
+| Scope        |     Window | Initial discovery limit |
+| ------------ | ---------: | ----------------------: |
+| sender       | 60 seconds |                 4 turns |
+| sender       | 10 minutes |                12 turns |
+| conversation | 60 seconds |                 4 turns |
+| conversation | 10 minutes |                12 turns |
 
 A `PRODUCT_DISCOVERY` turn with an `inReplyToProviderId` fragment uses the
 standard limits. Recovery, product-support and other applicable conversational

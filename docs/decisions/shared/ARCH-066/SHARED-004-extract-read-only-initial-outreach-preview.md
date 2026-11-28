@@ -14,17 +14,21 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: ["ARCH-066-SHARED-001", "ARCH-066-SHARED-002", "ARCH-066-SHARED-006"]
+depends_on:
+  ["ARCH-066-SHARED-001", "ARCH-066-SHARED-002", "ARCH-066-SHARED-006"]
 enables: ["ARCH-066-SHARED-005"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
+
 # Extract read-only checkout outreach evaluation and rendering
 
 ## Normative contract
+
 Implement [the complete outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md), sections1–7. It fixes exported schemas/signatures, strict input/result shapes, source relocation, ordered live reads, error mapping, offer behavior, rendering and tests. It overrides the earlier shell definition. No architecture choices are delegated to the implementor.
 
 ## Owned files and work
+
 - NEW `src/commerce/outreach/{contracts,evaluate,reconcile,selection,render,index}.ts` and matching `.test.ts` files; public package export `./commerce/outreach` and build/export checks. Internal pure helpers may be split under this directory only.
 - Port sources listed in contract section3, including actual pure template helpers in `recovery-template-preparation`, not the service facade. Export evaluateInitialOutreach with preview alias; one implementation for production/preview.
 - All public payloads use strict Zod and inferred types. Replace source z.custom placeholders for nested price/eligibility/combination data with actual field validators; canonical money/product/tool/offer schemas reused.
@@ -34,6 +38,7 @@ Implement [the complete outreach contract](../../../architecture/ARCH-066-initia
 - Add `scripts/validate-commerce-outreach.mjs`, registered as `validate:commerce-outreach`; import all four public schemas, evaluator and renderer from packed public JS/declarations. This task builds/packs locally but does not publish.
 
 ## Required acceptance evidence
+
 - [x] Strict schema fixtures and all closed refusal reasons from contract section5; malformed nested payload rejected before use.
 - [x] Ordered port-call spy: ready NONE reads each distinct checkout pair exactly twice, never model/offer/search; duplicate lines retain their quantities/order.
 - [x] Changed-price/current-facts, currency, missing product, wrong parent/tenant, revoked access, cancellation, deadline and exhausted-budget tests. Final-return regression coverage added in Attempt 2; see correction disposition below.
@@ -43,6 +48,7 @@ Implement [the complete outreach contract](../../../architecture/ARCH-066-initia
 - [x] Package typecheck/build, focused tests, `validate:commerce-outreach`, pack public import/declaration check and diff check. Record unavailable checks candidly; no claimed publication.
 
 ## Execution / completion
+
 Attempt 2 passes developer self-review, including both Attempt 1 corrections, and is explicitly completed by the developer. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
 
 Generic product payload validation uses accepted SHARED-006 implementation as source prerequisite; no competing schema edits. Source subtree ordering is006 then004, followed by005 publication.

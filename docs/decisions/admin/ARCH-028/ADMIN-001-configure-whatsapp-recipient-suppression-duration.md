@@ -152,6 +152,7 @@ Attempt 2 satisfies the evidence-only correction requested after Attempt 1. The 
 The Completion Report now records the launcher-resolved parent and implementation task worktrees, start-of-attempt synchronization for both branches, recursive implementation submodule materialisation, post-validation clean/upstream parity, and the focused validation rerun from the canonical implementation worktree.
 
 The implementation itself remains architecturally accepted from Attempt 1:
+
 - `whatsappRecipientSuppressionDays` is exposed through the existing SUPER_ADMIN Platform Billing Policy form;
 - the persisted value is rendered with a seven-day default when no policy exists;
 - server validation requires a positive whole number;
@@ -162,6 +163,7 @@ The implementation itself remains architecturally accepted from Attempt 1:
 ### Reviewed Files
 
 Implementation reviewed on Attempt 1:
+
 - `src/lib/admin/billing-control-validation.ts`
 - `src/app/actions/billing-controls.ts`
 - `src/components/admin/billing-controls.tsx`
@@ -170,6 +172,7 @@ Implementation reviewed on Attempt 1:
 - `tests/security/admin-billing-controls.test.mjs`
 
 Attempt 2 review:
+
 - `docs/decisions/admin/ARCH-028/ADMIN-001-configure-whatsapp-recipient-suppression-duration.md`
 
 ### Validation Reviewed

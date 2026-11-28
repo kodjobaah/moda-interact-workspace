@@ -170,25 +170,25 @@ Return contradictory accepted source facts to moda_architect before weakening co
 ### Git / VCS
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-025`
-  parent branch: `task/ARCH-020-COMMERCE-025`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-025`
-  implementation branch: `task/ARCH-020-COMMERCE-025`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-025`
+parent branch: `task/ARCH-020-COMMERCE-025`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-025`
+implementation branch: `task/ARCH-020-COMMERCE-025`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  `git submodule sync --recursive`: passed
-  `git submodule update --init --recursive`: passed
-  recorded submodule commits: `database@7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded submodule commits: `database@7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
 
 Expected mirrored branch: `task/ARCH-020-COMMERCE-025`. Implementation commits `44f9138` and `8b281cf` are pushed. Parent task metadata is being returned on the same mirrored branch for architect review; no merge, self-acceptance, or main update performed.
 
@@ -218,25 +218,27 @@ Add this exact focused regression to `tests/response-processing.test.ts`:
 
 ```ts
 const source = [
-  {id: 'a', sortKey: 'a'},
-  {id: 'null-1', sortKey: null},
-  {id: 'missing'},
-  {id: 'b', sortKey: 'b'},
-  {id: 'null-2', sortKey: null},
+  { id: "a", sortKey: "a" },
+  { id: "null-1", sortKey: null },
+  { id: "missing" },
+  { id: "b", sortKey: "b" },
+  { id: "null-2", sortKey: null },
 ];
 const processing = list({
-  fields: {id: {path: 'id'}},
-  sort: {path: 'sortKey', direction: 'DESC'},
+  fields: { id: { path: "id" } },
+  sort: { path: "sortKey", direction: "DESC" },
 });
 expect(run(source, processing)).toEqual({
   ok: true,
-  values: {items: [
-    {id: 'b'},
-    {id: 'a'},
-    {id: 'null-1'},
-    {id: 'missing'},
-    {id: 'null-2'},
-  ]},
+  values: {
+    items: [
+      { id: "b" },
+      { id: "a" },
+      { id: "null-1" },
+      { id: "missing" },
+      { id: "null-2" },
+    ],
+  },
 });
 ```
 

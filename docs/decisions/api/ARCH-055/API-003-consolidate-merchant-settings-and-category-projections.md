@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 4
 depends_on: []
 enables:
-- ARCH-055-API-009
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-API-009
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -66,14 +66,14 @@ Additional explicit registration/module paths for this revision:
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/merchant/store-categories/store-categories-read.service.ts; src/merchant/store-categories/profile-read.ts` | MODIFY read(): choose a short RepeatableRead transaction (not an alternative design); include principal, catalogue, profile and environment configuration reads in that tx. Extend the local read database port with $transaction; no FOR UPDATE/FOR SHARE on category GET. |
-| `src/merchant/store-categories/selection-publication.ts` | TRACK newly created lineage. Only that branch skips draft/latest reads and publishes revision=1. Pending-draft branch uses exact id/promptId/status=DRAFT update and requires count=1, removing its pre-read. Existing-lineage checks remain. |
-| `src/merchant/feature-preferences/service.ts; src/merchant/feature-preferences/timing.ts` | NARROW selected scalar/relation fields without changing fingerprint inputs. Name first-load phases initial.subscriptionLookupMs/initial.featuresLookupMs/initial.preferencesLookupMs/initial.projectionMs and reload phases final.*. Preserve overall timers, sequential changed upserts and final reload. |
-| `src/merchant/recovery-policy/service.ts; src/merchant/ai-response-delay/service.ts` | NARROW settings/override selections to projection/revision fields. Retain recovery-policy old-revision identical replay versus AI-delay revision-before-no-op; AI minutes 0..30 integers/default0. |
-| `src/merchant/recovery-summary/recovery-summary.service.ts` | CONSOLIDATE principal/settings/override into one parameterised statement returning one joined tenant row (LEFT JOIN optional settings/override). Validate identity in the service and project the existing policy/default/expiry semantics. No reporting metrics or writes. |
-| `scripts/test-arch055-merchant-settings-postgres.mjs` | CREATE canonical migration runner for existing bootstrap/store-context/category-read/category-write fixtures plus the new coherent-read race suite. Keep old aggregate runner untouched until API-009 reconciliation. |
+| File / symbol touchpoint                                                                                        | Deterministic edit                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/merchant/store-categories/store-categories-read.service.ts; src/merchant/store-categories/profile-read.ts` | MODIFY read(): choose a short RepeatableRead transaction (not an alternative design); include principal, catalogue, profile and environment configuration reads in that tx. Extend the local read database port with $transaction; no FOR UPDATE/FOR SHARE on category GET.                                |
+| `src/merchant/store-categories/selection-publication.ts`                                                        | TRACK newly created lineage. Only that branch skips draft/latest reads and publishes revision=1. Pending-draft branch uses exact id/promptId/status=DRAFT update and requires count=1, removing its pre-read. Existing-lineage checks remain.                                                              |
+| `src/merchant/feature-preferences/service.ts; src/merchant/feature-preferences/timing.ts`                       | NARROW selected scalar/relation fields without changing fingerprint inputs. Name first-load phases initial.subscriptionLookupMs/initial.featuresLookupMs/initial.preferencesLookupMs/initial.projectionMs and reload phases final.*. Preserve overall timers, sequential changed upserts and final reload. |
+| `src/merchant/recovery-policy/service.ts; src/merchant/ai-response-delay/service.ts`                            | NARROW settings/override selections to projection/revision fields. Retain recovery-policy old-revision identical replay versus AI-delay revision-before-no-op; AI minutes 0..30 integers/default0.                                                                                                         |
+| `src/merchant/recovery-summary/recovery-summary.service.ts`                                                     | CONSOLIDATE principal/settings/override into one parameterised statement returning one joined tenant row (LEFT JOIN optional settings/override). Validate identity in the service and project the existing policy/default/expiry semantics. No reporting metrics or writes.                                |
+| `scripts/test-arch055-merchant-settings-postgres.mjs`                                                           | CREATE canonical migration runner for existing bootstrap/store-context/category-read/category-write fixtures plus the new coherent-read race suite. Keep old aggregate runner untouched until API-009 reconciliation.                                                                                      |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
 
@@ -159,13 +159,13 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| C01 | Publish profile B/config B between the previous two profile/config reads | GET returns all A or all B, never old profile with new provenance. |
-| C02 | First lineage, existing empty lineage, valid/foreign/published pending draft | Only genuinely new lineage uses revision1 shortcut; invalid draft affects zero rows and full rollback. |
-| C03 | Mapping disabled after admission versus before admission; current/stale no-op controls | Follow exact C03a–c below: post-admission save returns 200 with enabled=true but planEligible/editable/effective=false; pre-admission old revision is 409 conflict, fresh disabled revision is 409 denied; no-op does not write/reload. |
-| C04 | AI delay 0/1/30, negative/fraction/31; policy old-revision identical replay | Original allowed/rejected values and deliberately different replay rules unchanged. |
-| C05 | No settings/override, active override, expired override, malformed row | Single summary statement keeps default, source and safe failure semantics. |
+| Case | Fixture / operation                                                                    | Required result                                                                                                                                                                                                                         |
+| ---- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C01  | Publish profile B/config B between the previous two profile/config reads               | GET returns all A or all B, never old profile with new provenance.                                                                                                                                                                      |
+| C02  | First lineage, existing empty lineage, valid/foreign/published pending draft           | Only genuinely new lineage uses revision1 shortcut; invalid draft affects zero rows and full rollback.                                                                                                                                  |
+| C03  | Mapping disabled after admission versus before admission; current/stale no-op controls | Follow exact C03a–c below: post-admission save returns 200 with enabled=true but planEligible/editable/effective=false; pre-admission old revision is 409 conflict, fresh disabled revision is 409 denied; no-op does not write/reload. |
+| C04  | AI delay 0/1/30, negative/fraction/31; policy old-revision identical replay            | Original allowed/rejected values and deliberately different replay rules unchanged.                                                                                                                                                     |
+| C05  | No settings/override, active override, expired override, malformed row                 | Single summary statement keeps default, source and safe failure semantics.                                                                                                                                                              |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -289,17 +289,18 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 - **M04/M05 paired measurement evidence remains outstanding.** The measurement baseline is `e20ceccafeade2c53bdb5ec5942b65a9ccffcc43`; the current corrected candidate is commit `de096e2`. No baseline/candidate two-warm-up plus five-restored-sample set was captured for any mandatory variant, and there are no recorded raw SQL/transaction/row/timing/retry/external-port tables. Do not infer metrics from test assertions or partial suite durations.
 - The terminal became unresponsive during a bounded rerun attempt; after it recovered, a rerun exposed the exact 5-second C01 transaction timeout above. The test-only timeout correction is committed and pushed but remains unvalidated. Required paired measurements and remaining validations are outstanding. The architect reviewed this Attempt 2 evidence on 2026-11-03 and returned the task to `ready`, with executor and claim cleared for Attempt 3. This is not acceptance; no downstream task was started, no main merge or gitlink update occurred.
 
-
 ### Attempt 4 correction and validation evidence — 2026-11-03
 
 **Disposition:** Attempt 4 implementation `e958f422cad24039ca71356d192f75c4faec6a54` and report `cf6e080e2f7571da8dfadc0d4d32a87e5d0742dc` are pushed to their matching task branches. The task is submitted for architect review; this is not an acceptance or completion decision. Prior submissions/reviews above and below remain historical.
 
 **Correction checklist**
+
 1. **Implemented — canonical fixtures/cleanup.** Revalidated the previously published slug/key, pending-draft, revocation and immutable-evidence teardown fixes on the accepted Database pin. Removed the now-unused teardown variables in bootstrap/category fixtures. Canonical settings runner: 8/8 before measurement additions; final paired runs: 9/9 each, including all original eight cases plus measurement coverage.
 2. **Implemented — C01 schedule.** The reader establishes its RepeatableRead snapshot and pauses before its profile read; the independent writer commits B before the reader resumes. The test observes coherent A and then fresh B, and reaches published/foreign-draft rollback checks. The existing 30-second test transaction timeout is validated. No production transaction timeout or locking policy changed.
 3. **Implemented — paired M04/M05 and complete validation.** Added opt-in measurements in the existing `arch055-coherent-read.postgres.test.ts`; no new framework/file or production instrumentation. Corrected recovery-policy test's tenant-parameter assertion from `$1` to `$2` (installation is `$1`). Extended the existing C03 integration suite to feed the exact observed service outcomes/errors through the real HTTP route: C03a and current no-op 200; stale revision 409/feature_preferences_conflict; fresh disabled mapping 409/feature_preferences_denied. PostgreSQL persistence/barriers remain real and independent of HTTP mapping.
 
 **Version/schema/fixture identity**
+
 - Prepared task-start baseline: `f894416d557ba79244753e2c691b21844a1153e6`; candidate: `e958f422cad24039ca71356d192f75c4faec6a54`. A read-only archive of baseline `src/` was extracted to `/tmp/arch055-api003-baseline`, with the same installed dependency tree; neither task worktree was switched.
 - `git diff e20ceccafeade2c53bdb5ec5942b65a9ccffcc43 f894416 -- src/merchant/store-categories src/merchant/feature-preferences src/merchant/recovery-policy src/merchant/ai-response-delay src/merchant/recovery-summary src/merchant/store-context` is empty. The previously named Attempt 2 measurement baseline and this attempt's prepared baseline therefore have identical measured service code. Candidate changes are tests only. No additional production SQL/latency saving is claimed from this rework.
 - Database pin: `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; 71 unchanged canonical migrations deployed successfully per runner; PostgreSQL 17 + pgvector via `pgvector/pgvector:pg17`; Node 24.19.0, npm 11.17.0, Prisma Client/CLI 6.19.3.
@@ -311,6 +312,7 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 - Measurement boundary is the real named service method, including category preparation/configuration reads, service transactions and feature final reload. Fixtures, pre-read expected revision, postconditions and HTTP authentication are excluded. One warmed Prisma client is reused within each version and disconnected at completion.
 
 **Observed results and retained decisions**
+
 - M04 new lineage: 0 revision-history lookups; existing empty lineage: 2; pending draft: 0 pre-reads and one exact-one conditional update. Each publishes exactly one revision and the expected category/template/mapping provenance. Invalid/published/foreign draft attempts in C02 reject and leave generation/evidence unchanged.
 - M05: feature GET/no-op have five logical calls; changed PUT has nine including one sequential upsert and complete final reload. Initial four phases exist once, final four only for changed updates; no-op retains both persisted preference timestamps and revision. Fingerprint inputs remain subscription identity/status/plan, plan activity/timestamp, all mapping eligibility/feature activity/timestamps, all feature presentation/activation fields, and preference values/timestamps.
 - Recovery-policy GET observes active override 90 minutes; AI-delay GET retains value 1. Summary absent/active/expired variants each execute one parameterised tenant-bound LEFT JOIN statement and return 30/90/45 minutes respectively. Read-only variants create no settings row; no additional mutation locks or per-feature queries were added.
@@ -319,21 +321,22 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 - SQL totals below include BEGIN, isolation and COMMIT. Every transactional sample has one BEGIN, one isolation statement and one COMMIT, zero ROLLBACK/retries; summary has none. Logical calls and SQL are intentionally distinct: relation loading emits additional SQL. The sample affectedTargetRows field counts the published prompt revision (M04) or changed preference rows (M05); per-call affectedRows additionally records all observed model mutation results. Calls' returnedRows are observed logical-result cardinalities, affectedRows use mutation result/count; database-engine internal returned-row counts, wire bytes, trigger-internal work and pure pool wait are not exposed/measured. All service dependencies here are database-only, with no external provider/R2/queue ports configured or invoked (0); no real external service was contacted.
 - Min/median/max milliseconds are descriptive five-sample observations under the local workload. There is no production percentile, capacity or latency-improvement claim.
 
-| Profile | Logical calls, both versions | SQL statements, both versions | Baseline min/median/max ms | Candidate min/median/max ms |
-|---|---:|---:|---|---|
-| M04-new | 13 | 20 | 73.835/83.584/118.610 | 70.512/78.177/122.297 |
-| M04-empty | 14 | 21 | 77.721/112.426/216.576 | 65.486/79.142/87.241 |
-| M04-draft | 11 | 18 | 71.185/79.988/179.935 | 75.785/83.042/97.323 |
-| M05-get | 5 | 11 | 34.549/42.025/61.604 | 31.508/36.216/46.643 |
-| M05-change | 9 | 18 | 51.821/58.913/85.011 | 55.783/61.224/79.708 |
-| M05-noop | 5 | 11 | 24.512/29.615/32.481 | 30.190/32.186/37.664 |
-| M05-policy | 4 | 7 | 16.579/24.936/38.252 | 20.594/24.158/31.498 |
-| M05-delay | 3 | 6 | 15.438/18.289/24.027 | 14.131/17.197/18.786 |
-| M05-summary-absent | 1 | 1 | 3.620/5.526/8.483 | 3.342/4.226/5.133 |
-| M05-summary-active | 1 | 1 | 1.990/3.363/5.535 | 3.296/3.553/8.314 |
-| M05-summary-expired | 1 | 1 | 2.916/4.423/7.141 | 2.838/3.077/4.574 |
+| Profile             | Logical calls, both versions | SQL statements, both versions | Baseline min/median/max ms | Candidate min/median/max ms |
+| ------------------- | ---------------------------: | ----------------------------: | -------------------------- | --------------------------- |
+| M04-new             |                           13 |                            20 | 73.835/83.584/118.610      | 70.512/78.177/122.297       |
+| M04-empty           |                           14 |                            21 | 77.721/112.426/216.576     | 65.486/79.142/87.241        |
+| M04-draft           |                           11 |                            18 | 71.185/79.988/179.935      | 75.785/83.042/97.323        |
+| M05-get             |                            5 |                            11 | 34.549/42.025/61.604       | 31.508/36.216/46.643        |
+| M05-change          |                            9 |                            18 | 51.821/58.913/85.011       | 55.783/61.224/79.708        |
+| M05-noop            |                            5 |                            11 | 24.512/29.615/32.481       | 30.190/32.186/37.664        |
+| M05-policy          |                            4 |                             7 | 16.579/24.936/38.252       | 20.594/24.158/31.498        |
+| M05-delay           |                            3 |                             6 | 15.438/18.289/24.027       | 14.131/17.197/18.786        |
+| M05-summary-absent  |                            1 |                             1 | 3.620/5.526/8.483          | 3.342/4.226/5.133           |
+| M05-summary-active  |                            1 |                             1 | 1.990/3.363/5.535          | 3.296/3.553/8.314           |
+| M05-summary-expired |                            1 |                             1 | 2.916/4.423/7.141          | 2.838/3.077/4.574           |
 
 **Validation**
+
 - `node scripts/test-arch055-merchant-settings-postgres.mjs`: exit 0, 8/8 before opt-in measurement; both final paired commands exit 0, 9/9, no skips.
 - `node scripts/test-arch035-feature-preferences-postgres.mjs`: final exit 0, 2/2, including exact C03 persistence/HTTP envelopes, timing/no-op controls and large changed set.
 - `node scripts/test-arch041-cross-domain-postgres.mjs`: final exit 0, 2/2 after the parameter-position assertion correction.
@@ -345,6 +348,7 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 - Each runner's finally cleanup succeeded (exit 0). Docker inventory at 06:24 UTC retained only two settings containers created at 03:18/03:20 UTC, before this claim at 06:09 UTC; no container created by this attempt remains. Those older resources were inspected by name/creation time only and left untouched.
 
 **Prepared execution / VCS evidence**
+
 - Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-003`, branch `task/ARCH-055-API-003`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-003`, same task branch.
@@ -357,10 +361,1873 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 The per-profile invariants apply to every one of the five raw samples in BOTH versions; equality was checked before encoding. SQL IDs refer to the common normalised statement dictionary; call entries retain observed selection shapes, logical returned cardinality and affected-row results. Raw samples retain operation/transaction milliseconds and every emitted timing phase. Fixture setup and test assertion SQL are excluded. Both warm-ups are discarded by design, not counted as samples.
 
 ```json
-{"commonSqlShapes":{"1":"SELECT \"commerce\".\"CommercePromptTemplateCategory\".\"id\", \"commerce\".\"CommercePromptTemplateCategory\".\"slug\", \"commerce\".\"CommercePromptTemplateCategory\".\"displayName\", \"commerce\".\"CommercePromptTemplateCategory\".\"description\", \"commerce\".\"CommercePromptTemplateCategory\".\"enabled\", \"commerce\".\"CommercePromptTemplateCategory\".\"displayOrder\", \"commerce\".\"CommercePromptTemplateCategory\".\"editVersion\", \"commerce\".\"CommercePromptTemplateCategory\".\"createdByAdminId\", \"commerce\".\"CommercePromptTemplateCategory\".\"updatedByAdminId\", \"commerce\".\"CommercePromptTemplateCategory\".\"createdAt\", \"commerce\".\"CommercePromptTemplateCategory\".\"updatedAt\", \"commerce\".\"CommercePromptTemplateCategory\".\"defaultTemplateId\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomySource\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyVersion\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyCategoryId\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyCategoryName\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyCategoryFullName\" FROM \"commerce\".\"CommercePromptTemplateCategory\" WHERE (\"commerce\".\"CommercePromptTemplateCategory\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","2":"SELECT \"commerce\".\"CommercePromptTemplate\".\"id\", \"commerce\".\"CommercePromptTemplate\".\"key\", \"commerce\".\"CommercePromptTemplate\".\"categoryId\", \"commerce\".\"CommercePromptTemplate\".\"displayName\", \"commerce\".\"CommercePromptTemplate\".\"description\", \"commerce\".\"CommercePromptTemplate\".\"promptText\", \"commerce\".\"CommercePromptTemplate\".\"enabled\", \"commerce\".\"CommercePromptTemplate\".\"editVersion\", \"commerce\".\"CommercePromptTemplate\".\"createdByAdminId\", \"commerce\".\"CommercePromptTemplate\".\"updatedByAdminId\", \"commerce\".\"CommercePromptTemplate\".\"createdAt\", \"commerce\".\"CommercePromptTemplate\".\"updatedAt\" FROM \"commerce\".\"CommercePromptTemplate\" WHERE \"commerce\".\"CommercePromptTemplate\".\"id\" IN ($1) OFFSET $2","3":"SELECT \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"id\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"shopifyTaxonomyCategoryId\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomySource\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomyVersion\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomyCategoryName\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomyCategoryFullName\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"displayName\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"weight\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"editVersion\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"createdAt\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"updatedAt\" FROM \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\" WHERE (\"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\" IS NOT NULL AND \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\" IN ($1)) ORDER BY \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"weight\" DESC, \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"id\" ASC OFFSET $2","4":"BEGIN","5":"SET TRANSACTION ISOLATION LEVEL SERIALIZABLE","6":"SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\", \"onboardingCompleted\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1 FOR UPDATE","7":"SELECT \"id\", \"shopId\", \"canonicalSiteUrl\", \"credentialVersion\", \"status\", \"revokedAt\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE \"id\" = $1 FOR SHARE","8":"SELECT \"billing\".\"Subscription\".\"id\", \"billing\".\"Subscription\".\"status\"::text, \"billing\".\"Subscription\".\"planId\" FROM \"billing\".\"Subscription\" WHERE (\"billing\".\"Subscription\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3","9":"SELECT \"commerce\".\"CommerceShopProfile\".\"id\", \"commerce\".\"CommerceShopProfile\".\"shopId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryActivatedAt\", \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\", \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectedAt\", \"commerce\".\"CommerceShopProfile\".\"createdAt\", \"commerce\".\"CommerceShopProfile\".\"updatedAt\" FROM \"commerce\".\"CommerceShopProfile\" WHERE (\"commerce\".\"CommerceShopProfile\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3","10":"INSERT INTO \"commerce\".\"CommerceShopProfile\" (\"id\",\"shopId\",\"pendingSelectionGeneration\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5) RETURNING \"commerce\".\"CommerceShopProfile\".\"id\", \"commerce\".\"CommerceShopProfile\".\"shopId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryActivatedAt\", \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\", \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectedAt\", \"commerce\".\"CommerceShopProfile\".\"createdAt\", \"commerce\".\"CommerceShopProfile\".\"updatedAt\"","11":"SELECT \"commerce\".\"CommercePromptTemplateCategory\".\"id\", \"commerce\".\"CommercePromptTemplateCategory\".\"enabled\", \"commerce\".\"CommercePromptTemplateCategory\".\"editVersion\", \"commerce\".\"CommercePromptTemplateCategory\".\"defaultTemplateId\" FROM \"commerce\".\"CommercePromptTemplateCategory\" WHERE (\"commerce\".\"CommercePromptTemplateCategory\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","12":"SELECT \"commerce\".\"CommercePromptTemplate\".\"id\", \"commerce\".\"CommercePromptTemplate\".\"enabled\", \"commerce\".\"CommercePromptTemplate\".\"categoryId\", \"commerce\".\"CommercePromptTemplate\".\"editVersion\", \"commerce\".\"CommercePromptTemplate\".\"promptText\" FROM \"commerce\".\"CommercePromptTemplate\" WHERE \"commerce\".\"CommercePromptTemplate\".\"id\" IN ($1) OFFSET $2","13":"SELECT \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"id\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"editVersion\" FROM \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\" WHERE (\"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\" IS NOT NULL AND \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\" IN ($1)) OFFSET $2","14":"SELECT \"commerce\".\"CommerceAgentPrompt\".\"id\" FROM \"commerce\".\"CommerceAgentPrompt\" WHERE (\"commerce\".\"CommerceAgentPrompt\".\"scope\" = CAST($1::text AS \"commerce\".\"CommerceAgentPromptScope\") AND \"commerce\".\"CommerceAgentPrompt\".\"shopId\" = $2) ORDER BY \"commerce\".\"CommerceAgentPrompt\".\"id\" ASC LIMIT $3 OFFSET $4","15":"INSERT INTO \"commerce\".\"CommerceAgentPrompt\" (\"id\",\"scope\",\"shopId\",\"createdAt\") VALUES ($1,CAST($2::text AS \"commerce\".\"CommerceAgentPromptScope\"),$3,$4) RETURNING \"commerce\".\"CommerceAgentPrompt\".\"id\"","16":"SELECT \"commerce\".\"CommerceAgentConfiguration\".\"id\", \"commerce\".\"CommerceAgentConfiguration\".\"activePromptRevisionId\" FROM \"commerce\".\"CommerceAgentConfiguration\" WHERE (\"commerce\".\"CommerceAgentConfiguration\".\"environment\" = CAST($1::text AS \"commerce\".\"CommerceEnvironment\") AND \"commerce\".\"CommerceAgentConfiguration\".\"scope\" = CAST($2::text AS \"commerce\".\"CommerceAgentPromptScope\") AND \"commerce\".\"CommerceAgentConfiguration\".\"shopId\" = $3) ORDER BY \"commerce\".\"CommerceAgentConfiguration\".\"id\" ASC LIMIT $4 OFFSET $5","17":"INSERT INTO \"commerce\".\"CommerceAgentPromptRevision\" (\"id\",\"promptId\",\"revisionNumber\",\"status\",\"editVersion\",\"promptText\",\"contentHash\",\"sourceTemplateId\",\"sourceTemplateEditVersion\",\"sourceContext\",\"createdAt\",\"updatedAt\",\"publishedAt\") VALUES ($1,$2,$3,CAST($4::text AS \"commerce\".\"CommercePromptRevisionStatus\"),$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING \"commerce\".\"CommerceAgentPromptRevision\".\"id\"","18":"INSERT INTO \"commerce\".\"CommerceAgentConfiguration\" (\"id\",\"environment\",\"scope\",\"shopId\",\"activePromptRevisionId\",\"modelEditVersion\",\"promptEditVersion\",\"createdAt\",\"updatedAt\") VALUES ($1,CAST($2::text AS \"commerce\".\"CommerceEnvironment\"),CAST($3::text AS \"commerce\".\"CommerceAgentPromptScope\"),$4,$5,$6,$7,$8,$9) RETURNING \"commerce\".\"CommerceAgentConfiguration\".\"id\", \"commerce\".\"CommerceAgentConfiguration\".\"environment\"::text, \"commerce\".\"CommerceAgentConfiguration\".\"scope\"::text, \"commerce\".\"CommerceAgentConfiguration\".\"shopId\", \"commerce\".\"CommerceAgentConfiguration\".\"modelId\", \"commerce\".\"CommerceAgentConfiguration\".\"activePromptRevisionId\", \"commerce\".\"CommerceAgentConfiguration\".\"modelEditVersion\", \"commerce\".\"CommerceAgentConfiguration\".\"promptEditVersion\", \"commerce\".\"CommerceAgentConfiguration\".\"createdAt\", \"commerce\".\"CommerceAgentConfiguration\".\"updatedAt\"","19":"UPDATE \"commerce\".\"CommerceShopProfile\" SET \"activeCategoryId\" = $1, \"activeCategoryActivatedAt\" = $2, \"pendingCategoryId\" = $3, \"pendingPromptRevisionId\" = $4, \"pendingSelectedAt\" = $5, \"pendingSelectionGeneration\" = (\"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" + $6), \"updatedAt\" = $7 WHERE (\"commerce\".\"CommerceShopProfile\".\"shopId\" = $8 AND \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\" IS NULL AND \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" = $9 AND \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\" IS NULL AND \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\" IS NULL)","20":"COMMIT","21":"SELECT \"commerce\".\"CommerceAgentPromptRevision\".\"id\" FROM \"commerce\".\"CommerceAgentPromptRevision\" WHERE (\"commerce\".\"CommerceAgentPromptRevision\".\"promptId\" = $1 AND \"commerce\".\"CommerceAgentPromptRevision\".\"status\" = CAST($2::text AS \"commerce\".\"CommercePromptRevisionStatus\")) LIMIT $3 OFFSET $4","22":"SELECT \"commerce\".\"CommerceAgentPromptRevision\".\"id\", \"commerce\".\"CommerceAgentPromptRevision\".\"revisionNumber\" FROM \"commerce\".\"CommerceAgentPromptRevision\" WHERE \"commerce\".\"CommerceAgentPromptRevision\".\"promptId\" = $1 ORDER BY \"commerce\".\"CommerceAgentPromptRevision\".\"revisionNumber\" DESC LIMIT $2 OFFSET $3","23":"UPDATE \"commerce\".\"CommerceAgentPromptRevision\" SET \"status\" = CAST($1::text AS \"commerce\".\"CommercePromptRevisionStatus\"), \"promptText\" = $2, \"sourceTemplateId\" = $3, \"sourceTemplateEditVersion\" = $4, \"sourceContext\" = $5, \"contentHash\" = $6, \"publishedAt\" = $7, \"editVersion\" = (\"commerce\".\"CommerceAgentPromptRevision\".\"editVersion\" + $8), \"updatedAt\" = $9 WHERE (\"commerce\".\"CommerceAgentPromptRevision\".\"id\" = $10 AND \"commerce\".\"CommerceAgentPromptRevision\".\"promptId\" = $11 AND \"commerce\".\"CommerceAgentPromptRevision\".\"status\" = CAST($12::text AS \"commerce\".\"CommercePromptRevisionStatus\"))","24":"UPDATE \"commerce\".\"CommerceShopProfile\" SET \"activeCategoryId\" = $1, \"activeCategoryActivatedAt\" = $2, \"pendingCategoryId\" = $3, \"pendingPromptRevisionId\" = $4, \"pendingSelectedAt\" = $5, \"pendingSelectionGeneration\" = (\"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" + $6), \"updatedAt\" = $7 WHERE (\"commerce\".\"CommerceShopProfile\".\"shopId\" = $8 AND \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\" IS NULL AND \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" = $9 AND \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\" = $10 AND \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\" = $11)","25":"SET TRANSACTION ISOLATION LEVEL REPEATABLE READ","26":"SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1","27":"SELECT \"id\", \"shopId\", \"canonicalSiteUrl\", \"credentialVersion\", \"status\", \"revokedAt\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE \"id\" = $1","28":"SELECT \"billing\".\"BillingPlan\".\"id\", \"billing\".\"BillingPlan\".\"active\", \"billing\".\"BillingPlan\".\"updatedAt\" FROM \"billing\".\"BillingPlan\" WHERE \"billing\".\"BillingPlan\".\"id\" IN ($1) OFFSET $2","29":"SELECT \"billing\".\"BillingPlanFeature\".\"id\", \"billing\".\"BillingPlanFeature\".\"featureId\", \"billing\".\"BillingPlanFeature\".\"enabled\", \"billing\".\"BillingPlanFeature\".\"planId\" FROM \"billing\".\"BillingPlanFeature\" WHERE \"billing\".\"BillingPlanFeature\".\"planId\" IN ($1) ORDER BY \"billing\".\"BillingPlanFeature\".\"featureId\" ASC OFFSET $2","30":"SELECT \"billing\".\"Feature\".\"id\", \"billing\".\"Feature\".\"active\", \"billing\".\"Feature\".\"updatedAt\" FROM \"billing\".\"Feature\" WHERE \"billing\".\"Feature\".\"id\" IN ($1,$2,$3,$4) OFFSET $5","31":"SELECT \"billing\".\"Feature\".\"id\", \"billing\".\"Feature\".\"key\", \"billing\".\"Feature\".\"displayName\", \"billing\".\"Feature\".\"description\", \"billing\".\"Feature\".\"active\", \"billing\".\"Feature\".\"activationMode\"::text, \"billing\".\"Feature\".\"systemRequired\", \"billing\".\"Feature\".\"updatedAt\" FROM \"billing\".\"Feature\" WHERE \"billing\".\"Feature\".\"active\" = $1 ORDER BY \"billing\".\"Feature\".\"displayName\" ASC, \"billing\".\"Feature\".\"id\" ASC OFFSET $2","32":"SELECT \"billing\".\"ShopFeaturePreference\".\"id\", \"billing\".\"ShopFeaturePreference\".\"featureId\", \"billing\".\"ShopFeaturePreference\".\"enabled\", \"billing\".\"ShopFeaturePreference\".\"updatedAt\" FROM \"billing\".\"ShopFeaturePreference\" WHERE \"billing\".\"ShopFeaturePreference\".\"shopId\" = $1 ORDER BY \"billing\".\"ShopFeaturePreference\".\"featureId\" ASC OFFSET $2","33":"SET TRANSACTION ISOLATION LEVEL READ COMMITTED","34":"SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1 FOR UPDATE","35":"INSERT INTO \"billing\".\"ShopFeaturePreference\" (\"id\",\"shopId\",\"featureId\",\"enabled\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (\"shopId\",\"featureId\") DO UPDATE SET \"enabled\" = $7, \"updatedAt\" = $8 WHERE ((\"billing\".\"ShopFeaturePreference\".\"shopId\" = $9 AND \"billing\".\"ShopFeaturePreference\".\"featureId\" = $10) AND 1=1) RETURNING \"billing\".\"ShopFeaturePreference\".\"id\", \"billing\".\"ShopFeaturePreference\".\"shopId\", \"billing\".\"ShopFeaturePreference\".\"featureId\", \"billing\".\"ShopFeaturePreference\".\"enabled\", \"billing\".\"ShopFeaturePreference\".\"createdAt\", \"billing\".\"ShopFeaturePreference\".\"updatedAt\"","36":"SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\", \"onboardingCompleted\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1","37":"SELECT \"shopify\".\"ShopSettings\".\"id\", \"shopify\".\"ShopSettings\".\"recoveryDelayMinutes\", \"shopify\".\"ShopSettings\".\"recoveryOfferMode\"::text, \"shopify\".\"ShopSettings\".\"fixedShopifyDiscountId\", \"shopify\".\"ShopSettings\".\"followUpEnabled\", \"shopify\".\"ShopSettings\".\"followUpDelayMinutes\", \"shopify\".\"ShopSettings\".\"notifyOnInitialRecoveryOutreach\", \"shopify\".\"ShopSettings\".\"updatedAt\" FROM \"shopify\".\"ShopSettings\" WHERE (\"shopify\".\"ShopSettings\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3","38":"SELECT \"shopify\".\"ShopRecoveryPolicyOverride\".\"id\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"recoveryDelayMinutes\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"recoveryOfferMode\"::text, \"shopify\".\"ShopRecoveryPolicyOverride\".\"fixedShopifyDiscountId\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"followUpEnabled\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"followUpDelayMinutes\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"expiresAt\" FROM \"shopify\".\"ShopRecoveryPolicyOverride\" WHERE (\"shopify\".\"ShopRecoveryPolicyOverride\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3","39":"SELECT \"shopify\".\"ShopSettings\".\"id\", \"shopify\".\"ShopSettings\".\"aiResponseDelayMinutes\", \"shopify\".\"ShopSettings\".\"updatedAt\" FROM \"shopify\".\"ShopSettings\" WHERE (\"shopify\".\"ShopSettings\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3","40":"SELECT s.\"id\" AS \"shopId\", s.\"domain\", s.\"platform\", s.\"shopifyShopId\", s.\"status\" AS \"shopStatus\", i.\"id\" AS \"installationId\", i.\"shopId\" AS \"installationShopId\", i.\"canonicalSiteUrl\", i.\"credentialVersion\", i.\"status\" AS \"installationStatus\", i.\"revokedAt\", settings.\"recoveryDelayMinutes\" AS \"merchantRecoveryDelayMinutes\", settings.\"recoveryOfferMode\" AS \"merchantRecoveryOfferMode\", settings.\"fixedShopifyDiscountId\" AS \"merchantFixedDiscountId\", settings.\"followUpEnabled\" AS \"merchantFollowUpEnabled\", settings.\"followUpDelayMinutes\" AS \"merchantFollowUpDelayMinutes\", override.\"id\" AS \"overrideId\", override.\"recoveryDelayMinutes\" AS \"overrideRecoveryDelayMinutes\", override.\"recoveryOfferMode\" AS \"overrideRecoveryOfferMode\", override.\"fixedShopifyDiscountId\" AS \"overrideFixedDiscountId\", override.\"followUpEnabled\" AS \"overrideFollowUpEnabled\", override.\"followUpDelayMinutes\" AS \"overrideFollowUpDelayMinutes\", override.\"expiresAt\" AS \"overrideExpiresAt\" FROM \"commerce\".\"Shop\" s LEFT JOIN \"woocommerce\".\"WooCommerceInstallation\" i ON i.\"id\" = $1 AND i.\"shopId\" = s.\"id\" LEFT JOIN \"shopify\".\"ShopSettings\" settings ON settings.\"shopId\" = s.\"id\" LEFT JOIN \"shopify\".\"ShopRecoveryPolicyOverride\" override ON override.\"shopId\" = s.\"id\" WHERE s.\"id\" = $2"},"perProfileInvariants":{"M04-new":{"logicalCalls":13,"calls":[{"method":"commercePromptTemplateCategory.findUnique","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"subscription.findUnique","returnedRows":1,"affectedRows":0,"selection":{"status":true,"planId":true}},{"method":"commerceShopProfile.findUnique","returnedRows":0,"affectedRows":0,"selection":null},{"method":"commerceShopProfile.create","returnedRows":1,"affectedRows":1,"selection":null},{"method":"commercePromptTemplateCategory.findUnique","returnedRows":1,"affectedRows":0,"selection":{"id":true,"enabled":true,"editVersion":true,"defaultTemplateId":true,"defaultTemplate":{"select":{"id":true,"enabled":true,"categoryId":true,"editVersion":true,"promptText":true}},"taxonomyMappings":{"where":{"conditionKey":{"not":null}},"select":{"id":true,"categoryId":true,"conditionKey":true,"editVersion":true}}}},{"method":"commerceAgentPrompt.findMany","returnedRows":0,"affectedRows":0,"selection":{"id":true}},{"method":"commerceAgentPrompt.create","returnedRows":1,"affectedRows":1,"selection":{"id":true}},{"method":"commerceAgentConfiguration.findMany","returnedRows":0,"affectedRows":0,"selection":{"id":true,"activePromptRevision":{"select":{"promptId":true}}}},{"method":"commerceAgentPromptRevision.create","returnedRows":1,"affectedRows":1,"selection":{"id":true}},{"method":"commerceAgentConfiguration.create","returnedRows":1,"affectedRows":1,"selection":null},{"method":"commerceShopProfile.updateMany","returnedRows":1,"affectedRows":1,"selection":null}],"sqlShapeIds":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"affectedTargetRows":1,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"],"retries":0,"externalPortInvocations":0},"M04-empty":{"logicalCalls":14,"calls":[{"method":"commercePromptTemplateCategory.findUnique","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"subscription.findUnique","returnedRows":1,"affectedRows":0,"selection":{"status":true,"planId":true}},{"method":"commerceShopProfile.findUnique","returnedRows":0,"affectedRows":0,"selection":null},{"method":"commerceShopProfile.create","returnedRows":1,"affectedRows":1,"selection":null},{"method":"commercePromptTemplateCategory.findUnique","returnedRows":1,"affectedRows":0,"selection":{"id":true,"enabled":true,"editVersion":true,"defaultTemplateId":true,"defaultTemplate":{"select":{"id":true,"enabled":true,"categoryId":true,"editVersion":true,"promptText":true}},"taxonomyMappings":{"where":{"conditionKey":{"not":null}},"select":{"id":true,"categoryId":true,"conditionKey":true,"editVersion":true}}}},{"method":"commerceAgentPrompt.findMany","returnedRows":1,"affectedRows":0,"selection":{"id":true}},{"method":"commerceAgentConfiguration.findMany","returnedRows":0,"affectedRows":0,"selection":{"id":true,"activePromptRevision":{"select":{"promptId":true}}}},{"method":"commerceAgentPromptRevision.findFirst","returnedRows":0,"affectedRows":0,"selection":{"id":true}},{"method":"commerceAgentPromptRevision.findFirst","returnedRows":0,"affectedRows":0,"selection":{"revisionNumber":true}},{"method":"commerceAgentPromptRevision.create","returnedRows":1,"affectedRows":1,"selection":{"id":true}},{"method":"commerceAgentConfiguration.create","returnedRows":1,"affectedRows":1,"selection":null},{"method":"commerceShopProfile.updateMany","returnedRows":1,"affectedRows":1,"selection":null}],"sqlShapeIds":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,21,22,17,18,19,20],"affectedTargetRows":1,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"],"retries":0,"externalPortInvocations":0},"M04-draft":{"logicalCalls":11,"calls":[{"method":"commercePromptTemplateCategory.findUnique","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"subscription.findUnique","returnedRows":1,"affectedRows":0,"selection":{"status":true,"planId":true}},{"method":"commerceShopProfile.findUnique","returnedRows":1,"affectedRows":0,"selection":null},{"method":"commercePromptTemplateCategory.findUnique","returnedRows":1,"affectedRows":0,"selection":{"id":true,"enabled":true,"editVersion":true,"defaultTemplateId":true,"defaultTemplate":{"select":{"id":true,"enabled":true,"categoryId":true,"editVersion":true,"promptText":true}},"taxonomyMappings":{"where":{"conditionKey":{"not":null}},"select":{"id":true,"categoryId":true,"conditionKey":true,"editVersion":true}}}},{"method":"commerceAgentPrompt.findMany","returnedRows":1,"affectedRows":0,"selection":{"id":true}},{"method":"commerceAgentConfiguration.findMany","returnedRows":0,"affectedRows":0,"selection":{"id":true,"activePromptRevision":{"select":{"promptId":true}}}},{"method":"commerceAgentPromptRevision.updateMany","returnedRows":1,"affectedRows":1,"selection":null},{"method":"commerceAgentConfiguration.create","returnedRows":1,"affectedRows":1,"selection":null},{"method":"commerceShopProfile.updateMany","returnedRows":1,"affectedRows":1,"selection":null}],"sqlShapeIds":[1,2,3,4,5,6,7,8,9,11,12,13,14,16,23,18,24,20],"affectedTargetRows":1,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"],"retries":0,"externalPortInvocations":0},"M05-get":{"logicalCalls":5,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"subscription.findUnique","returnedRows":1,"affectedRows":0,"selection":{"id":true,"status":true,"planId":true,"plan":{"select":{"id":true,"active":true,"updatedAt":true,"features":{"orderBy":{"featureId":"asc"},"select":{"featureId":true,"enabled":true,"feature":{"select":{"active":true,"updatedAt":true}}}}}}}},{"method":"feature.findMany","returnedRows":8,"affectedRows":0,"selection":{"id":true,"key":true,"displayName":true,"description":true,"active":true,"activationMode":true,"systemRequired":true,"updatedAt":true}},{"method":"shopFeaturePreference.findMany","returnedRows":2,"affectedRows":0,"selection":{"featureId":true,"enabled":true,"updatedAt":true}}],"sqlShapeIds":[4,25,26,27,8,28,29,30,31,32,20],"affectedTargetRows":0,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"],"retries":0,"externalPortInvocations":0},"M05-change":{"logicalCalls":9,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"subscription.findUnique","returnedRows":1,"affectedRows":0,"selection":{"id":true,"status":true,"planId":true,"plan":{"select":{"id":true,"active":true,"updatedAt":true,"features":{"orderBy":{"featureId":"asc"},"select":{"featureId":true,"enabled":true,"feature":{"select":{"active":true,"updatedAt":true}}}}}}}},{"method":"feature.findMany","returnedRows":8,"affectedRows":0,"selection":{"id":true,"key":true,"displayName":true,"description":true,"active":true,"activationMode":true,"systemRequired":true,"updatedAt":true}},{"method":"shopFeaturePreference.findMany","returnedRows":2,"affectedRows":0,"selection":{"featureId":true,"enabled":true,"updatedAt":true}},{"method":"shopFeaturePreference.upsert","returnedRows":1,"affectedRows":1,"selection":null},{"method":"subscription.findUnique","returnedRows":1,"affectedRows":0,"selection":{"id":true,"status":true,"planId":true,"plan":{"select":{"id":true,"active":true,"updatedAt":true,"features":{"orderBy":{"featureId":"asc"},"select":{"featureId":true,"enabled":true,"feature":{"select":{"active":true,"updatedAt":true}}}}}}}},{"method":"feature.findMany","returnedRows":8,"affectedRows":0,"selection":{"id":true,"key":true,"displayName":true,"description":true,"active":true,"activationMode":true,"systemRequired":true,"updatedAt":true}},{"method":"shopFeaturePreference.findMany","returnedRows":2,"affectedRows":0,"selection":{"featureId":true,"enabled":true,"updatedAt":true}}],"sqlShapeIds":[4,33,34,7,8,28,29,30,31,32,35,8,28,29,30,31,32,20],"affectedTargetRows":1,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL READ COMMITTED"],"retries":0,"externalPortInvocations":0},"M05-noop":{"logicalCalls":5,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"subscription.findUnique","returnedRows":1,"affectedRows":0,"selection":{"id":true,"status":true,"planId":true,"plan":{"select":{"id":true,"active":true,"updatedAt":true,"features":{"orderBy":{"featureId":"asc"},"select":{"featureId":true,"enabled":true,"feature":{"select":{"active":true,"updatedAt":true}}}}}}}},{"method":"feature.findMany","returnedRows":8,"affectedRows":0,"selection":{"id":true,"key":true,"displayName":true,"description":true,"active":true,"activationMode":true,"systemRequired":true,"updatedAt":true}},{"method":"shopFeaturePreference.findMany","returnedRows":2,"affectedRows":0,"selection":{"featureId":true,"enabled":true,"updatedAt":true}}],"sqlShapeIds":[4,33,34,7,8,28,29,30,31,32,20],"affectedTargetRows":0,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL READ COMMITTED"],"retries":0,"externalPortInvocations":0},"M05-policy":{"logicalCalls":4,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"shopSettings.findUnique","returnedRows":1,"affectedRows":0,"selection":{"recoveryDelayMinutes":true,"recoveryOfferMode":true,"fixedShopifyDiscountId":true,"followUpEnabled":true,"followUpDelayMinutes":true,"notifyOnInitialRecoveryOutreach":true,"updatedAt":true}},{"method":"shopRecoveryPolicyOverride.findUnique","returnedRows":1,"affectedRows":0,"selection":{"recoveryDelayMinutes":true,"recoveryOfferMode":true,"fixedShopifyDiscountId":true,"followUpEnabled":true,"followUpDelayMinutes":true,"expiresAt":true}}],"sqlShapeIds":[4,25,36,27,37,38,20],"affectedTargetRows":0,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"],"retries":0,"externalPortInvocations":0},"M05-delay":{"logicalCalls":3,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null},{"method":"shopSettings.findUnique","returnedRows":1,"affectedRows":0,"selection":{"aiResponseDelayMinutes":true,"updatedAt":true}}],"sqlShapeIds":[4,25,36,27,39,20],"affectedTargetRows":0,"transactionStatements":{"BEGIN":1,"COMMIT":1,"ROLLBACK":0},"isolationStatements":["SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"],"retries":0,"externalPortInvocations":0},"M05-summary-absent":{"logicalCalls":1,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null}],"sqlShapeIds":[40],"affectedTargetRows":0,"transactionStatements":{"BEGIN":0,"COMMIT":0,"ROLLBACK":0},"isolationStatements":[],"retries":0,"externalPortInvocations":0},"M05-summary-active":{"logicalCalls":1,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null}],"sqlShapeIds":[40],"affectedTargetRows":0,"transactionStatements":{"BEGIN":0,"COMMIT":0,"ROLLBACK":0},"isolationStatements":[],"retries":0,"externalPortInvocations":0},"M05-summary-expired":{"logicalCalls":1,"calls":[{"method":"$queryRaw","returnedRows":1,"affectedRows":0,"selection":null}],"sqlShapeIds":[40],"affectedTargetRows":0,"transactionStatements":{"BEGIN":0,"COMMIT":0,"ROLLBACK":0},"isolationStatements":[],"retries":0,"externalPortInvocations":0}},"rawSamples":{"baseline / M04-new":[{"sample":1,"fixture":"arch055-m04-new-2","operationMs":81.91712200000029,"transactionMs":[69.87635499999988],"timings":[]},{"sample":2,"fixture":"arch055-m04-new-3","operationMs":73.83476999999993,"transactionMs":[59.97376200000008],"timings":[]},{"sample":3,"fixture":"arch055-m04-new-4","operationMs":83.58390599999984,"transactionMs":[69.75873200000024],"timings":[]},{"sample":4,"fixture":"arch055-m04-new-5","operationMs":88.23840099999961,"transactionMs":[72.42624100000012],"timings":[]},{"sample":5,"fixture":"arch055-m04-new-6","operationMs":118.61036000000013,"transactionMs":[98.65800199999967],"timings":[]}],"candidate / M04-new":[{"sample":1,"fixture":"arch055-m04-new-2","operationMs":122.29722700000002,"transactionMs":[105.42895499999986],"timings":[]},{"sample":2,"fixture":"arch055-m04-new-3","operationMs":89.27364299999999,"transactionMs":[76.56851600000027],"timings":[]},{"sample":3,"fixture":"arch055-m04-new-4","operationMs":77.03524599999992,"transactionMs":[62.608312000000296],"timings":[]},{"sample":4,"fixture":"arch055-m04-new-5","operationMs":78.17737699999998,"transactionMs":[67.44767199999978],"timings":[]},{"sample":5,"fixture":"arch055-m04-new-6","operationMs":70.51200999999992,"transactionMs":[58.74749299999985],"timings":[]}],"baseline / M04-empty":[{"sample":1,"fixture":"arch055-m04-empty-2","operationMs":81.14902600000005,"transactionMs":[69.6074520000002],"timings":[]},{"sample":2,"fixture":"arch055-m04-empty-3","operationMs":77.72068300000046,"transactionMs":[66.857258],"timings":[]},{"sample":3,"fixture":"arch055-m04-empty-4","operationMs":112.42639799999961,"transactionMs":[79.76946800000042],"timings":[]},{"sample":4,"fixture":"arch055-m04-empty-5","operationMs":216.5761509999993,"transactionMs":[154.6135119999999],"timings":[]},{"sample":5,"fixture":"arch055-m04-empty-6","operationMs":112.59133500000007,"transactionMs":[97.80452400000013],"timings":[]}],"candidate / M04-empty":[{"sample":1,"fixture":"arch055-m04-empty-2","operationMs":87.24060200000031,"transactionMs":[77.44465000000037],"timings":[]},{"sample":2,"fixture":"arch055-m04-empty-3","operationMs":65.48632599999974,"transactionMs":[57.289404000000104],"timings":[]},{"sample":3,"fixture":"arch055-m04-empty-4","operationMs":80.64450299999999,"transactionMs":[66.13064500000019],"timings":[]},{"sample":4,"fixture":"arch055-m04-empty-5","operationMs":74.53271300000006,"transactionMs":[64.41149499999983],"timings":[]},{"sample":5,"fixture":"arch055-m04-empty-6","operationMs":79.1418749999998,"transactionMs":[68.71169899999995],"timings":[]}],"baseline / M04-draft":[{"sample":1,"fixture":"arch055-m04-draft-2","operationMs":82.21340299999974,"transactionMs":[66.5791679999993],"timings":[]},{"sample":2,"fixture":"arch055-m04-draft-3","operationMs":179.93494800000008,"transactionMs":[168.9074789999995],"timings":[]},{"sample":3,"fixture":"arch055-m04-draft-4","operationMs":71.18477900000016,"transactionMs":[58.599247000000105],"timings":[]},{"sample":4,"fixture":"arch055-m04-draft-5","operationMs":73.22655399999985,"transactionMs":[55.225257000000056],"timings":[]},{"sample":5,"fixture":"arch055-m04-draft-6","operationMs":79.9875090000005,"transactionMs":[67.15380800000003],"timings":[]}],"candidate / M04-draft":[{"sample":1,"fixture":"arch055-m04-draft-2","operationMs":97.32296799999995,"transactionMs":[80.92858599999954],"timings":[]},{"sample":2,"fixture":"arch055-m04-draft-3","operationMs":80.97909899999922,"transactionMs":[67.84993200000008],"timings":[]},{"sample":3,"fixture":"arch055-m04-draft-4","operationMs":87.08640000000014,"transactionMs":[74.66384900000048],"timings":[]},{"sample":4,"fixture":"arch055-m04-draft-5","operationMs":83.04205100000036,"transactionMs":[70.87744799999928],"timings":[]},{"sample":5,"fixture":"arch055-m04-draft-6","operationMs":75.78455899999972,"transactionMs":[61.35375600000043],"timings":[]}],"baseline / M05-get":[{"sample":1,"fixture":"arch055-m05-get-2","operationMs":34.54856800000016,"transactionMs":[34.50923299999977],"timings":[{"initial.subscriptionLookupMs":13.458329999999478,"initial.featuresLookupMs":5.913923999999497,"initial.preferencesLookupMs":5.817055999999866,"initial.projectionMs":0.10547099999985221}]},{"sample":2,"fixture":"arch055-m05-get-3","operationMs":39.10626400000001,"transactionMs":[39.06638000000021],"timings":[{"initial.subscriptionLookupMs":15.037053000000014,"initial.featuresLookupMs":9.417977000000064,"initial.preferencesLookupMs":9.330189999999675,"initial.projectionMs":0.08779800000047544}]},{"sample":3,"fixture":"arch055-m05-get-4","operationMs":61.6038410000001,"transactionMs":[61.5639199999996],"timings":[{"initial.subscriptionLookupMs":17.157038999999713,"initial.featuresLookupMs":13.81822000000011,"initial.preferencesLookupMs":13.725894000000153,"initial.projectionMs":0.16392499999983556}]},{"sample":4,"fixture":"arch055-m05-get-5","operationMs":42.025432000000364,"transactionMs":[41.9871549999998],"timings":[{"initial.subscriptionLookupMs":13.702060999999958,"initial.featuresLookupMs":9.885995000000548,"initial.preferencesLookupMs":9.791484999999739,"initial.projectionMs":0.0900019999999131}]},{"sample":5,"fixture":"arch055-m05-get-6","operationMs":59.223023999999896,"transactionMs":[59.18389399999978],"timings":[{"initial.subscriptionLookupMs":23.56756300000052,"initial.featuresLookupMs":6.209359999999833,"initial.preferencesLookupMs":6.0826170000000275,"initial.projectionMs":0.09041199999956007}]}],"candidate / M05-get":[{"sample":1,"fixture":"arch055-m05-get-2","operationMs":31.507822000000488,"transactionMs":[31.462122999999337],"timings":[{"initial.subscriptionLookupMs":10.573320000000422,"initial.featuresLookupMs":6.847585999999865,"initial.preferencesLookupMs":6.745665999999801,"initial.projectionMs":0.11094899999989138}]},{"sample":2,"fixture":"arch055-m05-get-3","operationMs":40.31981900000028,"transactionMs":[40.27430600000025],"timings":[{"initial.subscriptionLookupMs":12.162070000000313,"initial.featuresLookupMs":7.361124999999447,"initial.preferencesLookupMs":7.262639999999919,"initial.projectionMs":0.09776500000043598}]},{"sample":3,"fixture":"arch055-m05-get-4","operationMs":36.21613100000013,"transactionMs":[36.17650000000049],"timings":[{"initial.subscriptionLookupMs":14.891720000000532,"initial.featuresLookupMs":6.781383999999889,"initial.preferencesLookupMs":6.672268000000258,"initial.projectionMs":0.10094500000013795}]},{"sample":4,"fixture":"arch055-m05-get-5","operationMs":31.90338100000008,"transactionMs":[31.864666999999827],"timings":[{"initial.subscriptionLookupMs":11.057921000000533,"initial.featuresLookupMs":7.434790000000248,"initial.preferencesLookupMs":7.332639000000199,"initial.projectionMs":0.09403600000041479}]},{"sample":5,"fixture":"arch055-m05-get-6","operationMs":46.643043000000034,"transactionMs":[46.60179700000026],"timings":[{"initial.subscriptionLookupMs":14.8693659999999,"initial.featuresLookupMs":9.232565999999679,"initial.preferencesLookupMs":9.115170000000035,"initial.projectionMs":0.10147200000028533}]}],"baseline / M05-change":[{"sample":1,"fixture":"arch055-m05-change-2","operationMs":85.01079700000082,"transactionMs":[84.96608900000047],"timings":[{"initial.subscriptionLookupMs":14.050237999999808,"initial.featuresLookupMs":5.971144000000095,"initial.preferencesLookupMs":5.8903730000001815,"initial.projectionMs":0.1406170000000202,"final.subscriptionLookupMs":9.965868000000228,"final.featuresLookupMs":8.274902000000111,"final.preferencesLookupMs":8.215248000000429,"final.projectionMs":0.08618999999998778}]},{"sample":2,"fixture":"arch055-m05-change-3","operationMs":51.82061700000031,"transactionMs":[51.77387699999963],"timings":[{"initial.subscriptionLookupMs":11.378701000000547,"initial.featuresLookupMs":4.768651999999747,"initial.preferencesLookupMs":4.659956999999849,"initial.projectionMs":0.08268600000064907,"final.subscriptionLookupMs":12.260196000000178,"final.featuresLookupMs":7.735827999999856,"final.preferencesLookupMs":7.671590999999353,"final.projectionMs":0.1953560000001744}]},{"sample":3,"fixture":"arch055-m05-change-4","operationMs":52.09443400000055,"transactionMs":[52.05428099999972],"timings":[{"initial.subscriptionLookupMs":12.037953000000016,"initial.featuresLookupMs":4.803557000000183,"initial.preferencesLookupMs":4.717432999999801,"initial.projectionMs":0.08488199999919743,"final.subscriptionLookupMs":10.772702999999638,"final.featuresLookupMs":7.12902000000031,"final.preferencesLookupMs":7.07166000000052,"final.projectionMs":0.08269700000073499}]},{"sample":4,"fixture":"arch055-m05-change-5","operationMs":58.9129810000004,"transactionMs":[58.87223399999948],"timings":[{"initial.subscriptionLookupMs":9.278630000000703,"initial.featuresLookupMs":7.735918000000311,"initial.preferencesLookupMs":7.649438000000373,"initial.projectionMs":0.0887349999993603,"final.subscriptionLookupMs":13.348802999999862,"final.featuresLookupMs":7.034396000000015,"final.preferencesLookupMs":6.973947999999837,"final.projectionMs":0.08688299999994342}]},{"sample":5,"fixture":"arch055-m05-change-6","operationMs":70.13024900000073,"transactionMs":[70.0912500000004],"timings":[{"initial.subscriptionLookupMs":9.219845000000532,"initial.featuresLookupMs":9.96439299999929,"initial.preferencesLookupMs":9.874663999999939,"initial.projectionMs":0.08175699999992503,"final.subscriptionLookupMs":18.004430000000866,"final.featuresLookupMs":7.949366999999256,"final.preferencesLookupMs":7.8890879999999015,"final.projectionMs":0.0824350000002596}]}],"candidate / M05-change":[{"sample":1,"fixture":"arch055-m05-change-2","operationMs":79.70798099999956,"transactionMs":[79.6669750000001],"timings":[{"initial.subscriptionLookupMs":17.3576750000002,"initial.featuresLookupMs":13.874009999999544,"initial.preferencesLookupMs":13.772142000000713,"initial.projectionMs":0.08684199999970588,"final.subscriptionLookupMs":13.004667000000154,"final.featuresLookupMs":9.128493000000162,"final.preferencesLookupMs":8.979878999999528,"final.projectionMs":0.08749100000022736}]},{"sample":2,"fixture":"arch055-m05-change-3","operationMs":55.78334499999983,"transactionMs":[55.74035499999991],"timings":[{"initial.subscriptionLookupMs":12.241597000000183,"initial.featuresLookupMs":5.78394599999956,"initial.preferencesLookupMs":5.668604000000414,"initial.projectionMs":0.08812299999954121,"final.subscriptionLookupMs":11.525932999999895,"final.featuresLookupMs":5.389938000000257,"final.preferencesLookupMs":5.331645000000208,"final.projectionMs":0.0818939999999202}]},{"sample":3,"fixture":"arch055-m05-change-4","operationMs":58.63441299999977,"transactionMs":[58.590165999999954],"timings":[{"initial.subscriptionLookupMs":10.226757000000362,"initial.featuresLookupMs":6.156351000000541,"initial.preferencesLookupMs":6.059161000000131,"initial.projectionMs":0.08186599999953614,"final.subscriptionLookupMs":12.28847500000029,"final.featuresLookupMs":6.9233869999998205,"final.preferencesLookupMs":6.865498000000116,"final.projectionMs":0.08188299999983428}]},{"sample":4,"fixture":"arch055-m05-change-5","operationMs":70.29440599999998,"transactionMs":[70.25193899999977],"timings":[{"initial.subscriptionLookupMs":10.83131499999945,"initial.featuresLookupMs":8.567986999999448,"initial.preferencesLookupMs":8.422550000000228,"initial.projectionMs":0.08839100000022881,"final.subscriptionLookupMs":13.007582999999613,"final.featuresLookupMs":17.419354999999996,"final.preferencesLookupMs":17.330981000000065,"final.projectionMs":0.07971700000052806}]},{"sample":5,"fixture":"arch055-m05-change-6","operationMs":61.22375800000009,"transactionMs":[61.173303999999916],"timings":[{"initial.subscriptionLookupMs":12.780385000000024,"initial.featuresLookupMs":5.529454000000442,"initial.preferencesLookupMs":5.43803299999945,"initial.projectionMs":0.08377500000005966,"final.subscriptionLookupMs":12.29540999999972,"final.featuresLookupMs":9.728728000000046,"final.preferencesLookupMs":9.638584999999694,"final.projectionMs":0.11935600000015256}]}],"baseline / M05-noop":[{"sample":1,"fixture":"arch055-m05-noop-2","operationMs":28.408508999998958,"transactionMs":[28.359356000000844],"timings":[{"initial.subscriptionLookupMs":9.110842000000048,"initial.featuresLookupMs":5.200999999999112,"initial.preferencesLookupMs":5.108626999999615,"initial.projectionMs":0.09683799999947951}]},{"sample":2,"fixture":"arch055-m05-noop-3","operationMs":29.61526699999922,"transactionMs":[29.5843160000004],"timings":[{"initial.subscriptionLookupMs":10.178343000001405,"initial.featuresLookupMs":7.080395000000863,"initial.preferencesLookupMs":6.994951000000583,"initial.projectionMs":0.1289020000003802}]},{"sample":3,"fixture":"arch055-m05-noop-4","operationMs":32.481260999998995,"transactionMs":[32.454955000001064],"timings":[{"initial.subscriptionLookupMs":9.303986000000805,"initial.featuresLookupMs":8.429111000001285,"initial.preferencesLookupMs":8.32922999999937,"initial.projectionMs":0.1851280000009865}]},{"sample":4,"fixture":"arch055-m05-noop-5","operationMs":30.123755999999048,"transactionMs":[30.09840500000064],"timings":[{"initial.subscriptionLookupMs":11.016701000000467,"initial.featuresLookupMs":5.961153000000195,"initial.preferencesLookupMs":5.879452000001038,"initial.projectionMs":0.09846999999899708}]},{"sample":5,"fixture":"arch055-m05-noop-6","operationMs":24.51184900000044,"transactionMs":[24.483094000001074],"timings":[{"initial.subscriptionLookupMs":9.487984999999753,"initial.featuresLookupMs":5.357679999999164,"initial.preferencesLookupMs":5.274629000001369,"initial.projectionMs":0.08228000000053726}]}],"candidate / M05-noop":[{"sample":1,"fixture":"arch055-m05-noop-2","operationMs":31.9310289999994,"transactionMs":[31.874190999999882],"timings":[{"initial.subscriptionLookupMs":11.379279000000679,"initial.featuresLookupMs":6.188672999999653,"initial.preferencesLookupMs":6.09700200000043,"initial.projectionMs":0.10802499999954307}]},{"sample":2,"fixture":"arch055-m05-noop-3","operationMs":36.91922799999975,"transactionMs":[36.88657299999977],"timings":[{"initial.subscriptionLookupMs":14.344038000000182,"initial.featuresLookupMs":5.800506999999925,"initial.preferencesLookupMs":5.703612999999677,"initial.projectionMs":0.07953799999995681}]},{"sample":3,"fixture":"arch055-m05-noop-4","operationMs":37.66379400000005,"transactionMs":[37.633780000000115],"timings":[{"initial.subscriptionLookupMs":12.424631999999292,"initial.featuresLookupMs":9.475709999999708,"initial.preferencesLookupMs":9.346056000000317,"initial.projectionMs":0.09446099999968283}]},{"sample":4,"fixture":"arch055-m05-noop-5","operationMs":32.18575199999941,"transactionMs":[32.15784900000017],"timings":[{"initial.subscriptionLookupMs":10.810066000000006,"initial.featuresLookupMs":6.179076999999779,"initial.preferencesLookupMs":6.083550000000287,"initial.projectionMs":0.08362899999974616}]},{"sample":5,"fixture":"arch055-m05-noop-6","operationMs":30.190220999999838,"transactionMs":[30.147979999999734],"timings":[{"initial.subscriptionLookupMs":9.55873900000006,"initial.featuresLookupMs":6.243817999999919,"initial.preferencesLookupMs":6.1330840000000535,"initial.projectionMs":0.1161500000007436}]}],"baseline / M05-policy":[{"sample":1,"fixture":"arch055-m05-policy-2","operationMs":38.251820999999836,"transactionMs":[38.21949599999971],"timings":[]},{"sample":2,"fixture":"arch055-m05-policy-3","operationMs":24.936021999999866,"transactionMs":[24.902147999999215],"timings":[]},{"sample":3,"fixture":"arch055-m05-policy-4","operationMs":25.527694000000338,"transactionMs":[25.492489999998725],"timings":[]},{"sample":4,"fixture":"arch055-m05-policy-5","operationMs":23.1189030000005,"transactionMs":[23.083631000001333],"timings":[]},{"sample":5,"fixture":"arch055-m05-policy-6","operationMs":16.57919700000093,"transactionMs":[16.54263600000013],"timings":[]}],"candidate / M05-policy":[{"sample":1,"fixture":"arch055-m05-policy-2","operationMs":22.68130900000051,"transactionMs":[22.644601999999395],"timings":[]},{"sample":2,"fixture":"arch055-m05-policy-3","operationMs":20.59398499999952,"transactionMs":[20.558351000000584],"timings":[]},{"sample":3,"fixture":"arch055-m05-policy-4","operationMs":25.578913999999713,"transactionMs":[25.540675000000192],"timings":[]},{"sample":4,"fixture":"arch055-m05-policy-5","operationMs":24.158010000000104,"transactionMs":[24.12392699999964],"timings":[]},{"sample":5,"fixture":"arch055-m05-policy-6","operationMs":31.49829200000022,"transactionMs":[31.457267000000684],"timings":[]}],"baseline / M05-delay":[{"sample":1,"fixture":"arch055-m05-delay-2","operationMs":24.026609999998982,"transactionMs":[23.993892999998934],"timings":[]},{"sample":2,"fixture":"arch055-m05-delay-3","operationMs":18.28878799999984,"transactionMs":[18.25441000000137],"timings":[]},{"sample":3,"fixture":"arch055-m05-delay-4","operationMs":15.437504999999874,"transactionMs":[15.40374999999949],"timings":[]},{"sample":4,"fixture":"arch055-m05-delay-5","operationMs":18.19647199999963,"transactionMs":[18.1646499999988],"timings":[]},{"sample":5,"fixture":"arch055-m05-delay-6","operationMs":22.163155000000188,"transactionMs":[22.12870699999985],"timings":[]}],"candidate / M05-delay":[{"sample":1,"fixture":"arch055-m05-delay-2","operationMs":17.197007999999187,"transactionMs":[17.156812000001082],"timings":[]},{"sample":2,"fixture":"arch055-m05-delay-3","operationMs":17.251036999999997,"transactionMs":[17.215720000000147],"timings":[]},{"sample":3,"fixture":"arch055-m05-delay-4","operationMs":14.130917000000409,"transactionMs":[14.095209999999497],"timings":[]},{"sample":4,"fixture":"arch055-m05-delay-5","operationMs":16.26223899999968,"transactionMs":[16.227183999999397],"timings":[]},{"sample":5,"fixture":"arch055-m05-delay-6","operationMs":18.786480999999185,"transactionMs":[18.747669000000315],"timings":[]}],"baseline / M05-summary-absent":[{"sample":1,"fixture":"arch055-m05-summary-absent-2","operationMs":5.526491000000533,"transactionMs":[],"timings":[]},{"sample":2,"fixture":"arch055-m05-summary-absent-3","operationMs":5.831395999999586,"transactionMs":[],"timings":[]},{"sample":3,"fixture":"arch055-m05-summary-absent-4","operationMs":8.483256999999867,"transactionMs":[],"timings":[]},{"sample":4,"fixture":"arch055-m05-summary-absent-5","operationMs":3.6200019999996584,"transactionMs":[],"timings":[]},{"sample":5,"fixture":"arch055-m05-summary-absent-6","operationMs":5.124319999998988,"transactionMs":[],"timings":[]}],"candidate / M05-summary-absent":[{"sample":1,"fixture":"arch055-m05-summary-absent-2","operationMs":3.342083999999886,"transactionMs":[],"timings":[]},{"sample":2,"fixture":"arch055-m05-summary-absent-3","operationMs":5.132944000000862,"transactionMs":[],"timings":[]},{"sample":3,"fixture":"arch055-m05-summary-absent-4","operationMs":4.7357669999983045,"transactionMs":[],"timings":[]},{"sample":4,"fixture":"arch055-m05-summary-absent-5","operationMs":4.2260389999992185,"transactionMs":[],"timings":[]},{"sample":5,"fixture":"arch055-m05-summary-absent-6","operationMs":3.7069229999997333,"transactionMs":[],"timings":[]}],"baseline / M05-summary-active":[{"sample":1,"fixture":"arch055-m05-summary-active-2","operationMs":5.535262999999759,"transactionMs":[],"timings":[]},{"sample":2,"fixture":"arch055-m05-summary-active-3","operationMs":2.737372999999934,"transactionMs":[],"timings":[]},{"sample":3,"fixture":"arch055-m05-summary-active-4","operationMs":1.989811000001282,"transactionMs":[],"timings":[]},{"sample":4,"fixture":"arch055-m05-summary-active-5","operationMs":5.105385999999271,"transactionMs":[],"timings":[]},{"sample":5,"fixture":"arch055-m05-summary-active-6","operationMs":3.3634280000005674,"transactionMs":[],"timings":[]}],"candidate / M05-summary-active":[{"sample":1,"fixture":"arch055-m05-summary-active-2","operationMs":3.428895000000921,"transactionMs":[],"timings":[]},{"sample":2,"fixture":"arch055-m05-summary-active-3","operationMs":3.295564000000013,"transactionMs":[],"timings":[]},{"sample":3,"fixture":"arch055-m05-summary-active-4","operationMs":3.552730999999767,"transactionMs":[],"timings":[]},{"sample":4,"fixture":"arch055-m05-summary-active-5","operationMs":3.7791829999987385,"transactionMs":[],"timings":[]},{"sample":5,"fixture":"arch055-m05-summary-active-6","operationMs":8.313619000000472,"transactionMs":[],"timings":[]}],"baseline / M05-summary-expired":[{"sample":1,"fixture":"arch055-m05-summary-expired-2","operationMs":3.610028000000966,"transactionMs":[],"timings":[]},{"sample":2,"fixture":"arch055-m05-summary-expired-3","operationMs":2.91579400000046,"transactionMs":[],"timings":[]},{"sample":3,"fixture":"arch055-m05-summary-expired-4","operationMs":4.422887999999148,"transactionMs":[],"timings":[]},{"sample":4,"fixture":"arch055-m05-summary-expired-5","operationMs":7.140616000000591,"transactionMs":[],"timings":[]},{"sample":5,"fixture":"arch055-m05-summary-expired-6","operationMs":4.465850000000501,"transactionMs":[],"timings":[]}],"candidate / M05-summary-expired":[{"sample":1,"fixture":"arch055-m05-summary-expired-2","operationMs":3.4642650000005233,"transactionMs":[],"timings":[]},{"sample":2,"fixture":"arch055-m05-summary-expired-3","operationMs":2.837652000000162,"transactionMs":[],"timings":[]},{"sample":3,"fixture":"arch055-m05-summary-expired-4","operationMs":3.0604240000011487,"transactionMs":[],"timings":[]},{"sample":4,"fixture":"arch055-m05-summary-expired-5","operationMs":4.573555000000852,"transactionMs":[],"timings":[]},{"sample":5,"fixture":"arch055-m05-summary-expired-6","operationMs":3.076547999999093,"transactionMs":[],"timings":[]}]}}
+{
+  "commonSqlShapes": {
+    "1": "SELECT \"commerce\".\"CommercePromptTemplateCategory\".\"id\", \"commerce\".\"CommercePromptTemplateCategory\".\"slug\", \"commerce\".\"CommercePromptTemplateCategory\".\"displayName\", \"commerce\".\"CommercePromptTemplateCategory\".\"description\", \"commerce\".\"CommercePromptTemplateCategory\".\"enabled\", \"commerce\".\"CommercePromptTemplateCategory\".\"displayOrder\", \"commerce\".\"CommercePromptTemplateCategory\".\"editVersion\", \"commerce\".\"CommercePromptTemplateCategory\".\"createdByAdminId\", \"commerce\".\"CommercePromptTemplateCategory\".\"updatedByAdminId\", \"commerce\".\"CommercePromptTemplateCategory\".\"createdAt\", \"commerce\".\"CommercePromptTemplateCategory\".\"updatedAt\", \"commerce\".\"CommercePromptTemplateCategory\".\"defaultTemplateId\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomySource\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyVersion\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyCategoryId\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyCategoryName\", \"commerce\".\"CommercePromptTemplateCategory\".\"referenceTaxonomyCategoryFullName\" FROM \"commerce\".\"CommercePromptTemplateCategory\" WHERE (\"commerce\".\"CommercePromptTemplateCategory\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "2": "SELECT \"commerce\".\"CommercePromptTemplate\".\"id\", \"commerce\".\"CommercePromptTemplate\".\"key\", \"commerce\".\"CommercePromptTemplate\".\"categoryId\", \"commerce\".\"CommercePromptTemplate\".\"displayName\", \"commerce\".\"CommercePromptTemplate\".\"description\", \"commerce\".\"CommercePromptTemplate\".\"promptText\", \"commerce\".\"CommercePromptTemplate\".\"enabled\", \"commerce\".\"CommercePromptTemplate\".\"editVersion\", \"commerce\".\"CommercePromptTemplate\".\"createdByAdminId\", \"commerce\".\"CommercePromptTemplate\".\"updatedByAdminId\", \"commerce\".\"CommercePromptTemplate\".\"createdAt\", \"commerce\".\"CommercePromptTemplate\".\"updatedAt\" FROM \"commerce\".\"CommercePromptTemplate\" WHERE \"commerce\".\"CommercePromptTemplate\".\"id\" IN ($1) OFFSET $2",
+    "3": "SELECT \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"id\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"shopifyTaxonomyCategoryId\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomySource\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomyVersion\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomyCategoryName\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"taxonomyCategoryFullName\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"displayName\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"weight\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"editVersion\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"createdAt\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"updatedAt\" FROM \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\" WHERE (\"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\" IS NOT NULL AND \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\" IN ($1)) ORDER BY \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"weight\" DESC, \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"id\" ASC OFFSET $2",
+    "4": "BEGIN",
+    "5": "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE",
+    "6": "SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\", \"onboardingCompleted\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1 FOR UPDATE",
+    "7": "SELECT \"id\", \"shopId\", \"canonicalSiteUrl\", \"credentialVersion\", \"status\", \"revokedAt\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE \"id\" = $1 FOR SHARE",
+    "8": "SELECT \"billing\".\"Subscription\".\"id\", \"billing\".\"Subscription\".\"status\"::text, \"billing\".\"Subscription\".\"planId\" FROM \"billing\".\"Subscription\" WHERE (\"billing\".\"Subscription\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "9": "SELECT \"commerce\".\"CommerceShopProfile\".\"id\", \"commerce\".\"CommerceShopProfile\".\"shopId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryActivatedAt\", \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\", \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectedAt\", \"commerce\".\"CommerceShopProfile\".\"createdAt\", \"commerce\".\"CommerceShopProfile\".\"updatedAt\" FROM \"commerce\".\"CommerceShopProfile\" WHERE (\"commerce\".\"CommerceShopProfile\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "10": "INSERT INTO \"commerce\".\"CommerceShopProfile\" (\"id\",\"shopId\",\"pendingSelectionGeneration\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5) RETURNING \"commerce\".\"CommerceShopProfile\".\"id\", \"commerce\".\"CommerceShopProfile\".\"shopId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\", \"commerce\".\"CommerceShopProfile\".\"activeCategoryActivatedAt\", \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\", \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\", \"commerce\".\"CommerceShopProfile\".\"pendingSelectedAt\", \"commerce\".\"CommerceShopProfile\".\"createdAt\", \"commerce\".\"CommerceShopProfile\".\"updatedAt\"",
+    "11": "SELECT \"commerce\".\"CommercePromptTemplateCategory\".\"id\", \"commerce\".\"CommercePromptTemplateCategory\".\"enabled\", \"commerce\".\"CommercePromptTemplateCategory\".\"editVersion\", \"commerce\".\"CommercePromptTemplateCategory\".\"defaultTemplateId\" FROM \"commerce\".\"CommercePromptTemplateCategory\" WHERE (\"commerce\".\"CommercePromptTemplateCategory\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "12": "SELECT \"commerce\".\"CommercePromptTemplate\".\"id\", \"commerce\".\"CommercePromptTemplate\".\"enabled\", \"commerce\".\"CommercePromptTemplate\".\"categoryId\", \"commerce\".\"CommercePromptTemplate\".\"editVersion\", \"commerce\".\"CommercePromptTemplate\".\"promptText\" FROM \"commerce\".\"CommercePromptTemplate\" WHERE \"commerce\".\"CommercePromptTemplate\".\"id\" IN ($1) OFFSET $2",
+    "13": "SELECT \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"id\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\", \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"editVersion\" FROM \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\" WHERE (\"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"conditionKey\" IS NOT NULL AND \"commerce\".\"CommerceStoreCategoryTaxonomyMapping\".\"categoryId\" IN ($1)) OFFSET $2",
+    "14": "SELECT \"commerce\".\"CommerceAgentPrompt\".\"id\" FROM \"commerce\".\"CommerceAgentPrompt\" WHERE (\"commerce\".\"CommerceAgentPrompt\".\"scope\" = CAST($1::text AS \"commerce\".\"CommerceAgentPromptScope\") AND \"commerce\".\"CommerceAgentPrompt\".\"shopId\" = $2) ORDER BY \"commerce\".\"CommerceAgentPrompt\".\"id\" ASC LIMIT $3 OFFSET $4",
+    "15": "INSERT INTO \"commerce\".\"CommerceAgentPrompt\" (\"id\",\"scope\",\"shopId\",\"createdAt\") VALUES ($1,CAST($2::text AS \"commerce\".\"CommerceAgentPromptScope\"),$3,$4) RETURNING \"commerce\".\"CommerceAgentPrompt\".\"id\"",
+    "16": "SELECT \"commerce\".\"CommerceAgentConfiguration\".\"id\", \"commerce\".\"CommerceAgentConfiguration\".\"activePromptRevisionId\" FROM \"commerce\".\"CommerceAgentConfiguration\" WHERE (\"commerce\".\"CommerceAgentConfiguration\".\"environment\" = CAST($1::text AS \"commerce\".\"CommerceEnvironment\") AND \"commerce\".\"CommerceAgentConfiguration\".\"scope\" = CAST($2::text AS \"commerce\".\"CommerceAgentPromptScope\") AND \"commerce\".\"CommerceAgentConfiguration\".\"shopId\" = $3) ORDER BY \"commerce\".\"CommerceAgentConfiguration\".\"id\" ASC LIMIT $4 OFFSET $5",
+    "17": "INSERT INTO \"commerce\".\"CommerceAgentPromptRevision\" (\"id\",\"promptId\",\"revisionNumber\",\"status\",\"editVersion\",\"promptText\",\"contentHash\",\"sourceTemplateId\",\"sourceTemplateEditVersion\",\"sourceContext\",\"createdAt\",\"updatedAt\",\"publishedAt\") VALUES ($1,$2,$3,CAST($4::text AS \"commerce\".\"CommercePromptRevisionStatus\"),$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING \"commerce\".\"CommerceAgentPromptRevision\".\"id\"",
+    "18": "INSERT INTO \"commerce\".\"CommerceAgentConfiguration\" (\"id\",\"environment\",\"scope\",\"shopId\",\"activePromptRevisionId\",\"modelEditVersion\",\"promptEditVersion\",\"createdAt\",\"updatedAt\") VALUES ($1,CAST($2::text AS \"commerce\".\"CommerceEnvironment\"),CAST($3::text AS \"commerce\".\"CommerceAgentPromptScope\"),$4,$5,$6,$7,$8,$9) RETURNING \"commerce\".\"CommerceAgentConfiguration\".\"id\", \"commerce\".\"CommerceAgentConfiguration\".\"environment\"::text, \"commerce\".\"CommerceAgentConfiguration\".\"scope\"::text, \"commerce\".\"CommerceAgentConfiguration\".\"shopId\", \"commerce\".\"CommerceAgentConfiguration\".\"modelId\", \"commerce\".\"CommerceAgentConfiguration\".\"activePromptRevisionId\", \"commerce\".\"CommerceAgentConfiguration\".\"modelEditVersion\", \"commerce\".\"CommerceAgentConfiguration\".\"promptEditVersion\", \"commerce\".\"CommerceAgentConfiguration\".\"createdAt\", \"commerce\".\"CommerceAgentConfiguration\".\"updatedAt\"",
+    "19": "UPDATE \"commerce\".\"CommerceShopProfile\" SET \"activeCategoryId\" = $1, \"activeCategoryActivatedAt\" = $2, \"pendingCategoryId\" = $3, \"pendingPromptRevisionId\" = $4, \"pendingSelectedAt\" = $5, \"pendingSelectionGeneration\" = (\"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" + $6), \"updatedAt\" = $7 WHERE (\"commerce\".\"CommerceShopProfile\".\"shopId\" = $8 AND \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\" IS NULL AND \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" = $9 AND \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\" IS NULL AND \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\" IS NULL)",
+    "20": "COMMIT",
+    "21": "SELECT \"commerce\".\"CommerceAgentPromptRevision\".\"id\" FROM \"commerce\".\"CommerceAgentPromptRevision\" WHERE (\"commerce\".\"CommerceAgentPromptRevision\".\"promptId\" = $1 AND \"commerce\".\"CommerceAgentPromptRevision\".\"status\" = CAST($2::text AS \"commerce\".\"CommercePromptRevisionStatus\")) LIMIT $3 OFFSET $4",
+    "22": "SELECT \"commerce\".\"CommerceAgentPromptRevision\".\"id\", \"commerce\".\"CommerceAgentPromptRevision\".\"revisionNumber\" FROM \"commerce\".\"CommerceAgentPromptRevision\" WHERE \"commerce\".\"CommerceAgentPromptRevision\".\"promptId\" = $1 ORDER BY \"commerce\".\"CommerceAgentPromptRevision\".\"revisionNumber\" DESC LIMIT $2 OFFSET $3",
+    "23": "UPDATE \"commerce\".\"CommerceAgentPromptRevision\" SET \"status\" = CAST($1::text AS \"commerce\".\"CommercePromptRevisionStatus\"), \"promptText\" = $2, \"sourceTemplateId\" = $3, \"sourceTemplateEditVersion\" = $4, \"sourceContext\" = $5, \"contentHash\" = $6, \"publishedAt\" = $7, \"editVersion\" = (\"commerce\".\"CommerceAgentPromptRevision\".\"editVersion\" + $8), \"updatedAt\" = $9 WHERE (\"commerce\".\"CommerceAgentPromptRevision\".\"id\" = $10 AND \"commerce\".\"CommerceAgentPromptRevision\".\"promptId\" = $11 AND \"commerce\".\"CommerceAgentPromptRevision\".\"status\" = CAST($12::text AS \"commerce\".\"CommercePromptRevisionStatus\"))",
+    "24": "UPDATE \"commerce\".\"CommerceShopProfile\" SET \"activeCategoryId\" = $1, \"activeCategoryActivatedAt\" = $2, \"pendingCategoryId\" = $3, \"pendingPromptRevisionId\" = $4, \"pendingSelectedAt\" = $5, \"pendingSelectionGeneration\" = (\"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" + $6), \"updatedAt\" = $7 WHERE (\"commerce\".\"CommerceShopProfile\".\"shopId\" = $8 AND \"commerce\".\"CommerceShopProfile\".\"activeCategoryId\" IS NULL AND \"commerce\".\"CommerceShopProfile\".\"pendingSelectionGeneration\" = $9 AND \"commerce\".\"CommerceShopProfile\".\"pendingCategoryId\" = $10 AND \"commerce\".\"CommerceShopProfile\".\"pendingPromptRevisionId\" = $11)",
+    "25": "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ",
+    "26": "SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1",
+    "27": "SELECT \"id\", \"shopId\", \"canonicalSiteUrl\", \"credentialVersion\", \"status\", \"revokedAt\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE \"id\" = $1",
+    "28": "SELECT \"billing\".\"BillingPlan\".\"id\", \"billing\".\"BillingPlan\".\"active\", \"billing\".\"BillingPlan\".\"updatedAt\" FROM \"billing\".\"BillingPlan\" WHERE \"billing\".\"BillingPlan\".\"id\" IN ($1) OFFSET $2",
+    "29": "SELECT \"billing\".\"BillingPlanFeature\".\"id\", \"billing\".\"BillingPlanFeature\".\"featureId\", \"billing\".\"BillingPlanFeature\".\"enabled\", \"billing\".\"BillingPlanFeature\".\"planId\" FROM \"billing\".\"BillingPlanFeature\" WHERE \"billing\".\"BillingPlanFeature\".\"planId\" IN ($1) ORDER BY \"billing\".\"BillingPlanFeature\".\"featureId\" ASC OFFSET $2",
+    "30": "SELECT \"billing\".\"Feature\".\"id\", \"billing\".\"Feature\".\"active\", \"billing\".\"Feature\".\"updatedAt\" FROM \"billing\".\"Feature\" WHERE \"billing\".\"Feature\".\"id\" IN ($1,$2,$3,$4) OFFSET $5",
+    "31": "SELECT \"billing\".\"Feature\".\"id\", \"billing\".\"Feature\".\"key\", \"billing\".\"Feature\".\"displayName\", \"billing\".\"Feature\".\"description\", \"billing\".\"Feature\".\"active\", \"billing\".\"Feature\".\"activationMode\"::text, \"billing\".\"Feature\".\"systemRequired\", \"billing\".\"Feature\".\"updatedAt\" FROM \"billing\".\"Feature\" WHERE \"billing\".\"Feature\".\"active\" = $1 ORDER BY \"billing\".\"Feature\".\"displayName\" ASC, \"billing\".\"Feature\".\"id\" ASC OFFSET $2",
+    "32": "SELECT \"billing\".\"ShopFeaturePreference\".\"id\", \"billing\".\"ShopFeaturePreference\".\"featureId\", \"billing\".\"ShopFeaturePreference\".\"enabled\", \"billing\".\"ShopFeaturePreference\".\"updatedAt\" FROM \"billing\".\"ShopFeaturePreference\" WHERE \"billing\".\"ShopFeaturePreference\".\"shopId\" = $1 ORDER BY \"billing\".\"ShopFeaturePreference\".\"featureId\" ASC OFFSET $2",
+    "33": "SET TRANSACTION ISOLATION LEVEL READ COMMITTED",
+    "34": "SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1 FOR UPDATE",
+    "35": "INSERT INTO \"billing\".\"ShopFeaturePreference\" (\"id\",\"shopId\",\"featureId\",\"enabled\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (\"shopId\",\"featureId\") DO UPDATE SET \"enabled\" = $7, \"updatedAt\" = $8 WHERE ((\"billing\".\"ShopFeaturePreference\".\"shopId\" = $9 AND \"billing\".\"ShopFeaturePreference\".\"featureId\" = $10) AND 1=1) RETURNING \"billing\".\"ShopFeaturePreference\".\"id\", \"billing\".\"ShopFeaturePreference\".\"shopId\", \"billing\".\"ShopFeaturePreference\".\"featureId\", \"billing\".\"ShopFeaturePreference\".\"enabled\", \"billing\".\"ShopFeaturePreference\".\"createdAt\", \"billing\".\"ShopFeaturePreference\".\"updatedAt\"",
+    "36": "SELECT \"id\", \"domain\", \"platform\", \"shopifyShopId\", \"status\", \"onboardingCompleted\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1",
+    "37": "SELECT \"shopify\".\"ShopSettings\".\"id\", \"shopify\".\"ShopSettings\".\"recoveryDelayMinutes\", \"shopify\".\"ShopSettings\".\"recoveryOfferMode\"::text, \"shopify\".\"ShopSettings\".\"fixedShopifyDiscountId\", \"shopify\".\"ShopSettings\".\"followUpEnabled\", \"shopify\".\"ShopSettings\".\"followUpDelayMinutes\", \"shopify\".\"ShopSettings\".\"notifyOnInitialRecoveryOutreach\", \"shopify\".\"ShopSettings\".\"updatedAt\" FROM \"shopify\".\"ShopSettings\" WHERE (\"shopify\".\"ShopSettings\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "38": "SELECT \"shopify\".\"ShopRecoveryPolicyOverride\".\"id\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"recoveryDelayMinutes\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"recoveryOfferMode\"::text, \"shopify\".\"ShopRecoveryPolicyOverride\".\"fixedShopifyDiscountId\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"followUpEnabled\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"followUpDelayMinutes\", \"shopify\".\"ShopRecoveryPolicyOverride\".\"expiresAt\" FROM \"shopify\".\"ShopRecoveryPolicyOverride\" WHERE (\"shopify\".\"ShopRecoveryPolicyOverride\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "39": "SELECT \"shopify\".\"ShopSettings\".\"id\", \"shopify\".\"ShopSettings\".\"aiResponseDelayMinutes\", \"shopify\".\"ShopSettings\".\"updatedAt\" FROM \"shopify\".\"ShopSettings\" WHERE (\"shopify\".\"ShopSettings\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "40": "SELECT s.\"id\" AS \"shopId\", s.\"domain\", s.\"platform\", s.\"shopifyShopId\", s.\"status\" AS \"shopStatus\", i.\"id\" AS \"installationId\", i.\"shopId\" AS \"installationShopId\", i.\"canonicalSiteUrl\", i.\"credentialVersion\", i.\"status\" AS \"installationStatus\", i.\"revokedAt\", settings.\"recoveryDelayMinutes\" AS \"merchantRecoveryDelayMinutes\", settings.\"recoveryOfferMode\" AS \"merchantRecoveryOfferMode\", settings.\"fixedShopifyDiscountId\" AS \"merchantFixedDiscountId\", settings.\"followUpEnabled\" AS \"merchantFollowUpEnabled\", settings.\"followUpDelayMinutes\" AS \"merchantFollowUpDelayMinutes\", override.\"id\" AS \"overrideId\", override.\"recoveryDelayMinutes\" AS \"overrideRecoveryDelayMinutes\", override.\"recoveryOfferMode\" AS \"overrideRecoveryOfferMode\", override.\"fixedShopifyDiscountId\" AS \"overrideFixedDiscountId\", override.\"followUpEnabled\" AS \"overrideFollowUpEnabled\", override.\"followUpDelayMinutes\" AS \"overrideFollowUpDelayMinutes\", override.\"expiresAt\" AS \"overrideExpiresAt\" FROM \"commerce\".\"Shop\" s LEFT JOIN \"woocommerce\".\"WooCommerceInstallation\" i ON i.\"id\" = $1 AND i.\"shopId\" = s.\"id\" LEFT JOIN \"shopify\".\"ShopSettings\" settings ON settings.\"shopId\" = s.\"id\" LEFT JOIN \"shopify\".\"ShopRecoveryPolicyOverride\" override ON override.\"shopId\" = s.\"id\" WHERE s.\"id\" = $2"
+  },
+  "perProfileInvariants": {
+    "M04-new": {
+      "logicalCalls": 13,
+      "calls": [
+        {
+          "method": "commercePromptTemplateCategory.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "subscription.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": { "status": true, "planId": true }
+        },
+        {
+          "method": "commerceShopProfile.findUnique",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "commerceShopProfile.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        },
+        {
+          "method": "commercePromptTemplateCategory.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "enabled": true,
+            "editVersion": true,
+            "defaultTemplateId": true,
+            "defaultTemplate": {
+              "select": {
+                "id": true,
+                "enabled": true,
+                "categoryId": true,
+                "editVersion": true,
+                "promptText": true
+              }
+            },
+            "taxonomyMappings": {
+              "where": { "conditionKey": { "not": null } },
+              "select": {
+                "id": true,
+                "categoryId": true,
+                "conditionKey": true,
+                "editVersion": true
+              }
+            }
+          }
+        },
+        {
+          "method": "commerceAgentPrompt.findMany",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": { "id": true }
+        },
+        {
+          "method": "commerceAgentPrompt.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": { "id": true }
+        },
+        {
+          "method": "commerceAgentConfiguration.findMany",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "activePromptRevision": { "select": { "promptId": true } }
+          }
+        },
+        {
+          "method": "commerceAgentPromptRevision.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": { "id": true }
+        },
+        {
+          "method": "commerceAgentConfiguration.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        },
+        {
+          "method": "commerceShopProfile.updateMany",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        }
+      ],
+      "sqlShapeIds": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+      ],
+      "affectedTargetRows": 1,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": ["SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M04-empty": {
+      "logicalCalls": 14,
+      "calls": [
+        {
+          "method": "commercePromptTemplateCategory.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "subscription.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": { "status": true, "planId": true }
+        },
+        {
+          "method": "commerceShopProfile.findUnique",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "commerceShopProfile.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        },
+        {
+          "method": "commercePromptTemplateCategory.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "enabled": true,
+            "editVersion": true,
+            "defaultTemplateId": true,
+            "defaultTemplate": {
+              "select": {
+                "id": true,
+                "enabled": true,
+                "categoryId": true,
+                "editVersion": true,
+                "promptText": true
+              }
+            },
+            "taxonomyMappings": {
+              "where": { "conditionKey": { "not": null } },
+              "select": {
+                "id": true,
+                "categoryId": true,
+                "conditionKey": true,
+                "editVersion": true
+              }
+            }
+          }
+        },
+        {
+          "method": "commerceAgentPrompt.findMany",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": { "id": true }
+        },
+        {
+          "method": "commerceAgentConfiguration.findMany",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "activePromptRevision": { "select": { "promptId": true } }
+          }
+        },
+        {
+          "method": "commerceAgentPromptRevision.findFirst",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": { "id": true }
+        },
+        {
+          "method": "commerceAgentPromptRevision.findFirst",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": { "revisionNumber": true }
+        },
+        {
+          "method": "commerceAgentPromptRevision.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": { "id": true }
+        },
+        {
+          "method": "commerceAgentConfiguration.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        },
+        {
+          "method": "commerceShopProfile.updateMany",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        }
+      ],
+      "sqlShapeIds": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 21, 22, 17, 18, 19,
+        20
+      ],
+      "affectedTargetRows": 1,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": ["SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M04-draft": {
+      "logicalCalls": 11,
+      "calls": [
+        {
+          "method": "commercePromptTemplateCategory.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "subscription.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": { "status": true, "planId": true }
+        },
+        {
+          "method": "commerceShopProfile.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "commercePromptTemplateCategory.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "enabled": true,
+            "editVersion": true,
+            "defaultTemplateId": true,
+            "defaultTemplate": {
+              "select": {
+                "id": true,
+                "enabled": true,
+                "categoryId": true,
+                "editVersion": true,
+                "promptText": true
+              }
+            },
+            "taxonomyMappings": {
+              "where": { "conditionKey": { "not": null } },
+              "select": {
+                "id": true,
+                "categoryId": true,
+                "conditionKey": true,
+                "editVersion": true
+              }
+            }
+          }
+        },
+        {
+          "method": "commerceAgentPrompt.findMany",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": { "id": true }
+        },
+        {
+          "method": "commerceAgentConfiguration.findMany",
+          "returnedRows": 0,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "activePromptRevision": { "select": { "promptId": true } }
+          }
+        },
+        {
+          "method": "commerceAgentPromptRevision.updateMany",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        },
+        {
+          "method": "commerceAgentConfiguration.create",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        },
+        {
+          "method": "commerceShopProfile.updateMany",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        }
+      ],
+      "sqlShapeIds": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 16, 23, 18, 24, 20
+      ],
+      "affectedTargetRows": 1,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": ["SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-get": {
+      "logicalCalls": 5,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "subscription.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "status": true,
+            "planId": true,
+            "plan": {
+              "select": {
+                "id": true,
+                "active": true,
+                "updatedAt": true,
+                "features": {
+                  "orderBy": { "featureId": "asc" },
+                  "select": {
+                    "featureId": true,
+                    "enabled": true,
+                    "feature": {
+                      "select": { "active": true, "updatedAt": true }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "method": "feature.findMany",
+          "returnedRows": 8,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "key": true,
+            "displayName": true,
+            "description": true,
+            "active": true,
+            "activationMode": true,
+            "systemRequired": true,
+            "updatedAt": true
+          }
+        },
+        {
+          "method": "shopFeaturePreference.findMany",
+          "returnedRows": 2,
+          "affectedRows": 0,
+          "selection": { "featureId": true, "enabled": true, "updatedAt": true }
+        }
+      ],
+      "sqlShapeIds": [4, 25, 26, 27, 8, 28, 29, 30, 31, 32, 20],
+      "affectedTargetRows": 0,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": [
+        "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+      ],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-change": {
+      "logicalCalls": 9,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "subscription.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "status": true,
+            "planId": true,
+            "plan": {
+              "select": {
+                "id": true,
+                "active": true,
+                "updatedAt": true,
+                "features": {
+                  "orderBy": { "featureId": "asc" },
+                  "select": {
+                    "featureId": true,
+                    "enabled": true,
+                    "feature": {
+                      "select": { "active": true, "updatedAt": true }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "method": "feature.findMany",
+          "returnedRows": 8,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "key": true,
+            "displayName": true,
+            "description": true,
+            "active": true,
+            "activationMode": true,
+            "systemRequired": true,
+            "updatedAt": true
+          }
+        },
+        {
+          "method": "shopFeaturePreference.findMany",
+          "returnedRows": 2,
+          "affectedRows": 0,
+          "selection": { "featureId": true, "enabled": true, "updatedAt": true }
+        },
+        {
+          "method": "shopFeaturePreference.upsert",
+          "returnedRows": 1,
+          "affectedRows": 1,
+          "selection": null
+        },
+        {
+          "method": "subscription.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "status": true,
+            "planId": true,
+            "plan": {
+              "select": {
+                "id": true,
+                "active": true,
+                "updatedAt": true,
+                "features": {
+                  "orderBy": { "featureId": "asc" },
+                  "select": {
+                    "featureId": true,
+                    "enabled": true,
+                    "feature": {
+                      "select": { "active": true, "updatedAt": true }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "method": "feature.findMany",
+          "returnedRows": 8,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "key": true,
+            "displayName": true,
+            "description": true,
+            "active": true,
+            "activationMode": true,
+            "systemRequired": true,
+            "updatedAt": true
+          }
+        },
+        {
+          "method": "shopFeaturePreference.findMany",
+          "returnedRows": 2,
+          "affectedRows": 0,
+          "selection": { "featureId": true, "enabled": true, "updatedAt": true }
+        }
+      ],
+      "sqlShapeIds": [
+        4, 33, 34, 7, 8, 28, 29, 30, 31, 32, 35, 8, 28, 29, 30, 31, 32, 20
+      ],
+      "affectedTargetRows": 1,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": ["SET TRANSACTION ISOLATION LEVEL READ COMMITTED"],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-noop": {
+      "logicalCalls": 5,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "subscription.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "status": true,
+            "planId": true,
+            "plan": {
+              "select": {
+                "id": true,
+                "active": true,
+                "updatedAt": true,
+                "features": {
+                  "orderBy": { "featureId": "asc" },
+                  "select": {
+                    "featureId": true,
+                    "enabled": true,
+                    "feature": {
+                      "select": { "active": true, "updatedAt": true }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "method": "feature.findMany",
+          "returnedRows": 8,
+          "affectedRows": 0,
+          "selection": {
+            "id": true,
+            "key": true,
+            "displayName": true,
+            "description": true,
+            "active": true,
+            "activationMode": true,
+            "systemRequired": true,
+            "updatedAt": true
+          }
+        },
+        {
+          "method": "shopFeaturePreference.findMany",
+          "returnedRows": 2,
+          "affectedRows": 0,
+          "selection": { "featureId": true, "enabled": true, "updatedAt": true }
+        }
+      ],
+      "sqlShapeIds": [4, 33, 34, 7, 8, 28, 29, 30, 31, 32, 20],
+      "affectedTargetRows": 0,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": ["SET TRANSACTION ISOLATION LEVEL READ COMMITTED"],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-policy": {
+      "logicalCalls": 4,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "shopSettings.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "recoveryDelayMinutes": true,
+            "recoveryOfferMode": true,
+            "fixedShopifyDiscountId": true,
+            "followUpEnabled": true,
+            "followUpDelayMinutes": true,
+            "notifyOnInitialRecoveryOutreach": true,
+            "updatedAt": true
+          }
+        },
+        {
+          "method": "shopRecoveryPolicyOverride.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": {
+            "recoveryDelayMinutes": true,
+            "recoveryOfferMode": true,
+            "fixedShopifyDiscountId": true,
+            "followUpEnabled": true,
+            "followUpDelayMinutes": true,
+            "expiresAt": true
+          }
+        }
+      ],
+      "sqlShapeIds": [4, 25, 36, 27, 37, 38, 20],
+      "affectedTargetRows": 0,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": [
+        "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+      ],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-delay": {
+      "logicalCalls": 3,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        },
+        {
+          "method": "shopSettings.findUnique",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": { "aiResponseDelayMinutes": true, "updatedAt": true }
+        }
+      ],
+      "sqlShapeIds": [4, 25, 36, 27, 39, 20],
+      "affectedTargetRows": 0,
+      "transactionStatements": { "BEGIN": 1, "COMMIT": 1, "ROLLBACK": 0 },
+      "isolationStatements": [
+        "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+      ],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-summary-absent": {
+      "logicalCalls": 1,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        }
+      ],
+      "sqlShapeIds": [40],
+      "affectedTargetRows": 0,
+      "transactionStatements": { "BEGIN": 0, "COMMIT": 0, "ROLLBACK": 0 },
+      "isolationStatements": [],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-summary-active": {
+      "logicalCalls": 1,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        }
+      ],
+      "sqlShapeIds": [40],
+      "affectedTargetRows": 0,
+      "transactionStatements": { "BEGIN": 0, "COMMIT": 0, "ROLLBACK": 0 },
+      "isolationStatements": [],
+      "retries": 0,
+      "externalPortInvocations": 0
+    },
+    "M05-summary-expired": {
+      "logicalCalls": 1,
+      "calls": [
+        {
+          "method": "$queryRaw",
+          "returnedRows": 1,
+          "affectedRows": 0,
+          "selection": null
+        }
+      ],
+      "sqlShapeIds": [40],
+      "affectedTargetRows": 0,
+      "transactionStatements": { "BEGIN": 0, "COMMIT": 0, "ROLLBACK": 0 },
+      "isolationStatements": [],
+      "retries": 0,
+      "externalPortInvocations": 0
+    }
+  },
+  "rawSamples": {
+    "baseline / M04-new": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m04-new-2",
+        "operationMs": 81.91712200000029,
+        "transactionMs": [69.87635499999988],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m04-new-3",
+        "operationMs": 73.83476999999993,
+        "transactionMs": [59.97376200000008],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m04-new-4",
+        "operationMs": 83.58390599999984,
+        "transactionMs": [69.75873200000024],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m04-new-5",
+        "operationMs": 88.23840099999961,
+        "transactionMs": [72.42624100000012],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m04-new-6",
+        "operationMs": 118.61036000000013,
+        "transactionMs": [98.65800199999967],
+        "timings": []
+      }
+    ],
+    "candidate / M04-new": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m04-new-2",
+        "operationMs": 122.29722700000002,
+        "transactionMs": [105.42895499999986],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m04-new-3",
+        "operationMs": 89.27364299999999,
+        "transactionMs": [76.56851600000027],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m04-new-4",
+        "operationMs": 77.03524599999992,
+        "transactionMs": [62.608312000000296],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m04-new-5",
+        "operationMs": 78.17737699999998,
+        "transactionMs": [67.44767199999978],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m04-new-6",
+        "operationMs": 70.51200999999992,
+        "transactionMs": [58.74749299999985],
+        "timings": []
+      }
+    ],
+    "baseline / M04-empty": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m04-empty-2",
+        "operationMs": 81.14902600000005,
+        "transactionMs": [69.6074520000002],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m04-empty-3",
+        "operationMs": 77.72068300000046,
+        "transactionMs": [66.857258],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m04-empty-4",
+        "operationMs": 112.42639799999961,
+        "transactionMs": [79.76946800000042],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m04-empty-5",
+        "operationMs": 216.5761509999993,
+        "transactionMs": [154.6135119999999],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m04-empty-6",
+        "operationMs": 112.59133500000007,
+        "transactionMs": [97.80452400000013],
+        "timings": []
+      }
+    ],
+    "candidate / M04-empty": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m04-empty-2",
+        "operationMs": 87.24060200000031,
+        "transactionMs": [77.44465000000037],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m04-empty-3",
+        "operationMs": 65.48632599999974,
+        "transactionMs": [57.289404000000104],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m04-empty-4",
+        "operationMs": 80.64450299999999,
+        "transactionMs": [66.13064500000019],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m04-empty-5",
+        "operationMs": 74.53271300000006,
+        "transactionMs": [64.41149499999983],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m04-empty-6",
+        "operationMs": 79.1418749999998,
+        "transactionMs": [68.71169899999995],
+        "timings": []
+      }
+    ],
+    "baseline / M04-draft": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m04-draft-2",
+        "operationMs": 82.21340299999974,
+        "transactionMs": [66.5791679999993],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m04-draft-3",
+        "operationMs": 179.93494800000008,
+        "transactionMs": [168.9074789999995],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m04-draft-4",
+        "operationMs": 71.18477900000016,
+        "transactionMs": [58.599247000000105],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m04-draft-5",
+        "operationMs": 73.22655399999985,
+        "transactionMs": [55.225257000000056],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m04-draft-6",
+        "operationMs": 79.9875090000005,
+        "transactionMs": [67.15380800000003],
+        "timings": []
+      }
+    ],
+    "candidate / M04-draft": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m04-draft-2",
+        "operationMs": 97.32296799999995,
+        "transactionMs": [80.92858599999954],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m04-draft-3",
+        "operationMs": 80.97909899999922,
+        "transactionMs": [67.84993200000008],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m04-draft-4",
+        "operationMs": 87.08640000000014,
+        "transactionMs": [74.66384900000048],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m04-draft-5",
+        "operationMs": 83.04205100000036,
+        "transactionMs": [70.87744799999928],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m04-draft-6",
+        "operationMs": 75.78455899999972,
+        "transactionMs": [61.35375600000043],
+        "timings": []
+      }
+    ],
+    "baseline / M05-get": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-get-2",
+        "operationMs": 34.54856800000016,
+        "transactionMs": [34.50923299999977],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 13.458329999999478,
+            "initial.featuresLookupMs": 5.913923999999497,
+            "initial.preferencesLookupMs": 5.817055999999866,
+            "initial.projectionMs": 0.10547099999985221
+          }
+        ]
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-get-3",
+        "operationMs": 39.10626400000001,
+        "transactionMs": [39.06638000000021],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 15.037053000000014,
+            "initial.featuresLookupMs": 9.417977000000064,
+            "initial.preferencesLookupMs": 9.330189999999675,
+            "initial.projectionMs": 0.08779800000047544
+          }
+        ]
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-get-4",
+        "operationMs": 61.6038410000001,
+        "transactionMs": [61.5639199999996],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 17.157038999999713,
+            "initial.featuresLookupMs": 13.81822000000011,
+            "initial.preferencesLookupMs": 13.725894000000153,
+            "initial.projectionMs": 0.16392499999983556
+          }
+        ]
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-get-5",
+        "operationMs": 42.025432000000364,
+        "transactionMs": [41.9871549999998],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 13.702060999999958,
+            "initial.featuresLookupMs": 9.885995000000548,
+            "initial.preferencesLookupMs": 9.791484999999739,
+            "initial.projectionMs": 0.0900019999999131
+          }
+        ]
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-get-6",
+        "operationMs": 59.223023999999896,
+        "transactionMs": [59.18389399999978],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 23.56756300000052,
+            "initial.featuresLookupMs": 6.209359999999833,
+            "initial.preferencesLookupMs": 6.0826170000000275,
+            "initial.projectionMs": 0.09041199999956007
+          }
+        ]
+      }
+    ],
+    "candidate / M05-get": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-get-2",
+        "operationMs": 31.507822000000488,
+        "transactionMs": [31.462122999999337],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 10.573320000000422,
+            "initial.featuresLookupMs": 6.847585999999865,
+            "initial.preferencesLookupMs": 6.745665999999801,
+            "initial.projectionMs": 0.11094899999989138
+          }
+        ]
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-get-3",
+        "operationMs": 40.31981900000028,
+        "transactionMs": [40.27430600000025],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 12.162070000000313,
+            "initial.featuresLookupMs": 7.361124999999447,
+            "initial.preferencesLookupMs": 7.262639999999919,
+            "initial.projectionMs": 0.09776500000043598
+          }
+        ]
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-get-4",
+        "operationMs": 36.21613100000013,
+        "transactionMs": [36.17650000000049],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 14.891720000000532,
+            "initial.featuresLookupMs": 6.781383999999889,
+            "initial.preferencesLookupMs": 6.672268000000258,
+            "initial.projectionMs": 0.10094500000013795
+          }
+        ]
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-get-5",
+        "operationMs": 31.90338100000008,
+        "transactionMs": [31.864666999999827],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 11.057921000000533,
+            "initial.featuresLookupMs": 7.434790000000248,
+            "initial.preferencesLookupMs": 7.332639000000199,
+            "initial.projectionMs": 0.09403600000041479
+          }
+        ]
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-get-6",
+        "operationMs": 46.643043000000034,
+        "transactionMs": [46.60179700000026],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 14.8693659999999,
+            "initial.featuresLookupMs": 9.232565999999679,
+            "initial.preferencesLookupMs": 9.115170000000035,
+            "initial.projectionMs": 0.10147200000028533
+          }
+        ]
+      }
+    ],
+    "baseline / M05-change": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-change-2",
+        "operationMs": 85.01079700000082,
+        "transactionMs": [84.96608900000047],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 14.050237999999808,
+            "initial.featuresLookupMs": 5.971144000000095,
+            "initial.preferencesLookupMs": 5.8903730000001815,
+            "initial.projectionMs": 0.1406170000000202,
+            "final.subscriptionLookupMs": 9.965868000000228,
+            "final.featuresLookupMs": 8.274902000000111,
+            "final.preferencesLookupMs": 8.215248000000429,
+            "final.projectionMs": 0.08618999999998778
+          }
+        ]
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-change-3",
+        "operationMs": 51.82061700000031,
+        "transactionMs": [51.77387699999963],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 11.378701000000547,
+            "initial.featuresLookupMs": 4.768651999999747,
+            "initial.preferencesLookupMs": 4.659956999999849,
+            "initial.projectionMs": 0.08268600000064907,
+            "final.subscriptionLookupMs": 12.260196000000178,
+            "final.featuresLookupMs": 7.735827999999856,
+            "final.preferencesLookupMs": 7.671590999999353,
+            "final.projectionMs": 0.1953560000001744
+          }
+        ]
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-change-4",
+        "operationMs": 52.09443400000055,
+        "transactionMs": [52.05428099999972],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 12.037953000000016,
+            "initial.featuresLookupMs": 4.803557000000183,
+            "initial.preferencesLookupMs": 4.717432999999801,
+            "initial.projectionMs": 0.08488199999919743,
+            "final.subscriptionLookupMs": 10.772702999999638,
+            "final.featuresLookupMs": 7.12902000000031,
+            "final.preferencesLookupMs": 7.07166000000052,
+            "final.projectionMs": 0.08269700000073499
+          }
+        ]
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-change-5",
+        "operationMs": 58.9129810000004,
+        "transactionMs": [58.87223399999948],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 9.278630000000703,
+            "initial.featuresLookupMs": 7.735918000000311,
+            "initial.preferencesLookupMs": 7.649438000000373,
+            "initial.projectionMs": 0.0887349999993603,
+            "final.subscriptionLookupMs": 13.348802999999862,
+            "final.featuresLookupMs": 7.034396000000015,
+            "final.preferencesLookupMs": 6.973947999999837,
+            "final.projectionMs": 0.08688299999994342
+          }
+        ]
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-change-6",
+        "operationMs": 70.13024900000073,
+        "transactionMs": [70.0912500000004],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 9.219845000000532,
+            "initial.featuresLookupMs": 9.96439299999929,
+            "initial.preferencesLookupMs": 9.874663999999939,
+            "initial.projectionMs": 0.08175699999992503,
+            "final.subscriptionLookupMs": 18.004430000000866,
+            "final.featuresLookupMs": 7.949366999999256,
+            "final.preferencesLookupMs": 7.8890879999999015,
+            "final.projectionMs": 0.0824350000002596
+          }
+        ]
+      }
+    ],
+    "candidate / M05-change": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-change-2",
+        "operationMs": 79.70798099999956,
+        "transactionMs": [79.6669750000001],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 17.3576750000002,
+            "initial.featuresLookupMs": 13.874009999999544,
+            "initial.preferencesLookupMs": 13.772142000000713,
+            "initial.projectionMs": 0.08684199999970588,
+            "final.subscriptionLookupMs": 13.004667000000154,
+            "final.featuresLookupMs": 9.128493000000162,
+            "final.preferencesLookupMs": 8.979878999999528,
+            "final.projectionMs": 0.08749100000022736
+          }
+        ]
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-change-3",
+        "operationMs": 55.78334499999983,
+        "transactionMs": [55.74035499999991],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 12.241597000000183,
+            "initial.featuresLookupMs": 5.78394599999956,
+            "initial.preferencesLookupMs": 5.668604000000414,
+            "initial.projectionMs": 0.08812299999954121,
+            "final.subscriptionLookupMs": 11.525932999999895,
+            "final.featuresLookupMs": 5.389938000000257,
+            "final.preferencesLookupMs": 5.331645000000208,
+            "final.projectionMs": 0.0818939999999202
+          }
+        ]
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-change-4",
+        "operationMs": 58.63441299999977,
+        "transactionMs": [58.590165999999954],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 10.226757000000362,
+            "initial.featuresLookupMs": 6.156351000000541,
+            "initial.preferencesLookupMs": 6.059161000000131,
+            "initial.projectionMs": 0.08186599999953614,
+            "final.subscriptionLookupMs": 12.28847500000029,
+            "final.featuresLookupMs": 6.9233869999998205,
+            "final.preferencesLookupMs": 6.865498000000116,
+            "final.projectionMs": 0.08188299999983428
+          }
+        ]
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-change-5",
+        "operationMs": 70.29440599999998,
+        "transactionMs": [70.25193899999977],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 10.83131499999945,
+            "initial.featuresLookupMs": 8.567986999999448,
+            "initial.preferencesLookupMs": 8.422550000000228,
+            "initial.projectionMs": 0.08839100000022881,
+            "final.subscriptionLookupMs": 13.007582999999613,
+            "final.featuresLookupMs": 17.419354999999996,
+            "final.preferencesLookupMs": 17.330981000000065,
+            "final.projectionMs": 0.07971700000052806
+          }
+        ]
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-change-6",
+        "operationMs": 61.22375800000009,
+        "transactionMs": [61.173303999999916],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 12.780385000000024,
+            "initial.featuresLookupMs": 5.529454000000442,
+            "initial.preferencesLookupMs": 5.43803299999945,
+            "initial.projectionMs": 0.08377500000005966,
+            "final.subscriptionLookupMs": 12.29540999999972,
+            "final.featuresLookupMs": 9.728728000000046,
+            "final.preferencesLookupMs": 9.638584999999694,
+            "final.projectionMs": 0.11935600000015256
+          }
+        ]
+      }
+    ],
+    "baseline / M05-noop": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-noop-2",
+        "operationMs": 28.408508999998958,
+        "transactionMs": [28.359356000000844],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 9.110842000000048,
+            "initial.featuresLookupMs": 5.200999999999112,
+            "initial.preferencesLookupMs": 5.108626999999615,
+            "initial.projectionMs": 0.09683799999947951
+          }
+        ]
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-noop-3",
+        "operationMs": 29.61526699999922,
+        "transactionMs": [29.5843160000004],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 10.178343000001405,
+            "initial.featuresLookupMs": 7.080395000000863,
+            "initial.preferencesLookupMs": 6.994951000000583,
+            "initial.projectionMs": 0.1289020000003802
+          }
+        ]
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-noop-4",
+        "operationMs": 32.481260999998995,
+        "transactionMs": [32.454955000001064],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 9.303986000000805,
+            "initial.featuresLookupMs": 8.429111000001285,
+            "initial.preferencesLookupMs": 8.32922999999937,
+            "initial.projectionMs": 0.1851280000009865
+          }
+        ]
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-noop-5",
+        "operationMs": 30.123755999999048,
+        "transactionMs": [30.09840500000064],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 11.016701000000467,
+            "initial.featuresLookupMs": 5.961153000000195,
+            "initial.preferencesLookupMs": 5.879452000001038,
+            "initial.projectionMs": 0.09846999999899708
+          }
+        ]
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-noop-6",
+        "operationMs": 24.51184900000044,
+        "transactionMs": [24.483094000001074],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 9.487984999999753,
+            "initial.featuresLookupMs": 5.357679999999164,
+            "initial.preferencesLookupMs": 5.274629000001369,
+            "initial.projectionMs": 0.08228000000053726
+          }
+        ]
+      }
+    ],
+    "candidate / M05-noop": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-noop-2",
+        "operationMs": 31.9310289999994,
+        "transactionMs": [31.874190999999882],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 11.379279000000679,
+            "initial.featuresLookupMs": 6.188672999999653,
+            "initial.preferencesLookupMs": 6.09700200000043,
+            "initial.projectionMs": 0.10802499999954307
+          }
+        ]
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-noop-3",
+        "operationMs": 36.91922799999975,
+        "transactionMs": [36.88657299999977],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 14.344038000000182,
+            "initial.featuresLookupMs": 5.800506999999925,
+            "initial.preferencesLookupMs": 5.703612999999677,
+            "initial.projectionMs": 0.07953799999995681
+          }
+        ]
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-noop-4",
+        "operationMs": 37.66379400000005,
+        "transactionMs": [37.633780000000115],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 12.424631999999292,
+            "initial.featuresLookupMs": 9.475709999999708,
+            "initial.preferencesLookupMs": 9.346056000000317,
+            "initial.projectionMs": 0.09446099999968283
+          }
+        ]
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-noop-5",
+        "operationMs": 32.18575199999941,
+        "transactionMs": [32.15784900000017],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 10.810066000000006,
+            "initial.featuresLookupMs": 6.179076999999779,
+            "initial.preferencesLookupMs": 6.083550000000287,
+            "initial.projectionMs": 0.08362899999974616
+          }
+        ]
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-noop-6",
+        "operationMs": 30.190220999999838,
+        "transactionMs": [30.147979999999734],
+        "timings": [
+          {
+            "initial.subscriptionLookupMs": 9.55873900000006,
+            "initial.featuresLookupMs": 6.243817999999919,
+            "initial.preferencesLookupMs": 6.1330840000000535,
+            "initial.projectionMs": 0.1161500000007436
+          }
+        ]
+      }
+    ],
+    "baseline / M05-policy": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-policy-2",
+        "operationMs": 38.251820999999836,
+        "transactionMs": [38.21949599999971],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-policy-3",
+        "operationMs": 24.936021999999866,
+        "transactionMs": [24.902147999999215],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-policy-4",
+        "operationMs": 25.527694000000338,
+        "transactionMs": [25.492489999998725],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-policy-5",
+        "operationMs": 23.1189030000005,
+        "transactionMs": [23.083631000001333],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-policy-6",
+        "operationMs": 16.57919700000093,
+        "transactionMs": [16.54263600000013],
+        "timings": []
+      }
+    ],
+    "candidate / M05-policy": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-policy-2",
+        "operationMs": 22.68130900000051,
+        "transactionMs": [22.644601999999395],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-policy-3",
+        "operationMs": 20.59398499999952,
+        "transactionMs": [20.558351000000584],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-policy-4",
+        "operationMs": 25.578913999999713,
+        "transactionMs": [25.540675000000192],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-policy-5",
+        "operationMs": 24.158010000000104,
+        "transactionMs": [24.12392699999964],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-policy-6",
+        "operationMs": 31.49829200000022,
+        "transactionMs": [31.457267000000684],
+        "timings": []
+      }
+    ],
+    "baseline / M05-delay": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-delay-2",
+        "operationMs": 24.026609999998982,
+        "transactionMs": [23.993892999998934],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-delay-3",
+        "operationMs": 18.28878799999984,
+        "transactionMs": [18.25441000000137],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-delay-4",
+        "operationMs": 15.437504999999874,
+        "transactionMs": [15.40374999999949],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-delay-5",
+        "operationMs": 18.19647199999963,
+        "transactionMs": [18.1646499999988],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-delay-6",
+        "operationMs": 22.163155000000188,
+        "transactionMs": [22.12870699999985],
+        "timings": []
+      }
+    ],
+    "candidate / M05-delay": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-delay-2",
+        "operationMs": 17.197007999999187,
+        "transactionMs": [17.156812000001082],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-delay-3",
+        "operationMs": 17.251036999999997,
+        "transactionMs": [17.215720000000147],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-delay-4",
+        "operationMs": 14.130917000000409,
+        "transactionMs": [14.095209999999497],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-delay-5",
+        "operationMs": 16.26223899999968,
+        "transactionMs": [16.227183999999397],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-delay-6",
+        "operationMs": 18.786480999999185,
+        "transactionMs": [18.747669000000315],
+        "timings": []
+      }
+    ],
+    "baseline / M05-summary-absent": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-summary-absent-2",
+        "operationMs": 5.526491000000533,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-summary-absent-3",
+        "operationMs": 5.831395999999586,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-summary-absent-4",
+        "operationMs": 8.483256999999867,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-summary-absent-5",
+        "operationMs": 3.6200019999996584,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-summary-absent-6",
+        "operationMs": 5.124319999998988,
+        "transactionMs": [],
+        "timings": []
+      }
+    ],
+    "candidate / M05-summary-absent": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-summary-absent-2",
+        "operationMs": 3.342083999999886,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-summary-absent-3",
+        "operationMs": 5.132944000000862,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-summary-absent-4",
+        "operationMs": 4.7357669999983045,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-summary-absent-5",
+        "operationMs": 4.2260389999992185,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-summary-absent-6",
+        "operationMs": 3.7069229999997333,
+        "transactionMs": [],
+        "timings": []
+      }
+    ],
+    "baseline / M05-summary-active": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-summary-active-2",
+        "operationMs": 5.535262999999759,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-summary-active-3",
+        "operationMs": 2.737372999999934,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-summary-active-4",
+        "operationMs": 1.989811000001282,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-summary-active-5",
+        "operationMs": 5.105385999999271,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-summary-active-6",
+        "operationMs": 3.3634280000005674,
+        "transactionMs": [],
+        "timings": []
+      }
+    ],
+    "candidate / M05-summary-active": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-summary-active-2",
+        "operationMs": 3.428895000000921,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-summary-active-3",
+        "operationMs": 3.295564000000013,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-summary-active-4",
+        "operationMs": 3.552730999999767,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-summary-active-5",
+        "operationMs": 3.7791829999987385,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-summary-active-6",
+        "operationMs": 8.313619000000472,
+        "transactionMs": [],
+        "timings": []
+      }
+    ],
+    "baseline / M05-summary-expired": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-summary-expired-2",
+        "operationMs": 3.610028000000966,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-summary-expired-3",
+        "operationMs": 2.91579400000046,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-summary-expired-4",
+        "operationMs": 4.422887999999148,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-summary-expired-5",
+        "operationMs": 7.140616000000591,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-summary-expired-6",
+        "operationMs": 4.465850000000501,
+        "transactionMs": [],
+        "timings": []
+      }
+    ],
+    "candidate / M05-summary-expired": [
+      {
+        "sample": 1,
+        "fixture": "arch055-m05-summary-expired-2",
+        "operationMs": 3.4642650000005233,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 2,
+        "fixture": "arch055-m05-summary-expired-3",
+        "operationMs": 2.837652000000162,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 3,
+        "fixture": "arch055-m05-summary-expired-4",
+        "operationMs": 3.0604240000011487,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 4,
+        "fixture": "arch055-m05-summary-expired-5",
+        "operationMs": 4.573555000000852,
+        "transactionMs": [],
+        "timings": []
+      },
+      {
+        "sample": 5,
+        "fixture": "arch055-m05-summary-expired-6",
+        "operationMs": 3.076547999999093,
+        "transactionMs": [],
+        "timings": []
+      }
+    ]
+  }
+}
 ```
 
 **Canonical migration hashes**
+
 ```json
 {
   "20260912000000_arch010_first_production_baseline/migration.sql": "32ed7881a05eb81d465cf7641c2efc6aaf8186e7c18472b23f0fa5d4173b4604",

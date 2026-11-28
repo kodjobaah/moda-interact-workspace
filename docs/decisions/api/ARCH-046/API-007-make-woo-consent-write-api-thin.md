@@ -88,7 +88,7 @@ The real durability/correctness contract is a tenant-authenticated event, an imm
 
 - Required top-level keys are **exactly** `schemaVersion`, `eventId`, `decision`, `canonicalPhone`, `occurredAt`, `disclosure`. `decision` is `GRANT` or `REVOKE`; `disclosure` must be populated for GRANT and `null` for REVOKE. Preserve the existing size/identifier/locale/version/text/timestamp bounds, strict JSON decoding and no-store responses. `canonicalPhone` remains **digits-only E.164**, matching the existing persisted `CustomerPhone.whatsappCanonicalPhone`; validate/canonicalise it **once** with the published Shared identity utility (using `+` + digits as its input if needed). Do not accept a second `serverObservedPhone` or `verifiedCountryCode` in v2.
 - v2 has **no** `purpose`, `checkoutAction`, `checkoutKey`, `checkoutMode`, `source`, `fieldId`, `selection`, `userInitiated`, `nonceVerified`, `sessionVerified`, `merchantSiteUrl`, `shopId` or `customerId`. Woo is solely responsible for establishing an explicit server-observed customer action and attaching the exact displayed text. The authenticated installation establishes shop/merchant attribution; API does not search disclosure prose for the merchant name or URL.
-- The API must **still** enforce authenticated active Woo installation/shop tenancy, a bounded well-formed canonical phone, a deliberate *decision as asserted by the authenticated Woo server*, stable event identity, disclosure evidence for GRANT, and durable per-phone ordering. These are inexpensive and/or correctness-critical; removing fake attestations is not permission to trust anonymous browser input.
+- The API must **still** enforce authenticated active Woo installation/shop tenancy, a bounded well-formed canonical phone, a deliberate _decision as asserted by the authenticated Woo server_, stable event identity, disclosure evidence for GRANT, and durable per-phone ordering. These are inexpensive and/or correctness-critical; removing fake attestations is not permission to trust anonymous browser input.
 - **Breaking rollout:** reject v1 requests as invalid (`400`); v2 is the only accepted transport. No production in-flight v1 retries or existing user consent evidence require compatibility. Same `(shopId,eventId)` with differing v2 content remains a replay conflict; a repeat of the same v2 event returns its original result.
 - Continue to reject older decisions, concurrent stale grants, ambiguous active phone matches and conflicting evidence; duplicate identical `(shopId,eventId)` must return its original acknowledged revision/sequence even after a later REVOKE or feature disable. Preserve independent `whatsappNoContact`/`CUSTOMER_STOP` fields and all STOP non-override guarantees. Failure must not partially update CustomerPhone or evidence.
 - Keep the existing provider-observed timestamp/monotonic revision rules, **including v2 grant freshness and future-date rejection**, unless a later architecture task explicitly replaces them with a robust multi-tab/multi-device ordering protocol. The API may report a clock-skew limitation in the Completion Report but cannot silently trade withdrawal safety for permissiveness.
@@ -196,7 +196,7 @@ No production consent service, database schema/migration, WooCommerce plugin, Ba
 - Implemented the **v2-only**, six-field `woo.whatsapp-consent.v2` contract on the existing authenticated POST route; removed v1 and WooCommerce-specific attestation parsing under the agreed pre-production breaking rollout. Installation identity and fixed consent purpose remain server-derived.
 - Removed consent-write billing/entitlement reads and consolidated the in-transaction shop/installation locked recheck, retaining atomic CustomerPhone/evidence writes, recipient/event serialisation, chronological ordering, duplicate ACKs and immutable authoritative STOP handling.
 - Reconciled consent OpenAPI, API documentation, fixtures, unit, concurrency and PostgreSQL integration tests in original implementation commit `220fa2b`.
-- **Attempt 2: rollback proof.** Added a PostgreSQL-test-only `BEFORE INSERT` trigger on `commerce.WhatsAppConsentEvidence` which raises an error *after* the consent service's CustomerPhone mutation. The regression asserts no change to current decision/revision/sequence/evidence for an existing phone and no leaked Customer, CustomerPhone or evidence records when a new phone is involved. The trigger/function are removed in `finally`.
+- **Attempt 2: rollback proof.** Added a PostgreSQL-test-only `BEFORE INSERT` trigger on `commerce.WhatsAppConsentEvidence` which raises an error _after_ the consent service's CustomerPhone mutation. The regression asserts no change to current decision/revision/sequence/evidence for an existing phone and no leaked Customer, CustomerPhone or evidence records when a new phone is involved. The trigger/function are removed in `finally`.
 - **Attempt 2: API-006 proof tuple.** Added a real PostgreSQL read matching **all five** `(shopId, eventId, canonicalPhone, customerPhoneId, phoneConsentRevision)` values from a new v2 GRANT, with rejection checks for an incorrect shop and revision. This does not implement the API-006 endpoint or establish shopper identity for that future reader.
 - **Attempt 2: performance evidence.** Added an opt-in comparison runner that executes the same scenarios against the pre-API-007 v1 source (`220fa2b^`) and the current v2 code with the disposable migration-current PostgreSQL setup. It logs SQL statements, elapsed time of the Prisma `$transaction` client call, overall scenario wall time, success/rejection and whether a billing table was read. Legacy v1 code exists **only** in the temporary comparison source, not in the deployed API.
 - Attempt 2 changes committed as `b1ccf78` and pushed to `origin/task/ARCH-046-API-007`, as shown in the supplied 24 October 2026 terminal recording.
@@ -205,36 +205,36 @@ No production consent service, database schema/migration, WooCommerce plugin, Ba
 
 **Attempt 2 reconciliation rerun (24 October 2026, implementation head `b1ccf7842d1a6d732d900676d6e8c4250977b707`):**
 
-| Check | Observed result |
-|---|---|
-| `npm run test:arch046-woo-consent:unit` | **6/6 passed**, zero failures. |
-| `ARCH046_CONSENT_COMPARE_BASELINE=1 npm run test:arch046-woo-consent:postgres` | **11/11 primary PostgreSQL tests passed**, including the new failure-injection rollback test and API-006 proof-tuple assertions; **1/1 v1 comparison** and **1/1 v2 comparison** passed. |
-| Disposable PostgreSQL migrations | 59 migrations applied successfully. |
-| `npm run typecheck` | Passed; Prisma Client v6.19.3 generated and `tsc --noEmit` completed without errors. |
-| `npm run lint` | Passed (`eslint . --max-warnings=0`), no error output. |
-| `git diff --check origin/main...HEAD` | Passed against the published implementation branch. |
-| Consent OpenAPI YAML | Parsed successfully with the repository's `yaml` package; OpenAPI `3.1.0` and the expected POST path are present. No dedicated consent OpenAPI test/script is declared in `package.json`. |
-| Git commit / push | `b1ccf78` pushed, updating `task/ARCH-046-API-007` from `220fa2b` to `b1ccf78`. |
-| Live WordPress and CommerceAgent end-to-end | Not executed; separate WooCommerce v2 producer/system-test ownership. |
+| Check                                                                          | Observed result                                                                                                                                                                           |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch046-woo-consent:unit`                                        | **6/6 passed**, zero failures.                                                                                                                                                            |
+| `ARCH046_CONSENT_COMPARE_BASELINE=1 npm run test:arch046-woo-consent:postgres` | **11/11 primary PostgreSQL tests passed**, including the new failure-injection rollback test and API-006 proof-tuple assertions; **1/1 v1 comparison** and **1/1 v2 comparison** passed.  |
+| Disposable PostgreSQL migrations                                               | 59 migrations applied successfully.                                                                                                                                                       |
+| `npm run typecheck`                                                            | Passed; Prisma Client v6.19.3 generated and `tsc --noEmit` completed without errors.                                                                                                      |
+| `npm run lint`                                                                 | Passed (`eslint . --max-warnings=0`), no error output.                                                                                                                                    |
+| `git diff --check origin/main...HEAD`                                          | Passed against the published implementation branch.                                                                                                                                       |
+| Consent OpenAPI YAML                                                           | Parsed successfully with the repository's `yaml` package; OpenAPI `3.1.0` and the expected POST path are present. No dedicated consent OpenAPI test/script is declared in `package.json`. |
+| Git commit / push                                                              | `b1ccf78` pushed, updating `task/ARCH-046-API-007` from `220fa2b` to `b1ccf78`.                                                                                                           |
+| Live WordPress and CommerceAgent end-to-end                                    | Not executed; separate WooCommerce v2 producer/system-test ownership.                                                                                                                     |
 
 **Comparable single-run SQL and timing evidence** (from `ARCH046_CONSENT_COMPARISON` log lines; same scenario harness on v1 and v2):
 
-| Scenario | SQL v1 → v2 | Prisma transaction client ms v1 → v2 | Scenario wall ms v1 → v2 | Outcome v1 / v2 |
-|---|---:|---:|---:|---|
-| Fresh GRANT | 14 → 12 | 60.30 → 52.04 | 63.69 → 55.49 | recorded / recorded |
-| Existing GRANT | 12 → 10 | 27.75 → 25.88 | 28.56 → 26.52 | recorded / recorded |
-| REVOKE | 11 → 10 | 24.14 → 26.92 | 24.36 → 27.13 | recorded / recorded |
-| Duplicate retry | 8 → 7 | 16.29 → 16.63 | 16.50 → 16.83 | duplicate / duplicate |
-| Stale GRANT rejection | 10 → 8 | 23.06 → 17.03 | 23.30 → 17.26 | rejected / rejected |
-| Injected evidence-write failure | 12 → 10 | 48.18 → 40.70 | 48.45 → 40.93 | rejected / rejected |
+| Scenario                        | SQL v1 → v2 | Prisma transaction client ms v1 → v2 | Scenario wall ms v1 → v2 | Outcome v1 / v2       |
+| ------------------------------- | ----------: | -----------------------------------: | -----------------------: | --------------------- |
+| Fresh GRANT                     |     14 → 12 |                        60.30 → 52.04 |            63.69 → 55.49 | recorded / recorded   |
+| Existing GRANT                  |     12 → 10 |                        27.75 → 25.88 |            28.56 → 26.52 | recorded / recorded   |
+| REVOKE                          |     11 → 10 |                        24.14 → 26.92 |            24.36 → 27.13 | recorded / recorded   |
+| Duplicate retry                 |       8 → 7 |                        16.29 → 16.63 |            16.50 → 16.83 | duplicate / duplicate |
+| Stale GRANT rejection           |      10 → 8 |                        23.06 → 17.03 |            23.30 → 17.26 | rejected / rejected   |
+| Injected evidence-write failure |     12 → 10 |                        48.18 → 40.70 |            48.45 → 40.93 | rejected / rejected   |
 
-The benchmark captures the *elapsed client time around* Prisma `$transaction(...)`—including transaction initiation, query round trips, locking/commit or rollback, not PostgreSQL-server-only execution. It excludes scenario setup/HTTP work; the separately logged scenario wall duration includes the surrounding service call. These are **single local samples per scenario**, not p95 latency, load/capacity measurements, or proof of sustained throughput. The v1 GRANT and failure scenarios emitted a billing read; v2 emitted no billing read in the comparison scenarios. Failure-outcome measurements were recorded for both stale decision and deliberately injected evidence-insert failure. SQL counts were lower in every comparison; timings were lower in most, but not all scenarios, so no generalized latency-improvement claim is made.
+The benchmark captures the _elapsed client time around_ Prisma `$transaction(...)`—including transaction initiation, query round trips, locking/commit or rollback, not PostgreSQL-server-only execution. It excludes scenario setup/HTTP work; the separately logged scenario wall duration includes the surrounding service call. These are **single local samples per scenario**, not p95 latency, load/capacity measurements, or proof of sustained throughput. The v1 GRANT and failure scenarios emitted a billing read; v2 emitted no billing read in the comparison scenarios. Failure-outcome measurements were recorded for both stale decision and deliberately injected evidence-insert failure. SQL counts were lower in every comparison; timings were lower in most, but not all scenarios, so no generalized latency-improvement claim is made.
 
 **Review requirements cross-reference:**
 
 1. **Rollback after SQL failure:** satisfied by `v2.postgres.test.ts` evidence-trigger test and passing 11/11 PostgreSQL run.
 2. **Five-field API-006 evidence retrieval:** satisfied by `v2.postgres.test.ts` exact tuple query and negative tenant/revision checks.
- 3. **Comparable SQL, transaction and failure measurements:** satisfied by `performance.postgres.test.ts`, the opt-in PostgreSQL runner and measured table above. Prisma transaction-client elapsed time is accepted as the transaction-duration measure, with its client/round-trip/commit-or-rollback scope explicitly documented.
+3. **Comparable SQL, transaction and failure measurements:** satisfied by `performance.postgres.test.ts`, the opt-in PostgreSQL runner and measured table above. Prisma transaction-client elapsed time is accepted as the transaction-duration measure, with its client/round-trip/commit-or-rollback scope explicitly documented.
 
 ### Deviations
 
@@ -283,6 +283,7 @@ The launcher/provenance evidence gap has been resolved and is not a requested co
 - State transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. `completion_mode: developer`; explicit developer completion is pending. Neither task branch was merged to `main`.
 
 ## Architect Review
+
 ## Developer Completion Decision — Attempt 2
 
 On 2026-10-27, the developer explicitly completed accepted Attempt 2. The
@@ -305,6 +306,7 @@ performed.
   status changed.
 
 ## Architect Review
+
 ## Developer Review Reconciliation — 2026-10-27
 
 Reconciled the existing passing Attempt 2 review against the canonical task

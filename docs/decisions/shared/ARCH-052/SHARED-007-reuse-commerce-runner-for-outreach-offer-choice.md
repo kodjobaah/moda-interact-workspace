@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables: []
-created: '2026-10-29'
-updated: '2026-10-29'
+created: "2026-10-29"
+updated: "2026-10-29"
 ---
 
 # ARCH-052-SHARED-007: Add outreach entrypoint to the existing Commerce runner

@@ -539,7 +539,6 @@ moda-interact-system-test
 
 No Gateway or Messaging task is required.
 
-
 ## Deterministic implementation decomposition (Luna binding)
 
 The implementation is deliberately split so no Luna task owns multiple independently useful mechanisms.

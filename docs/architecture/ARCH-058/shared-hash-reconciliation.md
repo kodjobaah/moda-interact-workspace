@@ -21,15 +21,14 @@ The historical reproduction evidence remains in `shared-hash-reconciliation-evid
 
 `toolName + definitionVersion` is the durable built-in contract identity. SHARED-003 may retain `1.0.0` only as an unpublished intermediate because it removes redundant metadata without changing wire semantics. SHARED-005 intentionally changes `CommerceOfferSchema` timestamp acceptance, so it must bump both discount built-ins to `2.0.0`; DATABASE-002 upgrades persisted development grants accordingly before consumers use Shared 5.0.0. No corrected consumer accepts the legacy `1.0.0` built-in identity.
 
-
-| Task | Owner | Exact responsibility |
-| --- | --- | --- |
-| `ARCH-058-SHARED-003` | Shared | Remove `contractHash` and `commerceBuiltInToolContractPayload`; built-in identity becomes name + definitionVersion. |
-| `ARCH-058-SHARED-004` | Shared | Remove the unused conversation-specific MCP tool-context export while preserving legitimate Background/runner and outreach contracts. |
-| `ARCH-058-SHARED-005` | Shared | Replace version-sensitive discount option/detail timestamp validation with one explicit UTC seconds-based syntax and bump both changed discount built-ins to `2.0.0`. |
-| `ARCH-058-SHARED-006` | Shared publication | Publish the accepted combined breaking correction as approved target 5.0.0, subject to registry availability at execution time. |
-| `ARCH-058-DATABASE-002` | Database | Forward-migrate persisted built-in grants from hashed `1.0.0` to no-hash `2.0.0`, preserving existing rows/order and all published-grant invariants. |
-| `ARCH-058-MCP-002` | MCP | Resume the preserved draft only after DATABASE-002 and SHARED-006 are accepted; consume 5.0.0 and remove hash assertions/use. |
+| Task                    | Owner              | Exact responsibility                                                                                                                                                  |
+| ----------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ARCH-058-SHARED-003`   | Shared             | Remove `contractHash` and `commerceBuiltInToolContractPayload`; built-in identity becomes name + definitionVersion.                                                   |
+| `ARCH-058-SHARED-004`   | Shared             | Remove the unused conversation-specific MCP tool-context export while preserving legitimate Background/runner and outreach contracts.                                 |
+| `ARCH-058-SHARED-005`   | Shared             | Replace version-sensitive discount option/detail timestamp validation with one explicit UTC seconds-based syntax and bump both changed discount built-ins to `2.0.0`. |
+| `ARCH-058-SHARED-006`   | Shared publication | Publish the accepted combined breaking correction as approved target 5.0.0, subject to registry availability at execution time.                                       |
+| `ARCH-058-DATABASE-002` | Database           | Forward-migrate persisted built-in grants from hashed `1.0.0` to no-hash `2.0.0`, preserving existing rows/order and all published-grant invariants.                  |
+| `ARCH-058-MCP-002`      | MCP                | Resume the preserved draft only after DATABASE-002 and SHARED-006 are accepted; consume 5.0.0 and remove hash assertions/use.                                         |
 
 No Admin work, taxonomy re-import, new database column, duplicate descriptor, package-wide Zod pin or compatibility union is introduced.
 

@@ -20,14 +20,14 @@ New transport validation is structural: strict keys, types, lengths, enumeration
 
 The shopper-facing behavior is specified verbatim in [COMMERCE-001 section 3](../../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md). That pending task creates `moda-interact-commerce/src/commerce/bootstrap/system-product-response.ts`, exporting `SYSTEM_PRODUCT_BEHAVIOUR` and `SYSTEM_PRODUCT_RESPONSE_INSTRUCTIONS`. These are application instructions, not the architect/developer TOML role. The instruction rules reconciled in revisions 7/8 remain in force; revision 10 changes contract identity/dependencies, not the shopper-facing prompt literals. Commerce and Background implementations remain pending. The new runtime prompt file is therefore absent from the uploaded source.
 
-| Assembly position | Instruction owner and source | Publication or loading contract |
-| --- | --- | --- |
-| 1 | Shared `PLATFORM_INSTRUCTIONS` in `src/commerce/runner/instructions.ts` | Existing accepted runner kernel. Preserve its data-authority, grant and mandatory-referral rules. |
-| 2 | Background `RECOVERY_INSTRUCTIONS` in `src/commerce/recovery-instructions.ts` | Existing host instructions, with the exact third-string replacement specified by BACKGROUND-001 section 3. Recovery state and historical checkout facts remain host-owned. |
-| 3 | Published Platform business prompt | BACKGROUND-001 section 1 reads the single active PLATFORM configuration and its PUBLISHED revision once per turn. |
-| 4 | Optional published current-Shop business prompt | The same bounded lookup loads the current shop's PUBLISHED revision, when configured; another shop's row is rejected. |
-| 5 | Commerce `SYSTEM_PRODUCT_RESPONSE_INSTRUCTIONS` | The owned immutable release response contract supplies the structured selection/finalResponse instructions. |
-| 6 | Commerce `SYSTEM_PRODUCT_BEHAVIOUR` | The owned `product_search.behaviourPrompt` is frozen into the published release, then loaded through its pinned manifest. Other granted feature prompts retain their existing manifest order. |
+| Assembly position | Instruction owner and source                                                  | Publication or loading contract                                                                                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1                 | Shared `PLATFORM_INSTRUCTIONS` in `src/commerce/runner/instructions.ts`       | Existing accepted runner kernel. Preserve its data-authority, grant and mandatory-referral rules.                                                                                             |
+| 2                 | Background `RECOVERY_INSTRUCTIONS` in `src/commerce/recovery-instructions.ts` | Existing host instructions, with the exact third-string replacement specified by BACKGROUND-001 section 3. Recovery state and historical checkout facts remain host-owned.                    |
+| 3                 | Published Platform business prompt                                            | BACKGROUND-001 section 1 reads the single active PLATFORM configuration and its PUBLISHED revision once per turn.                                                                             |
+| 4                 | Optional published current-Shop business prompt                               | The same bounded lookup loads the current shop's PUBLISHED revision, when configured; another shop's row is rejected.                                                                         |
+| 5                 | Commerce `SYSTEM_PRODUCT_RESPONSE_INSTRUCTIONS`                               | The owned immutable release response contract supplies the structured selection/finalResponse instructions.                                                                                   |
+| 6                 | Commerce `SYSTEM_PRODUCT_BEHAVIOUR`                                           | The owned `product_search.behaviourPrompt` is frozen into the published release, then loaded through its pinned manifest. Other granted feature prompts retain their existing manifest order. |
 
 Background passes recovery instructions, Platform text and optional Shop text as `hostInstructions`. Shared's existing `composeTrustedInstructions` then assembles kernel, host instructions, response instructions and feature prompts in that order. This is the actual model-request assembly order, not a permission hierarchy created by string position. Host tool admission, current-policy checks, observation validation and final composition enforce authority. MCP provides tool contracts and results; it neither stores nor selects conversation instructions.
 
@@ -37,12 +37,12 @@ The existing Background third recovery string says `Missing evidence requires RE
 
 All four tools belong to the existing `product_search` feature, which becomes active, `ALWAYS_ENABLED` and `systemRequired`. They are available to each otherwise authorized CommerceAgent store with an active eligible plan mapping, including Free plans and future stores. MCP retains tenant, connection, plan status and published-tool checks. Background retains turn, lease and conversation-grant checks. No merchant preference is required. No new feature or manually authored Studio definition is needed.
 
-| Name | Definition version | Execution operation | Operation version |
-| --- | --- | --- | --- |
-| `commerce_resolve_product_categories` | `1.0.0` | `taxonomy.resolveCategories` | `1.0.0` |
-| `commerce_search_products` | `2.0.0` | `products.search` | `1.0.0` |
-| `commerce_get_product` | retain existing `1.0.0` | `products.get` | retain existing `1.0.0` |
-| `commerce_get_shipping_information` | `1.0.0` | `shipping.getInformation` | `1.0.0` |
+| Name                                  | Definition version      | Execution operation          | Operation version       |
+| ------------------------------------- | ----------------------- | ---------------------------- | ----------------------- |
+| `commerce_resolve_product_categories` | `1.0.0`                 | `taxonomy.resolveCategories` | `1.0.0`                 |
+| `commerce_search_products`            | `2.0.0`                 | `products.search`            | `1.0.0`                 |
+| `commerce_get_product`                | retain existing `1.0.0` | `products.get`               | retain existing `1.0.0` |
+| `commerce_get_shipping_information`   | `1.0.0`                 | `shipping.getInformation`    | `1.0.0`                 |
 
 Published descriptors must pass the **actual** existing bounded subset validator after projection. Shared 4.0.0 supplies bounded enum metadata in its accepted schemas. Commerce consumes those schemas through its existing authoring projector and applies the exact narrow projector changes listed in COMMERCE-001. Preserve `$schema`/default stripping, required keys, nullability and finite literal/enum bounds. Do not write alternative local wire schemas, admit arbitrary `const`/`oneOf` keywords or create another general schema engine. Tests start from actual Shared schemas and the actual Commerce projection/publication route, including `category.system`, recommendation version/scope/promotion kind and nullable IDs.
 
@@ -57,25 +57,27 @@ Input is exactly `{query: string(1..200), limit?: integer(1..10)}`; parsed defau
 Successful output is one of:
 
 ```typescript
-type CategoryResolution = {
-  outcome: "CANDIDATES" | "NO_CANDIDATES";
-  generationId: string; // 1..128
-  source: "SHOPIFY_STANDARD_PRODUCT_TAXONOMY";
-  taxonomyVersion: string; // 1..64
-  languageTag: string; // 1..35; corpus language, not promised query language
-  candidates: Array<{
-    categoryId: string; // original provider ID, 1..128
-    name: string; // 1..512
-    fullName: string; // full path, 1..4096
-    parentId: string | null; // 1..128 when present
-    level: number; // integer 0..32
-    ancestorIds: string[]; // max 32, original IDs
-    distance: number; // finite cosine distance, 0..2, lower is nearer
-  }>; // max 10, and no more than requested limit
-} | {
-  outcome: "UNAVAILABLE";
-  reasonCode: "NOT_READY" | "TEMPORARY_UNAVAILABLE";
-};
+type CategoryResolution =
+  | {
+      outcome: "CANDIDATES" | "NO_CANDIDATES";
+      generationId: string; // 1..128
+      source: "SHOPIFY_STANDARD_PRODUCT_TAXONOMY";
+      taxonomyVersion: string; // 1..64
+      languageTag: string; // 1..35; corpus language, not promised query language
+      candidates: Array<{
+        categoryId: string; // original provider ID, 1..128
+        name: string; // 1..512
+        fullName: string; // full path, 1..4096
+        parentId: string | null; // 1..128 when present
+        level: number; // integer 0..32
+        ancestorIds: string[]; // max 32, original IDs
+        distance: number; // finite cosine distance, 0..2, lower is nearer
+      }>; // max 10, and no more than requested limit
+    }
+  | {
+      outcome: "UNAVAILABLE";
+      reasonCode: "NOT_READY" | "TEMPORARY_UNAVAILABLE";
+    };
 ```
 
 Service invariants: `CANDIDATES` has at least one item; `NO_CANDIDATES` has none; every item belongs to the pinned complete generation; results sort by distance then category ID. Distance is a ranking value, not a probability or a claim of stock. Do not invent a universal confidence cutoff. A broad or ambiguous request may justify a clarification. The corpus stores reference meaning, never merchant inventory.
@@ -335,12 +337,12 @@ Pin one complete generation through query embedding and SQL retrieval. Use param
 
 Runtime implementation deliverables are:
 
-| Owner | Path/command | Purpose |
-| --- | --- | --- |
-| Database | new forward migration; `npm run migrate:deploy` | Create schema and targeted always-enabled feature/plan policy |
-| MCP | `scripts/sync-reference-taxonomy.mjs`; `npm run taxonomy:sync` | Validate, embed, import and activate/no-op a pinned corpus |
-| Commerce | extend `scripts/sync-system-commerce-tools.mjs`; `npm run commerce:sync-tools` | Create/version/publish the four owned definitions, behavior and response fields |
-| Commerce | `scripts/setup-commerce-product-discovery.mjs`; `npm run commerce:setup-discovery` | Thin environment orchestration of the three stages |
+| Owner    | Path/command                                                                       | Purpose                                                                         |
+| -------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Database | new forward migration; `npm run migrate:deploy`                                    | Create schema and targeted always-enabled feature/plan policy                   |
+| MCP      | `scripts/sync-reference-taxonomy.mjs`; `npm run taxonomy:sync`                     | Validate, embed, import and activate/no-op a pinned corpus                      |
+| Commerce | extend `scripts/sync-system-commerce-tools.mjs`; `npm run commerce:sync-tools`     | Create/version/publish the four owned definitions, behavior and response fields |
+| Commerce | `scripts/setup-commerce-product-discovery.mjs`; `npm run commerce:setup-discovery` | Thin environment orchestration of the three stages                              |
 
 The setup wrapper is **Commerce-owned**. This refines revision03's proposed parent-wrapper location so every implementation file has an existing launcher repository owner. It launches documented child commands; it does not import sibling application internals or modify sibling source.
 
@@ -385,14 +387,14 @@ Subcommands report their owned stages and the wrapper assembles the ordered full
 
 The child has exactly one taxonomy stage and `publication: null`. Its `sourceSha256` and non-null category count must match the accepted production manifest for a full CLI import. The wrapper carries observed values; it does not fabricate fingerprints or generation IDs.
 
-| Child mode/status/code | Taxonomy payload and exit | Wrapper treatment |
-| --- | --- | --- |
-| DRY_RUN / PLANNED / TAXONOMY_PENDING_MIGRATION | Verified source/count; importFingerprint null; generationId null; exit 0 | Preserve pending-migration planning and defer database-dependent prerequisites. |
-| DRY_RUN / PLANNED / TAXONOMY_PREPARE_GENERATION | Non-null fingerprint; generationId current active ID or null; exit 0 | Preserve planned taxonomy work. |
-| Either mode / UNCHANGED / TAXONOMY_IDENTICAL_ACTIVE | Non-null fingerprint and generationId; exit 0 | Preserve unchanged result. |
-| APPLY / APPLIED / TAXONOMY_ACTIVATED | Non-null fingerprint and generationId; exit 0 | Preserve applied result. |
-| Either mode / FAILED / actual source reason | taxonomy null; nonzero exit | Preserve source failure and earlier stages; later stages NOT_RUN. Map the exact child TAXONOMY_CONFIGURATION_MISSING reason to the established wrapper TAXONOMY_CONFIGURATION_UNAVAILABLE code, retaining the original source reason in diagnostics. |
-| Early argument/runtime-construction failure | No receipt; nonzero exit | Fail explicitly under the child-error handling in COMMERCE-001; do not infer successful planning from stderr text or invent a receipt. |
+| Child mode/status/code                              | Taxonomy payload and exit                                                | Wrapper treatment                                                                                                                                                                                                                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DRY_RUN / PLANNED / TAXONOMY_PENDING_MIGRATION      | Verified source/count; importFingerprint null; generationId null; exit 0 | Preserve pending-migration planning and defer database-dependent prerequisites.                                                                                                                                                                      |
+| DRY_RUN / PLANNED / TAXONOMY_PREPARE_GENERATION     | Non-null fingerprint; generationId current active ID or null; exit 0     | Preserve planned taxonomy work.                                                                                                                                                                                                                      |
+| Either mode / UNCHANGED / TAXONOMY_IDENTICAL_ACTIVE | Non-null fingerprint and generationId; exit 0                            | Preserve unchanged result.                                                                                                                                                                                                                           |
+| APPLY / APPLIED / TAXONOMY_ACTIVATED                | Non-null fingerprint and generationId; exit 0                            | Preserve applied result.                                                                                                                                                                                                                             |
+| Either mode / FAILED / actual source reason         | taxonomy null; nonzero exit                                              | Preserve source failure and earlier stages; later stages NOT_RUN. Map the exact child TAXONOMY_CONFIGURATION_MISSING reason to the established wrapper TAXONOMY_CONFIGURATION_UNAVAILABLE code, retaining the original source reason in diagnostics. |
+| Early argument/runtime-construction failure         | No receipt; nonzero exit                                                 | Fail explicitly under the child-error handling in COMMERCE-001; do not infer successful planning from stderr text or invent a receipt.                                                                                                               |
 
 ### 7.2 Receipt initialization and authoring schema boundaries
 

@@ -47,6 +47,7 @@ PAID_METERED:
 ```
 
 Purchased credits:
+
 - are prepaid/explicitly purchased;
 - do not expire;
 - survive plan changes, billing-cycle changes, uninstall/reinstall of the same durable Shop;
@@ -101,6 +102,7 @@ shopifyRecoveryCreditPackEventHandle   String?
 ```
 
 Semantics:
+
 - `includedRecoveryConversationAllowance` is an operational mirror used only for paid included -> top-up -> overage routing. It must be configured to match the Shopify plan policy; Shopify remains authoritative for commercial price/tier configuration.
 - It is NOT a price.
 - `recoveryCreditsPerPack` is the number of recovery conversations granted by one successfully billed pack.
@@ -122,6 +124,7 @@ grantedQuantity Int @default(0)
 ```
 
 Rules:
+
 - FREE counter continues to use effective Free allowance and ignores `grantedQuantity`.
 - PURCHASED_RECOVERY_CREDITS uses:
   `available = grantedQuantity - committedQuantity - reservedQuantity`.
@@ -166,6 +169,7 @@ Add inverse relations required by Prisma to `Shop`, `BillingPlan`, and `UsageEve
 ## Required invariants
 
 Application/schema validation must enforce:
+
 - top-up enabled => `recoveryCreditsPerPack > 0`;
 - top-up enabled => non-empty `shopifyRecoveryCreditPackEventHandle`;
 - paid top-up enabled => `includedRecoveryConversationAllowance >= 0`;
@@ -182,6 +186,7 @@ Do not store currency or monetary pack price.
 Generate the normal Prisma migration. Regenerate normal DB artifacts/ERD.
 
 Focused schema tests must prove:
+
 1. repeated purchase rows for the same shop are legal when IDs differ;
 2. the same purchase ID cannot be inserted twice;
 3. one UsageEvent cannot activate two purchases;
@@ -210,6 +215,7 @@ Do not implement purchase creation, Shopify billing events, credit activation or
 ## Completion Report
 
 ### Status
+
 Ready for Review (Attempt 2)
 
 ### Files Changed
@@ -244,6 +250,7 @@ Ready for Review (Attempt 2)
 - No PostgreSQL integration harness exists in this repository; deterministic schema/migration assertions were used as permitted by the task contract.
 
 ### Deviations
+
 None.
 
 ### Assumptions
@@ -251,9 +258,11 @@ None.
 The existing DATABASE-005 schema/migration implementation was retained except for the required in-place correction to the unapplied migration; no application/runtime code or second migration was added.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

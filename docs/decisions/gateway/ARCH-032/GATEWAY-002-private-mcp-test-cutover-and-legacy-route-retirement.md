@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-032-GATEWAY-001
-- ARCH-032-ADMIN-001
-- ARCH-032-BACKGROUND-001
-- ARCH-032-COMMERCE-006
-- ARCH-032-MCP-016
+  - ARCH-032-GATEWAY-001
+  - ARCH-032-ADMIN-001
+  - ARCH-032-BACKGROUND-001
+  - ARCH-032-COMMERCE-006
+  - ARCH-032-MCP-016
 enables: []
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-GATEWAY-002 — Prepare and execute separately approved private MCP endpoint cutover and legacy Commerce MCP-route retirement
@@ -98,47 +98,61 @@ Use the canonical developer workflow and launcher-managed isolated parent and re
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None
 
 ### Work Completed
+
 None
 
 ### Validation Results
+
 Not run
 
 ### Deviations
+
 None
 
 ### Assumptions
+
 None recorded
 
 ### Unresolved Issues
+
 None recorded
 
 ### Architectural Concerns
+
 None recorded
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed
 
 ### Reviewed Files
+
 None
 
 ### Validation Reviewed
+
 None
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
+
 None
 
 ## 2026-10-15 — Architect dependency reconciliation

@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 2
 depends_on: []
 enables:
-- ARCH-010-ADMIN-009
+  - ARCH-010-ADMIN-009
 created: 2026-09-12
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-ADMIN-007: Implement the supplied upgrade economics guardrail as a deterministic pure evaluator
@@ -121,6 +121,7 @@ Stop if the repository runtime cannot support the reference implementation witho
 ## Completion Report
 
 ### Status
+
 Review.
 
 ### Files Changed
@@ -151,41 +152,42 @@ Attempt 1 established the evaluator implementation and test command. Attempt 2 c
 ### Git / VCS
 
 Start-of-attempt synchronization:
-	parent remote task branch fast-forwarded: not-needed
-	parent origin/main incorporated: already-current
-	implementation remote task branch fast-forwarded: not-needed
-	implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Task branch: `task/ARCH-010-ADMIN-007`
 
 Physical worktree isolation:
-	canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-	parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-007`
-	parent branch: `task/ARCH-010-ADMIN-007`
-	implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-007`
-	implementation branch: `task/ARCH-010-ADMIN-007`
-	shared workspace checkout switched/mutated for task work: no
-	shared implementation checkout switched/mutated for task work: no
-	another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-007`
+parent branch: `task/ARCH-010-ADMIN-007`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-007`
+implementation branch: `task/ARCH-010-ADMIN-007`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Implementation repository:
-	repository: `moda-interact-admin`
-	commit: `eafb8f0`
-	remote branch: `origin/task/ARCH-010-ADMIN-007`
-	pushed: yes
+repository: `moda-interact-admin`
+commit: `eafb8f0`
+remote branch: `origin/task/ARCH-010-ADMIN-007`
+pushed: yes
 
 Parent workspace:
-	task file: `docs/decisions/admin/ARCH-010/ADMIN-007-upgrade-economics-pure-evaluator.md`
-	claim commit: `1774223`
-	review report commit: `2496753`
-	remote branch: `origin/task/ARCH-010-ADMIN-007`
-	pushed: yes
-	submodule gitlink staged: no
+task file: `docs/decisions/admin/ARCH-010/ADMIN-007-upgrade-economics-pure-evaluator.md`
+claim commit: `1774223`
+review report commit: `2496753`
+remote branch: `origin/task/ARCH-010-ADMIN-007`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review
@@ -279,10 +281,9 @@ Attempt 1 tests only `0`.
 Change test 24 to run the same `validateSinglePackShopifyEconomics(...)` assertion for at least:
 
 ```ts
-null
-0
--1
-Number.MAX_SAFE_INTEGER + 1
+null;
+0 - 1;
+Number.MAX_SAFE_INTEGER + 1;
 ```
 
 Every case must return:
@@ -659,4 +660,3 @@ ARCH-010-BACKGROUND-015
 ARCH-010-BACKGROUND-019
 ARCH-010-SHOPIFY-023
 ```
-

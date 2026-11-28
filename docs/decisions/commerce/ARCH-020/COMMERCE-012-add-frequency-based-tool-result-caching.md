@@ -154,7 +154,6 @@ required in addition to Complete dependencies; the initial definition is not Rea
 - Use approved observability APIs for hit/miss/bypass/error/admission outcomes and
   saved upstream calls. No high-cardinality keys/shop IDs/arguments as metric labels.
 
-
 ### Exact call identity: separate frequency counter per equivalent request
 
 Frequency is NOT a global count, a count per tool name alone or a measure of
@@ -216,13 +215,13 @@ context. r1 means this exact tool with `{query:"red shoes"}`; r2 means the same 
 with `{query:"blue shoes"}`. All requests below arrive within the same60-second
 window. Here the first three fetches complete before the next request arrives:
 
-| Incoming request | Red-shoes counter | Blue-shoes counter | Required action |
-|---|---:|---:|---|
-| r1 | 1 | absent | Fetch red shoes; do not store |
-| r1 | 2 | absent | Fetch red shoes; do not store |
-| r2 | 2 | 1 | Fetch blue shoes; do not store |
-| r1 | 3 | 1 | Fetch red shoes; store only a validated eligible success |
-| r1, after that fill and before expiry | 4 | 1 | Return red-shoes cache hit; no provider request |
+| Incoming request                      | Red-shoes counter | Blue-shoes counter | Required action                                          |
+| ------------------------------------- | ----------------: | -----------------: | -------------------------------------------------------- |
+| r1                                    |                 1 |             absent | Fetch red shoes; do not store                            |
+| r1                                    |                 2 |             absent | Fetch red shoes; do not store                            |
+| r2                                    |                 2 |                  1 | Fetch blue shoes; do not store                           |
+| r1                                    |                 3 |                  1 | Fetch red shoes; store only a validated eligible success |
+| r1, after that fill and before expiry |                 4 |                  1 | Return red-shoes cache hit; no provider request          |
 
 After r1,r1,r2, NEITHER identity qualifies for caching. Three different arguments
 produce three counters of1, not a counter of3. Different shops/revisions/context
@@ -325,14 +324,14 @@ from pure fake-clock/key tests. No production Redis or paid provider is required
 
 - [ ] Close the readiness checkpoint and consume approved owner dependencies.
 - [ ] Implement the exact identity/key, counting, NX fill and expiry contracts below
-  with an injected clock; satisfy K01–K09. No global or tool-name-only counter.
+      with an injected clock; satisfy K01–K09. No global or tool-name-only counter.
 - [ ] Integrate authorization-first lookup and threshold-based store into Commerce tool dispatch.
 - [ ] Add U06 cache-policy controls (Disabled/Frequency; X/Y/Z values, units, bounds,
-  eligibility explanation) in a new tool draft; publish changes as a new revision.
-  Existing grants cannot silently adopt a new policy. U14 runs fixture calls and
-  shows counter/admission/hit/miss/freshness outcomes with a resettable synthetic clock.
+      eligibility explanation) in a new tool draft; publish changes as a new revision.
+      Existing grants cannot silently adopt a new policy. U14 runs fixture calls and
+      shows counter/admission/hit/miss/freshness outcomes with a resettable synthetic clock.
 - [ ] Apply synchronous duplicate-action guards and existing server replay protection
-  to policy edits/publication. Read-only simulations remain isolated from production.
+      to policy edits/publication. Read-only simulations remain isolated from production.
 - [ ] Add bounded operational metrics, failure behaviour documentation and fixtures.
 
 ## Interfaces / Contracts
@@ -392,16 +391,16 @@ or correctness dependency. Do not expose cache controls as model tool arguments.
 ## Acceptance Criteria
 
 - [ ] K01–K09 pass with explicit counter/key/TTL/upstream/write counts. In particular,
-  r1,r1,r2 yields independent counts2/1 and no cache fill at threshold3.
+      r1,r1,r2 yields independent counts2/1 and no cache fill at threshold3.
 
 - [ ] Disabled tools execute every call; below-threshold calls do not store; threshold
-  call stores only validated success; subsequent identical calls hit before expiry.
+      call stores only validated success; subsequent identical calls hit before expiry.
 - [ ] Tests cover window/result expiry independently, threshold races, non-sliding TTL,
-  changed shop/arguments/revision/locale/currency, malformed/oversize results and Redis loss.
+      changed shop/arguments/revision/locale/currency, malformed/oversize results and Redis loss.
 - [ ] Revoked/ungranted requests cannot hit or populate; protected freshness operations
-  always execute fresh. Existing conversation policy pins survive new publication.
+      always execute fresh. Existing conversation policy pins survive new publication.
 - [ ] U06 edit/validate/publish and U14 simulation flows meet approved exact page spec,
-  role permissions, replay and double-click requirements.
+      role permissions, replay and double-click requirements.
 - [ ] No model call, WhatsApp send, production customer payload or policy decision is cached.
 
 ## Validation

@@ -12,10 +12,10 @@ priority: 70
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: 
+depends_on:
   - ARCH-007-SHARED-002
   - ARCH-007-DATABASE-002
-enables: 
+enables:
   - ARCH-007-BACKGROUND-007
 created: 2026-09-07
 updated: 2026-09-08
@@ -95,7 +95,6 @@ Inspect the repository `package.json` first. Run the focused tests required by t
 
 Exact Shared dependency: `@modainteract/moda-interact-shared@0.7.3`. Use the accepted Shopify billing/idempotency helpers rather than defining local substitutes.
 
-
 Luna deterministic-execution guardrails:
 
 - Treat this task file as the complete implementation contract. Do not infer additional product policy from old billing code.
@@ -106,7 +105,6 @@ Luna deterministic-execution guardrails:
 - Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
 - Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-BACKGROUND-006` branch and the mirrored parent-workspace `task/ARCH-007-BACKGROUND-006` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
 - Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
-
 
 ## Completion Report
 

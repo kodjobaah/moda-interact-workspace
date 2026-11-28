@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-017-DATABASE-001
+  - ARCH-017-DATABASE-001
 enables:
-- ARCH-017-BACKGROUND-002
+  - ARCH-017-BACKGROUND-002
 created: 2026-09-18
 updated: 2026-09-18
 ---
@@ -267,7 +267,7 @@ Do not export it and do not add any unrelated feature keys.
 Before creating/reserving recovery capacity, require:
 
 ```ts
-policy.features.has(CHECKOUT_RECOVERY_FEATURE_KEY)
+policy.features.has(CHECKOUT_RECOVERY_FEATURE_KEY);
 ```
 
 If false, return/throw using the service's existing admission-denial pattern. Add a distinct reason such as `feature-unavailable` only if the current result union requires a reason string. Do not overload capacity exhaustion, pause, or billing-error reasons.
@@ -454,7 +454,6 @@ Ready for architect review. ARCH-017 Background changes are implemented and vali
 - **Provider/pending-plan mismatch:** the existing drift scenario now runs for both milestone values, preserving no generic projection, no pending-state mutation, and no BillingPeriod creation.
 - **Accepted prior corrections:** Attempt-3 queued reconciliation remains unchanged; reinstall/no-contract still performs no `onboardingCompleted=false` write.
 
-
 ## Architect Review — Attempt 2
 
 ### Review Status
@@ -492,12 +491,12 @@ The current Background reconciliation path still assumes the pre-ARCH-017 meanin
 In `BillingSubscriptionReconciliationService.reconcileJob(...)`, initial activation is currently classified only when:
 
 ```ts
-row.settings?.onboardingCompleted === false
-&& row.subscription.status === SubscriptionProjectionStatus.NO_CONTRACT
-&& row.subscription.planId === null
-&& row.subscription.pendingPlanId !== null
-&& row.subscription.pendingShopifyPlanHandle !== null
-&& row.subscription.nextReconcileAt !== null
+row.settings?.onboardingCompleted === false &&
+  row.subscription.status === SubscriptionProjectionStatus.NO_CONTRACT &&
+  row.subscription.planId === null &&
+  row.subscription.pendingPlanId !== null &&
+  row.subscription.pendingShopifyPlanHandle !== null &&
+  row.subscription.nextReconcileAt !== null;
 ```
 
 The same obsolete condition is rechecked inside all three initial-activation completion/projection paths:
@@ -511,7 +510,7 @@ applyOtherCurrentPlan(...)
 through:
 
 ```ts
-settings?.onboardingCompleted !== false
+settings?.onboardingCompleted !== false;
 ```
 
 as a reason to reject the transition.
@@ -665,7 +664,7 @@ const settings = await this.database.shopSettings.findUnique({
 and then two initial-pending branches whose first predicate is:
 
 ```ts
-settings?.onboardingCompleted === false
+settings?.onboardingCompleted === false;
 ```
 
 This is incompatible with ARCH-017. `onboardingCompleted=true` is a historical Shopify managed-pricing milestone. It may already be true while durable Subscription state is still:
@@ -935,7 +934,7 @@ does not consume an unresolved initial activation when rotation sees it current
 Convert this test to execute the same scenario for both:
 
 ```ts
-[false, true]
+[false, true];
 ```
 
 values of `onboardingCompleted`.
@@ -985,7 +984,7 @@ Do not weaken those assertions.
 The canonical activation transaction may still write:
 
 ```ts
-onboardingCompleted: true
+onboardingCompleted: true;
 ```
 
 idempotently. That write is allowed. Attempt 4 removes onboarding as an eligibility predicate; it does not prohibit successful activation from persisting the true milestone.

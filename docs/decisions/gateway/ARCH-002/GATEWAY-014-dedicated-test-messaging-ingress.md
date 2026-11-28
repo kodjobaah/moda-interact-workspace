@@ -19,6 +19,7 @@ enables:
 created: 2026-09-03
 updated: 2026-09-04
 ---
+
 # Migrate Test Gateway to HAProxy With Explicit Host Routing
 
 ## Current Execution State
@@ -221,7 +222,7 @@ must remain gateway-local.
 It must return the existing bounded identity:
 
 ```json
-{"status":"ok","service":"moda-interact-gateway"}
+{ "status": "ok", "service": "moda-interact-gateway" }
 ```
 
 with HTTP `200`.

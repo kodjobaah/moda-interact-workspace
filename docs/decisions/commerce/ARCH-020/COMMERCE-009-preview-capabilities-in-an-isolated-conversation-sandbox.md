@@ -75,7 +75,6 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 Own `src/commerce/preview/` and exact C9.1 route handlers under the accepted App Router root.017 owns U14;013 owns real saved-bundle composition. This backend task can be accepted with strict loader fixtures;013 must verify real service wiring.
 
-
 ## Dependencies
 
 - ARCH-020-COMMERCE-002
@@ -272,7 +271,6 @@ Dependency reconciliation:009 prerequisite is satisfied. COMMERCE-012/013 and SY
 
 Parent task/index/architecture/handoff/workspace rollup are reconciled and published on the parent task branch. No implementation edit/commit, new claim, main merge/push or gitlink update. Developer final integration remains implementation merge first, then the parent gitlink/report integration.
 
-
 ### Changes Requested — Attempt 3 — 2026-09-21
 
 **Current decision: Ready for corrections; Attempt 3 retained; executor/claimed_at null; not accepted.** Reviewed implementation `8aaa2b39dc5515ca5642b59f7bb639d03541efeb` and parent report `fb3413bdda38eae44c9f0edc79c3150204d76633`, verified against remote task heads. Both dedicated worktrees were clean. The submission's frontmatter already said `ready` despite its Ready for Review report; this decision now explicitly confirms Ready for the correction below. No new attempt was claimed.
@@ -345,7 +343,6 @@ Execute the actual Lua transition contract in an isolated deterministic local ha
 
 Implement A2-R1–R4 only in009-owned backend paths and tests. Publish the prompt port clarification for013 and preserve PreviewBundleLoader compatibility. Update P01–P05 mappings to actual tested effects; separate constant transport-envelope checks from Lua behavior. Run focused and required validation, commit/push the same branch pair and return to review. No UI or live provider work is added. This parent review overlay is published before handoff; normal preparation owns the next claim.
 
-
 ### Changes Requested — Attempt 1 — 2026-09-21
 
 **Current decision: Ready, Attempt 1 retained, executor/claimed_at null; not accepted.** Reviewed implementation `fa795af310d0df76a1553e4adb7d77dbe6c7b149` and report `4081872461747617aa103e222456262dd7ff0443`. Remote task heads verified and dedicated worktrees clean. No new claim, implementation edits, dependent promotion or main integration.
@@ -389,7 +386,6 @@ Route tests must invoke actual handlers with injected service/transport: unautho
 ### Evidence and resubmission gate
 
 Implement R1–R4 within009's owned backend paths; do not implement017 screens or013 saved-source adapters. Publish typed ports with validated success/failure examples so017/013 can consume them without guessing. Replace the report's unsupported Redis/lifecycle deferral and map P01–P05 to actual tests with reserve/model/tool/history/result effects. Record preparation synchronization and nested dependency pin evidence, passing focused/type/lint/build/diff checks, and the full-suite baseline limitation accurately. No task-count minimum or live provider/Redis run is added. Commit/push the same implementation/report branches and resubmit for review. This parent overlay is published before handoff; normal preparation owns the next claim.
-
 
 ### Review Status
 

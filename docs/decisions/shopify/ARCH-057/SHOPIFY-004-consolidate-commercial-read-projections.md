@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-057-SHOPIFY-001
-- ARCH-057-SHOPIFY-002
-- ARCH-057-SHOPIFY-003
+  - ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-002
+  - ARCH-057-SHOPIFY-003
 enables:
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -52,44 +52,44 @@ All paths are relative to `moda-interact`. The exact route filenames are signifi
 
 ### Existing files to modify
 
-| Path | Exact responsibility |
-|---|---|
-| `app/routes/app/billing/options/route.tsx` | Loader uses one commercial presentation composition; preserve SHOPIFY-003 action ownership and all current fields/denied redirects |
-| `app/routes/app/billing/select/route.jsx` | Consume context and determine FROZEN from scalar status without loading balances, promotions or catalogue |
-| `app/routes/app/home/route.jsx` | Reuse scalar Subscription and already-loaded pricing facts for capacity; preserve onboarding/legacy redirect/recovery overview branches |
-| `app/services/billing/billing.service.ts` | Expose the two chosen presentation methods and remove superseded page-only read facade methods after migrating their named callers |
-| `app/services/billing/merchant-billing-read.service.ts` | Extract pure top-up/balance projection from supplied facts, remove unused lifetime `usageEvent.aggregate`/`usageQuantity`, preserve output predicates |
-| `app/services/billing/merchant-recovery-capacity-read.service.ts` | Extract pure capacity projection from supplied facts; no hidden Subscription/counter rereads in the page path |
-| `app/services/billing/subscription-read.service.ts` | Extract pure provider-to-merchant mapping supplied with already-loaded operational plans; preserve existing standalone read APIs used outside page composition |
-| `app/services/billing/billing-plan-resolution.service.ts` | Add a bounded presentation-only catalogue batch reader; do not change mutation materialization or the two new-purchase catalogue observations |
-| `app/services/billing/billing.types.ts` | Type the narrow presentation inputs/result and pure projections; preserve merchant DTOs except the unconsumed internal `usageQuantity` |
-| `app/services/merchant-pricing/merchant-pricing.server.js` | Export/reuse the existing pure top-up configuration derivation from known pricing usage events; preserve catalogue validation/localization |
-| `app/routes/app/promotions/route.tsx` | Consume context and the bounded single-context page reader; preserve selection action authorization and existing form/results |
-| `app/services/promotions/promotion.service.ts` | Single read context input, database-paged eligible offers, shared predicates, unchanged mutation admission with explicit failure ownership |
-| `app/routes/app/usage/route.jsx` | Consume context and log true read failures before existing fallback; cursor validation remains normal control flow |
-| `app/services/usage/history.server.ts` | Combine identical-filter count and quantity sum into one aggregate; preserve bounded source query and cursor/tenant rules |
-| `tests/unit/services/billing/merchant-billing-read.service.test.ts` | Pure projection parity and failure regression |
-| `tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts` | Capacity invariants across all existing lifecycle/balance branches |
-| `tests/unit/services/billing/subscription-read.service.test.ts` | Pure mapping and unchanged standalone read API behavior |
-| `tests/unit/services/billing/billing-plan-resolution.service.test.ts` | Bounded presentation batch read; unchanged mutation materialization |
-| `tests/unit/services/billing.service.test.ts` | Updated facade composition without constructor side effects |
-| `tests/unit/home-route.test.ts` | Existing onboarding/setup/legacy-link branches and shared scalar/capacity use |
-| `tests/unit/billing-ui.test.ts` | Unchanged select/options status behavior |
-| `tests/unit/merchant-pricing-usage-overview.test.jsx` | Unchanged localized catalogue/usage rendering |
-| `tests/unit/services/promotion.service.test.ts` | Shared page predicates, pagination and unchanged selection rules |
-| `tests/unit/routes/promotion-route.test.ts` | Bounded offers/history DTO and selection action regression |
-| `tests/unit/usage-route.test.ts` | Combined aggregate, safe cursor/tenant behavior and real read-error diagnostics |
-| `tests/integration/promotion-selection.concurrency.integration.test.ts` | Use pgvector PG17 with forward migrations; reconcile same-campaign expectation with existing policy and exercise bounded translated-offer pages |
+| Path                                                                          | Exact responsibility                                                                                                                                           |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/routes/app/billing/options/route.tsx`                                    | Loader uses one commercial presentation composition; preserve SHOPIFY-003 action ownership and all current fields/denied redirects                             |
+| `app/routes/app/billing/select/route.jsx`                                     | Consume context and determine FROZEN from scalar status without loading balances, promotions or catalogue                                                      |
+| `app/routes/app/home/route.jsx`                                               | Reuse scalar Subscription and already-loaded pricing facts for capacity; preserve onboarding/legacy redirect/recovery overview branches                        |
+| `app/services/billing/billing.service.ts`                                     | Expose the two chosen presentation methods and remove superseded page-only read facade methods after migrating their named callers                             |
+| `app/services/billing/merchant-billing-read.service.ts`                       | Extract pure top-up/balance projection from supplied facts, remove unused lifetime `usageEvent.aggregate`/`usageQuantity`, preserve output predicates          |
+| `app/services/billing/merchant-recovery-capacity-read.service.ts`             | Extract pure capacity projection from supplied facts; no hidden Subscription/counter rereads in the page path                                                  |
+| `app/services/billing/subscription-read.service.ts`                           | Extract pure provider-to-merchant mapping supplied with already-loaded operational plans; preserve existing standalone read APIs used outside page composition |
+| `app/services/billing/billing-plan-resolution.service.ts`                     | Add a bounded presentation-only catalogue batch reader; do not change mutation materialization or the two new-purchase catalogue observations                  |
+| `app/services/billing/billing.types.ts`                                       | Type the narrow presentation inputs/result and pure projections; preserve merchant DTOs except the unconsumed internal `usageQuantity`                         |
+| `app/services/merchant-pricing/merchant-pricing.server.js`                    | Export/reuse the existing pure top-up configuration derivation from known pricing usage events; preserve catalogue validation/localization                     |
+| `app/routes/app/promotions/route.tsx`                                         | Consume context and the bounded single-context page reader; preserve selection action authorization and existing form/results                                  |
+| `app/services/promotions/promotion.service.ts`                                | Single read context input, database-paged eligible offers, shared predicates, unchanged mutation admission with explicit failure ownership                     |
+| `app/routes/app/usage/route.jsx`                                              | Consume context and log true read failures before existing fallback; cursor validation remains normal control flow                                             |
+| `app/services/usage/history.server.ts`                                        | Combine identical-filter count and quantity sum into one aggregate; preserve bounded source query and cursor/tenant rules                                      |
+| `tests/unit/services/billing/merchant-billing-read.service.test.ts`           | Pure projection parity and failure regression                                                                                                                  |
+| `tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts` | Capacity invariants across all existing lifecycle/balance branches                                                                                             |
+| `tests/unit/services/billing/subscription-read.service.test.ts`               | Pure mapping and unchanged standalone read API behavior                                                                                                        |
+| `tests/unit/services/billing/billing-plan-resolution.service.test.ts`         | Bounded presentation batch read; unchanged mutation materialization                                                                                            |
+| `tests/unit/services/billing.service.test.ts`                                 | Updated facade composition without constructor side effects                                                                                                    |
+| `tests/unit/home-route.test.ts`                                               | Existing onboarding/setup/legacy-link branches and shared scalar/capacity use                                                                                  |
+| `tests/unit/billing-ui.test.ts`                                               | Unchanged select/options status behavior                                                                                                                       |
+| `tests/unit/merchant-pricing-usage-overview.test.jsx`                         | Unchanged localized catalogue/usage rendering                                                                                                                  |
+| `tests/unit/services/promotion.service.test.ts`                               | Shared page predicates, pagination and unchanged selection rules                                                                                               |
+| `tests/unit/routes/promotion-route.test.ts`                                   | Bounded offers/history DTO and selection action regression                                                                                                     |
+| `tests/unit/usage-route.test.ts`                                              | Combined aggregate, safe cursor/tenant behavior and real read-error diagnostics                                                                                |
+| `tests/integration/promotion-selection.concurrency.integration.test.ts`       | Use pgvector PG17 with forward migrations; reconcile same-campaign expectation with existing policy and exercise bounded translated-offer pages                |
 
 ### New files
 
-| Path | Purpose |
-|---|---|
-| `app/services/billing/merchant-billing-presentation.server.ts` | One local composition owner for commercial/capacity/top-up read inputs and partial-failure boundaries |
-| `tests/unit/services/billing/merchant-billing-presentation.test.ts` | Real orchestration with controlled ports, projection parity and original Shared output |
-| `tests/unit/commercial-read-budget.test.ts` | Deterministic repository/provider counts for options, select, home capacity, promotions and usage |
-| `tests/unit/routes/billing-options-loader.test.ts` | Actual loader access, output, outage and no-write behavior |
-| `tests/fixtures/commercial-read-context.ts` | Small scalar context/plan/period/catalogue fixtures reused by the new suites |
+| Path                                                                | Purpose                                                                                               |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `app/services/billing/merchant-billing-presentation.server.ts`      | One local composition owner for commercial/capacity/top-up read inputs and partial-failure boundaries |
+| `tests/unit/services/billing/merchant-billing-presentation.test.ts` | Real orchestration with controlled ports, projection parity and original Shared output                |
+| `tests/unit/commercial-read-budget.test.ts`                         | Deterministic repository/provider counts for options, select, home capacity, promotions and usage     |
+| `tests/unit/routes/billing-options-loader.test.ts`                  | Actual loader access, output, outage and no-write behavior                                            |
+| `tests/fixtures/commercial-read-context.ts`                         | Small scalar context/plan/period/catalogue fixtures reused by the new suites                          |
 
 New test/helper files each stay below 300 lines. Use existing `npm test` with exact paths, without a new package script/dependency. This task may not modify prerequisite request-context/provider-diagnostics implementations to make its own tests pass.
 
@@ -159,17 +159,17 @@ Provider failure must still allow an authorized page to present its durable shel
 
 Replace message-only truncation or empty catches with original safe `error`, actual Prisma code and available cause fields under the common contract. The orchestration keeps one owner for a shared failing read, even when two derived projections become unavailable. Normal invalid cursors, denied surfaces and locked/ineligible promotions remain normal control flow.
 
-| Injection / owner | Required actual Shared output | Required result |
-|---|---|---|
-| Provider error, SHOPIFY-002 adapter | Original safe upstream source/code/message/cause/status/request ID; no second provider body | Durable shell/local successes preserved; live verification unavailable |
-| Plan/period/counter/promotion/pricing DB read failure, presentation owner | Actual database error/code/cause, Shop and failed stage | Affected projection unavailable, no fabricated balance or entitlement |
-| Top-up pure validation/invariant failure, presentation owner | Actual internal error/cause and classification, no invented provider details | Existing unavailable presentation, no writes |
-| Home capacity rejects, Home/presentation owning boundary | Original error/code/cause before existing nullable fallback | Existing overview and page behavior preserved |
-| Promotion page count/page/history failure, page reader | Actual database error/code/cause and failed read | Existing route failure, no silently empty catalogue |
-| Promotion P2034 retry/exhaustion, selection service | Actual retry error at warn; original final error/code/cause at error | Same bounded retry; preserve typed `PROMOTION_SELECTION_UNAVAILABLE` with original cause |
-| Usage data/source query fails, usage route/service owner | Actual database/driver error/code/cause before fallback | Existing `error: read` UI result |
-| Invalid usage cursor, normal promotion denial or denied access | No fabricated operational/provider error | Existing safe cursor/message/redirect outcome |
-| Shared sink throws | Real Shared isolation assertion | Identical rendering/fallback, selection rollback/retry and authorization |
+| Injection / owner                                                         | Required actual Shared output                                                               | Required result                                                                          |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Provider error, SHOPIFY-002 adapter                                       | Original safe upstream source/code/message/cause/status/request ID; no second provider body | Durable shell/local successes preserved; live verification unavailable                   |
+| Plan/period/counter/promotion/pricing DB read failure, presentation owner | Actual database error/code/cause, Shop and failed stage                                     | Affected projection unavailable, no fabricated balance or entitlement                    |
+| Top-up pure validation/invariant failure, presentation owner              | Actual internal error/cause and classification, no invented provider details                | Existing unavailable presentation, no writes                                             |
+| Home capacity rejects, Home/presentation owning boundary                  | Original error/code/cause before existing nullable fallback                                 | Existing overview and page behavior preserved                                            |
+| Promotion page count/page/history failure, page reader                    | Actual database error/code/cause and failed read                                            | Existing route failure, no silently empty catalogue                                      |
+| Promotion P2034 retry/exhaustion, selection service                       | Actual retry error at warn; original final error/code/cause at error                        | Same bounded retry; preserve typed `PROMOTION_SELECTION_UNAVAILABLE` with original cause |
+| Usage data/source query fails, usage route/service owner                  | Actual database/driver error/code/cause before fallback                                     | Existing `error: read` UI result                                                         |
+| Invalid usage cursor, normal promotion denial or denied access            | No fabricated operational/provider error                                                    | Existing safe cursor/message/redirect outcome                                            |
+| Shared sink throws                                                        | Real Shared isolation assertion                                                             | Identical rendering/fallback, selection rollback/retry and authorization                 |
 
 Keep server diagnostics out of merchant JSON and locale text. No new visible keys are planned; if implementation requires one, stop for an explicit scope/copy amendment instead of changing only English.
 
@@ -328,13 +328,13 @@ The translation SQL fixture intersperses French-only rows, ties timestamps and i
 
 Same-fixture method comparison, fixed at `2026-09-15T12:00:00Z`, executed against archived accepted start source and current source:
 
-| Operation/branch | Before data methods | After data methods | Context and provider qualification |
-|---|---:|---:|---|
-| Healthy Paid options | 16 | 8 | Both include one controlled provider credential read and one provider observation; scalar context acquisition is separately one call, so total after Shop resolution is 17 before and 9 after |
-| Paid Home capacity, pricing facts already available | 5 | 4 | No provider; new current/pending names are from one operational-plan batch and matching pricing facts avoid a duplicate read |
-| Frozen select | 5 | 0 | One scalar-context read separately in both cases; no provider |
-| Promotion page | 7 | 5 | Before includes three repeated context methods plus four page-data methods and materializes all 100 fixture offers; after uses supplied context and returns a bounded six-row page |
-| Selected usage | 5 | 4 | Both retain one separate bounded raw source query |
+| Operation/branch                                    | Before data methods | After data methods | Context and provider qualification                                                                                                                                                            |
+| --------------------------------------------------- | ------------------: | -----------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Healthy Paid options                                |                  16 |                  8 | Both include one controlled provider credential read and one provider observation; scalar context acquisition is separately one call, so total after Shop resolution is 17 before and 9 after |
+| Paid Home capacity, pricing facts already available |                   5 |                  4 | No provider; new current/pending names are from one operational-plan batch and matching pricing facts avoid a duplicate read                                                                  |
+| Frozen select                                       |                   5 |                  0 | One scalar-context read separately in both cases; no provider                                                                                                                                 |
+| Promotion page                                      |                   7 |                  5 | Before includes three repeated context methods plus four page-data methods and materializes all 100 fixture offers; after uses supplied context and returns a bounded six-row page            |
+| Selected usage                                      |                   5 |                  4 | Both retain one separate bounded raw source query                                                                                                                                             |
 
 The new no-period Free Home branch uses **3** local methods, empty usage **2** methods/no raw query, and promotion counts remain **5** page-data calls for 1/100/10,000 fixture offers. Actual route tests separately record a controlled preseeded context (one context call/one lazy scalar read, no extra scalar DB read). Parent/support reads, relation expansion and SDK internals are excluded from domain budgets. The controlled provider port exposes its credential read separately; no live Partner request was executed. Baseline comparison is ORM-method evidence, not physical SQL evidence or a latency/capacity claim.
 

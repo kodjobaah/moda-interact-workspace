@@ -131,15 +131,18 @@ STOP if another accepted/integrated migration has already introduced an equivale
 ## Completion Report
 
 ### Status
+
 Implementation complete; returned to `moda_architect` for review.
 
 ### Files Changed
+
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20260911140000_add_subscription_provider_lifecycle_evidence/migration.sql`
 - `moda-interact-database/scripts/validate-billing-lifecycle-schema.mjs`
 - `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
+
 - Added `SubscriptionProjectionStatus.FROZEN` without removing or renaming existing projection states.
 - Added the exact `ProviderSubscriptionLifecycleState` enum values: `CREATED`, `UPDATED`, `CANCELLATION_SCHEDULED`, `CANCELED`, `FROZEN`, and `UNFROZEN`.
 - Added nullable provider lifecycle state, event ID, and event timestamp fields to `Subscription`; existing `nextReconcileAt` scheduling state remains unchanged.
@@ -148,6 +151,7 @@ Implementation complete; returned to `moda_architect` for review.
 - Regenerated the repository PlantUML ERD.
 
 ### Validation Results
+
 - `npm ci` completed; npm reported three high-severity audit findings in the existing dependency tree and install-script approval warnings.
 - `npm run format` passed.
 - `npm run validate` passed.
@@ -194,37 +198,38 @@ Start-of-attempt synchronization:
 - `git diff --check` passed.
 
 ### Git / VCS
+
 Task branch: `task/ARCH-010-DATABASE-008`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-008`
-  parent branch: `task/ARCH-010-DATABASE-008`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-008`
-  implementation branch: `task/ARCH-010-DATABASE-008`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-008`
+parent branch: `task/ARCH-010-DATABASE-008`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-008`
+implementation branch: `task/ARCH-010-DATABASE-008`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-database`
-  commit: `409f3e6`
-  remote branch: `origin/task/ARCH-010-DATABASE-008`
-  pushed: yes
+repository: `moda-interact-database`
+commit: `409f3e6`
+remote branch: `origin/task/ARCH-010-DATABASE-008`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/database/ARCH-010/DATABASE-008-shopify-subscription-freeze-state.md`
-  synchronization commit: `e79d28a`
-  claim commit: `5080206`
-  claim remote branch: `origin/task/ARCH-010-DATABASE-008`
-  claim pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/database/ARCH-010/DATABASE-008-shopify-subscription-freeze-state.md`
+synchronization commit: `e79d28a`
+claim commit: `5080206`
+claim remote branch: `origin/task/ARCH-010-DATABASE-008`
+claim pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -303,17 +308,14 @@ import {
 
 assert.equal(SubscriptionProjectionStatus.FROZEN, "FROZEN");
 
-assert.deepEqual(
-  Object.values(ProviderSubscriptionLifecycleState),
-  [
-    "CREATED",
-    "UPDATED",
-    "CANCELLATION_SCHEDULED",
-    "CANCELED",
-    "FROZEN",
-    "UNFROZEN",
-  ],
-);
+assert.deepEqual(Object.values(ProviderSubscriptionLifecycleState), [
+  "CREATED",
+  "UPDATED",
+  "CANCELLATION_SCHEDULED",
+  "CANCELED",
+  "FROZEN",
+  "UNFROZEN",
+]);
 ```
 
 Equivalent deterministic generated-client assertions are acceptable.
@@ -392,4 +394,3 @@ Because `completion_mode: automatic`, the task is complete. `executor` and `clai
 The submitted handoff identifies parent review-report commit `9a815b4`. That commit hash is not embedded into this same task file because doing so would make the parent report commit self-referential.
 
 Dependency/frontier reconciliation for `ARCH-010-BACKGROUND-016` and `ARCH-010-SHOPIFY-018` must be performed against the current canonical parent workspace; this task-specific acceptance overlay does not overwrite shared indexes or other task files from a stale snapshot.
-

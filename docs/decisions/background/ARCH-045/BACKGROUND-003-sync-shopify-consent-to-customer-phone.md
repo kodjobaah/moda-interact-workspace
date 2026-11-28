@@ -24,6 +24,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-23
 ---
+
 # Synchronise Shopify consent webhook into CustomerPhone
 
 ## Architecture

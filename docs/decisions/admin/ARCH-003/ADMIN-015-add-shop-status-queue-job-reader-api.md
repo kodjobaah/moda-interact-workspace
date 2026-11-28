@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add bounded shop and status queue-job reader API
 
 ## Objective
@@ -166,8 +167,8 @@ Conceptual result:
 ```json
 {
   "shops": [
-    {"value": "alpha.myshopify.com", "label": "alpha.myshopify.com"},
-    {"value": "beta.myshopify.com", "label": "beta.myshopify.com"}
+    { "value": "alpha.myshopify.com", "label": "alpha.myshopify.com" },
+    { "value": "beta.myshopify.com", "label": "beta.myshopify.com" }
   ],
   "hasOrphans": true,
   "scanTruncated": false
@@ -266,6 +267,7 @@ actually observed.
 ## Completion Report
 
 ### Status
+
 Ready for architect review.
 
 ### Implemented Files

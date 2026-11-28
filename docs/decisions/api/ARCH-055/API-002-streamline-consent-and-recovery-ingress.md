@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 3
 depends_on: []
 enables:
-- ARCH-055-API-009
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-API-009
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -62,11 +62,11 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/woocommerce/activity/routes.ts; src/woocommerce/activity/redis-producer.ts` | MODIFY failures to retain original causes and identify authentication/database versus connection/publication stage. Leave the queue acceptance path and producer retained-job verification unchanged. |
-| `src/woocommerce/consent/service.ts` | MOVE existing immutable-evidence lookup after event lock but before recipient lock. Exact digest replay returns original acknowledgement; only new evidence proceeds to recipient lock/current-phone mutation/evidence insert. |
-| `src/woocommerce/recovery-selection/service.ts` | SPLIT GET recipient lookup from mutation lookup: GET omits recipient advisory lock and FOR UPDATE; keep transaction-local Shop/installation checks. POST retains current lock and revision order. |
+| File / symbol touchpoint                                                                                                                      | Deterministic edit                                                                                                                                                                                                                |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/woocommerce/activity/routes.ts; src/woocommerce/activity/redis-producer.ts`                                                              | MODIFY failures to retain original causes and identify authentication/database versus connection/publication stage. Leave the queue acceptance path and producer retained-job verification unchanged.                             |
+| `src/woocommerce/consent/service.ts`                                                                                                          | MOVE existing immutable-evidence lookup after event lock but before recipient lock. Exact digest replay returns original acknowledgement; only new evidence proceeds to recipient lock/current-phone mutation/evidence insert.    |
+| `src/woocommerce/recovery-selection/service.ts`                                                                                               | SPLIT GET recipient lookup from mutation lookup: GET omits recipient advisory lock and FOR UPDATE; keep transaction-local Shop/installation checks. POST retains current lock and revision order.                                 |
 | `src/woocommerce/recovery-restore/service.ts; src/woocommerce/recovery-restore/routes.ts; scripts/test-arch053-recovery-restore-postgres.mjs` | KEEP the two deliberate eligibility reads; preserve bounded original SQL/Prisma identifiers in error diagnostics. Replace reduced schema setup in the restore fixture/runner with canonical migrations, not another local schema. |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
@@ -150,12 +150,12 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| B01 | Accepted GRANT retried after REVOKE and after real-equivalent STOP | Acknowledges historical evidence without changing current permission/STOP; duplicate path omits recipient lock. |
-| B02 | Concurrent status GET and selection POST/STOP/reconnect | GET is a committed snapshot; stale POST still conflicts and final consent guard remains authoritative. |
-| B03 | Authentication Prisma failure; Redis readiness failure; retained-job conflict | Correct stage and original redacted cause; no new PostgreSQL business writes. |
-| B04 | Recovery completes or installation rotates between restore evidence reads | No restoration returned after failed final check; canonical constraints exercised. |
+| Case | Fixture / operation                                                           | Required result                                                                                                 |
+| ---- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| B01  | Accepted GRANT retried after REVOKE and after real-equivalent STOP            | Acknowledges historical evidence without changing current permission/STOP; duplicate path omits recipient lock. |
+| B02  | Concurrent status GET and selection POST/STOP/reconnect                       | GET is a committed snapshot; stale POST still conflicts and final consent guard remains authoritative.          |
+| B03  | Authentication Prisma failure; Redis readiness failure; retained-job conflict | Correct stage and original redacted cause; no new PostgreSQL business writes.                                   |
+| B04  | Recovery completes or installation rotates between restore evidence reads     | No restoration returned after failed final check; canonical constraints exercised.                              |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -278,7 +278,6 @@ Blocked. The B04 installation-rotation interleaving is implemented and passed th
 - Run the canonical consent PostgreSQL suite, restore PostgreSQL suite, typecheck, and `git diff --check` after the runner corrections. Report any infrastructure failure without inferring paired values.
 - Keep the task in progress; do not promote API-009 or SYSTEM-TEST-001 until the paired evidence is complete and reviewed.
 
-
 ## Completion Report — Attempt 3
 
 ### Status
@@ -306,11 +305,11 @@ Ready for Review. Both Changes Requested findings are implemented and validated.
 
 Counts below held for every recorded sample. SQL includes BEGIN, isolation SET and COMMIT; each sample observed one committed transaction, no rollback and zero callback re-entry retries.
 
-| Profile | Logical DB calls baseline→candidate | SQL statements baseline→candidate | Advisory locks baseline→candidate | FOR UPDATE baseline→candidate | Affected target rows |
-|---|---:|---:|---:|---:|---:|
-| Exact consent replay after REVOKE/STOP | 5→4 | 7→6 | 2→1 | 0→0 | 0→0 |
-| New event, same recipient | 8→8 | 10→10 | 2→2 | 1→1 | 2→2 |
-| Recovery-selection GET | 5→4 | 7→6 | 1→0 | 1→0 | 0→0 |
+| Profile                                | Logical DB calls baseline→candidate | SQL statements baseline→candidate | Advisory locks baseline→candidate | FOR UPDATE baseline→candidate | Affected target rows |
+| -------------------------------------- | ----------------------------------: | --------------------------------: | --------------------------------: | ----------------------------: | -------------------: |
+| Exact consent replay after REVOKE/STOP |                                 5→4 |                               7→6 |                               2→1 |                           0→0 |                  0→0 |
+| New event, same recipient              |                                 8→8 |                             10→10 |                               2→2 |                           1→1 |                  2→2 |
+| Recovery-selection GET                 |                                 5→4 |                               7→6 |                               1→0 |                           1→0 |                  0→0 |
 
 Replay returns the original acknowledgement and preserves every current phone field/timestamp and immutable evidence row after later REVOKE and persisted CUSTOMER_STOP. GET preserves every target/evidence field. New REVOKE increments revision/sequence, preserves no-contact fields, links the new evidence to the same phone, and reports raw affected counts `[1,1]` for current-state update/evidence insertion. Mutation coordination remains intact.
 
@@ -318,14 +317,14 @@ Replay returns the original acknowledgement and preserves every current phone fi
 
 All values are milliseconds, shown as min/median/max over five recorded executions; raw warm-ups and samples remain in the artifact.
 
-| Version | Profile | Operation ms | Transaction ms |
-|---|---|---:|---:|
-| baseline | duplicate-replay | 98.55/183.03/573.36 | 98.24/182.82/573.12 |
-| baseline | new-event-same-recipient | 40.58/156.42/332.41 | 40.37/156.22/332.21 |
-| baseline | selection-get | 29.26/74.21/491.47 | 29.23/74.18/491.44 |
-| candidate | duplicate-replay | 34.46/109.22/128.85 | 34.22/109/128.46 |
-| candidate | new-event-same-recipient | 42.56/81.02/507.02 | 42.31/80.8/506.82 |
-| candidate | selection-get | 22.53/43.93/373.77 | 22.5/43.9/373.74 |
+| Version   | Profile                  |        Operation ms |      Transaction ms |
+| --------- | ------------------------ | ------------------: | ------------------: |
+| baseline  | duplicate-replay         | 98.55/183.03/573.36 | 98.24/182.82/573.12 |
+| baseline  | new-event-same-recipient | 40.58/156.42/332.41 | 40.37/156.22/332.21 |
+| baseline  | selection-get            |  29.26/74.21/491.47 |  29.23/74.18/491.44 |
+| candidate | duplicate-replay         | 34.46/109.22/128.85 |    34.22/109/128.46 |
+| candidate | new-event-same-recipient |  42.56/81.02/507.02 |   42.31/80.8/506.82 |
+| candidate | selection-get            |  22.53/43.93/373.77 |    22.5/43.9/373.74 |
 
 ### Validation and regression matrix
 
@@ -382,7 +381,6 @@ Not accepted. Return to Ready for the next normal claim, preserving Attempt 1 an
 
 Removed duplicated Completion Report material that had been interleaved into Objective/Context/Scope, restoring the original authorized scope lists and deterministic edit map from the claim revision. Retained the submitted Completion Report and its validation limitations as history. No new files, production behavior or wider scope is authorized or needed. Capture M03 and B04 in the existing allowed test paths, reconcile the Work Items/Acceptance Criteria, and submit the next attempt on the same branch pair. API-009 and SYSTEM-TEST-001 remain gated on acceptance.
 
-
 ### Recovery decision — Changes Requested, stranded Attempt 2, 3 November 2026
 
 Attempt 2 is not accepted. Preserve its report above as historical executor evidence, including its validation limitations. Its statement to keep the task in progress is superseded by this recovery decision. Return the same task to Ready, clear executor/claimed_at, and preserve `attempt: 2`; only the normal prepared launcher may claim Attempt 3.
@@ -408,7 +406,6 @@ API-009 remains Pending because API-003, API-004, API-006 and API-007 are not Co
 ### Reviewed files
 
 `src/woocommerce/activity/{routes.ts,redis-producer.ts}`, `src/woocommerce/consent/service.ts`, `src/woocommerce/recovery-selection/service.ts`, `src/woocommerce/recovery-restore/{routes.ts,service.ts}`, the named canonical migration runners and race tests, and `docs/decisions/api/ARCH-055/evidence/API-002-attempt-3-m03.jsonl`.
-
 
 ### Evidence-retention amendment — Attempt 3, 3 November 2026
 

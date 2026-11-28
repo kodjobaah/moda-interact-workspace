@@ -12,14 +12,15 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-GATEWAY-001
-- ARCH-002-SHARED-010
+  - ARCH-002-GATEWAY-001
+  - ARCH-002-SHARED-010
 enables:
-- ARCH-002-GATEWAY-005
-- ARCH-002-BACKGROUND-005
+  - ARCH-002-GATEWAY-005
+  - ARCH-002-BACKGROUND-005
 created: 2026-08-29
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Use Published Shared Package in Background Service
 
 ## Current Architect Instruction — Exact Shared Release
@@ -225,42 +226,42 @@ Ready for Review
 ### Work Completed
 
 - Inspected all current background imports of the shared package. Runtime code
-	consumes `@modainteract/moda-interact-shared/shopify` and
-	`@modainteract/moda-interact-shared/shopify/node`.
+  consumes `@modainteract/moda-interact-shared/shopify` and
+  `@modainteract/moda-interact-shared/shopify/node`.
 - Verified registry metadata for architect-approved exact release `0.4.0`,
-	including both required JavaScript/declaration export targets.
+  including both required JavaScript/declaration export targets.
 - Replaced `file:../moda-interact-shared` with exact version `0.4.0` and updated
-	the lockfile to the npm registry tarball and published integrity.
+  the lockfile to the npm registry tarball and published integrity.
 - Preserved all shared contract imports, queue/job constants, worker entrypoints
-	and business behavior unchanged.
+  and business behavior unchanged.
 
 ### Validation Results
 
 - `npm view @modainteract/moda-interact-shared@0.4.0 version dist.tarball dist.integrity exports --json`:
-	confirmed version `0.4.0`, the public npm tarball, accepted integrity
-	`sha512-eBSb...Ypl+7og==`, and required `./shopify` and `./shopify/node`
-	exports.
+  confirmed version `0.4.0`, the public npm tarball, accepted integrity
+  `sha512-eBSb...Ypl+7og==`, and required `./shopify` and `./shopify/node`
+  exports.
 - Lockfile inspection confirmed exact root dependency `0.4.0`, registry tarball
-	resolution, matching integrity, and no `file:`, sibling `resolved`, or `link`
-	marker. Credential scan found no committed npm authentication material.
+  resolution, matching integrity, and no `file:`, sibling `resolved`, or `link`
+  marker. Credential scan found no committed npm authentication material.
 - `npm ci`: passed from the registry-backed lockfile. npm reported three high
-	severity audit findings and five allow-scripts advisories; no install failure.
+  severity audit findings and five allow-scripts advisories; no install failure.
 - Direct ESM imports of `./shopify` and `./shopify/node`: passed.
 - `npm test -- --run tests/unit/events/shopify-contract-adapter.test.ts tests/unit/services/pending-recovery-candidate.service.test.ts`:
-	passed, 2 files and 12 tests.
+  passed, 2 files and 12 tests.
 - `npm test`: 10 files passed, 2 failed, 1 skipped; 64 tests passed, 2 failed,
-	2 skipped. Failures were the existing `customerPhone.findMany` Prisma mock
-	omission in `recovery-routing.service.test.ts` and an external Groq response
-	whose tool-call arguments were not valid JSON in
-	`commerce.agent.integration.test.ts`; neither concerns shared contracts.
+  2 skipped. Failures were the existing `customerPhone.findMany` Prisma mock
+  omission in `recovery-routing.service.test.ts` and an external Groq response
+  whose tool-call arguments were not valid JSON in
+  `commerce.agent.integration.test.ts`; neither concerns shared contracts.
 - `./node_modules/.bin/tsc --noEmit`: passed.
 - `npm run build`: passed, including Prisma Client generation and production
-	TypeScript compilation of all three worker entrypoints.
+  TypeScript compilation of all three worker entrypoints.
 - A temporary standalone copy with no sibling shared repository passed clean
-	`npm ci`, direct shared-subpath imports, typecheck, production build, and all
-	three compiled worker start-command resolution checks.
+  `npm ci`, direct shared-subpath imports, typecheck, production build, and all
+  three compiled worker start-command resolution checks.
 - `scripts/workspace-doctor.sh --quick`: 7 checks passed; one unrelated existing
-	Shopify `shamefully-hoist` warning remained.
+  Shopify `shamefully-hoist` warning remained.
 - VS Code diagnostics for package and lockfile were clean.
 
 ### Deviations
@@ -270,15 +271,15 @@ None.
 ### Assumptions
 
 - The architect-approved `0.4.0` registry integrity recorded by SHARED-010 and
-	returned by npm is the canonical package artifact for this consumer.
+  returned by npm is the canonical package artifact for this consumer.
 
 ### Unresolved Issues
 
 - The unrelated recovery-routing mock defect leaves one unit test failing.
 - The live Groq integration returned malformed tool-call JSON during this run;
-	focused shared-contract tests remain green.
+  focused shared-contract tests remain green.
 - npm reports three high-severity audit findings and five install-script
-	approval advisories; dependency migration, typecheck and build still succeed.
+  approval advisories; dependency migration, typecheck and build still succeed.
 
 ### Architectural Concerns
 

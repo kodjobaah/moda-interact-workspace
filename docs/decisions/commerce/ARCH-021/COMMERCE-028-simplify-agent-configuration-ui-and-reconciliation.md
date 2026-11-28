@@ -45,7 +45,6 @@ Coordinator:
 
 `moda_architect`
 
-
 ## Objective
 
 Remove Phase-2 action-bundle/replay/unknown-state UI machinery from Agent Configuration, consume named Server Actions directly, and provide explicit user-visible error plus read-only reconciliation for requests whose response is genuinely unconfirmed.
@@ -214,7 +213,6 @@ Consumes COMMERCE-025/026 mutation/reconciliation contracts and COMMERCE-027 pla
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
-
 
 ## Implementation Notes
 

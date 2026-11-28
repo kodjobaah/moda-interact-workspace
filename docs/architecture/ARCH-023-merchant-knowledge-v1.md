@@ -529,7 +529,6 @@ merchantKnowledge.dataFormats.<DATA_FORMAT_KEY>.label
 All 20 supported locale catalogues must contain these initial keys before ARCH-023
 integrated acceptance.
 
-
 ### D3 — content units are deterministic and language-neutral
 
 One content unit is four normalized Unicode code points:
@@ -1042,7 +1041,6 @@ read URL.
 Background already owns asynchronous business workflows. Web fetch/file extraction,
 content limiting, embeddings and revision promotion therefore remain Background-owned.
 
-
 ### D15 — locator replacement, refresh/reprocess and entitlement changes are revisioned
 
 Each `MerchantKnowledgeSource` has a monotonically increasing `currentGeneration`.
@@ -1097,7 +1095,6 @@ remain unchanged.
 
 A worker must not promote a revision if its generation no longer equals
 `source.currentGeneration`.
-
 
 ### D16 — `WEB_PAGE` sources are public HTTPS URLs subject to SSRF policy
 
@@ -1281,15 +1278,15 @@ may allow the agent to answer a policy question. It does not make a hypothetical
 
 For Feature key `merchant_knowledge`, C2 is enforced as follows:
 
-| Boundary | `maxKnowledgeSources` | `maxContentUnitsPerSource` |
-|---|---|---|
-| Admin plan authoring | validate positive/bounded value | validate positive/bounded value |
-| BillingPlan materialisation | validate/copy configuration unchanged | validate/copy configuration unchanged |
-| Shopify UI | display `configured / max` | display source usage / max |
-| Shopify server action | reject creation that would exceed source allowance | no content decision before fetch |
-| Background processing | re-check source position against current allowance | normalize/truncate before chunking/embedding |
-| Commerce lookup | search only currently entitled source positions | consume ACTIVE indexed content |
-| Background reconciliation | retain excess sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
+| Boundary                    | `maxKnowledgeSources`                                 | `maxContentUnitsPerSource`                                                 |
+| --------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| Admin plan authoring        | validate positive/bounded value                       | validate positive/bounded value                                            |
+| BillingPlan materialisation | validate/copy configuration unchanged                 | validate/copy configuration unchanged                                      |
+| Shopify UI                  | display `configured / max`                            | display source usage / max                                                 |
+| Shopify server action       | reject creation that would exceed source allowance    | no content decision before fetch                                           |
+| Background processing       | re-check source position against current allowance    | normalize/truncate before chunking/embedding                               |
+| Commerce lookup             | search only currently entitled source positions       | consume ACTIVE indexed content                                             |
+| Background reconciliation   | retain excess sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
 
 Source-count downgrades are non-destructive. Sources beyond the current
 `maxKnowledgeSources` remain persisted, including their revision history, but are
@@ -1327,15 +1324,15 @@ That does not give the returned content instruction authority or action authorit
 
 The trust/authority model is:
 
-| Source | May supply facts | May override model instructions | May create customer intent/consent/approval | May authorize a side-effecting Tool |
-|---|---|---|---|---|
-| Code-owned Level-1 kernel | n/a | authoritative security instruction | no | defines the rules only |
-| Trusted `hostInstructions` / host state | yes | may add/narrow below Level 1 | only when the host contract explicitly represents trusted customer/workflow authority | only through trusted runtime policy |
-| Customer-authored conversation message | customer-stated facts | no | yes, for that customer's expressed objective/request | no by itself; normal Tool/runtime validation still applies |
-| Internal authoritative Tool result | yes, for fields guaranteed by its Tool contract | **never** | **never** | **never** |
-| Studio-authored external HTTP Tool result | only as defined by its Tool contract | **never** | **never** | **never** |
-| Merchant Knowledge / retrieved document | reference facts | **never** | **never** | **never** |
-| Catalogue/provider data | as defined by its Tool contract | **never** | **never** | **never** |
+| Source                                    | May supply facts                                | May override model instructions    | May create customer intent/consent/approval                                           | May authorize a side-effecting Tool                        |
+| ----------------------------------------- | ----------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Code-owned Level-1 kernel                 | n/a                                             | authoritative security instruction | no                                                                                    | defines the rules only                                     |
+| Trusted `hostInstructions` / host state   | yes                                             | may add/narrow below Level 1       | only when the host contract explicitly represents trusted customer/workflow authority | only through trusted runtime policy                        |
+| Customer-authored conversation message    | customer-stated facts                           | no                                 | yes, for that customer's expressed objective/request                                  | no by itself; normal Tool/runtime validation still applies |
+| Internal authoritative Tool result        | yes, for fields guaranteed by its Tool contract | **never**                          | **never**                                                                             | **never**                                                  |
+| Studio-authored external HTTP Tool result | only as defined by its Tool contract            | **never**                          | **never**                                                                             | **never**                                                  |
+| Merchant Knowledge / retrieved document   | reference facts                                 | **never**                          | **never**                                                                             | **never**                                                  |
+| Catalogue/provider data                   | as defined by its Tool contract                 | **never**                          | **never**                                                                             | **never**                                                  |
 
 An action objective therefore has to exist independently of the Tool result that supplies
 facts used to evaluate that objective.
@@ -2072,8 +2069,26 @@ Export target: `@modainteract/moda-interact-shared/internationalization`
 
 ```ts
 export const MODA_SUPPORTED_LANGUAGE_TAGS = [
-  "zh-Hans", "zh-Hant", "cs", "da", "nl", "en", "fi", "fr", "de", "it",
-  "ja", "ko", "nb", "pl", "pt-BR", "pt-PT", "es", "sv", "th", "tr",
+  "zh-Hans",
+  "zh-Hant",
+  "cs",
+  "da",
+  "nl",
+  "en",
+  "fi",
+  "fr",
+  "de",
+  "it",
+  "ja",
+  "ko",
+  "nb",
+  "pl",
+  "pt-BR",
+  "pt-PT",
+  "es",
+  "sv",
+  "th",
+  "tr",
 ] as const;
 ```
 
@@ -2090,13 +2105,16 @@ Consumers: `moda-interact-admin`, `moda-interact`, `moda-interact-background`,
 `moda-interact-commerce`.
 
 ```ts
-export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION = 1 as const;
+export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION =
+  1 as const;
 
-export const MerchantKnowledgeFeatureConfigurationSchema = z.object({
-  schemaVersion: z.literal(1),
-  maxKnowledgeSources: z.number().int().min(1).max(100),
-  maxContentUnitsPerSource: z.number().int().min(1).max(25000),
-}).strict();
+export const MerchantKnowledgeFeatureConfigurationSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    maxKnowledgeSources: z.number().int().min(1).max(100),
+    maxContentUnitsPerSource: z.number().int().min(1).max(25000),
+  })
+  .strict();
 ```
 
 The values are plan configuration. ARCH-023 does not assign specific Free/Starter/Growth
@@ -2137,7 +2155,6 @@ currently active/allowed.
 
 No downstream consumer may invent local aliases for these keys.
 
-
 ### C4 — Merchant Knowledge processing queue
 
 Owner: `moda-interact-shared`
@@ -2153,16 +2170,19 @@ Consumer: `moda-interact-background`
 
 ```ts
 export const MERCHANT_KNOWLEDGE_QUEUE_NAME = "merchant-knowledge" as const;
-export const MERCHANT_KNOWLEDGE_PROCESS_JOB_NAME = "process-source-revision" as const;
+export const MERCHANT_KNOWLEDGE_PROCESS_JOB_NAME =
+  "process-source-revision" as const;
 export const MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION = 1 as const;
 
-export const MerchantKnowledgeProcessSourceRevisionJobSchema = z.object({
-  schemaVersion: z.literal(1),
-  shopId: z.string().trim().min(1).max(128),
-  sourceRevisionId: z.string().trim().min(1).max(128),
-  generation: z.number().int().positive(),
-  requestedAt: z.iso.datetime({ offset: true }),
-}).strict();
+export const MerchantKnowledgeProcessSourceRevisionJobSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    shopId: z.string().trim().min(1).max(128),
+    sourceRevisionId: z.string().trim().min(1).max(128),
+    generation: z.number().int().positive(),
+    requestedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
 ```
 
 The deterministic BullMQ job id is:
@@ -2458,7 +2478,6 @@ best-effort BullMQ process-source-revision enqueue
 
 An abandoned PENDING_UPLOAD asset does not consume `maxKnowledgeSources`.
 
-
 ### Flow E — Background source processing and entitlement reconciliation
 
 ```text
@@ -2513,7 +2532,6 @@ reconciliation creates an `ENTITLEMENT_CHANGE` PENDING revision using the same c
 URL or uploaded asset and enqueues it through C4.
 
 It does not automatically reprocess on allowance increases.
-
 
 ### Flow F — conversation lookup
 
@@ -2589,7 +2607,6 @@ the same generation invariant and current locator.
 
 Queue publication is outside the transaction. Reconciliation recovers committed PENDING
 work that did not reach BullMQ.
-
 
 ### Knowledge processing promotion transaction
 
@@ -3043,7 +3060,6 @@ Embedding requirements remain:
 The exact existing R2 credential/bucket environment names and deployment bindings are
 deferred until Patch 5 inspection of current Gateway/R2 wiring. Patch 1 fixes the
 security/ownership semantics above rather than inventing a second storage service.
-
 
 ## Rollout / Migration
 

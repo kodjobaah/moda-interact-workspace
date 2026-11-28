@@ -173,7 +173,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Do not create a repository-wide catalogue abstraction. This service is Shopify billing-specific. A small local Prisma unique-constraint predicate may live with the service; do not create a generic utility package solely for that check. The existing purchase workflow still needs its own P2002 detection until SHOPIFY-008; do not couple that workflow back to the plan-resolution service merely to share this tiny predicate.
 
-
 ## Completion Report
 
 ### Status
@@ -196,26 +195,26 @@ Review
 - Did not edit the frozen `tests/unit/services/billing.service.test.ts`.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-002`
-  parent branch: `task/ARCH-025-SHOPIFY-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-002`
-  implementation branch: `task/ARCH-025-SHOPIFY-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-002`
+parent branch: `task/ARCH-025-SHOPIFY-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-002`
+implementation branch: `task/ARCH-025-SHOPIFY-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent `origin/main` incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation `origin/main` incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent `origin/main` incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation `origin/main` incorporated: already-current
 
 Recursive implementation submodules:
-  `git submodule sync --recursive`: passed
-  `git submodule update --init --recursive`: passed
-  recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
-  preparation claim: Attempt 1, executor `copilot`, claim commit `daf233e0de951213489f224a8ddfa58b48a1a898`, pushed
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
+preparation claim: Attempt 1, executor `copilot`, claim commit `daf233e0de951213489f224a8ddfa58b48a1a898`, pushed
 
 ### Validation Results
 

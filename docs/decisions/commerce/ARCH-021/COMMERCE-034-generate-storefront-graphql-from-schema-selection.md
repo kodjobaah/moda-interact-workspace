@@ -465,11 +465,9 @@ Architect review confirms the production query builder now fails closed when the
 ```ts
 if (
   existing &&
-  (
-    !existingMapping ||
-    !('input' in existingMapping) ||
-    existingMapping.input !== generated.property
-  )
+  (!existingMapping ||
+    !("input" in existingMapping) ||
+    existingMapping.input !== generated.property)
 ) {
   throw new Error(
     `Generated variable ${name} conflicts with the existing input mapping.`,
@@ -492,7 +490,7 @@ The accepted reuse case is also covered: an existing variable with the same Grap
 The Int literal editor now preserves the authored numeric value using:
 
 ```ts
-Number(value)
+Number(value);
 ```
 
 rather than `Number.parseInt(...)`.

@@ -188,6 +188,7 @@ Also inspect every caller discovered by the required repository-wide search. Do 
 Add focused tests for the new mapping component and update existing focused tests.
 
 Required cases:
+
 1. Exact provider event handles with exact catalogue matches return mapped and no unmapped handles.
 2. Provider returns `bronze`, `silver`, `gold`; catalogue contains only `bronze`, `silver`; unmapped result is exactly `gold`.
 3. Catalogue contains `bronze`, `silver`, `gold`; provider returns only `bronze`; result is empty. Missing provider-side `silver`/`gold` is not an error.

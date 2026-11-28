@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-07T08:35:00Z
 ---
+
 # ARCH-006-ADMIN-004: Build the Admin merchant-support inbox UI
 
 ## Architecture
@@ -48,7 +49,7 @@ Required correction:
 import {
   AuthoredSupportBodySchema,
   countUnicodeGraphemes,
-} from '@modainteract/moda-interact-shared/merchant-communications';
+} from "@modainteract/moda-interact-shared/merchant-communications";
 ```
 
 and:
@@ -244,6 +245,7 @@ Admin navigation/pages/components for pending queue, shop support history, owner
 ## Requirements
 
 Implement:
+
 - `Merchant Messages` navigation/landing;
 - all-pending default plus ownership filters;
 - bounded shop thread/history;
@@ -532,7 +534,6 @@ The remaining Attempt 1 implementation is retained. Navigation, ownership contro
 
 Attempt remains `1` until the Admin repository agent claims this returned Ready task. The claim must set `status: in_progress`, set the executor/claim timestamp and increment `attempt` to `2`. The agent must implement only the correction contract above, return `ARCH-006-ADMIN-004` to `review`, and STOP. Do not claim or implement `ADMIN-005` in the same invocation.
 
-
 ### Architect Review — Attempt 2 — 2026-09-06
 
 **Review Status: Not accepted — return to Ready for one bounded Attempt 3 correction.**
@@ -681,7 +682,6 @@ Before returning to review, inspect the final diff and explicitly state that:
 - the focused regression would fail on the uncast Attempt 2 SQL.
 
 Return this same task to `review` and STOP. Do not claim `ADMIN-005` or any system-test task in the same invocation.
-
 
 ### Architect Review — Attempt 3 — 2026-09-06
 
@@ -923,7 +923,6 @@ Before returning to review, inspect the final diff and explicitly report:
 - the focused SQL regression would fail on the Attempt 3 INSERT.
 
 Return this same task to `review` and STOP. Do not claim `ADMIN-005` or any system-test task in the same invocation.
-
 
 ### Architect Review — Attempt 4 — 2026-09-06
 
@@ -1179,7 +1178,6 @@ Before returning to review, inspect the final diff and explicitly report:
 Return this same task to `review` and STOP. Do not claim `ADMIN-005` or any system-test
 task in the same invocation.
 
-
 ### Architect Review — Attempt 5 — 2026-09-06
 
 **Review Status: Not accepted — return to Ready for one bounded Attempt 6 correction.**
@@ -1204,7 +1202,7 @@ This is a raw-SQL/PostgreSQL-enum typing defect.
 `composeAdministrativeMessage()` computes:
 
 ```ts
-const state = needsTranslation ? 'PROCESSING' : 'AVAILABLE';
+const state = needsTranslation ? "PROCESSING" : "AVAILABLE";
 ```
 
 and then binds that JavaScript string directly into the enum-backed column:
@@ -1241,8 +1239,7 @@ Therefore the bound value must be explicitly cast to:
 
 #### Same demonstrated defect class — second remaining dynamic enum binding
 
-`moda_architect` audited every `$executeRaw(Prisma.sql\`...\`)` statement in
-`src/lib/admin/merchant-support.ts` against the ARCH-006 database schema so
+`moda_architect` audited every `$executeRaw(Prisma.sql\`...\`)`statement in`src/lib/admin/merchant-support.ts` against the ARCH-006 database schema so
 Attempt 6 does not repair only the button path that happened to be manually
 exercised.
 
@@ -1330,7 +1327,7 @@ task `blocked` to `moda_architect` with the exact reason.
 In `composeAdministrativeMessage()`, preserve:
 
 ```ts
-const state = needsTranslation ? 'PROCESSING' : 'AVAILABLE';
+const state = needsTranslation ? "PROCESSING" : "AVAILABLE";
 ```
 
 Do not create separate SQL branches for English and translated messages.
@@ -1390,9 +1387,9 @@ direction mapping:
 
 ```ts
 const directionByKind = {
-  MERCHANT: 'MERCHANT_TO_ADMIN',
-  ADMINISTRATIVE: 'ADMIN_TO_MERCHANT',
-  SYSTEM: 'SYSTEM_TO_MERCHANT',
+  MERCHANT: "MERCHANT_TO_ADMIN",
+  ADMINISTRATIVE: "ADMIN_TO_MERCHANT",
+  SYSTEM: "SYSTEM_TO_MERCHANT",
 } as const;
 ```
 
@@ -1498,7 +1495,7 @@ Prove all of the following:
 ```
 
 3. the generated SQL contains a `CAST(... AS
-   "support"."MerchantSupportMessageState")` around the parameter slot used for
+"support"."MerchantSupportMessageState")` around the parameter slot used for
    state;
 4. `AVAILABLE` remains in the query's bound `values` for the English path;
 5. `PROCESSING` remains in the query's bound `values` for the non-English path.
@@ -1599,7 +1596,6 @@ Before returning to review, inspect the final diff and explicitly report:
 Return this same task to `review` and STOP.
 
 Do not claim `ADMIN-005` or any system-test task in the same invocation.
-
 
 ### Architect Acceptance — Attempt 6 — 2026-09-07
 

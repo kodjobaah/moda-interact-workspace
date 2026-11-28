@@ -854,7 +854,6 @@ Irrelevant commerce payloads should not be retained simply for logging.
 
 # Rollout
 
-
 High-level implementation order:
 
 1. publish the recovery-focused shared contract;
@@ -886,17 +885,17 @@ rolling-deployment compatibility.
 
 ARCH-001 is decomposed into the following repository-owned tasks.
 
-| Task | Owner | Status | Depends On |
-|------|-------|--------|------------|
-| ARCH-001-SHARED-001 | moda_shared | Ready | - |
-| ARCH-001-SHOPIFY-001 | moda_app | Pending | ARCH-001-SHARED-001 |
-| ARCH-001-SHOPIFY-002 | moda_app | Pending | ARCH-001-SHOPIFY-001 |
-| ARCH-001-BACKGROUND-001 | moda_background | Pending | ARCH-001-SHARED-001 |
-| ARCH-001-BACKGROUND-002 | moda_background | Pending | ARCH-001-BACKGROUND-001 |
-| ARCH-001-BACKGROUND-003 | moda_background | Pending | ARCH-001-BACKGROUND-001 |
+| Task                    | Owner           | Status  | Depends On                                       |
+| ----------------------- | --------------- | ------- | ------------------------------------------------ |
+| ARCH-001-SHARED-001     | moda_shared     | Ready   | -                                                |
+| ARCH-001-SHOPIFY-001    | moda_app        | Pending | ARCH-001-SHARED-001                              |
+| ARCH-001-SHOPIFY-002    | moda_app        | Pending | ARCH-001-SHOPIFY-001                             |
+| ARCH-001-BACKGROUND-001 | moda_background | Pending | ARCH-001-SHARED-001                              |
+| ARCH-001-BACKGROUND-002 | moda_background | Pending | ARCH-001-BACKGROUND-001                          |
+| ARCH-001-BACKGROUND-003 | moda_background | Pending | ARCH-001-BACKGROUND-001                          |
 | ARCH-001-BACKGROUND-004 | moda_background | Pending | ARCH-001-BACKGROUND-002, ARCH-001-BACKGROUND-003 |
-| ARCH-001-BACKGROUND-005 | moda_background | Pending | ARCH-001-BACKGROUND-004 |
-| ARCH-001-BACKGROUND-006 | moda_background | Pending | ARCH-001-BACKGROUND-003 |
+| ARCH-001-BACKGROUND-005 | moda_background | Pending | ARCH-001-BACKGROUND-004                          |
+| ARCH-001-BACKGROUND-006 | moda_background | Pending | ARCH-001-BACKGROUND-003                          |
 
 No database task is currently required. The existing `CheckoutRecovery` model already contains the durable fields required by this architecture. If implementation discovers that a deterministic Shopify lookup or required recovery transition cannot be supported by the existing schema, the affected task must be blocked and returned to `moda_architect` rather than silently expanding database scope.
 

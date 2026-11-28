@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-053-SHARED-002
+  - ARCH-053-SHARED-002
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -33,7 +33,7 @@ Define canonical Woo restoration wire schemas. One bounded outcome in `moda-inte
 
 ## Context
 
-The inspected source snapshot is dated 2026-10-30. ARCH-052 owns dynamic discount discovery and must not be used for these checkout-URL changes. An ARCH-048 next-generation dependency exists only as a separate *portable* proposal until accepted/materialised. This task is **Ready** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The inspected source snapshot is dated 2026-10-30. ARCH-052 owns dynamic discount discovery and must not be used for these checkout-URL changes. An ARCH-048 next-generation dependency exists only as a separate _portable_ proposal until accepted/materialised. This task is **Ready** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
 
 ## Scope
 
@@ -60,7 +60,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 - All declared schemas use `z.strictObject` and reject unknown keys. The one `kind` discriminator must provide **two mutually exclusive variants**: supported requires `lines` and forbids `reason`; unsupported requires `reason` and forbids `lines`.
 - A **supported** snapshot is a complete, validated restoration record with `lines` (1..50) and the **complete known original** `appliedCouponCodes` (0..10). An empty coupon array in a supported snapshot means Woo verified no coupon was applied; it must never mean "field missing" or "coupon enumeration failed".
-- An **unsupported** snapshot has a required `reason`, a structurally bounded `appliedCouponCodes` array and **no `lines` key**. Its coupon list is not evidence that restoration is possible or that coupon enumeration succeeded: `reason: 'COUPONS_UNAVAILABLE'` makes even `[]` non-authoritative. No link is issued for an unsupported snapshot. An *absent `checkout.restoration` field* means legacy/unknown, never "coupon free".
+- An **unsupported** snapshot has a required `reason`, a structurally bounded `appliedCouponCodes` array and **no `lines` key**. Its coupon list is not evidence that restoration is possible or that coupon enumeration succeeded: `reason: 'COUPONS_UNAVAILABLE'` makes even `[]` non-authoritative. No link is issued for an unsupported snapshot. An _absent `checkout.restoration` field_ means legacy/unknown, never "coupon free".
 - Every supported line has a Woo positive decimal product ID **encoded as a string**, optional positive decimal variation ID string, quantity integer 1..100000 and optional Woo variation-attribute map (`Record<string,string>`, at most ten entries, bounded keys/values). No display fields (`title`, `sku`, `unitPrice`, `total`) or customer fields belong inside the restoration line.
 - Coupon strings are preserved in their original Woo-applied order/content; Shared never upper/lower-cases, sorts, deduplicates, verifies, replaces or issues coupons. Runtime coupon validity, usage/expiry/stacking and current totals remain WooCommerce-owned.
 - The resolver request has exactly `schemaVersion`, `recoveryId`, `token`; the positive resolver response has exactly `schemaVersion`, `status:'eligible'`, `recoveryId`, `checkoutKey`, `snapshot:<supported snapshot>`, `outreachOffer:<verified offer>`. The resolver **never** returns an unsupported snapshot, customer identity or shop credentials. Denials are API-owned HTTP statuses/body, not a second successful response union.
@@ -100,24 +100,36 @@ export const WOO_RESTORE_RESOLVE_VERSION = "woo.restore.resolve.v1" as const;
 
 // Wire IDs are strings because WordPress/PHP may emit integer IDs larger
 // than JavaScript's safe-integer range. WooCommerce validates their meaning.
-const WooPositiveDecimalIdSchema = z.string()
-  .min(1).max(20).regex(/^[1-9][0-9]*$/);
-const WooOpaqueRecoveryIdSchema = z.string()
-  .min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9._:~-]{0,127}$/);
-const WooNoControlTextSchema = (max: number) => z.string()
-  .min(1).max(max).regex(/^[^\p{Cc}]+$/u);
+const WooPositiveDecimalIdSchema = z
+  .string()
+  .min(1)
+  .max(20)
+  .regex(/^[1-9][0-9]*$/);
+const WooOpaqueRecoveryIdSchema = z
+  .string()
+  .min(1)
+  .max(128)
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._:~-]{0,127}$/);
+const WooNoControlTextSchema = (max: number) =>
+  z
+    .string()
+    .min(1)
+    .max(max)
+    .regex(/^[^\p{Cc}]+$/u);
 
 // z.record has no .max() for property count. This single refinement enforces
 // only the documented structural <=10 property bound; NO business policy.
-const WooRestoreAttributesV1Schema = z.record(
-  WooNoControlTextSchema(80), WooNoControlTextSchema(200),
-).superRefine((value, ctx) => {
-  if (Object.keys(value).length > 10) {
-    ctx.addIssue({code: "custom", message: "Too many attributes"});
-  }
-});
+const WooRestoreAttributesV1Schema = z
+  .record(WooNoControlTextSchema(80), WooNoControlTextSchema(200))
+  .superRefine((value, ctx) => {
+    if (Object.keys(value).length > 10) {
+      ctx.addIssue({ code: "custom", message: "Too many attributes" });
+    }
+  });
 
-const WooAppliedCouponCodesV1Schema = z.array(WooNoControlTextSchema(128)).max(10);
+const WooAppliedCouponCodesV1Schema = z
+  .array(WooNoControlTextSchema(128))
+  .max(10);
 
 export const WooCartRestoreLineV1Schema = z.strictObject({
   productId: WooPositiveDecimalIdSchema,
@@ -135,8 +147,9 @@ export const WooCartRestoreUnsupportedReasonV1Schema = z.enum([
   "COUPONS_UNAVAILABLE",
   "LIMIT_EXCEEDED",
 ]);
-export type WooCartRestoreUnsupportedReasonV1 =
-  z.infer<typeof WooCartRestoreUnsupportedReasonV1Schema>;
+export type WooCartRestoreUnsupportedReasonV1 = z.infer<
+  typeof WooCartRestoreUnsupportedReasonV1Schema
+>;
 
 export const WooCartRestoreSupportedSnapshotV1Schema = z.strictObject({
   schemaVersion: z.literal(WOO_CART_RESTORE_SNAPSHOT_VERSION),
@@ -144,8 +157,9 @@ export const WooCartRestoreSupportedSnapshotV1Schema = z.strictObject({
   appliedCouponCodes: WooAppliedCouponCodesV1Schema,
   lines: z.array(WooCartRestoreLineV1Schema).min(1).max(50),
 });
-export type WooCartRestoreSupportedSnapshotV1 =
-  z.infer<typeof WooCartRestoreSupportedSnapshotV1Schema>;
+export type WooCartRestoreSupportedSnapshotV1 = z.infer<
+  typeof WooCartRestoreSupportedSnapshotV1Schema
+>;
 
 export const WooCartRestoreUnsupportedSnapshotV1Schema = z.strictObject({
   schemaVersion: z.literal(WOO_CART_RESTORE_SNAPSHOT_VERSION),
@@ -153,31 +167,38 @@ export const WooCartRestoreUnsupportedSnapshotV1Schema = z.strictObject({
   reason: WooCartRestoreUnsupportedReasonV1Schema,
   appliedCouponCodes: WooAppliedCouponCodesV1Schema,
 });
-export type WooCartRestoreUnsupportedSnapshotV1 =
-  z.infer<typeof WooCartRestoreUnsupportedSnapshotV1Schema>;
+export type WooCartRestoreUnsupportedSnapshotV1 = z.infer<
+  typeof WooCartRestoreUnsupportedSnapshotV1Schema
+>;
 
 export const WooCartRestoreSnapshotV1Schema = z.discriminatedUnion("kind", [
   WooCartRestoreSupportedSnapshotV1Schema,
   WooCartRestoreUnsupportedSnapshotV1Schema,
 ]);
-export type WooCartRestoreSnapshotV1 =
-  z.infer<typeof WooCartRestoreSnapshotV1Schema>;
+export type WooCartRestoreSnapshotV1 = z.infer<
+  typeof WooCartRestoreSnapshotV1Schema
+>;
 
 // This is an EXTENSION for API-001's canonical v1 checkout object, not a
 // competing checkout-event/identity/phone/contact schema.
 export const WooCheckoutRestoreExtensionV1Schema = z.strictObject({
   restoration: WooCartRestoreSnapshotV1Schema.optional(),
 });
-export type WooCheckoutRestoreExtensionV1 =
-  z.infer<typeof WooCheckoutRestoreExtensionV1Schema>;
+export type WooCheckoutRestoreExtensionV1 = z.infer<
+  typeof WooCheckoutRestoreExtensionV1Schema
+>;
 
 export const WooRestoreResolveRequestV1Schema = z.strictObject({
   schemaVersion: z.literal(WOO_RESTORE_RESOLVE_VERSION),
   recoveryId: WooOpaqueRecoveryIdSchema,
-  token: z.string().length(43).regex(/^[A-Za-z0-9_-]{43}$/),
+  token: z
+    .string()
+    .length(43)
+    .regex(/^[A-Za-z0-9_-]{43}$/),
 });
-export type WooRestoreResolveRequestV1 =
-  z.infer<typeof WooRestoreResolveRequestV1Schema>;
+export type WooRestoreResolveRequestV1 = z.infer<
+  typeof WooRestoreResolveRequestV1Schema
+>;
 
 // The original customer's applied coupons remain in snapshot.appliedCouponCodes.
 // This is ONLY the verified offer previously sent in initial outreach; its
@@ -196,10 +217,11 @@ export const WooRestoreOutreachOfferV1Schema = z.discriminatedUnion("kind", [
     kind: z.literal("CHECKOUT_AUTOMATIC"),
     providerDiscountId: WooNoControlTextSchema(191),
   }),
-  z.strictObject({kind: z.literal("ALTERNATIVE_PRODUCT")}),
+  z.strictObject({ kind: z.literal("ALTERNATIVE_PRODUCT") }),
 ]);
-export type WooRestoreOutreachOfferV1 =
-  z.infer<typeof WooRestoreOutreachOfferV1Schema>;
+export type WooRestoreOutreachOfferV1 = z.infer<
+  typeof WooRestoreOutreachOfferV1Schema
+>;
 
 export const WooRestoreResolveResponseV1Schema = z.strictObject({
   schemaVersion: z.literal(WOO_RESTORE_RESOLVE_VERSION),
@@ -209,8 +231,9 @@ export const WooRestoreResolveResponseV1Schema = z.strictObject({
   snapshot: WooCartRestoreSupportedSnapshotV1Schema,
   outreachOffer: WooRestoreOutreachOfferV1Schema,
 });
-export type WooRestoreResolveResponseV1 =
-  z.infer<typeof WooRestoreResolveResponseV1Schema>;
+export type WooRestoreResolveResponseV1 = z.infer<
+  typeof WooRestoreResolveResponseV1Schema
+>;
 ```
 
 **No resolver v2:** `woo.restore.resolve.v1` is the first and only restoration resolver protocol. `outreachOffer` is **mandatory** on every eligible response: use `{kind:"NONE", reason:"NO_CONFIRMED_OFFER"}` when no confirmed initial offer exists. It must NOT be inferred from `snapshot.appliedCouponCodes`. The schema must reject `woo.restore.resolve.v2` and unknown/extra keys. No fallback/dual-version adapter is authorized.
@@ -246,7 +269,7 @@ The canonical fixture is **one JSON object** with exactly these five named prope
     "kind": "supported",
     "appliedCouponCodes": ["save10", "freeship"],
     "lines": [
-      {"productId": "101", "quantity": 2},
+      { "productId": "101", "quantity": 2 },
       {
         "productId": "202",
         "variationId": "207",
@@ -279,28 +302,37 @@ The canonical fixture is **one JSON object** with exactly these five named prope
       "kind": "supported",
       "appliedCouponCodes": ["save10", "freeship"],
       "lines": [
-        {"productId": "101", "quantity": 2},
+        { "productId": "101", "quantity": 2 },
         {
-          "productId": "202", "variationId": "207", "quantity": 1,
-           "attributes": {"attribute_pa_color": "navy", "attribute_pa_size": "m"}}
+          "productId": "202",
+          "variationId": "207",
+          "quantity": 1,
+          "attributes": {
+            "attribute_pa_color": "navy",
+            "attribute_pa_size": "m"
+          }
+        }
       ]
     },
     "outreachOffer": {
-      "kind": "CHECKOUT_CODE", "code": "EXTRA15",
+      "kind": "CHECKOUT_CODE",
+      "code": "EXTRA15",
       "providerDiscountId": "woo-discount-915"
     }
   },
   "outreachOfferExamples": {
-    "none": {"kind": "NONE", "reason": "NO_CONFIRMED_OFFER"},
-    "unverifiable": {"kind": "NONE", "reason": "UNVERIFIABLE"},
+    "none": { "kind": "NONE", "reason": "NO_CONFIRMED_OFFER" },
+    "unverifiable": { "kind": "NONE", "reason": "UNVERIFIABLE" },
     "checkoutCode": {
-      "kind": "CHECKOUT_CODE", "code": "EXTRA15",
+      "kind": "CHECKOUT_CODE",
+      "code": "EXTRA15",
       "providerDiscountId": "woo-discount-915"
     },
     "checkoutAutomatic": {
-      "kind": "CHECKOUT_AUTOMATIC", "providerDiscountId": "woo-discount-916"
+      "kind": "CHECKOUT_AUTOMATIC",
+      "providerDiscountId": "woo-discount-916"
     },
-    "alternativeProduct": {"kind": "ALTERNATIVE_PRODUCT"}
+    "alternativeProduct": { "kind": "ALTERNATIVE_PRODUCT" }
   }
 }
 ```
@@ -322,17 +354,26 @@ This is an **example of API-001's canonical v1 HTTP envelope**, not a second Sha
     "currency": "GBP",
     "total": "80.00",
     "items": [
-      {"quantity": 2, "productId": "101", "title": "T-shirt"},
-      {"quantity": 1, "productId": "202", "variationId": "207", "title": "Jacket"}
+      { "quantity": 2, "productId": "101", "title": "T-shirt" },
+      {
+        "quantity": 1,
+        "productId": "202",
+        "variationId": "207",
+        "title": "Jacket"
+      }
     ],
     "restoration": {
       "schemaVersion": "woo.cart-restore.v1",
       "kind": "supported",
       "appliedCouponCodes": ["save10"],
       "lines": [
-        {"productId": "101", "quantity": 2},
-        {"productId": "202", "variationId": "207", "quantity": 1,
-         "attributes": {"attribute_pa_color": "navy"}}
+        { "productId": "101", "quantity": 2 },
+        {
+          "productId": "202",
+          "variationId": "207",
+          "quantity": 1,
+          "attributes": { "attribute_pa_color": "navy" }
+        }
       ]
     }
   }
@@ -343,18 +384,18 @@ API-001 accepts HTTP v1, validates `checkout.restoration` with the published `Wo
 
 ### 5. Owner-specific responsibilities
 
-| Responsibility | Owning task |
-|---|---|
-| Schemas, exact v1 outreach-offer union, structural bounds, package entrypoints and canonical fixture | `ARCH-053-SHARED-001` |
-| Version bump and package publication | `ARCH-053-SHARED-002` |
-| PHP restorable lines, applied coupons, unsupported reason selection | `ARCH-053-WOOCOMMERCE-001`, coupon-only changes `WOOCOMMERCE-004` |
-| HTTP v1 envelope validation, phone normalization, authenticated ingress, v1 queue projection | `ARCH-053-API-001` |
-| Strict v1 queue validation and candidate retention | `ARCH-053-BACKGROUND-001` |
-| Durable snapshot and recovery admission | `ARCH-053-DATABASE-001`, `ARCH-053-BACKGROUND-002` |
-| Recovery generation URL/token issuance and freshness/order/consent gating | `ARCH-053-BACKGROUND-003`, `ARCH-053-API-002` |
-| Confirmed initial outreach receipt target and v1 offer projection | `ARCH-053-BACKGROUND-004`, `ARCH-053-API-003` |
-| Applying confirmed recommended checkout code and conflict notices | `ARCH-053-WOOCOMMERCE-007`, `ARCH-053-WOOCOMMERCE-008` |
-| Current product/variation/cart and coupon eligibility at restore time | `ARCH-053-WOOCOMMERCE-002`, `WOOCOMMERCE-005`, `WOOCOMMERCE-006` |
+| Responsibility                                                                                       | Owning task                                                       |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Schemas, exact v1 outreach-offer union, structural bounds, package entrypoints and canonical fixture | `ARCH-053-SHARED-001`                                             |
+| Version bump and package publication                                                                 | `ARCH-053-SHARED-002`                                             |
+| PHP restorable lines, applied coupons, unsupported reason selection                                  | `ARCH-053-WOOCOMMERCE-001`, coupon-only changes `WOOCOMMERCE-004` |
+| HTTP v1 envelope validation, phone normalization, authenticated ingress, v1 queue projection         | `ARCH-053-API-001`                                                |
+| Strict v1 queue validation and candidate retention                                                   | `ARCH-053-BACKGROUND-001`                                         |
+| Durable snapshot and recovery admission                                                              | `ARCH-053-DATABASE-001`, `ARCH-053-BACKGROUND-002`                |
+| Recovery generation URL/token issuance and freshness/order/consent gating                            | `ARCH-053-BACKGROUND-003`, `ARCH-053-API-002`                     |
+| Confirmed initial outreach receipt target and v1 offer projection                                    | `ARCH-053-BACKGROUND-004`, `ARCH-053-API-003`                     |
+| Applying confirmed recommended checkout code and conflict notices                                    | `ARCH-053-WOOCOMMERCE-007`, `ARCH-053-WOOCOMMERCE-008`            |
+| Current product/variation/cart and coupon eligibility at restore time                                | `ARCH-053-WOOCOMMERCE-002`, `WOOCOMMERCE-005`, `WOOCOMMERCE-006`  |
 
 Do **not** implement any of the consumer responsibilities inside Shared. These contracts carry a confirmed prior offer **as data**; they perform no dynamic discount discovery or issuance.
 
@@ -457,22 +498,26 @@ The package has not been versioned or published; that is the separate SHARED-002
 Task branch: `task/ARCH-053-SHARED-001`.
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-SHARED-001`, branch `task/ARCH-053-SHARED-001`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-SHARED-001`, branch `task/ARCH-053-SHARED-001`.
 - Shared checkouts switched/mutated: no. Another task worktree reused: no.
 
 Start-of-attempt synchronization and submodules (from launcher packet):
+
 - Parent remote task branch fast-forwarded: not needed; parent `origin/main` already incorporated.
 - Implementation remote task branch fast-forwarded: not needed; implementation `origin/main` already incorporated.
 - Recursive `git submodule sync`: passed. Recursive `git submodule update --init`: passed. Submodule entries: none.
 
 Implementation repository:
+
 - Task implementation commit: `3bffadc4ad20ca2910ff4c7e2257e6fa732140de`.
 - Mainline merge commit: `825b7b6` (`Merge branch 'main' into task/ARCH-053-SHARED-001`), incorporating local `main` at `b56788d` (`2.7.1`).
 - Remote branch: `origin/task/ARCH-053-SHARED-001`; pushed successfully after the user authorized publication.
 
 Parent workspace:
+
 - Task file: `docs/decisions/shared/ARCH-053/SHARED-001-define-woocommerce-cart-restore-contracts.md`.
 - Claim commit: `da1df065e3c33357336d55ca197ed18826975add` (launcher-pushed).
 - Review report commit: `fb7435d7dda2e214d941fa0c32f7c7b724fef572`; subsequent local commits record branch evidence and prior approval history. This report reconciliation is being committed and pushed after the user authorized publication.

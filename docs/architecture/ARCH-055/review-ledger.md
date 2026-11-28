@@ -49,11 +49,11 @@ Inspected the route, connection service, Free-plan preparation/activation helper
 
 These count explicit Prisma model-method calls along a successful, non-retried path. `$transaction` control, BEGIN/COMMIT/isolation setup, relation-query expansion, nested writes, database triggers, and provider network work are not counted. They are not measured SQL round trips.
 
-| Path and assumptions | Outside merchant transaction | Inside merchant transaction | Total |
-|---|---:|---:|---:|
-| Already-onboarded ACTIVE reconnect | 1 | 4 | 5 |
-| Already-onboarded UNINSTALLED reconnect | 1 | 5 | 6 |
-| First connection; valid operational Free plan already exists and catalogue is marked materialised | 4 | 11 | 15 |
+| Path and assumptions                                                                              | Outside merchant transaction | Inside merchant transaction | Total |
+| ------------------------------------------------------------------------------------------------- | ---------------------------: | --------------------------: | ----: |
+| Already-onboarded ACTIVE reconnect                                                                |                            1 |                           4 |     5 |
+| Already-onboarded UNINSTALLED reconnect                                                           |                            1 |                           5 |     6 |
+| First connection; valid operational Free plan already exists and catalogue is marked materialised |                            4 |                          11 |    15 |
 
 First-connection outside operations: installation lookup; catalogue+features lookup; first-grant policy lookup; operational plan lookup. Inside operations: Shop create; activation Shop lookup; Subscription lookup; catalogue invariant lookup; operational-plan invariant lookup; lifetime-counter lookup; first-grant-policy lookup; Subscription upsert; lifetime-counter create; onboarding update; installation create.
 
@@ -141,7 +141,6 @@ Prisma v6 transactions reference: `https://www.prisma.io/docs/orm/v6/prisma-clie
 
 PostgreSQL 17 transaction isolation reference: `https://www.postgresql.org/docs/17/transaction-iso.html` — isolation/snapshot semantics. Serializable is not a promise of a fresh wall-clock read before every statement.
 
-
 ---
 
 # Increment 02 — five more endpoints (E02–E06)
@@ -154,13 +153,13 @@ PostgreSQL 17 transaction isolation reference: `https://www.postgresql.org/docs/
 
 ## Increment summary
 
-| Entry | Endpoint | Current database-client work on a successful path | Transaction decision |
-|---|---|---|---|
-| E02 | GET `/v1/woocommerce/installation` | 1 authentication model call | No explicit transaction needed |
-| E03 | POST `/v1/woocommerce/activity` | 1 authentication model call; no business-state PostgreSQL writes | Keep queue acceptance outside any PostgreSQL transaction |
-| E04 | POST `/v1/woocommerce/whatsapp-consent` | 5 calls on duplicate; 8 on existing recipient; 10 on new recipient | Retain atomic consent/evidence transaction |
-| E05 | GET `/v1/woocommerce/customer-recovery-selection` | 5 calls, including recipient advisory lock and locking phone query | Retain the short authorization boundary initially; remove recipient write-style locking only after explicit snapshot-read contract and tests |
-| E06 | POST `/v1/woocommerce/customer-recovery-selection` | 6 calls on mutation; 5 on duplicate | Retain locked read/check/write transaction |
+| Entry | Endpoint                                           | Current database-client work on a successful path                  | Transaction decision                                                                                                                         |
+| ----- | -------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| E02   | GET `/v1/woocommerce/installation`                 | 1 authentication model call                                        | No explicit transaction needed                                                                                                               |
+| E03   | POST `/v1/woocommerce/activity`                    | 1 authentication model call; no business-state PostgreSQL writes   | Keep queue acceptance outside any PostgreSQL transaction                                                                                     |
+| E04   | POST `/v1/woocommerce/whatsapp-consent`            | 5 calls on duplicate; 8 on existing recipient; 10 on new recipient | Retain atomic consent/evidence transaction                                                                                                   |
+| E05   | GET `/v1/woocommerce/customer-recovery-selection`  | 5 calls, including recipient advisory lock and locking phone query | Retain the short authorization boundary initially; remove recipient write-style locking only after explicit snapshot-read contract and tests |
+| E06   | POST `/v1/woocommerce/customer-recovery-selection` | 6 calls on mutation; 5 on duplicate                                | Retain locked read/check/write transaction                                                                                                   |
 
 **Counting convention:** These totals count one Prisma model method or one `$queryRaw`/`$executeRaw` call as one explicit database-client operation. Each total includes the initial bearer-authentication lookup. They exclude transaction initiation, isolation configuration, commit/rollback, trigger-internal SQL, relation-loading expansion, retries and Redis work. They are not measured SQL statements or round trips. The authentication model call includes a Shop relation. Historical measured SQL counts are presented separately below.
 
@@ -239,11 +238,11 @@ The HTTP route authenticates and parses a v2 event, then acknowledges only after
 
 [B02-S09:19–28; B02-S10:102–172]
 
-| Path | Authentication | Raw calls inside transaction | Explicit total | Explicit business writes |
-|---|---:|---:|---:|---:|
-| Identical retained consent event | 1 | 4 | 5 | 0 |
-| New event, existing active recipient | 1 | 7 | 8 | 2 |
-| New event, no recipient yet | 1 | 9 | 10 | 4 |
+| Path                                 | Authentication | Raw calls inside transaction | Explicit total | Explicit business writes |
+| ------------------------------------ | -------------: | ---------------------------: | -------------: | -----------------------: |
+| Identical retained consent event     |              1 |                            4 |              5 |                        0 |
+| New event, existing active recipient |              1 |                            7 |              8 |                        2 |
+| New event, no recipient yet          |              1 |                            9 |             10 |                        4 |
 
 The four new-recipient writes are Customer insert, CustomerPhone insert, consent update and evidence insert. They are not four duplicates. No billing/feature lookup, recovery creation, message or queue publication occurs in this service. Passive consent remains separate from sending eligibility. [B02-S10:79–98,139–169]
 
@@ -291,12 +290,12 @@ The application-level call counts omit trigger-internal reads, foreign-key check
 
 The uploaded ARCH-046-API-007 task records a 24 October 2026 comparison at implementation head `b1ccf7842d1a6d732d900676d6e8c4250977b707`. Its v2 service-only sample reported:
 
-| Scenario | Recorded client-observed SQL statements | Recorded transaction-client elapsed time |
-|---|---:|---:|
-| Fresh GRANT | 12 | 52.04 ms |
-| Existing GRANT | 10 | 25.88 ms |
-| REVOKE | 10 | 26.92 ms |
-| Duplicate retry | 7 | 16.63 ms |
+| Scenario        | Recorded client-observed SQL statements | Recorded transaction-client elapsed time |
+| --------------- | --------------------------------------: | ---------------------------------------: |
+| Fresh GRANT     |                                      12 |                                 52.04 ms |
+| Existing GRANT  |                                      10 |                                 25.88 ms |
+| REVOKE          |                                      10 |                                 26.92 ms |
+| Duplicate retry |                                       7 |                                 16.63 ms |
 
 These figures come from the historical task report, not measurements made in this increment. The harness measures the client `$transaction` call, including transaction setup/round trips/commit, and excludes HTTP authentication/setup. They are single local observations, not p95, capacity, server-only latency or a baseline for the proposed new optimisation. The earlier comparison explicitly reports timings that did not improve in every scenario. [B02-S28:206–231; B02-S26:17–31,96–127]
 
@@ -386,14 +385,14 @@ The read optimisation retains Shop locks, so it does not require a cross-reposit
 
 ## Increment recommendations and validation order
 
-| Finding | Proposed action | Classification | Priority |
-|---|---|---|---|
-| E03-F01 | Preserve original DB/Redis errors; classify failure stage; update diagnostic tests | Confirmed diagnostic defect | High (operability) |
-| E04-F01 | Look up idempotent evidence before taking recipient lock | Proposed targeted optimisation | Medium |
-| E04-F02 / E06-F01 | Preserve conflict causes; verify raw-SQL error shape on Prisma 6.19.3 | Confirmed wrapping gap; error mapping unvalidated | Medium |
-| E05-F01 | Give GET a snapshot phone-read path without recipient advisory/FOR UPDATE locks | Proposed lock optimisation | Medium |
-| E05-F02 | Consider consolidating transaction-local installation gate, with equivalent ordering/errors | Conditional consolidation | Lower, pending cross-endpoint review |
-| B02-X01 | Correct lock explanation and validate actual STOP writer coordination | Confirmed documentation/test-boundary observation | Required for lock-boundary changes |
+| Finding           | Proposed action                                                                             | Classification                                    | Priority                             |
+| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------ |
+| E03-F01           | Preserve original DB/Redis errors; classify failure stage; update diagnostic tests          | Confirmed diagnostic defect                       | High (operability)                   |
+| E04-F01           | Look up idempotent evidence before taking recipient lock                                    | Proposed targeted optimisation                    | Medium                               |
+| E04-F02 / E06-F01 | Preserve conflict causes; verify raw-SQL error shape on Prisma 6.19.3                       | Confirmed wrapping gap; error mapping unvalidated | Medium                               |
+| E05-F01           | Give GET a snapshot phone-read path without recipient advisory/FOR UPDATE locks             | Proposed lock optimisation                        | Medium                               |
+| E05-F02           | Consider consolidating transaction-local installation gate, with equivalent ordering/errors | Conditional consolidation                         | Lower, pending cross-endpoint review |
+| B02-X01           | Correct lock explanation and validate actual STOP writer coordination                       | Confirmed documentation/test-boundary observation | Required for lock-boundary changes   |
 
 The first two query/lock changes are independent and bounded; neither justifies lowering isolation for mutation, adding billing lookups, weakening tenant isolation, removing append-only evidence, or adding a new datastore.
 
@@ -437,7 +436,6 @@ These sources verify database/library semantics, not application behaviour. Chec
 - r01: E01 installation connection review.
 - r02: Retains E01 verbatim apart from document-level status/evidence metadata; adds five endpoint reviews, source-count tables, historical measurement attribution, lock/error findings and validation boundaries. No application patch or acceptance is implied.
 
-
 ---
 
 # Increment 03 — five more endpoints (E07–E11)
@@ -452,13 +450,13 @@ These sources verify database/library semantics, not application behaviour. Chec
 
 The highest-priority issue is local read-grant revocation, not query count. The service updates old pending attempts after reconnect, but the canonical attempt trigger rejects their old credential versions; this can abort the entire revoke transaction. The revoke operation also lacks transaction-local validation of the request's credential version. Both are source-supported correctness risks needing deterministic migrated-PostgreSQL regression tests.
 
-| Entry | Method and path | Successful explicit database-client calls, including authentication | Transaction assessment |
-|---|---|---|---|
-| E07 | POST `/v1/woocommerce/shop-brand` | 7 first creation; 5 later update; 4 duplicate/stale acknowledgement | Retain ReadCommitted transaction and existing coordination; remove first-creation reread |
-| E08 | POST `/v1/woocommerce/recovery-restore/resolve` | 4 eligible; 2 early-ineligible | Retain read-only flow and deliberate post-offer eligibility recheck |
-| E09 | POST `/v1/woocommerce/read-authorizations` | 3 with database-backed security configuration; 2 with injected/static config | One guarded insert is atomic; no blanket transaction solely to reduce calls |
-| E10 | GET `/v1/woocommerce/read-authorization` | 2 current ACTIVE grant; 3 fallback/latest-attempt path | Retain non-locking status projection; inspect fallback index access |
-| E11 | DELETE `/v1/woocommerce/read-authorization` | 3 on a successful non-retried path | Retain Serializable two-write atomicity; correct generation/lifecycle handling |
+| Entry | Method and path                                 | Successful explicit database-client calls, including authentication          | Transaction assessment                                                                   |
+| ----- | ----------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| E07   | POST `/v1/woocommerce/shop-brand`               | 7 first creation; 5 later update; 4 duplicate/stale acknowledgement          | Retain ReadCommitted transaction and existing coordination; remove first-creation reread |
+| E08   | POST `/v1/woocommerce/recovery-restore/resolve` | 4 eligible; 2 early-ineligible                                               | Retain read-only flow and deliberate post-offer eligibility recheck                      |
+| E09   | POST `/v1/woocommerce/read-authorizations`      | 3 with database-backed security configuration; 2 with injected/static config | One guarded insert is atomic; no blanket transaction solely to reduce calls              |
+| E10   | GET `/v1/woocommerce/read-authorization`        | 2 current ACTIVE grant; 3 fallback/latest-attempt path                       | Retain non-locking status projection; inspect fallback index access                      |
+| E11   | DELETE `/v1/woocommerce/read-authorization`     | 3 on a successful non-retried path                                           | Retain Serializable two-write atomicity; correct generation/lifecycle handling           |
 
 Counts include explicit `$queryRaw`/`$executeRaw` lock operations and model methods. They exclude `$transaction` setup, BEGIN/COMMIT/isolation commands, relation expansion, trigger-internal SQL, retries and provider work. A bulk update can touch many rows and fire many triggers despite being one client call. No latency reduction is inferred from these counts. Relevant sources: B03-S01–S14.
 
@@ -472,11 +470,11 @@ The existing-row path is a real read/compare/merge/write operation. Media source
 
 ### Counts and decision table
 
-| Path | Authentication | Shop + installation locks | Brand work | Total |
-|---|---:|---:|---:|---:|
-| First snapshot, no ShopBrand row | 1 | 2 | SELECT + create + SELECT + UPDATE = 4 | 7 |
-| Existing brand, newer snapshot | 1 | 2 | SELECT + UPDATE = 2 | 5 |
-| Duplicate or older observation | 1 | 2 | SELECT = 1 | 4 |
+| Path                             | Authentication | Shop + installation locks |                            Brand work | Total |
+| -------------------------------- | -------------: | ------------------------: | ------------------------------------: | ----: |
+| First snapshot, no ShopBrand row |              1 |                         2 | SELECT + create + SELECT + UPDATE = 4 |     7 |
+| Existing brand, newer snapshot   |              1 |                         2 |                   SELECT + UPDATE = 2 |     5 |
+| Duplicate or older observation   |              1 |                         2 |                            SELECT = 1 |     4 |
 
 ### E07-F01 — Create result discarded before an immediate reread
 
@@ -536,10 +534,10 @@ Preserve an allowlisted original Prisma/driver code and safe cause/response deta
 
 The canonical Prisma model and migration history declare both a unique and a non-unique B-tree index over exactly the same keys:
 
-| Table | Keys | Unique index to retain | Non-unique duplicate candidate |
-|---|---|---|---|
+| Table                     | Keys                              | Unique index to retain                               | Non-unique duplicate candidate                       |
+| ------------------------- | --------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
 | commerce.CheckoutRecovery | shopId, checkoutToken, generation | CheckoutRecovery_shopId_checkoutToken_generation_key | CheckoutRecovery_shopId_checkoutToken_generation_idx |
-| whatsapp.Conversation | checkoutRecoveryId | Conversation_checkoutRecoveryId_key | Conversation_checkoutRecoveryId_idx |
+| whatsapp.Conversation     | checkoutRecoveryId                | Conversation_checkoutRecoveryId_key                  | Conversation_checkoutRecoveryId_idx                  |
 
 [B03-S12:390–391,550–551; B03-S30:184–187; B03-S31:906,921]
 
@@ -657,17 +655,17 @@ Required focused additions: F01 sequence; paused auth/reconnect/re-authorise/rev
 
 ## Prioritised register for this increment
 
-| Finding | Action | Priority | Ownership |
-|---|---|---|---|
-| E11-F01 / F02 | Correct old-attempt revocation and stale-principal mutation | High correctness | API; Database consulted if transition guards change |
-| E11-F03 | Reproduce/handle expiry during cancellation | Required in revoke correction | API + Database as needed |
-| E09-F01 | Preserve original insert error and distinguish failure classes | High operability | API |
-| E07-F01 | Return just-created brand fields, remove reread | Medium optimisation | API |
-| E08-F02 | Retain safe original diagnostic code/cause with redaction | Medium operability | API |
-| E09-F02 | Resolve/test current Shop-state gate through start commit | Medium correctness clarification | API; Database if guard changes |
-| E08-F01 | Full-migration restore validation before query/schema optimisation | Validation gate | API |
-| E08-F03 | Validate/remove duplicate non-unique indexes, retaining unique indexes | Measured schema follow-up | Database |
-| E10-F01 | Measure latest-attempt ordered index candidate | Lower, evidence-dependent | Database |
+| Finding       | Action                                                                 | Priority                         | Ownership                                           |
+| ------------- | ---------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------- |
+| E11-F01 / F02 | Correct old-attempt revocation and stale-principal mutation            | High correctness                 | API; Database consulted if transition guards change |
+| E11-F03       | Reproduce/handle expiry during cancellation                            | Required in revoke correction    | API + Database as needed                            |
+| E09-F01       | Preserve original insert error and distinguish failure classes         | High operability                 | API                                                 |
+| E07-F01       | Return just-created brand fields, remove reread                        | Medium optimisation              | API                                                 |
+| E08-F02       | Retain safe original diagnostic code/cause with redaction              | Medium operability               | API                                                 |
+| E09-F02       | Resolve/test current Shop-state gate through start commit              | Medium correctness clarification | API; Database if guard changes                      |
+| E08-F01       | Full-migration restore validation before query/schema optimisation     | Validation gate                  | API                                                 |
+| E08-F03       | Validate/remove duplicate non-unique indexes, retaining unique indexes | Measured schema follow-up        | Database                                            |
+| E10-F01       | Measure latest-attempt ordered index candidate                         | Lower, evidence-dependent        | Database                                            |
 
 No Shared contract, queue, Gateway infrastructure or new service is justified by these findings alone. Cross-repository source was read only to establish ownership and durable contracts. No task status is changed by this audit, including tasks already marked Complete in the snapshot. Source-supported new findings are not retroactive claims that historical tests failed.
 
@@ -708,7 +706,6 @@ These primary-documentation checks were made during this increment. They support
 
 Keep the five-endpoint cadence. The next natural group is the REST-read callback, REST-read browser return, merchant bootstrap, store-context update and store-category options. They remain unreviewed endpoints despite selective helper inspection above. Cumulative progress remains **11 reviewed / 50 remaining** from the original 61-route inventory.
 
-
 ---
 
 # Increment 04 — callback, return and merchant read/context endpoints (E12–E16)
@@ -720,13 +717,13 @@ Keep the five-endpoint cadence. The next natural group is the REST-read callback
 
 ## Batch summary and counting convention
 
-| Entry | Method/path | Successful source-level database-client calls | Decision |
-|---|---|---:|---|
-| E12 | POST `/v1/woocommerce/read-authorizations/callback/:token` | 5 fresh with DB-backed security config; 4 with static config; 2 already-committed replay | Retain Serializable transaction; correct concurrent replay and lifecycle validation |
-| E13 | GET `/v1/woocommerce/read-authorizations/return` | 0 invalid/missing attempt ID; 1 locale lookup; 2 when a signed-locale attempt also resolves DB-backed config | No transaction; keep informational/read-only boundary |
-| E14 | GET `/v1/merchant/bootstrap` | 2, including installation authentication | Retain narrow read; no gratuitous transaction or write |
-| E15 | PUT `/v1/merchant/store-context` | 2, including installation authentication | Keep single conditional Shop mutation; consider avoiding identical writes only if worthwhile |
-| E16 | GET `/v1/merchant/store-categories` | 6, including installation authentication | Consolidate identity reads cautiously; establish one coherent profile/configuration snapshot |
+| Entry | Method/path                                                |                                                                Successful source-level database-client calls | Decision                                                                                     |
+| ----- | ---------------------------------------------------------- | -----------------------------------------------------------------------------------------------------------: | -------------------------------------------------------------------------------------------- |
+| E12   | POST `/v1/woocommerce/read-authorizations/callback/:token` |                     5 fresh with DB-backed security config; 4 with static config; 2 already-committed replay | Retain Serializable transaction; correct concurrent replay and lifecycle validation          |
+| E13   | GET `/v1/woocommerce/read-authorizations/return`           | 0 invalid/missing attempt ID; 1 locale lookup; 2 when a signed-locale attempt also resolves DB-backed config | No transaction; keep informational/read-only boundary                                        |
+| E14   | GET `/v1/merchant/bootstrap`                               |                                                                     2, including installation authentication | Retain narrow read; no gratuitous transaction or write                                       |
+| E15   | PUT `/v1/merchant/store-context`                           |                                                                     2, including installation authentication | Keep single conditional Shop mutation; consider avoiding identical writes only if worthwhile |
+| E16   | GET `/v1/merchant/store-categories`                        |                                                                     6, including installation authentication | Consolidate identity reads cautiously; establish one coherent profile/configuration snapshot |
 
 The callback path segment is a secret bearer token, not a database attempt ID. The earlier inventory used the display placeholder `:id`; this is the same route, not an extra endpoint. `payload.user_id` carries the opaque attempt ID. Browser return is not installation-authenticated. Callback uses the bearer digest lookup rather than the reusable installation authenticator. [B04-S01:177–196; S02:52–58]
 
@@ -932,27 +929,27 @@ Validation completed in this increment is source inspection, route/helper/migrat
 
 ### Focused acceptance requirements for future implementation
 
-| Area | Required evidence before accepting a correction |
-|---|---|
-| Callback replay | Overlapping identical callbacks, transaction retry, selected-grant identity, superseded attempt, revoked replay, no second rotation, exact HTTP 200 acknowledgement only for an accepted durable outcome |
-| Callback lifecycle | Shop suspension during paused provider verification; reconnect/revoke at the boundary; rollback leaves attempt/grant consistent; compatible lock order |
-| Callback diagnostics | Original provider/database errors retained and classified, with bearer/keys/headers/body redaction; no blanket successful acknowledgement on an infrastructure error |
-| Return page | Valid proof still verified; malformed proof avoids optional config work; missing/invalid ID no query; fallback and no-writes preserved |
-| Bootstrap | Same bounded response and empty-profile handling; unchanged database state; canonical migrated schema; no assertion that one model call equals one SQL |
-| Store context | Equal/non-equal/null-clearing paths, no-op versus stale distinction, conflicting credentials, real lock-wait/reconnect interleavings, timestamp semantics and measured duplicate/write rate |
-| Category read | Coherent profile/configuration across publication, same-category mapping update, empty/pending profiles, environment/tenant isolation, bounds, whitespace eligibility, SQL/query/pool measurements |
+| Area                 | Required evidence before accepting a correction                                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Callback replay      | Overlapping identical callbacks, transaction retry, selected-grant identity, superseded attempt, revoked replay, no second rotation, exact HTTP 200 acknowledgement only for an accepted durable outcome |
+| Callback lifecycle   | Shop suspension during paused provider verification; reconnect/revoke at the boundary; rollback leaves attempt/grant consistent; compatible lock order                                                   |
+| Callback diagnostics | Original provider/database errors retained and classified, with bearer/keys/headers/body redaction; no blanket successful acknowledgement on an infrastructure error                                     |
+| Return page          | Valid proof still verified; malformed proof avoids optional config work; missing/invalid ID no query; fallback and no-writes preserved                                                                   |
+| Bootstrap            | Same bounded response and empty-profile handling; unchanged database state; canonical migrated schema; no assertion that one model call equals one SQL                                                   |
+| Store context        | Equal/non-equal/null-clearing paths, no-op versus stale distinction, conflicting credentials, real lock-wait/reconnect interleavings, timestamp semantics and measured duplicate/write rate              |
+| Category read        | Coherent profile/configuration across publication, same-category mapping update, empty/pending profiles, environment/tenant isolation, bounds, whitespace eligibility, SQL/query/pool measurements       |
 
 Use only actual repository-declared scripts and focused test files after dependencies and a disposable runtime are available. The existing `npm run test:arch026-woo-rest-read:postgres` covers authorization through the migrated runner. The three merchant suites currently run via `scripts/test-woocommerce-installation-postgres.mjs`; do not call that migrated coverage. A migration-backed extension is a proposed validation change, not a command that already exists for these suites.
 
 ## Priority and ownership summary
 
-| Priority | Findings | Proposed treatment |
-|---|---|---|
-| High | E12-F01, E12-F02, alongside earlier E11 findings | Correct callback acknowledgement/lifecycle behaviour with deterministic races before performance work |
-| Medium | E16-F01; E12-F03 | Fix coherent read semantics and preserve actual diagnostic causes |
-| Conditional optimisation | E16-F02, E15-F01 | Consolidate identity lookup; avoid identical context updates only with correct outcome distinction and measurable benefit |
-| Low | E13-F01, E16-F03 | Avoid malformed-proof config loading and unnecessary prompt-text transfer if worthwhile |
-| Retain | E14 and the stated correct portions of other endpoints | No mandatory refactor simply to lower a call count |
+| Priority                 | Findings                                               | Proposed treatment                                                                                                        |
+| ------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| High                     | E12-F01, E12-F02, alongside earlier E11 findings       | Correct callback acknowledgement/lifecycle behaviour with deterministic races before performance work                     |
+| Medium                   | E16-F01; E12-F03                                       | Fix coherent read semantics and preserve actual diagnostic causes                                                         |
+| Conditional optimisation | E16-F02, E15-F01                                       | Consolidate identity lookup; avoid identical context updates only with correct outcome distinction and measurable benefit |
+| Low                      | E13-F01, E16-F03                                       | Avoid malformed-proof config loading and unnecessary prompt-text transfer if worthwhile                                   |
+| Retain                   | E14 and the stated correct portions of other endpoints | No mandatory refactor simply to lower a call count                                                                        |
 
 These are review recommendations, not accepted implementation tasks. API owns service/query/HTTP corrections. Database owns any canonical trigger or schema/index change. No new Gateway, Background, queue, outbox, caching service or infrastructure mechanism is justified by this batch. Do not opportunistically change the category mutation endpoint before its own review. No architecture/task statuses or `_index.md` files were edited.
 
@@ -997,17 +994,17 @@ Recovery policy uses the accepted ARCH-035 policy boundary extended by ARCH-050-
 
 Counts are explicit Prisma model-method calls plus explicit raw-query lock/read calls on successful non-retried paths, including the one authentication lookup. Exclude `$transaction` BEGIN/COMMIT/isolation setup, trigger-internal operations, relation expansion, nested implementation statements, retries, test fixture operations and provider work. They are not measured SQL counts, round trips, duration or capacity. A bulk operation can affect many rows while counting as one client call.
 
-| Entry | Endpoint/path | Source-derived client calls | Transaction |
-|---|---|---:|---|
-| E17 | POST `/v1/merchant/store-category`: new profile + new lineage | 16 | Serializable, 15-second service timeout |
-| E17 | Same endpoint: existing profile/lineage, create a new revision | 14 | Same |
-| E17 | Same endpoint: existing profile/lineage, publish referenced pending draft | 13 | Same |
-| E18 | GET `/v1/merchant/feature-preferences` | 6 | Repeatable Read, no explicit row-update locks |
-| E19 | PUT `/v1/merchant/feature-preferences`: current-revision no-op | 6 | Read Committed, Shop UPDATE + installation SHARE locks |
-| E19 | Same endpoint: m actually changed preferences, m > 0 | 9 + m | Same |
-| E20 | GET `/v1/merchant/recovery-policy` | 5 | Repeatable Read, no explicit row-update locks |
-| E21 | PUT `/v1/merchant/recovery-policy`: create/update | 6 | Interactive transaction with isolation inherited from DB configuration |
-| E21 | Same endpoint: identical replay/default no-op | 5 | Same |
+| Entry | Endpoint/path                                                             | Source-derived client calls | Transaction                                                            |
+| ----- | ------------------------------------------------------------------------- | --------------------------: | ---------------------------------------------------------------------- |
+| E17   | POST `/v1/merchant/store-category`: new profile + new lineage             |                          16 | Serializable, 15-second service timeout                                |
+| E17   | Same endpoint: existing profile/lineage, create a new revision            |                          14 | Same                                                                   |
+| E17   | Same endpoint: existing profile/lineage, publish referenced pending draft |                          13 | Same                                                                   |
+| E18   | GET `/v1/merchant/feature-preferences`                                    |                           6 | Repeatable Read, no explicit row-update locks                          |
+| E19   | PUT `/v1/merchant/feature-preferences`: current-revision no-op            |                           6 | Read Committed, Shop UPDATE + installation SHARE locks                 |
+| E19   | Same endpoint: m actually changed preferences, m > 0                      |                       9 + m | Same                                                                   |
+| E20   | GET `/v1/merchant/recovery-policy`                                        |                           5 | Repeatable Read, no explicit row-update locks                          |
+| E21   | PUT `/v1/merchant/recovery-policy`: create/update                         |                           6 | Interactive transaction with isolation inherited from DB configuration |
+| E21   | Same endpoint: identical replay/default no-op                             |                           5 | Same                                                                   |
 
 E21 does not explicitly set isolation. The API Prisma constructor also supplies no global transaction isolation override. PostgreSQL's documented default is Read Committed, but the deployed database configuration was not inspected; do not record that deployed isolation as measured fact. [B05-S14:99–122; B05-S37:12–17; external semantics T1/T2 below]
 
@@ -1080,6 +1077,7 @@ The revision depends on Subscription, BillingPlan, mappings, Feature fields and 
 `include` loads full Subscription, BillingPlan, BillingPlanFeature and related Feature scalar records. A separate query also loads full active Feature records. The service does not need subscription provider/reconciliation fields, billing pricing/credit-pack fields, mapping `configuration` JSON, or full nested Feature descriptions. Preferences need only featureId, enabled and updatedAt.
 
 Use explicit projections retaining every fingerprint and Shared-selector input:
+
 - Subscription: id/status/planId; plan: id/active/updatedAt.
 - Plan mappings: featureId/enabled; related Feature: active/updatedAt.
 - Active catalogue: id/key/displayName/description/active/activationMode/systemRequired/updatedAt, with existing ordering.
@@ -1217,12 +1215,12 @@ These services do not automatically retry those failures. Do not add blind retri
 
 ## Validation, existing evidence and limits
 
-| Area | Existing inspected evidence | Required extension for the proposed change |
-|---|---|---|
-| Category selection | First/replacement, concurrent generation winner, rollback on template drift, unchanged billing/credentials; dedicated runner uses db push | Canonical migrations; fresh vs existing lineage; pending-draft conditional update; missing/foreign/published draft; rollback; explicit call assertions and actual SQL measurements |
-| Feature GET | Eligibility flags, hash changes, no writes, invalid principal/plan; migration-backed runner | Stable multi-table snapshot during global edits; narrowed projection preserves byte-for-byte response/revision; joined identity checks; actual SQL/row-transfer measurements |
-| Feature PUT | One-winner merchant race, no-op/current revision, stale requests, mapping drift between requests, system-required denial; migration-backed runner | Late failure in multiple changes rolls back all; realistic/boundary changeset load; coordinated global edit between reads; correct before/after timing; conflict cause preservation |
-| Policy GET/PUT | Defaults, notification-only edits, identical replay, one-winner stale race, admin override/expiry, stale credential; migration-backed cross-domain runner | Narrow projection and joined GET identity equivalence; error-cause route/service test; overlap with override changes; preserved no-op/default/timestamp behaviour |
+| Area               | Existing inspected evidence                                                                                                                               | Required extension for the proposed change                                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Category selection | First/replacement, concurrent generation winner, rollback on template drift, unchanged billing/credentials; dedicated runner uses db push                 | Canonical migrations; fresh vs existing lineage; pending-draft conditional update; missing/foreign/published draft; rollback; explicit call assertions and actual SQL measurements  |
+| Feature GET        | Eligibility flags, hash changes, no writes, invalid principal/plan; migration-backed runner                                                               | Stable multi-table snapshot during global edits; narrowed projection preserves byte-for-byte response/revision; joined identity checks; actual SQL/row-transfer measurements        |
+| Feature PUT        | One-winner merchant race, no-op/current revision, stale requests, mapping drift between requests, system-required denial; migration-backed runner         | Late failure in multiple changes rolls back all; realistic/boundary changeset load; coordinated global edit between reads; correct before/after timing; conflict cause preservation |
+| Policy GET/PUT     | Defaults, notification-only edits, identical replay, one-winner stale race, admin override/expiry, stale credential; migration-backed cross-domain runner | Narrow projection and joined GET identity equivalence; error-cause route/service test; overlap with override changes; preserved no-op/default/timestamp behaviour                   |
 
 The feature runner generates Prisma and deploys migrations before running its dedicated suite. The cross-domain policy runner also generates Prisma and deploys migrations. They must not be mislabelled db-push tests merely because category selection uses the older installation harness. [B05-S34:35–42; B05-S35:13–16, 54–66; B05-S33:54–79]
 
@@ -1234,14 +1232,14 @@ Completed verification: actual route/service/helper/test/migration/task inspecti
 
 ## Priority and ownership
 
-| Priority | Finding | Recommendation |
-|---|---|---|
-| Medium | E19-F03; B05-X02/E21-F01 | Correct timing attribution and preserve original handled database errors before relying on diagnostics |
-| Bounded optimisation | E17-F01/F02 | Remove two history reads only for a newly created lineage; fold referenced-draft check into guarded update |
-| Measurement-led | E18-F01/F02; E20-F01 | Narrow projections; combine read-only identity queries without changing snapshot/authorization semantics |
-| Conditional performance work | E19-F01/F02 | Measure actual change counts and transaction cost; choose bounded batching and coherent entitlement contract, not blind reread removal |
-| Acceptance prerequisite | E17-F03 | Canonical migration-backed category mutation coverage |
-| Retain | E18/E20 snapshot reads; E21 mutation flow; E17 publication transaction | Avoid refactoring correct behaviour solely to lower a headline query count |
+| Priority                     | Finding                                                                | Recommendation                                                                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Medium                       | E19-F03; B05-X02/E21-F01                                               | Correct timing attribution and preserve original handled database errors before relying on diagnostics                                 |
+| Bounded optimisation         | E17-F01/F02                                                            | Remove two history reads only for a newly created lineage; fold referenced-draft check into guarded update                             |
+| Measurement-led              | E18-F01/F02; E20-F01                                                   | Narrow projections; combine read-only identity queries without changing snapshot/authorization semantics                               |
+| Conditional performance work | E19-F01/F02                                                            | Measure actual change counts and transaction cost; choose bounded batching and coherent entitlement contract, not blind reread removal |
+| Acceptance prerequisite      | E17-F03                                                                | Canonical migration-backed category mutation coverage                                                                                  |
+| Retain                       | E18/E20 snapshot reads; E21 mutation flow; E17 publication transaction | Avoid refactoring correct behaviour solely to lower a headline query count                                                             |
 
 API owns query/service/test/diagnostic changes. Database owns canonical migrations if a later validated proposal genuinely needs one; no schema change is requested now. Admin code was read only to establish independent global catalogue writers; no Admin implementation task is created. Shared retains capability selection and generic logging, not application Prisma orchestration. No new infrastructure or system-test task is materialised during this assessment.
 
@@ -1275,13 +1273,13 @@ The clearest avoidable-work finding is in message pagination: a 51-row lookahead
 
 Counts below are explicit Prisma model-method and raw SQL invocation counts in the inspected successful, non-retried route. Each authenticated request contributes one authenticator model call. Counts exclude transaction-control statements, nested relation-query expansion, database-trigger work, retries and HTTP logging. They are not measured SQL statements, network round trips, rows examined or latency estimates.
 
-| Entry | Endpoint | Current explicit calls including authentication | Transaction recommendation |
-|---|---|---:|---|
-| E22 | GET `/v1/merchant/ai-response-delay` | 4, with or without a settings row | Retain the existing non-locking Repeatable Read snapshot while consolidating reads |
-| E23 | PUT `/v1/merchant/ai-response-delay` | 5 actual change/create; 4 valid no-op or revision conflict | Retain mutation transaction and current lock order |
-| E24 | GET `/v1/merchant/recoveries` | 5, including current zero-result path | Retain exact-count/page snapshot; skip page fetch when total is zero |
-| E25 | GET `/v1/merchant/recoveries/:id` | 5 without verified-inbound query; 6 when conversation and initial sentAt require it | Retain coherent summary snapshot and domain evidence queries |
-| E26 | GET `/v1/merchant/recoveries/:id/messages` | 8 nonempty page; 5 empty existing conversation; 4 no conversation | Retain snapshot; use lookahead/bounded existence and a narrow ownership projection |
+| Entry | Endpoint                                   |                                     Current explicit calls including authentication | Transaction recommendation                                                         |
+| ----- | ------------------------------------------ | ----------------------------------------------------------------------------------: | ---------------------------------------------------------------------------------- |
+| E22   | GET `/v1/merchant/ai-response-delay`       |                                                   4, with or without a settings row | Retain the existing non-locking Repeatable Read snapshot while consolidating reads |
+| E23   | PUT `/v1/merchant/ai-response-delay`       |                          5 actual change/create; 4 valid no-op or revision conflict | Retain mutation transaction and current lock order                                 |
+| E24   | GET `/v1/merchant/recoveries`              |                                               5, including current zero-result path | Retain exact-count/page snapshot; skip page fetch when total is zero               |
+| E25   | GET `/v1/merchant/recoveries/:id`          | 5 without verified-inbound query; 6 when conversation and initial sentAt require it | Retain coherent summary snapshot and domain evidence queries                       |
+| E26   | GET `/v1/merchant/recoveries/:id/messages` |                   8 nonempty page; 5 empty existing conversation; 4 no conversation | Retain snapshot; use lookahead/bounded existence and a narrow ownership projection |
 
 An absent or foreign recovery returns not-found after four calls including authentication. Route-rejected malformed requests are separate paths and are not included in successful-path counts. Proposed call reductions in different findings must not be added together without specifying the combined implementation; narrowing a projection alone does not reduce a model call.
 
@@ -1431,12 +1429,12 @@ The 51st fetched row is sliced away without deriving a navigation flag. Both cou
 
 Proposed behaviour, inside the same snapshot:
 
-| Navigation | Infer from the page fetch | Additional navigation lookup |
-|---|---|---|
-| `first` | No previous page; 51st row means next page | None |
-| `latest` | No next page; 51st row means previous page | None |
-| `next` | 51st row means another next page | Bounded existence of a row before the first returned row |
-| `previous` | 51st row means another previous page | Bounded existence of a row after the last returned row |
+| Navigation | Infer from the page fetch                  | Additional navigation lookup                             |
+| ---------- | ------------------------------------------ | -------------------------------------------------------- |
+| `first`    | No previous page; 51st row means next page | None                                                     |
+| `latest`   | No next page; 51st row means previous page | None                                                     |
+| `next`     | 51st row means another next page           | Bounded existence of a row before the first returned row |
+| `previous` | 51st row means another previous page       | Bounded existence of a row after the last returned row   |
 
 Use the same lexicographic predicates, timestamps, ID ordering, conversation scope and returned-page boundary. The opposite-direction query must remain for arbitrary, stale or deleted-row cursor boundaries; do not infer that the cursor row still exists. Preserve the current empty-page response. An EXISTS or ID-only first-match query expresses the Boolean requirement without counting every qualifying row; actual performance still requires query plans. [B06-S13:43–47, 92–124; T06-03]
 
@@ -1476,13 +1474,13 @@ The relevant list and transcript indexes already exist in the schema and ARCH-01
 
 ## Priorities, ownership and stop boundary
 
-| Priority | Recommendation | Expected evidence before acceptance |
-|---|---|---|
-| 1 | E26 navigation lookahead/existence and narrow message ownership projection | Migrated multi-page tests, unchanged cursors/content checks, actual SQL/plan comparison |
-| 2 | E23 original-cause preservation and aggregate-suite inclusion | Injected handled Prisma error retains safe diagnostics; dedicated suite remains callable and included |
-| 3 | E24 zero-result short-circuit | No page query after zero count; exact response/tenant/date semantics unchanged |
-| 4 | Read-only identity consolidation and delay-field projection | One actual joined identity read where intended, complete checks and snapshot preserved |
-| 5 | Representative deep-list/search and history/moderation measurements | Measured plans/rows/buffers/timing; no speculative index or cache |
+| Priority | Recommendation                                                             | Expected evidence before acceptance                                                                   |
+| -------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 1        | E26 navigation lookahead/existence and narrow message ownership projection | Migrated multi-page tests, unchanged cursors/content checks, actual SQL/plan comparison               |
+| 2        | E23 original-cause preservation and aggregate-suite inclusion              | Injected handled Prisma error retains safe diagnostics; dedicated suite remains callable and included |
+| 3        | E24 zero-result short-circuit                                              | No page query after zero count; exact response/tenant/date semantics unchanged                        |
+| 4        | Read-only identity consolidation and delay-field projection                | One actual joined identity read where intended, complete checks and snapshot preserved                |
+| 5        | Representative deep-list/search and history/moderation measurements        | Measured plans/rows/buffers/timing; no speculative index or cache                                     |
 
 All proposed code/test changes are owned by `moda_api`. Any later evidence-backed index change belongs to `moda_database`. Existing PostgreSQL infrastructure and shared logging are sufficient for these recommendations; no new gateway, queue, worker or telemetry transport is justified. No task was created, reopened, accepted, materialised or pushed in this increment. This remains a review record for the final consolidated report.
 
@@ -1539,13 +1537,13 @@ Optimisation opportunities are narrower: use the related-page lookahead instead 
 
 Count explicit Prisma model-method calls and raw queries/statements on successful, non-retried branches, including HTTP installation authentication. Transaction setup/commit, implicit relation expansion, trigger queries and connection acquisition are excluded. A global-client configuration lookup inside the callback is counted separately from transaction-client calls. These are not measured SQL counts, round trips, timings or capacity claims.
 
-| Entry | Route | Source-level calls | Transaction decision |
-|---|---|---:|---|
-| E27 | GET `/v1/merchant/recoveries/:id/related` | 7 nonempty page; 5 empty related page; 4 missing customer or owned recovery absent | Retain Repeatable Read ownership/page snapshot |
-| E28 | GET `/v1/merchant/recovery-summary` | 5 | Currently no transaction; no writes. Consider one coherent narrow SQL projection rather than adding locks |
-| E29 | POST `/v1/merchant/conversations/:id/messages` | 11 new HUMAN_TEXT; 16 new follow-up with DB-backed sender configuration (15 with a static sender); 5 replay | Retain Read Committed admission/claim/command transaction |
-| E30 | GET `/v1/merchant/conversations/:id/send-commands/:commandId` | 6 for existing command; 5 if owned conversation exists but command does not | Retain Repeatable Read command/assessment snapshot; assess installation share lock separately |
-| E31 | GET `/v1/merchant/conversations/:id/follow-up-templates` | 12 full path with DB-backed sender configuration (11 static); 4 when control/recovery status rejects immediately | Retain snapshot; make configuration participation explicit; assess installation share lock |
+| Entry | Route                                                         |                                                                                               Source-level calls | Transaction decision                                                                                      |
+| ----- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------: | --------------------------------------------------------------------------------------------------------- |
+| E27   | GET `/v1/merchant/recoveries/:id/related`                     |                               7 nonempty page; 5 empty related page; 4 missing customer or owned recovery absent | Retain Repeatable Read ownership/page snapshot                                                            |
+| E28   | GET `/v1/merchant/recovery-summary`                           |                                                                                                                5 | Currently no transaction; no writes. Consider one coherent narrow SQL projection rather than adding locks |
+| E29   | POST `/v1/merchant/conversations/:id/messages`                |      11 new HUMAN_TEXT; 16 new follow-up with DB-backed sender configuration (15 with a static sender); 5 replay | Retain Read Committed admission/claim/command transaction                                                 |
+| E30   | GET `/v1/merchant/conversations/:id/send-commands/:commandId` |                                      6 for existing command; 5 if owned conversation exists but command does not | Retain Repeatable Read command/assessment snapshot; assess installation share lock separately             |
+| E31   | GET `/v1/merchant/conversations/:id/follow-up-templates`      | 12 full path with DB-backed sender configuration (11 static); 4 when control/recovery status rejects immediately | Retain snapshot; make configuration participation explicit; assess installation share lock                |
 
 E27 absent recovery returns 404 at the route; no customer returns a valid empty related list. E29 replay returns the current original command with 200, not a new command. E31 can return an empty list at many earlier eligibility gates; 12 is the complete catalogue path, not every request.
 
@@ -1567,11 +1565,11 @@ Retain the snapshot, scoped cursor validation and integrity gates. The existing 
 
 Use lookahead to decide the cursor in the fetched direction. The initial page cannot have a newer page. For a next or previous request, use one bounded existence query for the opposite direction rather than counting the complete matching set.
 
-| Navigation | Previous/newer flag | Next/older flag | Proposed nonempty endpoint calls |
-|---|---|---|---:|
-| First | false | sixth row exists | 5, down from 7 |
-| Next | bounded newer-row existence | sixth row exists | 6, down from 7 |
-| Previous | sixth row exists | bounded older-row existence | 6, down from 7 |
+| Navigation | Previous/newer flag         | Next/older flag             | Proposed nonempty endpoint calls |
+| ---------- | --------------------------- | --------------------------- | -------------------------------: |
+| First      | false                       | sixth row exists            |                   5, down from 7 |
+| Next       | bounded newer-row existence | sixth row exists            |                   6, down from 7 |
+| Previous   | sixth row exists            | bounded older-row existence |                   6, down from 7 |
 
 Do not assume a supplied boundary row still exists. Preserve empty-page behaviour (both cursors null), timestamp/ID comparisons, tenant/customer predicates, exclusion of the anchor recovery, and cursor format. This proposal excludes any separate identity-read consolidation.
 
@@ -1633,24 +1631,24 @@ For a new command it checks HUMAN control/revision, merchant restriction, active
 
 A template command additionally inserts sequence two if absent, locks/validates it, claims it conditionally and creates the command referencing that exact attempt, all in one transaction. Do not create sequence three or a second conversation/ledger. [B07-S11:151–192]
 
-| Step | HUMAN_TEXT | Template (DB-backed sender) | Replay |
-|---|---:|---:|---:|
-| HTTP authentication | 1 | 1 | 1 |
-| Transaction Shop/installation validation | 2 | 2 | 2 |
-| Owned conversation/recovery | 1 | 1 | 1 |
-| Prior command by shop/key | 1 | 1 | 1 |
-| Restriction | 1 | 1 | 0 |
-| Subscription/entitlement projection | 1 | 1 | 0 |
-| Initial outreach lock/read | 1 | 1 | 0 |
-| Recipient reachability | 1 | 1 | 0 |
-| Verified inbound | 1 | 1 | 0 |
-| Sender config via root client | 0 | 1 | 0 |
-| Catalogue query via transaction | 0 | 1 | 0 |
-| Ensure sequence two exists | 0 | 1 | 0 |
-| Lock/read sequence two | 0 | 1 | 0 |
-| Conditional sequence-two claim | 0 | 1 | 0 |
-| Command create | 1 | 1 | 0 |
-| **Total** | **11** | **16** | **5** |
+| Step                                     | HUMAN_TEXT | Template (DB-backed sender) | Replay |
+| ---------------------------------------- | ---------: | --------------------------: | -----: |
+| HTTP authentication                      |          1 |                           1 |      1 |
+| Transaction Shop/installation validation |          2 |                           2 |      2 |
+| Owned conversation/recovery              |          1 |                           1 |      1 |
+| Prior command by shop/key                |          1 |                           1 |      1 |
+| Restriction                              |          1 |                           1 |      0 |
+| Subscription/entitlement projection      |          1 |                           1 |      0 |
+| Initial outreach lock/read               |          1 |                           1 |      0 |
+| Recipient reachability                   |          1 |                           1 |      0 |
+| Verified inbound                         |          1 |                           1 |      0 |
+| Sender config via root client            |          0 |                           1 |      0 |
+| Catalogue query via transaction          |          0 |                           1 |      0 |
+| Ensure sequence two exists               |          0 |                           1 |      0 |
+| Lock/read sequence two                   |          0 |                           1 |      0 |
+| Conditional sequence-two claim           |          0 |                           1 |      0 |
+| Command create                           |          1 |                           1 |      0 |
+| **Total**                                |     **11** |                      **16** |  **5** |
 
 With a static sender stub, template total is 15. The sender lookup is awaited inside the callback but is NOT made on `tx`: see E31-F01. The transaction is necessary even for the one-write text branch because authorization/control and mutable policy reads are coordinated; the Shop lock also fences the absent restriction-row case. Do not trade away this coordination for a smaller count.
 
@@ -1776,15 +1774,15 @@ Do not push a generic LIMIT 30 ahead of collision/overflow detection, replace LE
 
 ## Cross-endpoint priorities and ownership
 
-| Priority | Finding | Reason | Ownership |
-|---|---|---|---|
-| High | E30-F01 | Status does not match canonical prepared-content moderation | API correction; canonical Database/Background compatibility tests |
-| High | E29-F01 | Tenant-scoped public key can collide in global claim identity | Architect-coordinated producer/consumer/schema decision; API and Background at minimum |
-| High investigation | E31-F01 / F02 | Extra connection while locks are held; dependency failure reported as no choice | API configuration and merchant services; preserve Shared security/logging |
-| Medium | E27-F01 / F02 | Unnecessary exact counts and summary data on a paginated read | API |
-| Medium | E29-F02 / F04 | Conditional claim result reuse; original conflict evidence | API |
-| Lower | E28-F01 / E29-F03 / E30-F02 | Read consolidation/projection narrowing | API; measure workloads |
-| Contract-dependent | E30-F03 / E31-F03 | Read-only installation share locks | API; concurrency validation before removal |
+| Priority           | Finding                     | Reason                                                                          | Ownership                                                                              |
+| ------------------ | --------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| High               | E30-F01                     | Status does not match canonical prepared-content moderation                     | API correction; canonical Database/Background compatibility tests                      |
+| High               | E29-F01                     | Tenant-scoped public key can collide in global claim identity                   | Architect-coordinated producer/consumer/schema decision; API and Background at minimum |
+| High investigation | E31-F01 / F02               | Extra connection while locks are held; dependency failure reported as no choice | API configuration and merchant services; preserve Shared security/logging              |
+| Medium             | E27-F01 / F02               | Unnecessary exact counts and summary data on a paginated read                   | API                                                                                    |
+| Medium             | E29-F02 / F04               | Conditional claim result reuse; original conflict evidence                      | API                                                                                    |
+| Lower              | E28-F01 / E29-F03 / E30-F02 | Read consolidation/projection narrowing                                         | API; measure workloads                                                                 |
+| Contract-dependent | E30-F03 / E31-F03           | Read-only installation share locks                                              | API; concurrency validation before removal                                             |
 
 No new infrastructure, outbox, queue, database index or schema migration is approved by this record. E29-F01 may require Database and Shared work depending on the chosen identity contract; the report deliberately does not prescribe an isolated API patch. No accepted task has been reopened or silently reclassified by this static review.
 
@@ -1840,13 +1838,13 @@ For the knowledge command rows, `R` is the full first-page post-commit read proj
 
 An absent/static upload-configuration reader removes one call from R. Other entitlement/feature states can skip further calls; these are conditional examples, not universal totals. A later GET page also counts preceding eligible sources. Writes can race with the later best-effort response and therefore change its branch. [B08-S02:38–75,102–115,129–213]
 
-| Entry | Method/path | Current explicit calls | Decision |
-|---|---|---|---|
-| E32 | POST `/v1/merchant/conversations/:id/control` | 7 changed to HUMAN; 6 changed to AI; 5 current-revision HUMAN no-op; 4 AI no-op | Retain transaction, locks, revision checks and audit; preserve handled causes |
-| E33 | GET `/v1/merchant/merchant-knowledge` | 13 first page / 14 later page when ACTIVE evidence is found; 12 / 13 if page nonempty but no ACTIVE evidence; 11 empty first page | Preserve explicit best-effort/no-transaction design; consolidate ACTIVE lookup |
-| E34 | POST `/v1/merchant/merchant-knowledge/sources` | `1 authentication + 11 transaction + R`; exact duplicate `1 + 9 + R` | Keep source/revision atomicity and post-commit boundary; reduce common guard work |
-| E35 | PATCH `/v1/merchant/merchant-knowledge/sources/:id` | `1 + 8 + R` no-op; `1 + 9 + R` metadata; `1 + 10 + R` URL change | Strengthen generation predicate; retain no-op/metadata semantics |
-| E36 | DELETE `/v1/merchant/merchant-knowledge/sources/:id` | `1 + (9 + 2n) + R`, with n surviving sources | Strengthen generation predicate; compact only necessary positions, preferably in bounded batches |
+| Entry | Method/path                                          | Current explicit calls                                                                                                            | Decision                                                                                         |
+| ----- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| E32   | POST `/v1/merchant/conversations/:id/control`        | 7 changed to HUMAN; 6 changed to AI; 5 current-revision HUMAN no-op; 4 AI no-op                                                   | Retain transaction, locks, revision checks and audit; preserve handled causes                    |
+| E33   | GET `/v1/merchant/merchant-knowledge`                | 13 first page / 14 later page when ACTIVE evidence is found; 12 / 13 if page nonempty but no ACTIVE evidence; 11 empty first page | Preserve explicit best-effort/no-transaction design; consolidate ACTIVE lookup                   |
+| E34   | POST `/v1/merchant/merchant-knowledge/sources`       | `1 authentication + 11 transaction + R`; exact duplicate `1 + 9 + R`                                                              | Keep source/revision atomicity and post-commit boundary; reduce common guard work                |
+| E35   | PATCH `/v1/merchant/merchant-knowledge/sources/:id`  | `1 + 8 + R` no-op; `1 + 9 + R` metadata; `1 + 10 + R` URL change                                                                  | Strengthen generation predicate; retain no-op/metadata semantics                                 |
+| E36   | DELETE `/v1/merchant/merchant-knowledge/sources/:id` | `1 + (9 + 2n) + R`, with n surviving sources                                                                                      | Strengthen generation predicate; compact only necessary positions, preferably in bounded batches |
 
 Example: an initial fresh create, with its only revision still PENDING, makes 23 calls under these assumptions (1 + 11 + 11). A changed metadata patch whose response contains ACTIVE evidence makes 22 (1 + 9 + 12). Deleting one of 100 sources while the response still has ACTIVE evidence makes 220 calls (1 + 9 + 198 + 12); 198 are survivor position updates. These are source-derived examples, not traffic observations. Shared currently allows 1–100 entitled knowledge sources; the create helper separately refuses new rows when total retained sources reaches 1,000. Do not confuse an eligible-source limit with a claim that all retained rows remain eligible. [B08-S03:79–88,106–174; S39:45–55]
 
@@ -2078,13 +2076,13 @@ Counts are explicit Prisma model calls and raw-query calls on successful, non-re
 
 `R` means the ordinary full first-page knowledge response after a web command commits, without another HTTP-authentication call. With valid entitlement, at least one allowed pair, an active feature, and database-backed upload policy, R is 10 for an empty page, 11 for a nonempty page without ACTIVE evidence, or 12 with ACTIVE evidence. Other entitlement/configuration branches differ. This is the unchanged source count, not the count after proposed prior-increment improvements. [B09-S04:129–218]
 
-| Entry | Endpoint | Current explicit calls | Transaction decision |
-|---|---|---|---|
-| E37 | POST `/v1/merchant/merchant-knowledge/sources/:id/refresh` | 1 + 10 + R when appending; 1 + 8 + R when current work is PENDING/PROCESSING | Retain generation + revision atomicity |
-| E38 | PUT `/v1/merchant/merchant-knowledge/order` | 1 + 8 + 2n + R when rewriting n sources; 1 + 8 + R when already compacted and identical | Retain whole-list atomicity and merchant coordination |
-| E39 | POST `/v1/merchant/merchant-knowledge/upload-intents` | 9 new; 7 valid pending replay | Retain count/insert/identity coordination; sign after commit |
-| E40 | POST `/v1/merchant/merchant-knowledge/upload-finalize` | 16 new source; 17 replacement; 8 already-AVAILABLE replay; 12 when another finaliser wins during verification | Retain short phases around external verification; fix final asset-state coordination |
-| E41 | PATCH `/v1/merchant/merchant-knowledge/uploads/:id` | 8, including identical metadata | Retain authenticated coordinated write; no R2/configuration dependency required |
+| Entry | Endpoint                                                   | Current explicit calls                                                                                        | Transaction decision                                                                 |
+| ----- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| E37   | POST `/v1/merchant/merchant-knowledge/sources/:id/refresh` | 1 + 10 + R when appending; 1 + 8 + R when current work is PENDING/PROCESSING                                  | Retain generation + revision atomicity                                               |
+| E38   | PUT `/v1/merchant/merchant-knowledge/order`                | 1 + 8 + 2n + R when rewriting n sources; 1 + 8 + R when already compacted and identical                       | Retain whole-list atomicity and merchant coordination                                |
+| E39   | POST `/v1/merchant/merchant-knowledge/upload-intents`      | 9 new; 7 valid pending replay                                                                                 | Retain count/insert/identity coordination; sign after commit                         |
+| E40   | POST `/v1/merchant/merchant-knowledge/upload-finalize`     | 16 new source; 17 replacement; 8 already-AVAILABLE replay; 12 when another finaliser wins during verification | Retain short phases around external verification; fix final asset-state coordination |
+| E41   | PATCH `/v1/merchant/merchant-knowledge/uploads/:id`        | 8, including identical metadata                                                                               | Retain authenticated coordinated write; no R2/configuration dependency required      |
 
 E39/E40 include one production PlatformConfiguration lookup. Injected static configuration removes that one call. No full knowledge-response refresh is performed by E39–E41. E41 does not call the upload configuration reader. [B09-S05:96–261; B09-S07:53–64; B09-S12:59–74, 95–98; B09-S13:27–48]
 
@@ -2357,16 +2355,16 @@ Intent/finalise configuration is read before starting transactions; there is no 
 
 ## Priority, ownership and execution boundaries
 
-| Priority | Recommendation | Owners / coordination |
-|---|---|---|
-| High | E40-F01 final asset gate coordinated with cleanup | API implementation; Background lifecycle/lock review and integrated regression; Database only if invariant strengthening is required |
-| Medium/high | E40-F02 stable original-intake replay identity | API; Database only if provenance uniqueness cannot be guaranteed without schema support |
-| Medium | E39-F01 durable purpose binding matching published retry contract | API + bounded Database-owned storage decision |
-| Medium | E40-F03 reapply current MIME policy after R2 | API; no new query required |
-| Medium | E37-F01 / E40-F04 mutation-bound generation checks | API, validated against actual Background writer |
-| Medium | E38 moving-row-only ordering and narrow projection | API; migrated constraint/rollback tests |
-| Medium | E41 bounded existing-source eligibility / shared web-helper savings | API; preserve distinct new-source allocation and read projection |
-| Low/measurement-led | E39 expiry-count index; E41 no-op timestamp suppression; preliminary finalise lock reduction | Query/behaviour measurements first; Database owns any index change |
+| Priority            | Recommendation                                                                               | Owners / coordination                                                                                                                |
+| ------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| High                | E40-F01 final asset gate coordinated with cleanup                                            | API implementation; Background lifecycle/lock review and integrated regression; Database only if invariant strengthening is required |
+| Medium/high         | E40-F02 stable original-intake replay identity                                               | API; Database only if provenance uniqueness cannot be guaranteed without schema support                                              |
+| Medium              | E39-F01 durable purpose binding matching published retry contract                            | API + bounded Database-owned storage decision                                                                                        |
+| Medium              | E40-F03 reapply current MIME policy after R2                                                 | API; no new query required                                                                                                           |
+| Medium              | E37-F01 / E40-F04 mutation-bound generation checks                                           | API, validated against actual Background writer                                                                                      |
+| Medium              | E38 moving-row-only ordering and narrow projection                                           | API; migrated constraint/rollback tests                                                                                              |
+| Medium              | E41 bounded existing-source eligibility / shared web-helper savings                          | API; preserve distinct new-source allocation and read projection                                                                     |
+| Low/measurement-led | E39 expiry-count index; E41 no-op timestamp suppression; preliminary finalise lock reduction | Query/behaviour measurements first; Database owns any index change                                                                   |
 
 No new infrastructure service, queue, external store, mandatory schema migration, task definition or API breaking change has been approved in this increment. Potential purpose/intake storage changes require an explicit design decision. Existing runtime mechanisms are inspected rather than replaced. No task is accepted/reopened and no branch/worktree/commit/push is claimed.
 
@@ -2403,13 +2401,13 @@ The two promotion endpoints concern Moda promotional recovery credits, not Woo c
 
 Counts include one installation-authentication model call where the route uses the authenticator. A call is an explicit Prisma model method or raw-query invocation, not a SQL statement, returned-row count or network round trip. Transaction control, nested relation expansion, SQL triggers, retries, driver/pool operations and asynchronous workers are excluded. A single ORM call may emit several statements; narrower projections or nested upsert results can change that expansion. Costs are successful-path source deductions, not measurements.
 
-| Entry | Endpoint | Explicit calls | Transaction and principal boundary |
-|---|---|---:|---|
-| E42 | POST `/v1/merchant/merchant-knowledge/uploads/:id/reprocess` | 10 | Authentication + 7 preflight reads, then a 2-write transaction; isolation not explicitly selected |
-| E43 | GET `/v1/merchant/promotions` | 9 | Repeatable Read; no explicit row locks on the read helper path |
-| E44 | PUT `/v1/merchant/promotions/selection` | 10 actual selection; 6 accepted identical replay | Serializable, 12 s transaction timeout; at most 3 transaction attempts for P2002/P2034 |
-| E45 | GET `/v1/merchant/discount-catalogue` | `5 + b`, ordinarily 6 | Repeatable Read; `b >= 1` coupon batches of up to 100 rows, not one query per returned coupon |
-| E46 | GET `/v1/merchant/discount-offers` | 7 | Repeatable Read; saved settings readable without a CURRENT catalogue |
+| Entry | Endpoint                                                     |                                   Explicit calls | Transaction and principal boundary                                                                |
+| ----- | ------------------------------------------------------------ | -----------------------------------------------: | ------------------------------------------------------------------------------------------------- |
+| E42   | POST `/v1/merchant/merchant-knowledge/uploads/:id/reprocess` |                                               10 | Authentication + 7 preflight reads, then a 2-write transaction; isolation not explicitly selected |
+| E43   | GET `/v1/merchant/promotions`                                |                                                9 | Repeatable Read; no explicit row locks on the read helper path                                    |
+| E44   | PUT `/v1/merchant/promotions/selection`                      | 10 actual selection; 6 accepted identical replay | Serializable, 12 s transaction timeout; at most 3 transaction attempts for P2002/P2034            |
+| E45   | GET `/v1/merchant/discount-catalogue`                        |                            `5 + b`, ordinarily 6 | Repeatable Read; `b >= 1` coupon batches of up to 100 rows, not one query per returned coupon     |
+| E46   | GET `/v1/merchant/discount-offers`                           |                                                7 | Repeatable Read; saved settings readable without a CURRENT catalogue                              |
 
 E45's incomplete/missing catalogue rejection occurs after 4 calls including authentication, before coupon batches/settings lookup. Rejected/early-return paths elsewhere can cost less than the successful paths above. No unverified latency percentage is derived from these numbers.
 
@@ -2529,10 +2527,10 @@ An exploratory policy is first batch limit+1 and subsequent fallback batches 100
 
 The review-only boolean-deliverability model ran 43,865 cases with zero item/cursor/hasMore mismatches. It also demonstrates the trade-off:
 
-| Synthetic ordered input, limit 25 | Current fixed-100 | Exploratory first-26 then-100 |
-|---|---|---|
-| 1,000 usable rows | 1 query, 100 fetched rows | 1 query, 26 fetched rows |
-| 10 unusable then 990 usable | 1 query, 100 fetched rows | 2 queries, 126 fetched rows |
+| Synthetic ordered input, limit 25 | Current fixed-100         | Exploratory first-26 then-100 |
+| --------------------------------- | ------------------------- | ----------------------------- |
+| 1,000 usable rows                 | 1 query, 100 fetched rows | 1 query, 26 fetched rows      |
+| 10 unusable then 990 usable       | 1 query, 100 fetched rows | 2 queries, 126 fetched rows   |
 
 The candidate had extra queries in 9,578 model cases and fetched more rows in 507; these are counts over a deliberately constructed test set, not workload frequencies. No unconditional adoption is recommended. Measure SQL duration, transfer volume and pool time for clean and legacy-invalid distributions first. The model excludes JavaScript/Unicode safety predicates, actual database collation, Prisma, authorization, snapshots and concurrency.
 
@@ -2568,12 +2566,12 @@ Missing/SYNC_REQUIRED/SYNCING/ERROR/UNAVAILABLE catalogue state does not make th
 
 The GET loads whole catalogue, settings and override rows. Its actual projection needs:
 
-| Record | Fields consumed by this read |
-|---|---|
-| Catalogue | status, syncGeneration, updatedAt |
-| ShopSettings | recoveryOfferMode, updatedAt |
-| ShopRecoveryPolicyOverride | recoveryOfferMode, expiresAt |
-| Selected Woo coupons | id; already narrow |
+| Record                     | Fields consumed by this read      |
+| -------------------------- | --------------------------------- |
+| Catalogue                  | status, syncGeneration, updatedAt |
+| ShopSettings               | recoveryOfferMode, updatedAt      |
+| ShopRecoveryPolicyOverride | recoveryOfferMode, expiresAt      |
+| Selected Woo coupons       | id; already narrow                |
 
 Narrow the GET/projection reads without stripping fields needed by separately owned write checks in the later Save review. Keep the raw absence/default handling, override expiry and revision token exact. Savings concern result size, not the seven-call total.
 
@@ -2599,15 +2597,15 @@ This increment actually performed:
 
 No application tests, migration execution, PostgreSQL queries, EXPLAIN plans, live provider traffic, pool stress or latency benchmark was run. In this environment API node_modules, Docker and psql are absent. Available Node is v22.16.0; the repository declares 24.19.0. No runtime was installed or silently substituted. No library/package change, source edit, branch/worktree materialisation, commit, push, task-state edit or `_index.md` change was made.
 
-| Priority | Next implementation/validation decision | Ownership |
-|---|---|---|
-| Medium | E42 response contract includes implemented 409; test/document sequential retries and preflight-vs-commit gate | API; explicit architecture/client agreement for changed semantics |
-| Medium | E43 empty-page short-circuiting | API; migrated snapshot/query assertions |
-| Medium | E44 retain original exhausted-retry diagnostic | API/shared logger usage, no new generic logger |
-| Medium / measured | E44 final response from write results without increasing emitted SQL | API; concurrency/balance regression and SQL evidence |
-| Medium | E45 variable scan-cost/config-bound evidence | API + Background configuration context; no silent truncation |
-| Medium / shared bounded optimisation | E42/E41 existing-source eligibility and GET identity consolidation | API; preserve exact rank/auth checks |
-| Low / measured | E45 smaller first batch, index candidate; E46 narrow metadata projections | API; Database only for a subsequently justified index |
+| Priority                             | Next implementation/validation decision                                                                       | Ownership                                                         |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Medium                               | E42 response contract includes implemented 409; test/document sequential retries and preflight-vs-commit gate | API; explicit architecture/client agreement for changed semantics |
+| Medium                               | E43 empty-page short-circuiting                                                                               | API; migrated snapshot/query assertions                           |
+| Medium                               | E44 retain original exhausted-retry diagnostic                                                                | API/shared logger usage, no new generic logger                    |
+| Medium / measured                    | E44 final response from write results without increasing emitted SQL                                          | API; concurrency/balance regression and SQL evidence              |
+| Medium                               | E45 variable scan-cost/config-bound evidence                                                                  | API + Background configuration context; no silent truncation      |
+| Medium / shared bounded optimisation | E42/E41 existing-source eligibility and GET identity consolidation                                            | API; preserve exact rank/auth checks                              |
+| Low / measured                       | E45 smaller first batch, index candidate; E46 narrow metadata projections                                     | API; Database only for a subsequently justified index             |
 
 No new infrastructure, queue, schema migration, secret cache or global refactor is approved. Reuse existing test harnesses, Shared logger and ownership boundaries. An implementation task would be separately defined only after the relevant design is agreed.
 
@@ -2643,13 +2641,13 @@ The main opportunities are avoiding unnecessary coupon flag writes, combining us
 
 All counts include the HTTP installation-authentication lookup. Count an explicit Prisma model method or raw database call once; exclude transaction-control commands, relation-query expansion, trigger/foreign-key work, Redis calls, retries, and logging. These are source-derived client-call counts, not measured SQL statements, affected rows, network round trips, or latency.
 
-| Entry | Endpoint | Current successful path | Transaction assessment |
-|---|---|---|---|
-| E47 | PUT `/v1/merchant/discount-offers` | Existing settings: 13 changed nonempty selection; 11 changed empty selection; 10/9 identical nonempty/empty. Creating settings adds one call to the changed path: 14/12. | Retain Shop-coordinated atomic selection/mode/anchor update; isolation is not explicitly set by this method. |
-| E48 | GET `/v1/merchant/usage-history` | Free-current available view: `7 + E`; paid-current available view: `8 + E`; past available view: `9 + C + A + E`. See definitions below. | Retain Repeatable Read and bounded evidence resolution. |
-| E49 | GET `/v1/merchant/support/messages` | 5, including empty/out-of-range pages. | Read Committed, with Shop and installation SHARE locks; not a single support-data snapshot. |
-| E50 | POST `/v1/merchant/support/messages` | 7 new without translation; 8 new with translation; 4 matching replay. | Retain atomic message/thread/PENDING-translation persistence. Redis dispatch stays after commit. |
-| E51 | POST `/v1/merchant/support/messages/:id/read` | 5 fresh mark; 4 existing mark; 6 when another marker wins between initial read and conditional update. | Retain coordinated principal check, conditional write, and original winning timestamp. |
+| Entry | Endpoint                                      | Current successful path                                                                                                                                                  | Transaction assessment                                                                                       |
+| ----- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| E47   | PUT `/v1/merchant/discount-offers`            | Existing settings: 13 changed nonempty selection; 11 changed empty selection; 10/9 identical nonempty/empty. Creating settings adds one call to the changed path: 14/12. | Retain Shop-coordinated atomic selection/mode/anchor update; isolation is not explicitly set by this method. |
+| E48   | GET `/v1/merchant/usage-history`              | Free-current available view: `7 + E`; paid-current available view: `8 + E`; past available view: `9 + C + A + E`. See definitions below.                                 | Retain Repeatable Read and bounded evidence resolution.                                                      |
+| E49   | GET `/v1/merchant/support/messages`           | 5, including empty/out-of-range pages.                                                                                                                                   | Read Committed, with Shop and installation SHARE locks; not a single support-data snapshot.                  |
+| E50   | POST `/v1/merchant/support/messages`          | 7 new without translation; 8 new with translation; 4 matching replay.                                                                                                    | Retain atomic message/thread/PENDING-translation persistence. Redis dispatch stays after commit.             |
+| E51   | POST `/v1/merchant/support/messages/:id/read` | 5 fresh mark; 4 existing mark; 6 when another marker wins between initial read and conditional update.                                                                   | Retain coordinated principal check, conditional write, and original winning timestamp.                       |
 
 Usage-count terms: `C=1` when the current implementation queries a linked current paid period, even for `view=past`, otherwise zero. `A=1` for a supplied valid past-period cursor, which causes a separate anchor validation; otherwise zero. Past available views include one closed-period page query and one selected-period query, whether selected explicitly or by default. `E` is the evidence-resolution work for the returned usage page; it varies with event kinds, correction parents, reservation-derived outreach links, direct source references, and response version. It is zero on an empty usage page. Unavailable/no-selected-period branches return before the three usage queries and the evidence helpers.
 
@@ -2848,12 +2846,12 @@ The final reread is not the same as blindly rereading every update result. It ru
 
 An update-first version could perform the existing conditional UPDATE/RETURNING immediately, and only then fetch the eligible record if no row changed. It saves one call on the first successful mark but costs one on already-read replay (and missing/ineligible IDs):
 
-| Path | Current | Update-first candidate |
-|---|---:|---:|
-| First mark | 5 | 4 |
-| Already read | 4 | 5 |
-| Concurrent loser needing a fresh read | 6 | 5 |
-| Missing/foreign/ineligible | 4 | 5 |
+| Path                                  | Current | Update-first candidate |
+| ------------------------------------- | ------: | ---------------------: |
+| First mark                            |       5 |                      4 |
+| Already read                          |       4 |                      5 |
+| Concurrent loser needing a fresh read |       6 |                      5 |
+| Missing/foreign/ineligible            |       4 |                      5 |
 
 This is not an unconditional optimisation. Choose only after measuring normal-versus-replay frequency and validating two-connection races. Retain exactly the same tenant, state, kind and lifecycle gates in both statements. Do not use an unconditional `UPDATE readAt=COALESCE(readAt,NOW())` as a shortcut: it would execute updates on replays and can touch updatedAt despite the current no-write replay contract.
 
@@ -2900,13 +2898,13 @@ E52–E56: GET `/v1/billing`; GET `/v1/billing/plans`; POST `/v1/billing/subscri
 
 ## Summary and counting rules
 
-| Entry | Endpoint | Current explicit database-client calls on the stated path | Transaction decision |
-|---|---|---:|---|
-| E52 | GET `/v1/billing` | 9 ordinary Free; 10 ordinary paid with cancellation-history check; conditional formula below | Retain Repeatable Read and staged integrity checks |
-| E53 | GET `/v1/billing/plans` | 3 | Retain Repeatable Read; narrow translation rows |
-| E54 | POST `/v1/billing/subscription` | 15 warm successful creation; 8 matching replay | Retain durable intent / provider / guarded outcome separation |
-| E55 | DELETE `/v1/billing/subscription` | 11 successful cancellation; 7 matching replay | Retain coordination and deferred entitlement projection |
-| E56 | POST `/v1/billing/subscription/switch` | 14 warm successful switch; 8 matching replay | Retain same-contract switch and target materialisation |
+| Entry | Endpoint                               |                                    Current explicit database-client calls on the stated path | Transaction decision                                          |
+| ----- | -------------------------------------- | -------------------------------------------------------------------------------------------: | ------------------------------------------------------------- |
+| E52   | GET `/v1/billing`                      | 9 ordinary Free; 10 ordinary paid with cancellation-history check; conditional formula below | Retain Repeatable Read and staged integrity checks            |
+| E53   | GET `/v1/billing/plans`                |                                                                                            3 | Retain Repeatable Read; narrow translation rows               |
+| E54   | POST `/v1/billing/subscription`        |                                               15 warm successful creation; 8 matching replay | Retain durable intent / provider / guarded outcome separation |
+| E55   | DELETE `/v1/billing/subscription`      |                                                11 successful cancellation; 7 matching replay | Retain coordination and deferred entitlement projection       |
+| E56   | POST `/v1/billing/subscription/switch` |                                                 14 warm successful switch; 8 matching replay | Retain same-contract switch and target materialisation        |
 
 Counts include one installation-authentication model call. Recurring command counts additionally include one current sealed platform-configuration lookup as wired by `src/composition/billing.ts:26–30`. Injecting a static provider client removes that one call. Presentation reads do not fetch Woo provider credentials or make provider requests.
 
@@ -3111,7 +3109,6 @@ These support database-mechanism proposals only. They do not establish the appli
 
 E57–E61: recovery-credit-purchase history GET, recovery-credit-purchase POST, Woo billing webhook POST, health liveness GET and health readiness GET. After that last endpoint batch, reconcile the original inventory against actual route registrations and produce the separately consolidated final report, retaining evidence/confidence labels and prioritised implementation/validation work.
 
-
 ---
 
 # Increment 13 — final five endpoints (E57–E61)
@@ -3124,13 +3121,13 @@ E57–E61: recovery-credit-purchase history GET, recovery-credit-purchase POST, 
 
 ## Final-increment summary
 
-| Entry | Method/path | Explicit client calls on identified paths | Decision |
-|---|---|---|---|
-| E57 | GET `/v1/billing/recovery-credit-purchases` | 4, including an empty result | Retain Repeatable Read and exact count; skip empty-page fetch |
-| E58 | POST `/v1/billing/recovery-credit-purchases` | 16 fresh successful provider outcome; 8 matching replay; 14 ordinary provider-rejection/unknown-outcome path | Retain atomic intent and guarded outcome; address principal boundary and repeated results |
-| E59 | POST `/v1/billing/webhooks/woocommerce` | 2 fresh; 3 exact duplicate, with database-backed secret resolution | Retain receipt-only acceptance; duplicate read is justified |
-| E60 | GET `/health/live` | 0 | Retain dependency-independent liveness |
-| E61 | GET `/health/ready` | 1 attempted probe per request | Retain minimal query; bound outstanding work beyond the response deadline |
+| Entry | Method/path                                  | Explicit client calls on identified paths                                                                    | Decision                                                                                  |
+| ----- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| E57   | GET `/v1/billing/recovery-credit-purchases`  | 4, including an empty result                                                                                 | Retain Repeatable Read and exact count; skip empty-page fetch                             |
+| E58   | POST `/v1/billing/recovery-credit-purchases` | 16 fresh successful provider outcome; 8 matching replay; 14 ordinary provider-rejection/unknown-outcome path | Retain atomic intent and guarded outcome; address principal boundary and repeated results |
+| E59   | POST `/v1/billing/webhooks/woocommerce`      | 2 fresh; 3 exact duplicate, with database-backed secret resolution                                           | Retain receipt-only acceptance; duplicate read is justified                               |
+| E60   | GET `/health/live`                           | 0                                                                                                            | Retain dependency-independent liveness                                                    |
+| E61   | GET `/health/ready`                          | 1 attempted probe per request                                                                                | Retain minimal query; bound outstanding work beyond the response deadline                 |
 
 E58/E59 counts each include one configuration read in production composition. A static/injected configuration removes that call. E59 uses HMAC authentication, not installation bearer authentication. Health routes have neither installation authentication nor configuration reads per request.
 

@@ -139,16 +139,16 @@ Create the migration at the reserved path above. Use one explicit `BEGIN`/`COMMI
 
 In addition to the primary keys, unique keys, foreign keys and B-tree index expressed in Prisma, add:
 
-| SQL object | Required predicate or behavior |
-|---|---|
-| `ReferenceTaxonomyGeneration_active_corpus_key` | Partial unique B-tree index on `(environment, source, languageTag) WHERE "isActive" = true`; SQL-only because it is partial. Do not replace it with an unconditional Prisma unique constraint. |
-| `ReferenceTaxonomyGeneration_nonblank_check` | `btrim` of `id`, `source`, `taxonomyVersion`, `languageTag`, `sourceUrl`, `embeddingProvider`, `embeddingModel`, `embeddingIndexVersion` and `embeddingTextVersion` is nonempty. |
-| `ReferenceTaxonomyGeneration_hashes_check` | Both `sourceSha256` and `importFingerprint` match `^[0-9a-f]{64}$`. |
-| `ReferenceTaxonomyGeneration_positive_check` | `embeddingDimensions > 0 AND categoryCount > 0`. |
-| `ReferenceTaxonomyGeneration_activation_check` | `NOT "isActive" OR "activatedAt" IS NOT NULL`. `completedAt` is independently `NOT NULL` for every stored generation. |
-| `ReferenceTaxonomyCategory_identity_check` | Nonblank `generationId`, `categoryId`, `name`, `fullName`; `parentId` is null or nonblank and different from `categoryId`. |
-| `ReferenceTaxonomyCategory_level_check` | `level >= 0`; `cardinality(ancestorIds) = level`; no null ancestor element; `categoryId` does not occur in `ancestorIds`; level zero has null parent; positive level has non-null parent equal to the last ancestor. |
-| `ReferenceTaxonomyCategory_embedding_check` | `embeddingDimensions > 0 AND vector_dims(embedding) = embeddingDimensions`. |
+| SQL object                                      | Required predicate or behavior                                                                                                                                                                                       |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ReferenceTaxonomyGeneration_active_corpus_key` | Partial unique B-tree index on `(environment, source, languageTag) WHERE "isActive" = true`; SQL-only because it is partial. Do not replace it with an unconditional Prisma unique constraint.                       |
+| `ReferenceTaxonomyGeneration_nonblank_check`    | `btrim` of `id`, `source`, `taxonomyVersion`, `languageTag`, `sourceUrl`, `embeddingProvider`, `embeddingModel`, `embeddingIndexVersion` and `embeddingTextVersion` is nonempty.                                     |
+| `ReferenceTaxonomyGeneration_hashes_check`      | Both `sourceSha256` and `importFingerprint` match `^[0-9a-f]{64}$`.                                                                                                                                                  |
+| `ReferenceTaxonomyGeneration_positive_check`    | `embeddingDimensions > 0 AND categoryCount > 0`.                                                                                                                                                                     |
+| `ReferenceTaxonomyGeneration_activation_check`  | `NOT "isActive" OR "activatedAt" IS NOT NULL`. `completedAt` is independently `NOT NULL` for every stored generation.                                                                                                |
+| `ReferenceTaxonomyCategory_identity_check`      | Nonblank `generationId`, `categoryId`, `name`, `fullName`; `parentId` is null or nonblank and different from `categoryId`.                                                                                           |
+| `ReferenceTaxonomyCategory_level_check`         | `level >= 0`; `cardinality(ancestorIds) = level`; no null ancestor element; `categoryId` does not occur in `ancestorIds`; level zero has null parent; positive level has non-null parent equal to the last ancestor. |
+| `ReferenceTaxonomyCategory_embedding_check`     | `embeddingDimensions > 0 AND vector_dims(embedding) = embeddingDimensions`.                                                                                                                                          |
 
 Use immediate, non-deferrable foreign keys. The importer inserts each generation's categories **parent before child**, including across bounded insert statements. `parentId` resolves through `(generationId, categoryId)`, so a parent in another generation cannot satisfy the relationship. The category's dimension metadata resolves through `(generationId, embeddingDimensions)`, so a vector of the wrong dimension cannot be smuggled into a generation by changing its row metadata.
 

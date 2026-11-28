@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-053-BACKGROUND-003
-- ARCH-053-BACKGROUND-005
-- ARCH-053-API-004
-- ARCH-016-ADMIN-003
-- ARCH-053-WOOCOMMERCE-002
-- ARCH-053-WOOCOMMERCE-003
-- ARCH-048-BACKGROUND-011
-- ARCH-046-WOOCOMMERCE-003
+  - ARCH-053-BACKGROUND-003
+  - ARCH-053-BACKGROUND-005
+  - ARCH-053-API-004
+  - ARCH-016-ADMIN-003
+  - ARCH-053-WOOCOMMERCE-002
+  - ARCH-053-WOOCOMMERCE-003
+  - ARCH-048-BACKGROUND-011
+  - ARCH-046-WOOCOMMERCE-003
 enables: []
 created: 2026-10-29
 updated: 2026-11-02
@@ -48,7 +48,7 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 - Verify capture of 1..50 core lines including variations/attributes and **no-applied-coupon** snapshot cases, canonical v1 HTTP schema → existing v1 queue projection, candidate update, admission's immutable `wooRestoreSnapshot` and URL, template CTA safety, authenticated resolution and cross-device customer confirmation. Full applied-coupon lifecycle is assigned to `ARCH-053-SYSTEM-TEST-002`.
 - Verify HTTP `woo.activity.v1` with or without phone, preserve canonical phone proof validation and reject `woo.activity.v2`/`woo.activity.v3` after coordinated cutover; none of these may create a second queue envelope.
 - Test 2 shops (correct installation auth and hostname), same original checkout with generation 1→resumption→generation 2, independent eligible initial outreach without cross-generation cap, duplicate event and retry suppression, historical URL revocation, order placement/paid suppression, consent withdrawal/STOP, status terminality and delivery retry failures.
-- Assert the core restore flow uses *current* Woo pricing/tax/shipping, no historical totals; do not certify coupon-bearing restores under this task. The complete original-coupon matrix and **storefront-silent private diagnostics / correct totals** are terminal SYSTEM-TEST-002 responsibilities.
+- Assert the core restore flow uses _current_ Woo pricing/tax/shipping, no historical totals; do not certify coupon-bearing restores under this task. The complete original-coupon matrix and **storefront-silent private diagnostics / correct totals** are terminal SYSTEM-TEST-002 responsibilities.
 - Security matrix: WhatsApp preview GET and HEAD no cart mutation, forged POST/nonce, wrong token/wrong tenant, superseded generation, older link with newer shopping basket, existing cart confirmation, unsupported extension item/no silent partial restore, malicious URL host/subpath, no PII/coupon/token in logs/referrer, WordPress offline and API outage.
 - Capture manual direct return to original Woo session with unchanged fingerprint and new user interaction; confirm **one new delayed BullMQ candidate** (not an immediate CheckoutRecovery) and no event from idle homepage or passive scanner.
 - Exercise the canonical recovery lifetime in API restore resolution, AI/human conversation wrapper `checkout.url`, automated template checkout URL binding and locked Woo final-send admission. Include a Shopify wrapper/template URL fixture without changing Shopify URL generation.

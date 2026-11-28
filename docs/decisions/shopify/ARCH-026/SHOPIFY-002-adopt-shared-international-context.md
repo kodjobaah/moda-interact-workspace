@@ -225,6 +225,7 @@ The static authority test scans production `app/` sources for legacy internation
 ### Validation Results
 
 Passed:
+
 - `npm run prisma:generate` generated Prisma Client 6.19.3 from the accepted DATABASE-002 schema; `npm run build` also regenerated the client.
 - `npm run typecheck`.
 - Targeted ESLint over all changed production and test files.
@@ -236,6 +237,7 @@ Passed:
 - Production `app/` source audit found no remaining international-context business reads from ShopSettings. Remaining ShopSettings reads are for recovery/feature configuration, while the international-context fields are written as compatibility mirrors by `ShopService`.
 
 Limitations / baseline diagnostics:
+
 - The two affected PostgreSQL-backed Merchant Knowledge integration files skipped all 11 tests because their environment gate prerequisites were unavailable.
 - Running the entire `merchant-knowledge-read-model.test.ts` file still produces one pre-existing catalogue-filter assertion failure (the assertion expects only `WEB_PAGE`/`REMOTE_URL`, while the unchanged implementation queries `REMOTE_URL` and `UPLOAD`). The assertion was verified unchanged from the task-branch baseline. The new shared-Shop language test passes independently.
 - The production build completed with existing dependency/bundler warnings (Prisma browser entry externalization, Zod annotation comments, empty route chunks, and a large merchant-i18n chunk). Dependency manifests were not changed.

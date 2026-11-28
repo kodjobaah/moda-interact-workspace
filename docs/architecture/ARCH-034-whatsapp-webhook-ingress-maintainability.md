@@ -36,7 +36,7 @@ The current Messaging repo declares `npm test`, `npm run typecheck`, and `npm ru
 4. Preserve every existing externally observable behaviour and published queue contract, including ARCH-028 v3 failure-evidence semantics.
 5. Keep new production modules focused (target no more than 200 physical lines; hard maximum 300). Avoid a replacement catch-all dispatcher.
 6. Retain and strengthen focused, route-level and independent system-test evidence without weakening existing assertions.
-7. **After** the behaviour-preserving extraction, harden the authenticated webhook acceptance boundary: invalid structure or invalid inbound messages must be rejected before *any* queue publication for that HTTP request.
+7. **After** the behaviour-preserving extraction, harden the authenticated webhook acceptance boundary: invalid structure or invalid inbound messages must be rejected before _any_ queue publication for that HTTP request.
 
 ## Non-goals
 
@@ -99,7 +99,7 @@ The hardening task introduces an intentional **authenticated-request validation*
 
 1. Verify HMAC on the exact raw body, then parse JSON as before. Invalid JSON remains `400` / `invalid_json`.
 2. Validate the parsed Meta envelope shape before publication: root must be a non-array object with an `entry` array (empty allowed); each entry and change must be non-array objects; absent/null `changes` and `messages`/`statuses` collections remain empty where legacy code treated them that way; present non-null collections must be arrays; a `messages` field change requires a non-array object `value`.
-3. Ignore non-`messages` changes as before. Continue to ignore invalid **individual** provider statuses as before. Any invalid inbound message or malformed relevant envelope returns `400` / `invalid_payload` without publishing *any* job from that HTTP request. An absent/malformed `entry` now receives a deliberate `400` instead of an accidental `200`/`500`.
+3. Ignore non-`messages` changes as before. Continue to ignore invalid **individual** provider statuses as before. Any invalid inbound message or malformed relevant envelope returns `400` / `invalid_payload` without publishing _any_ job from that HTTP request. An absent/malformed `entry` now receives a deliberate `400` instead of an accidental `200`/`500`.
 4. Implement a **pure whole-webhook preflight** that stages valid normalized events in existing entry/change, messages-before-statuses order. Only after the entire request has passed preflight may publication begin; publish sequentially through the unchanged BullMQ producer.
 5. A queue or Redis failure **after publication begins** can still leave earlier jobs accepted and cause a `500`/retry. Do not claim cross-job atomicity; preserve deterministic job IDs, consumer idempotency and existing retry/backoff behaviour. No PostgreSQL outbox, new durable receipt, or distributed transaction is introduced in this bounded task.
 6. Preflight must be linear-time with no new database/provider round trips; stage only bounded Shared-normalized event objects, not copies of raw bodies/error payloads. Preserve existing telemetry reason vocabulary and signed-request security.
@@ -128,14 +128,14 @@ Existing architecture-level Messaging system tests should be reused. Independent
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| `ARCH-034-MESSAGING-001` — Extract pure WhatsApp normalizers | `moda_messaging` | Complete — Accepted Attempt 1 | `ARCH-028-MESSAGING-001` (Complete) |
-| `ARCH-034-MESSAGING-002` — Isolate Meta webhook authentication | `moda_messaging` | Complete — Accepted Attempt 1 | `ARCH-034-MESSAGING-001` (Complete) |
-| `ARCH-034-MESSAGING-003` — Extract BullMQ publication and job identity | `moda_messaging` | Complete — Accepted manual patch iteration 2 | `ARCH-034-MESSAGING-002` (Complete) |
-| `ARCH-034-MESSAGING-004` — Extract webhook dispatch and slim the route | `moda_messaging` | Complete — Accepted Attempt 1 | `ARCH-034-MESSAGING-003` (Complete) |
-| `ARCH-034-MESSAGING-005` — Reject invalid signed webhooks before publication | `moda_messaging` | Complete — Accepted Attempt 1 | `ARCH-034-MESSAGING-004` (Complete) |
-| `ARCH-034-SYSTEM-TEST-001` — Verify ingress refactor and rejection hardening | `moda_system_test` | Ready | `ARCH-034-MESSAGING-005` (Complete) |
+| Task                                                                         | Owner              | Status                                       | Depends On                          |
+| ---------------------------------------------------------------------------- | ------------------ | -------------------------------------------- | ----------------------------------- |
+| `ARCH-034-MESSAGING-001` — Extract pure WhatsApp normalizers                 | `moda_messaging`   | Complete — Accepted Attempt 1                | `ARCH-028-MESSAGING-001` (Complete) |
+| `ARCH-034-MESSAGING-002` — Isolate Meta webhook authentication               | `moda_messaging`   | Complete — Accepted Attempt 1                | `ARCH-034-MESSAGING-001` (Complete) |
+| `ARCH-034-MESSAGING-003` — Extract BullMQ publication and job identity       | `moda_messaging`   | Complete — Accepted manual patch iteration 2 | `ARCH-034-MESSAGING-002` (Complete) |
+| `ARCH-034-MESSAGING-004` — Extract webhook dispatch and slim the route       | `moda_messaging`   | Complete — Accepted Attempt 1                | `ARCH-034-MESSAGING-003` (Complete) |
+| `ARCH-034-MESSAGING-005` — Reject invalid signed webhooks before publication | `moda_messaging`   | Complete — Accepted Attempt 1                | `ARCH-034-MESSAGING-004` (Complete) |
+| `ARCH-034-SYSTEM-TEST-001` — Verify ingress refactor and rejection hardening | `moda_system_test` | Ready                                        | `ARCH-034-MESSAGING-005` (Complete) |
 
 System test is **terminal**: no implementation task depends upon it. The developer may validate the finished Messaging implementation manually before invoking the Ready system-test task.
 

@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-032-MCP-015
+  - ARCH-032-MCP-015
 enables:
-- ARCH-032-GATEWAY-002
-- ARCH-032-SYSTEM-TEST-002
+  - ARCH-032-GATEWAY-002
+  - ARCH-032-SYSTEM-TEST-002
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-MCP-016 — Certify MCP policy failure handling on disposable PostgreSQL
@@ -93,47 +93,61 @@ Use the canonical developer workflow and launcher-managed isolated parent and re
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None
 
 ### Work Completed
+
 None
 
 ### Validation Results
+
 Not run
 
 ### Deviations
+
 None
 
 ### Assumptions
+
 None recorded
 
 ### Unresolved Issues
+
 None recorded
 
 ### Architectural Concerns
+
 None recorded
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed
 
 ### Reviewed Files
+
 None
 
 ### Validation Reviewed
+
 None
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
+
 None
 
 ## 2026-10-15 — Architect dependency reconciliation
@@ -147,7 +161,6 @@ The YAML frontmatter above is authoritative for task eligibility. This clarifica
 ## 2026-10-15 — Active JSONB platform-policy storage correction
 
 The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.
-
 
 ## 2026-10-15 — Active policy-certification scope clarification
 

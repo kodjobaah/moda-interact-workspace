@@ -175,6 +175,7 @@ Ready for Review
 - Added in-memory service support and focused tests for found, missing, unavailable, forbidden, development bypass, no offline session, exact persisted domain, and access-token non-disclosure behavior.
 
 Acceptance mapping:
+
 - persisted search and exact resolution: `src/commerce/integration/studio/services.ts`, `tests/shop-execution-context.test.ts`
 - caller domain cannot override persisted domain: `tests/shop-execution-context.test.ts`
 - boolean offline availability and no-session selectability: `src/commerce/integration/studio/services.ts`, `tests/shop-execution-context.test.ts`
@@ -184,6 +185,7 @@ Acceptance mapping:
 ### Validation Results
 
 Agent-executed validation:
+
 - `npm ci` — completed; installed the locked dependencies. npm reported the repository's existing Node engine mismatch (`required 24.19.0`, current `24.21.0`) and audit warnings.
 - `npm test -- --run tests/shop-execution-context.test.ts tests/shop-execution-context-action.test.ts` — passed, 2 files / 6 tests.
 - `npm test -- --run tests/studio-integration.test.ts tests/studio-services.test.ts` — passed, 2 files / 15 tests.

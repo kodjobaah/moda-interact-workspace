@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-015-DATABASE-001
+  - ARCH-015-DATABASE-001
 enables:
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-BACKGROUND-003
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -317,7 +317,6 @@ STOP and return evidence to `moda_architect` if:
 ## Completion protocol
 
 Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
-
 
 ## Architect Review — Attempt 1
 

@@ -46,7 +46,7 @@ The existing Admin Billing > Events list and event drawer are driven by:
 - `src/components/admin/billing-overview.tsx` and `src/components/admin/billing-drawers.tsx`.
 - `src/app/(protected)/billing/page.tsx` (existing `view=events`, `eventId` detail).
 
-The current event projection omits `UsageEvent.sourceType`/`sourceId` and the committed/compensated `UsageReservation` source links. The authoritative schema already provides `UsageEvent.committedReservation` and `compensatedReservation`, `UsageReservation.purchasedCreditPurchaseId`, period counter, Shop entitlement counter, promotional grant ID and `RecoveryCreditPurchase`. The current `Conversation` model has no direct billing-source column. The implementation must not pretend that every `UsageEvent` is a recovery charge, or that a credit-pack *purchase/acquisition* UsageEvent is a *spend* event.
+The current event projection omits `UsageEvent.sourceType`/`sourceId` and the committed/compensated `UsageReservation` source links. The authoritative schema already provides `UsageEvent.committedReservation` and `compensatedReservation`, `UsageReservation.purchasedCreditPurchaseId`, period counter, Shop entitlement counter, promotional grant ID and `RecoveryCreditPurchase`. The current `Conversation` model has no direct billing-source column. The implementation must not pretend that every `UsageEvent` is a recovery charge, or that a credit-pack _purchase/acquisition_ UsageEvent is a _spend_ event.
 
 ## Scope
 

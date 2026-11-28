@@ -76,7 +76,6 @@ The service's canonical Merchant Knowledge read method is `requireMerchantKnowle
 
 Keep existing asset relocation/in-flight constraints. Do not migrate historical `objectKey` data or invent a new publicly accessible signing endpoint as part of this task. Update the existing server-only unit tests to reflect this one full-field contract.
 
-
 ## Work Items
 
 - [x] Create `app/services/platform-configuration/repository.server.ts` with environment/key-constrained Prisma lookup.
@@ -89,7 +88,7 @@ Keep existing asset relocation/in-flight constraints. Do not migrate historical 
 
 ## Interfaces / Contracts
 
-Proposed *internal* server-only API (the implementation may choose equivalent signatures while preserving observable semantics):
+Proposed _internal_ server-only API (the implementation may choose equivalent signatures while preserving observable semantics):
 
 ```ts
 interface ShopifyPlatformConfigurationService {

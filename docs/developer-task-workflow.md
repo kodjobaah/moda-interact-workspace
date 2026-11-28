@@ -142,24 +142,24 @@ pending -> ready -> in_progress -> review -> complete
 
 `agent`
 : The normal `/moda-task` path prepares/claims the task through the assigned
-  repository agent.
+repository agent.
 
 `developer`
 : The developer owns the implementation attempt. `/moda_developer_create`
-  materialises if necessary, prepares/claims the attempt and hands the canonical
-  implementation worktree to the developer.
+materialises if necessary, prepares/claims the attempt and hands the canonical
+implementation worktree to the developer.
 
 ### `completion_mode`
 
 `automatic`
 : A successful **authorized review** performs the completion transition. For
-  agent execution this is normally `moda_architect`. For developer execution,
-  `/moda_developer_update` performs developer-as-architect review and may
-  complete a passing task automatically.
+agent execution this is normally `moda_architect`. For developer execution,
+`/moda_developer_update` performs developer-as-architect review and may
+complete a passing task automatically.
 
 `developer`
 : A passing review does not make the task Complete. The task remains `review`
-  until the developer explicitly invokes:
+until the developer explicitly invokes:
 
 ```text
 /moda_developer_update <TASK_ID> complete

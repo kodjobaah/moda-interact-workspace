@@ -8,12 +8,12 @@ Date: 3 November 2026. Phase 3 follows the updated-snapshot reassessment. This i
 
 The additional billing trace establishes a specific acceptance condition: a fulfilled reservation `commit()` call is not sufficient proof of settlement. The common transition helper can return `already-ambiguous` or `already-released`, and the higher-level lifecycle wrapper currently discards that result. Confirmed-send reconciliation must positively establish settlement of the original credit source before declaring finalization complete.
 
-| Reference | Conclusion from this phase | Smallest supported correction | Closure boundary |
-|---|---|---|---|
-| U1 — API dependency | Current API source consumes two ARCH-055 fields absent from its own generation schema; exactly three migrations are also absent | Resolve real gitlink versus materialized-checkout state, synchronize the accepted dependency and regenerate through normal API commands | Source audit is complete; normal build and migration-backed integration remain unexecuted |
-| U3 — text ingress locks | Child INSERT takes an FK parent key-share lock before the helper asks for parent `FOR UPDATE`; two same-conversation arrivals can form an upgrade cycle | Call the existing locked pending-turn helper before `ConversationMessage.create`, inside the same transaction | No new call sites; successful distinct-message count unchanged; real PostgreSQL reproduction and regression test still required |
-| U2 — fallback identity | The fallback searches a usage idempotency key in the provider-dispatch-key column; its linked-message branch is unreachable after its own guard | Resolve usage-to-message identity once at the initial-outreach progress owner, with permit and ownership fields | A string substitution alone does not close recovery progress |
-| C3 — recovery continuation | Normal candidate retry skips existing `DETECTED` work; late message inspection and preparation gates obstruct partial finalization | Route actual retries through persisted-state classification before new-send preparation/admission; reuse existing delivery and finalization owners | Exact billing lineage, positive settlement, failed-message history and finite retry ownership are required |
+| Reference                  | Conclusion from this phase                                                                                                                              | Smallest supported correction                                                                                                                      | Closure boundary                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| U1 — API dependency        | Current API source consumes two ARCH-055 fields absent from its own generation schema; exactly three migrations are also absent                         | Resolve real gitlink versus materialized-checkout state, synchronize the accepted dependency and regenerate through normal API commands            | Source audit is complete; normal build and migration-backed integration remain unexecuted                                       |
+| U3 — text ingress locks    | Child INSERT takes an FK parent key-share lock before the helper asks for parent `FOR UPDATE`; two same-conversation arrivals can form an upgrade cycle | Call the existing locked pending-turn helper before `ConversationMessage.create`, inside the same transaction                                      | No new call sites; successful distinct-message count unchanged; real PostgreSQL reproduction and regression test still required |
+| U2 — fallback identity     | The fallback searches a usage idempotency key in the provider-dispatch-key column; its linked-message branch is unreachable after its own guard         | Resolve usage-to-message identity once at the initial-outreach progress owner, with permit and ownership fields                                    | A string substitution alone does not close recovery progress                                                                    |
+| C3 — recovery continuation | Normal candidate retry skips existing `DETECTED` work; late message inspection and preparation gates obstruct partial finalization                      | Route actual retries through persisted-state classification before new-send preparation/admission; reuse existing delivery and finalization owners | Exact billing lineage, positive settlement, failed-message history and finite retry ownership are required                      |
 
 No application code, existing migration, dependency pointer, architecture/task status or task index is changed by this review. The patch adds a separate review directory and can apply to the original updated archive without the earlier review patch. The earlier ARCH-028 acceptance artifact is not regenerated, relabelled or accepted by this analysis.
 
@@ -56,14 +56,14 @@ The existing coordinated rollout remains Database, compatible Background, then b
 
 The new helper correctly makes the pending-turn decision from locked current Conversation state, addressing the earlier stale-snapshot decision. The surrounding text-ingress ordering introduces a different concurrency risk:
 
-| Current receive order | Proposed receive order |
-|---|---|
-| Pre-transaction duplicate-provider-message lookup | Pre-transaction duplicate-provider-message lookup |
+| Current receive order                                                                 | Proposed receive order                                                                                                        |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Pre-transaction duplicate-provider-message lookup                                     | Pre-transaction duplicate-provider-message lookup                                                                             |
 | Insert inbound ConversationMessage; immediate FK check acquires parent key-share lock | Existing `recordProcessableInbound` helper locks Conversation `FOR UPDATE`, then applies current pending-turn/version changes |
-| Call helper; request parent `FOR UPDATE` | Insert the inbound ConversationMessage in the same transaction |
-| Remaining language and clock updates | Same remaining updates and existing transaction boundary |
-| Commit | Commit |
-| Post-commit outreach engagement update | Same post-commit outreach engagement update |
+| Call helper; request parent `FOR UPDATE`                                              | Insert the inbound ConversationMessage in the same transaction                                                                |
+| Remaining language and clock updates                                                  | Same remaining updates and existing transaction boundary                                                                      |
+| Commit                                                                                | Commit                                                                                                                        |
+| Post-commit outreach engagement update                                                | Same post-commit outreach engagement update                                                                                   |
 
 Two transactions may insert different messages for the same parent, each retaining compatible key-share locks. Each then requests an exclusive row lock that conflicts with the other's retained key-share lock. The resulting wait cycle is supported by PostgreSQL 17's documented row-lock rules and the immediate FK-check implementation. This is a static mechanism finding; no PostgreSQL engine was available here to demonstrate an observed deadlock.
 
@@ -79,11 +79,11 @@ The supplied [PostgreSQL 17 protocol](u3-postgres17-reproduction.md) and [SQL fi
 
 The three identities must remain distinct:
 
-| Identity | Location and purpose |
-|---|---|
-| `recovery-outreach:<attemptId>` | Hard-limit `UsageEvent.idempotencyKey`; its `sourceId` identifies the canonical outbound message |
-| `arch040-auto-<sha256(messageId)>` | Shopify final provider-dispatch permit on the message |
-| `arch046-woo-initial-<sha256(shopId + NUL + attemptId)>` | Woo initial-outreach permit, scoped to its shop/attempt |
+| Identity                                                 | Location and purpose                                                                             |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `recovery-outreach:<attemptId>`                          | Hard-limit `UsageEvent.idempotencyKey`; its `sourceId` identifies the canonical outbound message |
+| `arch040-auto-<sha256(messageId)>`                       | Shopify final provider-dispatch permit on the message                                            |
+| `arch046-woo-initial-<sha256(shopId + NUL + attemptId)>` | Woo initial-outreach permit, scoped to its shop/attempt                                          |
 
 The new no-offer fallback searches the first value in the provider-permit column. It also rejects every attempt with `outboundMessageId` before the code that would read that linked message. Both observations are definite source findings. Existing downstream uniqueness and admission guards mean this defect is not, by itself, proof of a duplicate provider send.
 
@@ -107,15 +107,15 @@ flowchart TD
 
 The diagram's confirmed branch may stop at an explicit settlement conflict. It does not promise automatic resolution of missing provider receipts, ambiguous credit lineage or historical billing-policy restrictions.
 
-| Durable state | Required behavior |
-|---|---|
-| No canonical message, intact unsent lineage | Continue the same generation and sequence-one attempt after current send eligibility; absence must be corroborated, because generic failed-message cleanup can remove the usage link |
-| `PENDING` message, both permit fields null | Resume the same message and hard-limit usage through existing preparation/delivery and the final permit CAS; ordinary `sendTemplate` currently returns duplicate before reaching delivery |
-| Either permit field present, no confirmed/definitive outcome | Hold uncertainty; do not release credit or send another HTTP request merely because a timeout, age or attempt `FAILED` flag exists |
-| Durable definitive failure | Finish exact compensation and retain failed-message/attempt lineage; use the existing 131026 recipient-suppression owner where applicable |
-| `SENT`, `DELIVERED` or `READ`, valid `sentAt` and ownership | Skip offer/template preparation and new-send admission; settle the original credit and replay existing finalization without another provider call |
-| Support/attempt committed, recovery still `DETECTED` | Reuse the exact receipt and atomic finalizer, then converge recovery status without overwriting a newer terminal/engaged state |
-| Recovery sent, follow-up publication failed | Reuse the persisted due date and deterministic queue identity through existing scheduling reconciliation |
+| Durable state                                                | Required behavior                                                                                                                                                                         |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No canonical message, intact unsent lineage                  | Continue the same generation and sequence-one attempt after current send eligibility; absence must be corroborated, because generic failed-message cleanup can remove the usage link      |
+| `PENDING` message, both permit fields null                   | Resume the same message and hard-limit usage through existing preparation/delivery and the final permit CAS; ordinary `sendTemplate` currently returns duplicate before reaching delivery |
+| Either permit field present, no confirmed/definitive outcome | Hold uncertainty; do not release credit or send another HTTP request merely because a timeout, age or attempt `FAILED` flag exists                                                        |
+| Durable definitive failure                                   | Finish exact compensation and retain failed-message/attempt lineage; use the existing 131026 recipient-suppression owner where applicable                                                 |
+| `SENT`, `DELIVERED` or `READ`, valid `sentAt` and ownership  | Skip offer/template preparation and new-send admission; settle the original credit and replay existing finalization without another provider call                                         |
+| Support/attempt committed, recovery still `DETECTED`         | Reuse the exact receipt and atomic finalizer, then converge recovery status without overwriting a newer terminal/engaged state                                                            |
+| Recovery sent, follow-up publication failed                  | Reuse the persisted due date and deterministic queue identity through existing scheduling reconciliation                                                                                  |
 
 Permit and receipt evidence outrank the attempt's current status. In this source, provider HTTP and the local `markSent` transaction share a `try` block. A local database failure after successful HTTP can leave an admitted `PENDING` message without a stored provider ID. Billing may become `AMBIGUOUS`, while Shopify unconditionally marks the attempt `FAILED`. That flag is not proof of rejection. Correlated provider evidence is needed; a missing provider-ID link also limits what an ordinary webhook can repair.
 
@@ -141,14 +141,14 @@ After settlement is proven, reuse the current finalization sequence: exact credi
 
 This phase identifies concrete local opportunities without claiming runtime performance gains:
 
-| Path | Database work to preserve | Candidate simplification |
-|---|---|---|
-| U3 ingress | Existing parent lock, current-state decision, atomic message/state writes | Reorder existing call sites; successful distinct-message count unchanged; failed-insert work can increase |
-| Normal no-offer preparation | Valid recovery/attempt identity, current lifetime and template binding | Reuse adjacent recovery/lifetime projections; current facade plus fallback uses six direct calls before delegated preparation, versus four within fallback alone |
-| Existing admission | Usage-to-message identity, permit and ownership classification | Add selected columns to the existing two-read path; avoid a second independent message probe |
-| Confirmed replay | Exact credit settlement, finalizer locks/CAS, recovery update and scheduling read | Skip new offer/AI/MCP/template preparation and new admission |
-| Support replay | Existing lock and exact message/sentAt/due validation | Preserve its three-operation replay path; an unlocked notice-existence check is insufficient |
-| `markSent` | Atomic receipt and conversation timestamp persistence | Verified conversation ID may remove its reread, but assess the separate lock-order lead before combining changes |
+| Path                        | Database work to preserve                                                         | Candidate simplification                                                                                                                                         |
+| --------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| U3 ingress                  | Existing parent lock, current-state decision, atomic message/state writes         | Reorder existing call sites; successful distinct-message count unchanged; failed-insert work can increase                                                        |
+| Normal no-offer preparation | Valid recovery/attempt identity, current lifetime and template binding            | Reuse adjacent recovery/lifetime projections; current facade plus fallback uses six direct calls before delegated preparation, versus four within fallback alone |
+| Existing admission          | Usage-to-message identity, permit and ownership classification                    | Add selected columns to the existing two-read path; avoid a second independent message probe                                                                     |
+| Confirmed replay            | Exact credit settlement, finalizer locks/CAS, recovery update and scheduling read | Skip new offer/AI/MCP/template preparation and new admission                                                                                                     |
+| Support replay              | Existing lock and exact message/sentAt/due validation                             | Preserve its three-operation replay path; an unlocked notice-existence check is insufficient                                                                     |
+| `markSent`                  | Atomic receipt and conversation timestamp persistence                             | Verified conversation ID may remove its reread, but assess the separate lock-order lead before combining changes                                                 |
 
 These are bounded source-call counts. They exclude relation-expansion SQL, trigger work, transaction control, retries and delegated operations unless explicitly included. No latency, QPS, contention rate, cost reduction or query plan was measured.
 

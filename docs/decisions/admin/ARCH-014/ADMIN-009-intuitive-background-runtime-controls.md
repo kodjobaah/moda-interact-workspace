@@ -13,10 +13,10 @@ status: complete
 priority: 66
 attempt: 2
 depends_on:
-- ARCH-014-DATABASE-004
-- ARCH-014-ADMIN-007
+  - ARCH-014-DATABASE-004
+  - ARCH-014-ADMIN-007
 enables:
-- ARCH-014-SYSTEM-TEST-003
+  - ARCH-014-SYSTEM-TEST-003
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -109,6 +109,7 @@ Technical field name may appear only inside collapsed `Show technical details`.
 ### Billing
 
 **Reconciliation interval**
+
 - field: `billingReconciliationIntervalSeconds`
 - UI unit: seconds
 - default 60
@@ -116,6 +117,7 @@ Technical field name may appear only inside collapsed `Show technical details`.
   `How often Moda checks Shopify billing state. Lower values detect changes sooner but increase Shopify and database activity.`
 
 **Shops per reconciliation cycle**
+
 - `billingReconciliationShopBatchSize`
 - unit shops
 - default 50
@@ -123,6 +125,7 @@ Technical field name may appear only inside collapsed `Show technical details`.
   `Maximum merchants checked during one reconciliation pass. Increase this as the merchant base grows, while watching provider and database load.`
 
 **Usage events per publish cycle**
+
 - `shopifyUsagePublishBatchSize`
 - unit events
 - default 50
@@ -132,18 +135,21 @@ Technical field name may appear only inside collapsed `Show technical details`.
 ### Recovery
 
 **Repair interval**
+
 - `recoveryRepairIntervalSeconds`
 - display using seconds/minutes, default `5 min`
 - guidance:
   `How often Moda looks for recoveries blocked because recovery capacity was unavailable.`
 
 **Shops per repair**
+
 - `recoveryRepairShopBatchSize`
 - default 100
 - guidance:
   `Maximum shops inspected during one recovery-capacity repair pass.`
 
 **Recoveries per resume job**
+
 - `recoveryResumeBatchSize`
 - default 25
 - guidance:
@@ -152,12 +158,14 @@ Technical field name may appear only inside collapsed `Show technical details`.
 ### Merchant communications
 
 **Translation reconciliation interval**
+
 - `translationReconciliationIntervalSeconds`
 - default `5 min`
 - guidance:
   `How often Moda repairs missing or stale translation jobs. Lower values recover work sooner but increase database and queue activity.`
 
 **Translations per provider batch**
+
 - `translationBatchMaxRequests`
 - default 100
 - guidance:
@@ -166,6 +174,7 @@ Technical field name may appear only inside collapsed `Show technical details`.
 ### Messaging
 
 **Wait after customer message**
+
 - `conversationQuietWindowMs`
 - UI unit seconds; support decimal display only if exact ms is not a whole second
 - default `3 sec`
@@ -173,6 +182,7 @@ Technical field name may appear only inside collapsed `Show technical details`.
   `Moda waits this long after the most recent customer message before responding, so rapid follow-up messages can be handled as one turn.`
 
 **Maximum message settle time**
+
 - `conversationMaxSettleWindowMs`
 - default `10 sec`
 - guidance:

@@ -18,6 +18,7 @@ enables: []
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add failed-job detail panel UI
 
 ## Architecture
@@ -128,14 +129,17 @@ solely for the detail panel.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/components/admin/queue-monitor.tsx`
 - `moda-interact-admin/tests/security/admin-queue-monitor.test.mjs`
 - `moda-interact-admin/tests/security/admin-failed-job-detail-panel.test.mjs`
 
 ### Work Completed
+
 - Connected selected failed-job rows to the protected ADMIN-006 detail endpoint
   with abortable loading and stale-selection cleanup.
 - Added a read-only detail panel showing queue, identity, lifecycle timestamps,
@@ -148,6 +152,7 @@ Ready for Review.
   payload-editing controls.
 
 ### Validation Results
+
 - Focused queue-monitor/detail-panel tests: 14 passed.
 - `npm test`: 51 passed.
 - `npm exec tsc -- --noEmit`: passed.
@@ -158,17 +163,21 @@ Ready for Review.
 - `git diff --check`: passed.
 
 ### Deviations
+
 The existing ADMIN-005 source assertion that prohibited detail loading was
 updated because ADMIN-007 is the authorized follow-up that owns this UI.
 
 ### Assumptions
+
 The ADMIN-006 normalized payload is JSON-safe for display and copy, and the
 protected endpoint remains the sole source of selected-job detail data.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

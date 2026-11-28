@@ -329,7 +329,7 @@ src/lib/admin/openrouter-credential-crypto.ts
 using only:
 
 ```ts
-import { createCipheriv, randomBytes } from 'node:crypto';
+import { createCipheriv, randomBytes } from "node:crypto";
 ```
 
 Expose one server-only function equivalent to:
@@ -361,7 +361,7 @@ The function MUST perform these operations in this exact order:
 createCommerceOpenRouterCredentialAad({
   environment: input.environment,
   keyId: input.activeKeyId,
-})
+});
 ```
 
 5. encode that returned canonical string as UTF-8 bytes;

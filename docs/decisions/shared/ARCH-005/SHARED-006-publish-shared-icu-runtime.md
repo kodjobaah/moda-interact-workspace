@@ -106,7 +106,7 @@ by the accepted SHARED-005 task and were not modified by this publication task.
 - `npm publish --access public`: passed; prepack build and declaration build
   passed, published `0.6.3`.
 - `npm view @modainteract/moda-interact-shared@0.6.3 version dist.integrity
-  --json --registry=https://registry.npmjs.org`: passed.
+--json --registry=https://registry.npmjs.org`: passed.
 - Registry integrity:
   `sha512-QdGfpV+hX5ut/vmR+RD3fQ/Tyy978A1J58hVf9+Ro2f6jq+f09jB4Jf5fPFxzgsAIsXx0/ftO+FChpa+w1cAAg==`.
 - Clean temporary install of `@modainteract/moda-interact-shared@0.6.3`: passed;
@@ -139,7 +139,6 @@ not commit or push.
 ### Review Status
 
 Accepted.
-
 
 ### Review Notes
 

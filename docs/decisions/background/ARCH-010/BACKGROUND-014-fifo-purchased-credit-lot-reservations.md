@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-BACKGROUND-011
+  - ARCH-010-DATABASE-013
+  - ARCH-010-BACKGROUND-011
 enables:
-- ARCH-010-ADMIN-003
-- ARCH-010-BACKGROUND-019
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-ADMIN-003
+  - ARCH-010-BACKGROUND-019
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-BACKGROUND-014: Make purchased recovery reservations FIFO lot-aware
@@ -200,9 +200,11 @@ Return `review` and STOP after validation/completion report.
 ## Completion Report
 
 ### Status
+
 Ready for Review — Attempt 2 corrections implemented.
 
 ### Files Changed
+
 - `moda-interact-background/src/entrypoints/billing.ts`
 - `moda-interact-background/src/services/purchased-recovery-reservation.service.ts`
 - `moda-interact-background/src/services/recovery-credit-purchase.service.ts`
@@ -213,6 +215,7 @@ Ready for Review — Attempt 2 corrections implemented.
 - `moda-interact-background/tests/unit/services/recovery-credit-refund.service.test.ts` deleted
 
 ### Work Completed
+
 - Implemented deterministic FIFO purchased-lot selection by `activatedAt ASC NULLS LAST`, `createdAt ASC`, and `id ASC`.
 - Added aggregate and exact-lot CAS reservation, commit, release, ambiguous retention, replay, and released-row reactivation behavior.
 - Preserved purchased exhaustion fallback behavior and NOT_APPLICABLE recovery usage events.
@@ -224,6 +227,7 @@ Ready for Review — Attempt 2 corrections implemented.
 - Attempt 2 correction checklist: Correction 1 implemented in the new PostgreSQL integration test; Correction 2 implemented in the purchased reservation unit test; Correction 3 implemented in the explicit VCS/worktree evidence below.
 
 ### Validation Results
+
 - `npx vitest run tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-credit-purchase.service.test.ts`: passed, 2 files, 24 tests.
 - `MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts`: passed, 1 file, 1 test, against local disposable `moda_interact_test` initialized with `20260912000000_arch010_first_production_baseline`.
 - `npm run prisma:validate`: passed.
@@ -233,29 +237,30 @@ Ready for Review — Attempt 2 corrections implemented.
 - Source search found no remaining `REFUNDED`, refund-settlement, correction-event, negative-App-Event, `settlementMode`, or obsolete refund-service branch.
 
 ### Git / VCS
+
 Task branch: `task/ARCH-010-BACKGROUND-014`
 
 Physical task isolation:
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-014`
-  parent branch: `task/ARCH-010-BACKGROUND-014`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-014`
-  implementation branch: `task/ARCH-010-BACKGROUND-014`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-014`
+parent branch: `task/ARCH-010-BACKGROUND-014`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-014`
+implementation branch: `task/ARCH-010-BACKGROUND-014`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: yes
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: yes
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: yes
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-background`
-  commit: `2104959` (`test: complete purchased reservation concurrency proof`)
+repository: `moda-interact-background`
+commit: `2104959` (`test: complete purchased reservation concurrency proof`)
 
 Parent workspace:
-  commit: `a335f9b` (Attempt-2 Completion Report)
+commit: `a335f9b` (Attempt-2 Completion Report)
 
 The implementation `database` gitlink remains intentionally unstaged and was not changed or published by this task. No main branch was modified or merged.
 
@@ -619,4 +624,3 @@ FREE:
 ```
 
 `BACKGROUND-019` owns only promotion-first routing and exact promotional grant reservation. It must reuse the accepted BACKGROUND-002 / BACKGROUND-011 / BACKGROUND-014 primitives rather than reimplementing their accounting.
-

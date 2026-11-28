@@ -828,16 +828,16 @@ Normal OpenRouter credential rotation is a database operation. Encryption-keyrin
 
 ## Repository Responsibilities
 
-| Repository | Owner | ARCH-024 responsibility |
-|---|---|---|
-| `moda-interact-database` | `moda_database` | Availability, Catalogue evolution, optional MerchantPricingPlan -> model association, encrypted OpenRouter credential, constraints/migration/audit persistence |
-| `moda-interact-shared` | `moda_shared` | model contracts/OpenRouter client, modular LangGraph `runCommerceTurn`, Commerce-turn structured logging, publication |
-| `moda-interact-admin` | `moda_admin` | Availability administration, Catalogue administration, Price Plan -> model product configuration, OpenRouter credential lifecycle |
-| `moda-interact-commerce` | `moda_commerce` | Preview cleanup, Shop -> Price Plan -> Platform effective model resolution, Studio Shop override selection, Feature-composed Test Conversations, selected-Shop Tool execution, OpenRouter Test Conversation runtime |
-| `moda-interact-background` | `moda_background` | production Shop -> Price Plan -> Platform model resolution/OpenRouter integration, canonical runner logger injection, hardened official-SDK MCP client, redundant local graph cleanup |
-| `moda-interact-gateway` | `moda_gateway` | keyring/config-group wiring and obsolete static Preview provider configuration removal |
-| `moda-interact` | `moda_app` | **No ARCH-024 implementation task required**; merchants do not select/administer models |
-| `moda-interact-system-test` | `moda_system_test` | Terminal integrated validation deliberately deferred to a later architecture session |
+| Repository                  | Owner              | ARCH-024 responsibility                                                                                                                                                                                             |
+| --------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `moda-interact-database`    | `moda_database`    | Availability, Catalogue evolution, optional MerchantPricingPlan -> model association, encrypted OpenRouter credential, constraints/migration/audit persistence                                                      |
+| `moda-interact-shared`      | `moda_shared`      | model contracts/OpenRouter client, modular LangGraph `runCommerceTurn`, Commerce-turn structured logging, publication                                                                                               |
+| `moda-interact-admin`       | `moda_admin`       | Availability administration, Catalogue administration, Price Plan -> model product configuration, OpenRouter credential lifecycle                                                                                   |
+| `moda-interact-commerce`    | `moda_commerce`    | Preview cleanup, Shop -> Price Plan -> Platform effective model resolution, Studio Shop override selection, Feature-composed Test Conversations, selected-Shop Tool execution, OpenRouter Test Conversation runtime |
+| `moda-interact-background`  | `moda_background`  | production Shop -> Price Plan -> Platform model resolution/OpenRouter integration, canonical runner logger injection, hardened official-SDK MCP client, redundant local graph cleanup                               |
+| `moda-interact-gateway`     | `moda_gateway`     | keyring/config-group wiring and obsolete static Preview provider configuration removal                                                                                                                              |
+| `moda-interact`             | `moda_app`         | **No ARCH-024 implementation task required**; merchants do not select/administer models                                                                                                                             |
+| `moda-interact-system-test` | `moda_system_test` | Terminal integrated validation deliberately deferred to a later architecture session                                                                                                                                |
 
 ## Contracts
 
@@ -1108,25 +1108,25 @@ Gateway remains last among runtime cutover tasks so obsolete static Preview inpu
 
 Individual task YAML is authoritative.
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| `ARCH-024-DATABASE-001` | `moda_database` | Complete | - |
-| `ARCH-024-SHARED-001` | `moda_shared` | Complete | DATABASE-001 |
-| `ARCH-024-SHARED-002` | `moda_shared` | Complete | SHARED-001 |
-| `ARCH-024-ADMIN-001` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
-| `ARCH-024-ADMIN-002` | `moda_admin` | Complete | DATABASE-001, SHARED-002, ADMIN-001 |
-| `ARCH-024-ADMIN-003` | `moda_admin` | Complete | DATABASE-001, SHARED-002, ADMIN-002 |
-| `ARCH-024-ADMIN-004` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
-| `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
-| `ARCH-024-COMMERCE-002` | `moda_commerce` | Complete | DATABASE-001, SHARED-002 |
-| `ARCH-024-COMMERCE-003` | `moda_commerce` | Complete | COMMERCE-002, ADMIN-002 |
-| `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
-| `ARCH-024-COMMERCE-005` | `moda_commerce` | Complete | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
-| `ARCH-024-COMMERCE-006` | `moda_commerce` | Complete | COMMERCE-005 |
-| `ARCH-024-COMMERCE-007` | `moda_commerce` | Complete | COMMERCE-006, SHARED-002 |
-| `ARCH-024-BACKGROUND-001` | `moda_background` | Complete | DATABASE-001, SHARED-002 |
-| `ARCH-024-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001 |
-| `ARCH-024-GATEWAY-001` | `moda_gateway` | Ready | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
+| Task                      | Owner             | Status   | Depends On                                                    |
+| ------------------------- | ----------------- | -------- | ------------------------------------------------------------- |
+| `ARCH-024-DATABASE-001`   | `moda_database`   | Complete | -                                                             |
+| `ARCH-024-SHARED-001`     | `moda_shared`     | Complete | DATABASE-001                                                  |
+| `ARCH-024-SHARED-002`     | `moda_shared`     | Complete | SHARED-001                                                    |
+| `ARCH-024-ADMIN-001`      | `moda_admin`      | Complete | DATABASE-001, SHARED-002                                      |
+| `ARCH-024-ADMIN-002`      | `moda_admin`      | Complete | DATABASE-001, SHARED-002, ADMIN-001                           |
+| `ARCH-024-ADMIN-003`      | `moda_admin`      | Complete | DATABASE-001, SHARED-002, ADMIN-002                           |
+| `ARCH-024-ADMIN-004`      | `moda_admin`      | Complete | DATABASE-001, SHARED-002                                      |
+| `ARCH-024-COMMERCE-001`   | `moda_commerce`   | Complete | -                                                             |
+| `ARCH-024-COMMERCE-002`   | `moda_commerce`   | Complete | DATABASE-001, SHARED-002                                      |
+| `ARCH-024-COMMERCE-003`   | `moda_commerce`   | Complete | COMMERCE-002, ADMIN-002                                       |
+| `ARCH-024-COMMERCE-004`   | `moda_commerce`   | Complete | COMMERCE-001                                                  |
+| `ARCH-024-COMMERCE-005`   | `moda_commerce`   | Complete | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003             |
+| `ARCH-024-COMMERCE-006`   | `moda_commerce`   | Complete | COMMERCE-005                                                  |
+| `ARCH-024-COMMERCE-007`   | `moda_commerce`   | Complete | COMMERCE-006, SHARED-002                                      |
+| `ARCH-024-BACKGROUND-001` | `moda_background` | Complete | DATABASE-001, SHARED-002                                      |
+| `ARCH-024-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001                                                |
+| `ARCH-024-GATEWAY-001`    | `moda_gateway`    | Ready    | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
 
 No ARCH-024 system-test task is materialised in this session. This remains an intentional coordination decision due to overlap with frozen ARCH-023 and upcoming architecture work. Any terminal integrated acceptance work will be defined separately against the final combined architecture.
 
@@ -1146,14 +1146,14 @@ ARCH-021-SYSTEM-TEST-004
 
 Replacement mapping:
 
-| Superseded task | ARCH-024 replacement |
-|---|---|
-| ARCH-021-COMMERCE-105 | ARCH-024-COMMERCE-004 |
-| ARCH-021-COMMERCE-106 | ARCH-024-COMMERCE-002 + ARCH-024-COMMERCE-007 |
-| ARCH-021-COMMERCE-107 | ARCH-024-COMMERCE-005 |
-| ARCH-021-COMMERCE-108 | ARCH-024-COMMERCE-006 |
-| ARCH-021-COMMERCE-109 | ARCH-024-COMMERCE-001 |
-| ARCH-021-GATEWAY-002 | ARCH-024-GATEWAY-001 |
+| Superseded task          | ARCH-024 replacement                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| ARCH-021-COMMERCE-105    | ARCH-024-COMMERCE-004                                                                                   |
+| ARCH-021-COMMERCE-106    | ARCH-024-COMMERCE-002 + ARCH-024-COMMERCE-007                                                           |
+| ARCH-021-COMMERCE-107    | ARCH-024-COMMERCE-005                                                                                   |
+| ARCH-021-COMMERCE-108    | ARCH-024-COMMERCE-006                                                                                   |
+| ARCH-021-COMMERCE-109    | ARCH-024-COMMERCE-001                                                                                   |
+| ARCH-021-GATEWAY-002     | ARCH-024-GATEWAY-001                                                                                    |
 | ARCH-021-SYSTEM-TEST-004 | Deferred future integrated system validation; no ARCH-024 system-test task materialised in this session |
 
 Accepted ARCH-021 work through COMMERCE-104/110 remains baseline functionality and is not reopened by ARCH-024.

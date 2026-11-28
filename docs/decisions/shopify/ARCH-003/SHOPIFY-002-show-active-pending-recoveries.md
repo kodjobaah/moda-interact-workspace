@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
+
 # Show active pending recoveries on merchant Usage overview
 
 ## Architecture
@@ -394,10 +395,8 @@ Clicking `Refresh` must:
 Refreshing…
 ```
 
-while the request is in flight;
-6. prevent duplicate refresh clicks while already refreshing;
-7. update the active count, rows, pagination metadata and `Last updated` time
-   after the refresh completes.
+while the request is in flight; 6. prevent duplicate refresh clicks while already refreshing; 7. update the active count, rows, pagination metadata and `Last updated` time
+after the refresh completes.
 
 Use the repository's existing React Router data APIs and the smallest
 server-only authenticated endpoint/resource-loader structure appropriate to the
@@ -596,7 +595,7 @@ actual component exposed one state-synchronisation defect.
 ```js
 const [displayData, setDisplayData] = useState(pendingRecoveries);
 const [lastUpdated, setLastUpdated] = useState(
-  pendingRecoveries?.available ? pendingRecoveriesUpdatedAt : null
+  pendingRecoveries?.available ? pendingRecoveriesUpdatedAt : null,
 );
 ```
 
@@ -627,7 +626,7 @@ displayData.page=1
 The next manual refresh then uses:
 
 ```js
-displayData.page
+displayData.page;
 ```
 
 and can request the wrong page.

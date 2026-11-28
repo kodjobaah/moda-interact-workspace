@@ -78,16 +78,16 @@ Read DATABASE-005 moderation decisions through Shopify's existing authenticated 
 
 ### 1. Exact existing code surfaces to extend
 
-| Existing source | Required changes |
-|---|---|
-| `app/services/recoveries/recovery-detail.server.ts` | Extend `readRecoveryDetail`/scoped DTO with bounded safe `CheckoutRecovery.lineItems`, currency/value, `Conversation.id`/mode/revision, last authenticated customer inbound/window advisory, sequence-2 follow-up and public shop restriction. Keep `readRecoveryMessages` and `readRelatedRecoveries` pagination unchanged. |
-| `app/routes/app/recovery-detail/loader.server.ts` | Use the existing `requireRecoveryHistory` shop/session boundary and current detail identity. Forward the new projection; preserve 404, section errors, embed context, list filters and message cursors. `RECOVERY_HISTORY` is read access, **not sufficient by itself to authorise sending**. |
-| `app/routes/app/recovery-detail/state.ts` | Extend only existing `DetailData`/DTO-derived types, with no parallel generic conversation DTO or duplicate client store. |
-| `app/routes/app/recovery-detail/route.tsx` | Continue rendering current route; integrate action/fetcher state via small separated modules rather than turning this file into a large controller. |
-| `app/routes/app/recovery-detail/RecoveryDetail.tsx`, `.css` | Compose modular basket, conversation control, transcript and composer components; maintain existing `MessageText`, sender labels, receipts, transcription and related-recovery behaviour. |
-| `app/routes.ts` | If needed register **only recovery-scoped Shopify resource actions** for takeover/resume, human send and command status under the existing `/app/recoveries/:recoveryId` flow. Preserve current detail, `/messages` and `/related` endpoints. |
-| `app/routes/app/recovery-detail/messages.ts`, `related.ts` | Preserve existing reader and cursor semantics; change only if a concrete integration issue requires it. |
-| `app/routes/app/recoveries/recovery-list-state` and merchant i18n utilities | Reuse existing return navigation, filters, embed state and merchant locale/time zone; add translations using current i18n patterns. |
+| Existing source                                                             | Required changes                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/recoveries/recovery-detail.server.ts`                         | Extend `readRecoveryDetail`/scoped DTO with bounded safe `CheckoutRecovery.lineItems`, currency/value, `Conversation.id`/mode/revision, last authenticated customer inbound/window advisory, sequence-2 follow-up and public shop restriction. Keep `readRecoveryMessages` and `readRelatedRecoveries` pagination unchanged. |
+| `app/routes/app/recovery-detail/loader.server.ts`                           | Use the existing `requireRecoveryHistory` shop/session boundary and current detail identity. Forward the new projection; preserve 404, section errors, embed context, list filters and message cursors. `RECOVERY_HISTORY` is read access, **not sufficient by itself to authorise sending**.                                |
+| `app/routes/app/recovery-detail/state.ts`                                   | Extend only existing `DetailData`/DTO-derived types, with no parallel generic conversation DTO or duplicate client store.                                                                                                                                                                                                    |
+| `app/routes/app/recovery-detail/route.tsx`                                  | Continue rendering current route; integrate action/fetcher state via small separated modules rather than turning this file into a large controller.                                                                                                                                                                          |
+| `app/routes/app/recovery-detail/RecoveryDetail.tsx`, `.css`                 | Compose modular basket, conversation control, transcript and composer components; maintain existing `MessageText`, sender labels, receipts, transcription and related-recovery behaviour.                                                                                                                                    |
+| `app/routes.ts`                                                             | If needed register **only recovery-scoped Shopify resource actions** for takeover/resume, human send and command status under the existing `/app/recoveries/:recoveryId` flow. Preserve current detail, `/messages` and `/related` endpoints.                                                                                |
+| `app/routes/app/recovery-detail/messages.ts`, `related.ts`                  | Preserve existing reader and cursor semantics; change only if a concrete integration issue requires it.                                                                                                                                                                                                                      |
+| `app/routes/app/recoveries/recovery-list-state` and merchant i18n utilities | Reuse existing return navigation, filters, embed state and merchant locale/time zone; add translations using current i18n patterns.                                                                                                                                                                                          |
 
 Recommended small modules, following actual repository conventions, include `checkout-basket.tsx`, `conversation-control.tsx`, `human-message-composer.tsx`, `follow-up-template-selector.tsx`, `conversation-commands.server.ts` and a command-status controller/hook. These are **illustrative module boundaries**, not required new directories or additional task IDs. Do not grow an already substantial `RecoveryDetail.tsx` into a monolith.
 
@@ -221,7 +221,6 @@ Existing basket, messages and recovery details remain available; HUMAN composer 
 
 The Shopify server owns only existing Shopify admin-session validation, recovery-scoped Prisma reads, the accepted HUMAN/AI control CAS, the same durable HUMAN command/follow-up claim transaction as Woo API-004, and the Recovery Detail UI. It must **not** publish a BullMQ merchant-send job, call Meta directly, run a Shopify-only dispatcher or configure a Shopify-specific delivery queue. Successful command acceptance means a PostgreSQL record exists; BG002's single shared DB poller consumes it irrespective of origin. Inbound WhatsApp and automatic recovery follow-up BullMQ paths are unchanged. Confirm actual existing plan/feature human-send entitlement instead of borrowing `RECOVERY_HISTORY`, and keep terminal recovery sends ineligible under shared recovery policy. Preserve all ASCII layouts and developer-owned post-delivery validation, which is not a feature acceptance criterion.
 
-
 ## Work Items
 
 - [x] Extend existing Shopify shop-scoped recovery detail read/loader and typed projection with persisted basket, mode/revision, 24-hour advisory, follow-up and public HUMAN restriction data.
@@ -246,10 +245,10 @@ The Shopify server owns only existing Shopify admin-session validation, recovery
 
 No WooCommerce, hosted Woo API, Gateway, new Shared-package or other Shopify task dependency.
 
-
 - ARCH-040-DATABASE-005
 
 - ARCH-040-BACKGROUND-006
+
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-002
@@ -326,6 +325,7 @@ DATABASE-001 and shared Background contracts are consumed through existing durab
 None within SHOPIFY-001 feature scope.
 
 ### Architectural Concerns
+
 Return new cross-service, persistence, admission or policy gaps to `moda_architect`.
 
 ## Architect Review

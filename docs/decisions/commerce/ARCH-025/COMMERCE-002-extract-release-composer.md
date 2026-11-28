@@ -91,14 +91,12 @@ Preserve `CommerceResponseContractSchema.safeParse(...)`, raw invalid JSON reten
 
 Preserve the current asymmetric role behaviour exactly. The top-level **Create release** opener is shown only to `SUPER_ADMIN`, while `ADMIN` receives the explanatory copy. However, when the composer is already open from `composer.release` seed state (for example via Edit as new release), the inner **Create immutable release** button is currently gated only by `pending || locked || !validated` and is not independently hidden/disabled by role; server authorization remains authoritative. Do not add a new client role gate during extraction. Preserve the exact create payload, success navigation to `/releases/<id>?tab=response-contract`, and `DirtyNavigationGuard` Cancel behaviour. Do not restore any obsolete Preview/Test handoff.
 
-
 ## Work Items
 
 - [x] Move Release Composer into the dedicated module.
 - [x] Keep all Release-specific state/validation local to that module.
 - [x] Add focused Release Composer tests for seed/default/freshness/single-flight/create/cancel behaviour.
 - [x] Keep the accepted COMMERCE-001 controller and source-inspection tests unchanged.
-
 
 ## Interfaces / Contracts
 
@@ -120,7 +118,6 @@ Consumes the accepted COMMERCE-001 common workspace props/command contract. Rele
 - [x] No Preview handoff or new server action is introduced.
 - [x] SUPER_ADMIN-only opener / seeded-composer ADMIN submission asymmetry is unchanged; no new client create-role gate is introduced.
 - [x] Frozen 13/3/90-test assets and accepted COMMERCE-001 source-inspection tests are unchanged; frozen hashes match. The StudioWorkspace suite retains its six documented baseline failures.
-
 
 ## Validation
 
@@ -188,29 +185,29 @@ No cross-repository or architecture contract concerns.
 Task branch: `task/ARCH-025-COMMERCE-002`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-002`
-  parent branch: `task/ARCH-025-COMMERCE-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-002`
-  implementation branch: `task/ARCH-025-COMMERCE-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-002`
+parent branch: `task/ARCH-025-COMMERCE-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-002`
+implementation branch: `task/ARCH-025-COMMERCE-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization: launcher-prepared; both task worktrees were reused. Implementation `origin/main` was already included; implementation remote task branch was absent before initial publication. Parent remote task claim was already present.
 
 Implementation repository:
-  repository: `moda-interact-commerce`
-  commit: `3352a9a761d84bb00e37650f02487efed619e118`
-  remote branch: `origin/task/ARCH-025-COMMERCE-002`
-  pushed: yes; remote ref verified at the implementation commit
+repository: `moda-interact-commerce`
+commit: `3352a9a761d84bb00e37650f02487efed619e118`
+remote branch: `origin/task/ARCH-025-COMMERCE-002`
+pushed: yes; remote ref verified at the implementation commit
 
 Parent workspace:
-  task file: `docs/decisions/commerce/ARCH-025/COMMERCE-002-extract-release-composer.md`
-  review-submission commit: `d98207c9feee116c7738f0404887db584f355db6`
-  remote branch: `origin/task/ARCH-025-COMMERCE-002`
-  pushed: yes; remote ref verified at the review-submission commit
-  submodule gitlink staged: no
+task file: `docs/decisions/commerce/ARCH-025/COMMERCE-002-extract-release-composer.md`
+review-submission commit: `d98207c9feee116c7738f0404887db584f355db6`
+remote branch: `origin/task/ARCH-025-COMMERCE-002`
+pushed: yes; remote ref verified at the review-submission commit
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

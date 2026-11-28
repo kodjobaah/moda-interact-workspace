@@ -32,15 +32,15 @@ Studio lets the Moda team define what CommerceAgent can do and how it should
 respond. Merchants receive behaviour according to their eligible features and
 configuration. Customers continue using WhatsApp; they do not use Studio.
 
-| Term | Meaning |
-|---|---|
-| Feature | An offering managed in Moda Admin, with plan and merchant eligibility rules. Studio configures its conversational behaviour. |
-| Tool | A reusable action the assistant can choose when it needs facts. Its definition explains when to use it, what information it accepts, how information is retrieved and how results are presented. |
-| Behaviour / capability | Instructions, settings and a selection of exact tool versions. A feature can have more than one behaviour configuration. |
-| Draft | Saved work that can still be edited. Saving does not make it live. |
-| Published version or revision | A validated, fixed copy of a tool or behaviour. Later changes require another draft. |
-| Release | A fixed collection of published behaviour revisions, plus response instructions and the response-details definition. |
-| Active release | The release selected for new conversations in the environment. Creating a release does not activate it. |
+| Term                          | Meaning                                                                                                                                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Feature                       | An offering managed in Moda Admin, with plan and merchant eligibility rules. Studio configures its conversational behaviour.                                                                     |
+| Tool                          | A reusable action the assistant can choose when it needs facts. Its definition explains when to use it, what information it accepts, how information is retrieved and how results are presented. |
+| Behaviour / capability        | Instructions, settings and a selection of exact tool versions. A feature can have more than one behaviour configuration.                                                                         |
+| Draft                         | Saved work that can still be edited. Saving does not make it live.                                                                                                                               |
+| Published version or revision | A validated, fixed copy of a tool or behaviour. Later changes require another draft.                                                                                                             |
+| Release                       | A fixed collection of published behaviour revisions, plus response instructions and the response-details definition.                                                                             |
+| Active release                | The release selected for new conversations in the environment. Creating a release does not activate it.                                                                                          |
 
 The usual workflow is:
 
@@ -67,9 +67,9 @@ Google sign-in alone does not grant Studio access. **Access denied** means the
 account does not currently have the required active staff permission. Ask a Moda
 administrator to check your account. Use **Sign out** to change accounts.
 
-| Role | What you can do |
-|---|---|
-| ADMIN | Create and edit drafts, explore Shopify, validate definitions and test configurations. |
+| Role        | What you can do                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| ADMIN       | Create and edit drafts, explore Shopify, validate definitions and test configurations.                                          |
 | SUPER_ADMIN | All ADMIN actions, plus publishing, creating releases, activation, rollback and enabling or disabling tools and configurations. |
 
 The sidebar contains **Features**, **Tools**, **Explore Shopify**, **Test
@@ -109,13 +109,13 @@ change feature metadata, plans or availability. Studio does not create features
 or edit merchant preferences. A feature without conversational behaviour is not
 necessarily incomplete; some features only concern billing or other services.
 
-| Status | How to interpret it |
-|---|---|
-| Not configured | No Commerce behaviour is linked to this feature. |
-| Draft only | Configurations exist, but none is included in the active release. |
-| Live | At least one linked configuration is included in the active release. Check merchant eligibility separately. |
-| Unpublished changes | Draft changes differ from the version in use. |
-| Disabled configuration | A configuration is disabled, even if published versions exist. |
+| Status                 | How to interpret it                                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Not configured         | No Commerce behaviour is linked to this feature.                                                            |
+| Draft only             | Configurations exist, but none is included in the active release.                                           |
+| Live                   | At least one linked configuration is included in the active release. Check merchant eligibility separately. |
+| Unpublished changes    | Draft changes differ from the version in use.                                                               |
+| Disabled configuration | A configuration is disabled, even if published versions exist.                                              |
 
 For shared platform instructions, open **Features → Platform configurations**.
 These include the core conversation instructions and recovery-policy behaviour.
@@ -131,14 +131,14 @@ a first version starts at `1.0.0`.
 The tool editor has **Metadata**, **Definition** and **History** tabs. The
 Definition tab guides you through six steps:
 
-| Step | What to enter or check |
-|---|---|
-| 1. Purpose | Explain what the tool does and when the assistant should use it. Review the proposed version. |
-| 2. Inputs | Define the fields the assistant may supply: name, description, type, whether required and allowed bounds. |
+| Step                    | What to enter or check                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Purpose              | Explain what the tool does and when the assistant should use it. Review the proposed version.                                                          |
+| 2. Inputs               | Define the fields the assistant may supply: name, description, type, whether required and allowed bounds.                                              |
 | 3. Retrieve information | Choose a **Public Shopify query** or an available **Recovery/discount operation**. Select the documented operation/version or build a permitted query. |
-| 4. Map inputs | Map each required argument to a declared **Agent input** or a type-valid **Fixed value**. Resolve missing or incompatible mappings. |
-| 5. Response | Choose **Text** or **List**, select the result path and insert the allowed field chips. Supply unavailable text and, for lists, empty-result text. |
-| 6. Review and test | Inspect the assistant-facing descriptor separately from the retrieval definition, resolve validation errors and test the saved revision. |
+| 4. Map inputs           | Map each required argument to a declared **Agent input** or a type-valid **Fixed value**. Resolve missing or incompatible mappings.                    |
+| 5. Response             | Choose **Text** or **List**, select the result path and insert the allowed field chips. Supply unavailable text and, for lists, empty-result text.     |
+| 6. Review and test      | Inspect the assistant-facing descriptor separately from the retrieval definition, resolve validation errors and test the saved revision.               |
 
 Shop identity and credentials are supplied by the system, not by editable tool
 inputs. Response templates present retrieved facts; they do not add calculations
@@ -340,40 +340,40 @@ of that tool, including calls from existing grants. Review the usage information
 and confirmation before disabling it. Enabling it does not add new tool versions
 to old conversations.
 
-| What you see | What to do |
-|---|---|
-| Action is pending | Wait for its result. Conflicting actions are disabled to prevent duplicate submissions. |
-| Unknown outcome or a timeout after submitting | Use the offered reconciliation/retry for that original action. Do not create a second tool, release or operation to guess whether the first succeeded. |
-| Another user changed the record | Keep your local input, reload the current record, compare changes and deliberately save against the refreshed version. |
-| Activation conflict | Refresh the active-release information and confirm again only after reviewing the new state. |
-| Validation errors | Correct the indicated fields. Test success from before an edit does not validate the edited definition. |
-| Service or schema unavailable | Retain your draft and retry when the service returns. Unavailable is not the same as an empty result. |
-| Publish or Activate is unavailable for your role | Ask a SUPER_ADMIN to review and perform the publication step. |
-| A tool is absent from a merchant's list | Check feature eligibility, enabled state, exact published bindings and active-release membership in Merchants. |
-| New behaviour is absent from an existing conversation | Existing conversations retain their initial selection. Inspect the new-conversation list or start a fresh synthetic preview. |
-| Preview is Unknown, expired or over budget | Reconcile an uncertain run first. Reset expired state or follow the displayed budget limits; do not repeatedly submit the same message. |
+| What you see                                          | What to do                                                                                                                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Action is pending                                     | Wait for its result. Conflicting actions are disabled to prevent duplicate submissions.                                                                |
+| Unknown outcome or a timeout after submitting         | Use the offered reconciliation/retry for that original action. Do not create a second tool, release or operation to guess whether the first succeeded. |
+| Another user changed the record                       | Keep your local input, reload the current record, compare changes and deliberately save against the refreshed version.                                 |
+| Activation conflict                                   | Refresh the active-release information and confirm again only after reviewing the new state.                                                           |
+| Validation errors                                     | Correct the indicated fields. Test success from before an edit does not validate the edited definition.                                                |
+| Service or schema unavailable                         | Retain your draft and retry when the service returns. Unavailable is not the same as an empty result.                                                  |
+| Publish or Activate is unavailable for your role      | Ask a SUPER_ADMIN to review and perform the publication step.                                                                                          |
+| A tool is absent from a merchant's list               | Check feature eligibility, enabled state, exact published bindings and active-release membership in Merchants.                                         |
+| New behaviour is absent from an existing conversation | Existing conversations retain their initial selection. Inspect the new-conversation list or start a fresh synthetic preview.                           |
+| Preview is Unknown, expired or over budget            | Reconcile an uncertain run first. Reset expired state or follow the displayed budget limits; do not repeatedly submit the same message.                |
 
 ## Page reference
 
 Routes below are relative to the Studio address. `[id]` means the selected record,
 not text to type into the address bar.
 
-| Page | Where to find it | Purpose / return path |
-|---|---|---|
-| U01 · Sign in | `/sign-in` | Google staff sign-in; returns to the requested page or Features. |
-| U02 · Access denied | `/access-denied` | Explains missing permission; Sign out to change account. |
-| U03 · Features | `/features` | Feature catalogue and Platform configurations link. |
-| U04 · Feature detail | `/features/[id]` | Linked behaviours and Admin link; back to Features. |
-| U05 · Tools | `/tools` | Reusable tool library and New tool. |
-| U06 · Tool editor | `/tools/[id]` | Metadata, definition and history; back to Tools or originating behaviour. |
-| U07 · Explore Shopify | `/explore` | Documentation and query builder; return to originating tool when applicable. |
-| U08 · Platform configurations | `/capabilities` | Core/recovery configurations; back to Features. |
-| U09 · Behaviour editor | `/capabilities/[id]` | Instructions and exact tool bindings; back to feature or platform list. |
-| U10 · Releases | `/releases` | History and release composer. |
-| U11 · Release detail | `/releases/[id]` | Exact versions, response contract, activation and rollback; back to Releases. |
-| U12 · Merchants | `/shops` | Merchant search. |
-| U13 · Merchant detail | `/shops/[id]` | Eligibility and new-conversation tool list; back to Merchants. |
-| U14 · Test conversations | `/preview` | Tool tests and synthetic conversations; back to source or Features. |
+| Page                          | Where to find it     | Purpose / return path                                                         |
+| ----------------------------- | -------------------- | ----------------------------------------------------------------------------- |
+| U01 · Sign in                 | `/sign-in`           | Google staff sign-in; returns to the requested page or Features.              |
+| U02 · Access denied           | `/access-denied`     | Explains missing permission; Sign out to change account.                      |
+| U03 · Features                | `/features`          | Feature catalogue and Platform configurations link.                           |
+| U04 · Feature detail          | `/features/[id]`     | Linked behaviours and Admin link; back to Features.                           |
+| U05 · Tools                   | `/tools`             | Reusable tool library and New tool.                                           |
+| U06 · Tool editor             | `/tools/[id]`        | Metadata, definition and history; back to Tools or originating behaviour.     |
+| U07 · Explore Shopify         | `/explore`           | Documentation and query builder; return to originating tool when applicable.  |
+| U08 · Platform configurations | `/capabilities`      | Core/recovery configurations; back to Features.                               |
+| U09 · Behaviour editor        | `/capabilities/[id]` | Instructions and exact tool bindings; back to feature or platform list.       |
+| U10 · Releases                | `/releases`          | History and release composer.                                                 |
+| U11 · Release detail          | `/releases/[id]`     | Exact versions, response contract, activation and rollback; back to Releases. |
+| U12 · Merchants               | `/shops`             | Merchant search.                                                              |
+| U13 · Merchant detail         | `/shops/[id]`        | Eligibility and new-conversation tool list; back to Merchants.                |
+| U14 · Test conversations      | `/preview`           | Tool tests and synthetic conversations; back to source or Features.           |
 
 ### Reference for maintaining this guide
 

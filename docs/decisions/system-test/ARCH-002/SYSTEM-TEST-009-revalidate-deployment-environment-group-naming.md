@@ -19,6 +19,7 @@ depends_on:
 enables:
   - ARCH-002-SYSTEM-TEST-008
 ---
+
 # Revalidate Deployment Environment-Group Naming and Isolation
 
 This task is **Ready — Architect Changes Requested remain applicable**.
@@ -32,6 +33,7 @@ Blueprint-managed Environment Groups:
 ```text
 __SET_IN_RENDER_DASHBOARD__
 ```
+
 `DEPLOYMENT_ENVIRONMENT_NAME` retains its real environment value.
 
 The test placeholder literals intentionally remain in `render.test.yaml`.
@@ -112,7 +114,6 @@ if they appear as active Blueprint environment-group declarations or
 
 Historical task prose is not runtime configuration and should not be treated as
 a failure.
-
 
 ## GATEWAY-011 Ownership Contract
 
@@ -196,7 +197,6 @@ git diff --check
 - changing custom domains;
 - live Render validation;
 - capacity testing.
-
 
 ## Architect Correction — Attempt 2
 
@@ -319,7 +319,6 @@ Return the same task to `review` after the correction.
 
 Do not create another task for this issue.
 
-
 ## Resolved Upstream Block — GATEWAY-012
 
 GATEWAY-012 is architect-accepted Complete.
@@ -347,8 +346,6 @@ SHOPIFY_APP_URL
 
 The previously requested generalized cross-environment contamination tests
 remain required.
-
-
 
 ## Architect Correction — Attempt 3
 

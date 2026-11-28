@@ -19,6 +19,7 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T12:36:00Z
 ---
+
 # Adopt shared ICU internationalisation runtime in Admin
 
 ## Objective
@@ -1010,7 +1011,7 @@ The current catalogue has 220 keys. The exact count may change only if Attempt 3
 Current `src/components/admin/recovery-conversation-tab.tsx` renders:
 
 ```ts
-adminStatusLabel(message.senderType)
+adminStatusLabel(message.senderType);
 ```
 
 but the current catalogue has no sender-type keys. Known values therefore render raw backend enums such as:
@@ -1036,7 +1037,7 @@ sender.HUMAN     -> Human
 and a bounded helper such as:
 
 ```ts
-adminSenderLabel(value)
+adminSenderLabel(value);
 ```
 
 Requirements:
@@ -1054,8 +1055,8 @@ Add regressions for all four known sender types plus one unknown/raw fallback.
 `src/lib/admin/queue-monitor.ts` still contains:
 
 ```ts
-jobNames: ['Pending recovery candidates']
-jobNames: ['WhatsApp events']
+jobNames: ["Pending recovery candidates"];
+jobNames: ["WhatsApp events"];
 ```
 
 and `src/components/admin/queue-monitor.tsx` renders `queue.jobNames.join(", ")` directly.
@@ -1124,9 +1125,9 @@ active: "tenants" | "observability" | "queues";
 and comparisons such as:
 
 ```ts
-active === "tenants"
-status === "FAILED"
-senderType === "CUSTOMER"
+active === "tenants";
+status === "FAILED";
+senderType === "CUSTOMER";
 ```
 
 remain internal identifiers. Only the **rendered user-facing label** for those values must resolve through ICU, for example `navigation.tenants`, `status.FAILED`, or `sender.CUSTOMER`.
@@ -1471,4 +1472,3 @@ ARCH-005-ADMIN-001 = COMPLETE
 ```
 
 `ARCH-006-ADMIN-001` has its ARCH-005 Admin prerequisite satisfied, but remains Pending until all of its other declared dependencies are Complete.
-

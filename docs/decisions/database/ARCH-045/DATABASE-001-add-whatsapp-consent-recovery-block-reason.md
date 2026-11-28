@@ -19,6 +19,7 @@ enables: []
 created: 2026-10-20
 updated: 2026-10-20
 ---
+
 # Superseded: WhatsApp consent recovery admission enum
 
 ## Architecture
@@ -34,7 +35,7 @@ Coordinator: `moda_architect`
 
 ## Context
 
-The 2026-10-20 design correction moves the consent check before the existing `RecoveryInitiationService` persists a recovery. Existing enum values for *already created* capacity/recipient-suppressed recoveries remain unchanged. Shopify stores its own WhatsApp consent.
+The 2026-10-20 design correction moves the consent check before the existing `RecoveryInitiationService` persists a recovery. Existing enum values for _already created_ capacity/recipient-suppressed recoveries remain unchanged. Shopify stores its own WhatsApp consent.
 
 ## Scope
 

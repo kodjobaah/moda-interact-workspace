@@ -72,7 +72,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R5 — Separation.** Post-window commands must continue to the Meta recovery-template path (BG007), never use a free-form conversation wrapper in place of an approved template.
 
-**R6 — One human in-window path; no obsolete bypass.** Replace any separate in-window direct raw-text dispatch that would evade BG005 and full-message moderation, while retaining a no-wrapper case through the *same* final admission path. Remove dead local wrapper/formatting helpers and superseded tests after a reference audit, not by deleting the original human-control, service-window or moderation protections. BG007 separately owns the post-window template branch; both tasks touch `human-command-dispatcher.service.ts`, so require explicit final-branch reconciliation before acceptance.
+**R6 — One human in-window path; no obsolete bypass.** Replace any separate in-window direct raw-text dispatch that would evade BG005 and full-message moderation, while retaining a no-wrapper case through the _same_ final admission path. Remove dead local wrapper/formatting helpers and superseded tests after a reference audit, not by deleting the original human-control, service-window or moderation protections. BG007 separately owns the post-window template branch; both tasks touch `human-command-dispatcher.service.ts`, so require explicit final-branch reconciliation before acceptance.
 
 ## Work Items
 
@@ -103,7 +103,6 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - `ARCH-047-BACKGROUND-005` (Complete)
 - `ARCH-040-DATABASE-007` (Complete; its merged Database `main` schema/client must be synchronized before Background source edits)
-
 
 **Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
 
@@ -149,8 +148,6 @@ After finishing Work Items, Acceptance Criteria and Validation, fill the Complet
 Keep merchant-facing display parity explicit in handoff to Shopify/Woo tasks, but do not modify those repositories. A preview must never be the security authority at send time: Background re-resolves current wrapper and session eligibility.
 
 Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and the deterministic `/moda-task` launcher packet. Use launcher-resolved dedicated parent and implementation worktrees, both on `task/ARCH-047-BACKGROUND-009`; synchronise from canonical roots, not a prior task worktree. Preserve exact source semantics and existing test expectations; use the published `@modainteract/moda-interact-shared/logging` for generic structured logs, not a second logger. Prefer small coordinator/repository/pure-helper files over 300+ line catch-all services.
-
-
 
 ## Completion Report
 
@@ -381,7 +378,6 @@ The inspected 26 October BG009 worktree shows a correct preparation-only `HumanW
 - Parent synchronization: fetched `origin --prune`; parent HEAD was clean and equal to `origin/task/ARCH-047-BACKGROUND-009` at `eb7abb3636f441b2f66fcc93144143dfc5455de6`; current `origin/main` was an ancestor's ancestor at `cda92824e2875baf9f114e41d244a35666fe5b86`. The task branch had 11 mainline commits to merge and 4 task commits. Merged `origin/main` into the task branch without conflict; merge commit `3f542bfebe8b8a55061252b90a2b8bdb63718fc7` was pushed. After fetch, parent HEAD equals origin task, `origin/main` is an ancestor, and the worktree is clean.
 - Implementation synchronization: fetched `origin --prune`; implementation HEAD was clean and equal to `origin/task/ARCH-047-BACKGROUND-009` at `7b135b115efff28a1d32b91b6ef93333d8bc7dad`; current implementation `origin/main` `6cce2b18f288d4cabc6f7dcea3ef251acbb15323` is an ancestor. No merge was required. The Database submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, equal to Database `origin/main`.
 - Pre-claim implementation disclosure: commit `7b135b1` and the reported 28/28 PostgreSQL integration run predate this formal claim. Current Attempt 3 begins with those tests committed and pushed; no implementation source edits were made during claim preparation.
-
 
 ### Reviewed Files
 

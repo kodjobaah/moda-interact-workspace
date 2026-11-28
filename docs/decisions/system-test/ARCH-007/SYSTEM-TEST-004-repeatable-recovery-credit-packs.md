@@ -29,6 +29,7 @@ updated: 2026-09-08
 Terminal/manual-gated integrated validation only.
 
 Validate:
+
 - Free allowance exhausted -> pack request -> Shopify pack UsageEvent reported -> credits activate -> recovery allowed.
 - consume whole pack -> another pack can be bought and activates again.
 - paid included allowance exhausted -> purchased credits are consumed before overage.
@@ -57,46 +58,59 @@ Do not run until all dependencies are architect-accepted Complete and the develo
 ## Completion Report
 
 ### Status
+
 Pending
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
-None.
 
+None.

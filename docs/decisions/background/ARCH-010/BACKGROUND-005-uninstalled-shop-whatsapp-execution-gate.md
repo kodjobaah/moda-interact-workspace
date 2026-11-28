@@ -52,6 +52,7 @@ No heuristic tenant inference may be added by this task.
 
 At minimum inspect:
 status: in_progress
+
 ```text
 executor: copilot
 src/workers/whatsapp.worker.ts
@@ -197,9 +198,11 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `src/services/shop-execution-eligibility.service.ts`
 - `src/workers/whatsapp.worker.ts`
 - `src/services/conversation-turn-processor.service.ts`
@@ -209,6 +212,7 @@ Ready for Review
 - `tests/unit/services/recovery-routing.service.test.ts`
 
 ### Work Completed
+
 - Preserved the B004 `ShopExecutionRecord`, `resolveShopByDomain`, and `isShopExecutionActive` helper API.
 - Preserved the accepted inbound and delayed-turn worker boundaries and their durable Shop.status checks.
 - Added worker tests proving active context-linked inbound persists/enqueues, while UNINSTALLED and SUSPENDED routes do neither.
@@ -218,6 +222,7 @@ Ready for Review
 - Attempt 2/3 review corrections: all implemented; no scope guard or stop condition was triggered.
 
 ### Validation Results
+
 - `npm test -- --run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts`: 3 files passed, 45 tests passed.
 - `npm test -- --run tests/unit/services/recovery-routing.service.test.ts`: 22 passed, 1 pre-existing fixture failure because the mocked Prisma namespace does not expose `PrismaClientKnownRequestError` as a constructor.
 - `npm test -- --run tests/unit/services/recovery-routing.service.test.ts -t 'mixed inactive and active ownership'`: 1 passed, 22 skipped.
@@ -230,6 +235,7 @@ Ready for Review
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-005`, branch `task/ARCH-010-BACKGROUND-005`.
 - Negative isolation assertions: parent is not the primary/shared workspace: yes; implementation is not the shared repository checkout: yes.
@@ -287,14 +293,14 @@ src/services/shop-execution-eligibility.service.ts
 but its version contains only:
 
 ```ts
-isShopExecutionActive(shopId)
+isShopExecutionActive(shopId);
 ```
 
 The already-reviewed BACKGROUND-004 implementation of the same helper also contains
 the `ShopExecutionRecord` contract and:
 
 ```ts
-resolveShopByDomain(domain)
+resolveShopByDomain(domain);
 ```
 
 which BACKGROUND-004 uses for recovery scheduling/execution.
@@ -343,7 +349,7 @@ only on the routing-service result.
 The processor test currently sets:
 
 ```ts
-test.loaded.shopUnavailable = true
+test.loaded.shopUnavailable = true;
 ```
 
 and correctly proves that the processor does not call settled abuse admission,
@@ -761,4 +767,3 @@ Dependency reconciliation:
   `ARCH-010-SHOPIFY-006`.
 
 No dependent task is promoted by this acceptance overlay.
-

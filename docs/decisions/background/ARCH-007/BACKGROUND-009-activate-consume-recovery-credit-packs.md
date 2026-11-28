@@ -59,6 +59,7 @@ Do not hard-stop paid merchants merely because included units are exhausted.
 Add a bounded service/reconciliation path for `RecoveryCreditPurchase`.
 
 State mapping:
+
 ```text
 linked UsageEvent REPORTED
   -> activate purchase exactly once
@@ -84,30 +85,36 @@ Activation transaction must be idempotent. Reprocessing an ACTIVE purchase must 
 Use existing Prisma transaction/CAS conventions from `FreeRecoveryReservationService`; do not copy raw SQL.
 
 Counter:
+
 ```text
 EntitlementCounter.PURCHASED_RECOVERY_CREDITS
 ```
 
 Available:
+
 ```text
 grantedQuantity - committedQuantity - reservedQuantity
 ```
 
 Reservation lifecycle:
+
 - reserve before provider send;
 - definitive provider failure -> RELEASED and reservedQuantity decremented;
 - ambiguous provider outcome -> AMBIGUOUS, still consumes safety capacity until reconciliation;
 - provider accepted / recovery initiated -> COMMITTED; committedQuantity incremented, reserved decremented.
 
 Commit creates one internal `RECOVERY_CONVERSATION +1` UsageEvent with:
+
 ```text
 shopifyReportState = NOT_APPLICABLE
 ```
+
 because the merchant already paid via the recovery-credit-pack billing event. Never also emit the normal paid recovery meter for that same top-up-covered recovery.
 
 ## Paid included-usage calculation
 
 For top-up-enabled PAID_METERED plans only, calculate normal current-period recovery quantity from durable `UsageEvent` rows that:
+
 - belong to current `billingPeriodId`;
 - metric = `RECOVERY_CONVERSATION`;
 - use the plan's normal `shopifyUsageEventHandle`;
@@ -118,6 +125,7 @@ If included allowance/meter configuration is invalid, do not guess. Preserve the
 ## Credit persistence rules
 
 Purchased credits:
+
 - do not reset at billing period boundary;
 - do not reset on plan upgrade/downgrade;
 - do not reset on uninstall/reinstall of the same durable Shop;
@@ -127,25 +135,15 @@ Purchased credits:
 ## Required tests
 
 FREE:
+
 1. free 5/5 + 0 purchased -> blocked.
 2. free 5/5 + 1 purchased -> admitted and purchased balance becomes 0 after commit.
 3. free allowance remaining -> Free is consumed before purchased credits.
 4. purchased pack exhausted -> later newly activated pack restores capacity.
 
-PAID:
-5. included allowance 200, normal count 199, purchased >0 -> 200th uses normal meter, not purchased.
-6. normal count 200, purchased >0 -> next recovery consumes purchased credit and no normal recovery meter event is reportable.
-7. normal count 200, purchased 0 -> next recovery follows existing paid overage path.
-8. after purchased credits exhaust, paid overage resumes.
-9. after another pack activates, subsequent recovery can consume purchased credits again.
+PAID: 5. included allowance 200, normal count 199, purchased >0 -> 200th uses normal meter, not purchased. 6. normal count 200, purchased >0 -> next recovery consumes purchased credit and no normal recovery meter event is reportable. 7. normal count 200, purchased 0 -> next recovery follows existing paid overage path. 8. after purchased credits exhaust, paid overage resumes. 9. after another pack activates, subsequent recovery can consume purchased credits again.
 
-ACTIVATION/IDEMPOTENCY:
-10. REPORTED purchase increments grantedQuantity exactly once under replay/concurrency.
-11. PENDING/RETRYABLE does not grant.
-12. NEEDS_ATTENTION does not grant.
-13. later REPORTED after retry grants once.
-14. duplicate recovery execution does not consume two purchased credits.
-15. definitive vs ambiguous provider outcomes preserve reservation semantics.
+ACTIVATION/IDEMPOTENCY: 10. REPORTED purchase increments grantedQuantity exactly once under replay/concurrency. 11. PENDING/RETRYABLE does not grant. 12. NEEDS_ATTENTION does not grant. 13. later REPORTED after retry grants once. 14. duplicate recovery execution does not consume two purchased credits. 15. definitive vs ambiguous provider outcomes preserve reservation semantics.
 
 ## Luna execution rules
 
@@ -163,9 +161,11 @@ ACTIVATION/IDEMPOTENCY:
 ## Completion Report
 
 ### Status
+
 Ready for Review (Attempt 3)
 
 ### Files Changed
+
 - `moda-interact-background/package.json`
 - `moda-interact-background/package-lock.json`
 - `moda-interact-background/src/services/effective-billing-policy.service.ts`
@@ -179,6 +179,7 @@ Ready for Review (Attempt 3)
 - `moda-interact-background/tests/unit/runtime/observability-startup.test.ts`
 
 ### Work Completed
+
 - Added durable purchased-credit reservation lifecycle with serializable transactions, CAS/version checks, idempotent replay, release, and ambiguous outcomes.
 - Added billed recovery-pack activation and bounded reconciliation from linked UsageEvent state.
 - Added Free and paid admission ordering so purchased credits are consumed before paid overage, while preserving the normal paid path for invalid configuration and exhausted purchased balance.
@@ -191,6 +192,7 @@ Ready for Review (Attempt 3)
 - Attempt 3 adds a deterministic reservation barrier proving both contenders read the same counter version, one loses the conditional CAS, retries in a new transaction, and observes exhausted capacity.
 
 ### Validation Results
+
 - `npm run prisma:validate` passed.
 - `npm run prisma:generate` passed.
 - `npm run build` passed.
@@ -199,24 +201,30 @@ Ready for Review (Attempt 3)
 - `git diff --check` passed.
 
 ### Deviations
+
 - Full suite retains two pre-existing failures in `pending-recovery-candidate.service.test.ts`; they are outside this task's scope.
 
 ### Assumptions
+
 - The accepted `ARCH-007-SHARED-006` contract is consumed at version `0.8.0`.
 
 ### Unresolved Issues
+
 - The two unrelated pending recovery candidate tests remain failing.
 
 ### Architectural Concerns
+
 None.
 
 ### Attempt 2 Implementation
+
 - Implementation commit: `68a16f0093beebc8469107403ebc46a8b3eb6076`
 - Correction 1 files/tests: `src/services/recovery-credit-purchase.service.ts`, `tests/unit/services/recovery-credit-purchase.service.test.ts`.
 - Correction 2 files/tests: `src/services/shopify-usage-event-publisher.service.ts`, `tests/unit/services/shopify-usage-event-publisher.service.test.ts`.
 - Required reservation and admission regressions: `tests/unit/services/purchased-recovery-reservation.service.test.ts`, `tests/unit/services/recovery-billing.service.test.ts`.
 
 ### Attempt 3 Implementation
+
 - Implementation commit: `125f1a9`
 - REPORTED-first bounded reconciliation: `src/services/recovery-credit-purchase.service.ts`, `tests/unit/services/recovery-credit-purchase.service.test.ts`.
 - CAS-loss/retry concurrency proof: `tests/unit/services/purchased-recovery-reservation.service.test.ts`.
@@ -226,17 +234,17 @@ None.
 Task branch: `task/ARCH-007-BACKGROUND-009`
 
 Implementation repository:
-  repository: `moda-interact-background`
-  commit: `125f1a9`
-  remote branch: `origin/task/ARCH-007-BACKGROUND-009`
-  pushed: yes
+repository: `moda-interact-background`
+commit: `125f1a9`
+remote branch: `origin/task/ARCH-007-BACKGROUND-009`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/background/ARCH-007/BACKGROUND-009-activate-consume-recovery-credit-packs.md`
-  commit: `6644b41`
-  remote branch: `origin/task/ARCH-007-BACKGROUND-009`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/background/ARCH-007/BACKGROUND-009-activate-consume-recovery-credit-packs.md`
+commit: `6644b41`
+remote branch: `origin/task/ARCH-007-BACKGROUND-009`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

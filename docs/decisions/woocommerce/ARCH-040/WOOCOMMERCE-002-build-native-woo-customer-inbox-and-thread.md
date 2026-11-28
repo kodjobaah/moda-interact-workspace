@@ -1,4 +1,5 @@
 ---
+
 id: ARCH-040-WOOCOMMERCE-002
 architecture_id: ARCH-040
 title: Extend Woo Recovery Detail with basket and conversation

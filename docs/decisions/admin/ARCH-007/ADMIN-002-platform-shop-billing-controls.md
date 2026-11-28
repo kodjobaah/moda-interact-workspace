@@ -12,9 +12,9 @@ priority: 70
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: 
+depends_on:
   - ARCH-007-ADMIN-001
-enables: 
+enables:
   - ARCH-007-ADMIN-003
   - ARCH-007-SYSTEM-TEST-001
 created: 2026-09-07
@@ -57,7 +57,6 @@ Admin platform billing policy screen plus tenant billing-controls panel/actions/
 - Every mutation writes BillingAuditEvent with actor/reason/before/after and shop when applicable.
 - Use existing PlatformAdmin ADMIN/SUPER_ADMIN authorization; hard platform/correction-level controls require SUPER_ADMIN.
 
-
 ## Work Items
 
 - [x] Build platform policy page/actions.
@@ -95,7 +94,6 @@ Inspect the repository `package.json` first. Run the focused tests required by t
 
 ## Implementation Notes
 
-
 Luna deterministic-execution guardrails:
 
 - Treat this task file as the complete implementation contract. Do not infer additional product policy from old billing code.
@@ -106,7 +104,6 @@ Luna deterministic-execution guardrails:
 - Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
 - Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-ADMIN-002` branch and the mirrored parent-workspace `task/ARCH-007-ADMIN-002` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
 - Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
-
 
 ## Completion Report
 
@@ -217,14 +214,14 @@ When `existing` is `null`, optional chaining returns `undefined`, and `undefined
 
 Required authorization behavior after the fix:
 
-| Principal | Mutation | Required result |
-| --- | --- | --- |
-| `ADMIN` | first override with only `outboundSoftLimit` | ALLOW |
-| `ADMIN` | first override with only `pauseNewRecoveries` and/or `pauseAutomatedWhatsapp` | ALLOW |
-| `ADMIN` | set non-null `outboundHardLimit` | REJECT |
-| `ADMIN` | set non-null `recoverySafetyCeiling` | REJECT |
-| `ADMIN` | remove or replace an existing non-null hard control | REJECT |
-| `SUPER_ADMIN` | set/remove/replace hard controls | ALLOW, subject to existing bounds validation |
+| Principal     | Mutation                                                                      | Required result                              |
+| ------------- | ----------------------------------------------------------------------------- | -------------------------------------------- |
+| `ADMIN`       | first override with only `outboundSoftLimit`                                  | ALLOW                                        |
+| `ADMIN`       | first override with only `pauseNewRecoveries` and/or `pauseAutomatedWhatsapp` | ALLOW                                        |
+| `ADMIN`       | set non-null `outboundHardLimit`                                              | REJECT                                       |
+| `ADMIN`       | set non-null `recoverySafetyCeiling`                                          | REJECT                                       |
+| `ADMIN`       | remove or replace an existing non-null hard control                           | REJECT                                       |
+| `SUPER_ADMIN` | set/remove/replace hard controls                                              | ALLOW, subject to existing bounds validation |
 
 Implementation constraint: compute whether an existing hard control is present only when an existing override actually exists. An acceptable shape is:
 
@@ -252,15 +249,15 @@ Current defect: the function validates only `YYYY-MM-DD` shape and then relies o
 
 Required behavior:
 
-| Input | Required result |
-| --- | --- |
-| empty / omitted | `null` |
-| `2026-02-28` | ACCEPT |
-| `2026-02-29` | REJECT |
-| `2028-02-29` | ACCEPT |
-| `2026-02-31` | REJECT |
-| `2026-04-31` | REJECT |
-| malformed non-`YYYY-MM-DD` input | REJECT |
+| Input                            | Required result |
+| -------------------------------- | --------------- |
+| empty / omitted                  | `null`          |
+| `2026-02-28`                     | ACCEPT          |
+| `2026-02-29`                     | REJECT          |
+| `2028-02-29`                     | ACCEPT          |
+| `2026-02-31`                     | REJECT          |
+| `2026-04-31`                     | REJECT          |
+| malformed non-`YYYY-MM-DD` input | REJECT          |
 
 Implementation constraint: after parsing year/month/day, construct the UTC date and round-trip `getUTCFullYear()`, `getUTCMonth()`, and `getUTCDate()` against the submitted components. Do not use locale-dependent parsing. Continue returning the valid expiry at `23:59:59.999Z` as the current implementation does.
 

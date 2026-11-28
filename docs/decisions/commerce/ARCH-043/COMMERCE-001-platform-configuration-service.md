@@ -19,7 +19,7 @@ depends_on:
   - ARCH-043-ADMIN-002
 enables:
   - ARCH-043-COMMERCE-002
-created: '2026-10-17'
+created: "2026-10-17"
 updated: 2026-10-17
 ---
 
@@ -52,7 +52,7 @@ Commerce currently has separate environment readers for preview budgets (`src/co
 - Validate the closed `commerce.preview` object (`deadlineMs`, `outputTokens`) and the `auth.commerce` / `commerce.connectionKeys` encrypted envelopes and decrypted purpose-specific payloads against the exact ARCH-043 schema. Unknown fields, types, environment, key, version and ciphertext tampering fail safely.
 - Use existing `@modainteract/moda-interact-shared/security/credentials/node` decryption/keyring functions and the architecture's frozen AAD bytes `JSON.stringify(["moda-platform-config-v1", environment, key, version, 1])`. Preserve pre-existing connection-credential ciphertext/AAD; unseal wrapping material stays outside PostgreSQL.
 - Define typed outputs that give existing consumers the complete required auth (`AUTH_SECRET`, Google provider ID/secret) and connection material (keyring, active key ID, command HMAC key) **on trusted server paths only**. Never return sealed envelopes, decrypted secrets or key material to client components or public JSON.
-- Support a code-owned safe default for a *missing* `commerce.preview` row only (60,000 ms / 1,200 tokens); preserve `PREVIEW_SLOT_MS - 30,000` and 32,768 hard ceilings. Invalid existing rows must be rejected, not replaced silently. Missing/disabled/corrupt auth or connection secrets fail closed.
+- Support a code-owned safe default for a _missing_ `commerce.preview` row only (60,000 ms / 1,200 tokens); preserve `PREVIEW_SLOT_MS - 30,000` and 32,768 hard ceilings. Invalid existing rows must be rejected, not replaced silently. Missing/disabled/corrupt auth or connection secrets fail closed.
 - **No cache:** each call performs a fresh database read of the requested key, with no process-global singleton values, TTL, Redis snapshot, polling, or stale-last-good fallback. A single business operation may pass its validated result to its own downstream steps.
 - Test through an injectable repository and disposable PostgreSQL integration where task validation requires it; do not change runtime routes or environment readers in this task.
 
@@ -67,7 +67,7 @@ Commerce currently has separate environment readers for preview budgets (`src/co
 1. The service is a **read-only** trusted server facility, with a fixed three-key allowlist and strict environment isolation.
 2. Each invocation retrieves a current row; subsequent invocations observe committed updates without refresh mechanisms or redeployment, subject to transaction visibility.
 3. Preserve separate security layers: the external unseal key protects ARCH-043 secret envelopes; decoded Commerce connection key material still decrypts existing Commerce credential records using their original AAD.
-4. Optional *absent* preview settings may use only current code defaults. Required secret settings fail closed when missing, disabled, tampered, wrong-environment or not decryptable.
+4. Optional _absent_ preview settings may use only current code defaults. Required secret settings fail closed when missing, disabled, tampered, wrong-environment or not decryptable.
 5. Secret errors/logs expose only bounded key/status/reason identifiers; never secret values, keys, ciphertext, nonce, tags or request payloads.
 
 ## Work Items
@@ -103,7 +103,7 @@ requireCommerceConnectionSecurity(deps): Promise<{ keyring: CredentialKeyring; a
 ## Acceptance Criteria
 
 - [x] One common server-side database reader supplies all three approved Commerce keys, with strict runtime schema checks and isolation.
-- [x] A committed change is visible to the *next call*; no cross-operation cache or stale fallback.
+- [x] A committed change is visible to the _next call_; no cross-operation cache or stale fallback.
 - [x] Preview missing-row defaults are safe and hard ceilings cannot be weakened.
 - [x] Wrong-environment, invalid, revoked, absent or undecryptable secret rows fail closed and leak no material.
 - [ ] Shared crypto/AAD interoperability is proven with Admin-owned canonical test vectors; pre-existing Commerce credential ciphertext remains compatible. Existing credential AAD compatibility is tested; Admin-owned deterministic writer vectors are not yet available.

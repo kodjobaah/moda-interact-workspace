@@ -13,13 +13,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-MESSAGING-003
+  - ARCH-002-MESSAGING-003
 enables:
-- ARCH-002-GATEWAY-006
-- ARCH-002-SYSTEM-TEST-002
+  - ARCH-002-GATEWAY-006
+  - ARCH-002-SYSTEM-TEST-002
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Add bounded Meta ingress semantic telemetry
 
 ## Objective
@@ -87,45 +88,45 @@ Ready for Review
 ### Work Completed
 
 - Added module-scope messaging-owned tracer, request counter, and latency
-	histogram using the global OpenTelemetry API providers installed by the
-	accepted shared runtime.
+  histogram using the global OpenTelemetry API providers installed by the
+  accepted shared runtime.
 - Recorded accepted, rejected, and failed POST ingress outcomes across the
-	existing method, signature, JSON, processing, and success paths without
-	changing response or queue behavior.
+  existing method, signature, JSON, processing, and success paths without
+  changing response or queue behavior.
 - Restricted all span and metric attributes to closed outcome, reason, and HTTP
-	status-code vocabularies.
+  status-code vocabularies.
 - Kept message content, full payloads, customer/phone identifiers, provider
-	message IDs, credentials, tokens, and authorization data out of telemetry.
+  message IDs, credentials, tokens, and authorization data out of telemetry.
 - Wrapped semantic recording in failure isolation so tracer, counter, or
-	histogram failures cannot escape into webhook handling.
+  histogram failures cannot escape into webhook handling.
 - Added direct runtime declarations for `@opentelemetry/api` and the compatible
-	Zod contract required by the shared runtime consumer.
+  Zod contract required by the shared runtime consumer.
 
 ### Validation Results
 
 - `node --test tests/whatsapp-ingress-telemetry.test.mjs` passed: 4 tests.
-	Coverage includes acceptance/latency, rejected/failed outcomes, exact
-	attribute allowlisting, closed cardinality sets, sensitive-data exclusion,
-	and independent tracer/counter/histogram failure isolation.
+  Coverage includes acceptance/latency, rejected/failed outcomes, exact
+  attribute allowlisting, closed cardinality sets, sensitive-data exclusion,
+  and independent tracer/counter/histogram failure isolation.
 - `npm test` passed: 7 tests, 0 failures.
 - `npm run typecheck` passed (`react-router typegen && tsc`).
 - `npm run build` passed for both React Router client and server bundles.
 - Changed-file editor diagnostics reported no errors and `git diff --check`
-	passed.
+  passed.
 - Static ownership review found no local NodeSDK, tracer/meter provider, OTLP
-	exporter, span processor, sampler, or BullMQ telemetry wiring.
+  exporter, span processor, sampler, or BullMQ telemetry wiring.
 - Sensitive-data scan found no message, payload, customer, phone, credential,
-	token, secret, or authorization input in the semantic telemetry module. Its
-	only `message` property is a bounded span-status value derived from the closed
-	reason vocabulary.
+  token, secret, or authorization input in the semantic telemetry module. Its
+  only `message` property is a bounded span-status value derived from the closed
+  reason vocabulary.
 - Initial `workspace-doctor.sh --quick` reported `DEP-ZOD-001` because messaging
-	consumed the shared runtime without a direct Zod declaration. After adding
-	compatible `zod@^4.5.4`, the doctor passed 7 checks with only the documented
-	unrelated `NPM-CONFIG-001` warning and one local-development informational
-	condition.
+  consumed the shared runtime without a direct Zod declaration. After adding
+  compatible `zod@^4.5.4`, the doctor passed 7 checks with only the documented
+  unrelated `NPM-CONFIG-001` warning and one local-development informational
+  condition.
 - Dependency installation reported zero vulnerabilities and repeated the
-	existing transitive allow-scripts advisory for `fsevents`,
-	`msgpackr-extract`, and `protobufjs`.
+  existing transitive allow-scripts advisory for `fsevents`,
+  `msgpackr-extract`, and `protobufjs`.
 
 ### Deviations
 

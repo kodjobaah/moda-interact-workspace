@@ -23,7 +23,6 @@ updated: 2026-10-02
 
 # Extract pure subscription reconciliation classification
 
-
 ## Architecture
 
 Architecture ID: `ARCH-025`

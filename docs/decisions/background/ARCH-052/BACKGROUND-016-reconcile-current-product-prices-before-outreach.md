@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-052-MCP-003
-- ARCH-052-COMMERCE-007
-- ARCH-052-BACKGROUND-005
+  - ARCH-052-MCP-003
+  - ARCH-052-COMMERCE-007
+  - ARCH-052-BACKGROUND-005
 enables:
-- ARCH-052-BACKGROUND-010
-- ARCH-052-BACKGROUND-008
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
+  - ARCH-052-BACKGROUND-010
+  - ARCH-052-BACKGROUND-008
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
 created: 2026-10-31
 updated: 2026-10-31
 ---
@@ -74,7 +74,7 @@ Use these exact exported Background-local declarations in the new `*.types.ts` (
 
 ```typescript
 export type LinePriceObservation = Readonly<{
-  lineKey: string;                         // 'line-' + 1-based zero-padded four-digit saved index
+  lineKey: string; // 'line-' + 1-based zero-padded four-digit saved index
   productId: string | null;
   variantId: string | null;
   quantity: number | null;
@@ -82,9 +82,10 @@ export type LinePriceObservation = Readonly<{
   checkoutCurrency: string | null;
   catalogueUnitPrice: string | null;
   catalogueCurrency: string | null;
-  catalogueObservedAt: string | null;     // source value, not inferred timestamp
+  catalogueObservedAt: string | null; // source value, not inferred timestamp
   catalogueComparison: "EQUAL" | "DIFFERENT" | "INCOMPARABLE";
-  checkoutPriceChange: "CONFIRMED_UNCHANGED" | "CONFIRMED_CHANGED" | "UNVERIFIABLE";
+  checkoutPriceChange:
+    "CONFIRMED_UNCHANGED" | "CONFIRMED_CHANGED" | "UNVERIFIABLE";
   reasonCodes: readonly string[];
 }>;
 
@@ -94,10 +95,13 @@ export type CheckoutPriceReconciliation = Readonly<{
   outreachAttemptId: string;
   generation: number;
   basketFingerprint: string;
-  evaluatedAt: string;                   // injected UTC observation, ISO 8601
+  evaluatedAt: string; // injected UTC observation, ISO 8601
   lines: readonly LinePriceObservation[]; // one per saved line when 1..100; [] for invalid/overflow basket
-  reasonCodes: readonly string[];            // whole-report reason, e.g. BASKET_TOO_LARGE
-  currentMerchandiseSubtotal: Readonly<{ amountDecimal: string; currency: string }> | null;
+  reasonCodes: readonly string[]; // whole-report reason, e.g. BASKET_TOO_LARGE
+  currentMerchandiseSubtotal: Readonly<{
+    amountDecimal: string;
+    currency: string;
+  }> | null;
   completeness: "COMPLETE" | "PARTIAL";
 }>;
 

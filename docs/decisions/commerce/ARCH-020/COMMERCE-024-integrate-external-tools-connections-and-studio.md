@@ -107,9 +107,9 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 - ARCH-020-COMMERCE-038
 
 ## Enables
+
 - ARCH-020-COMMERCE-012
 - ARCH-020-SYSTEM-TEST-002
-
 
 ## Acceptance Criteria
 
@@ -496,7 +496,7 @@ Attempt 5 completed that contract.
 However, the accepted conversation `PreviewService` also requires:
 
 ```ts
-PreviewExternalFixtureRunner
+PreviewExternalFixtureRunner;
 ```
 
 to execute a frozen synthetic external response during Conversation preview.
@@ -1165,7 +1165,7 @@ Use the canonical saved definition identity instead.
 Import the already-accepted hash function:
 
 ```ts
-import { toolContentHash } from '../../publication/validation';
+import { toolContentHash } from "../../publication/validation";
 ```
 
 The exact found identity must be equivalent to:
@@ -1174,16 +1174,15 @@ The exact found identity must be equivalent to:
 const definition = parsed.data;
 
 return {
-  kind: 'found' as const,
+  kind: "found" as const,
   value: {
     toolRevisionId,
     definition,
-    definitionHash:
-      revision.contentHash ?? toolContentHash(definition),
+    definitionHash: revision.contentHash ?? toolContentHash(definition),
     connectionRevisionId:
-      definition.execution.kind === 'EXTERNAL_HTTP'
+      definition.execution.kind === "EXTERNAL_HTTP"
         ? definition.execution.connectionRevisionId
-        : '',
+        : "",
     enabled: revision.tool.enabled,
   },
 };
@@ -1268,13 +1267,13 @@ or publication mutation.
 Required behavior is equivalent to:
 
 ```ts
-if (definition.execution.kind === 'EXTERNAL_HTTP') {
+if (definition.execution.kind === "EXTERNAL_HTTP") {
   const validator = this.dependencies.externalPublication;
 
   if (!validator) {
     throw new LifecycleError(
-      'VALIDATOR_UNAVAILABLE',
-      'external publication validation is unavailable',
+      "VALIDATOR_UNAVAILABLE",
+      "external publication validation is unavailable",
     );
   }
 
@@ -1287,9 +1286,9 @@ if (definition.execution.kind === 'EXTERNAL_HTTP') {
 
   if (!validation.ok) {
     throw new LifecycleError(
-      validation.code === 'VALIDATOR_UNAVAILABLE'
-        ? 'VALIDATOR_UNAVAILABLE'
-        : 'INVALID_DEFINITION',
+      validation.code === "VALIDATOR_UNAVAILABLE"
+        ? "VALIDATOR_UNAVAILABLE"
+        : "INVALID_DEFINITION",
       validation.issues[0]?.message ?? validation.code,
     );
   }
@@ -1299,7 +1298,7 @@ if (definition.execution.kind === 'EXTERNAL_HTTP') {
 Only after successful EXTERNAL_HTTP validation may the existing:
 
 ```ts
-await this.registry.isAvailable(definition)
+await this.registry.isAvailable(definition);
 ```
 
 check and existing one publication mutation continue.
@@ -1343,7 +1342,7 @@ new PreviewService({
 and passes it directly to:
 
 ```ts
-integration.createPreview(previewService)
+integration.createPreview(previewService);
 ```
 
 That proves the integration factory in isolation, not the production composition
@@ -1995,7 +1994,7 @@ toolRevisionId == published external tool revision
 Do not mutate:
 
 ```ts
-backend.runtime.verifyAssertion
+backend.runtime.verifyAssertion;
 ```
 
 Generate an RS256 fixture key pair and configure the backend assertion verifier with
@@ -2540,7 +2539,7 @@ Do not pass a fabricated manifest/grant through a custom authorization callback.
 Do not mutate:
 
 ```ts
-backend.runtime.verifyAssertion
+backend.runtime.verifyAssertion;
 ```
 
 Generate an RS256 test key pair and configure the assembled backend verifier with the

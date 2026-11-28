@@ -33,9 +33,9 @@ PRODUCTION / COMPATIBLE ROLLOUT. Single Background source acceptance -> develope
 
 ## Tasks
 
-| Task | Owner | State | Dependencies |
-|---|---|---|---|
-| ARCH-074-BACKGROUND-001 | moda_background | Complete | None |
+| Task                    | Owner           | State    | Dependencies |
+| ----------------------- | --------------- | -------- | ------------ |
+| ARCH-074-BACKGROUND-001 | moda_background | Complete | None         |
 
 ## Completion Gate / Open Questions
 

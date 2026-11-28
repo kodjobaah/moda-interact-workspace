@@ -6,27 +6,31 @@ coordinator: moda_architect
 created: 2026-11-05
 updated: 2026-11-06
 ---
+
 # Shopify offline token refresh coordination
 
 ## Definition status
+
 Revision 1 was replaced before implementation. Revision 2 below is the sole normative architecture contract. Task metadata/history remains unchanged.
 
 ## Tasks
-| Task | Owner | Status | Dependencies |
-|---|---|---|---|
-| ARCH-061-SHARED-001 | shared | Complete | - |
-| ARCH-061-SHARED-002 | shared | Complete | ARCH-061-SHARED-001 |
-| ARCH-061-SHOPIFY-001 | shopify | Complete | ARCH-061-SHARED-002 |
-| ARCH-061-BACKGROUND-001 | background | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
-| ARCH-061-COMMERCE-001 | commerce | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
-| ARCH-061-MCP-001 | mcp | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
-| ARCH-061-SYSTEM-TEST-001 | system-test | Ready | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001, ARCH-061-BACKGROUND-001, ARCH-061-COMMERCE-001, ARCH-061-MCP-001 |
 
+| Task                     | Owner       | Status   | Dependencies                                                                                                |
+| ------------------------ | ----------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| ARCH-061-SHARED-001      | shared      | Complete | -                                                                                                           |
+| ARCH-061-SHARED-002      | shared      | Complete | ARCH-061-SHARED-001                                                                                         |
+| ARCH-061-SHOPIFY-001     | shopify     | Complete | ARCH-061-SHARED-002                                                                                         |
+| ARCH-061-BACKGROUND-001  | background  | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001                                                                   |
+| ARCH-061-COMMERCE-001    | commerce    | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001                                                                   |
+| ARCH-061-MCP-001         | mcp         | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001                                                                   |
+| ARCH-061-SYSTEM-TEST-001 | system-test | Ready    | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001, ARCH-061-BACKGROUND-001, ARCH-061-COMMERCE-001, ARCH-061-MCP-001 |
 
 ## Revision 2 — binding implementation contract (2026-11-05)
+
 This section supersedes earlier proposed APIs, feasibility gates, recovery assumptions and cutover text. All decisions below are architecture decisions, not implementation choices. Existing task metadata/history remains intact.
 
 ### Exact package/API and files to create
+
 Shared creates `src/shopify/offline-token-provider.ts`, `src/shopify/offline-token-provider.test.ts`, `src/shopify/offline-token-provider.postgres.test.ts`, `src/shopify/oauth-configuration.ts` and `src/shopify/index.ts`; publish export `@modainteract/moda-interact-shared/shopify/node`. These paths are NEW, not claims of existing code. Export createShopifyOfflineTokenProvider, ShopifyOfflineTokenError, readShopifyOAuthConfiguration and the types below. Package entrypoint is Node-only and never re-exported from browser-safe root.
 
 Factory input: `{prisma: ShopifyOfflineDatabase, readOAuth: () => Promise<{apiKey:string;apiSecret:string}>, fetch: typeof fetch, now?:()=>number}`. Factory returns `{withSdkInstallationSessionLock<T>(integrationDomain:string, work:(context:SdkInstallationSessionContext)=>Promise<T>):Promise<T>, getAccessToken(shopId:string, options?:{signal?:AbortSignal}):Promise<string>, getSession(shopId:string, options?:{signal?:AbortSignal}):Promise<OfflineCredentialSnapshot>, withSessionLock<T>(shopId:string, work:(context:LockedSessionContext)=>Promise<T>, options?:{signal?:AbortSignal}):Promise<T>}`. Snapshot is server-only `{id:string;shopId:string;shop:string;accessToken:string;scope:string|null;expires:Date|null;refreshTokenExpires:Date|null}`; never includes refreshToken. getAccessToken delegates to getSession. Context is `{transaction:ShopifyOfflineTransaction;shopId:string;shop:string;sessionId:string;signal:AbortSignal}`. This is not an authorization API: consumers resolve trusted tenant/shop first. Callback may perform ONLY session authentication/token acquisition/lifecycle persistence, never a route handler or unrelated commerce operation.
@@ -34,17 +38,21 @@ Factory input: `{prisma: ShopifyOfflineDatabase, readOAuth: () => Promise<{apiKe
 Structural interfaces: `ShopifyOfflineDatabase.$transaction<T>(work:(tx:ShopifyOfflineTransaction)=>Promise<T>, options:{maxWait:number;timeout:number;isolationLevel:'ReadCommitted'}):Promise<T>`. Transaction requires `$queryRawUnsafe<T>(sql:string,...values:unknown[]):Promise<T>`, `$executeRawUnsafe(sql:string,...values:unknown[]):Promise<number>`, and `session` delegate methods findUnique, findMany, create, update, upsert, delete, deleteMany, updateMany supporting the existing Session scalar shape; method args are narrow exported structural object types, not imported generated Prisma types. Any SDK session serialization delegates use this tx, never a second global-client transaction. Shared tests compile adapters against independently generated service clients. No Shared Prisma client instance or @prisma/client runtime dependency.
 
 ### Exact lock order
+
 Within the configured transaction execute SET LOCAL lock_timeout='5s' and statement_timeout='18s'; parameterized SELECT pg_advisory_xact_lock(hashtextextended($1,0)) with the stored integration-domain gate, then parameterized SELECT "id" FROM "shopify"."Session" WHERE "id"=$1 FOR UPDATE with actual persisted row ID. Keep all timing/recovery guarantees. Acquire gate then existing lifecycle Shop locks where needed then actual Session row; never choose an arbitrary row. Selected-shop resolution and mapping are fixed in the selected-shop section below.
 
 ### Fixed budgets, wire validation and retry taxonomy
+
 Transaction maxWait 5000ms; timeout 20000ms; per refresh network plus streamed body total 8000ms; callback/request work deadline 15000ms. Abort at first caller cancellation/deadline. Fetch POST `https://${shop}/admin/oauth/access_token`, redirect:error, no automatic retries, x-www-form-urlencoded client_id/client_secret/grant_type=refresh_token/refresh_token. Limit response to 16384 bytes while streaming before JSON parse, require successful status and object; token strings nonempty <=4096 chars with no CR/LF/NUL or surrounding whitespace. expires_in and refresh_token_expires_in must be safe integers >0, within 86400 and 7776000 seconds respectively, and access lifetime >300 seconds plus 20-second transaction margin. Validate optional scope string <=4096 chars/control-free; absent scope preserves stored scope, present scope replaces it. Compute expiries from request-start timestamp (conservative), check Date range, then update accessToken/expires/refreshToken/refreshTokenExpires/scope in ONE tx update. Return snapshot/token only after commit.
 
 ShopifyOfflineTokenError exports fixed codes SESSION_MISSING, SESSION_IDENTITY_CONFLICT, INVALID_SESSION, REFRESH_TOKEN_EXPIRED, OAUTH_CONFIG_UNAVAILABLE, LOCK_TIMEOUT, CANCELLED, DEADLINE, REFRESH_REJECTED, REFRESH_RESPONSE_INVALID, REFRESH_OUTCOME_UNKNOWN, PERSISTENCE_UNAVAILABLE. No Error cause/raw payload in public error. Never log secret/token/provider body/SQL. Retryable flag true only lock timeout/deadline/persistence/unknown; caller cancellation and invalid input/rejected credentials false. No automatic retry inside call. Lock wait/HTTP failure before request dispatch is distinct from uncertain dispatch; 4xx rejection maps REFRESH_REJECTED, malformed success or post-dispatch network/body failure maps REFRESH_OUTCOME_UNKNOWN; DB failure after remote success likewise unknown. Transient pre-dispatch DB failure maps PERSISTENCE_UNAVAILABLE.
 
 ### Resolved provider recovery decision
+
 Official Shopify August 28, 2026 change retains previously used refresh token until its replacement is used, at most 30 days from first use and within original 90-day lifetime: https://shopify.dev/changelog/posts/more-resilient-refreshes-for-expiring-offline-access-tokens . It explicitly supports lost-response/storage-failure recovery. On unknown outcome return bounded unavailable, release/rollback transaction and DO NOT return uncommitted access token. Next independent request reacquires locks, rereads durable pair, uses newest stored refresh token, and may make ONE fresh bounded refresh attempt with that persisted token if still unexpired. This is documented provider recovery, not blind concurrent retry. If provider rejects it, fail REFRESH_REJECTED and require existing reinstall/reauthorization; never keep an older in-memory token. No exactly-once remote guarantee on crash/save failure. No new durable marker/schema is needed for this provider-supported recovery path. Tests distinguish single normal refresh from permitted extra recovery request after injected ambiguity.
 
 ### SDK integration decision — public wrappers plus transaction-bound storage
+
 There is no installed SDK pre-refresh hook. Do NOT invent one, mutate internal strategies, disable expiring offline tokens or patch node_modules. App creates `app/services/shopify-offline-coordination.server.ts` and `.test.ts`, plus `app/services/shopify-session-storage.server.ts` and `.test.ts`. Use Node AsyncLocalStorage to bind LockedSessionContext to custom implementation of PUBLIC Shopify SessionStorage interface. Keep SDK Session serialization compatibility by using its public Session class/Prisma adapter conversion behavior; no private method invocation. Its loadSession/storeSession/deleteSession/deleteSessions/findSessionsByShop execute against the bound transaction when offline; direct offline writes without context throw COORDINATION_REQUIRED. Online-only rows retain normal existing storage behavior but cannot overwrite offline IDs.
 
 Wrap PUBLIC shopify.authenticate.admin, authenticate.webhook and unauthenticated.admin BEFORE SDK invocation in withSessionLock. Wrapper scope ends after SDK authentication/context acquisition or redirect Response, before returned admin client operations or React Router route work. SDK token exchange/refresh and storeSession then share the same held gate/row tx. SDK may refresh internally and that is permitted only in this scope. Expose default shopify object as a facade with these wrapped fields; exported authenticate/unauthenticated/sessionStorage reference facade, never raw underlying SDK. Other auth methods remain delegated but storage refuses any offline access without binding; add an explicit wrapper when an actually used method requires it rather than silently bypassing enforcement.
@@ -56,33 +64,38 @@ Install official `setAbstractFetchFunc` exported from `@shopify/shopify-api/runt
 App SDK redirects: a thrown Response after a successful token store must COMMIT session transaction then rethrow Response outside it. Ordinary errors roll back. Capture callback Response as a tagged return value so transaction commits intentionally; 4xx/5xx failure Response without successful validated persistence must roll back. Do not commit arbitrary error effects. Compare provider request/save state in scoped context; tests cover OAuth redirect success versus failure rollback. No callback escapes transaction-bound Prisma/ALS into later route execution.
 
 ### OAuth configuration exact adapter decision
+
 App retains createDefaultShopifyPlatformConfigurationService().requireShopifyOAuthCredentials in app/services/platform-configuration/composition.server.ts. Background retains platformConsumerConfiguration.read('shopify.oauth') in src/services/platform-configuration/consumers.ts. Commerce existing src/platform-configuration/runtime.ts/service.ts does NOT yet expose shopify.oauth; MCP has no platform OAuth reader. Add NEW Commerce `src/platform-configuration/shopify-oauth.ts` and MCP `src/runtime/shopify-oauth.ts`; these use Shared readShopifyOAuthConfiguration with each local Prisma platformConfiguration delegate, trusted deployment environment and MODA_CONFIG_UNSEAL_KEY parsed via existing Shared credentials/node. Do not copy App/Background source or pass OAuth keys via tool requests.
 
 Shared readShopifyOAuthConfiguration input `{prisma:{platformConfiguration:{findUnique(args):Promise<Row|null>}};environment:string;unsealKeyring:CredentialKeyring}` reads exact environment_key [environment,'shopify.oauth']; validates stored environment/key/version and sealed envelope with existing Shared decryptCredential/parseCredentialKeyring. Freeze AAD UTF-8 JSON.stringify(['moda-platform-config-v1',environment,'shopify.oauth',version,1]) exactly as existing App seal.server.ts and Background service.ts. Decode existing `{apiKey,apiSecret}` payload shape, nonempty bounded strings, no plaintext/env fallback, no disabled/missing row fallback. Reuse existing platform sealed format, do not invent envelope. Add known existing-format compatibility vectors for App/Background readers; Shared tests use actual stored envelope fixtures. This new reusable reader is scoped to Shopify OAuth, not an unsolicited platform config rewrite.
 
 ### Deterministic rollout verification artifact
+
 System Test creates NEW `scripts/arch061-verify-cutover.mjs` and fixture test `test/harness/arch061-cutover.test.js`. CLI `node scripts/arch061-verify-cutover.mjs --manifest <operator-recorded-manifest.json>` is read-only and exits nonzero unless manifest names App, Background, Commerce and MCP deployment IDs, previous/new immutable commit IDs, Shared package version, every declared offline-reader/writer path, timestamped stop/drain receipts for ALL old process replicas and timestamped successful staged concurrency tests. It must reject missing/duplicate service receipts, any remaining old replica, mismatched shared versions and stale evidence (older than 30 minutes); never infer process absence from empty pg_stat_activity alone. Operator supplies real provider deployment inventory/receipts; script does not guess Render service IDs or invent an existing pause API. Actual deployment is a separately authorized operation. Maintain stopped old replicas until replacements pass this verifier and smoke tests; resume one coordinated App then coordinated consumers, verify bounded refresh and no uncoordinated writer errors, then release ingress. Receipt absence is a hard rollout failure, not permission to deploy concurrently. This new verifier and its rejection fixtures are implementation scope of SYSTEM-TEST-001.
 
 ### Cancellation and SDK retry finalization
+
 Aborting callback/fetch does not immediately cancel arbitrary user JavaScript: ALS context must carry closed=true after deadline and every storage operation rejects closed context before scheduling writes. Prisma timeout/rollback is authoritative; no write/result may escape after transaction close. All token-endpoint SDK calls without active matching ALS context fail before dispatch, including deferred admin client retry callbacks. Caller must reacquire a public coordinated auth context on a later request; do not allow a deferred retry to exchange outside lock. Existing route authentication failure semantics remain fail-closed. SDK diagnostics during auth must emit fixed safe classifications rather than raw SDK session-token/body messages; update App observability adapter tests with access/refresh/JWT/client-secret canaries.
 
 ## Deterministic acceptance matrix
-| Trigger | Required result |
-|---|---|
+
+| Trigger                                                        | Required result                                                                                            |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Two distinct Prisma clients/processes race on same expired row | One normal successful remote refresh; waiter rereads committed pair under lock and sends no second refresh |
-| Different shops | Independent locks; no global serialization |
-| Valid/nonexpiring access | No refresh, unchanged credential pair |
-| Expired refresh token or missing pair | No provider call; explicit unavailable/reauth state |
-| Malformed response/non-2xx/body overflow | No partial writes; bounded safe errors |
-| Lock wait or fetch timeout/caller abort | Finite termination, rollback, released lock; classify possible remote acceptance as unknown |
-| Remote success then injected save/commit failure | Never return uncommitted token; unknown-outcome classification and documented recovery |
-| Stale SDK preloaded session races service refresh | SDK cannot refresh outside pre-read lock; cannot overwrite newly rotated pair |
-| Install/uninstall/reinstall race | No stale token/session resurrection; agreed lifecycle generation/order enforced |
-| OAuth client config missing or foreign session mapping | Fail before network; no secret diagnostics |
-| Credential canaries in response/errors | Absent from logs/client DTO/HTML/test reports |
-| Commerce status render | Zero token refresh/provider network; execution obtains current token via shared runtime |
+| Different shops                                                | Independent locks; no global serialization                                                                 |
+| Valid/nonexpiring access                                       | No refresh, unchanged credential pair                                                                      |
+| Expired refresh token or missing pair                          | No provider call; explicit unavailable/reauth state                                                        |
+| Malformed response/non-2xx/body overflow                       | No partial writes; bounded safe errors                                                                     |
+| Lock wait or fetch timeout/caller abort                        | Finite termination, rollback, released lock; classify possible remote acceptance as unknown                |
+| Remote success then injected save/commit failure               | Never return uncommitted token; unknown-outcome classification and documented recovery                     |
+| Stale SDK preloaded session races service refresh              | SDK cannot refresh outside pre-read lock; cannot overwrite newly rotated pair                              |
+| Install/uninstall/reinstall race                               | No stale token/session resurrection; agreed lifecycle generation/order enforced                            |
+| OAuth client config missing or foreign session mapping         | Fail before network; no secret diagnostics                                                                 |
+| Credential canaries in response/errors                         | Absent from logs/client DTO/HTML/test reports                                                              |
+| Commerce status render                                         | Zero token refresh/provider network; execution obtains current token via shared runtime                    |
 
 ### Selected-shop identity and existing integration rules
+
 The caller supplies selected `commerce.Shop.id`, never a host/domain: `getAccessToken(shopId:string, options?:{signal?:AbortSignal}):Promise<string>`, `getSession(shopId:string, options?:{signal?:AbortSignal}):Promise<OfflineCredentialSnapshot>`, `withSessionLock<T>(shopId:string, work:(context:LockedSessionContext)=>Promise<T>, options?:{signal?:AbortSignal}):Promise<T>`. Context includes trusted `shopId`, stored `shop` integration domain and actual `sessionId`. Snapshot includes `shopId` plus existing session fields. Add structural `shop.findUnique({where:{id:string},select:{id:true;platform:true;status:true;domain:true}})` to transaction interface. Shared loads selected Shop server-side, requires existing active SHOPIFY identity, then reads its stored offline Session through existing installation mapping (`Session.shop` matches the trusted Shopify integration domain). It verifies row ownership against that selected shop and rejects missing/ambiguous/foreign session. No new schema field or alias map is introduced. Current schema stores Shopify integration domain on Shop.domain and Session.shop; use that existing relationship, not a primary storefront/custom domain from a browser. Use actual persisted Session.id for row lock/update; SDK owns new-auth session ID creation. Do not derive or mandate an offline_<domain> ID, rekey legacy rows or invent ID normalization.
 
 No new domain regex, normalization or myshopify.com acceptance rule is added. Shopify installation/SDK validation continues to own accepted integration domains. Once trusted mapping resolves, the refresh URL host is the stored Session.shop; do not accept a host in provider options or tool inputs. Unknown shop -> SESSION_MISSING, non-SHOPIFY/inactive shop -> INVALID_SESSION, missing/ambiguous/foreign offline mapping -> SESSION_IDENTITY_CONFLICT or SESSION_MISSING as applicable, before OAuth I/O. Existing consumer tenant authorization remains required before this helper; knowing a Shop ID alone is not authorization.
@@ -92,15 +105,16 @@ All existing-shop service and SDK paths use gate parameter `moda:shopify-offline
 SDK install/bootstrap has no Shop ID yet: provide separately named `withSdkInstallationSessionLock<T>(integrationDomain:string, work:(context:LockedSessionContext)=>Promise<T>)` ONLY to App composition, not consumer getAccessToken/getSession callers. SDK's existing validation/installation rules establish the integration domain and still verify request authenticity. Existing-shop App requests resolve that stored integration to its Shop first and use selected-shop path; genuinely new SDK auth uses bootstrap gate with same domain identity, while SDK owns generated Session.id. There is no new domain acceptance check or invented alias table. Unverified request hints select only candidate gate as previously specified and never authorize; the SDK storage adapter checks actual row.shop against the bound SDK integration context before returning/persisting any credential. Binding a session ID happens from actual stored row or successful SDK-generated Session, not string concatenation. After bootstrap creates Shop, future consumers use the existing stored relationship and same gate. Lifecycle deletion/reinstall takes same stored integration-domain gate before existing locks.
 
 ### Exact adapter changes for selected Shop ID
+
 Background helper becomes `getShopifyAccessToken(shopId:string, options?:{signal?:AbortSignal})`; existing provider callbacks accepting shopDomain resolve through their existing authorized Shop object/query and pass its id. Do not pass domain as ID or infer a different tenant. Where a domain-only runtime callback remains, the service adapter resolves an active SHOPIFY Shop by the existing stored integration domain within its current authorized execution context, requires one matching Shop and forwards id; absence/ambiguity fails closed. No Shared domain lookup overload.
 
 Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing authorized shop/domain admission; local-policy-providers uses context.shopId for merchantKnowledge and policy execution. Its discount provider domain-only list callback resolves the matching owned active Shopify Shop from its existing local Prisma/context then calls getSession(shop.id); retain scope and permission checks. MCP runtime provider reader accepts trusted selected shop identity from resolved connection context (thread shopId to read rather than extracting it from arbitrary request domain); retain stored domain equality check as consistency validation, not new validation policy. Metadata-only status readers retain selected-shop filtering and no refresh, use actual persisted IDs and existing mapping rather than new hardcoded canonical ID predicates.
 
 ### Replacement identity acceptance assertions
+
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
-
 
 ## Shopify Completion / Consumer Frontier — 6 November 2026
 

@@ -34,7 +34,6 @@ Replace the Tenant Directory Billing tab's single stacked diagnostic surface wit
 
 ## Current inspected baseline
 
-
 The supplied snapshot currently renders all of the following together in `src/components/admin/tenant-billing.tsx`:
 
 - subscription and billing period;
@@ -47,16 +46,17 @@ The supplied snapshot currently renders all of the following together in `src/co
 
 That top-level navigation stays unchanged.
 
-
 ## Required preflight
 
 1. Work in launcher-resolved ADMIN-003 task worktree after synchronisation.
 2. Confirm ADMIN-002 is Complete and reusable Admin billing drawer/tab primitives exist.
 3. Confirm Tenant Billing current equivalent of:
-  - `src/app/(protected)/page.tsx`
-  - `src/components/admin/tenant-detail-panel.tsx`
-  - `src/components/admin/tenant-billing.tsx`
-  - `src/lib/admin/billing.ts`
+
+- `src/app/(protected)/page.tsx`
+- `src/components/admin/tenant-detail-panel.tsx`
+- `src/components/admin/tenant-billing.tsx`
+- `src/lib/admin/billing.ts`
+
 4. Confirm tenant detail reads can pass the selected `shopId` into ADMIN-001 detail helpers so another shop's event/purchase cannot be opened by changing only the detail id.
 5. If ADMIN-002 did not produce a reusable drawer shell/detail component as accepted, STOP and return dependency mismatch rather than creating a competing drawer mechanism.
 
@@ -356,33 +356,33 @@ Ready for Review
 Task branch: `task/ARCH-008-ADMIN-003`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-003`
-  parent branch: `task/ARCH-008-ADMIN-003`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-003`
-  implementation branch: `task/ARCH-008-ADMIN-003`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-003`
+parent branch: `task/ARCH-008-ADMIN-003`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-003`
+implementation branch: `task/ARCH-008-ADMIN-003`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-admin`
-  commit: `87664de`
-  remote branch: `origin/task/ARCH-008-ADMIN-003`
-  pushed: yes
+repository: `moda-interact-admin`
+commit: `87664de`
+remote branch: `origin/task/ARCH-008-ADMIN-003`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/admin/ARCH-008/ADMIN-003-simplify-tenant-billing-inspection.md`
-  commit: `80e0890`
-  remote branch: `origin/task/ARCH-008-ADMIN-003`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/admin/ARCH-008/ADMIN-003-simplify-tenant-billing-inspection.md`
+commit: `80e0890`
+remote branch: `origin/task/ARCH-008-ADMIN-003`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -402,7 +402,6 @@ None.
 ### Architectural Concerns
 
 None introduced.
-
 
 ## Architect Review
 

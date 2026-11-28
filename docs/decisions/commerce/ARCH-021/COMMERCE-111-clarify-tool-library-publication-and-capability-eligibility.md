@@ -74,10 +74,8 @@ revisions[].status = DRAFT | PUBLISHED
 The Add Capability route independently filters the same summaries with:
 
 ```ts
-tool.enabled
-&& tool.revisions.some(
-  (revision) => revision.status === 'PUBLISHED'
-)
+tool.enabled &&
+  tool.revisions.some((revision) => revision.status === "PUBLISHED");
 ```
 
 A Tool with one DRAFT revision therefore appears in the Global tool library as `1 revisions` but correctly does not appear in Add Capability. The current library presentation makes those two screens look contradictory even when the backend state is consistent.
@@ -154,15 +152,13 @@ Open history
 For every Tool row derive:
 
 ```ts
-const publishedCount =
-  tool.revisions.filter(
-    (revision) => revision.status === 'PUBLISHED'
-  ).length;
+const publishedCount = tool.revisions.filter(
+  (revision) => revision.status === "PUBLISHED",
+).length;
 
-const draftCount =
-  tool.revisions.filter(
-    (revision) => revision.status === 'DRAFT'
-  ).length;
+const draftCount = tool.revisions.filter(
+  (revision) => revision.status === "DRAFT",
+).length;
 
 const totalCount = tool.revisions.length;
 ```
@@ -203,8 +199,7 @@ Do not hide zero counts.
 Compute only:
 
 ```ts
-const capabilityEligible =
-  tool.enabled && publishedCount > 0;
+const capabilityEligible = tool.enabled && publishedCount > 0;
 ```
 
 Render exactly one eligibility line per Tool.
@@ -246,10 +241,8 @@ app/features/[id]/capabilities/new/page.tsx
 or its current predicate:
 
 ```ts
-tool.enabled
-&& tool.revisions.some(
-  (revision) => revision.status === 'PUBLISHED'
-)
+tool.enabled &&
+  tool.revisions.some((revision) => revision.status === "PUBLISHED");
 ```
 
 The Tool library's displayed eligibility must agree with that predicate but does not replace it.

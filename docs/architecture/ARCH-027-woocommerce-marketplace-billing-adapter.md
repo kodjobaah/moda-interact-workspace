@@ -798,7 +798,6 @@ For an unconfirmed charge, `canceled` / `prepaid_term_ended` makes the operation
 
 For an already ACTIVE purchase, canceled/prepaid-term-ended is a no-op: credits are not revoked without a later `refunded` receipt and the separate refund business workflow.
 
-
 Once activated, purchased credits enter the existing reservation/consumption path. Woo must not create a fake Shopify purchase-acquisition `UsageEvent` merely to satisfy old Shopify evidence requirements.
 
 ### 10. No new Shared billing runtime contract for Woo v1
@@ -950,7 +949,7 @@ Moda REJECTS in Woo
 
 Woo monetary amount/tax/full-vs-partial behavior is provider-owned and may be stored only as audit evidence. Moda never derives credit quantity from provider money.
 
-**Database contract reconciliation (2026-10-11):** The historical DATABASE-001 migration required `providerAmount` and `providerCurrency` even for a verified `COMPLETED` Woo refund whose money was absent or unusable. Accepted `ARCH-027-DATABASE-002` (`b9cb77a`) prospectively corrects that conflict: the pair/format rules remain enforced *when supplied*, and all provider/action/reference/confirmation and positive-credit invariants remain required, but both audit values may be NULL on completion. Shopify constraints are unchanged. BACKGROUND-005 Attempt 3 has now verified actual disposable PostgreSQL settlement and idempotent replay with malformed optional money and is architect-accepted Complete; no synthetic money is needed.
+**Database contract reconciliation (2026-10-11):** The historical DATABASE-001 migration required `providerAmount` and `providerCurrency` even for a verified `COMPLETED` Woo refund whose money was absent or unusable. Accepted `ARCH-027-DATABASE-002` (`b9cb77a`) prospectively corrects that conflict: the pair/format rules remain enforced _when supplied_, and all provider/action/reference/confirmation and positive-credit invariants remain required, but both audit values may be NULL on completion. Shopify constraints are unchanged. BACKGROUND-005 Attempt 3 has now verified actual disposable PostgreSQL settlement and idempotent replay with malformed optional money and is architect-accepted Complete; no synthetic money is needed.
 
 A provider `refunded` event with no matching local hold remains attention-only because Moda cannot infer an allowance quantity from money.
 
@@ -989,7 +988,6 @@ Woo initial acquisition differs deliberately from Shopify: successful first Woo 
 
 `ARCH-027-API-002` owns the first read-only HTTP projection of this parity contract. It exposes the billing hub plus selectable plan catalogue without implementing any billing command.
 
-
 `ARCH-027-API-006` owns the Woo purchase-history/refund-navigation read model:
 
 ```text
@@ -1023,13 +1021,11 @@ Parity means consistent visual language, hierarchy, responsive layout, notices, 
 
 To make cancellation status durable across a browser reload, API-002 also exposes a bounded `pendingCancellation` projection. A provider-accepted API-003 cancel may be `CONFIRMED` before BACKGROUND-002 records `Subscription.cancelAtPeriodEnd`; the UI must show that lag rather than briefly presenting cancellation as absent.
 
-
 `ARCH-027-WOOCOMMERCE-002`, after architect acceptance of WOOCOMMERCE-004, adds Shopify-aligned predefined top-up purchase cards and controls to that same native Woo Billing surface. It consumes API-002's current-plan bundles and API-004's one-bundle/one-charge command through the existing browser -> WordPress REST -> PHP Moda client boundary.
 
 The UI has no quantity control. One Buy click sends only the opaque `merchantPricingUsageEventId`; the hosted API remains authoritative for bundle ownership, credits and stored USD price. Successful command initiation redirects the top-level browser to Woo. On return, the existing Billing refresh shows durable pending/activated state; browser return never grants credits.
 
 Per-offer pending state is deterministic: an unresolved purchase disables only its matching bundle with `unavailableReason=PENDING_PURCHASE`. Global billing-state/cancellation restrictions use `topUps.purchaseEligible=false`; they do not invent additional per-offer reason codes.
-
 
 ### 16. Recurring Woo commands persist intent before provider writes
 
@@ -1278,7 +1274,6 @@ service.
 `ARCH-027-BACKGROUND-001` is intentionally a safety prerequisite rather than the receipt consumer itself. Source inspection showed that activating Woo paid subscriptions before this correction would either retain Shopify meter requirements or create Shopify-reportable included-usage events for Woo.
 
 `ARCH-027-BACKGROUND-004` is the charge-acquisition receipt consumer. It does not reuse Shopify meter reconciliation; Woo `/charges` provides different provider evidence. Both paths converge on the same `RecoveryCreditPurchase` / purchased-credit counter state.
-
 
 ### `moda-interact` / `moda_app`
 
@@ -1684,35 +1679,35 @@ must never be made a prerequisite for unfinished implementation work.
 
 ### Defined task
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| `ARCH-027-DATABASE-001` | `moda_database` | Complete | `ARCH-026-DATABASE-002` |
-| `ARCH-027-DATABASE-002` | `moda_database` | Complete | `ARCH-027-DATABASE-001` |
-| `ARCH-027-DATABASE-003` | `moda_database` | Complete (developer-directed closeout) | `ARCH-027-DATABASE-001`, `ARCH-027-DATABASE-002` |
-| `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
-| `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
-| `ARCH-027-API-003` | `moda_api` | Complete | `ARCH-027-API-002` |
-| `ARCH-027-API-004` | `moda_api` | Complete | `ARCH-027-API-003` |
-| `ARCH-027-API-005` | `moda_api` | Complete | `ARCH-027-API-004` |
-| `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
-| `ARCH-027-BACKGROUND-002` | `moda_background` | Complete | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
-| `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
-| `ARCH-027-BACKGROUND-004` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
-| `ARCH-027-BACKGROUND-006` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
-| `ARCH-027-BACKGROUND-005` | `moda_background` | Complete (Attempt 3) | `ARCH-027-BACKGROUND-004`, `ARCH-027-DATABASE-002` |
-| `ARCH-027-API-006` | `moda_api` | Ready | `ARCH-027-BACKGROUND-005` |
-| `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
-| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Ready | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004` |
-| `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
-| `ARCH-027-ADMIN-001` | `moda_admin` | Ready | `ARCH-027-BACKGROUND-005` |
-| `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
-| `ARCH-027-GATEWAY-001` | `moda_gateway` | Ready | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
-| `ARCH-027-SHOPIFY-001` | `moda_app` | Complete | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-SHOPIFY-002` | `moda_app` | Complete (Accepted Attempt 7) | `ARCH-027-SHOPIFY-001`, `ARCH-027-DATABASE-003` |
-| `ARCH-027-BACKGROUND-007` | `moda_background` | Ready | `ARCH-027-SHOPIFY-002` |
-| `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` and `ARCH-027-BACKGROUND-007` |
-| `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer completion | `ARCH-027-SYSTEM-TEST-001` |
+| Task                       | Owner              | Status                                 | Depends On                                                                                                   |
+| -------------------------- | ------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `ARCH-027-DATABASE-001`    | `moda_database`    | Complete                               | `ARCH-026-DATABASE-002`                                                                                      |
+| `ARCH-027-DATABASE-002`    | `moda_database`    | Complete                               | `ARCH-027-DATABASE-001`                                                                                      |
+| `ARCH-027-DATABASE-003`    | `moda_database`    | Complete (developer-directed closeout) | `ARCH-027-DATABASE-001`, `ARCH-027-DATABASE-002`                                                             |
+| `ARCH-027-SHARED-001`      | `moda_shared`      | Superseded                             | -                                                                                                            |
+| `ARCH-027-API-001`         | `moda_api`         | Complete                               | `ARCH-026-API-002`, `ARCH-027-DATABASE-001`                                                                  |
+| `ARCH-027-API-002`         | `moda_api`         | Complete                               | `ARCH-027-API-001`                                                                                           |
+| `ARCH-027-API-003`         | `moda_api`         | Complete                               | `ARCH-027-API-002`                                                                                           |
+| `ARCH-027-API-004`         | `moda_api`         | Complete                               | `ARCH-027-API-003`                                                                                           |
+| `ARCH-027-API-005`         | `moda_api`         | Complete                               | `ARCH-027-API-004`                                                                                           |
+| `ARCH-027-BACKGROUND-001`  | `moda_background`  | Complete                               | `ARCH-027-DATABASE-001`                                                                                      |
+| `ARCH-027-BACKGROUND-002`  | `moda_background`  | Complete                               | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001`                                                                |
+| `ARCH-027-BACKGROUND-003`  | `moda_background`  | Superseded                             | -                                                                                                            |
+| `ARCH-027-BACKGROUND-004`  | `moda_background`  | Complete                               | `ARCH-027-BACKGROUND-002`                                                                                    |
+| `ARCH-027-BACKGROUND-006`  | `moda_background`  | Complete                               | `ARCH-027-BACKGROUND-002`                                                                                    |
+| `ARCH-027-BACKGROUND-005`  | `moda_background`  | Complete (Attempt 3)                   | `ARCH-027-BACKGROUND-004`, `ARCH-027-DATABASE-002`                                                           |
+| `ARCH-027-API-006`         | `moda_api`         | Ready                                  | `ARCH-027-BACKGROUND-005`                                                                                    |
+| `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete                               | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003`                                           |
+| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Ready                                  | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004`                                   |
+| `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending                                | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006`                                                               |
+| `ARCH-027-ADMIN-001`       | `moda_admin`       | Ready                                  | `ARCH-027-BACKGROUND-005`                                                                                    |
+| `ARCH-027-ADMIN-002`       | `moda_admin`       | Superseded                             | -                                                                                                            |
+| `ARCH-027-GATEWAY-001`     | `moda_gateway`     | Ready                                  | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005`                                                                   |
+| `ARCH-027-SHOPIFY-001`     | `moda_app`         | Complete                               | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001`                                                              |
+| `ARCH-027-SHOPIFY-002`     | `moda_app`         | Complete (Accepted Attempt 7)          | `ARCH-027-SHOPIFY-001`, `ARCH-027-DATABASE-003`                                                              |
+| `ARCH-027-BACKGROUND-007`  | `moda_background`  | Ready                                  | `ARCH-027-SHOPIFY-002`                                                                                       |
+| `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending                                | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` and `ARCH-027-BACKGROUND-007` |
+| `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer completion         | `ARCH-027-SYSTEM-TEST-001`                                                                                   |
 
 ## Open Questions
 
@@ -1764,6 +1759,7 @@ is authored:
 - Accepted the Woo merchant Billing hub after verifying the A1-R1 locale-aware numeric presentation and A1-R2 cancellation-dialog keyboard/focus fixes. Developer-reported JavaScript validation passed (focused 14/14, full 74/74), with lint and build reported successful.
 - A1-R3 developer validation passed after test-fixture corrections: `npm run test:integration:wordpress` exit 0; `npm run test:integration:package-lifecycle` exit 0. The lifecycle run covered WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, plugin 0.1.0, candidate SHA-256 `65be4dc39432b72d5e0d030d08026e01dc6690cac3985780648275ee80ab4337` and WOO-005 baseline `98273e4ebdfa9a78146cb897fb905ef97a6814e7`. These are developer-reported commands/results, not architect-executed Docker tests or independent candidate hashing.
 - WOO-001 is Complete. With API-004 already accepted Complete on canonical parent main, WOO-002 is promoted to Ready for normal launcher dependency re-gating after developer branch integration. The WOO-001 parent snapshot predates API-004's accepted task document and must be reconciled with main rather than treating its stale API-004 status as canonical. No implementation branches, database schema, gitlinks or architecture/domain `_index.md` are changed by this review. ARCH-027 remains Proposed pending the rest of the work.
+
 ### 2026-10-09 — ARCH-027-API-005 accepted on Attempt 1
 
 - Architect reviewed implementation commit `1c6e2a37f3d577d8b878cb5b73fa10d5ea903772`, parent Completion Report commit `c8c390b664f9aeff11c9bf9c57c260c7192ba5e1`, and the uploaded task snapshot. Confirmed the unauthenticated provider route has exact raw-body HMAC verification, bounded seven-topic/provider-envelope admission, durable `(topic, payloadSha256)` receipt dedupe, retryable failures and no synchronous billing/queue side effects.
@@ -1775,7 +1771,6 @@ is authored:
 - Architect reviewed the uploaded implementation and published mirrored task-branch files. Confirmed authenticated one-bundle/one-charge intent, exact FIXED/USD catalogue quotes and idempotency, per-Shop serialization, atomically persisted REQUESTED purchase plus INITIATING operation, Free null-period and paid OPEN-period acquisition, and provider result handling without premature credit activation.
 - Developer-reported validation: 31/31 PostgreSQL integration cases, 120 unit passes/0 failures (31 database cases skipped in unit runner and run separately), typecheck, lint, build and diff checks passed. The 3 high-severity npm audit advisories remain a separate dependency-maintenance concern. No independent Node 24 test rerun or real Woo sandbox certification was performed in the architect review.
 - Accepted API-004 as Complete and promoted API-005 to Ready. WOOCOMMERCE-002 remains Pending because WOOCOMMERCE-001 is not yet Complete. ARCH-027 remains Proposed pending outstanding implementation and terminal system tests. Architecture/domain `_index.md` reconciliation remains deferred.
-
 
 ### 2026-10-09 — ARCH-027-API-003 accepted on Attempt 3
 
@@ -1794,7 +1789,6 @@ is authored:
 - Architect verified A1-R1: never-onboarded `NO_CONTRACT` shells with existing `Subscription.providerCoverageEndAt` evidence are rejected without connection/billing mutation; eligible Woo Free subscription creation and shell activation both explicitly null that field. Already-onboarded Free/paid reconnects remain billing no-ops.
 - Reviewed the dedicated worktree, start-of-attempt, GitHub commit and targeted unit/disposable-PostgreSQL regression evidence. Accepted `ARCH-027-API-001` at Attempt 2 and promoted dependent `ARCH-027-API-002` to Ready. No provider billing or schema migration change is introduced by this correction.
 - All other ARCH-027 implementation tasks and terminal system-test gates retain their prior dependency states; this does not mark the entire architecture Implemented.
-
 
 ### 2026-10-06 — Prepaid cancellation, independent entitlement cadence and evidence-derived reconciliation
 

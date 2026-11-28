@@ -48,19 +48,24 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             priority
           />
           <div>
-            <p className="text-sm font-medium text-[var(--brand-700)]">Moda Interact</p>
-            <h1 className="text-xl font-bold text-[var(--brand-900)]">Platform Admin</h1>
+            <p className="text-sm font-medium text-[var(--brand-700)]">
+              Moda Interact
+            </p>
+            <h1 className="text-xl font-bold text-[var(--brand-900)]">
+              Platform Admin
+            </h1>
           </div>
         </div>
 
         <p className="mt-6 text-sm leading-6 text-gray-600">
-          Sign in with an authorised Google account. A valid Google account alone
-          does not grant platform administration access.
+          Sign in with an authorised Google account. A valid Google account
+          alone does not grant platform administration access.
         </p>
 
         {error ? (
           <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            This Google account is not authorised for Moda platform administration.
+            This Google account is not authorised for Moda platform
+            administration.
           </div>
         ) : null}
 

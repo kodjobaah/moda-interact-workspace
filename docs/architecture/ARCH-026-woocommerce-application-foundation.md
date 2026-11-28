@@ -276,7 +276,7 @@ reusing independently verified common Shopify translations.
 
 **Target coverage:** `en`, `fr`, `de`, `it`, `es`, `nl`, `da`, `fi`, `nb`, `sv`,
 `cs`, `pl`, `tr`, `pt-BR`, `pt-PT`, `ja`, `ko`, `th`, `zh-Hans`, `zh-Hant`.
-This is a *coverage set for shipped UI translations*, not an allowlist for
+This is a _coverage set for shipped UI translations_, not an allowlist for
 provider-native WordPress locales or persisted Shop international context.
 English is the source/fallback locale; nineteen other language catalogues must
 have reviewed translated values. WordPress native variants (for example `fr_FR`,
@@ -287,7 +287,7 @@ safely without modifying `Shop.storeLocale` or `Shop.defaultLanguageTag`.
 **Locale authority:** authenticated administrator/user UI locale first, WordPress
 site/store locale when no user override exists, English for missing translation
 coverage. This agrees with Shopify's session-locale-before-store preference.
-`StoreContextResolver` remains authoritative for the distinct *store* language
+`StoreContextResolver` remains authoritative for the distinct _store_ language
 sent to Moda. Switching the administrator's language must not rewrite that
 store context, alter CommerceAgent/WhatsApp language, or trigger merchant billing,
 category or recovery writes. Category names/descriptions continue to come from
@@ -378,7 +378,6 @@ pre-production, additive, single-repository tasks. The real browser/PHP/API/Post
 read-after-write flow and unchanged connection/credit state require integrated
 verification after both implementation reviews.
 
-
 ### Woo Store Category selection under Recovery Settings (2026-10-09)
 
 **Decision:** The merchant experiences the same category selection and mapping controls
@@ -419,8 +418,8 @@ WooCommerce Connect -> Free plan ACTIVE -> Merchant Overview (category not selec
 snapshot: only enabled categories with valid enabled default templates; category
 identities, localized names/descriptions, eligible mapping IDs/names, current
 active/pending identity, selected mapping IDs, `pendingSelectionGeneration`, and
-pending-publication/provenance information. Use the *administrator's requested UI
-locale* for presentation with the existing category-localization fallback policy;
+pending-publication/provenance information. Use the _administrator's requested UI
+locale_ for presentation with the existing category-localization fallback policy;
 do not overwrite `Shop.storeLocale` or `Shop.defaultLanguageTag`.
 
 **Mutation contract (ARCH-026-API-006):** A strict, versioned, bounded command with
@@ -472,11 +471,10 @@ implementation, publication and infrastructure dependencies are architect-accept
 **Cross-platform parity:** Shopify's existing private selection/activation service
 is the reference for lifecycle and generation/templating rules. The API owns the
 Woo provider-neutral HTTP boundary and must consume the existing shared Commerce
-prompt rendering/provenance contracts. Do not fork category *data* or weaken those
+prompt rendering/provenance contracts. Do not fork category _data_ or weaken those
 rules to make Woo work. Require parity-focused tests against the Shopify behaviour;
 any subsequent consolidation of persistence implementations must be separately
 scoped, rather than unilaterally changing Shopify during this Woo task.
-
 
 ### Merchant-approved read-only WooCommerce REST access (2026-10-10)
 
@@ -602,13 +600,13 @@ existing installed-plugin connection/billing state must be preserved.
 **Current bounded read-authorisation task frontier** (retrospectively reconciled
 on 2026-10-16; individual task YAML remains authoritative):
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-026-DATABASE-003 | moda_database | Complete | ARCH-026-DATABASE-001 |
-| ARCH-026-API-007 | moda_api | Complete | ARCH-026-DATABASE-003, ARCH-026-API-002 |
-| ARCH-026-API-008 | moda_api | Complete | ARCH-026-API-007 |
+| Task                     | Owner            | Status   | Depends On                                                           |
+| ------------------------ | ---------------- | -------- | -------------------------------------------------------------------- |
+| ARCH-026-DATABASE-003    | moda_database    | Complete | ARCH-026-DATABASE-001                                                |
+| ARCH-026-API-007         | moda_api         | Complete | ARCH-026-DATABASE-003, ARCH-026-API-002                              |
+| ARCH-026-API-008         | moda_api         | Complete | ARCH-026-API-007                                                     |
 | ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Complete | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
-| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Ready | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
+| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Ready    | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015                           |
 
 `ARCH-026-SYSTEM-TEST-001` is terminal; no database/API/Woo implementation
 or publication task may depend on its result. Its implementation dependencies are now retrospectively recorded Complete; the
@@ -826,42 +824,42 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Complete | - |
-| ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-001 |
-| ARCH-026-DATABASE-001 | moda_database | Complete | - |
-| ARCH-026-DATABASE-002 | moda_database | Complete | ARCH-026-DATABASE-001 |
-| ARCH-026-DATABASE-003 | moda_database | Complete | ARCH-026-DATABASE-001 |
-| ARCH-026-API-001 | moda_api | Complete | - |
-| ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
-| ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
-| ARCH-026-API-004 | moda_api | Complete | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002 |
-| ARCH-026-API-005 | moda_api | Complete | ARCH-026-API-002, ARCH-026-API-003 |
-| ARCH-026-API-006 | moda_api | Complete | ARCH-026-API-005 |
-| ARCH-026-API-007 | moda_api | Complete | ARCH-026-DATABASE-003, ARCH-026-API-002 |
-| ARCH-026-API-008 | moda_api | Complete | ARCH-026-API-007 |
-| ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
-| ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
-| ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
-| ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
-| ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004 |
-| ARCH-026-WOOCOMMERCE-008 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-007, ARCH-026-API-005, ARCH-026-API-006 |
-| ARCH-026-WOOCOMMERCE-009 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-008 |
-| ARCH-026-WOOCOMMERCE-010 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
-| ARCH-026-WOOCOMMERCE-011 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
-| ARCH-026-WOOCOMMERCE-012 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
-| ARCH-026-WOOCOMMERCE-013 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
+| Task                     | Owner            | Status   | Depends On                                                                                             |
+| ------------------------ | ---------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Complete | -                                                                                                      |
+| ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-001                                                                               |
+| ARCH-026-DATABASE-001    | moda_database    | Complete | -                                                                                                      |
+| ARCH-026-DATABASE-002    | moda_database    | Complete | ARCH-026-DATABASE-001                                                                                  |
+| ARCH-026-DATABASE-003    | moda_database    | Complete | ARCH-026-DATABASE-001                                                                                  |
+| ARCH-026-API-001         | moda_api         | Complete | -                                                                                                      |
+| ARCH-026-API-002         | moda_api         | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001                                                                |
+| ARCH-026-API-003         | moda_api         | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002                                                                |
+| ARCH-026-API-004         | moda_api         | Complete | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002                                              |
+| ARCH-026-API-005         | moda_api         | Complete | ARCH-026-API-002, ARCH-026-API-003                                                                     |
+| ARCH-026-API-006         | moda_api         | Complete | ARCH-026-API-005                                                                                       |
+| ARCH-026-API-007         | moda_api         | Complete | ARCH-026-DATABASE-003, ARCH-026-API-002                                                                |
+| ARCH-026-API-008         | moda_api         | Complete | ARCH-026-API-007                                                                                       |
+| ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002                                                             |
+| ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003                                                                               |
+| ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003                                                             |
+| ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001                                                         |
+| ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004                                   |
+| ARCH-026-WOOCOMMERCE-008 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-007, ARCH-026-API-005, ARCH-026-API-006                                           |
+| ARCH-026-WOOCOMMERCE-009 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-008                                                                               |
+| ARCH-026-WOOCOMMERCE-010 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009                                                                               |
+| ARCH-026-WOOCOMMERCE-011 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009                                                                               |
+| ARCH-026-WOOCOMMERCE-012 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009                                                                               |
+| ARCH-026-WOOCOMMERCE-013 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009                                                                               |
 | ARCH-026-WOOCOMMERCE-014 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-010, ARCH-026-WOOCOMMERCE-011, ARCH-026-WOOCOMMERCE-012, ARCH-026-WOOCOMMERCE-013 |
-| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Complete | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
-| ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
-| ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
-| ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-| ARCH-026-BACKGROUND-001 | moda_background | Complete | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
-| ARCH-026-BACKGROUND-002 | moda_background | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
-| ARCH-026-ADMIN-001 | moda_admin | Complete | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
-| ARCH-026-ADMIN-002 | moda_admin | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
-| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Ready | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
+| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Complete | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006                                   |
+| ARCH-026-GATEWAY-001     | moda_gateway     | Complete | ARCH-026-API-001                                                                                       |
+| ARCH-026-SHOPIFY-001     | moda_app         | Complete | ARCH-026-DATABASE-001                                                                                  |
+| ARCH-026-SHOPIFY-002     | moda_app         | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001                                                            |
+| ARCH-026-BACKGROUND-001  | moda_background  | Complete | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007                                                         |
+| ARCH-026-BACKGROUND-002  | moda_background  | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001                                   |
+| ARCH-026-ADMIN-001       | moda_admin       | Complete | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001                                                          |
+| ARCH-026-ADMIN-002       | moda_admin       | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001                                        |
+| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Ready    | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015                                                             |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
@@ -892,7 +890,6 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 - 2026-10-09: Agreed Woo Store Category selection in Recovery Settings after automatic Free activation. Shopify remains initial category -> billing; Woo remains Connect -> Free -> explicit category select -> immediate prompt publication if subscription ACTIVE, followed by the same active-category editing semantics. Defined portable API-005, API-006 and WOO-008 tasks without materialising developer task branches, altering current API-004/WOO-007 metadata, or touching any `_index.md` file.
 
 - 2026-10-09: LocalWP integrated review confirmed Woo installation/reconnect, active lifetime Free subscription, and preserved five available credits. Merchant bootstrap read/overview are correct; the four provider-neutral Shop international-context fields have no Woo provider writer and remain null. Decided on a separate, authenticated, retryable store-context command rather than adding work to the proven Connect transaction. Portable architect-owned `ARCH-026-API-004` (Ready, dependencies Complete) and `ARCH-026-WOOCOMMERCE-007` (Pending API-004) are defined but **not materialised** in the developer's Git task worktrees/branches. Category selection is deliberately excluded; no decision indexes are reconciled.
-
 
 - 2026-10-08: WOOCOMMERCE-006 Accepted / Complete at Attempt 2. The production `0.1.0` plugin ZIP was independently verified at SHA-256 `276327aa22fa5bf4ef9e1b9054a52bc16de2040a0b6f571a916b633ff5350286` (33 entries, intact Composer autoloader, compiled browser assets, local API credential boundary and `moda-interact` translation domain). Both Attempt 1 corrections are closed: POT generation no longer derives an invalid support URL from the task worktree, the package audit rejects internal architecture task identifiers of arbitrary numeric width, and the Completion Report records dedicated worktree/synchronization/mirrored-branch provenance. Developer-reported validation includes 47 JS tests, 33 PHP tests / 152 assertions and exact WOO-005-baseline install/upgrade/deactivate/reactivate preservation. This architect review independently inspected the artifact, source, branch blobs and syntax; the full WordPress lifecycle was not rerun externally. No `_index.md` is reconciled and ARCH-026 remains Proposed pending full architecture verification.
 

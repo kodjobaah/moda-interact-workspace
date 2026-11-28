@@ -36,7 +36,6 @@ Coordinator: `moda_architect`
 
 **Superseded — do not implement or claim.** The merchant-selectable `NOT_CONFIGURED` / `MODA_CHECKBOX` / `SUPPORTED_EXTERNAL` source selector, provider adapters and source-epoch persistence were removed from the agreed Woo v1 design on 2026-10-21. `ARCH-045-DATABASE-002` now uses existing WooInstallation identity and current CustomerPhone plus Moda-checkbox evidence only. No hosted consent-source settings API is required; WooCommerce Recovery Settings guidance and checkbox registration are consolidated under `ARCH-046-WOOCOMMERCE-001`. Everything below is retained solely as superseded historical specification; it is **not executable scope**.
 
-
 Expose authenticated, durable Woo merchant consent collector selection, persisted on **existing `WooCommerceInstallation`** with epoch fencing for customer-phone grants.
 
 ## Context

@@ -71,13 +71,27 @@ The HTTP request stores the frozen HUMAN command; it does **not** call OpenAI or
 `POST /v1/merchant/conversations/{conversationId}/messages`
 
 Open-window human text body:
+
 ```json
-{ "kind":"HUMAN_TEXT", "expectedControlRevision":5, "idempotencyKey":"merchant-send-key", "textBody":"Hello, I can help" }
+{
+  "kind": "HUMAN_TEXT",
+  "expectedControlRevision": 5,
+  "idempotencyKey": "merchant-send-key",
+  "textBody": "Hello, I can help"
+}
 ```
 
 Closed-window recovery follow-up body:
+
 ```json
-{ "kind":"RECOVERY_FOLLOW_UP_TEMPLATE", "expectedControlRevision":5, "idempotencyKey":"merchant-send-key", "templateName":"approved_recovery_follow_up", "templateLanguage":"en_GB", "templateParameters":{} }
+{
+  "kind": "RECOVERY_FOLLOW_UP_TEMPLATE",
+  "expectedControlRevision": 5,
+  "idempotencyKey": "merchant-send-key",
+  "templateName": "approved_recovery_follow_up",
+  "templateLanguage": "en_GB",
+  "templateParameters": {}
+}
 ```
 
 - `idempotencyKey` required, opaque, length bounded by DB schema; stable for retry/double click, not generated afresh for every network retry. Strictly enforce exclusive text/template shape, server-side template allowlist and parameter bounds, a nonempty bounded human text and a request size limit. Use an API-local versioned canonical JSON representation and compute `payloadSha256` on server (not from client).
@@ -97,13 +111,11 @@ Closed-window recovery follow-up body:
 - Perform the restriction check under the command admission transaction with an appropriate ordering fence against Admin suspension. Always rely on BACKGROUND-001 restriction policy as wired by BACKGROUND-002 for a second, mandatory check at final provider admission. Never send because the UI said the shop was ACTIVE.
 - The command-status GET may report `human_messaging_suspended`, `human_rate_limited`, `human_repeated_spam`, `human_content_invalid` or `human_screening_unavailable` when these are persisted worker outcomes. Never leak internal administrator notes.
 
-
 ### Platform-neutral persistence and dispatch contract
 
 Woo API is an authenticated **producer**, not a dispatcher. Inside its existing Woo-installation/shop-scoped PostgreSQL transaction it commits the very same `MerchantConversationSendCommand` shape/idempotency identity that Shopify's server action writes. It must **not** publish BullMQ, invoke Meta, call a Background HTTP endpoint, or distinguish scheduling by commerce platform. The shared BG002 messaging-worker **PostgreSQL poller** is the sole consumer of HUMAN sends. Existing inbound WhatsApp and delayed automatic recovery follow-ups keep their established BullMQ jobs; do not schedule a new BullMQ job for a merchant's immediate post-window follow-up.
 
 For an existing unclaimed sequence-2 PENDING row, atomically claim that row and bind approved template/recipient snapshot, selected trigger and initiation fields in the **same** transaction as the command. Do not overwrite a claimed row or a provider-unknown operation; retry uses the original command and credit idempotency identity. Acceptance returns `ACCEPTED`, not provider delivery. Server-side eligibility must explicitly resolve the existing send entitlement independently of `RECOVERY_HISTORY` read access, and reject terminal recoveries under the shared policy. Use the maximum verified inbound timestamp for the 24-hour window. Final dispatch revalidates these conditions under the BG001 fence.
-
 
 ## Work Items
 
@@ -125,8 +137,8 @@ Routes: `POST /v1/merchant/conversations/{conversationId}/messages` and `GET /v1
 - ARCH-040-API-003
 - ARCH-040-DATABASE-001
 
-
 - ARCH-040-DATABASE-005
+
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-001
@@ -166,6 +178,7 @@ After only this task’s Work Items, Acceptance Criteria and Validation are comp
 ## Completion Report
 
 ### Status
+
 Complete — Attempt 1 accepted and explicitly completed by developer on 2026-10-19.
 
 ### Files Changed
@@ -194,15 +207,19 @@ Complete — Attempt 1 accepted and explicitly completed by developer on 2026-10
 - No merge to `main` was performed.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
+
 None for this task. Background retains final moderation/provider/credit admission and dispatch ownership as specified.
 
 ### Architectural Concerns
+
 Return newly discovered contract or ownership gaps to moda_architect.
 
 ## Developer Self-Review - Accepted
@@ -216,19 +233,25 @@ On 2026-10-19, the developer confirmed that no required Work Item or Acceptance 
 ## Architect Review
 
 ### Review Status
+
 Developer self-review accepted; explicit developer completion recorded.
 
 ### Review Notes
+
 Implementation reviewed against the API-004 contract and validated from the canonical implementation worktree. No scope deviation requiring architect action was identified.
 
 ### Reviewed Files
+
 Implementation commit `d1d7e715055f0d299baa4a193911efbec9fadd4a`, focused tests, OpenAPI contract and route registration.
 
 ### Validation Reviewed
+
 Focused unit/contract tests, disposable PostgreSQL admission suite, typecheck, lint, diff check and mirrored branch publication.
 
 ### Architecture Conformance
+
 Conforms to the Woo installation producer boundary, durable command/idempotency contract, existing recovery sequence-two ownership, moderation lifecycle and Background dispatch separation.
 
 ### Follow-up
+
 Reconcile the ARCH-040 downstream dependency frontier after publication; do not begin dependent implementation in this task.

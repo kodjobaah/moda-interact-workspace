@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-005-BACKGROUND-003
-- ARCH-007-BACKGROUND-004
-- ARCH-010-BACKGROUND-013
+  - ARCH-005-BACKGROUND-003
+  - ARCH-007-BACKGROUND-004
+  - ARCH-010-BACKGROUND-013
 enables:
-- ARCH-012-BACKGROUND-001
-- ARCH-012-GATEWAY-001
-- ARCH-012-SYSTEM-TEST-001
+  - ARCH-012-BACKGROUND-001
+  - ARCH-012-GATEWAY-001
+  - ARCH-012-SYSTEM-TEST-001
 created: 2026-09-14
 updated: 2026-09-16
 ---
@@ -29,17 +29,21 @@ updated: 2026-09-16
 # ARCH-012-BACKGROUND-003
 
 ## Objective
+
 Harden the outbound WhatsApp transport as a Moda-owned communications capability. v1 uses one Moda sender, but business callers must no longer encode the assumption that `WHATSAPP_PHONE_NUMBER_ID` is the provider account/WABA identity or that a single sender can never be abstracted later.
 
 ## Product invariant
+
 Merchants do **not** provide a WABA, Meta app, access token or WhatsApp phone number. The sender is Moda-owned infrastructure.
 
 ARCH-012 v1 provisions exactly one active production sender; this task creates an abstraction, not a load balancer or sender pool database.
 
 ## Current defect to correct
+
 `WhatsAppService.getProviderAccountId()` currently returns `WHATSAPP_PHONE_NUMBER_ID`, while template selection treats that value as `providerAccountId`. WABA/account identity and phone-number sender identity are distinct concepts and must no longer be conflated.
 
 ## Authorized implementation surface
+
 Expected files:
 
 ```text
@@ -53,6 +57,7 @@ focused WhatsApp/outbound/template tests
 No database schema changes.
 
 ## 2026-09-16 outbound-admission compatibility requirement
+
 `src/services/outbound-whatsapp-admission.service.ts` now contains accepted ARCH-010 execution gates that were not present in the original ARCH-012 snapshot. Preserve them exactly while extending the transport:
 
 ```text
@@ -66,12 +71,13 @@ denied prepared messages are cleaned up through existing failPrepared behaviour
 Do not simplify the service back to the older admission-only implementation, and do not bypass eligibility for text, template, link-preview, image-header or URL-button sends. New outbound capabilities must pass through the same accepted admission/provider lifecycle.
 
 ## Sender configuration abstraction
+
 Create a bounded resolver/config type equivalent to:
 
 ```ts
 type ModaWhatsAppSender = {
-  providerAccountId: string;      // WABA ID
-  providerPhoneNumberId: string;  // Cloud API sender phone-number ID
+  providerAccountId: string; // WABA ID
+  providerPhoneNumberId: string; // Cloud API sender phone-number ID
 };
 ```
 
@@ -91,9 +97,11 @@ Exactly one sender is required in v1. Do not invent shop->sender persistence or 
 Template selection must receive true `providerAccountId = WHATSAPP_BUSINESS_ACCOUNT_ID`, not the phone-number ID.
 
 ## Outbound transport surface
+
 Preserve existing `sendWhatsAppText` and `sendWhatsAppTemplate` behaviours while extending typed capability:
 
 ### Text
+
 Support:
 
 ```ts
@@ -108,6 +116,7 @@ Support:
 Serialize `text.preview_url` only when requested. Ordinary HTTPS hyperlinks in `text.body` remain untouched.
 
 ### Template
+
 Support approved template components needed by ARCH-012 communications:
 
 ```text
@@ -121,9 +130,11 @@ Use Meta's template component shape; do not synthesize an unapproved template, a
 A static URL already embedded in an approved template requires no runtime URL parameter; do not force one.
 
 ### Reply context
+
 Allow an outbound text response to include `context.message_id` when Background intentionally replies to a specific customer message. Do not require it for every ordinary conversation response.
 
 ## Sender identity / provider response
+
 All sends:
 
 - use `providerPhoneNumberId` in the Graph `/messages` path;
@@ -168,6 +179,7 @@ All sends:
 - [x] accepted outbound admission/provider-status behaviour is preserved.
 
 ## Validation
+
 Run focused transport/admission/template tests plus repository-declared full tests/build/typecheck/Prisma validation and:
 
 ```text
@@ -175,17 +187,21 @@ git diff --check
 ```
 
 ## Stop conditions
+
 STOP if making WABA identity truthful requires a durable sender database/pool, or if existing template rows cannot be interpreted without a data migration. Report the exact blocker; do not silently repurpose another field.
 
 ## Completion protocol
+
 Return BACKGROUND-003 to `review`; STOP.
 
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-background/src/integration/whatsapp/types.ts`
 - `moda-interact-background/src/services/whatsapp.service.ts`
 - `moda-interact-background/src/services/outbound-whatsapp-admission.service.ts`
@@ -195,6 +211,7 @@ Ready for Review.
 Implementation commit: `bb01a66` (`feat(background): harden WhatsApp sender transport`).
 
 ### Correction Mapping
+
 - WABA identity is resolved from `WHATSAPP_BUSINESS_ACCOUNT_ID`; the Cloud API path uses the distinct `WHATSAPP_PHONE_NUMBER_ID`, with access token validation retained inside the transport.
 - Template selection continues through `getProviderAccountId()` and now receives the WABA ID; no sender pool, schema, migration, or merchant credential surface was added.
 - Text sends support optional `preview_url` and reply `context.message_id`; ordinary HTTPS bodies remain unchanged.
@@ -203,6 +220,7 @@ Implementation commit: `bb01a66` (`feat(background): harden WhatsApp sender tran
 - Focused regressions cover missing WABA/phone/token configuration, identity separation, selector compatibility, text options, template components, static URLs, shopId retention, and eligibility ordering.
 
 ### Validation Results
+
 - `npm test -- --run tests/unit/services/whatsapp.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/whatsapp-template-selector.service.test.ts`: passed, 3 files / 38 tests.
 - `npm test`: 65 files passed, 10 skipped, 993 tests passed; 4 unrelated translation integration tests failed because `Background runtime configuration has not started` in the existing translation runtime path.
 - `npm run build`: passed (`prisma:generate` and `tsc`).
@@ -211,15 +229,18 @@ Implementation commit: `bb01a66` (`feat(background): harden WhatsApp sender tran
 - `npm ci`: completed from the repository lockfile; npm reported 3 high-severity audit findings in the existing dependency tree.
 
 ### Limitations and Unresolved Issues
+
 - Full-suite failures are outside the changed WhatsApp transport/admission/template files and reproduce the existing translation runtime configuration baseline. No unrelated fixes were made.
 - The implementation branch is clean after commit and pushed as `task/ARCH-012-BACKGROUND-003`.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1.
 
 ### Review Notes
+
 Functionality-first review accepted implementation commit `bb01a66`.
 
 Verified functional behaviour:

@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-DATABASE-014
-- ARCH-010-BACKGROUND-014
-- ARCH-010-BACKGROUND-019
-- ARCH-010-BACKGROUND-021
+  - ARCH-010-DATABASE-014
+  - ARCH-010-BACKGROUND-014
+  - ARCH-010-BACKGROUND-019
+  - ARCH-010-BACKGROUND-021
 enables:
-- ARCH-010-SHOPIFY-025
-- ARCH-010-ADMIN-002
-- ARCH-010-ADMIN-003
-- ARCH-010-SYSTEM-TEST-001
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SHOPIFY-025
+  - ARCH-010-ADMIN-002
+  - ARCH-010-ADMIN-003
+  - ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-13
 updated: 2026-09-14
 ---
@@ -310,14 +310,17 @@ STOP if DATABASE-014 final fields are unavailable, if implementing the refund ra
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `src/services/purchased-recovery-reservation.service.ts`
 - `tests/unit/services/purchased-recovery-reservation.service.test.ts`
 - `tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts`
 
 ### Work Completed
+
 - Preserved the accepted serializable transaction, versioned CAS, bounded whole-transaction retry, exact purchase-lot ownership, and FIFO allocation conventions.
 - Corrected both new-reservation and released-reservation replay lot CAS predicates to require the exact freshly read `currentAmount`, `reservedAmount`, `version`, and `ACTIVE` status.
 - Added the required regression proving two live 1-credit reservations can occupy one 2-credit ACTIVE lot and that a third independent source key is exhausted.
@@ -327,6 +330,7 @@ Ready for Review.
 - Added a disposable PostgreSQL integration race using independent Prisma clients/connections for reservation versus refund withdrawal.
 
 ### Validation Results
+
 - `npx vitest run tests/unit/services/purchased-recovery-reservation.service.test.ts`: PASS, 1 file and 14 tests.
 - `npm run test:integration`: PASS, 2 files and 3 tests, including all eight required PostgreSQL race behaviors across the concurrency suite.
 - `npm run prisma:validate`: PASS; Prisma schema is valid.
@@ -336,20 +340,20 @@ Ready for Review.
 
 ### Requirement Matrix
 
-| Requirement | Evidence | Result |
-|---|---|---|
-| Allocation predicates, FIFO, status filtering, reactivation age | Service `selectOldestSpendableLot`; unit FIFO/status tests; PostgreSQL reactivation test | PASS |
-| Fresh-read versioned CAS and whole-transaction retry | Counter and lot `updateMany` predicates; unit CAS-loss retry; serializable integration transactions | PASS |
-| One-credit reservation/refund races | Two-client PostgreSQL winner test plus refund-first alternate-lot test | PASS |
-| Two-credit reservation/refund race | PostgreSQL reservation-first test proves one reserved and one refund-available credit | PASS |
-| ACTIVE/WITHDRAWN commit and release | Unit and PostgreSQL withdrawn commit/release tests with aggregate assertions | PASS |
-| Final completion and refund closure | PostgreSQL test verifies `COMPLETED`, `CANCELLED`, `NO_CREDITS_REMAINING`, and no provider reference | PASS |
-| Ambiguous holds | Unit test verifies `AMBIGUOUS` retains lot and aggregate reservation and blocks further capacity | PASS |
-| Released replay idempotency | Unit test verifies one source-key reservation identity and reactivation without duplicate consumption | PASS |
-| Multiple-lot isolation | Unit and PostgreSQL tests verify eligible FIFO allocation and untouched unrelated lot state | PASS |
-| Aggregate conservation | Unit plus PostgreSQL lot/counter assertions across reserve, commit, release, withdrawal, reactivation, and completion; provider settlement remains ADMIN-003's contract | PASS |
-| All eight required real-PostgreSQL scenarios | PostgreSQL suite covers scenarios 1 through 8; scenarios 7 and 8 are asserted together in the reactivation/isolation test | PASS |
-| Non-goals and ownership boundaries | Diff limited to reservation service and tests; no endpoint, UI, valuation, provider settlement, schema, or shared-contract changes | PASS |
+| Requirement                                                     | Evidence                                                                                                                                                                | Result |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| Allocation predicates, FIFO, status filtering, reactivation age | Service `selectOldestSpendableLot`; unit FIFO/status tests; PostgreSQL reactivation test                                                                                | PASS   |
+| Fresh-read versioned CAS and whole-transaction retry            | Counter and lot `updateMany` predicates; unit CAS-loss retry; serializable integration transactions                                                                     | PASS   |
+| One-credit reservation/refund races                             | Two-client PostgreSQL winner test plus refund-first alternate-lot test                                                                                                  | PASS   |
+| Two-credit reservation/refund race                              | PostgreSQL reservation-first test proves one reserved and one refund-available credit                                                                                   | PASS   |
+| ACTIVE/WITHDRAWN commit and release                             | Unit and PostgreSQL withdrawn commit/release tests with aggregate assertions                                                                                            | PASS   |
+| Final completion and refund closure                             | PostgreSQL test verifies `COMPLETED`, `CANCELLED`, `NO_CREDITS_REMAINING`, and no provider reference                                                                    | PASS   |
+| Ambiguous holds                                                 | Unit test verifies `AMBIGUOUS` retains lot and aggregate reservation and blocks further capacity                                                                        | PASS   |
+| Released replay idempotency                                     | Unit test verifies one source-key reservation identity and reactivation without duplicate consumption                                                                   | PASS   |
+| Multiple-lot isolation                                          | Unit and PostgreSQL tests verify eligible FIFO allocation and untouched unrelated lot state                                                                             | PASS   |
+| Aggregate conservation                                          | Unit plus PostgreSQL lot/counter assertions across reserve, commit, release, withdrawal, reactivation, and completion; provider settlement remains ADMIN-003's contract | PASS   |
+| All eight required real-PostgreSQL scenarios                    | PostgreSQL suite covers scenarios 1 through 8; scenarios 7 and 8 are asserted together in the reactivation/isolation test                                               | PASS   |
+| Non-goals and ownership boundaries                              | Diff limited to reservation service and tests; no endpoint, UI, valuation, provider settlement, schema, or shared-contract changes                                      | PASS   |
 
 ### Audit Correction
 
@@ -357,39 +361,41 @@ The audit found one concrete production gap: final consumption of a `WITHDRAWN` 
 
 ### Attempt 3 Audit Matrix
 
-| Requirement | Audit evidence | Result |
-|---|---|---|
-| ACTIVE-only new allocation | `selectOldestSpendableLot` filters `status = ACTIVE`; lot CAS repeats `ACTIVE` predicate; unit and PostgreSQL tests pass | PASS |
-| Requested, withdrawn, completed, and refunded exclusion | New allocation queries only ACTIVE lots and checks positive `currentAmount - reservedAmount`; status-filter unit test passes | PASS |
-| FIFO ordering | Ordering remains `activatedAt ASC NULLS LAST`, `createdAt ASC`, `id ASC`; unit FIFO and PostgreSQL reactivation tests pass | PASS |
-| Reactivation preserves original FIFO age | PostgreSQL reactivation helper changes status only; old lot remains ahead of newer lots | PASS |
-| Fresh-read lot CAS | Both reservation sites now use exact fresh `id`, `version`, `status`, `currentAmount`, and `reservedAmount`; strict unit harness verifies equality fields | PASS |
-| Aggregate CAS and whole-transaction retry | Aggregate `updateMany` remains versioned; `ReservationConcurrencyConflict` retries the complete Serializable transaction; CAS-loss unit test passes | PASS |
-| Serializable isolation | Reserve, commit, release, and ambiguous transitions use Prisma Serializable transactions; refund helpers use the same level | PASS |
-| One-credit reservation wins race | Two independent reservation/refund PostgreSQL clients leave exactly one owner and no over-allocation | PASS |
-| One-credit refund wins race | Refund-first PostgreSQL scenario withdraws the old lot and reservation selects the next ACTIVE FIFO lot | PASS |
-| Two-credit reservation/refund race | Reservation leaves one available credit; PostgreSQL refund transition withdraws with `currentAmount=2`, `reservedAmount=1` | PASS |
-| ACTIVE commit | Commit decrements lot reserved/current and aggregate reserved, increments committed, and emits one usage event | PASS |
-| WITHDRAWN commit | Existing RESERVED ownership remains valid; PostgreSQL test commits a withdrawn lot and conserves aggregate quantities | PASS |
-| ACTIVE release | Release decrements lot and aggregate reserved without changing aggregate refunding | PASS |
-| WITHDRAWN release | Release decrements lot/aggregate reserved and increments aggregate refunding; unit and PostgreSQL tests pass | PASS |
-| Final withdrawn completion and refund closure | Last commit atomically sets `COMPLETED` and cancels live refund as `NO_CREDITS_REMAINING` with no provider reference | PASS |
-| Ambiguous hold | `markAmbiguous` changes only reservation status; lot and aggregate holds remain; subsequent capacity is exhausted in unit test | PASS |
-| Released replay idempotency | Source key reuses the same reservation/counter identity, excludes ineligible original lots, and can select a fresh eligible lot; replay tests pass | PASS |
-| Multiple live reservations per lot | New 14-test unit regression reserves two sequential source keys on one 2-credit lot, asserts same lot and `reservedAmount=2`, then third exhaustion | PASS |
-| Multiple-lot isolation | Old/completed/withdrawn/refunded/requested lots are skipped; unrelated active lot remains unchanged in PostgreSQL test | PASS |
-| Aggregate conservation | Reserve, commit, release, withdrawal, reactivation, completion, and provider-settlement ownership boundaries are asserted; ADMIN-003 owns provider movement | PASS |
-| Eight real PostgreSQL races | Independent Prisma clients/connections exercise: reservation-first one-credit, refund-first alternate lot, two-credit withdrawal, withdrawn release, withdrawn commit, final completion/refund cancellation, reactivation FIFO, and unrelated-lot isolation | PASS |
-| Validations | Focused unit PASS; integration PASS; Prisma PASS; build PASS; diff check PASS; full unit suite only has the unchanged observability baseline failures | PASS |
-| Non-goals and ownership | Diff is limited to the reservation service, focused unit test, and task report; no endpoint, UI, valuation, provider settlement, schema, or shared-contract changes | PASS |
+| Requirement                                             | Audit evidence                                                                                                                                                                                                                                              | Result |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| ACTIVE-only new allocation                              | `selectOldestSpendableLot` filters `status = ACTIVE`; lot CAS repeats `ACTIVE` predicate; unit and PostgreSQL tests pass                                                                                                                                    | PASS   |
+| Requested, withdrawn, completed, and refunded exclusion | New allocation queries only ACTIVE lots and checks positive `currentAmount - reservedAmount`; status-filter unit test passes                                                                                                                                | PASS   |
+| FIFO ordering                                           | Ordering remains `activatedAt ASC NULLS LAST`, `createdAt ASC`, `id ASC`; unit FIFO and PostgreSQL reactivation tests pass                                                                                                                                  | PASS   |
+| Reactivation preserves original FIFO age                | PostgreSQL reactivation helper changes status only; old lot remains ahead of newer lots                                                                                                                                                                     | PASS   |
+| Fresh-read lot CAS                                      | Both reservation sites now use exact fresh `id`, `version`, `status`, `currentAmount`, and `reservedAmount`; strict unit harness verifies equality fields                                                                                                   | PASS   |
+| Aggregate CAS and whole-transaction retry               | Aggregate `updateMany` remains versioned; `ReservationConcurrencyConflict` retries the complete Serializable transaction; CAS-loss unit test passes                                                                                                         | PASS   |
+| Serializable isolation                                  | Reserve, commit, release, and ambiguous transitions use Prisma Serializable transactions; refund helpers use the same level                                                                                                                                 | PASS   |
+| One-credit reservation wins race                        | Two independent reservation/refund PostgreSQL clients leave exactly one owner and no over-allocation                                                                                                                                                        | PASS   |
+| One-credit refund wins race                             | Refund-first PostgreSQL scenario withdraws the old lot and reservation selects the next ACTIVE FIFO lot                                                                                                                                                     | PASS   |
+| Two-credit reservation/refund race                      | Reservation leaves one available credit; PostgreSQL refund transition withdraws with `currentAmount=2`, `reservedAmount=1`                                                                                                                                  | PASS   |
+| ACTIVE commit                                           | Commit decrements lot reserved/current and aggregate reserved, increments committed, and emits one usage event                                                                                                                                              | PASS   |
+| WITHDRAWN commit                                        | Existing RESERVED ownership remains valid; PostgreSQL test commits a withdrawn lot and conserves aggregate quantities                                                                                                                                       | PASS   |
+| ACTIVE release                                          | Release decrements lot and aggregate reserved without changing aggregate refunding                                                                                                                                                                          | PASS   |
+| WITHDRAWN release                                       | Release decrements lot/aggregate reserved and increments aggregate refunding; unit and PostgreSQL tests pass                                                                                                                                                | PASS   |
+| Final withdrawn completion and refund closure           | Last commit atomically sets `COMPLETED` and cancels live refund as `NO_CREDITS_REMAINING` with no provider reference                                                                                                                                        | PASS   |
+| Ambiguous hold                                          | `markAmbiguous` changes only reservation status; lot and aggregate holds remain; subsequent capacity is exhausted in unit test                                                                                                                              | PASS   |
+| Released replay idempotency                             | Source key reuses the same reservation/counter identity, excludes ineligible original lots, and can select a fresh eligible lot; replay tests pass                                                                                                          | PASS   |
+| Multiple live reservations per lot                      | New 14-test unit regression reserves two sequential source keys on one 2-credit lot, asserts same lot and `reservedAmount=2`, then third exhaustion                                                                                                         | PASS   |
+| Multiple-lot isolation                                  | Old/completed/withdrawn/refunded/requested lots are skipped; unrelated active lot remains unchanged in PostgreSQL test                                                                                                                                      | PASS   |
+| Aggregate conservation                                  | Reserve, commit, release, withdrawal, reactivation, completion, and provider-settlement ownership boundaries are asserted; ADMIN-003 owns provider movement                                                                                                 | PASS   |
+| Eight real PostgreSQL races                             | Independent Prisma clients/connections exercise: reservation-first one-credit, refund-first alternate lot, two-credit withdrawal, withdrawn release, withdrawn commit, final completion/refund cancellation, reactivation FIFO, and unrelated-lot isolation | PASS   |
+| Validations                                             | Focused unit PASS; integration PASS; Prisma PASS; build PASS; diff check PASS; full unit suite only has the unchanged observability baseline failures                                                                                                       | PASS   |
+| Non-goals and ownership                                 | Diff is limited to the reservation service, focused unit test, and task report; no endpoint, UI, valuation, provider settlement, schema, or shared-contract changes                                                                                         | PASS   |
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-022`
 - Implementation branch/commit: `task/ARCH-010-BACKGROUND-022` at `af2e2f134387e7da768ce8fe68f27c83654cbc6b` (`Fix purchased credit lot reservation CAS`), pushed to `origin/task/ARCH-010-BACKGROUND-022`; worktree clean after validation.
 - Implementation base: `992638f0e7be8c40249adfece485fb4f65439c53`.
 - Parent report branch: `task/ARCH-010-BACKGROUND-022`; report update pending as the next parent-only commit.
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review — Attempt 2
@@ -429,7 +435,7 @@ the selected purchase lot with a predicate equivalent to:
 
 ```ts
 reservedAmount: {
-  lte: lot.currentAmount - lot.reservedAmount - quantity
+  lte: lot.currentAmount - lot.reservedAmount - quantity;
 }
 ```
 
@@ -528,20 +534,19 @@ Use those exact freshly-read values as the CAS authority.
 Required shape:
 
 ```ts
-const updatedLot =
-  await transaction.recoveryCreditPurchase.updateMany({
-    where: {
-      id: lot.id,
-      version: lot.version,
-      status: RecoveryCreditPurchaseStatus.ACTIVE,
-      currentAmount: lot.currentAmount,
-      reservedAmount: lot.reservedAmount,
-    },
-    data: {
-      reservedAmount: { increment: quantity },
-      version: { increment: 1 },
-    },
-  });
+const updatedLot = await transaction.recoveryCreditPurchase.updateMany({
+  where: {
+    id: lot.id,
+    version: lot.version,
+    status: RecoveryCreditPurchaseStatus.ACTIVE,
+    currentAmount: lot.currentAmount,
+    reservedAmount: lot.reservedAmount,
+  },
+  data: {
+    reservedAmount: { increment: quantity },
+    version: { increment: 1 },
+  },
+});
 ```
 
 Then retain:
@@ -987,4 +992,3 @@ ARCH-010-SHOPIFY-025
 ```
 
 No Attempt 4 is required for `ARCH-010-BACKGROUND-022`.
-

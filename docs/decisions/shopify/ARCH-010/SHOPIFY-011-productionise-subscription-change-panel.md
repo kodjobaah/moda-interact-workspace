@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SHOPIFY-013
-- ARCH-010-SHOPIFY-015
+  - ARCH-010-SHOPIFY-013
+  - ARCH-010-SHOPIFY-015
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 superseded_by: ARCH-010-SHOPIFY-015
 ---
 
@@ -176,4 +176,5 @@ STOP if SHOPIFY-013's accepted contract differs materially. Return to `moda_arch
 ## Completion Report
 
 ### Status
+
 Not started.

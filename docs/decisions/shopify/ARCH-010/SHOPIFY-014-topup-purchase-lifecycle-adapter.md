@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-SHOPIFY-013
-- ARCH-010-SHOPIFY-007
-- ARCH-007-SHOPIFY-004
-- ARCH-010-SHOPIFY-018
-- ARCH-010-DATABASE-014
+  - ARCH-010-SHOPIFY-013
+  - ARCH-010-SHOPIFY-007
+  - ARCH-007-SHOPIFY-004
+  - ARCH-010-SHOPIFY-018
+  - ARCH-010-DATABASE-014
 enables:
-- ARCH-010-SHOPIFY-012
-- ARCH-010-BACKGROUND-021
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-BACKGROUND-021
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -291,9 +291,11 @@ STOP if Shopify App Pricing/App Events is no longer the actual mechanism, exact 
 ## Completion Report
 
 ### Status
+
 Ready for Architect Review.
 
 ### Files Changed
+
 - `app/components/dashboard/TopUpPurchasePanel.jsx`
 - `app/i18n/locales/{cs,da,de,en,es,fi,fr,it,ja,ko,nb,nl,pl,pt-BR,pt-PT,sv,th,tr,zh-Hans,zh-Hant}.json`
 - `app/routes/app/billing/options/route.tsx`
@@ -301,11 +303,13 @@ Ready for Architect Review.
 - `tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
+
 - Applied the Attempt 3 correction requested by Architect Review: restored `app/routes/app/billing/options/route.tsx` exactly from `64b535798ed03ca08045fbfa96ff364f7be26f77`, returning final billing-options composition ownership to SHOPIFY-012.
 - Preserved the accepted Attempt 2 implementation unchanged across the billing service, production top-up panel, locale catalogues, and `/app/billing` `PENDING_BILLING -> REQUESTED` correction.
 - Preserved the single lifecycle snapshot authority, full local/provider eligibility gates, effective FROZEN precedence, fail-closed behavior, REQUESTED-only writes, immutable before snapshots, idempotency/concurrency protection, provider report attention states, and all canonical purchase lifecycle statuses.
 
 ### Validation Results
+
 - `git diff 64b535798ed03ca08045fbfa96ff364f7be26f77 -- app/routes/app/billing/options/route.tsx`: passed with empty output.
 - `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/billing-ui.test.ts tests/unit/merchant-i18n.test.ts tests/unit/billing-i18n.test.ts`: passed, 4 files and 214 tests.
 - `npm run prisma:generate`: passed.
@@ -313,6 +317,7 @@ Ready for Architect Review.
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 - Launcher-provided isolated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-014`.
 - Launcher-provided isolated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-014`.
 - Mirrored task branch: `task/ARCH-010-SHOPIFY-014` in both repositories.
@@ -324,8 +329,8 @@ Ready for Architect Review.
 - Attempt 3 used the launcher-provided prepared claim and exact isolated worktrees without rerouting, dependency discovery, worktree recreation, startup synchronization, submodule initialization, or a second claim.
 
 ### Architect Review
-Pending moda_architect review. Attempt 3 correction is ready for final review handoff.
 
+Pending moda_architect review. Attempt 3 correction is ready for final review handoff.
 
 ## Architect Review — Attempt 2
 
@@ -778,28 +783,28 @@ cs da de en es fi fr it ja ko nb nl pl pt-BR pt-PT sv th tr zh-Hans zh-Hant
 
 Use these exact status labels:
 
-| Locale | ACTIVE | COMPLETED | WITHDRAWN | REFUNDED |
-| --- | --- | --- | --- | --- |
-| cs | Aktivní | Dokončeno | Staženo | Vráceno |
-| da | Aktiv | Fuldført | Trukket tilbage | Refunderet |
-| de | Aktiv | Abgeschlossen | Zurückgezogen | Erstattet |
-| en | Active | Completed | Withdrawn | Refunded |
-| es | Activo | Completado | Retirado | Reembolsado |
-| fi | Aktiivinen | Valmis | Peruttu | Hyvitetty |
-| fr | Actif | Terminé | Retiré | Remboursé |
-| it | Attivo | Completato | Ritirato | Rimborsato |
-| ja | 有効 | 完了 | 取り下げ | 返金済み |
-| ko | 활성 | 완료 | 철회됨 | 환불됨 |
-| nb | Aktiv | Fullført | Trukket tilbake | Refundert |
-| nl | Actief | Voltooid | Ingetrokken | Terugbetaald |
-| pl | Aktywny | Zakończony | Wycofany | Zwrócony |
-| pt-BR | Ativo | Concluído | Retirado | Reembolsado |
-| pt-PT | Ativo | Concluído | Retirado | Reembolsado |
-| sv | Aktiv | Slutförd | Återtagen | Återbetald |
-| th | ใช้งานอยู่ | เสร็จสมบูรณ์ | ถอนแล้ว | คืนเงินแล้ว |
-| tr | Etkin | Tamamlandı | Geri çekildi | İade edildi |
-| zh-Hans | 已激活 | 已完成 | 已撤回 | 已退款 |
-| zh-Hant | 已啟用 | 已完成 | 已撤回 | 已退款 |
+| Locale  | ACTIVE     | COMPLETED     | WITHDRAWN       | REFUNDED     |
+| ------- | ---------- | ------------- | --------------- | ------------ |
+| cs      | Aktivní    | Dokončeno     | Staženo         | Vráceno      |
+| da      | Aktiv      | Fuldført      | Trukket tilbage | Refunderet   |
+| de      | Aktiv      | Abgeschlossen | Zurückgezogen   | Erstattet    |
+| en      | Active     | Completed     | Withdrawn       | Refunded     |
+| es      | Activo     | Completado    | Retirado        | Reembolsado  |
+| fi      | Aktiivinen | Valmis        | Peruttu         | Hyvitetty    |
+| fr      | Actif      | Terminé       | Retiré          | Remboursé    |
+| it      | Attivo     | Completato    | Ritirato        | Rimborsato   |
+| ja      | 有効       | 完了          | 取り下げ        | 返金済み     |
+| ko      | 활성       | 완료          | 철회됨          | 환불됨       |
+| nb      | Aktiv      | Fullført      | Trukket tilbake | Refundert    |
+| nl      | Actief     | Voltooid      | Ingetrokken     | Terugbetaald |
+| pl      | Aktywny    | Zakończony    | Wycofany        | Zwrócony     |
+| pt-BR   | Ativo      | Concluído     | Retirado        | Reembolsado  |
+| pt-PT   | Ativo      | Concluído     | Retirado        | Reembolsado  |
+| sv      | Aktiv      | Slutförd      | Återtagen       | Återbetald   |
+| th      | ใช้งานอยู่ | เสร็จสมบูรณ์  | ถอนแล้ว         | คืนเงินแล้ว  |
+| tr      | Etkin      | Tamamlandı    | Geri çekildi    | İade edildi  |
+| zh-Hans | 已激活     | 已完成        | 已撤回          | 已退款       |
+| zh-Hant | 已啟用     | 已完成        | 已撤回          | 已退款       |
 
 For `billingCommerce.topup.reportingRetry` and `billingCommerce.topup.reportingNeedsAttention`, preserve the exact English semantics above and provide a native-language translation in every supported non-English catalogue. Do not leave the English source text copied into non-English catalogues.
 
@@ -916,8 +921,6 @@ Return to `moda_architect` only when:
 ```
 
 Do not start `ARCH-010-SHOPIFY-012` or `ARCH-010-BACKGROUND-021` from this task.
-
-
 
 ## Architect Review — Attempt 3
 

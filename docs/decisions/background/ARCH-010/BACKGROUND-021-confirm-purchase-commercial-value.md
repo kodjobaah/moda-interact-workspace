@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-010-DATABASE-014
-- ARCH-010-BACKGROUND-015
-- ARCH-010-SHOPIFY-014
+  - ARCH-010-DATABASE-014
+  - ARCH-010-BACKGROUND-015
+  - ARCH-010-SHOPIFY-014
 enables:
-- ARCH-010-BACKGROUND-022
-- ARCH-010-SHOPIFY-025
-- ARCH-010-ADMIN-003
-- ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-BACKGROUND-022
+  - ARCH-010-SHOPIFY-025
+  - ARCH-010-ADMIN-003
+  - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-13
 updated: 2026-09-14
 ---
@@ -232,9 +232,11 @@ STOP if exact purchase valuation cannot be proven from provider evidence without
 ## Completion Report
 
 ### Status
+
 Ready for Architect Review.
 
 ### Files Changed
+
 - `src/services/recovery-credit-purchase.service.ts`
 - `src/services/billing-reconciliation.service.ts`
 - `src/services/purchased-recovery-reservation.service.ts`
@@ -244,6 +246,7 @@ Ready for Architect Review.
 - `tests/unit/services/purchased-recovery-reservation.service.test.ts`
 
 ### Work Completed
+
 - Replaced legacy quantity-only activation and removed obsolete `PENDING_BILLING`/`NEEDS_ATTENTION` purchase activation paths.
 - Reconciliation now requires the exact provider subscription, current billing-period/meter scope, cumulative quantity proof from the purchase's immutable before quantity, positive provider cost delta, and matching currency.
 - Ambiguous attribution, missing/unchanged cost, subscription/currency/quantity mismatch, non-REPORTED evidence, and multiple unresolved purchases remain `REQUESTED` with zero capacity and no aggregate grant.
@@ -255,20 +258,21 @@ Ready for Architect Review.
 
 ### Behavioral Test Matrix
 
-| Required behavior | Production symbol | Test evidence |
-| --- | --- | --- |
-| No capacity before valuation | `selectOldestSpendableLot`, `reserveInTransaction` | `purchased-recovery-reservation.service.test.ts`: REQUESTED lot returns `credits-exhausted`, remains at zero reserved/current balance unchanged. |
-| Exact quantity/cost/currency and immutable snapshots | `reconcileProviderConfirmed` | `recovery-credit-purchase.service.test.ts`: before quantity `2` plus one provider unit yields after `3`; cost `12.50 - 10.00` yields `2.5`; USD is persisted in both after and purchase fields; timestamps and version are asserted. |
-| Subscription, cycle, plan, and meter identity | reconciliation `scope` and candidate checks; `BillingReconciliationService.reconcilePackPurchases` | Focused billing test asserts exact period, plan, meter, subscription, quantity, cost, and currency handoff; purchase tests mutate purchase period/plan/meter snapshots and require fail-closed `over` discrepancy. |
-| Ambiguity and quantity-only fail closed | `reconcileProviderConfirmed` | Multiple unresolved candidates, missing cost, non-positive delta, currency/subscription mismatch, quantity mismatch, and non-REPORTED/mismatched UsageEvent cases assert no activation, no capacity, and no aggregate grant. |
-| Atomic ACTIVE/currentAmount/aggregate grant | Serializable `$transaction`, CAS `updateMany`, counter `upsert` | Activation test asserts ACTIVE, `currentAmount = creditsGranted`, `reservedAmount = 0`, all valuation fields, version increment, aggregate grant, and Serializable transaction option. |
-| Idempotent replay | ACTIVE count and REQUESTED candidate selection in `reconcileProviderConfirmed` | Replay test asserts zero second activation and aggregate grant remains exactly `5`; reservation commit replay returns `already-committed` with one usage event. |
-| Plan-price independence and immutable historical value | `providerPurchaseAmount` calculation in `reconcileProviderConfirmed` | Plan snapshot price `999.00` still stores provider delta `2.5`; later plan handle/cost leaves ACTIVE purchase amount/currency unchanged. |
-| Post-commit resume hint | `recoveryCapacityResumeService.schedule` after `$transaction` | Resume-hint tests assert event order transaction-complete -> schedule, no hint on zero activation, and activation result survives queue failure. |
+| Required behavior                                      | Production symbol                                                                                  | Test evidence                                                                                                                                                                                                                        |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No capacity before valuation                           | `selectOldestSpendableLot`, `reserveInTransaction`                                                 | `purchased-recovery-reservation.service.test.ts`: REQUESTED lot returns `credits-exhausted`, remains at zero reserved/current balance unchanged.                                                                                     |
+| Exact quantity/cost/currency and immutable snapshots   | `reconcileProviderConfirmed`                                                                       | `recovery-credit-purchase.service.test.ts`: before quantity `2` plus one provider unit yields after `3`; cost `12.50 - 10.00` yields `2.5`; USD is persisted in both after and purchase fields; timestamps and version are asserted. |
+| Subscription, cycle, plan, and meter identity          | reconciliation `scope` and candidate checks; `BillingReconciliationService.reconcilePackPurchases` | Focused billing test asserts exact period, plan, meter, subscription, quantity, cost, and currency handoff; purchase tests mutate purchase period/plan/meter snapshots and require fail-closed `over` discrepancy.                   |
+| Ambiguity and quantity-only fail closed                | `reconcileProviderConfirmed`                                                                       | Multiple unresolved candidates, missing cost, non-positive delta, currency/subscription mismatch, quantity mismatch, and non-REPORTED/mismatched UsageEvent cases assert no activation, no capacity, and no aggregate grant.         |
+| Atomic ACTIVE/currentAmount/aggregate grant            | Serializable `$transaction`, CAS `updateMany`, counter `upsert`                                    | Activation test asserts ACTIVE, `currentAmount = creditsGranted`, `reservedAmount = 0`, all valuation fields, version increment, aggregate grant, and Serializable transaction option.                                               |
+| Idempotent replay                                      | ACTIVE count and REQUESTED candidate selection in `reconcileProviderConfirmed`                     | Replay test asserts zero second activation and aggregate grant remains exactly `5`; reservation commit replay returns `already-committed` with one usage event.                                                                      |
+| Plan-price independence and immutable historical value | `providerPurchaseAmount` calculation in `reconcileProviderConfirmed`                               | Plan snapshot price `999.00` still stores provider delta `2.5`; later plan handle/cost leaves ACTIVE purchase amount/currency unchanged.                                                                                             |
+| Post-commit resume hint                                | `recoveryCapacityResumeService.schedule` after `$transaction`                                      | Resume-hint tests assert event order transaction-complete -> schedule, no hint on zero activation, and activation result survives queue failure.                                                                                     |
 
 Correction mapping: no Architect Review corrections were present; the latest review section remained `Pending`.
 
 ### Validation Results
+
 - Focused purchase, reconciliation, resume-hint, and reservation tests: passed, 70/70 tests after mutation-strengthening edits; the two edited files are committed as implementation `b10c5d1`.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
@@ -277,6 +281,7 @@ Correction mapping: no Architect Review corrections were present; the latest rev
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-021`
 - Implementation branch: `task/ARCH-010-BACKGROUND-021`
 - Implementation commits: `229fd5f` (`Confirm recovery credit purchase commercial value`), `cbdd18e` (`fix background purchase reservation balances`), `59206a6` (`test background purchase valuation evidence`), and `b10c5d1` (`test background purchase mutation strength`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
@@ -284,6 +289,7 @@ Correction mapping: no Architect Review corrections were present; the latest rev
 - Parent report commits: `e308a3e` (claim), `7090504` (return for review), `5f047e5` (validation evidence), `4731de0` (`docs background 021 audit evidence`), and `00af590` (`docs background 021 git evidence`), pushed to `origin/task/ARCH-010-BACKGROUND-021`.
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review — Attempt 1
@@ -550,4 +556,3 @@ ARCH-010-BACKGROUND-022
 ```
 
 No additional BACKGROUND-021 implementation attempt is required.
-

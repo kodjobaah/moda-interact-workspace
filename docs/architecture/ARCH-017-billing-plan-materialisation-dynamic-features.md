@@ -394,15 +394,15 @@ There are no production customers or production billing lifecycle state to prese
 
 ## Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-017-DATABASE-001 | moda_database | Complete | - |
-| ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
-| ARCH-017-BACKGROUND-002 | moda_background | Complete | ARCH-017-BACKGROUND-001 |
-| ARCH-017-SHOPIFY-001 | moda_app | Complete (Attempt 4 Accepted) | ARCH-017-DATABASE-001 |
-| ARCH-017-SHOPIFY-002 | moda_app | Complete | ARCH-017-SHOPIFY-001 |
-| ARCH-017-SHOPIFY-003 | moda_app | Complete | ARCH-017-SHOPIFY-002 |
-| ARCH-017-ADMIN-001 | moda_admin | Complete | ARCH-017-DATABASE-001 |
+| Task                    | Owner           | Status                        | Depends On              |
+| ----------------------- | --------------- | ----------------------------- | ----------------------- |
+| ARCH-017-DATABASE-001   | moda_database   | Complete                      | -                       |
+| ARCH-017-BACKGROUND-001 | moda_background | Complete                      | ARCH-017-DATABASE-001   |
+| ARCH-017-BACKGROUND-002 | moda_background | Complete                      | ARCH-017-BACKGROUND-001 |
+| ARCH-017-SHOPIFY-001    | moda_app        | Complete (Attempt 4 Accepted) | ARCH-017-DATABASE-001   |
+| ARCH-017-SHOPIFY-002    | moda_app        | Complete                      | ARCH-017-SHOPIFY-001    |
+| ARCH-017-SHOPIFY-003    | moda_app        | Complete                      | ARCH-017-SHOPIFY-002    |
+| ARCH-017-ADMIN-001      | moda_admin      | Complete                      | ARCH-017-DATABASE-001   |
 
 BACKGROUND-002 was a bounded reconciliation-correctness follow-up discovered during manual testing. It is complete and did not reopen BACKGROUND-001.
 
@@ -412,7 +412,6 @@ SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-003 owns current
 
 - **2026-10-05 — AI Conversations made a core plan-managed feature.** `ai_conversations` now follows the same required/always-enabled merchant behaviour as `checkout_recovery`: every merchant catalogue plan and operational BillingPlan receives the capability, merchants cannot toggle it off, and obsolete `ShopFeaturePreference` rows are removed during convergence. Product Search, Order Support, Merchant Knowledge, and other `MERCHANT_OPT_IN` features remain optional.
 - **2026-09-30 — ARCH-017-SHOPIFY-001 Attempt 4 accepted.** Reconciled the onboarding invariant to require provider confirmation of the requested current/pending managed-pricing selection before the monotonic onboarding write. This supersedes the earlier SHOPIFY-002 callback-entry subrule while preserving SHOPIFY-002/003 historical completion. The accepted lazy BillingPlan materialiser and persistent merchant feature-preference behaviour are the implementation baseline to integrate before ARCH-023 Shopify configuration work resumes.
-
 
 ### Preserved local functionality reconciliation — 2026-11-13
 

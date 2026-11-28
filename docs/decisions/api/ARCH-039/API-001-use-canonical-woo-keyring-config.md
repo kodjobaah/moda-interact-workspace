@@ -22,7 +22,6 @@ created: 2026-10-14
 updated: 2026-10-14
 ---
 
-
 # Replace Woo REST-read API-specific keyring configuration
 
 ## Architecture
@@ -43,7 +42,7 @@ ARCH-039 makes one published credential security mechanism authoritative for hos
 ## Scope
 
 - Migrate `src/woocommerce/rest-read/config.ts`, relevant runtime configuration typing/startup/dev scripts and operator documentation to `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID`.
-- Preserve `MODA_WOO_REST_READ_PUBLIC_ORIGIN` as a *non-keyring* Woo-specific configuration input.
+- Preserve `MODA_WOO_REST_READ_PUBLIC_ORIGIN` as a _non-keyring_ Woo-specific configuration input.
 
 ## Out of Scope
 

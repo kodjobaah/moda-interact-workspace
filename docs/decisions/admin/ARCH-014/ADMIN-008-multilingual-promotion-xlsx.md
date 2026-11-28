@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-014-DATABASE-003
-- ARCH-014-ADMIN-006
+  - ARCH-014-DATABASE-003
+  - ARCH-014-ADMIN-006
 enables:
-- ARCH-014-SYSTEM-TEST-002
+  - ARCH-014-SYSTEM-TEST-002
 created: 2026-09-15
 updated: 2026-09-16T00:20:00Z
 ---

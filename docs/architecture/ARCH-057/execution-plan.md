@@ -8,12 +8,12 @@ This package defines twelve Shopify implementation tasks plus one terminal syste
 
 Reconciled against the task records in this branch on 2026-11-05 after SHOPIFY-010 Attempt 1 acceptance.
 
-| State | Tasks |
-|---|---|
+| State    | Tasks                                                                                                                                                                                                                      |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Complete | ARCH-057-SHOPIFY-001, ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-004, ARCH-057-SHOPIFY-005, ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-009, ARCH-057-SHOPIFY-010 |
-| Review | None |
-| Ready | ARCH-057-SHOPIFY-011 |
-| Pending | ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001 |
+| Review   | None                                                                                                                                                                                                                       |
+| Ready    | ARCH-057-SHOPIFY-011                                                                                                                                                                                                       |
+| Pending  | ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001                                                                                                                                                                             |
 
 SHOPIFY-010 Attempt 1 is architect-accepted at `6e8029deb30de8903e937dc092b68f8b304e4dce`; independent validation passed 168 tests. Reviewed recorded Redis evidence passed 9 tests; it was not rerun by the architect. Its claim is cleared. SHOPIFY-011 is Ready after reconciliation of SHOPIFY-004's published acceptance. Later tasks remain Pending transitively. No downstream execution, main merge, live drain or deployment is implied. Historical frontier notes below do not override current task records.
 
@@ -43,15 +43,15 @@ This order resolves lifecycle/billing correctness early and leaves diagnostic/na
 
 After 001 is accepted/integrated, the billing, support, recovery, settings and lifecycle branches can run in isolated worktrees. Preserve the following chains:
 
-| Branch | Chain |
-|---|---|
-| Billing | 002 → 003 → 004 |
-| Support | 005 |
-| Recovery | 006 |
-| Settings/knowledge | 007 → 008 |
-| Webhook lifecycle/ingress | 009 → 010 |
-| Final application review | All 001–010 → 011 → 012 |
-| Terminal verification | 012 → SYSTEM-TEST-001, including all transitive prerequisites |
+| Branch                    | Chain                                                         |
+| ------------------------- | ------------------------------------------------------------- |
+| Billing                   | 002 → 003 → 004                                               |
+| Support                   | 005                                                           |
+| Recovery                  | 006                                                           |
+| Settings/knowledge        | 007 → 008                                                     |
+| Webhook lifecycle/ingress | 009 → 010                                                     |
+| Final application review  | All 001–010 → 011 → 012                                       |
+| Terminal verification     | 012 → SYSTEM-TEST-001, including all transitive prerequisites |
 
 The short numbers in this table all mean `ARCH-057-SHOPIFY-NNN`. Do not run 001 concurrently with consumers that touch its common routes/Shop service. Do not run 009/010 against competing webhook observability edits. 011 audits the integrated result and therefore runs after the functional branches.
 
@@ -96,7 +96,6 @@ Definition validation and patch apply checks are supplied with the handoff. They
 ## Settings Task Acceptance (2026-11-04)
 
 ARCH-057-SHOPIFY-007 Attempt 1 is architect-accepted and Complete at `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e`. Its task records independent 135-test validation, reviewed 23-test PostgreSQL evidence and review limits. Earlier ready/pending snapshots for this task are historical. SHOPIFY-008 is now ready and unclaimed; SHOPIFY-011 remains pending on remaining prerequisites. No downstream execution, main merge or architecture completion is implied.
-
 
 ## Published Acceptance Reconciliation — 2026-11-05
 

@@ -45,6 +45,7 @@ Build the Usage History merchant screen with period selection, event filters and
 Shopify app/components/dashboard/UsageEvents.tsx uses Current/Past tabs, billing-period selection, filter controls, event table and cursor paging. Woo Billing and Purchase History exist, but no equivalent merchant Usage History surface.
 
 Source references:
+
 - Shopify: app/components/dashboard/UsageEvents.tsx; app/routes/app/usage/route.jsx.
 - Woo: src/billing/purchase-history-screen.js; src/billing/connected-billing-screen.js.
 
@@ -188,7 +189,6 @@ Accepted by the developer-as-architect on 2026-10-16 after automated reconciliat
 ### Review Notes
 
 Implementation was source-compared with the named Shopify UsageEvents component/route and the Woo billing boundary. Billing remains distinct; missing hosted usage data is shown as unavailable. No backend or database files changed.
-
 
 **Architect reconciliation (2026-10-16):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Usage History remains absent. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
 

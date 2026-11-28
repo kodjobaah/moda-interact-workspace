@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHOPIFY-018
-- ARCH-010-ADMIN-004
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHOPIFY-018
+  - ARCH-010-ADMIN-004
 enables:
-- ARCH-010-SHOPIFY-020
-- ARCH-010-SHOPIFY-022
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SHOPIFY-020
+  - ARCH-010-SHOPIFY-022
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-12
 updated: 2026-09-13
 ---
@@ -148,9 +148,11 @@ Stop if DATABASE-011 selection/grant uniqueness is unavailable or SHOPIFY-018/cu
 ## Completion Report
 
 ### Status
+
 Implementation complete; returned to review.
 
 ### Files Changed
+
 - `moda-interact/app/services/promotions/promotion.service.ts`
 - `moda-interact/app/routes/app/promotions/route.tsx`
 - `moda-interact/app/routes.ts`
@@ -158,12 +160,14 @@ Implementation complete; returned to review.
 - `moda-interact/tests/unit/services/promotion.service.test.ts`
 
 ### Work Completed
+
 - Added a merchant-safe running promotion catalogue filtered by ACTIVE status, time window, GLOBAL/SHOP/PLAN targeting, and local subscription plan projection.
 - Added authenticated merchant selection with executable lifecycle checks, serializable transaction isolation, one grant per campaign/shop, exact first-claim quantity, replay-safe reuse, selection timestamps/counts, and blocking of a different usable selection.
 - Added merchant route/action and app navigation without exposing admin IDs, audit metadata, or internal selection error codes.
 - Added focused tests for catalogue filtering/projection, exact grant creation/reselection, and competing selection protection.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - `npm run typecheck`: passed for the touched implementation; no diagnostics were reported for SHOPIFY-021 files.
@@ -175,6 +179,7 @@ Implementation complete; returned to review.
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-021`.
 - Implementation branch: `task/ARCH-010-SHOPIFY-021`.
 - Implementation commit: `a329079` (`feat(shopify): add promotion offer selection`), pushed to origin.
@@ -183,6 +188,7 @@ Implementation complete; returned to review.
 - Claim cleared in this report; parent report commit/push follows. No merge to `main` performed.
 
 ### Architect Review
+
 Pending.
 
 ## Attempt 2 Completion Report
@@ -351,8 +357,8 @@ merchantPromotionSelection.findUnique({
 but then evaluates:
 
 ```ts
-currentGrant.campaign.expiresAt
-currentGrant.campaign.status
+currentGrant.campaign.expiresAt;
+currentGrant.campaign.status;
 ```
 
 `campaign` was not requested in that Prisma relation read.
@@ -439,7 +445,7 @@ old exhausted/no remaining -> permits switching
 Attempt 1 derives:
 
 ```ts
-selected: Boolean(grant)
+selected: Boolean(grant);
 ```
 
 A grant is lifetime history for `(campaignId, shopId)`. It remains after the merchant
@@ -1971,20 +1977,14 @@ let postgres: StartedPostgreSqlContainer | undefined;
 let database: PrismaClient | undefined;
 let firstClient: PrismaClient | undefined;
 let secondClient: PrismaClient | undefined;
-let selectPromotionOffer:
-  typeof import("../../app/services/promotions/promotion.service")["selectPromotionOffer"];
+let selectPromotionOffer: (typeof import("../../app/services/promotions/promotion.service"))["selectPromotionOffer"];
 
 const originalDatabaseUrl = process.env.DATABASE_URL;
 
 async function deployMigrations(databaseUrl: string): Promise<void> {
   await execFileAsync(
     prismaExecutable,
-    [
-      "migrate",
-      "deploy",
-      "--schema",
-      "database/prisma/schema.prisma",
-    ],
+    ["migrate", "deploy", "--schema", "database/prisma/schema.prisma"],
     {
       cwd: repositoryRoot,
       env: {
@@ -2119,9 +2119,8 @@ describeWithDatabase(
           secondClient.$connect(),
         ]);
 
-        ({ selectPromotionOffer } = await import(
-          "../../app/services/promotions/promotion.service"
-        ));
+        ({ selectPromotionOffer } =
+          await import("../../app/services/promotions/promotion.service"));
 
         await createCommonFixtures();
       } catch (error) {
@@ -2170,138 +2169,110 @@ describeWithDatabase(
       }
     }, 120_000);
 
-    it(
-      "allows exactly one winner when two different campaigns are selected concurrently",
-      async () => {
-        if (!database || !firstClient || !secondClient) {
-          throw new Error("Disposable database clients are unavailable");
-        }
+    it("allows exactly one winner when two different campaigns are selected concurrently", async () => {
+      if (!database || !firstClient || !secondClient) {
+        throw new Error("Disposable database clients are unavailable");
+      }
 
-        const candidates = [
-          { campaignId: campaignAId, quantity: 25 },
-          { campaignId: campaignBId, quantity: 40 },
-        ] as const;
+      const candidates = [
+        { campaignId: campaignAId, quantity: 25 },
+        { campaignId: campaignBId, quantity: 40 },
+      ] as const;
 
-        const outcomes = await Promise.allSettled([
-          selectPromotionOffer(
-            shopId,
-            campaignAId,
-            selectionTime,
-            firstClient,
-          ),
-          selectPromotionOffer(
-            shopId,
-            campaignBId,
-            selectionTime,
-            secondClient,
-          ),
-        ]);
+      const outcomes = await Promise.allSettled([
+        selectPromotionOffer(shopId, campaignAId, selectionTime, firstClient),
+        selectPromotionOffer(shopId, campaignBId, selectionTime, secondClient),
+      ]);
 
-        const fulfilledIndexes = outcomes
-          .map((outcome, index) => ({ outcome, index }))
-          .filter(({ outcome }) => outcome.status === "fulfilled")
-          .map(({ index }) => index);
+      const fulfilledIndexes = outcomes
+        .map((outcome, index) => ({ outcome, index }))
+        .filter(({ outcome }) => outcome.status === "fulfilled")
+        .map(({ index }) => index);
 
-        expect(fulfilledIndexes).toHaveLength(1);
+      expect(fulfilledIndexes).toHaveLength(1);
 
-        const winningIndex = fulfilledIndexes[0];
-        if (winningIndex !== 0 && winningIndex !== 1) {
-          throw new Error("Expected exactly one fulfilled promotion selection");
-        }
+      const winningIndex = fulfilledIndexes[0];
+      if (winningIndex !== 0 && winningIndex !== 1) {
+        throw new Error("Expected exactly one fulfilled promotion selection");
+      }
 
-        const losingIndex = winningIndex === 0 ? 1 : 0;
-        const winningCampaign = candidates[winningIndex];
-        const losingCampaign = candidates[losingIndex];
-        const losingOutcome = outcomes[losingIndex];
+      const losingIndex = winningIndex === 0 ? 1 : 0;
+      const winningCampaign = candidates[winningIndex];
+      const losingCampaign = candidates[losingIndex];
+      const losingOutcome = outcomes[losingIndex];
 
-        expect(losingOutcome.status).toBe("rejected");
-        if (losingOutcome.status !== "rejected") {
-          throw new Error("Expected the losing promotion selection to reject");
-        }
-        expect(losingOutcome.reason).toMatchObject({
-          code: "ACTIVE_PROMOTION_ALREADY_SELECTED",
-        });
+      expect(losingOutcome.status).toBe("rejected");
+      if (losingOutcome.status !== "rejected") {
+        throw new Error("Expected the losing promotion selection to reject");
+      }
+      expect(losingOutcome.reason).toMatchObject({
+        code: "ACTIVE_PROMOTION_ALREADY_SELECTED",
+      });
 
-        expect(
-          await database.merchantPromotionSelection.count({
-            where: { shopId },
-          }),
-        ).toBe(1);
-        expect(
-          await database.promotionalCreditGrant.count({
-            where: { shopId },
-          }),
-        ).toBe(1);
-
-        const selection = await database.merchantPromotionSelection.findUnique({
+      expect(
+        await database.merchantPromotionSelection.count({
           where: { shopId },
-          include: { promotionalCreditGrant: true },
-        });
-
-        expect(selection).not.toBeNull();
-        expect(selection?.promotionalCreditGrant.campaignId).toBe(
-          winningCampaign.campaignId,
-        );
-        expect(selection?.promotionalCreditGrant.quantity).toBe(
-          winningCampaign.quantity,
-        );
-        expect(
-          await database.promotionalCreditGrant.count({
-            where: {
-              campaignId: losingCampaign.campaignId,
-              shopId,
-            },
-          }),
-        ).toBe(0);
-      },
-      30_000,
-    );
-
-    it(
-      "reuses one exact grant when the same campaign is selected concurrently",
-      async () => {
-        if (!database || !firstClient || !secondClient) {
-          throw new Error("Disposable database clients are unavailable");
-        }
-
-        const outcomes = await Promise.allSettled([
-          selectPromotionOffer(
-            shopId,
-            campaignAId,
-            selectionTime,
-            firstClient,
-          ),
-          selectPromotionOffer(
-            shopId,
-            campaignAId,
-            selectionTime,
-            secondClient,
-          ),
-        ]);
-
-        expect(outcomes.every((outcome) => outcome.status === "fulfilled")).toBe(
-          true,
-        );
-
-        const grants = await database.promotionalCreditGrant.findMany({
-          where: { campaignId: campaignAId, shopId },
-        });
-
-        expect(grants).toHaveLength(1);
-        expect(grants[0]).toMatchObject({
-          quantity: 25,
-          selectionCount: 2,
-        });
-
-        const selection = await database.merchantPromotionSelection.findUnique({
+        }),
+      ).toBe(1);
+      expect(
+        await database.promotionalCreditGrant.count({
           where: { shopId },
-        });
+        }),
+      ).toBe(1);
 
-        expect(selection).not.toBeNull();
-        expect(selection?.promotionalCreditGrantId).toBe(grants[0]?.id);
-      },
-      30_000,
-    );
+      const selection = await database.merchantPromotionSelection.findUnique({
+        where: { shopId },
+        include: { promotionalCreditGrant: true },
+      });
+
+      expect(selection).not.toBeNull();
+      expect(selection?.promotionalCreditGrant.campaignId).toBe(
+        winningCampaign.campaignId,
+      );
+      expect(selection?.promotionalCreditGrant.quantity).toBe(
+        winningCampaign.quantity,
+      );
+      expect(
+        await database.promotionalCreditGrant.count({
+          where: {
+            campaignId: losingCampaign.campaignId,
+            shopId,
+          },
+        }),
+      ).toBe(0);
+    }, 30_000);
+
+    it("reuses one exact grant when the same campaign is selected concurrently", async () => {
+      if (!database || !firstClient || !secondClient) {
+        throw new Error("Disposable database clients are unavailable");
+      }
+
+      const outcomes = await Promise.allSettled([
+        selectPromotionOffer(shopId, campaignAId, selectionTime, firstClient),
+        selectPromotionOffer(shopId, campaignAId, selectionTime, secondClient),
+      ]);
+
+      expect(outcomes.every((outcome) => outcome.status === "fulfilled")).toBe(
+        true,
+      );
+
+      const grants = await database.promotionalCreditGrant.findMany({
+        where: { campaignId: campaignAId, shopId },
+      });
+
+      expect(grants).toHaveLength(1);
+      expect(grants[0]).toMatchObject({
+        quantity: 25,
+        selectionCount: 2,
+      });
+
+      const selection = await database.merchantPromotionSelection.findUnique({
+        where: { shopId },
+      });
+
+      expect(selection).not.toBeNull();
+      expect(selection?.promotionalCreditGrantId).toBe(grants[0]?.id);
+    }, 30_000);
   },
 );
 ```

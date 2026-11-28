@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-ADMIN-010
+  - ARCH-010-DATABASE-013
+  - ARCH-010-ADMIN-010
 enables:
-- ARCH-010-ADMIN-005
-- ARCH-010-SHOPIFY-021
+  - ARCH-010-ADMIN-005
+  - ARCH-010-SHOPIFY-021
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-ADMIN-004: Create and activate GLOBAL, PLAN and SHOP promotion campaigns
@@ -117,20 +117,24 @@ Stop if DATABASE-010 has not landed or if current Admin authorization/tenant-pla
 ## Completion Report
 
 ### Status
+
 Review.
 
 ### Files Changed
+
 - `src/app/(protected)/promotions/page.tsx`
 - `src/components/admin/sidebar.tsx`
 - `tests/security/admin-promotions.test.mjs`
 
 ### Work Completed
+
 - Preserved the accepted Attempt 2 CAS, persisted-term activation validation, no-grant/no-selection/no-counter/no-Shopify boundaries, and existing campaign authoring behaviour.
 - Added a SUPER_ADMIN page boundary that retains the platform principal, redirects non-SUPER_ADMIN roles before loading campaign or target data, and preserves unauthenticated handling in `requirePlatformAdminPage()`.
 - Restricted the Promotions sidebar entry to SUPER_ADMIN while leaving all other navigation visibility unchanged.
 - Added deterministic security coverage for page role gating, redirect ordering, sidebar discoverability, and all existing ADMIN-004 mutation boundaries.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts`: passed, 4 tests.
@@ -143,21 +147,22 @@ Review.
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-004`
-  parent branch: `task/ARCH-010-ADMIN-004`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-004`
-  implementation branch: `task/ARCH-010-ADMIN-004`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-004`
+parent branch: `task/ARCH-010-ADMIN-004`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-004`
+implementation branch: `task/ARCH-010-ADMIN-004`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 database submodule initialized: yes
 database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
@@ -515,7 +520,7 @@ The published parent branch at Attempt 2 incorrectly remained:
 ```yaml
 status: in_progress
 executor: copilot
-claimed_at: '2026-09-13T12:58:24Z'
+claimed_at: "2026-09-13T12:58:24Z"
 attempt: 2
 ```
 
@@ -689,4 +694,3 @@ All declared dependencies of both tasks are now Complete, so both are promoted f
 `pending` to `ready`.
 
 This acceptance does **not** claim or start either task.
-

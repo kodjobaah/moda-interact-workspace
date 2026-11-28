@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-012-MESSAGING-001
-- ARCH-012-BACKGROUND-001
-- ARCH-012-BACKGROUND-003
-- ARCH-012-GATEWAY-001
+  - ARCH-012-MESSAGING-001
+  - ARCH-012-BACKGROUND-001
+  - ARCH-012-BACKGROUND-003
+  - ARCH-012-GATEWAY-001
 enables: []
 created: 2026-09-14
 updated: 2026-09-16
@@ -27,9 +27,11 @@ updated: 2026-09-16
 # ARCH-012-SYSTEM-TEST-002
 
 ## Objective
+
 Prove that a WhatsApp customer can reply by voice and that the communication reaches the existing ordered Background conversation path without raw-audio retention, duplicate transcription or cross-tenant misrouting.
 
 ## Test infrastructure
+
 Extend existing test infrastructure with deterministic fakes/emulators rather than calling live Meta/Groq in the normal suite:
 
 - WhatsApp emulator must provide Meta-style inbound `audio` webhook payloads and media lookup/download endpoints;
@@ -43,7 +45,7 @@ Extend existing test infrastructure with deterministic fakes/emulators rather th
 2. contextless voice note with one active conversation -> correct route before media download -> transcript -> one turn;
 3. contextless cross-tenant ambiguous voice -> no media download and no transcription call;
 4. exactly 120 seconds -> accepted;
-5. >120 seconds -> no transcription call, `REJECTED`, deterministic "2 minutes or shorter" outbound text;
+5. > 120 seconds -> no transcription call, `REJECTED`, deterministic "2 minutes or shorter" outbound text;
 6. corrupt/unsupported audio -> terminal voice failure and deterministic retry/text fallback;
 7. blank transcription -> no CommerceAgent invocation;
 8. duplicate inbound webhook/job -> one durable audio message and one completed logical turn;
@@ -71,6 +73,7 @@ Extend existing test infrastructure with deterministic fakes/emulators rather th
 - [ ] existing text path is not regressed.
 
 ## Validation
+
 Run focused ARCH-012 voice system scenarios, the full declared system-test suite, and:
 
 ```text
@@ -80,23 +83,29 @@ git diff --check
 If deployed Render validation is part of the accepted test environment, prove `WHATSAPP_BUSINESS_ACCOUNT_ID`, WhatsApp credentials and Groq credential presence only by configuration/readiness evidence; never print secret values.
 
 ## Stop conditions
+
 STOP if a live external provider is required for the normal deterministic acceptance suite or if raw customer audio must be retained to make the test pass.
 
 ## Completion protocol
+
 Return SYSTEM-TEST-002 to `review`; STOP.
 
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Validation Results
+
 TBD.
 
 ## Architect Review
 
 ### Review Status
+
 Not reviewed.
 
 ### Review Notes
+
 TBD.

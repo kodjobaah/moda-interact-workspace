@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-SHARED-011
+  - ARCH-052-SHARED-011
 enables:
-- ARCH-052-SHARED-012
-- ARCH-053-API-003
+  - ARCH-052-SHARED-012
+  - ARCH-053-API-003
 created: 2026-10-30
 updated: 2026-10-31
 ---

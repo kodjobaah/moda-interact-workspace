@@ -17,6 +17,7 @@ enables:
 created: 2026-09-02
 updated: 2026-09-02
 ---
+
 # Make Outbound WhatsApp API Base URL Configurable
 
 ## Architecture

@@ -343,9 +343,11 @@ An operation-keyed PostgreSQL advisory transaction lock is acceptable because it
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `src/commerce/publication/ports.ts`
 - `src/commerce/publication/lifecycle.ts`
 - `src/commerce/integration/backend/publication-storage.ts`
@@ -353,12 +355,14 @@ Ready for Review
 - `tests/backend-postgres-rehearsal.test.ts`
 
 ### Work Completed
+
 - Added a dedicated initial Tool + draft persistence contract and routed only `createToolWithInitialDraft` through it.
 - Added a bounded Prisma transaction with operation-keyed advisory locking, exact audit replay lookup, direct Tool/revision/audit inserts, Tool.name-only unique-conflict mapping, and rollback hook coverage.
 - Added real PostgreSQL evidence that a distinct narrow create completes while the legacy global publication lock is held, plus actor-mismatch replay rejection.
 - Preserved the generic publication transaction for all unrelated lifecycle commands.
 
 ### Validation Results
+
 - Implementation commits: `d6b20ae` and `8748595` (`test(commerce): prove narrow lock independence`), both pushed to `task/ARCH-021-COMMERCE-037`.
 - Attempt 2 claim commit: `e5a36f92f2a5a39781c0dd5afad1711ebc259027`; correction-request commit: `63ba7312f1a52aa2bad11befce592fff2b76b99d`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-037`.
@@ -375,22 +379,27 @@ Ready for Review
 - Full typecheck: existing 16 diagnostics in unrelated files; no task-owned diagnostic was reported.
 
 ### Deviations
+
 - No schema or migration changes.
 - The existing broad PostgreSQL rehearsal test timed out at 60 seconds in this environment; the focused Attempt 2 PostgreSQL test passed independently.
 
 ### Assumptions
+
 - Existing `CommerceAuditEvent.id` remains the durable operation identity, with `operationId` populated for the new direct audit row.
 - The existing production authorization adapter's development-principal guard remains a no-op, while lifecycle role authorization and canonical definition validation remain enforced before persistence.
 
 ### Unresolved Issues
+
 - Architect review should confirm whether the same two backend integration failures and broad rehearsal timeout remain baseline environment issues or require separate follow-up tasks.
 
 ### Architectural Concerns
+
 - None within the COMMERCE-037 scope. The generic publication transaction remains unchanged for unrelated commands.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes
@@ -492,8 +501,11 @@ src/commerce/integration/backend/publication-storage.ts
 The current catch block does this for every Prisma unique violation:
 
 ```ts
-if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-  throw new LifecycleError('CONFLICT', 'tool already exists');
+if (
+  error instanceof Prisma.PrismaClientKnownRequestError &&
+  error.code === "P2002"
+) {
+  throw new LifecycleError("CONFLICT", "tool already exists");
 }
 ```
 

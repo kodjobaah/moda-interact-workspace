@@ -160,16 +160,16 @@ Revalidated the expanded definition and implemented its missing browse, shipping
 
 #### Definition comparison and corrections
 
-| Requirement | Result and evidence |
-|---|---|
-| Original categories, unavailable lookups, canonical built-ins, strict mixed grants and bounded nullable recommendation details | Retained and revalidated by the focused and full suites. The two canonical discount descriptors/hashes are unchanged. |
-| Explicit bounded browse | Added `browse` to search input with parsed default `false`; query remains nullable/default null. Query/category/browse applicability remains service policy. Exact-get/search outputs are unchanged. |
-| Fourth published shipping tool | Added/exported the shipping input/output schemas and inferred types, their dictionary members and `shipping.getInformation` operation metadata. Shipping stays outside the two-discount built-in allowlist. Candidate definition/operation versions `1.0.0` validate. |
-| Native shipping facts and independent policy outcomes | Strict objects require every nullable output field; IDs, strings, HTTPS URLs, finite nonnegative measurements and enums are bounded. Inputs default both IDs to null and reject caller-authored destination/cart/query/shop/scope/token/URL fields. Ownership, field relationships, verified hosts and the 16,384-byte policy-body budget remain adapter policy. |
-| Optional answer presentation | Added/exported dispositions and identifier-only presentation selection. Both null IDs select policy-only information; their presence/disposition relationship remains service policy. Combining its shape with recommendations retains unrelated release fields. |
-| Narrow instruction correction | Replaced the blanket unknown-fact referral instruction with trusted-host-authorized truthful limitations. Runtime data still creates no objective/permission. A positively absent policy scope differs from a failed authorized provider read. Instructions distinguish a latched product-bearing shipping observation from a policy-only ordinary answer. Host composition/branch detection stays with the host. |
-| Hard error/referral preservation | New runner tests accept normal shipping outcomes and both soft dispositions, reject nonempty hard-referral details/evidence, preserve plain-text conversion after error, and reject a soft answer after an error followed by a successful shipping result. Required-referral logic and the hard-referral validator were not changed. |
-| Real projection and public exports | Actual Commerce projector generates category/search/shipping inputs and combined recommendation/presentation details. Null/null selection and nullable recommendation IDs compile; depth-four input, depth-six details, unbounded fields, extra keys and unsupported schema keywords remain rejected. Compiled public exports are exercised in a clean process. |
+| Requirement                                                                                                                    | Result and evidence                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Original categories, unavailable lookups, canonical built-ins, strict mixed grants and bounded nullable recommendation details | Retained and revalidated by the focused and full suites. The two canonical discount descriptors/hashes are unchanged.                                                                                                                                                                                                                                                                                             |
+| Explicit bounded browse                                                                                                        | Added `browse` to search input with parsed default `false`; query remains nullable/default null. Query/category/browse applicability remains service policy. Exact-get/search outputs are unchanged.                                                                                                                                                                                                              |
+| Fourth published shipping tool                                                                                                 | Added/exported the shipping input/output schemas and inferred types, their dictionary members and `shipping.getInformation` operation metadata. Shipping stays outside the two-discount built-in allowlist. Candidate definition/operation versions `1.0.0` validate.                                                                                                                                             |
+| Native shipping facts and independent policy outcomes                                                                          | Strict objects require every nullable output field; IDs, strings, HTTPS URLs, finite nonnegative measurements and enums are bounded. Inputs default both IDs to null and reject caller-authored destination/cart/query/shop/scope/token/URL fields. Ownership, field relationships, verified hosts and the 16,384-byte policy-body budget remain adapter policy.                                                  |
+| Optional answer presentation                                                                                                   | Added/exported dispositions and identifier-only presentation selection. Both null IDs select policy-only information; their presence/disposition relationship remains service policy. Combining its shape with recommendations retains unrelated release fields.                                                                                                                                                  |
+| Narrow instruction correction                                                                                                  | Replaced the blanket unknown-fact referral instruction with trusted-host-authorized truthful limitations. Runtime data still creates no objective/permission. A positively absent policy scope differs from a failed authorized provider read. Instructions distinguish a latched product-bearing shipping observation from a policy-only ordinary answer. Host composition/branch detection stays with the host. |
+| Hard error/referral preservation                                                                                               | New runner tests accept normal shipping outcomes and both soft dispositions, reject nonempty hard-referral details/evidence, preserve plain-text conversion after error, and reject a soft answer after an error followed by a successful shipping result. Required-referral logic and the hard-referral validator were not changed.                                                                              |
+| Real projection and public exports                                                                                             | Actual Commerce projector generates category/search/shipping inputs and combined recommendation/presentation details. Null/null selection and nullable recommendation IDs compile; depth-four input, depth-six details, unbounded fields, extra keys and unsupported schema keywords remain rejected. Compiled public exports are exercised in a clean process.                                                   |
 
 #### Files changed in Attempt 2
 
@@ -179,17 +179,17 @@ Revalidated the expanded definition and implemented its missing browse, shipping
 
 All commands ran in the prepared Shared implementation worktree using the workspace Node bootstrap (Node 24.19.0). Both focused and full tests set `COMMERCE_CONTRACT_SOURCE_ROOT` to the explicit Commerce source checkout, so the real projection case executed rather than skipped.
 
-| Command/check | Result |
-|---|---|
-| `npm run test:product-discovery-contracts` | 77 passed; 0 failed/skipped. Includes the extended runner suite. |
-| `npm run typecheck` | Passed after the final projection fixture change. |
-| `npm test` | 432 tests: 431 passed, 0 failed, 1 existing optional live-Redis skip (`TEST_REDIS_URL` not configured). |
-| `npm run build` | Passed, including generated declarations. |
-| `npm run validate:commerce-entrypoints` | Passed in the clean process with all new schemas and the existing runner regression checks. |
-| Browser-platform bundle of `src/commerce/index.ts` | Passed; 159 bundled modules, no Node crypto requirement. |
-| `npm pack --dry-run` | Passed; 131 files, including both commerce and runner JavaScript/declaration entrypoints; no tarball/registry write. |
-| `git diff --check` | Passed for source and this report. |
-| Protected source comparison | Runtime-data authority text is byte-identical; canonical discount descriptors, hard-referral validator, subset limits and runtime runner version unchanged from Attempt 1. |
+| Command/check                                      | Result                                                                                                                                                                     |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:product-discovery-contracts`         | 77 passed; 0 failed/skipped. Includes the extended runner suite.                                                                                                           |
+| `npm run typecheck`                                | Passed after the final projection fixture change.                                                                                                                          |
+| `npm test`                                         | 432 tests: 431 passed, 0 failed, 1 existing optional live-Redis skip (`TEST_REDIS_URL` not configured).                                                                    |
+| `npm run build`                                    | Passed, including generated declarations.                                                                                                                                  |
+| `npm run validate:commerce-entrypoints`            | Passed in the clean process with all new schemas and the existing runner regression checks.                                                                                |
+| Browser-platform bundle of `src/commerce/index.ts` | Passed; 159 bundled modules, no Node crypto requirement.                                                                                                                   |
+| `npm pack --dry-run`                               | Passed; 131 files, including both commerce and runner JavaScript/declaration entrypoints; no tarball/registry write.                                                       |
+| `git diff --check`                                 | Passed for source and this report.                                                                                                                                         |
+| Protected source comparison                        | Runtime-data authority text is byte-identical; canonical discount descriptors, hard-referral validator, subset limits and runtime runner version unchanged from Attempt 1. |
 
 Actual Commerce prerequisite: `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce`. Observed checkout HEAD: `7046baabc66d5a9b1d1e374cc29474a816dd68ba`. The three consumed files were clean and their hashes match the Attempt 1 evidence (authoring `306105bcc30b4fd4cf6c03d9b5bf17363285088390315363878333054585d608`, renderer `103195938924b2c5c0b01ddf05c0e6bc660a800b8455ba84f4303a93f571ae74`, publication `a056e6b5869a35b7ca6bf78380d2caab5cde635d56fbd5697ae89efff993edaa`). Its existing projector/publication files were read only; no consumer dependency or source was changed. The first integration run exposed its released operation registry rejecting the new names. The corrected fixture checks exact candidate operation metadata against candidate Shared, then exercises the installed Commerce publication path with its existing registered `products.search` operation and the actual generated input schema. This proves schema projection/publication compatibility, not adoption of the new operation registrations by the unreleased consumer. Commerce owns that adoption after SHARED-002. No substitute input/details schema or relaxed validator is used in the projection test.
 
@@ -197,13 +197,12 @@ Logs: `/tmp/shared058-a2-{focused,typecheck,tests,build,entrypoints,browser,pack
 
 #### Provenance and remaining boundary
 
-| Final compiled artifact | SHA256 |
-|---|---|
-| `dist/commerce/index.js` | `d5f865b7812228d0ed44957fcab35b4d67859c2f59b51bd17ddd8affbb072680` |
-| `dist/commerce/index.d.ts` | `58efe0ad118969bce69f14862c327ddf47f33ca51cf0ac3216af4a90cee38556` |
-| `dist/commerce/runner/index.js` | `f01298e43e87c90a8232f13def60e2af662b100432fcf5517aa55e3c8738914f` |
+| Final compiled artifact           | SHA256                                                             |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `dist/commerce/index.js`          | `d5f865b7812228d0ed44957fcab35b4d67859c2f59b51bd17ddd8affbb072680` |
+| `dist/commerce/index.d.ts`        | `58efe0ad118969bce69f14862c327ddf47f33ca51cf0ac3216af4a90cee38556` |
+| `dist/commerce/runner/index.js`   | `f01298e43e87c90a8232f13def60e2af662b100432fcf5517aa55e3c8738914f` |
 | `dist/commerce/runner/index.d.ts` | `559de76987df045ccb36a29b4d2dffb9f8c8496f834d5294014f24f873702b5a` |
-
 
 Implementation start: `602417366ecab046757f3f84dbc7923e816b009b`; end: `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. Package metadata remains `3.1.0`; runtime runner remains `1.1.0`; the separate SHARED-002 task owns the 4.0.0 release gate. No provider/database code, consumer upgrades, new package subpath, customer-facing strings, main merge or registry publication occurred. Architect review and downstream publication/consumer implementation remain pending.
 
@@ -230,7 +229,6 @@ main merged/updated/pushed: no
 ```
 
 ### Attempt 1 — Preserved Historical Report
-
 
 ### Status
 
@@ -279,16 +277,16 @@ src/commerce/subset.ts
 
 ### Validation Results
 
-| Command / gate | Result |
-|---|---|
-| `npm run test:product-discovery-contracts` | 17 passed, zero failures/skips |
-| `npm run typecheck` | passed |
-| `npm test` | 424 passed, zero failures, one existing optional live-Redis test skipped |
-| `npm run build` | passed, JavaScript and declarations generated |
-| `npm run validate:commerce-entrypoints` | passed in clean subprocess without provider/database credentials |
-| `npm pack --dry-run` | passed; 131 intended files; commerce and runner JavaScript/declarations included |
-| Browser-platform bundle of `src/commerce/index.ts` | passed, 159 source/dependency inputs; no Node-only import requirement |
-| `git diff --check` and staged diff check | passed |
+| Command / gate                                     | Result                                                                           |
+| -------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `npm run test:product-discovery-contracts`         | 17 passed, zero failures/skips                                                   |
+| `npm run typecheck`                                | passed                                                                           |
+| `npm test`                                         | 424 passed, zero failures, one existing optional live-Redis test skipped         |
+| `npm run build`                                    | passed, JavaScript and declarations generated                                    |
+| `npm run validate:commerce-entrypoints`            | passed in clean subprocess without provider/database credentials                 |
+| `npm pack --dry-run`                               | passed; 131 intended files; commerce and runner JavaScript/declarations included |
+| Browser-platform bundle of `src/commerce/index.ts` | passed, 159 source/dependency inputs; no Node-only import requirement            |
+| `git diff --check` and staged diff check           | passed                                                                           |
 
 The focused tests are a subset of the full suite, not an additional distinct total. The single full-suite skip is the existing native BullMQ trace-context test gated by `TEST_REDIS_URL`; no required discovery/built-in/subset case was skipped. No Redis or PostgreSQL integration is required by this contract-only task.
 
@@ -310,8 +308,8 @@ Runner fixtures cover mixed success, optional unavailable continuation, persiste
 
 #### Generated built-in hashes
 
-| Built-in | Canonical SHA256 |
-|---|---|
+| Built-in                        | Canonical SHA256                                                   |
+| ------------------------------- | ------------------------------------------------------------------ |
 | `commerce_get_discount_options` | `a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb` |
 | `commerce_get_discount_details` | `776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f` |
 
@@ -325,19 +323,19 @@ Both focused tests and the compiled public entrypoint verifier recompute these h
 - Actual Commerce projector/publication source checkout: `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce`, HEAD `1b30ed9cf03ac85d04eb9e1502ae5463817c17f2`; the three consumed source files were clean and unmodified. Its installed Shared dependency remains unchanged; candidate validators are only test function arguments.
 - Generated build output is ignored and not committed; package dry-run writes no registry state and no package version was changed.
 
-| Shared source/artifact | SHA256 |
-|---|---|
-| `src/commerce/built-in-tools.ts` | `fc77616161ec2aacc0c41446f6d77e76801ea12b3e0682119d6692653ba8e5d9` |
-| `dist/commerce/index.js` | `230d114af36cca05723e13df0e6b1e7e78e87404a095c27c4e4ed6d0123e98b9` |
-| `dist/commerce/index.d.ts` | `65b8734feb5fd5e5dd895fd0a21d495d591b1120e82fdf310850400fbef23ac2` |
-| `dist/commerce/runner/index.js` | `a9c86c4e9c6aac14bbfaa25356ff56c63ae0f464addf73fc7e55dee479140c9d` |
+| Shared source/artifact            | SHA256                                                             |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `src/commerce/built-in-tools.ts`  | `fc77616161ec2aacc0c41446f6d77e76801ea12b3e0682119d6692653ba8e5d9` |
+| `dist/commerce/index.js`          | `230d114af36cca05723e13df0e6b1e7e78e87404a095c27c4e4ed6d0123e98b9` |
+| `dist/commerce/index.d.ts`        | `65b8734feb5fd5e5dd895fd0a21d495d591b1120e82fdf310850400fbef23ac2` |
+| `dist/commerce/runner/index.js`   | `a9c86c4e9c6aac14bbfaa25356ff56c63ae0f464addf73fc7e55dee479140c9d` |
 | `dist/commerce/runner/index.d.ts` | `6098db4aad5155b8161f18f74502f86cd0f70749a473b1866421b9ebaa55d08b` |
 
-| Actual Commerce test prerequisite | SHA256 |
-|---|---|
+| Actual Commerce test prerequisite                      | SHA256                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------ |
 | `src/commerce/execution/policy-operation-authoring.ts` | `306105bcc30b4fd4cf6c03d9b5bf17363285088390315363878333054585d608` |
-| `src/commerce/execution/policy-result-schema.ts` | `103195938924b2c5c0b01ddf05c0e6bc660a800b8455ba84f4303a93f571ae74` |
-| `src/commerce/tool-definition/publication.ts` | `a056e6b5869a35b7ca6bf78380d2caab5cde635d56fbd5697ae89efff993edaa` |
+| `src/commerce/execution/policy-result-schema.ts`       | `103195938924b2c5c0b01ddf05c0e6bc660a800b8455ba84f4303a93f571ae74` |
+| `src/commerce/tool-definition/publication.ts`          | `a056e6b5869a35b7ca6bf78380d2caab5cde635d56fbd5697ae89efff993edaa` |
 
 Complete local command logs: `/tmp/shared058-{focused,typecheck,tests,build,entrypoints,pack,browser}.log`. Source was committed unchanged after these checks.
 

@@ -271,7 +271,7 @@ folder-based route migration remains the task implementation.
 1. Updated all identified stale source-path assertions to folder-based routes.
 2. Added a regression test for removal of retired flat route modules.
 3. Reverted the incidental production/UI commit while preserving the route
-  migration, then made no further application-source edits.
+   migration, then made no further application-source edits.
 
 ### Review Result
 

@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-053-BACKGROUND-002
-- ARCH-048-BACKGROUND-011
+  - ARCH-053-BACKGROUND-002
+  - ARCH-048-BACKGROUND-011
 enables:
-- ARCH-053-SYSTEM-TEST-001
-- ARCH-053-SYSTEM-TEST-002
+  - ARCH-053-SYSTEM-TEST-001
+  - ARCH-053-SYSTEM-TEST-002
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -54,7 +54,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 ## Requirements
 
 - Issuance does not depend on ARCH-052 discount discovery, private Woo provider call, WP transient or extra HMAC key. No network/Redis inside admission transaction; entropy failure is retryable and must not admit a partial row with a phantom URL.
-- A new generation receives a different URL and fresh snapshot; the old link remains stored historically but API resolver refuses it immediately once old generation is terminal/superseded. New arrivals can send their independently eligible initial outreach under ARCH-048. **Installation status is authoritative:** revoked/inactive at preflight yields `INSTALLATION_INACTIVE`; revocation after preflight but before the insertion transaction commits is rejected by `confirmCurrentWooConsent()` as `CONSENT_CHANGED`. Neither path may insert a new recovery, issue a link, or create admission history. If an installation is revoked *after* a previously valid admission, preserve historical data, but subsequent link resolution/outreach must fail closed at their owning boundaries.
+- A new generation receives a different URL and fresh snapshot; the old link remains stored historically but API resolver refuses it immediately once old generation is terminal/superseded. New arrivals can send their independently eligible initial outreach under ARCH-048. **Installation status is authoritative:** revoked/inactive at preflight yields `INSTALLATION_INACTIVE`; revocation after preflight but before the insertion transaction commits is rejected by `confirmCurrentWooConsent()` as `CONSENT_CHANGED`. Neither path may insert a new recovery, issue a link, or create admission history. If an installation is revoked _after_ a previously valid admission, preserve historical data, but subsequent link resolution/outreach must fail closed at their owning boundaries.
 - Ensure 7-day checkout freshness for URL resolution is consistent with existing Background template freshness. Historical confirmed billing/sends are never altered by link creation.
 
 ### Mandatory workflow/security invariants
@@ -107,7 +107,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-**Architect decision (2026-10-30, after Attempt 1):** The earlier scope phrase grouping revoked installations with invalid URL configuration was contradictory. **Do not implement a separate persistence path for revoked installations.** The existing active-installation and transactional consent fences take precedence over URL omission. The implementation described in the Attempt 1 Completion Report is architecturally correct on this point. Reclaim this *same* task as Attempt 2, keep implementation commit `6b6b254` as the code baseline, add only the narrowly scoped regression coverage in the latest Architect Review, rerun task-required validation, update the Completion Report and return `status: review`. Do not redesign the URL, create a new task, modify another repository, activate Woo outbound sending or start enabled system-test tasks.
+**Architect decision (2026-10-30, after Attempt 1):** The earlier scope phrase grouping revoked installations with invalid URL configuration was contradictory. **Do not implement a separate persistence path for revoked installations.** The existing active-installation and transactional consent fences take precedence over URL omission. The implementation described in the Attempt 1 Completion Report is architecturally correct on this point. Reclaim this _same_ task as Attempt 2, keep implementation commit `6b6b254` as the code baseline, add only the narrowly scoped regression coverage in the latest Architect Review, rerun task-required validation, update the Completion Report and return `status: review`. Do not redesign the URL, create a new task, modify another repository, activate Woo outbound sending or start enabled system-test tasks.
 
 Dependencies `ARCH-053-BACKGROUND-002` and `ARCH-048-BACKGROUND-011` are Complete in this submitted worktree snapshot, subject to rechecking in the launcher on reclaim. Older historical snapshot descriptions in this task are superseded by the recorded accepted dependency state.
 

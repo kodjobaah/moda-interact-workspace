@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-SHARED-009
+  - ARCH-052-SHARED-009
 enables:
-- ARCH-052-MCP-002
-- ARCH-052-MCP-003
-- ARCH-052-COMMERCE-006
-- ARCH-052-BACKGROUND-011
-created: '2026-10-30'
+  - ARCH-052-MCP-002
+  - ARCH-052-MCP-003
+  - ARCH-052-COMMERCE-006
+  - ARCH-052-BACKGROUND-011
+created: "2026-10-30"
 updated: 2026-10-30
 ---
 

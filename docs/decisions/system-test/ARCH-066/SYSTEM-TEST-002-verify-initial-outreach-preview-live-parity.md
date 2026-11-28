@@ -19,9 +19,11 @@ enables: []
 created: 2026-11-08
 updated: 2026-11-09
 ---
+
 # Verify checkout outreach preview and Background parity
 
 ## Scope and exact work
+
 Read ARCH-066 and its two sequence diagrams. This task is definition only; implement only after dependencies complete, in canonical task worktrees. You are not alone in the codebase; preserve unrelated edits. No merchandise-specific assumptions or new per-category schema.
 
 Own system-test only. NEW `src/scenarios/arch066-initial-outreach-preview.js`, deterministic fixture files, existing scenario registration, provider harness and WhatsApp emulator.
@@ -33,12 +35,15 @@ Matrix: clothing, nail varnish, trees and unseen attribute; duplicate lines; del
 Record pinned commits/package integrity, fixture hashes, commands, run IDs and exact comparison artifacts. Disposable integration run required; unit tests alone do not complete task.
 
 ## Completion report
+
 Not started. Record implementation commit, scoped checks and parity evidence before completion. No production deployment or real message sending authorized.
 
 ## Review corrections
+
 Use the normative outreach contract and new SHARED-005 exact artifact. Assert ordered initial/revalidation product calls (NONE exactly two per distinct pair), zero model/offer calls for NONE, checkout-only rejection of alternative-product promotion, changed-fact refusal and READY-media/TEXT fallback parity. Exercise actual app/api/studio/preview/initial-outreach routes including list, start, status and cancel, status codes and tenant ownership. Fixture model responses and observed clock fixed; no stochastic wording comparisons. Preserve production admission regression tests separately.
 
 ## Deterministic implementation checklist
+
 - [ ] Register arch066-initial-outreach-preview in existing scenario catalogue and package script test:arch066:outreach using existing harness. Pin Shared005/database/Background/Commerce commits and record commands.
 - [ ] Run all contract7 cases through both platform fixtures and actual Studio routes/Background host. NONE ready call trace exactly two get_product per distinct pair, checkout duplicate quantities unchanged, zero model/offer/search. FIXED/AI scripted offer decisions use bounded ports; current-facts change refuses before rendered ready.
 - [ ] Seed ready R2 IMAGE projection, missing IMAGE with approved TEXT fallback, and missing both assignments; compare provenance/full params/header/body with Background same explicit inputs. No media generation or Meta requests from Studio.
@@ -62,8 +67,8 @@ Review BACKGROUND-001 and COMMERCE-001 against this amendment before acceptance.
 
 The checkout-led requirements above are preserved as scope history. Later published Accepted reviews/completion decisions and immutable release evidence in this file remain authoritative; the earlier requirement to review before acceptance does not reopen those accepted attempts. Current required product-detail correction artifact is the accepted SHARED-010 release (5.8.0); earlier5.7.0 handoff text remains historical. No lifecycle decision, execution or new release is authorized by this pull reconciliation. Terminal system-test execution remains manually gated.
 
-
 ## Architect terminal readiness and current parity contract — 2026-11-09
+
 COMMERCE002explicitlyCompleteAcceptedAttempt2, source40b59e777db5b85d8f3444da1abe07170e70496f/reviewbffd7e9af9f2fcb96ac7a8342c38c3ef999a5fc6; Background002CompleteAcceptedAttempt2 source0a6010315fb97ab47c105c9f93bb792f1cd07b49. All explicitdependenciesComplete. Ready unchangedAttempt0/unclaimed; execution_mode/completion_mode developer preserved. User may manually exercise/integrate implementation before /moda_developer_create ARCH-066-SYSTEM-TEST-002; do not automatically execute. No implementation worktree/claim/test is created by readiness. SystemTest001alreadyReadyAttempt0/developer/manualgate remainsunchanged.
 Latest Studio-only amendment supersedes old approval/WABA/fingerprint/TEXTfallback wording above for Studio ONLY. Pin Commerce actualShared5.10.0 integrity sha512-cdXKp0YLPg/yFN5acZNpdZbDfzFqY1MV45rFHh1+Q1e8Wf3VFuR1Ylgr8icorCj9h8pE3CTFTheUuxCEMKCfFw==; Background retains accepted5.9.0 until separatelychanged. Compare identical validstoredcontent/fullparameters/header/text using actualpublicrenderers with same facts; Studio source template/locale IDs and NOT_EVALUATED marker intentionally differ from production registrationprovenance. ProveStudio permits storeddeclined/stalehash metadata without any sender/projection/Meta accesses; structural/value/tenant/ready-media limits remain. MissingIMAGEdata refusesStudio(noautomaticfallback); separately retainBackgroundapprovedTEXTfallback/productioneligibility/admission/finalgeneration/consent/credit/outbox/emulatorfences. Do not reinstate withdrawn013/014/Admin001or standalone007/008/MCP002requirements.
 Use actualdefaultfactory/HTTP/registeredlocalandisolatedMCP paths, bothproviders; currentWoo currency comesauthenticateddata/currencies/current, neverrelabelcheckoutpresentment. Preserve originalscope matrix/refusals/priceofferchanges/NONE2reads/duplicates/cancel/deadline/overflow/owner/TTL/capacity/purge/no-sideeffects and deterministicmachine-readable integrationartifacts. Unit-only74cases are prerequisiteevidence, not integratedsystemcompletion. No livecustomer/provider/send/hostedmutation authorized here; optionalhostedsmoke needs explicitscope/authority. Architecture remainsInProgress until requiredterminaltestsacceptedComplete.

@@ -151,7 +151,7 @@ export const merchantKnowledgeQueue: Queue<
   MerchantKnowledgeProcessSourceRevisionJob,
   void,
   typeof MERCHANT_KNOWLEDGE_PROCESS_JOB_NAME
->
+>;
 ```
 
 It must use:
@@ -166,8 +166,7 @@ from the published Shared contract/current Background Redis connection.
 Also export:
 
 ```ts
-export const closeMerchantKnowledgeResources:
-  readonly (() => Promise<unknown>)[]
+export const closeMerchantKnowledgeResources: readonly (() => Promise<unknown>)[];
 ```
 
 containing the queue close operation.
@@ -289,9 +288,7 @@ Export:
 
 ```ts
 export class MerchantKnowledgeReconciliationService {
-  reconcilePendingOnce(input?: {
-    pageSize?: number;
-  }): Promise<{
+  reconcilePendingOnce(input?: { pageSize?: number }): Promise<{
     scanned: number;
     enqueued: number;
     skippedStale: number;
@@ -362,7 +359,7 @@ export interface MerchantKnowledgeJobProcessor {
 
 export function createMerchantKnowledgeWorker(
   processor: MerchantKnowledgeJobProcessor,
-): Worker
+): Worker;
 ```
 
 The BullMQ processor must:
@@ -511,17 +508,21 @@ The repository may use dependency injection/factories in tests, but do not creat
 ## Completion Report
 
 ### Status
+
 Review requested after Attempt 4; awaiting `moda_architect`. No architect acceptance decision has been made by this agent.
 
 ### Files Changed
+
 Attempt 4 made no implementation-source changes. The Attempt 3 correction remains at implementation commit `3ed6621`, pushed to `origin/task/ARCH-023-BACKGROUND-001`; the prior foundation is in implementation commit `06566f8`. This attempt updates only this task report in the parent worktree. The database submodule remains at `2eb17ee910491e8f9df82736fc0a843844415947`; no database files or gitlink were changed.
 
 ### Work Completed
+
 Attempt 2 established the worker foundation. Attempt 3 addressed Architect Review corrections A2-R1 and A2-R3 and recorded A3-R1 as blocked because the repository integration wrapper's default PostgreSQL image lacked pgvector. Attempt 4 satisfies A3-R1 without changing the integration wrapper, Shared helper, Gateway, production Background code, database schema, or migration history.
 
 Started a fresh task-unique `pgvector/pgvector:pg17` container with a random password, a dedicated database, and a dynamically assigned loopback-only host port. Waited for Docker health to become `healthy`, validated the Prisma schema, and applied every repository migration through `npx prisma migrate deploy --schema database/prisma/schema.prisma`, including `20260929160000_arch023_merchant_knowledge_schema`. The queue-loss integration test exercised the production reconciliation service against PostgreSQL while mocking queue publication: it verified that failed initial enqueue left the durable revision PENDING, then recovery enqueued it with a stable job ID. The EXIT cleanup trap removed the container; no volume or network was created. No production entrypoint, acquisition implementation, embedding/vector processing, or database schema change was added.
 
 ### Validation Results
+
 Attempt 4 live integration evidence:
 
 - Image: `pgvector/pgvector:pg17` (`sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f`).
@@ -535,15 +536,19 @@ Attempt 4 live integration evidence:
 Attempt 3 focused unit suites passed: entitlement 7/7, reconciliation 7/7, and worker 5/5 (19 total). `npx tsc --noEmit` and `git diff --check` passed. Attempt 2's other passing validation remains recorded above. Attempt 4 made no implementation-source changes.
 
 ### Deviations
+
 No implementation or shared test-infrastructure changes were required. Validation used only the task-authorized disposable container. No unrelated audit remediation was attempted.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 None known. The generic wrapper's default image limitation remains unchanged; the required queue-loss proof passed using the explicitly authorized task-local pgvector container.
 
 ### Architectural Concerns
+
 The generic integration wrapper still does not select a pgvector image, but this task-local validation requirement is satisfied without changing shared infrastructure. Architect Review remains owned by `moda_architect` and was not modified.
 
 ### Git / VCS
@@ -551,6 +556,7 @@ The generic integration wrapper still does not select a pgvector image, but this
 Task branch: `task/ARCH-023-BACKGROUND-001` in both repositories.
 
 Physical worktree isolation:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-001`, `task/ARCH-023-BACKGROUND-001`
 - implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-001`, `task/ARCH-023-BACKGROUND-001`
@@ -559,18 +565,21 @@ Physical worktree isolation:
 - another task worktree reused: no; the canonical worktrees for this task were reused
 
 Start-of-attempt synchronization from the prepared packet:
+
 - parent remote task branch fast-forwarded: not-needed
 - parent `origin/main` incorporated: already-current
 - implementation remote task branch fast-forwarded: not-needed
 - implementation `origin/main` incorporated: already-current
 
 Implementation repository:
+
 - repository: `moda-interact-background`
 - current implementation commit: `3ed66214bf43ec7e882c28bbdef4c6b290a39734`; no Attempt 4 implementation commit was needed
 - remote branch: `origin/task/ARCH-023-BACKGROUND-001`
 - pushed: yes
 
 Parent workspace:
+
 - task file: `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
 - Attempt 4 claim: launcher commit `6b5c0d2a01ce4b2057b61b0417b1bbbe960cdbb8`, timestamp `2026-09-30T11:05:58Z`; committed and pushed before execution
 - prior report update: committed and pushed on `origin/task/ARCH-023-BACKGROUND-001` before Attempt 4
@@ -584,6 +593,7 @@ Merged to implementation `main`: no. Merged to workspace `main`: no.
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 4
 
 ### Review Notes
@@ -709,6 +719,7 @@ implementation is started implicitly by this review.
 #### Historical Attempt 3 — Changes Requested — 2026-09-30
 
 ##### Review Notes
+
 Attempt 3 resolves the two source/report corrections that remained from the prior review:
 
 1. **A2-R1 is satisfied.** The reconciliation producer now uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`, and the focused reconciliation test asserts the canonical Shared constant rather than a duplicated local literal.
@@ -736,6 +747,7 @@ If a Docker-capable local environment is genuinely unavailable, return the same 
 The task is returned to `ready` with `attempt: 3` preserved. The next authorised claim increments it to Attempt 4. `ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003` remain Pending until BACKGROUND-001 is architect-accepted Complete.
 
 ##### Reviewed Files
+
 - `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
 - `docs/decisions/background/ARCH-023/_index.md`
 - `docs/architecture/ARCH-023-merchant-knowledge.md`
@@ -745,6 +757,7 @@ The task is returned to `ready` with `attempt: 3` preserved. The next authorised
 - accepted ARCH-023 database migration surface referenced by the integration failure
 
 ##### Validation Reviewed
+
 - Attempt 3 focused unit validation passed 19/19: entitlement 7/7, reconciliation 7/7 and worker 5/5.
 - `npx tsc --noEmit` and `git diff --check` passed.
 - A2-R1 code/test correction is present and uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`.
@@ -752,7 +765,9 @@ The task is returned to `ready` with `attempt: 3` preserved. The next authorised
 - The existing integration test exercises the production `MerchantKnowledgeReconciliationService` against PostgreSQL while mocking only queue publication, so a standalone pgvector-capable PostgreSQL container is sufficient to close the missing proof.
 
 ##### Architecture Conformance
+
 **Conformant in implementation; acceptance pending one required live validation.** The worker foundation remains within the intended Background boundary, consumes the canonical Shared schema-version constant, preserves the accepted database contract, and records the required execution provenance. Creating a disposable pgvector-capable PostgreSQL container solely for task validation does not introduce runtime infrastructure or alter repository ownership.
 
 ##### Follow-up
+
 Reclaim this same task for Attempt 4 and perform the bounded disposable-Docker PostgreSQL validation above. Do not start BACKGROUND-002 or BACKGROUND-003. If the migration and queue-loss integration test pass, update the Completion Report, check the remaining Acceptance Criterion/Validation item, return the task to `review`, clear the claim and STOP.

@@ -104,7 +104,10 @@ test("direct Loki transport receives sanitized structured JSON with bounded labe
   // High-cardinality operational identifiers may remain in the safe JSON body
   // but must not be promoted to architecture labels.
   assert.match(received.body, /safe-high-cardinality-body-value/);
-  assert.doesNotMatch(received.body, /"recoveryId"\s*:\s*"safe-high-cardinality-body-value"\s*,?\s*"[^"]*"\s*:/);
+  assert.doesNotMatch(
+    received.body,
+    /"recoveryId"\s*:\s*"safe-high-cardinality-body-value"\s*,?\s*"[^"]*"\s*:/,
+  );
 
   await loki.shutdown();
 

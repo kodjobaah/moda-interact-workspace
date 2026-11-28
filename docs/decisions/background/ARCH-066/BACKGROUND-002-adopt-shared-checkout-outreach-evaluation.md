@@ -14,14 +14,17 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: ["ARCH-066-SHARED-005", "ARCH-066-BACKGROUND-001", "ARCH-066-SHARED-012"]
+depends_on:
+  ["ARCH-066-SHARED-005", "ARCH-066-BACKGROUND-001", "ARCH-066-SHARED-012"]
 enables: ["ARCH-066-SYSTEM-TEST-002", "ARCH-066-COMMERCE-002"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
+
 # Use shared read-only outreach evaluation in Background
 
 ## Scope and exact work
+
 Read ARCH-066 and its two sequence diagrams. This task is definition only; implement only after dependencies complete, in canonical task worktrees. You are not alone in the codebase; preserve unrelated edits. No merchandise-specific assumptions or new per-category schema.
 
 Own Background only. Touch `src/services/recovery-offers/{initial-outreach-agent-context,initial-outreach-offer-selection,current-outreach-offer-revalidation}.service.ts`, `src/services/recovery-pricing/checkout-price-reconciliation.service.ts`, `src/agents/initial-outreach-offer.*`, `src/services/recovery-template-integration/automated-recovery-template.service.ts`, related Woo outreach adapters, package/lockfile and scoped tests.
@@ -33,12 +36,15 @@ Keep existing current-offer admission revalidation/token, transaction fences, re
 Acceptance: unchanged existing initial outreach regressions, both provider fixtures, NONE live product read assertion, checkout generation change, offer expiry between selection/admission, replay/credit/send fences and byte parity with Shared renderer. Record exact fixture inputs/results for Studio parity; no real customer sends.
 
 ## Completion report — Attempt1 (historical)
+
 Blocked — Attempt1. Safe partial implementation and positive regression evidence published as `8be7e962e8d197b2372ade543e80c64a3fec4813` on implementation `task/ARCH-066-BACKGROUND-002`. Exact published Shared5.8.0 lacks required preserved frozen-template brand bindings. No architect acceptance/completion or runnable deployment claim. Active claim cleared; Attempt1 retained. No production deployment or real message sending authorized.
 
 ## Normative review correction
+
 [Outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md) is mandatory. Use evaluateInitialOutreach and shared frozen-template rendering; no duplicated algorithm or arbitrary render callback. Preserve historical/current prices and checkout-only restriction. Production ALTERNATIVE_PRODUCT_PROMOTION is explicitly refused for this initial path; preserve historical receipt parsing and conversational recommendations. Ready media only in Studio; IMAGE unavailable selects approved TEXT fallback or refuses.
 
 ## Deterministic implementation checklist
+
 - [x] Apply outreach contract1–7 and consumer contract A/E. Keep production facade inputs/real attempt metadata, but map to shared evaluation input; decorate validated decision afterward. No fake attempt in Shared/Studio.
 - [x] Replace initial-outreach-offer graph pure logic and checkout price arithmetic with Shared delegates; context builder no longer skips current product observation in NONE. Existing admission revalidator remains production host and revalidates before sending; no shared result treated as admissionToken.
 - [x] Map old ALTERNATIVE_PRODUCT_PROMOTION to explicit initial-path refusal OUTSIDE_CHECKOUT, preserving previousPromise historical parsing and conversational graph. Include regression showing an offer on a non-checkout item cannot enter new initial message.
@@ -50,15 +56,17 @@ Blocked — Attempt1. Safe partial implementation and positive regression eviden
 SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainteract/moda-interact-shared@5.7.0` and integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==` (source `09e249c5717c8866996624f8855a7d649dfd2c43`). Use this exact artifact and canonical consumer contract; never guess/latest/ranges. Remaining explicit blockers: ARCH-066-BACKGROUND-001. Status Pending, unchanged Attempt0/unclaimed. No implementation, deployment or task claim is started by reconciliation.
 
 ## Dependency frontier — 2026-11-08
+
 BACKGROUND001 explicitly Complete at Accepted Attempt2; Shared005 Complete immutable5.7.0 lineage retained (current corrected artifact5.8.0 available through accepted010). Both explicit prerequisites satisfied. Ready, unchanged Attempt0/unclaimed, execution/completion developer retained. This promotion does not execute or amend implementation scope; use `/moda_developer_create ARCH-066-BACKGROUND-002` when ready. No standalone publication or main/live action.
 
 ## Execution ownership amendment — 2026-11-08
-Developer explicitly invoked moda-task agent implementation and authorized synchronization/claim/source/report publication. Ready Attempt0/unclaimed with Complete001/005; agent execution is authorized, completion remains developer. Preserve checkout-led withdrawal and real checkout/send ownership. Use the exact accepted5.8.0 artifact/integrity already adopted by completed BACKGROUND001 and published by SHARED010; it includes accepted005 outreach exports, so do not downgrade the prerequisite implementation to5.7.0 or mutate published code. No live/main/standalone/follow-on execution.
 
+Developer explicitly invoked moda-task agent implementation and authorized synchronization/claim/source/report publication. Ready Attempt0/unclaimed with Complete001/005; agent execution is authorized, completion remains developer. Preserve checkout-led withdrawal and real checkout/send ownership. Use the exact accepted5.8.0 artifact/integrity already adopted by completed BACKGROUND001 and published by SHARED010; it includes accepted005 outreach exports, so do not downgrade the prerequisite implementation to5.7.0 or mutate published code. No live/main/standalone/follow-on execution.
 
 ## Completion Report — Attempt1 (2026-11-08)
 
 ### Implemented source and trust boundaries
+
 - Exact existing pin retained: `@modainteract/moda-interact-shared@5.8.0`, integrity `sha512-LS6Tj4Jwsupe0qvsjcfrbt4vhGJkxfHm70bQvSbBdeOKpwsOpCoHRKvmyI4Tg4/lBDxH5QTSEF9fbGLjDnIifw==`. No package downgrade, republish, internal dist/source import or Shared modification. `npm ci --ignore-scripts` and Prisma6.19.3 generation passed. Database remains accepted `b7f58d5a93e41d54b2fd92a5d483aec4c2c5b595`; no schema/migration change.
 - `initial-outreach-offer.agent.ts` and `.graph.ts` now form host compatibility facades around published `evaluateInitialOutreach`; removed duplicated bounded selection graph. Host still authenticates selector/shop, supplies clock/cancellation/credentials lazily, uses existing45s/8steps/16remote/512output limits and decorates only validated decisions with real recovery/attempt/generation/fingerprint. Shared sees reusable checkout metadata, not fake production attempts. Selector canonical OK envelope is unwrapped to the published output port; typed ERROR codes are thrown to Shared once. NONE invokes no model/offer calls and performs two exact reads per distinct pair. Reusable evaluation computes current subtotal/line comparison; host report projection uses actual evaluation current observations, not the preflight snapshot as proof. Existing offered-mode source-price preflight/admission reads remain separate host budget ownership, not a hidden evaluator reset.
 - Trusted context reader adds persisted checkoutUrl and original checkoutUnitPrice. Historical checkout values and quantities remain separate from current Shared facts. `background-checkout-outreach-policy-v1` is an explicit host-owned static instruction policy identifier, not evidence of a published Studio profile revision. Existing current-offer revalidation/token remains independent; selection service reconciles render evaluation.offerDecision to the actual admitted no-offer/checkout decision without changing evaluation identity/products/generation.
@@ -67,9 +75,11 @@ Developer explicitly invoked moda-task agent implementation and authorized synch
 - Optional fallback cannot render/send after missing evaluation, denial, identity or current-facts refusal. Verified fallback carries ready evaluation and real host expected generation/basket fingerprint; reloaded recovery must still match before preparation. Existing final admission/consent/credit/outbox/send fences remain authoritative. This partial branch is not accepted/deployable while the compatibility/regression gaps below remain.
 
 ### Confirmed Shared dependency blocker
+
 `tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts`, describe “ARCH066 published frozen-brand compatibility”, contains four preserved **positive** cases “preserves valid mandatory %s in the shared INITIAL renderer” for `shopBrand.logoAltText`, `shopBrand.logoWidth`, `shopBrand.logoHeight`, `shopBrand.squareLogoAltText`. Inputs use approved frozen registration/hash/locale, same-shop saved brand values (`Saved logo alt`,100,200,`Saved square alt`) and valid ready evaluation. Host mandatory validation succeeds, but published5.8.0 renderer returns BINDING_VALUE_UNAVAILABLE instead of required prepared parameters. All four assertions currently fail, deliberately exposing the required unsupported capability. Published resolver has only brandName/logoURL/squareURL/coverURL cases although its allowed frozen semantic schema includes these four keys. A local callback/renderer or dropping bindings would violate the shared-first contract. Related preserved BODY brand URL/multiple ready media semantics and invalid URL safe-refusal behavior also need Shared owner review; no local workaround was added. Architect owns SHARED011 correction/SHARED012 publication; no such implementation/release started here.
 
 ### Actual validation results
+
 - First evaluator/context facade `tsc --noEmit`: passed. Final renderer/fallback/evaluation integration `tsc --noEmit`: passed (final log `/private/tmp/arch066-background002-final-tsc.log`, session2465 exit0). Changed-file ESLint and `git diff --check`: passed after removing unused withdrawn alternative bindings.
 - Agent + selection + current-offer admission revalidation focused run: **3files,38passed**, including both SHOPIFY/WOOCOMMERCE NONE mandatory2reads and no model/offer calls, historical12.50/current12.00 with quantity2/current subtotal24.00; existing current admission/offer source tests retained.
 - Bounded unaffected run: **3files,7passed** (46 unrelated cases excluded by explicit test-name filter). Includes both providers, malformed native identity before provider I/O, changed second-read facts refusal, alternative-product refusal, generation-change fallback refusal before rendering and supported frozen same-input Shared parity. Exact command: `vitest run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts -t 'Shared initial|refuses changed|refuses an alternative|matches Shared|rejects a changed'`.
@@ -79,48 +89,71 @@ Developer explicitly invoked moda-task agent implementation and authorized synch
 - Full build and remaining required acceptance/regression/credit/replay/Studio integration gates were **not certified** while blocked. Existing full-lint consent-provider151 no-control-regex limitation remains known and untouched; full lint was not rerun or claimed passing. No current-task baseline exemption is asserted. Required acceptance/checklist remains incomplete; this report is an honest blocked return, not a passing review submission.
 
 ### Remaining work after dependency correction
+
 Consume only the separately accepted/published correction; retain this same task branch/history and rework the real INITIAL/fallback path and preserved regression fixtures. Required still-unfinished acceptance includes full actual production NONE admission facade coverage, all live offer expiry/selection/admission cases, replay/credit/send fences, strict frozen brand/media/URL compatibility, both-provider full caller regressions and actual Studio identical-input frozen rendering. Do not resolve these by erasing tests, raw initial render fallback, local Shared schema/renderer fork or trusting evaluation as admission. No main merge, activation/deployment, managed database change, real provider/model/customer/Meta send, new standalone route or follow-on task execution.
 
 ### Prepared execution and publication evidence
+
 Packet `/private/tmp/arch066-background002-prepared.json`: primary root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; exact parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-BACKGROUND-002` reused and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-BACKGROUND-002` created; mirrored `task/ARCH-066-BACKGROUND-002`. Parent baseline `b32ecc3d5d91b975991c4df78653f34e2a56aef3`; implementation baseline `5291d48266d1136a43f6a16a4aea35048969f58d`. Both own remote FF not-needed/main already-current; recursive sync/update passed ready at databaseb7f58d5. All explicit prerequisites Complete per launcher. Claim `5eb9ccd8335bbe44174c2102f19ba769f90f307a`, codex2026-11-08T20:41:44Z Attempt1 already pushed; no repeated startup/claim. No shared/default/another task worktree switched or reused. Implementation commit `8be7e962e8d197b2372ade543e80c64a3fec4813` pushed; only assigned report staged in parent, no parent implementation gitlink or architect-owned correction/architecture/index file staged. Completion_mode developer retained; no architect review section written by repository agent.
 
 ## Architect Review — Attempt1 (2026-11-08)
+
 ### Review Status
+
 Blocked — not Accepted. Status blocked, Attempt1 preserved, executor/claimed_at null. Required implementation/validation incomplete; no developer completion decision available.
+
 ### Review Notes
+
 Independently inspected source8be7e962e8d197b2372ade543e80c64a3fec4813 and report67eacdd515f14d3e860b503527b2986b31e0ddb1; both remotely verified, implementation clean. Local graph replaced by published evaluator facade; actual INITIAL NONE early bypass removed, no alternative initial product, ready evaluation propagated separately from production admission token. Shared frozen renderer/assignment selection used for INITIAL; host savedbrand/media checks, FOLLOW_UP/historical paths retained. Host fallback now requires ready evidence and real generation/fingerprint match. These changes are partial and must not be integrated as a passing task.
 Actual immutable5.8.0 contract gap confirmed: outreach SemanticKeySchema permits shopBrand.logoAltText/logoWidth/logoHeight/squareLogoAltText, while PreparedVariableResolver.resolve only supports brandName/threeURLs and falls through to BINDING_VALUE_UNAVAILABLE. Existing Background saved-brand resolver supports these valid bounded fields. Four positive valid fixtures all fail; missing/unsafe mandatorybrand may not be bypassed by generic shopName fallback. Required correction belongs to Shared, no local renderer/callback/schema fork or unsupported internal import allowed.
+
 ### Reviewed Files
+
 Agent/graph/types, trusted context and selection/revalidation adapter; actual automated INITIAL/fallback; preparer/selection/types; existing brand resolver; new both-provider, generation, supported parity and four positive incompatibility tests. Published Shared outreach variables.ts/template-contracts.ts and current logs independently inspected. Exact package5.8/integrity and accepted database pin preserved.
+
 ### Validation Reviewed
+
 Compiler/scoped lint/diffcheck pass. Evaluator/selection/current admission38passed; bounded supported parity/generation7passed (explicit filter excludes46others). Four positive valid brand compatibility tests fail as required, not skipped/xfail. Final broader snapshot12files150tests:78passed/72failed,5failing files. Failures include graph16/16, image1/9, preparer12/29, fallback11/19, coordinator32/55; not all attributed to Shared or baseline. Full build, complete production NONE/expiry/replay/credit/send and Studio parity acceptance not certified. Unchanged consent-provider151 full-lint limitation remains explicit, no full-lint pass claimed. No acceptance from partial tests.
+
 ### Architecture Conformance
+
 Canonical prepared Attempt1 packet records dedicated sibling parent/implementation, remote/main synchronization, exact recursive databaseb7f58d5, pushed claim5eb9ccd8. Source/report published on mirrored task branches, parent gitlink not staged. Checkout-led production recovery scope retained;007/008/MCP002 withdrawal not resurrected. Current blocker and residual failures prevent conformance/acceptance; architecture remains In Progress. No main/live/deploy/release/consumer execution.
+
 ### Follow-up
+
 SHARED011 Ready/unclaimed defines strict supported frozen-brand/media compatibility; SHARED012 Pending separate immutable publication. Both definitions materialized in canonical parent branches only; no implementation worktrees or claims created.012 added as explicit Background dependency, with no dependency on blocked consumer/system test. After corrected artifact is Complete, re-gate this SAME task for rework, adopt exact published pin and fix/test remaining72failures as appropriate without deleting safety assertions. Require full actual production NONE2reads/no model/offer and existing configured nooffer behavior; generation/current-facts change and selected-offer expiry between evaluation/admission; both providers; replay/credit/outbox/moderation/send fences; strictbrand/media/URL binding compatibility; identical frozen parameters/fullbody/provenance with Studio fixture. Preserve historical result parsing/FOLLOW_UP. Current partial source remains reviewable but cannot be Accepted or completed. Commerce002/SystemTest002 remain gated/manual; no follow-on execution.
 
 ## Architect Dependency Unblocking Review — 2026-11-08
+
 ### Review Status
+
 Changes Requested — dependency corrected; Ready for same-task rework, not Accepted. Prior Attempt1 preserved, executor/claimed_at null. Next authorized canonical claim alone creates Attempt2.
+
 ### Review Notes
+
 SHARED012 now explicitly Complete at Accepted Attempt1 with public downloadable immutable5.9.0; release/source/integrity evidence in exact materialized dependency record. Existing001/005 prerequisites also Complete. Missing frozen brand capability no longer prevents correction, but published partial source8be7e962 and historical72failingtests remain unaccepted. No failures waived by Shared goldens/publication.
+
 ### Required Same-Task Corrections
+
 - [ ] Retain original branch/source/history and every unfinished original Work Item/Acceptance Criterion. Pin exactly @modainteract/moda-interact-shared5.9.0, integritysha512-mGjw3KY2iLCGXGS5K7ZjHrsHM6mbooi5Qmcl08zXWlZxLjaL38HY74EUGqMdT79VPGQ1EBsKNnfH9RTI+hY1GA==; never downgrade/range/latest or duplicate Shared internals.
 - [ ] Populate strict preparedBrand from same-shop saved brandName/logoAltText/logoWidth/logoHeight/squareLogoAltText, unavailable fields null. Populate preparedBrandMedia fixedlogo/squareLogo/coverImage slots with authorized READY R2 derivatives/roles. Keep IMAGE/CHECKOUT_PRODUCT headerMedia independent; no genericname mandatory fallback/raw original URL or fake ready evidence. Preserve mandatory INITIAL shop.name and onecheckout.itemsSummary in valid frozen goldens.
 - [ ] Investigate all prior72failures (graph16/16,image1/9,preparer12/29,fallback11/19,coordinator32/55). Update intentionally obsolete expectations only with preserved safety coverage; do not delete/skip assertions or relabel all failures baseline. Verify strict URL/refusal and current provider/native-ID facts, price/quantity mapping and historical/current distinction.
 - [ ] Prove actual production NONE facade performs exactly required two live reads per distinct pair without model/offer calls and retains permitted existing configured no-offer path; reject noncheckout alternative offers while preserving historical result parsing/conversational/FOLLOW_UP behavior.
 - [ ] Prove checkout generation/fingerprint and changed-current-facts refusal; selected-offer expiry between selection/admission; real attempt identity, consent/moderation/credit/outbox/replay/send fences. Shared evaluation/rendering never becomes admissionToken or authorized fallback on identity/denial/stale facts. Finish original pure-delegation scope without service-local forks.
 - [ ] Run required both-provider caller/regression suites, compiler/build/scopedlint and exact same frozen input fullbody/parameters/provenance parity for Studio handoff. Record current full counts/no hidden skipped safety cases. Known untouched consent-provider151 full-lint limitation must remain honestly distinguished from current regressions.
-### Architecture Conformance / Follow-up
-Ready permits correction only; no source edits/claim/acceptance/completion occur in this reconciliation. Preserve checkout-led withdrawal, no standalone007/008/MCP002 resurrection. Commerce002/SystemTest002 remain gated by original incomplete consumer work/manual checkpoints; no follow-on/main/npm/live execution. Invoke `/moda-task ARCH-066-BACKGROUND-002` for next authorized agent attempt.
 
+### Architecture Conformance / Follow-up
+
+Ready permits correction only; no source edits/claim/acceptance/completion occur in this reconciliation. Preserve checkout-led withdrawal, no standalone007/008/MCP002 resurrection. Commerce002/SystemTest002 remain gated by original incomplete consumer work/manual checkpoints; no follow-on/main/npm/live execution. Invoke `/moda-task ARCH-066-BACKGROUND-002` for next authorized agent attempt.
 
 ## Completion Report — Attempt2 (current, 2026-11-08)
 
 ### Status / published implementation
+
 Ready for Review. Implementation `0a6010315fb97ab47c105c9f93bb792f1cd07b49` pushed on `task/ARCH-066-BACKGROUND-002`, preserving Attempt1 `8be7e962e8d197b2372ade543e80c64a3fec4813`. Task review, unchanged Attempt2, claim cleared; completion_mode developer retained. All prior72 current-task failures are resolved, not waived as baseline. Historical blocked reports/reviews remain. No architect acceptance/completion decision is made by moda_background.
 
 ### Required review corrections — individually implemented
+
 1. **Exact artifact/history:** package/lock pins `@modainteract/moda-interact-shared@5.9.0`, integrity `sha512-mGjw3KY2iLCGXGS5K7ZjHrsHM6mbooi5Qmcl08zXWlZxLjaL38HY74EUGqMdT79VPGQ1EBsKNnfH9RTI+hY1GA==`, matching accepted012. Includes009 detail selection and011 brand/media corrections. No internal source/dist imports, downgrade/range/latest, new Shared release or rewrite of immutable artifacts. Existing database pin remains `b7f58d5a93e41d54b2fd92a5d483aec4c2c5b595`.
 2. **Strict saved brand/media:** recovery-template-brand.ts projects same-shop cached saved brandName/logoAltText/logoWidth/logoHeight/squareLogoAltText with unavailable values null, using public prepared types. Mandatory saved brand never borrows generic shopName. BODY logo/squareLogo/coverImage slots resolve only their bound authorized READY R2 role; unused slots null, no original URLs. IMAGE/CHECKOUT_PRODUCT header remains independent. Preparer uses Shared strict input schema/render/selection, preserving host WABA/assignment/hash/lifetime/media ownership. Mandatory BODY validation precedes header availability fallback: a missing IMAGE BODY brand cannot be hidden by selecting TEXT. Existing valid BODY+missing/stale header still uses approved TEXT. No generic renderer callback, competing schema or unsafe media projection.
 3. **All72 regressions investigated/resolved:** every original scenario remains, with no skips/xfails or deletion of failing safety cases. Graph's16 cases now use canonical native IDs/current priced checkout products, required first product read and final product/offer rereads. Withdrawn initial alternative/search/generic-tool attempts now assert strict failure with no fabricated source authority, instead of obsolete alternative/singleton fallback. Forged codes/provider IDs/URLs, offer identity mismatches, expired/future/disabled/unavailable offers, missing tools and32KiB output remain guarded. Required initial slots are explicit in frozen goldens; CODE/AUTOMATIC fixtures carry matching strict evaluated decisions. Corrupt discount fixtures never acquire generic ready-nooffer proof. Unsupported URL text is a typed refusal, historical labels never masquerade as fresh selected options. Existing human/historical/FOLLOW_UP parsing remains covered. Final full prior residual suite plus new acceptance:155/155 passed.
@@ -129,6 +162,7 @@ Ready for Review. Implementation `0a6010315fb97ab47c105c9f93bb792f1cd07b49` push
 6. **Pure delegation / parity / validation:** evaluation and current merchandise reconciliation remain public Shared facade responsibility; production host only decorates validated fields with real attempt metadata. Assignment selection delegates to Shared. INITIAL frozen body/parameters come only from Shared rendering. Existing pricing fingerprint/preflight/admission and FOLLOW_UP binding/summary helpers remain because their supported callers are outside migrated evaluation/render and no lower-level public Shared helper exists; no new copy/fork introduced. Static `background-checkout-outreach-policy-v1` remains explicitly host-owned policy metadata, not invented published revision evidence. Real production fixtures compare identical frozen projection/evaluation/customer/shop/checkout with public Shared: full text Buffer bytes, all parameters and provenance equal. These exact fixture inputs/results are the Studio handoff; COMMERCE002/System Tests are separate gated executions, not claimed run here.
 
 ### Current validation (no hidden skipped safety cases)
+
 - Exact5.9 install passed; lock integrity independently matches accepted012.
 - Final original residual plus new actual acceptance cases: **13files155passed**, zero failed/skipped. Command: `vitest run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/services/recovery-offers/initial-outreach-offer-selection.service.test.ts tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts tests/unit/services/recovery-template-preparation tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts tests/unit/services/recovery-template-integration/arch066-production-none.test.ts`. Final log `/private/tmp/arch066-background002-a2-final-residual.log`. Intermediate154pass preceded the final header/BODY regression;155 is current.
 - `npm run test:commerce-recommendations`: **20files204passed**, including current admission revalidation and existing recommendation/shipping/discount/evidence/initial-outreach callers. Log `/private/tmp/arch066-background002-a2-recommendations.log`.
@@ -138,27 +172,42 @@ Ready for Review. Implementation `0a6010315fb97ab47c105c9f93bb792f1cd07b49` push
 - Changed-file ESLint and `git diff --check`: passed. Final `npm run lint` reports **only** unchanged `src/providers/shopify-whatsapp-consent.provider.ts:151` no-control-regex; no task source/test errors remain. File diff against Attempt1 baseline is empty. Combined build/lint process exited1 due this sole known existing full-lint limitation; no full-lint pass or72-test baseline exemption is claimed. Log `/private/tmp/arch066-background002-a2-final-full-lint.log`.
 
 ### Exact frozen handoff / named acceptance evidence
+
 - “runs SHOPIFY/WOOCOMMERCE context/selection/admission/preparer with exactly two reads per distinct pair and configured no-offer” records the common synthetic test customer, fixed same-shop recovery URL, native pair, approved frozen registration/binding hash and saved merchant. Full body: `Saved Merchant saved 2 × Live shirt (Blue) and 1 × Live shirt (Blue) for Test customer. Continue https://shop.example/checkout`. Historical Old colour/title/prices do not enter current parameters. Every provenance field and full parameter array equals Shared; headerMedia null and fixed unused brand-media slots null.
 - “preserves valid mandatory %s in the shared INITIAL renderer” now passes all4 positive saved-brand text/dimension cases, including mandatory shop.name/itemsSummary parameters. Existing same-shop all3 BODY ready-media vector validates exact authorized URLs and one saved-brand read. IMAGE attempt-specific derivative, approved missing/stale-header TEXT fallback, wrong tenant/role/raw media, mandatory brand absence/unsafe text and new early-header masking refusal all pass.
 - Agent tests retain historical/current quantity comparison, changed second-read facts refusal and explicit OUTSIDE_CHECKOUT alternative refusal. Model-priority and pinned behavior safety tests now pass. Existing initial context/generation, selected-offer expiry/F1/F2/F3 and actual token generation cases pass; original historical receipt/FOLLOW_UP tests remain present. No real model/provider/Meta/customer send, deployed activation, managed database mutation, main merge, standalone resurrection, release or follow-on task execution.
 
 ### Attempt2 prepared Git/worktree evidence
+
 Packet `/private/tmp/arch066-background002-attempt2-prepared.json`: canonical primary root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; exact reused parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-BACKGROUND-002` and reused implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-BACKGROUND-002`, both `task/ARCH-066-BACKGROUND-002`. Parent baseline `a08de718f9a8e01b839c5a85aced663982667fad`; implementation baseline `8be7e962e8d197b2372ade543e80c64a3fec4813`. Both own remote FF not-needed/main already-current; recursive sync/update passed ready at databaseb7f58d5. Launcher dependency gate001/005/012 Complete; durable claim `ad8ce07b0181fd24bf1d837c2aac610a377ef1ce`, codex2026-11-08T22:53:43Z Attempt2. No repeated startup/claim; shared/default/other task worktrees not switched or reused. Source committed/pushed `0a6010315fb97ab47c105c9f93bb792f1cd07b49`; only assigned task report staged in parent, no gitlink/architecture/index/other task or Architect Review edit. Completion authority remains developer; separate moda_architect review required.
 
 ## Architect Review — Attempt2 (2026-11-08)
+
 ### Review Status
+
 Accepted. Status remains review, unchanged Attempt2, executor/claimed_at null. Explicit developer completion pending via `/moda_developer_update ARCH-066-BACKGROUND-002 complete`.
+
 ### Review Notes
+
 Independently inspected implementation0a6010315fb97ab47c105c9f93bb792f1cd07b49 and reportd0a55dd60b1ab8e7cd1425fade9a4cb54f017af7, remotely verified/clean. Exact public5.9.0 pin/integrity matches Complete012. Cached same-shop saved-brand columns and authorized fixed BODYmedia projections use Shared strict schema/render, independent CHECKOUT_PRODUCT header; mandatory brand never borrows generic name/raw originals. IMAGE availability fallback now follows mandatory BODY validation, preserves valid approved TEXT fallback and cannot mask missing/foreign mandatory evidence. Initial alternative selection refuses; historical/FOLLOW_UP support retained. Canonical selected/evaluated decision, tenant/run and checkout line/quantity identities guarded; injected model priority and trusted profile behavior preserved below host invariants.
+
 ### Reviewed Files
+
 Agent/graph; preparer/brand/types; automated coordinator; package/lock; all16graph safety cases and updated canonical proof fixtures; production-none.test.ts real context/selection/agent/revalidator/automated/preparer chain; retained current-offer F1/F2/F3/expiry and delivery safety suites. Public Shared source used only through immutable package; no copied schema/renderer/callback. Legacy source-price admission/fingerprint/FOLLOW_UP mechanisms retain active domain semantics; new initial arithmetic/evaluation/rendering delegates to Shared.
+
 ### Validation Reviewed
+
 Current final original-residual+new cases13files155/155 passed, no skipped safety cases: all prior72failures resolved rather than baseline-waived. Recommendations20files204 passed; consent/moderation/credit/outbox/replay/send22files231 passed. Affected coordinator/realNONE57 and final header/body32 passed. Final compiler, build (Prisma/both TypeScript/projects/template packaging), changed-scope ESLint/diffcheck pass. Full lint retains only unchanged consent-provider151 no-control-regex; file diff empty, no full-lint pass claimed. Architect accepts this explicit pre-existing out-of-scope limitation.
 Actual Shopify/Woo NONE chain proves2get_product calls per distinct pair, no model/offer/preflight/fallback calls, duplicate quantities2+1, historical12.50/current12/current subtotal36 separate from checkout total, complete approved body/parameters/provenance byte parity and generation-invalidated final admission. Frozen fixture inputs/results recorded for future Studio handoff; this does not claim execution of unfinished Commerce002 or integrated deployment. Selected-offer expiry/revocation and post-selection authorization/source fences retained; no evaluation/render result substitutes for send admission.
+
 ### Architecture Conformance
+
 Conforms to checkout-led scope and original correction checklist. Prepared Attempt2 packet proves exact dedicated sibling worktrees/mirrored branches, main/remote synchronization after bounded doc conflict resolutiona08de718f, recursive databaseb7f58d5ready, Complete001/005/012 gate and pushed single claimad8ce07b. Source/report published; no parent gitlink, main, Shared release, standalone007/008/MCP002 resurrection, live provider/customer/Meta or follow-on execution. Historical Attempt1/blocked reports remain.
+
 ### Follow-up
+
 Explicit developer completion required before dependant promotions. Evaluate actual remaining Commerce/System Test prerequisites only after Background002 Complete; manual system validation remains terminal. No new task or consumer execution begins from this review. Architecture remains In Progress.
 
 ## Developer Completion Decision — 2026-11-08
+
 Developer explicitly invoked `/moda_developer_update ARCH-066-BACKGROUND-002 complete`. Accepted Attempt2review806d17ad4289ceaacdd9996f8b383d2360616718 and source0a6010315fb97ab47c105c9f93bb792f1cd07b49 independently verified clean/published. Complete at unchanged Attempt2, executor/claimed_at remain null. Current155/204/231passing checks and finalbuild/compiler/scopedlint evidence retained without rerun; full lint sole unchanged consent151 limitation remains explicit. All former72failures resolved, not waived. Concurrent Commerce001 remote181bd35f is CompleteAttempt3, preserved; Commerce002 newly Ready Attempt0/unclaimed. SystemTest001 already Ready/manual-gated, SystemTest002 Pending on Commerce002. No main/live/release/follow-on execution.

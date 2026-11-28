@@ -21,6 +21,7 @@ enables:
 created: 2026-10-13
 updated: 2026-10-14
 ---
+
 # Resolve and enforce LIVE per-turn CommerceAgent budgets
 
 ## Architecture

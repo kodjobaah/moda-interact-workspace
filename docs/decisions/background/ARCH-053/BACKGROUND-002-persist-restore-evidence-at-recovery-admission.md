@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-053-BACKGROUND-001
-- ARCH-053-DATABASE-001
+  - ARCH-053-BACKGROUND-001
+  - ARCH-053-DATABASE-001
 enables:
-- ARCH-053-BACKGROUND-003
+  - ARCH-053-BACKGROUND-003
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -39,7 +39,7 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 
 ## Scope
 
-- Modify `src/services/woocommerce-recovery/woo-recovery-admission.service.ts` and `woo-recovery-admission-evidence.ts` and targeted repository tests, *not* checkout-candidate scheduling or worker composition.
+- Modify `src/services/woocommerce-recovery/woo-recovery-admission.service.ts` and `woo-recovery-admission-evidence.ts` and targeted repository tests, _not_ checkout-candidate scheduling or worker composition.
 - In the existing transaction that creates `CheckoutRecovery`, write the validated latest candidate `checkout.restoration` to `wooRestoreSnapshot` as Prisma JSON, or `null` when absent; preserve `lineItems` display projection, original total and customer identity exactly as before.
 - Reuse ARCH-048's existing generation selection once available: evidence is immutable per `(shopId,checkoutToken,generation)` and never copied onto another generation when a duplicate or stale candidate matures.
 

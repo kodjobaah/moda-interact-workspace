@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables: []
-created: '2026-10-29'
-updated: '2026-10-30'
+created: "2026-10-29"
+updated: "2026-10-30"
 ---
 
 # ARCH-052-COMMERCE-008: Verify Shopify discounts for a specific recommended product without checkout mutation

@@ -191,6 +191,7 @@ Implementation: `package.json`, `package-lock.json`, `src/commerce/host.ts`, `sr
 Pinned `@modainteract/moda-interact-shared` to 1.0.0 and consumed its direct Feature/Capability/Tool manifest. Removed the MCP prompt method and per-Capability prompt fetch loop; the Shared runner now receives the manifest's `featureBehaviours` and applies each once. Updated host parsing and MCP fixture handling for singular `toolDescriptor`, strengthened list and execution authorization to exact Tool identity/revision/name/version and grant provenance, and covered empty selected keys/tools, sibling Capabilities sharing one Feature, reused Tool deduplication, and absence of `prompts/get`.
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-BACKGROUND-002`, `task/ARCH-021-BACKGROUND-002`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-BACKGROUND-002`, `task/ARCH-021-BACKGROUND-002`.
@@ -202,6 +203,7 @@ Physical worktree isolation:
 ### Validation Results
 
 On `task/ARCH-021-BACKGROUND-002`:
+
 - Focused host suite: 41/41 passed.
 - Affected Commerce integration and pipeline suites (`host.test.ts`, `commerce.agent.integration.test.ts`, `commerce.agent.pipeline.test.ts`): 43/43 passed.
 - `npm run build`: passed, including Prisma Client generation and TypeScript compilation.

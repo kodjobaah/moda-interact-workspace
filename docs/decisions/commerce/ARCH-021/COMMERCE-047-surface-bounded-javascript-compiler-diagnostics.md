@@ -154,7 +154,9 @@ must not expose internal runtime exception messages to the browser through this 
 Extend the Request processor diagnostic shape from:
 
 ```ts
-{ code: string }
+{
+  code: string;
+}
 ```
 
 to the bounded equivalent:
@@ -421,9 +423,11 @@ Do not parse JavaScript in React and do not reconstruct compiler messages from c
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `src/commerce/code-runtime/types.ts`
 - `src/commerce/code-runtime/worker.mjs`
 - `src/commerce/code-request/processor.ts`
@@ -435,6 +439,7 @@ Ready for Review
 - `tests/external-tools-ui.test.tsx`
 
 ### Work Completed
+
 - Guest compile/entrypoint failures now carry a sanitized QuickJS message capped at 512 UTF-8 bytes before leaving the worker; quoted token fragments and filesystem paths are removed, and only explicit finite line/column properties are retained.
 - Request processor mapping preserves syntax diagnostics and locations while operational codes remain message-free. Request-only validation displays the compiler message with the existing generic fallback when absent; Response diagnostics retain their previous presentation.
 - Regressions cover real QuickJS malformed/missing entrypoints, the Request processor, authoring validation, the Server Action `kind: ok` envelope, Request UI display, operational message suppression, and absence of error logs for expected syntax failures.
@@ -458,6 +463,7 @@ Ready for Review
   - recorded submodule commit: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`
 
 ### Validation Results
+
 - `npm run code-runtime:package`: passed; runtime package hash remains `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9` and artifact set remains `manifest.json`, `quickjs.wasm`, `worker.mjs`.
 - `npm run code-runtime:smoke`: passed.
 - `npm run test:arch020-code-runtime-proof`: passed, 12 tests.
@@ -470,20 +476,25 @@ Ready for Review
 - Implementation commit `4dccfab` was pushed to `origin/task/ARCH-021-COMMERCE-047`.
 
 ### Deviations
+
 None
 
 ### Assumptions
+
 None
 
 ### Unresolved Issues
+
 The unrelated repository typecheck baseline described above remains unresolved.
 
 ### Architectural Concerns
+
 None
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1
 
 ### Review Notes
@@ -499,6 +510,7 @@ The runtime logging separation also conforms: expected guest syntax failures do 
 The submitted task was in `review` but retained `executor: copilot` / `claimed_at`; this acceptance clears those stale claim fields as architect-owned coordination reconciliation.
 
 ### Reviewed Files
+
 - `src/commerce/code-runtime/types.ts`
 - `src/commerce/code-runtime/worker.mjs`
 - `src/commerce/code-runtime/kernel.ts` (logging boundary inspection)
@@ -512,6 +524,7 @@ The submitted task was in `review` but retained `executor: copilot` / `claimed_a
 - this task Completion Report
 
 ### Validation Reviewed
+
 Accepted submitted evidence:
 
 ```text
@@ -544,7 +557,9 @@ expected guest syntax diagnostics produce no operational error log
 The supplied review archive does not include installed dependencies, so the architect review did not falsely claim to rerun dependency-backed commands; acceptance is based on submitted validation evidence plus direct inspection of the implementation and focused regressions.
 
 ### Architecture Conformance
+
 Conforms. COMMERCE-047 remains a bounded Request diagnostic-fidelity change on top of the accepted COMMERCE-046 runtime. It preserves the runtime engine, worker supervision, Request semantics, operational logging boundary, Response behavior, persistence boundaries and free tab navigation.
 
 ### Follow-up
+
 None. The QuickJS runtime-adapter/Request compiler-diagnostic follow-up chain is Complete.

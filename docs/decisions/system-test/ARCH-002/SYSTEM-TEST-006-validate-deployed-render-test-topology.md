@@ -26,6 +26,7 @@ enables:
 created: 2026-09-03
 updated: 2026-09-04
 ---
+
 # Validate Deployed Render Test Topology
 
 ## Current Execution State
@@ -72,7 +73,6 @@ Manual test evidence already established that the Admin custom domain itself is
 reachable and serves the expected login boundary. Do not reopen gateway/Admin
 implementation merely because earlier system-test probes used malformed host
 input.
-
 
 ## Objective
 
@@ -463,7 +463,7 @@ contracts.
 The current Meta POST sends:
 
 ```js
-host: "ordinary.test.invalid"
+host: "ordinary.test.invalid";
 ```
 
 That is not a valid deployed-Render proof. Render's public edge may reject an
@@ -474,7 +474,7 @@ For the ordinary/default-host Meta POST, use the actual host from
 `ARCH002_TEST_GATEWAY_URL`, equivalent to:
 
 ```js
-new URL(base).host
+new URL(base).host;
 ```
 
 or simply allow the HTTP client to generate the Host from that URL.
@@ -552,8 +552,6 @@ git diff --check
 
 Do not modify another repository and do not commit/push.
 
-
-
 ## GATEWAY-012 Resolution
 
 The Render Blueprint schema block is resolved: GATEWAY-012 is
@@ -566,7 +564,6 @@ required live probe inputs are available.
 Do not treat a Render `Deployed` status alone as proof that provider-backed
 application flows are ready for SYSTEM-TEST-006.
 
-
 ## Architect Coordination Update — Live Frontier Open
 
 The live Render test topology is now instantiated and both public test
@@ -578,7 +575,6 @@ environment before the task is launched.
 
 No new implementation work is authorized unless the live runner demonstrates
 a defect.
-
 
 ## Architect Coordination Update — Attempt 5 Reopened
 
@@ -596,7 +592,6 @@ resolved.
 The task is reopened without code changes. Attempt 5 should run the already
 accepted live runner unchanged.
 
-
 ## Architect Correction — Attempt 6
 
 ### Stale Environment Group Check
@@ -605,7 +600,7 @@ The submitted live topology validator currently contains logic equivalent to:
 
 ```js
 const envGroup = document?.envVarGroups?.find(
-  (group) => group.name === "moda-observability-test"
+  (group) => group.name === "moda-observability-test",
 );
 ```
 
@@ -745,7 +740,6 @@ Return the same task to `review` if the live mandatory assertions complete.
 
 Return to `blocked` only for a genuine external live prerequisite that remains
 unavailable.
-
 
 ## Architect Correction — Attempt 7
 
@@ -939,7 +933,6 @@ Return to `blocked` only if the corrected direct-domain Admin probe or aligned
 Meta verification still demonstrates a genuine live deployment/configuration
 failure.
 
-
 ## Architect Correction — Attempt 8
 
 ### 1. Remove the obsolete synthetic Admin health request
@@ -957,7 +950,7 @@ However the submitted runner still executes:
 
 ```js
 const adminHealth = await request(`${base}/health`, {
-  headers: { host: inputs.adminHost }
+  headers: { host: inputs.adminHost },
 });
 ```
 
@@ -1040,7 +1033,7 @@ Meta verify token
 If a safe underlying network code is available, such as:
 
 ```js
-error.cause?.code
+error.cause?.code;
 ```
 
 it may be included.
@@ -1590,7 +1583,6 @@ back to `ready` for the next execution attempt. That attempt should run the
 existing live validation unchanged and return to `review` only when all
 mandatory deployed assertions execute successfully.
 
-
 ## Architect Review — Current
 
 ### Review Status
@@ -1606,7 +1598,6 @@ malformed `ARCH002_TEST_GATEWAY_URL` has now been corrected externally.
 
 Execute the existing live runner unchanged and return to `review` only after
 the mandatory deployed assertions have actually executed.
-
 
 ## Architect Review — Attempt 6
 
@@ -1626,7 +1617,6 @@ SYSTEM-TEST-006's stale test environment-group identity check from
 After that correction, execute the live runner in the same attempt.
 
 Do not modify gateway/application repositories.
-
 
 ## Architect Review — Attempt 7
 
@@ -1657,7 +1647,6 @@ Correct that bounded probe in SYSTEM-TEST-006 only.
 The Meta GET 403 is not authorization to change the Meta verification contract.
 Align the task input `ARCH002_TEST_META_VERIFY_TOKEN` with the deployed
 `WHATSAPP_VERIFY_TOKEN`, redeploy messaging after any group change, and rerun.
-
 
 ## Architect Review — Attempt 8
 
@@ -1880,13 +1869,13 @@ protocol plus each canonical custom hostname.
 The current runner creates Shopify headers with:
 
 ```js
-new URL(base).host
+new URL(base).host;
 ```
 
 and sends:
 
 ```js
-POST `${base}/webhooks`
+POST`${base}/webhooks`;
 ```
 
 where `base` is:
@@ -2511,7 +2500,6 @@ as passed.
 
 None. The changes remain within the system-test repository and do not implement
 gateway routing or expose private services.
-
 
 ---
 

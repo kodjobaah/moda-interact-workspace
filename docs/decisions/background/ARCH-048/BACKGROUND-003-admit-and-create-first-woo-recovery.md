@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-048-BACKGROUND-006
-- ARCH-046-BACKGROUND-001
-- ARCH-045-BACKGROUND-005
+  - ARCH-048-BACKGROUND-006
+  - ARCH-046-BACKGROUND-001
+  - ARCH-045-BACKGROUND-005
 enables:
-- ARCH-046-BACKGROUND-002
-- ARCH-048-BACKGROUND-005
-created: '2026-10-23'
+  - ARCH-046-BACKGROUND-002
+  - ARCH-048-BACKGROUND-005
+created: "2026-10-23"
 updated: 2026-10-24
 ---
 
@@ -70,7 +70,7 @@ Shopify's present `RecoveryMaterializationService` invokes a Shopify provider ch
 - Absent/expired BullMQ job is never proof that no recovery exists; check PostgreSQL under transaction/concurrency discipline.
 - One initial generation per Woo checkout lineage. If existing status suggests re-entry, fail closed pending separately approved policy rather than auto-increment generation.
 - Current consent for exact canonical customer phone and local STOP supersede stale positive evidence. Never create a consent-wait recovery row.
-- No claim of live checkout verification: latest *received* event is all that can be known under outbound-only design.
+- No claim of live checkout verification: latest _received_ event is all that can be known under outbound-only design.
 - An accepted `created` result is not a guarantee of send; BG004 performs independent irreversible dispatch guards.
 
 ### Mandatory shared logging and failure propagation
@@ -95,7 +95,10 @@ Shopify's present `RecoveryMaterializationService` invokes a Shopify provider ch
 
 ```ts
 interface WooRecoveryAdmissionEvaluator {
-  evaluateMatured(candidate: WooPendingCandidate, context: { jobId?: string }): Promise<WooAdmissionOutcome>;
+  evaluateMatured(
+    candidate: WooPendingCandidate,
+    context: { jobId?: string },
+  ): Promise<WooAdmissionOutcome>;
 }
 type WooAdmissionOutcome =
   | { kind: "created"; recoveryId: string }
@@ -107,7 +110,7 @@ type WooAdmissionOutcome =
 
 **Output contract to ARCH-046-BACKGROUND-002:** stable denial reasons and an injectible before-INSERT consent-policy/admission-result hook; ARCH-046 owns deduplicated merchant Support notice implementation. BG004 sees only a committed recoveryId. No public cross-service API is added.
 
-**File boundary:** own Woo admission service/adapter, optional reusable *row-only* DB helper, own tests. Do not edit checkout/order workers, pending candidate worker, existing Shopify-only lookup service, initial-send services or `src/entrypoints/*`.
+**File boundary:** own Woo admission service/adapter, optional reusable _row-only_ DB helper, own tests. Do not edit checkout/order workers, pending candidate worker, existing Shopify-only lookup service, initial-send services or `src/entrypoints/*`.
 
 ## Dependencies
 

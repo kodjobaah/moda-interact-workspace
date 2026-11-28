@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-052-SHARED-010
-created: '2026-10-30'
+  - ARCH-052-SHARED-010
+created: "2026-10-30"
 updated: 2026-10-30
 ---
 
@@ -33,7 +33,7 @@ Make **one versioned update** to the existing generic Commerce contract in `src/
 
 ## Context
 
-Current published 2.6.0 declares `CommerceToolInputs.commerce_get_discount_options` as `{}`; the output is `{mode, offers(max 50), truncated}`; `CommerceOfferSchema` contains no eligibility conditions. `CommerceProductSchema` includes category *labels* but no provider category/collection IDs and requires a non-null `variantId`. Woo simple products may have no variant. These gaps were verified against the attached 09:15 workspace. Shopify's existing discount synchroniser also captures only summary/status/date/code fields, so the new wire structure alone does not fill missing facts; BACKGROUND-011 owns synchronisation changes.
+Current published 2.6.0 declares `CommerceToolInputs.commerce_get_discount_options` as `{}`; the output is `{mode, offers(max 50), truncated}`; `CommerceOfferSchema` contains no eligibility conditions. `CommerceProductSchema` includes category _labels_ but no provider category/collection IDs and requires a non-null `variantId`. Woo simple products may have no variant. These gaps were verified against the attached 09:15 workspace. Shopify's existing discount synchroniser also captures only summary/status/date/code fields, so the new wire structure alone does not fill missing facts; BACKGROUND-011 owns synchronisation changes.
 
 ## Scope
 
@@ -77,13 +77,24 @@ export const CommerceDiscountConditionFactsSchema = z.strictObject({
   providerStatus: z.string().max(64),
   unavailableAt: DateSchema.nullable(),
   discountKind: z.enum([
-    "PERCENTAGE", "FIXED_AMOUNT", "FREE_SHIPPING", "BUY_X_GET_Y", "OTHER", "UNKNOWN",
+    "PERCENTAGE",
+    "FIXED_AMOUNT",
+    "FREE_SHIPPING",
+    "BUY_X_GET_Y",
+    "OTHER",
+    "UNKNOWN",
   ]),
   discountValue: MoneySchema.nullable(),
   discountCurrency: CurrencySchema.nullable(),
   targeting: z.strictObject({
     kind: z.enum([
-      "ALL", "PRODUCTS", "VARIANTS", "CATEGORIES", "COLLECTIONS", "MIXED", "UNKNOWN",
+      "ALL",
+      "PRODUCTS",
+      "VARIANTS",
+      "CATEGORIES",
+      "COLLECTIONS",
+      "MIXED",
+      "UNKNOWN",
     ]),
     includedProductIds: z.array(ID).max(128),
     includedVariantIds: z.array(ID).max(128),
@@ -105,14 +116,17 @@ export const CommerceDiscountConditionFactsSchema = z.strictObject({
   individualUse: z.boolean().nullable(),
   unrepresentedConditions: z.array(z.string().min(1).max(128)).max(24),
 });
-export type CommerceDiscountConditionFacts =
-  z.infer<typeof CommerceDiscountConditionFactsSchema>;
+export type CommerceDiscountConditionFacts = z.infer<
+  typeof CommerceDiscountConditionFactsSchema
+>;
 
 export const CommerceDiscountDetailsSchema = z.strictObject({
   offer: CommerceOfferSchema,
   facts: CommerceDiscountConditionFactsSchema,
 });
-export type CommerceDiscountDetails = z.infer<typeof CommerceDiscountDetailsSchema>;
+export type CommerceDiscountDetails = z.infer<
+  typeof CommerceDiscountDetailsSchema
+>;
 ```
 
 **Exact changes to existing declarations (do not recreate the dictionaries):**
@@ -152,12 +166,20 @@ commerce_get_discount_details: z.strictObject({
 ```json
 {
   "mode": "FIXED",
-  "offers": [{
-    "offerId": "offer-20", "title": "Socks 20", "method": "CODE",
-    "code": "SOCKS20", "startsAt": null, "endsAt": null,
-    "support": "SUPPORTED", "reasonCodes": []
-  }],
-  "cursor": "opaque-continuation-token", "truncated": true
+  "offers": [
+    {
+      "offerId": "offer-20",
+      "title": "Socks 20",
+      "method": "CODE",
+      "code": "SOCKS20",
+      "startsAt": null,
+      "endsAt": null,
+      "support": "SUPPORTED",
+      "reasonCodes": []
+    }
+  ],
+  "cursor": "opaque-continuation-token",
+  "truncated": true
 }
 ```
 
@@ -165,25 +187,44 @@ commerce_get_discount_details: z.strictObject({
 {
   "details": {
     "offer": {
-      "offerId": "offer-20", "title": "Socks 20", "method": "CODE",
-      "code": "SOCKS20", "startsAt": null, "endsAt": null,
-      "support": "SUPPORTED", "reasonCodes": []
+      "offerId": "offer-20",
+      "title": "Socks 20",
+      "method": "CODE",
+      "code": "SOCKS20",
+      "startsAt": null,
+      "endsAt": null,
+      "support": "SUPPORTED",
+      "reasonCodes": []
     },
     "facts": {
-      "provider": "WOOCOMMERCE", "completeness": "COMPLETE",
-      "observedAt": "2026-10-30T09:00:00.000Z", "providerStatus": "ACTIVE",
-      "unavailableAt": null, "discountKind": "PERCENTAGE",
-      "discountValue": "20", "discountCurrency": null,
+      "provider": "WOOCOMMERCE",
+      "completeness": "COMPLETE",
+      "observedAt": "2026-10-30T09:00:00.000Z",
+      "providerStatus": "ACTIVE",
+      "unavailableAt": null,
+      "discountKind": "PERCENTAGE",
+      "discountValue": "20",
+      "discountCurrency": null,
       "targeting": {
-        "kind": "PRODUCTS", "includedProductIds": ["401"],
-        "includedVariantIds": [], "includedCategoryIds": [], "includedCollectionIds": [],
-        "excludedProductIds": [], "excludedVariantIds": [],
-        "excludedCategoryIds": [], "excludedCollectionIds": []
+        "kind": "PRODUCTS",
+        "includedProductIds": ["401"],
+        "includedVariantIds": [],
+        "includedCategoryIds": [],
+        "includedCollectionIds": [],
+        "excludedProductIds": [],
+        "excludedVariantIds": [],
+        "excludedCategoryIds": [],
+        "excludedCollectionIds": []
       },
-      "minimumSubtotal": null, "maximumSubtotal": null,
-      "minimumQuantity": null, "usageLimit": null, "usageCount": null,
-      "perCustomerLimit": null, "customerScope": "ALL",
-      "excludesSaleItems": false, "individualUse": false,
+      "minimumSubtotal": null,
+      "maximumSubtotal": null,
+      "minimumQuantity": null,
+      "usageLimit": null,
+      "usageCount": null,
+      "perCustomerLimit": null,
+      "customerScope": "ALL",
+      "excludesSaleItems": false,
+      "individualUse": false,
       "unrepresentedConditions": []
     }
   }

@@ -16,11 +16,11 @@ claimed_at: null
 attempt: 2
 depends_on: []
 enables:
-- ARCH-015-SHOPIFY-002
-- ARCH-015-BACKGROUND-001
-- ARCH-015-BACKGROUND-002
-- ARCH-015-SHOPIFY-003
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-SHOPIFY-002
+  - ARCH-015-BACKGROUND-001
+  - ARCH-015-BACKGROUND-002
+  - ARCH-015-SHOPIFY-003
+  - ARCH-015-BACKGROUND-003
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -179,13 +179,13 @@ Status: Review; implementation complete and returned to `moda_architect`.
 ### Implementation
 
 - Added and exported `deriveShopifyProviderContextIdentity` with legacy ID
-	compatibility, deterministic native fallback identity derivation, strict date
-	validation, and bounded `SHOPIFY_PROVIDER_CONTEXT_INVALID:` errors.
+  compatibility, deterministic native fallback identity derivation, strict date
+  validation, and bounded `SHOPIFY_PROVIDER_CONTEXT_INVALID:` errors.
 - Added and exported `isSameShopifyPurchaseProviderContext`, comparing only the
-	trimmed provider context identity, plan handle, and billing period ID.
+  trimmed provider context identity, plan handle, and billing period ID.
 - Added coverage for deterministic identity generation, differing plan/period
-	inputs, malformed fallback evidence, ordering errors, comparison requirements,
-	event-handle independence, and existing billing exports.
+  inputs, malformed fallback evidence, ordering errors, comparison requirements,
+  event-handle independence, and existing billing exports.
 - Bumped exactly one patch version from `0.11.0` to `0.11.1`.
 
 ### Validation and Publication
@@ -194,13 +194,13 @@ Status: Review; implementation complete and returned to `moda_architect`.
 - `npm run typecheck`: passed.
 - `npm run build`: passed.
 - `npm run validate:billing-entrypoint`: passed; runtime and declaration exports
-	are present.
+  are present.
 - `npm pack --dry-run`: passed for `@modainteract/moda-interact-shared@0.11.1`.
 - `git diff --check`: passed.
 - Published `@modainteract/moda-interact-shared@0.11.1` to npm with public
-	access. npm accepted the publication; registry metadata was still propagating
-	when checked immediately afterward and returned a temporary 404, so the
-	published-registry export verification remains propagation-pending.
+  access. npm accepted the publication; registry metadata was still propagating
+  when checked immediately afterward and returned a temporary 404, so the
+  published-registry export verification remains propagation-pending.
 - Implementation commit: `882fefc`.
 
 ### Architect Review
@@ -243,7 +243,7 @@ republish or overwrite it.
 `isSameShopifyPurchaseProviderContext(...)` currently evaluates each pair using:
 
 ```ts
-purchaseValue.trim() === currentValue.trim()
+purchaseValue.trim() === currentValue.trim();
 ```
 
 without requiring the trimmed values to be non-empty.
@@ -331,9 +331,11 @@ return pairs.every(([purchaseValue, currentValue]) => {
   const normalizedPurchaseValue = purchaseValue.trim();
   const normalizedCurrentValue = currentValue.trim();
 
-  return normalizedPurchaseValue.length > 0
-    && normalizedCurrentValue.length > 0
-    && normalizedPurchaseValue === normalizedCurrentValue;
+  return (
+    normalizedPurchaseValue.length > 0 &&
+    normalizedCurrentValue.length > 0 &&
+    normalizedPurchaseValue === normalizedCurrentValue
+  );
 });
 ```
 
@@ -538,7 +540,6 @@ runtime export smoke, and blank-context fail-closed registry smoke have not
 been claimed as complete, and this task is not marked review-ready.
 
 Return to `moda_architect` for the external npm propagation/publication retry.
-
 
 ## Architect Review — Attempt 2
 

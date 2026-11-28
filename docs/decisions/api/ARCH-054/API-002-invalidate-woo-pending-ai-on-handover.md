@@ -22,9 +22,7 @@ created: 2026-10-31
 updated: 2026-10-31
 ---
 
-
 # ARCH-054-API-002: Invalidate pending AI when Woo merchant changes human control
-
 
 ## Architecture
 
@@ -34,75 +32,61 @@ Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md
 
 Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
 
-
 ## Objective
 
 Fence pending/delayed AI turns atomically inside the existing authenticated WooCommerce HUMAN/AI control transaction.
-
 
 ## Context
 
 ARCH-054 adds a **merchant-selectable integer 0–30 minute AI reply delay** to the existing ARCH-040 recovery-conversation processor and handover controls, leaving merchant-authored HUMAN replies without configured delay. See the parent architecture and current snapshot for specific boundaries.
 
-
 ## Scope
 
 Modify `src/merchant/conversations/control/service.ts` only plus its existing focused tests; do not change request/response wire schema `ARCH-040` control command or introduce another control endpoint.
-
 
 ## Out of Scope
 
 No unrelated architecture changes, new standalone chat service, per-user timer jobs, invented provider error explanations, or updates to `docs/decisions/**/_index.md`. No implementation outside the assigned repository.
 
-
 ## Requirements
 
-- Retain `SELECT ... FOR UPDATE` recovery/shop/installation auth, `expectedControlRevision` CAS, `ConversationControlEvent`, and status/suspension rules. On a *successful* AI->HUMAN or HUMAN->AI transition, in the same SQL transaction as `controlRevision += 1` clear `pendingTurnStartedAt`, `pendingAiNotBeforeAt`, `pendingAiControlRevision`, `pendingAiDelayMinutes`, `processingInboundVersion`, `processingStartedAt`, and set `lastProcessedVersion` to the current `inboundVersion`; do not remove transcript or alter provider send receipts.
+- Retain `SELECT ... FOR UPDATE` recovery/shop/installation auth, `expectedControlRevision` CAS, `ConversationControlEvent`, and status/suspension rules. On a _successful_ AI->HUMAN or HUMAN->AI transition, in the same SQL transaction as `controlRevision += 1` clear `pendingTurnStartedAt`, `pendingAiNotBeforeAt`, `pendingAiControlRevision`, `pendingAiDelayMinutes`, `processingInboundVersion`, `processingStartedAt`, and set `lastProcessedVersion` to the current `inboundVersion`; do not remove transcript or alter provider send receipts.
 - No-op repeated target-mode request must not increment revision, reopen pending AI, or race. Stale expected revision must return existing 409. The old worker must be stopped by original revision fence at final provider admission; cannot recall previously dispatched Meta operation.
 - Existing HUMAN send command admission and dispatch must remain immediate (no delay field check). Do not alter Meta window, consent, moderation or human sending entitlements.
-
 
 ## Work Items
 
 - [x] Add atomic pending invalidation to control transition transaction.
 - [x] Test pending AI=>HUMAN, HUMAN=>AI, duplicate control request, concurrent inbound/claim, stale queued job after control toggles, existing 409, and HUMAN text dispatch independence.
 
-
 ## Interfaces / Contracts
 
 No new public control request field. Existing `controlRevision` and `expectedControlRevision` remain canonical. Internal Prisma fields owned by DATABASE-001.
-
 
 ## Dependencies
 
 - ARCH-054-DATABASE-001
 
-
 ## Enables
 
 - ARCH-054-BACKGROUND-002
-
 
 ## Acceptance Criteria
 
 - [x] One durable control transition atomically invalidates old pending state, across workers; no stale AI reply after final admission fence.
 - [x] Existing Woo tenant auth and human-message behaviour remain unchanged; focused integration tests pass.
 
-
 ## Validation
 
 - [x] Focused API conversation-control unit/PostgreSQL tests using declared script; changed-file lint/build/typecheck per package.json; `git diff --check`.
-
 
 ## Stop Condition
 
 After all required Work Items, Acceptance Criteria and Validation are complete, update Completion Report, set status to `review`, return control to `moda_architect` and **STOP**. Do not implement dependent tasks. Publication tasks do not rerun accepted implementation validation.
 
-
 ## Implementation Notes
 
 Implement only the identified repository-owned changes; preserve original provider/SDK errors in shared structured logs and rethrow failures to the owning retry/admission boundary.
-
 
 ## Completion Report
 
@@ -141,33 +125,32 @@ No architectural deviation. The queued AI job cannot be recalled, but it is no l
 ### Worktree and Git Evidence
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-API-002`
-  parent branch: `task/ARCH-054-API-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-API-002`
-  implementation branch: `task/ARCH-054-API-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-API-002`
+parent branch: `task/ARCH-054-API-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-API-002`
+implementation branch: `task/ARCH-054-API-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization (launcher packet):
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
-  parent prepared head: `08c184a1a9c8356488d90b166c58a0277c1524e9`
-  implementation prepared head: `25fb95062355b15cbadc954db1164fd94fc2cfa7`
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+parent prepared head: `08c184a1a9c8356488d90b166c58a0277c1524e9`
+implementation prepared head: `25fb95062355b15cbadc954db1164fd94fc2cfa7`
 
 Recursive implementation submodules (launcher packet):
-  `git submodule sync --recursive`: passed
-  `git submodule update --init --recursive`: passed
-  recorded database submodule commit: `7c377282aa5819b3008b7d7f3018f44f4161523e`
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded database submodule commit: `7c377282aa5819b3008b7d7f3018f44f4161523e`
 
 Publication:
-  implementation task branch commit: `954fd95`
-  parent task branch commit: completion report commit
-  both task branches pushed: yes
-
+implementation task branch commit: `954fd95`
+parent task branch commit: completion report commit
+both task branches pushed: yes
 
 ## Architect Review
 

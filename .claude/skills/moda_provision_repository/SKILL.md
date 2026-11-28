@@ -122,7 +122,7 @@ python3 "$MODA_WORKSPACE_ROOT/scripts/provision-moda-repository.py" \
 report `real_run_blockers`, but it MUST NOT create a remote, add a submodule,
 commit, or push.
 
-A `--create --visibility public|private --dry-run` invocation verifies GitHub CLI authentication and reports the exact requested visibility that a missing repository *would* be created with, but it does not create it.
+A `--create --visibility public|private --dry-run` invocation verifies GitHub CLI authentication and reports the exact requested visibility that a missing repository _would_ be created with, but it does not create it.
 
 ## Real-run safety invariants
 

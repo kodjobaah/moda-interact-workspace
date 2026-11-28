@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
-created: '2026-10-18'
+created: "2026-10-18"
 updated: 2026-11-01
 ---
 
@@ -125,18 +125,18 @@ The previously reported historical task artifact helper digest prefix `070d8bd1`
 
 Environment: Darwin/x64; `.nvmrc` selected Node `v24.19.0` and npm `11.17.0`; package manager npm. `package-lock.json` SHA-256: `01830b46804ace6e92f148f892b7a54d4b918673ff780ee01390c097548fdf14`. Locked and installed versions: `quickjs-wasi@3.6.2`, `string-strip-html@13.6.2`, `esbuild@0.28.2`.
 
-| Command | Result |
-|---|---|
-| `npm ci` | PASS; 905 packages installed. npm reported 44 audit findings (27 moderate, 16 high, 1 critical); no dependency changes were made in this task. |
-| `npm run code-runtime:package` + `npm run code-runtime:smoke`, twice after `rm -rf build/code-runtime` | PASS both times; smoke verified v1/v2 matrix, v1 helper absence, v2 helper output/frozen namespace, forbidden capabilities, request v1, and compile-only behavior. |
-| Packaged artifact SHA-256, both runs | Identical: `helpers-v2.js` `83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a`; `manifest.json` `57e71653c06592e3e322eb03b1038bc112cff05af8fae3939b041671fd27d7c4`; `quickjs.wasm` `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`; `worker.mjs` `172204db71c55a812f228d4d6aa7615d8d26a719cdc414a8ee0b2e65cb23ba31`. |
-| `npx vitest run tests/code-runtime-proof.test.ts tests/code-runtime-helper-bundle.test.ts --maxWorkers=1` | PASS, 16 tests; repeated twice, both passed. |
-| Same focused Vitest command with `--maxWorkers=4` | PASS, 16 tests. |
-| `npx vitest run --maxWorkers=4` | 173 files passed, 22 failed, 6 skipped; 1,453 tests passed, 19 failed, 16 skipped. No Code Runtime proof/helper failure was reported. Failures include missing disposable database/Redis fixtures, unrelated UI timeout and Prisma/mock issues. |
-| `npm run build` | PASS, including package/smoke, Prisma client generation and Next.js production build. Existing Nunjucks dynamic-loader warning only. |
-| `npm run typecheck` after build/Prisma generation | FAIL with one unrelated diagnostic: `tests/system-commerce-tool-sync.test.ts:305` passes `{}` where current Next.js `ProcessEnv` typing requires `NODE_ENV`. |
-| Focused `npx eslint` over Code Runtime kernel, worker, packaging, smoke and proof files | PASS; no diagnostics. |
-| `git diff --check` | PASS for the task report change. |
+| Command                                                                                                   | Result                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm ci`                                                                                                  | PASS; 905 packages installed. npm reported 44 audit findings (27 moderate, 16 high, 1 critical); no dependency changes were made in this task.                                                                                                                                                                                                         |
+| `npm run code-runtime:package` + `npm run code-runtime:smoke`, twice after `rm -rf build/code-runtime`    | PASS both times; smoke verified v1/v2 matrix, v1 helper absence, v2 helper output/frozen namespace, forbidden capabilities, request v1, and compile-only behavior.                                                                                                                                                                                     |
+| Packaged artifact SHA-256, both runs                                                                      | Identical: `helpers-v2.js` `83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a`; `manifest.json` `57e71653c06592e3e322eb03b1038bc112cff05af8fae3939b041671fd27d7c4`; `quickjs.wasm` `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`; `worker.mjs` `172204db71c55a812f228d4d6aa7615d8d26a719cdc414a8ee0b2e65cb23ba31`. |
+| `npx vitest run tests/code-runtime-proof.test.ts tests/code-runtime-helper-bundle.test.ts --maxWorkers=1` | PASS, 16 tests; repeated twice, both passed.                                                                                                                                                                                                                                                                                                           |
+| Same focused Vitest command with `--maxWorkers=4`                                                         | PASS, 16 tests.                                                                                                                                                                                                                                                                                                                                        |
+| `npx vitest run --maxWorkers=4`                                                                           | 173 files passed, 22 failed, 6 skipped; 1,453 tests passed, 19 failed, 16 skipped. No Code Runtime proof/helper failure was reported. Failures include missing disposable database/Redis fixtures, unrelated UI timeout and Prisma/mock issues.                                                                                                        |
+| `npm run build`                                                                                           | PASS, including package/smoke, Prisma client generation and Next.js production build. Existing Nunjucks dynamic-loader warning only.                                                                                                                                                                                                                   |
+| `npm run typecheck` after build/Prisma generation                                                         | FAIL with one unrelated diagnostic: `tests/system-commerce-tool-sync.test.ts:305` passes `{}` where current Next.js `ProcessEnv` typing requires `NODE_ENV`.                                                                                                                                                                                           |
+| Focused `npx eslint` over Code Runtime kernel, worker, packaging, smoke and proof files                   | PASS; no diagnostics.                                                                                                                                                                                                                                                                                                                                  |
+| `git diff --check`                                                                                        | PASS for the task report change.                                                                                                                                                                                                                                                                                                                       |
 
 The smoke manifest reported engine `quickjs-ng-wasi`, WASM digest `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`, helper digest `83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a`, and the exact locked package versions above. These current bytes match the supplied unchanged-baseline hashes. An earlier operator using Node `v24.21.0`/npm `11.19.0` also reported the same current digests and passing smoke, but that does not prove the missing historical `070d8bd1` artifact was caused by the Node variation.
 
@@ -200,7 +200,7 @@ contradict the current reproducibility evidence and is transparently documented.
   and no Code Runtime tests failed.
 - Architect verified the implementation branch is clean and synchronized at
   `15d505e`, with the published task ref present. `git diff --check
-  origin/main...HEAD` passed.
+origin/main...HEAD` passed.
 
 ### Architecture Conformance
 

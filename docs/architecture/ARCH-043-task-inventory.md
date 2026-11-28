@@ -4,14 +4,14 @@ The **16 active task IDs** below implement the accepted two-table Platform Confi
 
 The Admin registry (`moda-interact-admin/src/lib/admin/platform-configuration/{contracts,secrets-contracts}.ts`) and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md` define the **17 authoritative PostgreSQL keys**. Background service contracts support the nine keys used by Background; other keys are explicitly denied rather than exposing Admin/Commerce/Messaging secrets to Background. `merchant.knowledge.r2` is canonical; `merchantKnowledge.upload` and `support.translation` are not active. There are **no ARCH-043 Shared tasks**, configuration caches, Messaging runtime integration or new Prisma tables.
 
-| Task | Owner | Snapshot status | Depends on |
-|---|---|---|---|
-| `ARCH-043-DATABASE-001` | moda_database | Complete | — |
-| `ARCH-043-GATEWAY-001` | moda_gateway | Pending | `ARCH-043-ADMIN-001`, `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-001`, `ARCH-043-BACKGROUND-002`, `ARCH-043-API-001`, `ARCH-043-API-002`, `ARCH-043-COMMERCE-001`, `ARCH-043-COMMERCE-002`, `ARCH-043-SHOPIFY-001`, `ARCH-043-SHOPIFY-002`, `ARCH-043-MCP-001` |
-| `ARCH-043-MCP-001` | moda_mcp | Pending | `ARCH-043-DATABASE-001` |
-| `ARCH-043-SHOPIFY-001` | moda_app | Ready | `ARCH-043-DATABASE-001` |
-| `ARCH-043-SHOPIFY-002` | moda_app | Pending | `ARCH-043-SHOPIFY-001`, `ARCH-043-ADMIN-002` |
-| `ARCH-043-SYSTEM-TEST-001` | moda_system_test | Pending | `ARCH-043-DATABASE-001`, `ARCH-043-ADMIN-001`, `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-001`, `ARCH-043-BACKGROUND-002`, `ARCH-043-API-001`, `ARCH-043-API-002`, `ARCH-043-COMMERCE-001`, `ARCH-043-COMMERCE-002`, `ARCH-043-SHOPIFY-001`, `ARCH-043-SHOPIFY-002`, `ARCH-043-MCP-001`, `ARCH-043-GATEWAY-001` |
+| Task                       | Owner            | Snapshot status | Depends on                                                                                                                                                                                                                                                                                                      |
+| -------------------------- | ---------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ARCH-043-DATABASE-001`    | moda_database    | Complete        | —                                                                                                                                                                                                                                                                                                               |
+| `ARCH-043-GATEWAY-001`     | moda_gateway     | Pending         | `ARCH-043-ADMIN-001`, `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-001`, `ARCH-043-BACKGROUND-002`, `ARCH-043-API-001`, `ARCH-043-API-002`, `ARCH-043-COMMERCE-001`, `ARCH-043-COMMERCE-002`, `ARCH-043-SHOPIFY-001`, `ARCH-043-SHOPIFY-002`, `ARCH-043-MCP-001`                                                  |
+| `ARCH-043-MCP-001`         | moda_mcp         | Pending         | `ARCH-043-DATABASE-001`                                                                                                                                                                                                                                                                                         |
+| `ARCH-043-SHOPIFY-001`     | moda_app         | Ready           | `ARCH-043-DATABASE-001`                                                                                                                                                                                                                                                                                         |
+| `ARCH-043-SHOPIFY-002`     | moda_app         | Pending         | `ARCH-043-SHOPIFY-001`, `ARCH-043-ADMIN-002`                                                                                                                                                                                                                                                                    |
+| `ARCH-043-SYSTEM-TEST-001` | moda_system_test | Pending         | `ARCH-043-DATABASE-001`, `ARCH-043-ADMIN-001`, `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-001`, `ARCH-043-BACKGROUND-002`, `ARCH-043-API-001`, `ARCH-043-API-002`, `ARCH-043-COMMERCE-001`, `ARCH-043-COMMERCE-002`, `ARCH-043-SHOPIFY-001`, `ARCH-043-SHOPIFY-002`, `ARCH-043-MCP-001`, `ARCH-043-GATEWAY-001` |
 
 ## Canonical task files
 
@@ -38,19 +38,19 @@ No `_index.md` edits. `DATABASE-001` is `complete` in the inspected 21:06 snapsh
 - `API-002`: apply the existing reader to Knowledge/R2 and REST-read consumers, with safe outcomes through the API Shared logger. No private Meta route or Messaging consumer.
 - The earlier `API-003` private Meta route proposal is withdrawn, not retained in API-002. Stale duplicate API-001/API-002/API-003 drafts remain excluded from canonical discovery.
 - API-002 depends on both API-001 and ADMIN-002. Gateway and terminal System Test depend on API-002, not removed API-003. No `_index.md` changes.
-No `_index.md` edits. Background-010..012 are not canonical new tasks; archived/superseded draft numbers are not reactivated. The developer reports `DATABASE-001` completed since this baseline; its canonical task YAML/architect review must be reconciled before dependent tasks are promoted from Pending to Ready. The ADMIN-002 task is already materialised and actively claimed by the developer; do not reset its execution metadata when applying this architectural amendment. Other task materialisation and status must be determined from their individual canonical task files.
+  No `_index.md` edits. Background-010..012 are not canonical new tasks; archived/superseded draft numbers are not reactivated. The developer reports `DATABASE-001` completed since this baseline; its canonical task YAML/architect review must be reconciled before dependent tasks are promoted from Pending to Ready. The ADMIN-002 task is already materialised and actively claimed by the developer; do not reset its execution metadata when applying this architectural amendment. Other task materialisation and status must be determined from their individual canonical task files.
 
 ## 18 October 2026 — Five pending additions (Background split into services and consumers)
 
 The table above is historical source-snapshot state; the task frontmatter and developer's current branch determine live state. The five tasks below are defined but not materialised. No task can start while a dependency is still in progress/review. `ADMIN-002` stays developer-owned and in progress; the additional five sealed purposes belong to that existing task, with no new Admin authentication-bootstrap task.
 
-| Task | Repository owner | Depends on |
-|---|---|---|
-| `ARCH-043-ADMIN-004` | `moda-interact-admin` | `ARCH-043-ADMIN-002` |
-| `ARCH-043-API-004` | `moda-interact-api` | `ARCH-043-ADMIN-002`, `ARCH-043-DATABASE-001` |
-| `ARCH-043-BACKGROUND-008` | `moda-interact-background` | `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-002` — create typed resolver services; no provider changes |
+| Task                      | Repository owner           | Depends on                                                                                                              |
+| ------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `ARCH-043-ADMIN-004`      | `moda-interact-admin`      | `ARCH-043-ADMIN-002`                                                                                                    |
+| `ARCH-043-API-004`        | `moda-interact-api`        | `ARCH-043-ADMIN-002`, `ARCH-043-DATABASE-001`                                                                           |
+| `ARCH-043-BACKGROUND-008` | `moda-interact-background` | `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-002` — create typed resolver services; no provider changes                   |
 | `ARCH-043-BACKGROUND-009` | `moda-interact-background` | `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-008`, `ARCH-043-BACKGROUND-001` — integrate accepted resolver into providers |
-| `ARCH-043-SHOPIFY-002` | `moda-interact` | `ARCH-043-SHOPIFY-001`, `ARCH-043-ADMIN-002` |
+| `ARCH-043-SHOPIFY-002`    | `moda-interact`            | `ARCH-043-SHOPIFY-001`, `ARCH-043-ADMIN-002`                                                                            |
 
 Current `GATEWAY-001` and terminal `SYSTEM-TEST-001` must remain pending until all five new tasks and their prerequisite set are accepted. `COMMERCE_CURSOR_SECRET` is deferred; embedding settings stay with `CommerceEmbeddingConfiguration`; `WOO_BILLING_ENVIRONMENT` stays deployment-owned. No `_index.md` edits. Background-010..012 are not canonical new tasks; archived/superseded draft numbers are not reactivated.
 
@@ -60,7 +60,6 @@ Current `GATEWAY-001` and terminal `SYSTEM-TEST-001` must remain pending until a
 - `docs/decisions/api/ARCH-043/API-004-woo-billing-credential-reader.md`
 - `docs/decisions/background/ARCH-043/BACKGROUND-008-platform-credential-resolver-services.md`
 - `docs/decisions/background/ARCH-043/BACKGROUND-009-integrate-provider-credential-consumers.md`
-
 
 ## 18 October 2026 — Final Shopify two-task consolidation
 
@@ -73,7 +72,6 @@ The snapshot has DATABASE-001 and ADMIN-002 Complete; SHOPIFY-001 is therefore m
 The earlier historical statement that there is no Messaging runtime integration is superseded for **`messaging.meta` only**. Define exactly one new task, `ARCH-043-MESSAGING-001` (`docs/decisions/messaging/ARCH-043/MESSAGING-001-database-backed-meta-webhook-credentials.md`), owner `moda_messaging`, status **Ready in the supplied snapshot**, depends on Complete `ARCH-043-DATABASE-001` and `ARCH-043-ADMIN-002`. The definition is **portable; not materialised or claimed**. The existing historical task inventory tables/statuses above remain an as-of-date record and must not be treated as updated live branch state.
 
 All implementation, tests and `pg` dependency additions occur in **`moda-interact-messaging`**. Only the already published Shared Node crypto/logging APIs are consumed. **No new Shared primitive, Shared task, publication gate, Prisma schema, database migration or other repository implementation** is authorised. External Render DB/unseal provisioning is necessary before hosted cutover but is not performed by this Messaging task. Existing System Test tasks are neither started nor given new dependencies by this amendment.
-
 
 ## Current reconciliation — 2 November 2026
 

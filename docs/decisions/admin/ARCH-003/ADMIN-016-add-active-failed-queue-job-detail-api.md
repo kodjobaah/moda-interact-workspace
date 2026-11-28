@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add selected active and failed queue-job detail API
 
 ## Objective
@@ -142,6 +143,7 @@ now includes inspection of Active jobs.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
@@ -175,9 +177,9 @@ None.
 ### Assumptions
 
 - The generic detail request requires an explicit `status` query parameter so
-        the requested-state invariant cannot be weakened by an implicit default.
+  the requested-state invariant cannot be weakened by an implicit default.
 - Active detail may include the read-only BullMQ `data` and stacktrace fields as
-        authorized diagnostic output; active `failedReason` is normalized to empty.
+  authorized diagnostic output; active `failedReason` is normalized to empty.
 
 ### Unresolved Issues
 

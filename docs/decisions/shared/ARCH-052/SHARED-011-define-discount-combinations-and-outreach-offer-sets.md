@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-SHARED-010
+  - ARCH-052-SHARED-010
 enables:
-- ARCH-053-SHARED-003
-- ARCH-052-SHARED-012
+  - ARCH-053-SHARED-003
+  - ARCH-052-SHARED-012
 created: 2026-10-30
 updated: 2026-10-30
 ---
@@ -93,24 +93,43 @@ For Woo use `individualUse` already on `CommerceDiscountConditionFactsSchema`; d
 ```typescript
 export const InitialOutreachCheckoutOfferSetSchema = z.strictObject({
   schemaVersion: z.literal("moda.outreach.checkout-offers.v1"),
-  offers: z.array(z.strictObject({
-    offerId: z.string().min(1).max(191),
-    providerDiscountId: z.string().min(1).max(191).nullable(),
-    method: z.enum(["CODE", "AUTOMATIC"]),
-    code: z.string().min(1).max(128).nullable(),
-  })).min(1).max(3),
+  offers: z
+    .array(
+      z.strictObject({
+        offerId: z.string().min(1).max(191),
+        providerDiscountId: z.string().min(1).max(191).nullable(),
+        method: z.enum(["CODE", "AUTOMATIC"]),
+        code: z.string().min(1).max(128).nullable(),
+      }),
+    )
+    .min(1)
+    .max(3),
 });
-export type InitialOutreachCheckoutOfferSet =
-  z.infer<typeof InitialOutreachCheckoutOfferSetSchema>;
+export type InitialOutreachCheckoutOfferSet = z.infer<
+  typeof InitialOutreachCheckoutOfferSetSchema
+>;
 ```
 
 Positive group example:
 
 ```json
-{"schemaVersion":"moda.outreach.checkout-offers.v1","offers":[
-  {"offerId":"discount-10","providerDiscountId":"woo:coupon:10","method":"CODE","code":"SAVE10"},
-  {"offerId":"discount-20","providerDiscountId":"woo:coupon:20","method":"CODE","code":"SHIPFREE"}
-]}
+{
+  "schemaVersion": "moda.outreach.checkout-offers.v1",
+  "offers": [
+    {
+      "offerId": "discount-10",
+      "providerDiscountId": "woo:coupon:10",
+      "method": "CODE",
+      "code": "SAVE10"
+    },
+    {
+      "offerId": "discount-20",
+      "providerDiscountId": "woo:coupon:20",
+      "method": "CODE",
+      "code": "SHIPFREE"
+    }
+  ]
+}
 ```
 
 Shared validates the structure only: Background verifies method/code consistency, unique offer IDs, selected shop, source identity, merchant mode, pairwise combination policy and current send permission. API verifies the same immutable confirmed receipt chain before projecting Woo restoration data. No model-generated code or provider ID may enter this structure. A `providerDiscountId:null` cannot be passed as a verified Woo coupon. Do not replace existing `CommerceOfferSchema`, MCP tool dictionaries or the generic result wrapper.

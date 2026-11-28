@@ -69,26 +69,51 @@ Create modules under `src/services/conversation-moderation/` (equivalent existin
 
 ```ts
 // moderation-client.ts
-export type ModerateText = (input: { text: string; model: string; timeoutMs: number }) =>
-  Promise<{ flagged: boolean; categories: Record<string, boolean>;
-    categoryScores: Record<string, number>; appliedInputTypes?: Record<string, string[]>;
-    returnedModel: string; requestId?: string }>;
+export type ModerateText = (input: {
+  text: string;
+  model: string;
+  timeoutMs: number;
+}) => Promise<{
+  flagged: boolean;
+  categories: Record<string, boolean>;
+  categoryScores: Record<string, number>;
+  appliedInputTypes?: Record<string, string[]>;
+  returnedModel: string;
+  requestId?: string;
+}>;
 
 // moderation-assessment.service.ts
 export type ModerationSubject =
-  | { kind: 'CUSTOMER_MESSAGE' | 'AGENT_MESSAGE' | 'AUTOMATION_MESSAGE'; messageId: string }
-  | { kind: 'HUMAN_COMMAND'; commandId: string };
+  | {
+      kind: "CUSTOMER_MESSAGE" | "AGENT_MESSAGE" | "AUTOMATION_MESSAGE";
+      messageId: string;
+    }
+  | { kind: "HUMAN_COMMAND"; commandId: string };
 export type ModerationResult =
-  | { kind: 'allow'; assessmentId: string; digest: string; policyVersion: string }
-  | { kind: 'block'; assessmentId: string; reasonCode: string }
-  | { kind: 'review_required'; assessmentId: string; reasonCode: string }
-  | { kind: 'retry'; assessmentId: string; retryAt: Date };
+  | {
+      kind: "allow";
+      assessmentId: string;
+      digest: string;
+      policyVersion: string;
+    }
+  | { kind: "block"; assessmentId: string; reasonCode: string }
+  | { kind: "review_required"; assessmentId: string; reasonCode: string }
+  | { kind: "retry"; assessmentId: string; retryAt: Date };
 export interface ModerationAssessmentService {
-  assessText(input: { subject: ModerationSubject; shopId: string;
-    conversationId: string; effectiveText: string; inputKind: 'TEXT' | 'TRANSCRIPT' | 'TEMPLATE_PARAMETERS';
-    policyVersion: string; now: Date }): Promise<ModerationResult>;
-  requireCurrentAllowance(input: { subject: ModerationSubject; effectiveText: string;
-    policyVersion: string }): Promise<boolean>;
+  assessText(input: {
+    subject: ModerationSubject;
+    shopId: string;
+    conversationId: string;
+    effectiveText: string;
+    inputKind: "TEXT" | "TRANSCRIPT" | "TEMPLATE_PARAMETERS";
+    policyVersion: string;
+    now: Date;
+  }): Promise<ModerationResult>;
+  requireCurrentAllowance(input: {
+    subject: ModerationSubject;
+    effectiveText: string;
+    policyVersion: string;
+  }): Promise<boolean>;
 }
 ```
 
@@ -101,14 +126,14 @@ The caller's `shopId` is a tenant-scoping assertion that MUST be independently v
 
 ### 2. Explicit integration call-site matrix
 
-| Existing source | Integration change | Critical invariant |
-|---|---|---|
-| `src/workers/whatsapp.worker.ts` (`processInboundMessage`) | After verified route and persist/dedupe, obtain text assessment before enqueue/normal turn eligibility. Audio uses completed transcript after existing `inbound-whatsapp-audio.service.ts`; unsupported media is not auto-allowed. | Inbound webhook/queue acknowledgement does not wait on OpenAI HTTP; subsequent Background work owns classification. Persist all inbound text even when flagged. |
-| `src/services/conversation-turn-processor.service.ts` and `src/services/conversation.service.ts` | Gate real AI turn on the moderation state of all candidate inbound messages, then filter blocked/review-required content from agent history/context. Include sender-aware HUMAN context already specified by BG002. Moderate the final agent response before prepared delivery. | A queued turn must not race ahead of moderation; no blocked text, summaries or tool inputs leak into normal AI context; no stale AI send after takeover. |
-| `src/services/recovery-conversation/merchant-send-command.service.ts` or BG002's dispatcher | Assess leased HUMAN command's canonical payload before BG001 `OutboundSendFenceService.admitFinalSend`. If blocked, close same command with stable reason; transient moderation failure defers same command. | Same command/attempt/credit identity; no new queue, shop-specific scheduling or re-send of provider-unknown work. |
-| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts` | At the common final text/template delivery boundary require current ALLOW for **the actual outgoing content and sender**; apply to AGENT and dynamic AUTOMATION too, including safe fallback/terminal paths. | Moderation before dispatch permit; ownership/recipient/window/billing fence still enforced independently; `ALLOW` does not skip other gates. |
-| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` (if dynamic content) | Moderate dynamic/customer-specific template parameters or a canonical rendering if available. Approved static template alone remains governed by existing approval/recipient eligibility. | Do not claim that unseen Meta-rendered text was semantically moderated; do not silently permit unmoderated arbitrary dynamic parameters. |
-| Existing `src/entrypoints/messaging.ts` and local `src/index.ts` | Configure and inject one service, wired through the existing worker lifecycle. | No new queue/worker deployment; clean startup/shutdown; no separate Shopify/Woo code path. |
+| Existing source                                                                                        | Integration change                                                                                                                                                                                                                                                              | Critical invariant                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/workers/whatsapp.worker.ts` (`processInboundMessage`)                                             | After verified route and persist/dedupe, obtain text assessment before enqueue/normal turn eligibility. Audio uses completed transcript after existing `inbound-whatsapp-audio.service.ts`; unsupported media is not auto-allowed.                                              | Inbound webhook/queue acknowledgement does not wait on OpenAI HTTP; subsequent Background work owns classification. Persist all inbound text even when flagged. |
+| `src/services/conversation-turn-processor.service.ts` and `src/services/conversation.service.ts`       | Gate real AI turn on the moderation state of all candidate inbound messages, then filter blocked/review-required content from agent history/context. Include sender-aware HUMAN context already specified by BG002. Moderate the final agent response before prepared delivery. | A queued turn must not race ahead of moderation; no blocked text, summaries or tool inputs leak into normal AI context; no stale AI send after takeover.        |
+| `src/services/recovery-conversation/merchant-send-command.service.ts` or BG002's dispatcher            | Assess leased HUMAN command's canonical payload before BG001 `OutboundSendFenceService.admitFinalSend`. If blocked, close same command with stable reason; transient moderation failure defers same command.                                                                    | Same command/attempt/credit identity; no new queue, shop-specific scheduling or re-send of provider-unknown work.                                               |
+| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`                        | At the common final text/template delivery boundary require current ALLOW for **the actual outgoing content and sender**; apply to AGENT and dynamic AUTOMATION too, including safe fallback/terminal paths.                                                                    | Moderation before dispatch permit; ownership/recipient/window/billing fence still enforced independently; `ALLOW` does not skip other gates.                    |
+| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` (if dynamic content) | Moderate dynamic/customer-specific template parameters or a canonical rendering if available. Approved static template alone remains governed by existing approval/recipient eligibility.                                                                                       | Do not claim that unseen Meta-rendered text was semantically moderated; do not silently permit unmoderated arbitrary dynamic parameters.                        |
+| Existing `src/entrypoints/messaging.ts` and local `src/index.ts`                                       | Configure and inject one service, wired through the existing worker lifecycle.                                                                                                                                                                                                  | No new queue/worker deployment; clean startup/shutdown; no separate Shopify/Woo code path.                                                                      |
 
 **Ordering clarification:** current `processInboundMessage()` runs inside an existing BullMQ worker. Never introduce synchronous OpenAI calls in Meta webhook ingress. The BullMQ job can await bounded moderation or requeue/defer under its existing retry contracts; ensure inbound acknowledgement and durable message persistence first. For HUMAN commands reuse BG002's single Postgres polling dispatcher and `nextAttemptAt`. For AI failures use existing delayed/retryable turn machinery, not another queue. Consider all turn phases, including audio transcript completion, repeated/out-of-order webhooks, stale inboundVersion and stale controlRevision.
 
@@ -144,7 +169,7 @@ Outbound AGENT:    reserved message -> moderate final effective content
                                 RETRYABLE_ERROR -> safe existing retry/suppression, no Meta
 ```
 
-A cached `ALLOW` must be rejected if any of: subject ID, effective text SHA-256, policy version, message direction, conversation/shop binding or expected provider-admission content differ. Moderation *cannot* revoke an already irreversible Meta send. All final submission race rules from BG001/BG002 remain authoritative.
+A cached `ALLOW` must be rejected if any of: subject ID, effective text SHA-256, policy version, message direction, conversation/shop binding or expected provider-admission content differ. Moderation _cannot_ revoke an already irreversible Meta send. All final submission race rules from BG001/BG002 remain authoritative.
 
 ### 5. Observability/configuration/cost guardrails
 

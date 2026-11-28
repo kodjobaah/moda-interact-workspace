@@ -40,9 +40,10 @@ Replace Shopify's applicable environment-backed configuration consumption with t
 ## Context
 
 In the 17 October snapshot:
+
 - `app/services/merchant-knowledge/r2-config.server.ts` reads `MERCHANT_KNOWLEDGE_R2_ENDPOINT`, `MERCHANT_KNOWLEDGE_R2_BUCKET` and `MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES` alongside external R2 credentials. `upload.server.ts` uses that synchronous configuration for both intent signing and finalisation.
 - `app/shopify.server.js` builds `shopifyApp({...})` **synchronously at module evaluation**, using `SHOPIFY_API_KEY` and `SHOPIFY_API_SECRET`, then exports bound `authenticate`, `login`, `registerWebhooks`, session storage and other helpers.
-SHOPIFY-001 provides three typed service readers; this task adapts call sites and proves that OAuth secrets are available **before** this synchronous client is constructed.
+  SHOPIFY-001 provides three typed service readers; this task adapts call sites and proves that OAuth secrets are available **before** this synchronous client is constructed.
 
 ## Scope
 
@@ -86,7 +87,6 @@ SHOPIFY-001 provides three typed service readers; this task adapts call sites an
 ### 18 October upload consumer correction (controlling)
 
 `app/services/merchant-knowledge/r2-config.server.ts` and `upload.server.ts` must consume `SHOPIFY-001.requireMerchantKnowledgeR2Configuration()` as **one immutable six-field operation snapshot**, without merging legacy `merchantKnowledge.upload` or R2 credential environment values. Validate upload intent/finalisation, signed headers, shop authentication, tenant caps, existing assets and safe bucket-location changes. Browser response must never include `accessKeyId`, `secretAccessKey` or sealed envelope. Legacy config and environment fallbacks cannot silently override the selected row. The Shopify OAuth/startup requirements of this task are unchanged.
-
 
 ## Work Items
 
@@ -140,7 +140,6 @@ Complete defined integrations and validation, update task/Completion Report to R
 ## Implementation Notes
 
 This task absorbs the previous `ARCH-043-SHOPIFY-003` Partner credential consumer. The old task is removed from active discovery, and downstream Gateway/System Test depend on SHOPIFY-002 for **all three** Shopify configuration cutovers. Keep runtime implementation exclusively in `moda-interact`; Admin manages credential import, Background owns its separate Partner provider, and Gateway owns environment-variable removal.
-
 
 Prefer modular adapters over an oversized `shopify.server.js` or a generic config framework. Inspect the real Shopify SDK and React Router startup contract first. If authenticated load-before-serve cannot be achieved without a new entrypoint/service lifecycle decision, **report the architectural blocker** rather than writing a partially initialised or insecure fallback. Reuse approved Shared logging and ARCH-039 cryptography. Treat R2 endpoint/bucket changes as an explicit in-flight upload safety concern, not an invisible generic config refresh.
 

@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-055-BACKGROUND-001
+  - ARCH-055-BACKGROUND-001
 enables:
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -53,10 +53,10 @@ One owning repository: `moda-interact`. Paths below are relative to that reposit
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `app/services/recoveries/recovery-human-commands.server.ts` | AFTER matching replay resolution allocate randomUUID() for a new command. Template creates command.id=followUpClaimKey and attempt.initiationKey identical in existing transaction; HUMAN_TEXT null. Explicitly select no private new field into public response. Never replace public retry key/hash. |
-| `tests/unit/arch040-shopify-command.test.ts; tests/unit/arch047-shopify-follow-up-sender.test.ts; tests/fixtures/arch047-shopify-follow-up.ts` | ASSERT created command ID and claim key and template/null differentiation; update mock return fields without pretending mocks prove shared DB constraints. Retain public fields/locale/template policy. |
+| File / symbol touchpoint                                                                                                                       | Deterministic edit                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app/services/recoveries/recovery-human-commands.server.ts`                                                                                    | AFTER matching replay resolution allocate randomUUID() for a new command. Template creates command.id=followUpClaimKey and attempt.initiationKey identical in existing transaction; HUMAN_TEXT null. Explicitly select no private new field into public response. Never replace public retry key/hash. |
+| `tests/unit/arch040-shopify-command.test.ts; tests/unit/arch047-shopify-follow-up-sender.test.ts; tests/fixtures/arch047-shopify-follow-up.ts` | ASSERT created command ID and claim key and template/null differentiation; update mock return fields without pretending mocks prove shared DB constraints. Retain public fields/locale/template policy.                                                                                                |
 
 **Test registration:** Existing two exact vitest files in task Validation; real cross-platform PostgreSQL/Background proof belongs to terminal system test, not an invented implementation prerequisite.
 
@@ -125,10 +125,10 @@ The public API remains unchanged except documentation corrections explicitly aut
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| K01 | Two Shops submit same key and same-Shop exact/conflicting replay | Distinct internal identity across Shops; exact replay same command; conflicting payload unchanged rejection. |
-| K02 | Template insert fails after claim; HUMAN_TEXT success | Transaction rollback; human text key null and unchanged behaviour. |
+| Case | Fixture / operation                                              | Required result                                                                                              |
+| ---- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| K01  | Two Shops submit same key and same-Shop exact/conflicting replay | Distinct internal identity across Shops; exact replay same command; conflicting payload unchanged rejection. |
+| K02  | Template insert fails after claim; HUMAN_TEXT success            | Transaction rollback; human text key null and unchanged behaviour.                                           |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -178,28 +178,29 @@ The authoritative sender suite is unchanged and was run as required. No new file
 
 Executed from the canonical implementation worktree using the workspace Node bootstrap:
 
-| Command | Observed outcome |
-|---|---|
-| `npm ci --ignore-scripts` | Successful locked install in the new worktree; no manifest/lock change. |
-| `npm run prisma:generate` | Exit 0; generated Prisma Client **6.19.3** from the recorded Database schema. |
-| `npx --no-install vitest run tests/unit/arch040-shopify-command.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts` | Exit 0; **2 files, 44 tests passed**, Vitest 4.1.11, no failures. |
-| `npm run typecheck` | Exit 0; React Router type generation and TypeScript compilation. |
-| `npm run lint` | Exit 0; no baseline exemption required. |
-| `git -c core.fsmonitor=false diff --check` | Exit 0, also checked staged changes before commit. |
+| Command                                                                                                                      | Observed outcome                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `npm ci --ignore-scripts`                                                                                                    | Successful locked install in the new worktree; no manifest/lock change.       |
+| `npm run prisma:generate`                                                                                                    | Exit 0; generated Prisma Client **6.19.3** from the recorded Database schema. |
+| `npx --no-install vitest run tests/unit/arch040-shopify-command.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts` | Exit 0; **2 files, 44 tests passed**, Vitest 4.1.11, no failures.             |
+| `npm run typecheck`                                                                                                          | Exit 0; React Router type generation and TypeScript compilation.              |
+| `npm run lint`                                                                                                               | Exit 0; no baseline exemption required.                                       |
+| `git -c core.fsmonitor=false diff --check`                                                                                   | Exit 0, also checked staged changes before commit.                            |
 
 Node **24.19.0**, npm **11.17.0**. A read-only Git diff initially reported an fsmonitor IPC warning; subsequent Git checks used a command-local core.fsmonitor=false override, without changing repository configuration. No workspace doctor or unrelated baseline investigation was necessary.
 
 **Regression matrix**
+
 - **K01 — pass (producer unit boundary):** Two distinct Shopify Shop/conversation/recovery fixtures submit the same public retry key and get different valid UUIDs. Each insert retains its Shop/public key/hash; its claim and persisted internal field equal its own command ID. Exact same-Shop replay returns the original response and allocates no UUID/claim/insert; a changed payload rejects. Historical template replay retains the original ID/state/backfilled key, performs no claim/insert and returns no private field.
 - **K02 — pass (producer transaction/error boundary):** An injected original Prisma P2002 error from command insertion propagates by exact object identity after the sequence-two update. The claim and command insert execute within one Serializable callback, with claim invocation preceding insertion. HUMAN_TEXT succeeds with a null claim key and no sequence-two update. These assertions establish producer transaction placement/rejection, not physical PostgreSQL rollback or constraint behavior.
 
 **Before/after write-shape evidence and limits**
 
-| Branch | Starting producer | Candidate producer |
-|---|---|---|
-| New template | Database-default command ID; omitted/new-row-null followUpClaimKey; attempt initiationKey=public retry key | Explicit generated command ID; followUpClaimKey=same ID; initiationKey=same ID |
-| New text | Database-default command ID; null private claim by default; no sequence-two claim | Explicit generated command ID; explicit null private claim; no sequence-two claim |
-| Exact replay | Original command/public key and response; no new insert/claim | Same; UUID spy also confirms no ID allocation |
+| Branch       | Starting producer                                                                                          | Candidate producer                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| New template | Database-default command ID; omitted/new-row-null followUpClaimKey; attempt initiationKey=public retry key | Explicit generated command ID; followUpClaimKey=same ID; initiationKey=same ID    |
+| New text     | Database-default command ID; null private claim by default; no sequence-two claim                          | Explicit generated command ID; explicit null private claim; no sequence-two claim |
+| Exact replay | Original command/public key and response; no new insert/claim                                              | Same; UUID spy also confirms no ID allocation                                     |
 
 No query removal/batching or optional optimisation is selected by this task. Tests observe one logical command insert and one conditional claim update for the valid existing-PENDING template fixture; replay observes no new writes. These are **mock client invocations**, not emitted SQL or observed affected database rows. No SQL/bytes/latency/physical rollback measurement is claimed. The task's specific Test Registration assigns real cross-platform PostgreSQL/Background proof to terminal **ARCH-055-SYSTEM-TEST-001**, explicitly excluding an invented implementation prerequisite here. The public select/DTO shape is asserted separately. No provider, Redis or R2 I/O was introduced or executed; unit tests use deterministic mocked boundaries.
 

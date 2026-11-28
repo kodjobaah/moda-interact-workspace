@@ -216,7 +216,7 @@ merchantKnowledgeConfiguration: {
     purposeKey: MerchantKnowledgePurposeKey;
     dataFormatKey: MerchantKnowledgeDataFormatKey;
   }>;
-};
+}
 ```
 
 The field is required on every create/update submitted through the current Admin builder after this task.
@@ -248,10 +248,7 @@ Expose:
 
 ```ts
 {
-  purposeKey,
-  purposeDisplayName,
-  dataFormatKey,
-  dataFormatDisplayName
+  (purposeKey, purposeDisplayName, dataFormatKey, dataFormatDisplayName);
 }
 ```
 
@@ -493,22 +490,37 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
+
 Ready for Architect Review (Attempt 2)
+
 ### Files Changed
+
 Pricing-plan action and builder, Merchant Knowledge feature-control and persistence helpers, focused plan-save unit coverage, and the pricing-plan security contract test. No package, database gitlink, schema, or migration change was made in Attempt 2.
+
 ### Work Completed
+
 Addressed A1-R1 by deriving all Supported features controls from one tested model: an existing Merchant Knowledge mapping now contributes no second generic control, while the single product-policy control remains checked and disabled. Addressed A1-R2 by extracting the existing transaction's mapping persistence and BillingPlan mirror into a helper used by the current create/update action; behavioral tests prove exact Merchant Knowledge JSON persistence, preservation of requested and inactive mappings, identical mirror configuration, and no preference writes. Addressed A1-R3/A1-R4 with both attempts' verified launcher provenance and evidence-aligned task checklists.
+
 ### Validation Results
+
 Attempt 2 focused Merchant Knowledge policy/payload/save tests: 19/19 passed. Focused pricing security: 12/12 passed. `npm run prisma:validate`, `npx tsc --noEmit --pretty false`, changed-file diagnostics, `git diff --check`, and `npm run build` passed. The build emitted existing BullMQ optional-dependency warnings. Changed production-file ESLint reported no errors; the two explicitly passed test files are ignored by the repository ESLint configuration.
 
 The full `npm run test:unit` run completed with 168 passed and 2 unrelated failures: `tests/unit/merchant-pricing-translation-workbook.test.ts` / “rejects stale metadata, locale/header changes, and highlight identity changes” failed its existing `assert.ok` at line 207; `tests/unit/merchant-pricing-translations.test.ts` / “returns all bounded validation issues in canonical order” did not produce the expected `PLAN_HANDLE_MISMATCH` issue at line 211. Both are outside the changed files and match the two translation failures recorded in Attempt 1. The full `npm run lint` remains blocked by three errors outside this task: `src/components/admin/billing-drawers.tsx:178` (`react-hooks/purity`, `Date.now` during render), `src/components/admin/promotions/promotion-campaign-reactivation-drawer.tsx:31` (`react-hooks/purity`, `Date.now` during render), and `src/components/admin/promotions/promotion-campaign-reactivation.tsx:74` (`react-hooks/set-state-in-effect`). Changed production files were independently checked with ESLint; no changed-file diagnostics were reported. The task-relevant validation therefore passes without changing unrelated translation, billing, or promotions code.
+
 ### Deviations
+
 Updated existing source-contract security assertions to follow the production transaction helper/control-model boundary, and extracted the existing plan-feature write sequence so the required create/update/mirror behavior can be tested without adding a separate materialization path.
+
 ### Assumptions
+
 The downstream Architect Review will assess the repeatable, unrelated translation-unit and billing/promotions lint failures separately; no corresponding diagnostics occur in the changed production files.
+
 ### Unresolved Issues
+
 The two repository-wide translation unit failures and three billing/promotions lint errors listed above remain unresolved and outside ADMIN-001 scope. The full broad security suite was not repeated in Attempt 2; its unrelated Attempt 1 failures remain documented above in the original report history.
+
 ### Architectural Concerns
+
 None identified; no schema, consumer-runtime, preference, or second materialization mechanism was introduced.
 
 ### Launcher Preparation Evidence (Attempt 1)
@@ -565,6 +577,7 @@ another task worktree reused: no
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes
@@ -699,7 +712,6 @@ review.
 #### Historical Attempt 1 — Changes Requested — 2026-09-30
 
 ##### Review Notes
-
 
 The implementation is substantially aligned with the ARCH-023 plan-entitlement design, but Attempt 1 is not yet acceptable.
 

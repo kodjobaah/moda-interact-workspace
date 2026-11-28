@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-017-BACKGROUND-001
-- ARCH-017-SHOPIFY-001
-- ARCH-017-ADMIN-001
+  - ARCH-017-BACKGROUND-001
+  - ARCH-017-SHOPIFY-001
+  - ARCH-017-ADMIN-001
 created: 2026-09-18
 updated: 2026-09-18
 ---
@@ -283,12 +283,12 @@ Create the enum/table first.
 
 Seed these four rows in the migration itself so deployment does not depend on running `prisma/seed.mjs`:
 
-| key | displayName | activationMode | systemRequired | active |
-|---|---|---|---|---|
-| `checkout_recovery` | Checkout Recovery | ALWAYS_ENABLED | true | true |
-| `ai_conversations` | AI Conversations | MERCHANT_OPT_IN | false | true |
-| `product_search` | Product Search | MERCHANT_OPT_IN | false | true |
-| `order_support` | Order Support | MERCHANT_OPT_IN | false | true |
+| key                 | displayName       | activationMode  | systemRequired | active |
+| ------------------- | ----------------- | --------------- | -------------- | ------ |
+| `checkout_recovery` | Checkout Recovery | ALWAYS_ENABLED  | true           | true   |
+| `ai_conversations`  | AI Conversations  | MERCHANT_OPT_IN | false          | true   |
+| `product_search`    | Product Search    | MERCHANT_OPT_IN | false          | true   |
+| `order_support`     | Order Support     | MERCHANT_OPT_IN | false          | true   |
 
 Use `INSERT ... ON CONFLICT ("key") DO NOTHING` or the equivalent deterministic PostgreSQL statement.
 

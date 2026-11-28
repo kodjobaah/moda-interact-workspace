@@ -18,6 +18,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T10:30:00Z
 ---
+
 # ARCH-006-DATABASE-001: Add core merchant-support thread and message persistence
 
 ## Architecture
@@ -153,6 +154,7 @@ Luna stop condition: once the core support schema/migration/indexes validate, re
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20260906101500_add_merchant_support_persistence/migration.sql`
 - `moda-interact-database/docs/generated/prisma-erd.puml`

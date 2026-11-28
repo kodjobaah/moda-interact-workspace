@@ -15,22 +15,22 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-DATABASE-014
-- ARCH-010-BACKGROUND-021
-- ARCH-010-BACKGROUND-022
-- ARCH-010-BACKGROUND-019
-- ARCH-010-SHOPIFY-025
-- ARCH-010-SHOPIFY-026
-- ARCH-010-ADMIN-003
-- ARCH-010-ADMIN-005
-- ARCH-010-ADMIN-006
-- ARCH-010-SHOPIFY-020
-- ARCH-010-SHOPIFY-021
-- ARCH-010-SHOPIFY-022
+  - ARCH-010-DATABASE-014
+  - ARCH-010-BACKGROUND-021
+  - ARCH-010-BACKGROUND-022
+  - ARCH-010-BACKGROUND-019
+  - ARCH-010-SHOPIFY-025
+  - ARCH-010-SHOPIFY-026
+  - ARCH-010-ADMIN-003
+  - ARCH-010-ADMIN-005
+  - ARCH-010-ADMIN-006
+  - ARCH-010-SHOPIFY-020
+  - ARCH-010-SHOPIFY-021
+  - ARCH-010-SHOPIFY-022
 enables:
-- ARCH-010-SYSTEM-TEST-004
+  - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-SYSTEM-TEST-003: Validate purchased-credit refund lifecycle and opt-in promotional campaigns
@@ -255,10 +255,13 @@ STOP if any implementation dependency is not Complete, if live provider evidence
 ## Completion Report
 
 ### Status
+
 Not started/manual-gated.
 
 ### Validation Results
+
 Populate when explicitly invoked.
 
 ### Architect Review
+
 Pending.

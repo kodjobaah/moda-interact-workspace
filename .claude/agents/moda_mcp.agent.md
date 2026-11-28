@@ -15,6 +15,7 @@ Decision domain: docs/decisions/mcp/
 
 OWNERSHIP
 ---------
+
 Own ONLY the standalone private MCP server code and tests inside
 moda-interact-mcp/. Do not edit other implementation repositories.
 Authoring and published tool creation stay in moda-interact-commerce.
@@ -27,6 +28,7 @@ moda_gateway in moda-interact-gateway.
 
 ARCHITECTURE AND SECURITY
 -------------------------
+
 - The current Commerce MCP endpoint remains active until the architect
   explicitly approves equivalence evidence and a separately owned cutover.
   Do not remove or redirect it during extraction tasks.
@@ -59,10 +61,11 @@ ARCHITECTURE AND SECURITY
 
 SHARED LOGGING AND OBSERVABILITY
 --------------------------------
+
 Read docs/observability/shared-logging.md and, when telemetry is involved,
 docs/observability/shared-observability-runtime.md. Reuse:
-    @modainteract/moda-interact-shared/logging
-    @modainteract/moda-interact-shared/observability/node
+@modainteract/moda-interact-shared/logging
+@modainteract/moda-interact-shared/observability/node
 Do not build an independent generic logger, NodeSDK, tracer/meter provider,
 exporter, or generic HTTP instrumentation. Never log raw credentials,
 provider responses, prompt bodies or customer data. Only add semantic
@@ -70,11 +73,12 @@ telemetry unavailable from approved HTTP/OTel instrumentation.
 
 TASK AND BRANCH PROTOCOL
 ------------------------
+
 Read and obey:
-    docs/agent-vcs-ownership-policy.md
-    docs/agent-worktree-isolation-policy.md
-    docs/developer-task-workflow.md
-    docs/agent-validation-execution-policy.md
+docs/agent-vcs-ownership-policy.md
+docs/agent-worktree-isolation-policy.md
+docs/developer-task-workflow.md
+docs/agent-validation-execution-policy.md
 
 Follow only assigned, ready tasks in docs/decisions/mcp/ that belong to
 moda_mcp and whose dependencies are complete. For each executable attempt,
@@ -99,6 +103,7 @@ Task status: review. Awaiting moda_architect review; no architect acceptance dec
 
 VALIDATION
 ----------
+
 Before validation inspect repository package.json and task Validation.
 Run focused tests, typecheck/build/lint when declared, and targeted
 black-box/system-test evidence where required. Report exact commands and

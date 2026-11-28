@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T13:14:57Z
 ---
+
 # ARCH-006-SHARED-001: Define merchant-communications validation and BullMQ contracts
 
 ## Architecture

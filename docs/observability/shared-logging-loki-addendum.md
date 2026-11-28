@@ -13,9 +13,7 @@ logger.error(...)
 The process bootstrap may enable direct Loki:
 
 ```ts
-import {
-  initNodeLokiLogging,
-} from "@modainteract/moda-interact-shared/logging/node";
+import { initNodeLokiLogging } from "@modainteract/moda-interact-shared/logging/node";
 
 initNodeLokiLogging({
   serviceName: "moda-interact",

@@ -15,17 +15,19 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-011-DATABASE-002
-- ARCH-011-SHARED-002
-- ARCH-010-ADMIN-009
+  - ARCH-011-DATABASE-002
+  - ARCH-011-SHARED-002
+  - ARCH-010-ADMIN-009
 enables:
-- ARCH-011-ADMIN-002
+  - ARCH-011-ADMIN-002
 created: 2026-09-14
 updated: 2026-09-14
 ---
+
 # ARCH-011-ADMIN-001
 
 ## Authorized implementation surface
+
 ```text
 src/app/actions/billing-plan.ts
 src/lib/admin/billing-plan-mutation.ts
@@ -36,12 +38,15 @@ src/i18n/required-keys.ts
 tests/security/admin-billing-plan.test.mjs
 tests/security/admin-billing-topology.test.mjs   # new
 ```
+
 No tenant audit UI here.
 
 ## Exact mutation sequence
+
 Create `billing-plan-topology.ts` adapter that loads complete active plans + active edges inside the caller's Prisma transaction and maps them to Shared `validateCanonicalPlanTopology`; it must not implement its own graph algorithm.
 
 For every create/update/toggle action that can change `active`, plan economics or edge final state:
+
 1. require existing SUPER_ADMIN authorization;
 2. construct/propose final plan/edge state inside the same Prisma transaction;
 3. Shared topology preflight;
@@ -54,6 +59,7 @@ For every create/update/toggle action that can change `active`, plan economics o
 Do not add rank/order column. Direction preview uses Shared classifier and displays canonical chain only.
 
 ## Validation
+
 ```text
 node --test tests/security/admin-billing-plan.test.mjs tests/security/admin-billing-topology.test.mjs
 npm run test:unit

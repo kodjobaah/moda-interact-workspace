@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T17:45:46Z
 ---
+
 # ARCH-006-BACKGROUND-005: Submit each logical translation Batch to OpenAI at most once
 
 ## Architecture
@@ -74,7 +75,6 @@ Failure classification is explicit:
 - success: persist provider Batch ID, `submittedAt`, initial `pollSequence` and `nextPollAt = now + configurable MINUTES`, then best-effort enqueue the delayed poll.
 
 Use bounded runtime configuration such as `TRANSLATION_BATCH_SUBMIT_RETRY_MINUTES`, `TRANSLATION_BATCH_SUBMIT_MAX_ATTEMPTS`, and `TRANSLATION_BATCH_INITIAL_POLL_MINUTES`. No retry cadence is expressed in seconds.
-
 
 ### Shared queue worker topology
 

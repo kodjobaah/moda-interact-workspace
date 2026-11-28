@@ -48,25 +48,25 @@ Do not mutate the API or worker, administer Meta assets or enrol a sender, updat
 
 `WhatsAppPoolSender` is platform configuration for the current deployment. A row identifies one already-registered Meta **phone-number ID** and its owning WhatsApp Business Account (WABA). The environment already selects its database. Omit shop and environment columns. The existing encrypted `public."PlatformConfiguration"` entry keyed by `messaging.sender` supplies credentials. Keep that record and its audit history as they are. Pool membership has one source, `whatsapp."WhatsAppPoolSender"`. Store no token, displayed telephone number, copied credential document or second list of senders. The migration creates an empty inventory. ADMIN-001 owns verified enrolment, allocation enablement and priority on the existing Platform Configuration page.
 
-| Record | Writer and purpose |
-| --- | --- |
-| `WhatsAppPoolSender` | A platform super-admin manages availability through Admin. Changing priority or disabling allocation has no cascading effect on existing routes. |
-| `RecoverySenderThread` | Background binds a canonical customer number and receiving Meta number for one active period. |
-| `RecoverySenderRoute` | Background binds a shop to that thread. Each customer/shop can have one open route. Different shops may share a thread when all eligible numbers are already in use by this customer. |
-| `RecoverySenderAssignment` | Background attaches each recovery conversation to its route. Several eligible baskets from one shop can share that route. |
+| Record                      | Writer and purpose                                                                                                                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WhatsAppPoolSender`        | A platform super-admin manages availability through Admin. Changing priority or disabling allocation has no cascading effect on existing routes.                                                                |
+| `RecoverySenderThread`      | Background binds a canonical customer number and receiving Meta number for one active period.                                                                                                                   |
+| `RecoverySenderRoute`       | Background binds a shop to that thread. Each customer/shop can have one open route. Different shops may share a thread when all eligible numbers are already in use by this customer.                           |
+| `RecoverySenderAssignment`  | Background attaches each recovery conversation to its route. Several eligible baskets from one shop can share that route.                                                                                       |
 | `RecoveryBasketRoutingTurn` | Background records the original inbound question and links later clarification replies to it until the correct shop and recovery conversation can be selected. Independent questions have separate inbound IDs. |
 
 ### Database repository change list
 
-| Action | Path in `moda-interact-database` |
-| --- | --- |
-| Edit | `prisma/schema.prisma` |
+| Action | Path in `moda-interact-database`                                      |
+| ------ | --------------------------------------------------------------------- |
+| Edit   | `prisma/schema.prisma`                                                |
 | Create | `prisma/migrations/20261113120000_whatsapp_sender_pool/migration.sql` |
-| Edit | `package.json` (two script entries) |
-| Create | `scripts/validate-whatsapp-sender-pool.mjs` |
-| Create | `scripts/test-whatsapp-sender-pool-postgres.mjs` |
-| Edit | `docs/generated/prisma-erd.puml` |
-| Render | `docs/generated/erd.png` |
+| Edit   | `package.json` (two script entries)                                   |
+| Create | `scripts/validate-whatsapp-sender-pool.mjs`                           |
+| Create | `scripts/test-whatsapp-sender-pool-postgres.mjs`                      |
+| Edit   | `docs/generated/prisma-erd.puml`                                      |
+| Render | `docs/generated/erd.png`                                              |
 
 The portable parent task is the source of the schema edits and SQL. The implementation agent records its report on the mirrored parent task branch. All historical migrations, the lockfile, the parent indexes and consumer submodule pins are outside the implementation change list.
 

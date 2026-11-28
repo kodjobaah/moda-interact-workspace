@@ -34,7 +34,7 @@ Coordinator: `moda_architect`
 
 ## 21 October 2026 architectural supersession
 
-**Not executable.** Following approval of Shopify-equivalent *two-way* Woo Support, this narrowly scoped read-only Support API is superseded by `ARCH-035-API-020`. Its source body and original acceptance criteria are historical only; there has been no implementation, claim, publication or acceptance for this task. Consent-related SYSTEM messages will be read in the same Support thread through the full implementation. Do not start or materialise this task. ARCH-046's other consent tasks and separately blocked recovery-engine gate remain unchanged.
+**Not executable.** Following approval of Shopify-equivalent _two-way_ Woo Support, this narrowly scoped read-only Support API is superseded by `ARCH-035-API-020`. Its source body and original acceptance criteria are historical only; there has been no implementation, claim, publication or acceptance for this task. Consent-related SYSTEM messages will be read in the same Support thread through the full implementation. Do not start or materialise this task. ARCH-046's other consent tasks and separately blocked recovery-engine gate remain unchanged.
 
 ## Objective
 

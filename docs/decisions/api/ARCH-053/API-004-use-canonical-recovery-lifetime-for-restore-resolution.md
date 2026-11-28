@@ -68,7 +68,8 @@ The configuration source is exactly `public."BackgroundRuntimeConfig"` with `id=
 Apply the same rule as `CheckoutRecoveryExpiryService` to the persisted recovery:
 
 ```ts
-const ageMs = BigInt(now.getTime()) - BigInt(recovery.lastExternalActivityAt.getTime());
+const ageMs =
+  BigInt(now.getTime()) - BigInt(recovery.lastExternalActivityAt.getTime());
 const permittedMs = BigInt(checkoutRecoveryLifetimeDays) * 86_400_000n;
 const withinLifetime = ageMs >= 0n && ageMs < permittedMs;
 ```

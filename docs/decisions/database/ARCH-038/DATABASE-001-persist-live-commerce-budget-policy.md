@@ -27,6 +27,7 @@ enables:
 created: 2026-10-13
 updated: 2026-10-13
 ---
+
 # Persist unified LIVE and PREVIEW CommerceModelPolicy
 
 ## Architecture
@@ -71,7 +72,6 @@ The accepted ARCH-038 design consolidates the previously separate LIVE and PREVI
 - Audited mutation records actor, reason, previous/new JSON, environment/context/scope, owner, schema/edit versions atomically with CAS; migration-created Platform defaults may have null creator, subsequent writes require authorised admins.
 - Migration and Prisma-generated client preserve existing Shop, MerchantPricingPlan, Subscription and billing records and referential integrity. Include reverse relations and foreign-key delete behaviours consistent with existing schema.
 
-
 ## Work Items
 
 - [x] Implement Prisma schema and additive SQL migration.
@@ -97,7 +97,6 @@ None
 - `ARCH-038-COMMERCE-002`
 - `ARCH-038-SYSTEM-TEST-001`
 - `ARCH-038-SYSTEM-TEST-002`
-
 
 ## Acceptance Criteria
 
@@ -132,6 +131,7 @@ Completed by explicit developer decision after accepted self-review.
 ### Files Changed
 
 Implementation repository (`moda-interact-database`):
+
 - `package.json`
 - `prisma/schema.prisma`
 - `prisma/migrations/20261013183000_arch038_unified_model_policies/migration.sql`
@@ -149,6 +149,7 @@ The upgrade rehearsal now seeds non-empty Shop, MerchantPricingPlan, Subscriptio
 ### Validation Results
 
 All commands ran in the canonical implementation worktree:
+
 - `npm run test:arch038-model-policy-schema` — PASS.
 - `npm run validate` — PASS; Prisma schema valid.
 - `npm run prisma:generate` — PASS; Prisma Client v6.19.3 generated.

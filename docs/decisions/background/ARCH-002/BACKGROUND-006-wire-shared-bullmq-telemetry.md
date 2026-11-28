@@ -13,13 +13,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-BACKGROUND-005
+  - ARCH-002-BACKGROUND-005
 enables:
-- ARCH-002-BACKGROUND-007
-- ARCH-002-BACKGROUND-008
+  - ARCH-002-BACKGROUND-007
+  - ARCH-002-BACKGROUND-008
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Wire shared BullMQ telemetry in background processing
 
 ## Objective
@@ -101,35 +102,35 @@ Ready for Review
 ### Work Completed
 
 - Attached the published shared BullMQ adapter through BullMQ's native
-	`telemetry` option on the checkout, order, pending-recovery-candidate and
-	WhatsApp Workers.
+  `telemetry` option on the checkout, order, pending-recovery-candidate and
+  WhatsApp Workers.
 - Attached the same shared adapter contract to the background-owned lazy
-	pending-recovery-candidate Queue producer.
+  pending-recovery-candidate Queue producer.
 - Used canonical process identities: Shopify event for checkout/order and the
-	pending-candidate producer, recovery for candidate materialization, and
-	messaging for WhatsApp processing.
+  pending-candidate producer, recovery for candidate materialization, and
+  messaging for WhatsApp processing.
 - Preserved all queue/job names, business payloads, delays, retry/backoff,
-	retention and concurrency options.
+  retention and concurrency options.
 - Added focused constructor, payload-identity, no-provider correctness and real
-	Redis producer/consumer trace-continuity coverage.
+  Redis producer/consumer trace-continuity coverage.
 
 ### Validation Results
 
 - Focused unit tests: 2 files and 14 tests passed.
 - Redis-backed integration test against disposable Redis 7: 2 tests passed;
-	producer and consumer spans inherited the active parent trace ID, the
-	consumed payload remained equal to the published candidate, and processing
-	succeeded without a registered telemetry provider.
+  producer and consumer spans inherited the active parent trace ID, the
+  consumed payload remained equal to the published candidate, and processing
+  succeeded without a registered telemetry provider.
 - `./node_modules/.bin/tsc --noEmit`: passed.
 - `npm run build`: passed, including Prisma Client generation and TypeScript
-	compilation.
+  compilation.
 - `npm test`: 13 files passed, 1 failed, 2 skipped; 79 tests passed, 1 failed,
-	4 skipped. The sole failure is the pre-existing unrelated
-	`recovery-routing.service.test.ts` mock omission for
-	`prisma.customerPhone.findMany`; no BullMQ telemetry test failed.
+  4 skipped. The sole failure is the pre-existing unrelated
+  `recovery-routing.service.test.ts` mock omission for
+  `prisma.customerPhone.findMany`; no BullMQ telemetry test failed.
 - Source review found exactly five BullMQ constructors and five native
-	telemetry options, with no `traceparent`, baggage, prototype patching, local
-	`BullMQOtel`, worker metrics or GenAI instrumentation.
+  telemetry options, with no `traceparent`, baggage, prototype patching, local
+  `BullMQOtel`, worker metrics or GenAI instrumentation.
 - VS Code diagnostics were clean for all changed production and test files.
 
 ### Deviations
@@ -140,16 +141,16 @@ runs. It was executed explicitly against a disposable local Redis 7 container.
 ### Assumptions
 
 - The pending-recovery-candidate Queue is currently produced by the checkout
-	path in the Shopify event process, so its telemetry adapter uses
-	`moda-shopify-event-worker`.
+  path in the Shopify event process, so its telemetry adapter uses
+  `moda-shopify-event-worker`.
 - OpenTelemetry provider/exporter setup remains test-only and is not introduced
-	into production service code.
+  into production service code.
 
 ### Unresolved Issues
 
 - The existing recovery-routing unit-test mock still lacks
-	`prisma.customerPhone.findMany`, leaving the unrelated full suite one test
-	short of green.
+  `prisma.customerPhone.findMany`, leaving the unrelated full suite one test
+  short of green.
 
 ### Architectural Concerns
 

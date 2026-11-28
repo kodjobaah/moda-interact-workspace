@@ -33,7 +33,7 @@ updated: 2026-11-17
 
 ## Lifecycle and failure outcomes
 
-- No B001 consent cleanup on cart empty, order completion, abandoned checkout materialisation or Redis TTL. Shopify's checkout owns its attribute lifecycle; B001 retains only *existing* worker indexes and retries. A completed/paid/terminal checkout does not create SQL consent or outreach.
+- No B001 consent cleanup on cart empty, order completion, abandoned checkout materialisation or Redis TTL. Shopify's checkout owns its attribute lifecycle; B001 retains only _existing_ worker indexes and retries. A completed/paid/terminal checkout does not create SQL consent or outreach.
 - A missing attribute is `NO_EXPLICIT_CHOICE`; duplicate named attributes, malformed provider shape, missing authenticated event token, unavailable provider data or mismatched checkout identity are typed denial/defer, not a default GRANT. The actual HMAC decision is verified by B002; do not treat an unverified string as consent.
 - Existing unrelated Redis cache, BullMQ and checkout queues continue as before. No new DB schema, Redis namespace, timed cleanup job or Shopify API call. Existing privacy logs and provider error redaction stay intact.
 

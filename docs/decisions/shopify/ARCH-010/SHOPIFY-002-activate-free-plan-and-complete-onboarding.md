@@ -1,5 +1,5 @@
---- 
-id: ARCH-010-SHOPIFY-002 
+---
+id: ARCH-010-SHOPIFY-002
 architecture_id: ARCH-010
 title: Activate Free plan with durable asynchronous Shopify verification
 task_kind: implementation
@@ -27,6 +27,7 @@ enables:
 created: 2026-09-11
 updated: 2026-09-12
 ---
+
 ## Completion Report
 
 Ready for Review.
@@ -42,9 +43,11 @@ Attempt 8 correction checklist:
   contains no billing-path diagnostic.
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `moda-interact/app/services/billing/billing-reconciliation.service.ts`
 - `moda-interact/tests/unit/services/billing.service.test.ts`
 - `moda-interact/tests/unit/routes/billing-callback.test.ts`
@@ -52,6 +55,7 @@ Ready for Review
 - This task file records the Attempt 8 execution evidence.
 
 ### Work Completed
+
 - Retained all prior accepted corrections: Shared billing contract `0.10.0`,
   exact initial-selection tokens, row-lock ordering, stale-response guards,
   atomic lifetime-counter creation, exact Free-period snapshots, durable retry
@@ -62,13 +66,16 @@ Ready for Review
   entitlement counter.
 
 ### Acceptance Criteria
+
 Implemented for the bounded merchant callback/producer scope. Background
 reconciliation, Paid plans, plan changes, Admin, and infrastructure remain out of scope.
 
 ### Work Items
+
 Completed callback, billing service, queue producer, focused tests, i18n completeness, and required validation.
 
 ### Validation Results
+
 - Focused callback, BillingService, reconciliation producer, and billing UI suites:
   81 passed across 4 files.
 - Full Vitest: 255 passed, 1 skipped across 33 test files.
@@ -85,63 +92,69 @@ Completed callback, billing service, queue producer, focused tests, i18n complet
   Shopify-hosted `admin.shopify.com` pricing route.
 
 ### Git / VCS
+
 Task branch: `task/ARCH-010-SHOPIFY-002`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-002`
-  parent branch: `task/ARCH-010-SHOPIFY-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-002`
-  implementation branch: `task/ARCH-010-SHOPIFY-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-002`
+parent branch: `task/ARCH-010-SHOPIFY-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-002`
+implementation branch: `task/ARCH-010-SHOPIFY-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact`
-  Attempt 8 implementation commits: `6ce6884`, `679a829`
-  prior task head retained: `8fab46d`
-  remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  pushed: yes
+repository: `moda-interact`
+Attempt 8 implementation commits: `6ce6884`, `679a829`
+prior task head retained: `8fab46d`
+remote branch: `origin/task/ARCH-010-SHOPIFY-002`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
-  claim commit: `c0fef26`
-  report and review-status/final metadata commit: this task-file commit
-  remote branch: `origin/task/ARCH-010-SHOPIFY-002`
-  report pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/shopify/ARCH-010/SHOPIFY-002-activate-free-plan-and-complete-onboarding.md`
+claim commit: `c0fef26`
+report and review-status/final metadata commit: this task-file commit
+remote branch: `origin/task/ARCH-010-SHOPIFY-002`
+report pushed: yes
+submodule gitlink staged: no
 
 Database dependency revision:
-  `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`
+`6d5fb9adf2e5c1fb28333b330dd183c9cda41550`
 
 Merged to implementation main: no
 Merged to workspace main: no
 
 ### Deviations
+
 The implementation worktree retains the expected database gitlink change from
 `ebe43c0` to published database commit `6d5fb9adf2e5c1fb28333b330dd183c9cda41550`,
 which provides the required schema and generated-client contract. Per policy it
 was not staged in the implementation repository.
 
 ### Assumptions
+
 The developer will update the parent database submodule pointer when the published database dependency is promoted into the implementation repository's mainline.
 
 ### Unresolved Issues
+
 The repository-wide typecheck remains a documented baseline failure in unrelated
 files; no changed task-owned billing file has a diagnostic.
 
 ### Architectural Concerns
+
 The database field is available at the published dependency revision, while the
 parent submodule pointer remains a developer-owned integration step.
 Partner API throws/times out/throttles
-```
+
+````
 
 then:
 
@@ -383,7 +396,7 @@ Partner API failure
   -> onboarding remains incomplete
   -> record transport-error metadata
   -> schedule deterministic retry
-```
+````
 
 Immediate completion must be gated on a successful Partner verification performed by the current callback execution. A failed Partner call must not use stale local `ACTIVE` state as current verification evidence.
 
@@ -441,7 +454,7 @@ Add focused tests for the allowed initial source, safe same-plan replay, and rej
 `completeFreeActivation(...)` currently uses:
 
 ```ts
-grantedQuantity: policy?.lifetimeFreeRecoveryAllowance ?? 0
+grantedQuantity: policy?.lifetimeFreeRecoveryAllowance ?? 0;
 ```
 
 The ARCH-010 invariant is to snapshot `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance` exactly once. If the canonical policy row is unexpectedly missing, creating the one-time `FREE_RECOVERY_LIFETIME` counter with `0` permanently records the wrong shop-lifetime grant because replay intentionally does not rewrite an existing counter.
@@ -532,7 +545,7 @@ The task is still not acceptable because the explicit Required Tests / idempoten
 `prepareFreeActivation(...)` currently treats:
 
 ```ts
-!currentSubscription
+!currentSubscription;
 ```
 
 as sufficient for initial activation, without also requiring:
@@ -661,13 +674,12 @@ Attempt-3 architect decision remain in the production implementation.
 `prepareFreeActivation(...)` still classifies:
 
 ```ts
-const isInitialActivation = !currentSubscription ||
-  (
-    currentSubscription.status === SubscriptionProjectionStatus.NO_CONTRACT &&
+const isInitialActivation =
+  !currentSubscription ||
+  (currentSubscription.status === SubscriptionProjectionStatus.NO_CONTRACT &&
     currentSubscription.planId === null &&
     !currentSubscription.observedShopifyPlanHandle &&
-    settings?.onboardingCompleted !== true
-  );
+    settings?.onboardingCompleted !== true);
 ```
 
 The `!currentSubscription` branch bypasses `ShopSettings.onboardingCompleted`.
@@ -828,7 +840,7 @@ Attempt 5 correctly satisfies three substantial parts of the Attempt-4 correctio
   `NO_CONTRACT + no current plan` source;
 - first `FREE_RECOVERY_LIFETIME` creation is now race-safe at the database boundary
   through `INSERT ... SELECT PlatformBillingPolicy.lifetimeFreeRecoveryAllowance ...
-  ON CONFLICT ("shopId","counter") DO NOTHING`, followed by an exact counter re-read;
+ON CONFLICT ("shopId","counter") DO NOTHING`, followed by an exact counter re-read;
   an existing counter is not rewritten and missing policy remains fail-closed;
 - `syncSubscription(...)` now preserves a newer local Free-B intent in the tested
   case where an older Free-A Partner response reports current Free-A and no provider
@@ -1479,7 +1491,7 @@ Current completion does:
 ```ts
 nextReconcileAt: subscription.plan.recoveryCreditPackEnabled
   ? subscription.nextReconcileAt
-  : null
+  : null;
 ```
 
 For a pack-enabled verified Free plan this is wrong.
@@ -1519,18 +1531,17 @@ pending-token check:
 ```ts
 const completionNow = new Date();
 
-const completedNextReconcileAt =
-  !subscription.plan.recoveryCreditPackEnabled
-    ? null
-    : subscription.currentPeriodEnd
-      ? new Date(Math.max(
+const completedNextReconcileAt = !subscription.plan.recoveryCreditPackEnabled
+  ? null
+  : subscription.currentPeriodEnd
+    ? new Date(
+        Math.max(
           completionNow.getTime(),
-          subscription.currentPeriodEnd.getTime()
-            - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS,
-        ))
-      : new Date(
-          completionNow.getTime() + INITIAL_BILLING_RETRY_DELAY_MS,
-        );
+          subscription.currentPeriodEnd.getTime() -
+            APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS,
+        ),
+      )
+    : new Date(completionNow.getTime() + INITIAL_BILLING_RETRY_DELAY_MS);
 ```
 
 Write:
@@ -2318,7 +2329,7 @@ contract from Attempt 7.
 The focused BillingService suite now directly calls:
 
 ```ts
-syncSubscription(shopId, token)
+syncSubscription(shopId, token);
 ```
 
 with the exact initial-selection token and proves all three required stale cases:
@@ -2557,9 +2568,9 @@ ARCH-010-BACKGROUND-003
 ```
 
 No dependant becomes Ready solely from this acceptance.
+
 #### Attempt 4 — Completion-state reconciliation
 
 The developer confirmed on 2026-09-12 that Attempt 4 of this task had already completed and that this parent task document was stale. This coordination edit synchronizes the durable task state to `complete` so dependency/frontier calculation does not schedule already-finished work.
 
 The supplied parent ZIP does not contain the separate task-branch implementation checkout/Attempt-4 report commit, so this consolidation does **not** invent replacement implementation evidence or rewrite the earlier Architect Review history. The existing recorded implementation/review evidence above remains provenance; task-branch evidence should be preserved when the completed task report is merged into the parent workspace.
-

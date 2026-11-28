@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-DATABASE-006
 architecture_id: ARCH-010
-title: Move the one-time lifetime Free recovery grant to platform policy and snapshot
+title:
+  Move the one-time lifetime Free recovery grant to platform policy and snapshot
   it per shop
 task_kind: implementation
 domain: database
@@ -16,17 +17,17 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-007-DATABASE-002
-- ARCH-007-DATABASE-003
+  - ARCH-007-DATABASE-002
+  - ARCH-007-DATABASE-003
 enables:
-- ARCH-010-ADMIN-001
-- ARCH-010-BACKGROUND-001
-- ARCH-010-BACKGROUND-003
-- ARCH-010-BACKGROUND-011
-- ARCH-010-SHOPIFY-002
-- ARCH-010-SHOPIFY-003
-- ARCH-010-SHOPIFY-009
-- ARCH-010-DATABASE-012
+  - ARCH-010-ADMIN-001
+  - ARCH-010-BACKGROUND-001
+  - ARCH-010-BACKGROUND-003
+  - ARCH-010-BACKGROUND-011
+  - ARCH-010-SHOPIFY-002
+  - ARCH-010-SHOPIFY-003
+  - ARCH-010-SHOPIFY-009
+  - ARCH-010-DATABASE-012
 created: 2026-09-11
 updated: 2026-09-11 13:08:31+00:00
 ---
@@ -195,9 +196,11 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Implementation complete; returned to `moda_architect` for review.
 
 ### Files Changed
+
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/seed.mjs`
 - `moda-interact-database/prisma/migrations/20260911121000_move_lifetime_free_grant_to_platform_policy/migration.sql`
@@ -207,6 +210,7 @@ Implementation complete; returned to `moda_architect` for review.
 - `moda-interact-database/docs/generated/erd.png`
 
 ### Work Completed
+
 - Added `PlatformBillingPolicy.lifetimeFreeRecoveryAllowance Int @default(5)` and retained the legacy `BillingPlan.freeLifetimeConversationAllowance` field as non-authoritative.
 - Added a database non-negative CHECK constraint for the platform allowance.
 - Added an idempotent migration-cohort backfill for onboarding-completed shops, independent of plan kind, preserving positive grants and all usage quantities while excluding incomplete onboarding and period counters.
@@ -214,6 +218,7 @@ Implementation complete; returned to `moda_architect` for review.
 - Regenerated the tracked ERD artifacts.
 
 ### Validation Results
+
 - `npm ci` completed successfully.
 - `npm run format` passed.
 - `npm run prisma:generate` passed.
@@ -300,6 +305,7 @@ Start-of-attempt synchronization:
 - `git diff --check` passed.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-006`
 - Implementation branch: `task/ARCH-010-DATABASE-006`
 - Published commits: `a8ca715`, `6a0a711`, `449dba7`, `7523f49`
@@ -414,7 +420,7 @@ The current validator uses:
 ```js
 assert.doesNotMatch(
   migration,
-  /BillingPlan|billingPlan|planId|planKind|PAID_METERED/
+  /BillingPlan|billingPlan|planId|planKind|PAID_METERED/,
 );
 ```
 

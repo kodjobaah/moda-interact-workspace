@@ -569,37 +569,37 @@ None identified. The Architect Review section remains pending and is unchanged.
 ### Git / VCS
 
 Task branch:
-  `task/ARCH-021-COMMERCE-051`
+`task/ARCH-021-COMMERCE-051`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-051`
-  parent branch: `task/ARCH-021-COMMERCE-051`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-051`
-  implementation branch: `task/ARCH-021-COMMERCE-051`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-051`
+parent branch: `task/ARCH-021-COMMERCE-051`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-051`
+implementation branch: `task/ARCH-021-COMMERCE-051`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
-  recursive implementation submodule sync/update: passed; database at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+recursive implementation submodule sync/update: passed; database at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`
 
 Implementation repository:
-  repository: `moda-interact-commerce`
-  commit: `e56fc8b34c7f2b7c6b346a425814a2eaf41ce300`
-  remote branch: `origin/task/ARCH-021-COMMERCE-051`
-  pushed: yes
+repository: `moda-interact-commerce`
+commit: `e56fc8b34c7f2b7c6b346a425814a2eaf41ce300`
+remote branch: `origin/task/ARCH-021-COMMERCE-051`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/commerce/ARCH-021/COMMERCE-051-add-live-external-http-authoring-observation.md`
-  review-submission commit: `93a0244462b2151b558a1ac57e728705328698b9`
-  remote branch: `origin/task/ARCH-021-COMMERCE-051`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/commerce/ARCH-021/COMMERCE-051-add-live-external-http-authoring-observation.md`
+review-submission commit: `93a0244462b2151b558a1ac57e728705328698b9`
+remote branch: `origin/task/ARCH-021-COMMERCE-051`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

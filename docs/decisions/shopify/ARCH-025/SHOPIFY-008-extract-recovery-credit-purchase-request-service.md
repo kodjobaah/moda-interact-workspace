@@ -167,7 +167,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Do not generalise this into a command bus. Keep current error messages because billing routes/tests may display/assert them. A tiny service-local P2002 predicate is acceptable; do not import plan-resolution internals solely to share that mechanical check.
 
-
 ## Completion Report
 
 ### Status

@@ -19,8 +19,8 @@ enables:
 created: 2026-08-31
 updated: 2026-09-02
 ---
-# Implement Google Platform-Admin Authentication and Session Foundation
 
+# Implement Google Platform-Admin Authentication and Session Foundation
 
 ## Publication precondition
 

@@ -129,14 +129,14 @@ No provider credentials in browser/log evidence.
 
 ## Final matrix
 
-| Scenario | Result | Evidence |
-|---|---|---|
-| Free -> paid -> Free | PASS/FAIL | ... |
-| Purchased credits across renewal | PASS/FAIL | ... |
-| Cancellation | PASS/FAIL | ... |
-| Refund | PASS/FAIL | ... |
-| Upgrade/downgrade + support | PASS/FAIL | ... |
-| Generic correction guard | PASS/FAIL | ... |
+| Scenario                         | Result    | Evidence |
+| -------------------------------- | --------- | -------- |
+| Free -> paid -> Free             | PASS/FAIL | ...      |
+| Purchased credits across renewal | PASS/FAIL | ...      |
+| Cancellation                     | PASS/FAIL | ...      |
+| Refund                           | PASS/FAIL | ...      |
+| Upgrade/downgrade + support      | PASS/FAIL | ...      |
+| Generic correction guard         | PASS/FAIL | ...      |
 
 All PASS required.
 

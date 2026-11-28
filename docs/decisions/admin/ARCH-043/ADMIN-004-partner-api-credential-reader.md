@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-043-ADMIN-002
+  - ARCH-043-ADMIN-002
 enables:
-- ARCH-043-GATEWAY-001
-- ARCH-043-SYSTEM-TEST-001
-created: '2026-10-17'
-updated: '2026-10-21'
+  - ARCH-043-GATEWAY-001
+  - ARCH-043-SYSTEM-TEST-001
+created: "2026-10-17"
+updated: "2026-10-21"
 ---
 
 # Use database Shopify Partner credentials in Admin subscription reads

@@ -16,12 +16,12 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
-- ARCH-032-BACKGROUND-001
-- ARCH-032-COMMERCE-006
-- ARCH-032-MCP-020
-- ARCH-032-SYSTEM-TEST-002
+  - ARCH-032-BACKGROUND-001
+  - ARCH-032-COMMERCE-006
+  - ARCH-032-MCP-020
+  - ARCH-032-SYSTEM-TEST-002
 created: 2026-10-15
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-MCP-019 — Restore the Commerce capabilities manifest resource
@@ -103,17 +103,20 @@ fixtures, mutable authoring settings or synthetic data.
 
    ```json
    {
-     "contents": [{
-       "uri": "commerce://capabilities",
-       "mimeType": "application/json",
-       "text": "<JSON-encoded CommerceManifest>"
-     }]
+     "contents": [
+       {
+         "uri": "commerce://capabilities",
+         "mimeType": "application/json",
+         "text": "<JSON-encoded CommerceManifest>"
+       }
+     ]
    }
    ```
 
    The angle-bracket placeholder above is documentation only; `text` must be a
    JSON string of a real manifest and must pass the published Shared schema.
    Unknown/malformed URIs fail closed with safe protocol errors.
+
 4. The manifest includes the persisted `contractVersion`, `releaseId`,
    `runnerCompatibility`, `responseContract` and `responseContractHash`; the
    currently **eligible, published and executable** capabilities with exact pinned
@@ -175,7 +178,7 @@ fixtures, mutable authoring settings or synthetic data.
 
 ## Dependencies
 
-None as a *new task gate*: this correction targets the MCP runtime and published
+None as a _new task gate_: this correction targets the MCP runtime and published
 Shared contract already present in the 2026-10-15 snapshot. Existing ARCH-032
 historical task-status metadata is not silently treated as accepted; do not
 change those tasks or unblock deferred Studio/Gateway work in this patch.

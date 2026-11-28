@@ -241,22 +241,22 @@ implementation and parent report are kept in dedicated physical task worktrees.
 
 ### Unresolved Issues
 
- The deployed Redis-backed rolling limiter, deployed auth/OAuth, live-store and
- deployment lifecycle checks remain developer-owned validation. Local schema
- browsing and validation remain available without remote documentation
- availability. No official artifact or pinned-process evidence blocker remains;
- both were verified locally as recorded above.
+The deployed Redis-backed rolling limiter, deployed auth/OAuth, live-store and
+deployment lifecycle checks remain developer-owned validation. Local schema
+browsing and validation remain available without remote documentation
+availability. No official artifact or pinned-process evidence blocker remains;
+both were verified locally as recorded above.
 
 ### Architectural Concerns
 
- The checked-in artifact is the accepted local Storefront 2026-07 schema surface
- used by the compiler; promotion still requires the pending deployed/live checks
- listed above.
+The checked-in artifact is the accepted local Storefront 2026-07 schema surface
+used by the compiler; promotion still requires the pending deployed/live checks
+listed above.
 
 ### Git / VCS
 
- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean at `c61656073d35d8a7b3b9bfd3e4ecfe05385396fa`; all implementation commits are pushed.
- Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`, clean at `c61656073d35d8a7b3b9bfd3e4ecfe05385396fa`; all implementation commits are pushed.
+Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-011`, branch `task/ARCH-020-COMMERCE-011`. Nested `database/` submodule is initialized, clean and checked out at `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No parent service gitlink or main branch was changed.
 
 ## Architect Review
 
@@ -359,11 +359,12 @@ try {
   try {
     await redis.connect();
     await redis.ping();
-    admitted = Number(await redis.eval(/* existing script and arguments */)) === 1;
-    if (!admitted) throw new DiscoveryAdmissionError('RATE_LIMITED');
+    admitted =
+      Number(await redis.eval(/* existing script and arguments */)) === 1;
+    if (!admitted) throw new DiscoveryAdmissionError("RATE_LIMITED");
   } catch (error) {
     if (error instanceof DiscoveryAdmissionError) throw error;
-    throw new DiscoveryAdmissionError('ADMISSION_UNAVAILABLE');
+    throw new DiscoveryAdmissionError("ADMISSION_UNAVAILABLE");
   }
   return await operation();
 } finally {
@@ -379,7 +380,6 @@ Extend the Redis mock to use a correctly chainable multi/decr/exec object and an
 ### Attempt 6 resubmission gate
 
 Correct R6-1–R6-3 on the same branch pair, preserve prior accepted progress, and update runtime/report limits to the ACTUAL C15.1 values (two redirects,1MiB input,64KiB serialized output). Add the six isolated reproductions as permanent tests plus the specified contract boundaries. Run focused local checks, typecheck/lint/build/diff and report actual results. Label the environment-gated Redis case as unrun/skipped instead of treating early return as exercised coverage; unavailable real Redis is not the reason this review withholds acceptance. No live Redis/store/deployment run or provider upgrade is requested. This parent overlay is published before preparation; no new attempt is claimed by review.
-
 
 ### Changes Requested — Attempt 5 — 2026-09-21
 
@@ -628,22 +628,22 @@ Implement in the following order. Existing filenames are exact; proposed new fil
 
 Required test additions (real assertions on outcomes and side effects; source substring tests do not count):
 
-| Test ID / file | Input or boundary | Required assertion |
-|---|---|---|
-| R1-01–03 `tests/discovery.test.ts` | Three exact invalid documents in R1 above | valid:false, bounded error with relevant path; no execution/publication. |
-| R1-04 `tests/discovery.test.ts` | Full C14 ProductDetails definition, with mapped handle, resultPath and scalar response template | valid:true against verified artifact, not a minimal empty draft. |
-| R1-05 `tests/discovery.test.ts` | Unknown typed field/argument, missing variable, wrong variable mapping type, nonexistent result/template path, incomplete draft | Each rejects independently; valid neighbor control passes. |
-| R1-06 `tests/discovery.test.ts` | Depth 8/9, selections 100/101, document 16384/16385 bytes, cost 500/501, first 1/20 versus 0/21, last/variable page size | At-boundary otherwise valid fixtures pass; exceeded bound fails for that reason alone. Use actual schema-valid constructs. |
-| R1-07 `tests/discovery.test.ts` | Alias and nested edges.node versus forbidden root node; second operation, fragment, directive | Allowed constructs pass; each forbidden construct fails independently. |
-| R2-01 `tests/discovery.test.ts` | Recompute full artifact byte hash, QueryRoot -> Product/Shop typed traversal, token-required field | Hash matches; parent field sets differ correctly; restricted field visible but unselectable with reason. |
-| R2-02 `tests/discovery.test.ts` | Bad cursor/parent/version/hash; missing artifact | INVALID_INPUT for cursor/parent, valid:false for definition mismatch; missing authoritative artifact fails closed. |
-| R3-01 new `tests/discovery-process.test.ts` | Actual pinned child initialize/list/approved call/close with explicit nonsecret env | Actual recorded compatibility passes; no extra listener; child and pending calls reaped. No live store credentials. |
-| R3-02 same file | Unknown tool/schema drift, crash, malformed/oversized output, restart and shutdown | Bounded typed failures; no arbitrary dispatch; restart bounded; no orphan child. |
-| R4-01 `tests/discovery-route.test.ts` | Anonymous/revoked/other-service versus authorized staff | Denied requests cause zero upstream calls; authorized service traversal returns C15 envelopes. |
-| R4-02 same file | Request 60/61, concurrent 2/3 same admin and 4/5 replica, missing Redis | Exact allowed/rejected thresholds above; rejected requests cause zero upstream calls; settled calls release slots. |
-| R4-03 same file | Upstream promise never settles; advance fake time to 20,000ms; late result | Caller gets bounded failure by deadline; upstream cancellation observed; no duplicate response/pending leak. |
-| R4-04 same file | Unknown GET/body keys, URL userinfo/off-domain redirect, oversized body/output | Deterministic typed rejection; no forbidden fetch; no content/secrets in errors/logs. |
-| R4-05 same file | Docs outage plus available Redis/local artifact | Docs typed retryable failure; authenticated schema/validation still work and retain artifact. Redis outage still fails closed. |
+| Test ID / file                              | Input or boundary                                                                                                               | Required assertion                                                                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| R1-01–03 `tests/discovery.test.ts`          | Three exact invalid documents in R1 above                                                                                       | valid:false, bounded error with relevant path; no execution/publication.                                                       |
+| R1-04 `tests/discovery.test.ts`             | Full C14 ProductDetails definition, with mapped handle, resultPath and scalar response template                                 | valid:true against verified artifact, not a minimal empty draft.                                                               |
+| R1-05 `tests/discovery.test.ts`             | Unknown typed field/argument, missing variable, wrong variable mapping type, nonexistent result/template path, incomplete draft | Each rejects independently; valid neighbor control passes.                                                                     |
+| R1-06 `tests/discovery.test.ts`             | Depth 8/9, selections 100/101, document 16384/16385 bytes, cost 500/501, first 1/20 versus 0/21, last/variable page size        | At-boundary otherwise valid fixtures pass; exceeded bound fails for that reason alone. Use actual schema-valid constructs.     |
+| R1-07 `tests/discovery.test.ts`             | Alias and nested edges.node versus forbidden root node; second operation, fragment, directive                                   | Allowed constructs pass; each forbidden construct fails independently.                                                         |
+| R2-01 `tests/discovery.test.ts`             | Recompute full artifact byte hash, QueryRoot -> Product/Shop typed traversal, token-required field                              | Hash matches; parent field sets differ correctly; restricted field visible but unselectable with reason.                       |
+| R2-02 `tests/discovery.test.ts`             | Bad cursor/parent/version/hash; missing artifact                                                                                | INVALID_INPUT for cursor/parent, valid:false for definition mismatch; missing authoritative artifact fails closed.             |
+| R3-01 new `tests/discovery-process.test.ts` | Actual pinned child initialize/list/approved call/close with explicit nonsecret env                                             | Actual recorded compatibility passes; no extra listener; child and pending calls reaped. No live store credentials.            |
+| R3-02 same file                             | Unknown tool/schema drift, crash, malformed/oversized output, restart and shutdown                                              | Bounded typed failures; no arbitrary dispatch; restart bounded; no orphan child.                                               |
+| R4-01 `tests/discovery-route.test.ts`       | Anonymous/revoked/other-service versus authorized staff                                                                         | Denied requests cause zero upstream calls; authorized service traversal returns C15 envelopes.                                 |
+| R4-02 same file                             | Request 60/61, concurrent 2/3 same admin and 4/5 replica, missing Redis                                                         | Exact allowed/rejected thresholds above; rejected requests cause zero upstream calls; settled calls release slots.             |
+| R4-03 same file                             | Upstream promise never settles; advance fake time to 20,000ms; late result                                                      | Caller gets bounded failure by deadline; upstream cancellation observed; no duplicate response/pending leak.                   |
+| R4-04 same file                             | Unknown GET/body keys, URL userinfo/off-domain redirect, oversized body/output                                                  | Deterministic typed rejection; no forbidden fetch; no content/secrets in errors/logs.                                          |
+| R4-05 same file                             | Docs outage plus available Redis/local artifact                                                                                 | Docs typed retryable failure; authenticated schema/validation still work and retain artifact. Redis outage still fails closed. |
 
 Mocks may establish service policy and deadlines; R3-01 must run the actual pinned process. The exact official artifact/tool schema is evidence to acquire, not something this review authorizes inventing. If unavailable, report the exact failed acquisition/compatibility result and stop that dependent implementation path. Do not mark it passed or transfer the local evidence requirement to a future deployment task. Internal class names/helpers may vary; these file responsibilities, operation ordering, limits and acceptance outcomes may not.
 
@@ -654,7 +654,6 @@ Reviewed all new discovery modules, route, artifact, fixtures and runtime docs. 
 Correct R1–R4 on the same implementation branch, rerun required checks, commit/push and resubmit the report with a requirement-to-fixture matrix, pinned-process actual evidence, artifact distribution evidence and prepared synchronization details. Replace stale `Work Completed: None; task definition only` and distinguish actual results from unrun checks. Do not claim the compiler/schema/process requirements complete while deferring them. This parent review overlay is published before normal correction preparation; no main merge or gitlink update.
 
 ### Historical definition review
-
 
 ### Review Status
 

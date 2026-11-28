@@ -16,10 +16,10 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-032-ADMIN-001
-- ARCH-032-MCP-015
+  - ARCH-032-ADMIN-001
+  - ARCH-032-MCP-015
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-DATABASE-001 — Persist required environment-scoped MCP execution policy
@@ -108,9 +108,11 @@ published at `c7771ea`, and the parent branch remains
 ## Completion Report
 
 ### Status
+
 Changes Requested
 
 ### Files Changed
+
 `docs/ARCH-032-mcp-execution-policy-jsonb.md`; `package.json`;
 `prisma/migrations/20261015160000_arch032_mcp_platform_policy_jsonb/migration.sql`;
 `prisma/schema.prisma`; `prisma/seed.mjs`;
@@ -118,12 +120,14 @@ Changes Requested
 `scripts/validate-arch032-mcp-platform-policy-schema.mjs`.
 
 ### Work Completed
+
 Added the nullable Prisma JSONB field, a migration, policy documentation, seed
 changes, and schema/PostgreSQL tests in implementation commit `85eca46`.
 Implementation branch is pushed. The migration and tests currently provision
 and seed MCP policy values, contrary to the task contract; see the self-review.
 
 ### Validation Results
+
 `npm run validate` passed. `npm run test:arch032-mcp-platform-policy-schema`,
 `npm run test:arch032-mcp-platform-policy:postgres:fresh`, and
 `npm run test:arch032-mcp-platform-policy:postgres:upgrade` passed, but their
@@ -131,47 +135,59 @@ assertions require the prohibited singleton/default-policy seeding and therefore
 do not demonstrate task acceptance. `git diff --check` passed.
 
 ### Deviations
+
 The migration inserts the platform singleton on fresh databases and backfills
 MCP defaults for all five environments on upgrades; `prisma/seed.mjs` also
 supplies MCP defaults. The documentation and tests describe/require this
 behavior although the task explicitly forbids it.
 
 ### Assumptions
+
 None recorded
 
 ### Unresolved Issues
+
 Column-only migration, null/unconfigured behavior, and corresponding test
 expectations need correction before this attempt can pass review.
 
 ### Architectural Concerns
+
 None recorded
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — explicit developer-as-architect disposition on 2026-10-15.
 
 ### Review Notes
+
 Accepted against the active developer-approved seeding contract and the passing Attempt 1 self-review. The older no-seeding corrections are superseded by the active scope amendment and remain historical evidence only. Explicit developer completion was requested and recorded separately below.
 
 ### Reviewed Files
+
 `prisma/schema.prisma`; `prisma/migrations/20261015160000_arch032_mcp_platform_policy_jsonb/migration.sql`; `prisma/seed.mjs`; `scripts/validate-arch032-mcp-platform-policy-schema.mjs`; `scripts/test-arch032-mcp-platform-policy-postgres.mjs`; `docs/ARCH-032-mcp-execution-policy-jsonb.md`; `package.json`.
 
 ### Validation Reviewed
+
 `npm run validate`; `npm run test:arch032-mcp-platform-policy-schema`; disposable PostgreSQL fresh and upgrade tests; focused ESLint; `npm run lint`; `git diff --check origin/main...HEAD` — all passed at implementation commit `c7771ea`.
 
 ### Architecture Conformance
+
 Accepted. The existing singleton and version are reused; no policy table/model or hardcoded runtime fallback was added. Runtime Admin/MCP validation remains assigned to dependent tasks.
 
 ### Follow-up
+
 No task-local follow-up. Reconcile the direct dependency frontier after publishing this explicit completion; downstream Admin/MCP validation remains separate work.
 
 ## Developer Self-Review - Changes Requested
 
 ### Review Result
+
 Changes Requested
 
 ### Blocking Corrections
+
 1. Make the migration column-only: add nullable `mcpExecutionPolicy JSONB` and
    remove the singleton `INSERT`, JSON defaults, null-row `UPDATE`, and version
    bump. On both fresh and upgrade databases, a missing singleton must remain
@@ -198,11 +214,13 @@ Changes Requested
    boundary validation criterion incomplete until it has executable evidence.
 
 ### Validation Evidence
+
 Prisma validation and all three new test commands passed. The PostgreSQL tests
 passed against expectations that conflict with the task requirements, so these
 results are not acceptance evidence. `git diff --check` passed.
 
 ### State Transition
+
 Returned to `ready`; `executor` and `claimed_at` cleared; attempt remains `1`.
 The next `/moda_developer_create ARCH-032-DATABASE-001` claim should increment
 the attempt once after the corrections are made.
@@ -221,7 +239,7 @@ The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton
 
 ## 2026-10-15 — Developer-approved default-seeding contract (ACTIVE; supersedes prior review corrections)
 
-**Authoritative scope decision:** The developer explicitly requests that a database reset populate *all* platform policies with their default values, **including MCP**. The existing `PlatformBillingPolicy` singleton is the only policy store. Initial database provisioning is required, not prohibited.
+**Authoritative scope decision:** The developer explicitly requests that a database reset populate _all_ platform policies with their default values, **including MCP**. The existing `PlatformBillingPolicy` singleton is the only policy store. Initial database provisioning is required, not prohibited.
 
 This section supersedes the **scope assumptions and blocking corrections 1–4** of the historical `Developer Self-Review - Changes Requested` above, specifically the column-only/no-row/no-seed/no-backfill acceptance rules. Preserve that self-review and the original Completion Report as historical evidence; do not erase their findings or pretend that validation proved the earlier contract. The previously implemented migration/seed behaviour in database implementation commit `85eca46` is now in scope, subject to verifying its exact defaults, upgrade preservation, idempotence and version/CAS behaviour against the revised criteria.
 

@@ -39,10 +39,7 @@
     "sourceArchive": "/tmp/ARCH-070-SHARED-007/native-provisional-800059e55690.tgz",
     "sourceArchiveSha256": "800059e55690d6c27e8233fad8a6d6dd5ee9a09f5d4f9a6fcbe553c1d6fa31a0",
     "sourceCommit": "fea4f4f2486b53004976bdd00493c99e804ad124",
-    "entryExports": [
-      "runCommerceTurn",
-      "OpenRouterModelClient"
-    ],
+    "entryExports": ["runCommerceTurn", "OpenRouterModelClient"],
     "target": "node22",
     "packages": "external",
     "bundle": "/tmp/ARCH-070-SHARED-007/diagnostic-800059e55690/native-candidate-800059e55690.node22.mjs",

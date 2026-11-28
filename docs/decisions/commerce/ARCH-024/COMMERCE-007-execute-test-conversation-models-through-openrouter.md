@@ -203,17 +203,17 @@ unpublished Shared task-branch source
 Commerce MUST import:
 
 ```ts
-import type { CommerceModelInvoker } from '@modainteract/moda-interact-shared/commerce/runner';
+import type { CommerceModelInvoker } from "@modainteract/moda-interact-shared/commerce/runner";
 import {
   CommerceModelConfigurationSchema,
   CommerceModelProviderSchema,
   CommerceProviderModelIdSchema,
   CommerceModelSelectionSourceSchema,
-} from '@modainteract/moda-interact-shared/commerce/model';
+} from "@modainteract/moda-interact-shared/commerce/model";
 import {
   OpenRouterModelClient,
   type OpenRouterModelClientOptions,
-} from '@modainteract/moda-interact-shared/commerce/model/node';
+} from "@modainteract/moda-interact-shared/commerce/model/node";
 ```
 
 Do not add direct `@langchain/openrouter` or `@langchain/core` dependencies to `moda-interact-commerce`.
@@ -238,10 +238,10 @@ ARCH-024-COMMERCE-005 already defines and stores the complete authored snapshot:
 
 ```ts
 PreviewConversationSnapshot =
-  PreviewFrozenSnapshot
-  + snapshot.shop
-  + snapshot.model
-  + snapshot.instructions
+  PreviewFrozenSnapshot +
+  snapshot.shop +
+  snapshot.model +
+  snapshot.instructions;
 ```
 
 This task MUST import/use the accepted local `PreviewConversationSnapshot` / `PreviewConversationSnapshotSchema` implementation. It MUST NOT add model/instruction/Shop fields to the snapshot, create a second persisted snapshot, or move authored state to separate `StoredConversation` fields.
@@ -363,7 +363,7 @@ CommerceOpenRouterCredential.environment = environment
 createCommerceOpenRouterCredentialAad({
   environment,
   keyId: row.keyId,
-})
+});
 ```
 
 7. require the decrypted secret to be 1..8192 UTF-8 bytes and contain no `\r`, `\n` or `\0`;
@@ -421,8 +421,9 @@ src/commerce/integration/preview/model-runtime.ts
 Export one factory equivalent to:
 
 ```ts
-export type PreviewOpenRouterModelFactory =
-  (options: OpenRouterModelClientOptions) => CommerceModelInvoker;
+export type PreviewOpenRouterModelFactory = (
+  options: OpenRouterModelClientOptions,
+) => CommerceModelInvoker;
 
 export function createPreviewOpenRouterModelInvoker(input: {
   model: PreviewConversationModelSnapshot;
@@ -435,7 +436,7 @@ export function createPreviewOpenRouterModelInvoker(input: {
 Production `createClient` MUST be:
 
 ```ts
-(options) => new OpenRouterModelClient(options)
+(options) => new OpenRouterModelClient(options);
 ```
 
 On **every** `invoke(request, signal)`:
@@ -451,9 +452,7 @@ configurationSchemaVersion
 configuration
 ```
 
-plus the just-resolved credential;
-4. invoke it with the exact `ModelRequest` and signal;
-5. return the resulting `ModelStep` unchanged.
+plus the just-resolved credential; 4. invoke it with the exact `ModelRequest` and signal; 5. return the resulting `ModelStep` unchanged.
 
 Do not cache:
 
@@ -496,7 +495,7 @@ PreviewService conversation execution
 Specifically remove:
 
 ```ts
-mode: 'FIXTURE' | 'MODEL'
+mode: "FIXTURE" | "MODEL";
 ```
 
 from human conversation/run state if still present after accepted C001-C006 work.
@@ -528,12 +527,12 @@ Call `runCommerceTurn(...)` with `hostInstructions` exactly:
 
 ```ts
 [
-  'This is an isolated staff Test Conversation. Never send customer messages or perform mutations.',
+  "This is an isolated staff Test Conversation. Never send customer messages or perform mutations.",
   conversation.snapshot.instructions.platform.text,
   ...(conversation.snapshot.instructions.shop
     ? [conversation.snapshot.instructions.shop.text]
     : []),
-]
+];
 ```
 
 Do not concatenate these strings into one string before passing them to the runner.

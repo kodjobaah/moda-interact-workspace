@@ -64,18 +64,18 @@ These names are **proposed canonical identifiers**, not pre-existing DB rows. Al
 }
 ```
 
-| Property | Min | Max |
-|---|---:|---:|
-| dispatchBatchSize | 1 | 500 |
-| refreshIntervalMinutes | 1 | 1440 |
-| dispatchCooldownMinutes | 1 | 120 |
-| unavailableRecheckMinutes | 1 | 1440 |
-| staleScanMinutes | 1 | 120 |
-| maxPages | 1 | 200 |
-| requestTimeoutMs | 1000 | 30000 |
-| maxResponseBytes | 16384 | 4194304 |
-| maxScanDurationMs | 30000 | 600000 |
-| workerConcurrency | 1 | 32 |
+| Property                  |   Min |     Max |
+| ------------------------- | ----: | ------: |
+| dispatchBatchSize         |     1 |     500 |
+| refreshIntervalMinutes    |     1 |    1440 |
+| dispatchCooldownMinutes   |     1 |     120 |
+| unavailableRecheckMinutes |     1 |    1440 |
+| staleScanMinutes          |     1 |     120 |
+| maxPages                  |     1 |     200 |
+| requestTimeoutMs          |  1000 |   30000 |
+| maxResponseBytes          | 16384 | 4194304 |
+| maxScanDurationMs         | 30000 |  600000 |
+| workerConcurrency         |     1 |      32 |
 
 The first nine bounds are from `moda-interact-background/src/services/woo-coupon-sync-config.ts`. Worker concurrency has the proposed existing default 4 and the prior review-suggested 1..32 guard; the Background implementer must verify it against the active worker before adoption. The Background task must distinguish settings safe to refresh live from worker concurrency requiring explicit worker restart/recreation; no accidental dual queue consumer or duplicate processing.
 
@@ -95,7 +95,11 @@ This is the legacy non-secret policy, not an additional source of truth after th
 ### `speech.transcription` — Background
 
 ```json
-{"provider":"groq","groqModelId":"whisper-large-v3-turbo","openaiModelId":"gpt-4o-mini-transcribe"}
+{
+  "provider": "groq",
+  "groqModelId": "whisper-large-v3-turbo",
+  "openaiModelId": "gpt-4o-mini-transcribe"
+}
 ```
 
 `provider` is `groq` or `openai`; both model identifiers use the current 128-character model-ID validation. These are existing code defaults, not an automatic production switch. Provider API credentials are outside the initial listed secret purposes unless separately authorised; never insert them into non-secret `speech.transcription`.
@@ -103,7 +107,7 @@ This is the legacy non-secret policy, not an additional source of truth after th
 ### `support.translation` — legacy migration-only support-message policy
 
 ```json
-{"provider":"openai","model":"example-model"}
+{ "provider": "openai", "model": "example-model" }
 ```
 
 **Superseded:** do not create or continue editing this as an independent active provider/model setting. The canonical support-message translation model is the enabled automatic default from `CommerceTranslationModelConfiguration`, backed by the existing `CommerceTranslationProviderCredential` OpenAI secret. Retain old row/audit history for migration comparison. BACKGROUND-001/009 must validate model selection and preserve queued job model snapshots, and must not conflate other Commerce translation workflows.
@@ -111,7 +115,7 @@ This is the legacy non-secret policy, not an additional source of truth after th
 ### `commerce.preview` — Commerce
 
 ```json
-{"deadlineMs":60000,"outputTokens":1200}
+{ "deadlineMs": 60000, "outputTokens": 1200 }
 ```
 
 `deadlineMs` must be a positive integer <= `PREVIEW_SLOT_MS - 30000`; `outputTokens` must be 1..32768. Retain the existing fixed `modelSteps` and `remoteCalls` safety defaults (4 each), preview expiry and provider limits. This configuration must not change live agent behaviour.
@@ -119,7 +123,13 @@ This is the legacy non-secret policy, not an additional source of truth after th
 ### `admin.grafana` — Admin only
 
 ```json
-{"baseUrl":null,"logsUrl":null,"metricsUrl":null,"tracesUrl":null,"platformDashboardUrl":null}
+{
+  "baseUrl": null,
+  "logsUrl": null,
+  "metricsUrl": null,
+  "tracesUrl": null,
+  "platformDashboardUrl": null
+}
 ```
 
 All fields are nullable validated HTTPS URLs (max 2048 characters, no embedded credentials/tokens). `null` means no link. No OTLP/LOKI exporter routing, service telemetry credentials or monitoring collection moves into this key.
@@ -142,18 +152,18 @@ These names are **proposed canonical secret purposes**, not existing rows. They 
 
 The sealed plaintext payload MUST itself be validated after decryption against an exact purpose-specific shape. Bind authenticated-data (AAD) to canonical `environment`, `key`, `version` and envelope schema version. The exact UTF-8 AAD bytes are `JSON.stringify(["moda-platform-config-v1", environment, key, resultingVersion, 1])`, constructed only after strict identifier and revision validation; the writer and readers MUST test byte identity and reject tampering. Fresh random nonce on every write/re-wrap; deny unknown keys, algorithms, versions and fields; use the already published ARCH-039 `@modainteract/moda-interact-shared/security/credentials/node` `encryptCredential`/`decryptCredential` and `CredentialEnvelope`, together with the frozen canonical JSON/byte mapping and AAD convention defined in this architecture (implemented in each authorised reader/writer and byte-vector tested). Do not introduce another cipher, decryption routine or keyring parser. Rewrapping a Commerce keyring does **not** change the bytes or AAD of existing Commerce-encrypted database credentials.
 
-| Secret purpose | Sealed plaintext fields (never displayed) | Primary consumers |
-|---|---|---|
-| `commerce.connectionKeys` | existing `COMMERCE_CONNECTION_KEYS_JSON` keyring, `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, and command HMAC key if its current consumer requires it | Commerce, API, Background, Admin, MCP |
-| `auth.admin` | `AUTH_SECRET`, existing Google OAuth client ID/secret where required | Admin |
-| `auth.commerce` | `AUTH_SECRET`, existing Google OAuth client ID/secret where required | Commerce |
-| `shopify.oauth` | `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET` | Shopify app, Background session-refresh consumer |
-| `messaging.meta` | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | Encrypted Admin-managed record; no API secret-returning endpoint and no Messaging runtime cutover |
-| `commerce.bootstrap` | `adminEmail` mapped from `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`; valid email matching exactly one active SUPER_ADMIN | Commerce Merchant Knowledge bootstrap only; email is an identity selector, not proof of authority |
-| `merchant.knowledge.r2` | `endpoint`, `bucket`, `accessKeyId`, `secretAccessKey`, `maxUploadBytes`, `maxXlsxUncompressedBytes` (last two positive bounded **JSON integers**) | API, Shopify server and Background Merchant Knowledge operations; one atomic sealed JSON record, no split sources |
-| `woocommerce.auth` | `consumerKey`, `consumerSecret` | Platform-owned WooCommerce connection only; **never** replaces existing tenant-specific encrypted REST authorisations |
+| Secret purpose            | Sealed plaintext fields (never displayed)                                                                                                          | Primary consumers                                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `commerce.connectionKeys` | existing `COMMERCE_CONNECTION_KEYS_JSON` keyring, `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, and command HMAC key if its current consumer requires it    | Commerce, API, Background, Admin, MCP                                                                                 |
+| `auth.admin`              | `AUTH_SECRET`, existing Google OAuth client ID/secret where required                                                                               | Admin                                                                                                                 |
+| `auth.commerce`           | `AUTH_SECRET`, existing Google OAuth client ID/secret where required                                                                               | Commerce                                                                                                              |
+| `shopify.oauth`           | `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`                                                                                                            | Shopify app, Background session-refresh consumer                                                                      |
+| `messaging.meta`          | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`                                                                                                         | Encrypted Admin-managed record; no API secret-returning endpoint and no Messaging runtime cutover                     |
+| `commerce.bootstrap`      | `adminEmail` mapped from `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`; valid email matching exactly one active SUPER_ADMIN                                     | Commerce Merchant Knowledge bootstrap only; email is an identity selector, not proof of authority                     |
+| `merchant.knowledge.r2`   | `endpoint`, `bucket`, `accessKeyId`, `secretAccessKey`, `maxUploadBytes`, `maxXlsxUncompressedBytes` (last two positive bounded **JSON integers**) | API, Shopify server and Background Merchant Knowledge operations; one atomic sealed JSON record, no split sources     |
+| `woocommerce.auth`        | `consumerKey`, `consumerSecret`                                                                                                                    | Platform-owned WooCommerce connection only; **never** replaces existing tenant-specific encrypted REST authorisations |
 
-**18 October canonical reconciliation:** `merchant.knowledge.r2` supersedes `merchantKnowledge.upload` with one six-field sealed record, including keys and bounds. Existing `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration` supersede `support.translation` and the `openAiTranslationApiKey` field of `ai.providers`. The new `ai.providers` shape is *speech-only*: `{groqApiKey?:string,openAiApiKey?:string}` with at least one valid key on initial set. These names identify providers rather than the model/feature using them. Older prose/table references to a support translation key in this record are historical and non-authoritative. See the parent architecture's controlling 18 October decision. No new tables or secret-audit exception.
+**18 October canonical reconciliation:** `merchant.knowledge.r2` supersedes `merchantKnowledge.upload` with one six-field sealed record, including keys and bounds. Existing `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration` supersede `support.translation` and the `openAiTranslationApiKey` field of `ai.providers`. The new `ai.providers` shape is _speech-only_: `{groqApiKey?:string,openAiApiKey?:string}` with at least one valid key on initial set. These names identify providers rather than the model/feature using them. Older prose/table references to a support translation key in this record are historical and non-authoritative. See the parent architecture's controlling 18 October decision. No new tables or secret-audit exception.
 
 **Independent unlock material is mandatory:** a deployment-held `MODA_CONFIG_UNSEAL_KEY` or managed KMS identity/key must be accessible to approved server-side decryptors. Never store this unseal key in the same database, an audit row, source, public build or browser. Rotation must support old/new wrapping keys during deliberate re-encryption, with fail-closed unknown-key handling. For a single env-key deployment, rotation must use a bounded controlled dual-key cutover before deleting the old key. Database connectivity and service identity are separate startup dependencies; encryption-at-rest using a DB-stored key alone would not protect these secrets.
 
@@ -176,7 +186,6 @@ The sealed plaintext payload MUST itself be validated after decryption against a
 ## 5. Out of scope
 
 Do not create `PlatformProviderCredential*`, nine policy tables, new Woo integer columns in `BackgroundRuntimeConfig`, duplicate cryptographic codecs, or a database-stored configuration-unseal root. Do not rewrite any existing `Commerce*` encrypted-credential rows or AAD bytes, `BackgroundRuntimeConfig`, `PlatformBillingPolicy`, `ShopFeaturePreference`, `ShopSettings` or prior migrations. Provider credentials outside the explicit list below remain under their existing domain owners.
-
 
 ## 17 October 2026 — Additional secret registry contract
 

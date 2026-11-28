@@ -23,9 +23,7 @@ created: 2026-10-31
 updated: 2026-10-31
 ---
 
-
 # ARCH-054-SHARED-002: Publish accepted ARCH-054 v1 delay contract
-
 
 ## Architecture
 
@@ -35,72 +33,58 @@ Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md
 
 Coordinator: `moda_architect`. Attempt 1 was accepted by Architect review; the publication task is complete.
 
-
 ## Objective
 
 Publish an accepted build of `@modainteract/moda-interact-shared/ai-response-delay` so consumers use one package version.
-
 
 ## Context
 
 ARCH-054 adds a **merchant-selectable integer 0–30 minute AI reply delay** to the existing ARCH-040 recovery-conversation processor and handover controls, leaving merchant-authored HUMAN replies without configured delay. See the parent architecture and current snapshot for specific boundaries.
 
-
 ## Scope
 
 Only Shared package version/release metadata, approved lockfile edits required for publishing, and release evidence. No implementation code changes.
-
 
 ## Out of Scope
 
 No unrelated architecture changes, new standalone chat service, per-user timer jobs, invented provider error explanations, or updates to `docs/decisions/**/_index.md`. No implementation outside the assigned repository.
 
-
 ## Requirements
 
 - Only proceed after SHARED-001 is architect-accepted Complete. Choose next actually available registry version greater than pinned `3.0.0`, without overwriting an existing tag. Run approved publishing mechanism and confirm exact version and `./ai-response-delay` import from the registry. Record the immutable version used by API/Shopify and publish commit evidence. No tests/build/lint reruns of already accepted implementation.
-
 
 ## Work Items
 
 - [x] Verify accepted task and release version; publish; record package/version/import proof. Stop before editing consumer repositories.
 
-
 ## Interfaces / Contracts
 
 Published npm subpath `@modainteract/moda-interact-shared/ai-response-delay`; contains `MerchantAiResponseDelayReadV1Schema`, `MerchantAiResponseDelayWriteV1Schema`, `AiResponseDelayMinutesSchema` and inferred types.
 
-
 ## Dependencies
 
 - ARCH-054-SHARED-001
-
 
 ## Enables
 
 - ARCH-054-API-001
 - ARCH-054-SHOPIFY-001
 
-
 ## Acceptance Criteria
 
 - [x] Correct approved version published and resolvable; no implementation source edits or consumer changes; full error and publication evidence recorded.
-
 
 ## Validation
 
 - [x] Registry visibility check and declared package-version check only; no unit test/build/lint validation in publication task.
 
-
 ## Stop Condition
 
 After all required Work Items, Acceptance Criteria and Validation are complete, update Completion Report, set status to `review`, return control to `moda_architect` and **STOP**. Do not implement dependent tasks. Publication tasks do not rerun accepted implementation validation.
 
-
 ## Implementation Notes
 
 Implement only the identified repository-owned changes; preserve original provider/SDK errors in shared structured logs and rethrow failures to the owning retry/admission boundary.
-
 
 ## Completion Report
 

@@ -81,7 +81,8 @@ A directly related existing focused test may be changed only when it asserts the
    ```ts
    {
      kind: "BUILT_IN";
-     toolName: "commerce_get_discount_options" | "commerce_get_discount_details";
+     toolName: "commerce_get_discount_options" |
+       "commerce_get_discount_details";
      definitionVersion: "1.0.0";
    }
    ```

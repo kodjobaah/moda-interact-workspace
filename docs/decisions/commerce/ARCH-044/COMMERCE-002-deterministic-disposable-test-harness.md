@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 3
 depends_on: []
 enables: [ARCH-044-COMMERCE-007]
-created: '2026-10-18'
+created: "2026-10-18"
 updated: 2026-11-01
 ---
 
@@ -105,14 +105,14 @@ This task owns test environment scaffolding, not all the failures revealed when 
 
 ### Six baseline suite-setup failures (zero test assertions executed)
 
-| Test file | Known diagnostic |
-|---|---|
-| `tests/agent-configuration-model-postgres.test.ts` | `COMMERCE_TEST_DATABASE_URL` missing |
-| `tests/agent-configuration-prompts-postgres.test.ts` | `COMMERCE_TEST_DATABASE_URL` missing |
-| `tests/c20-integration-fixture.test.ts` | `C20_FIXTURE_UNSAFE_ENVIRONMENT` — disposable PostgreSQL/Redis/namespace missing |
-| `tests/preview-openrouter-postgres.test.ts` | `COMMERCE_TEST_DATABASE_URL` missing |
-| `tests/studio-integration-c20.test.ts` | `C20_FIXTURE_UNSAFE_DATABASE_TARGET` — disposable targets missing |
-| `tests/tool-editor-dispatch.test.tsx` | Partial `vi.mock` omits `ResponseTemplateSchema` |
+| Test file                                            | Known diagnostic                                                                 |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `tests/agent-configuration-model-postgres.test.ts`   | `COMMERCE_TEST_DATABASE_URL` missing                                             |
+| `tests/agent-configuration-prompts-postgres.test.ts` | `COMMERCE_TEST_DATABASE_URL` missing                                             |
+| `tests/c20-integration-fixture.test.ts`              | `C20_FIXTURE_UNSAFE_ENVIRONMENT` — disposable PostgreSQL/Redis/namespace missing |
+| `tests/preview-openrouter-postgres.test.ts`          | `COMMERCE_TEST_DATABASE_URL` missing                                             |
+| `tests/studio-integration-c20.test.ts`               | `C20_FIXTURE_UNSAFE_DATABASE_TARGET` — disposable targets missing                |
+| `tests/tool-editor-dispatch.test.tsx`                | Partial `vi.mock` omits `ResponseTemplateSchema`                                 |
 
 Additionally: `tests/discovery-limits.test.ts` timed out at 30,000 ms under Redis-enabled execution.
 

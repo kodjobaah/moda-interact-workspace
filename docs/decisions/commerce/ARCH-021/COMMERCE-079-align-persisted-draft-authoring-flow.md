@@ -70,7 +70,6 @@ tests/shopify-admin-tools-ui.test.tsx
 tests/tool-authoring-screen.test.tsx
 ```
 
-
 ## Out of Scope
 
 - Changing revision lifecycle, CAS rules or publication proof.
@@ -138,7 +137,6 @@ Publish controls for SUPER_ADMIN where currently supported
 
 For persisted Shopify DRAFTs, Request -> Explore -> Use in tool -> Request must preserve `toolId`, `toolRevisionId`, tab/editor buffers and the existing sessionStorage identity checks. Returning from Explore must not auto-save.
 
-
 ### R7 — persisted DRAFTs own the same provider-neutral Test freshness checkpoint semantics
 
 COMMERCE-081 and COMMERCE-083 consume C079 as the persisted-DRAFT authoring-session/persistence boundary. C079 must therefore establish the persisted equivalent of the C078 provider-neutral Test freshness checkpoint before either downstream Test-integration task executes.
@@ -149,11 +147,7 @@ For persisted `EXTERNAL_HTTP` and `SHOPIFY_ADMIN_GRAPHQL` DRAFT authoring, maint
 
 ```ts
 type AuthoringTestStatus =
-  | "NOT_RUN"
-  | "RUNNING"
-  | "PASSED"
-  | "FAILED"
-  | "STALE";
+  "NOT_RUN" | "RUNNING" | "PASSED" | "FAILED" | "STALE";
 
 type AuthoringTestSnapshot = {
   toolDefinitionRevision: number;
@@ -191,7 +185,6 @@ Persisted authoring must keep **persistence dirtiness** distinct from **Test fre
 - a stale in-flight completion must never mark the current persisted candidate PASSED.
 
 C079 establishes this common persisted-session state only. C081/C083 remain responsible for invoking C080/C082 and for provider-specific safe Test diagnostics/presentation.
-
 
 ## Work Items
 

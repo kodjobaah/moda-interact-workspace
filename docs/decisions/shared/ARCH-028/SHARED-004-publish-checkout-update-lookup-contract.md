@@ -166,7 +166,7 @@ No source or registry mutation was made. The release cannot safely continue unti
 - **Registry and packed SHA-512:** `sha512-7YElb5YyjSKyDxFbxmzZBp2obj1DYjjdfbK/0abq7YXDzefgQAsFG87s30ZYuiSEuN3YwekN/J0gEmmfk2N32g==` (matched).
 - **Packed SHA-1:** `693c53f216a6dc9d4478e1239b8c2cc22891427d`.
 - **Verification:** Exact clean-installed `1.5.0`; Shopify JS and declarations packaged; public `/shopify` runtime imports passed; canonical v2/v3 parser, unchanged strict v2 legacy parser, schema bounds and strictness passed. Seven booleans in the attached JSON are all `true`.
-- **Evidence artifact:** `docs/evidence/ARCH-028/SHARED-004-publication-evidence-1.5.0.json` (developer's read-only verification script output). `noPublicationOrSourceMutation: true` refers to the *verification run*, not the developer's earlier package publication.
+- **Evidence artifact:** `docs/evidence/ARCH-028/SHARED-004-publication-evidence-1.5.0.json` (developer's read-only verification script output). `noPublicationOrSourceMutation: true` refers to the _verification run_, not the developer's earlier package publication.
 - **Workflow deviation:** Publication was developer-executed externally to the normal agent claim workflow; previous Attempt 1 worktree/launcher evidence is preserved. This direct completion is explicitly developer-requested and architect-reviewed, not represented as a successful agent Attempt 2.
 - **Source provenance boundary:** Passing runtime/export checks establish release behaviour; they do not cryptographically prove every published byte matches SHARED-003's source commit. That stronger claim is not made.
 

@@ -13,7 +13,7 @@ status: complete
 priority: 30
 attempt: 4
 depends_on:
-- ARCH-017-BACKGROUND-001
+  - ARCH-017-BACKGROUND-001
 enables: []
 created: 2026-09-19
 updated: 2026-09-19
@@ -22,7 +22,6 @@ claimed_at: null
 ---
 
 # ARCH-017-BACKGROUND-002
-
 
 ## Objective
 
@@ -41,28 +40,31 @@ ARCH-011 remains out of scope.
 Current generic code creates an OPEN period without any plan fields:
 
 ```ts
-const billingPeriod = provider.currentPeriodStart && provider.currentPeriodEnd
-  ? await this.database.billingPeriod.upsert({
-      where: {
-        shopId_periodStart_periodEnd: {
+const billingPeriod =
+  provider.currentPeriodStart && provider.currentPeriodEnd
+    ? await this.database.billingPeriod.upsert({
+        where: {
+          shopId_periodStart_periodEnd: {
+            shopId,
+            periodStart: provider.currentPeriodStart,
+            periodEnd: provider.currentPeriodEnd,
+          },
+        },
+        update: { status: BillingPeriodStatus.OPEN },
+        create: {
           shopId,
+          subscriptionId: (
+            await this.database.subscription.findUniqueOrThrow({
+              where: { shopId },
+              select: { id: true },
+            })
+          ).id,
           periodStart: provider.currentPeriodStart,
           periodEnd: provider.currentPeriodEnd,
+          status: BillingPeriodStatus.OPEN,
         },
-      },
-      update: { status: BillingPeriodStatus.OPEN },
-      create: {
-        shopId,
-        subscriptionId: (await this.database.subscription.findUniqueOrThrow({
-          where: { shopId },
-          select: { id: true },
-        })).id,
-        periodStart: provider.currentPeriodStart,
-        periodEnd: provider.currentPeriodEnd,
-        status: BillingPeriodStatus.OPEN,
-      },
-    })
-  : null;
+      })
+    : null;
 ```
 
 Immediately afterwards the same path can write:
@@ -246,7 +248,7 @@ export async function ensureCurrentBillingPeriodProjection(
     providerPlanHandle: string;
     plan: CurrentBillingPeriodPlanProjection;
   },
-): Promise<CurrentBillingPeriodProjectionResult>
+): Promise<CurrentBillingPeriodProjectionResult>;
 ```
 
 ## A2. Exact helper algorithm
@@ -272,7 +274,7 @@ Do not write database state.
 Use only:
 
 ```ts
-shopId_periodStart_periodEnd
+shopId_periodStart_periodEnd;
 ```
 
 Do not search by `subscriptionId` alone and do not create a second overlapping period.
@@ -392,8 +394,9 @@ const providerMatchesCurrentCycle = Boolean(
   provider.currentPeriodEnd &&
   existing.currentPeriodStart &&
   existing.currentPeriodEnd &&
-  provider.currentPeriodStart.getTime() === existing.currentPeriodStart.getTime() &&
-  provider.currentPeriodEnd.getTime() === existing.currentPeriodEnd.getTime()
+  provider.currentPeriodStart.getTime() ===
+    existing.currentPeriodStart.getTime() &&
+  provider.currentPeriodEnd.getTime() === existing.currentPeriodEnd.getTime(),
 );
 ```
 
@@ -412,8 +415,7 @@ currentPeriodEnd = provider.currentPeriodEnd
 lastSyncedAt = now
 ```
 
-Do not clear pending plan/cancellation fields in this repair step;
-6. if CONFLICT, set:
+Do not clear pending plan/cancellation fields in this repair step; 6. if CONFLICT, set:
 
 ```text
 status = SYNC_ERROR
@@ -423,8 +425,7 @@ lastSyncedAt = now
 nextReconcileAt = now + 60 seconds
 ```
 
-and preserve `planId`, current period pointers and pending intent;
-7. after commit, enqueue the existing deterministic subscription-reconcile job when a conflict scheduled `nextReconcileAt`.
+and preserve `planId`, current period pointers and pending intent; 7. after commit, enqueue the existing deterministic subscription-reconcile job when a conflict scheduled `nextReconcileAt`.
 
 If a conflict was recorded, return immediately from `reconcileShop()` and do not invoke SamePlan rollover or plan-change logic in the same pass.
 
@@ -801,9 +802,9 @@ Required implementation in `BillingReconciliationService`:
 1. Compute one explicit valid-cycle predicate for executable mapped projection:
 
 ```ts
-provider.currentPeriodStart !== null
-&& provider.currentPeriodEnd !== null
-&& provider.currentPeriodStart < provider.currentPeriodEnd
+provider.currentPeriodStart !== null &&
+  provider.currentPeriodEnd !== null &&
+  provider.currentPeriodStart < provider.currentPeriodEnd;
 ```
 
 2. When `planUsable === true`, the meter is usable, and the resulting provider status would otherwise be `ACTIVE` or `TRIALING`, a false valid-cycle predicate is fail-closed provider state.
@@ -1086,7 +1087,6 @@ attempt: 3
 Return control to `moda_architect` and STOP.
 
 There is no architect acceptance decision for Attempt 2.
-
 
 ## Architect Review — Attempt 3 — Changes Requested
 
@@ -1430,7 +1430,6 @@ There is no architect acceptance decision for Attempt 3.
 - Correction 3 implemented and validated: both restored lifecycle cases execute through `BillingReconciliationService` and pass.
 
 Task status: review.
-
 
 ## Architect Review — Attempt 4 — Accepted
 

@@ -401,66 +401,96 @@ Prefer built-in `node:https`, `node:dns/promises`, `node:zlib` and a small dedic
 ## Completion Report
 
 ### Status
+
 Attempt 2 complete; ready for Architect Review.
+
 ### Files Changed
+
 Attempt 2 changed `src/services/merchant-knowledge-network-policy.ts`, `tests/unit/services/merchant-knowledge-network-policy.test.ts`, and `tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts`. The synchronization merge also retained the current upstream package manifest/lockfile changes, including `parse5` and the BACKGROUND-003 dependencies, while removing the unauthorized `ipaddr.js` dependency.
+
 ### Work Completed
+
 Replaced the permissive `ipaddr.js` range predicate with a deterministic Node `node:net` `isIP`/`BlockList` policy. IPv4 candidates are checked against explicit non-public/special-use CIDRs; IPv6 is limited to `2000::/3` with explicit special-use exclusions; IPv4-mapped IPv6 continues through the mapped IPv4 policy. Added regression coverage for all six A1-R1 addresses (`192.31.196.1`, `192.52.193.1`, `192.175.48.1`, `4000::1`, `6000::1`, `fe00::1`) and for a mixed public/special-use DNS answer rejected before the request callback. Existing positive global IPv4 and IPv6 cases remain passing. DNS ordering, pinned HTTPS connections, TLS hostname verification, peer checking, redirect handling, bounded decompression, extraction, and the BACKGROUND-001 contract were otherwise unchanged.
+
 ### Validation Results
+
 Focused network-policy, HTML-extraction, and acquirer suites: 71/71 passed. `npm run build`: passed. Changed-file diagnostics: clean. `git diff --check`: passed. The initial build attempt lacked upstream-merged BACKGROUND-003 dependencies in this worktree's `node_modules`; installing from the synchronized lockfile with lifecycle scripts disabled resolved the environment issue, and the required build then passed. The optional full-unit failures from Attempt 1 were outside this task's authorized files and were not correction items; the full suite was not rerun for Attempt 2. Standalone ESLint is not a task gate and no repository ESLint configuration was found in Attempt 1.
+
 ### Deviations
+
 Used Node's built-in `BlockList` and explicit CIDR policy, as required by A1-R1/A1-R2; no new runtime dependency or registry lookup was introduced.
+
 ### Assumptions
+
 The adapter remains a separately injected BACKGROUND-001 contract implementation; worker orchestration is owned by a downstream task. Conservative blocking of explicitly listed special-use ranges is preferable to admitting an address whose global reachability is ambiguous.
+
 ### Unresolved Issues
+
 None for the authorized BACKGROUND-002 scope. The optional unrelated repository-wide unit failures reported in Attempt 1 remain outside this task and were not changed.
+
 ### Architectural Concerns
+
 None identified. No out-of-scope worker, database, normalization, chunking, embedding, or persistence behavior was introduced.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-002`
-  parent branch: `task/ARCH-023-BACKGROUND-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-002`
-  implementation branch: `task/ARCH-023-BACKGROUND-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
-  database submodule: ready at `2eb17ee910491e8f9df82736fc0a843844415947`
-  launcher claim: Attempt 2, dependency gate passed, claim committed and pushed as `77cb0eb5f02aae08918843e0d652dbde474daf04`
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-002`
+parent branch: `task/ARCH-023-BACKGROUND-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-002`
+implementation branch: `task/ARCH-023-BACKGROUND-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+database submodule: ready at `2eb17ee910491e8f9df82736fc0a843844415947`
+launcher claim: Attempt 2, dependency gate passed, claim committed and pushed as `77cb0eb5f02aae08918843e0d652dbde474daf04`
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Commit identities:
-  implementation commit: `3a9b355af29a1535fac865fa4063f267efcc30b9` (pushed to `origin/task/ARCH-023-BACKGROUND-002`)
-  completion-report commit: this parent task-report update; its commit identity is included in the task handoff.
+implementation commit: `3a9b355af29a1535fac865fa4063f267efcc30b9` (pushed to `origin/task/ARCH-023-BACKGROUND-002`)
+completion-report commit: this parent task-report update; its commit identity is included in the task handoff.
 
 ### Attempt 3 Completion
+
 #### Status
+
 Attempt 3 complete; returned to Architect Review with `status: review`, `attempt: 3`, `executor: null`, and `claimed_at: null`.
+
 #### Files Changed
+
 Implementation repository files changed:
+
 - `src/services/merchant-knowledge-network-policy.ts`
 - `tests/unit/services/merchant-knowledge-network-policy.test.ts`
 - `tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts`
 
 No other implementation files, dependencies, contracts, schemas, or acquisition mechanisms changed.
+
 #### Work Completed
+
 The IPv6 positive allow predicate now admits only the architect-supplied explicit allocation CIDR set and still excludes `NON_PUBLIC_SPECIAL_USE_CIDRS`. Added an explicit `2620:4f:8000::/48` special-use exclusion; `2001:db8::/32` remains denied, and `2001::/23` and `2002::/16` remain outside the allow set. IPv4 policy and IPv4-mapped IPv6 normalization/recursive IPv4 classification are unchanged. The pre-request mixed-answer rejection, DNS ordering and pinning, TLS/SNI, peer verification, redirects, deadline, body limit, and extraction path are unchanged.
+
 #### Validation Results
+
 Focused command, run exactly as required:
+
 ```sh
 npx vitest run tests/unit/services/merchant-knowledge-network-policy.test.ts tests/unit/services/merchant-knowledge-html-extraction.test.ts tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts
 ```
+
 Result: 3 test files passed; **79/79 tests passed**. `npm run build`: passed. Changed-file diagnostics for all three changed implementation/test files: no errors found. `git diff --check`: passed.
+
 #### Commit Identities
+
 Implementation commit: `f181dbaa0398fcaec0f072b7439fc94d05681df7` (`fix(background): restrict public IPv6 address admission`).
 Parent report commit (Attempt 3 review-state publication): `6656c02ba83eafc963302dbe2b1077a9b5c0cb91`.
+
 #### Worktree Evidence
+
 Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-002`, branch `task/ARCH-023-BACKGROUND-002`.
 Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-002`, branch `task/ARCH-023-BACKGROUND-002`.
 Both are the already-prepared Attempt 3 worktrees; no new claim or attempt was created, and no other task worktree was reused.
@@ -469,6 +499,7 @@ After push and fetch, the implementation worktree was clean and its `HEAD` match
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 3
 
 ### Review Notes
@@ -511,7 +542,7 @@ conformant.
 
 One security-boundary defect remains in R3. `isPublicIpAddress()` uses `2000::/3` as a blanket
 IPv6 allow range and subtracts only a short special-use deny list. `2000::/3` is the architectural
-IPv6 global-unicast address space, but it is not equivalent to *currently globally routable*
+IPv6 global-unicast address space, but it is not equivalent to _currently globally routable_
 unicast: IANA retains substantial reserved/unallocated blocks inside it, and separately registers
 special-purpose prefixes that this task explicitly requires to be denied. The current predicate
 therefore still returns `true` for addresses that R3 requires rejected, including:
@@ -637,6 +668,7 @@ Attempt 2 must run from the canonical task worktrees, rerun the task-required va
 The optional full-unit failures reported in Attempt 1 are not correction items for this task: the failing areas are outside the authorised files and the focused 64/64 suite plus build/changed-file diagnostics/diff checks passed. Standalone ESLint is also not invented as a gate because this repository has no `eslint.config.*` and the task does not require a missing script/configuration.
 
 ### Reviewed Files
+
 - `package.json`
 - `package-lock.json`
 - `src/services/merchant-knowledge-network-policy.ts`
@@ -650,6 +682,7 @@ The optional full-unit failures reported in Attempt 1 are not correction items f
 - `docs/agent-worktree-isolation-policy.md`
 
 ### Validation Reviewed
+
 - Focused network-policy / HTML-extraction / acquirer suites: submitted `64/64` passed.
 - `npm run build`: submitted pass.
 - Changed-file diagnostics: submitted clean.
@@ -658,7 +691,9 @@ The optional full-unit failures reported in Attempt 1 are not correction items f
 - Architect inspection independently demonstrated that the current allow predicate admits R3-denied special/reserved address classes; this is an acceptance blocker regardless of focused-suite success.
 
 ### Architecture Conformance
+
 Changes required. D16/R3 is a security boundary: every initial and redirect destination must be globally routable public unicast before connection. The current DNS pinning/peer verification structure can remain, but the address-classification predicate and its dependency surface must be corrected. No worker orchestration, persistence, normalization, chunking, embedding, upload or Gateway work is authorised in Attempt 2.
 
 ### Follow-up
+
 Return the same task through its normal execution path for Attempt 2. BACKGROUND-004 remains Pending. BACKGROUND-003 remains independently Ready and may proceed.

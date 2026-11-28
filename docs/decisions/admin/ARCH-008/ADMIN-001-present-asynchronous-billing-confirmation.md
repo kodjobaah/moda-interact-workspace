@@ -336,33 +336,33 @@ Review — attempt 2 corrections complete and returned to `moda_architect`.
 Task branch: `task/ARCH-008-ADMIN-001`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-001`
-  parent branch: `task/ARCH-008-ADMIN-001`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-001`
-  implementation branch: `task/ARCH-008-ADMIN-001`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-008-ADMIN-001`
+parent branch: `task/ARCH-008-ADMIN-001`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-008-ADMIN-001`
+implementation branch: `task/ARCH-008-ADMIN-001`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: already-current
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: already-current
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: already-current
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: already-current
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-admin`
-  commit: `d372bfbcd68aa459974a2d64b0da2adaa8b1658f`
-  remote branch: `origin/task/ARCH-008-ADMIN-001`
-  pushed: yes
+repository: `moda-interact-admin`
+commit: `d372bfbcd68aa459974a2d64b0da2adaa8b1658f`
+remote branch: `origin/task/ARCH-008-ADMIN-001`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/admin/ARCH-008/ADMIN-001-present-asynchronous-billing-confirmation.md`
-  commit: `f9cc7b3059e405358b196f3802e1b01193cca7e7`
-  remote branch: `origin/task/ARCH-008-ADMIN-001`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/admin/ARCH-008/ADMIN-001-present-asynchronous-billing-confirmation.md`
+commit: `f9cc7b3059e405358b196f3802e1b01193cca7e7`
+remote branch: `origin/task/ARCH-008-ADMIN-001`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

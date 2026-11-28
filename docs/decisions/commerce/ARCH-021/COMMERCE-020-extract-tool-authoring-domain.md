@@ -143,19 +143,19 @@ Define in `src/studio/tools/contracts.ts`:
 
 ```ts
 type ToolMutationCode =
-  | 'FORBIDDEN'
-  | 'INVALID_INPUT'
-  | 'NOT_FOUND'
-  | 'CONFLICT'
-  | 'CAS_CONFLICT'
-  | 'LIVE_TEST_REQUIRED'
-  | 'DATABASE_UNAVAILABLE'
-  | 'INTERNAL_ERROR';
+  | "FORBIDDEN"
+  | "INVALID_INPUT"
+  | "NOT_FOUND"
+  | "CONFLICT"
+  | "CAS_CONFLICT"
+  | "LIVE_TEST_REQUIRED"
+  | "DATABASE_UNAVAILABLE"
+  | "INTERNAL_ERROR";
 
 type ToolMutationResult<T> =
-  | { kind: 'ok'; operationId: string; value: T }
+  | { kind: "ok"; operationId: string; value: T }
   | {
-      kind: 'error';
+      kind: "error";
       operationId: string;
       code: ToolMutationCode;
       message: string;
@@ -181,9 +181,7 @@ For every Tool mutation:
 
 ```ts
 {
-  state: 'UNCONFIRMED',
-  operationId,
-  label
+  state: ("UNCONFIRMED", operationId, label);
 }
 ```
 
@@ -196,12 +194,12 @@ Add `src/studio/tools/reconciliation-server-actions.ts` with:
 
 ```ts
 type ToolOperationReconciliationResult =
-  | { kind: 'committed'; operationId: string; action: string }
-  | { kind: 'not-committed'; operationId: string }
+  | { kind: "committed"; operationId: string; action: string }
+  | { kind: "not-committed"; operationId: string }
   | {
-      kind: 'error';
+      kind: "error";
       operationId: string;
-      code: 'FORBIDDEN' | 'DATABASE_UNAVAILABLE' | 'INTERNAL_ERROR';
+      code: "FORBIDDEN" | "DATABASE_UNAVAILABLE" | "INTERNAL_ERROR";
       message: string;
     };
 ```
@@ -312,24 +310,33 @@ This is the Tool-domain continuation of the accepted COMMERCE-029 simplification
 ## Completion Report
 
 ### Status
+
 Ready for Review
+
 ### Files Changed
+
 - `src/commerce/integration/studio/services.ts`
 - `src/studio/tools/tool-authoring-screen.tsx`
 - `src/studio/tools/tool-library.tsx`
 - `tests/tool-authoring-screen.test.tsx`
+
 ### Correction Checklist
+
 - A3-R1: implemented direct lifecycle `CONFLICT` and `OPERATION_REUSE_CONFLICT` mapping in `services.ts`; focused Tool tests remain green.
 - A3-R2: implemented action-await-only transport boundary and confirmed-save refresh fallback in `tool-authoring-screen.tsx`; executable tests cover rejection and refresh failure without UNCONFIRMED replay.
 - A3-R3: implemented serializable external creation intent retention and draft-only continuation/reconciliation state in `tool-library.tsx` and `tool-authoring-screen.tsx`.
 - A3-R4: added executable deterministic-error, transport uncertainty, write-lock and post-success refresh regressions; existing reconciliation/workspace tests remain green.
 - A3-R5: ran required focused suite, external UI suite, lint, typecheck, full suite, source audits and diff check.
 - A3-R6: reconciled Attempt 4 metadata and mirrored-branch evidence below; Architect Review preserved unchanged.
+
 ### Work Completed
+
 - Preserved the accepted serializable Tool boundary and named Server Action architecture.
 - Kept deterministic Tool results distinct from transport uncertainty and prevented canonical refresh errors from creating UNCONFIRMED.
 - Retained external creation intent without storing mutation closures or replaying `createTool`.
+
 ### Validation Results
+
 - Focused suite: `npm exec vitest run tests/tool-authoring-screen.test.tsx tests/tool-operation-reconciliation.test.ts tests/studio-workspace.test.tsx` passed, 3 files and 29 tests, zero skipped.
 - External UI suite: `npm run test:arch020-external-tools-ui` passed, 13 tests.
 - Task-owned ESLint command passed.
@@ -337,31 +344,44 @@ Ready for Review
 - `git diff --check` passed.
 - `npm run typecheck` failed only on existing unrelated diagnostics in C20/external wiring/selected-shop tests; zero diagnostics referenced COMMERCE-020-owned changed files.
 - `npm test -- --run` reported 89 passed, 19 failed, 2 skipped; failures were environment/configuration/integration baseline failures, with no failures in the three focused files or changed Tool source paths.
+
 ### Handoff Evidence
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-020`; branch `task/ARCH-021-COMMERCE-020`; clean before report update; claim commit `0613ec06`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-020`; branch `task/ARCH-021-COMMERCE-020`; clean after implementation; implementation commit `f62ccba6762312a144c40054e811996211544fcb`; pushed to matching origin branch.
 - Recursive submodule materialization: launcher-provided; database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Parent report commit: `8adbaefa`; parent branch pushed to matching `origin/task/ARCH-021-COMMERCE-020`; implementation and parent heads both match their respective origin task branches.
+
 ### Deviations
+
 - Full typecheck and full test suite remain blocked by unrelated repository baseline diagnostics and environment-dependent integration failures listed above.
+
 ### Assumptions
+
 - Existing launcher synchronization and recursive submodule preparation evidence remains authoritative for this prepared Attempt 4 handoff.
+
 ### Unresolved Issues
+
 - No COMMERCE-020-owned focused test, lint, diff or source-audit failure remains.
+
 ### Architectural Concerns
+
 None
 
 ## Attempt 5 Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Work Completed
+
 - Added executable reconciliation coverage for real Server Action authorization, audit filtering, database failures and unexpected failures.
 - Added Tool UI coverage for transport uncertainty, fresh retry operation IDs, canonical recovery failure retention, external draft recovery and no duplicate mutation.
 - Preserved the serializable production Tool boundary and removed the unreachable legacy mutation-result branch from the client domain.
 
 ### Validation Results
+
 - Focused Tool/reconciliation/workspace run: 3 files, 46 passed and 1 pre-existing stale-CAS workspace failure; Tool-specific files passed with zero skipped.
 - External UI suite: 13 tests passed.
 - Targeted ESLint: passed.
@@ -370,6 +390,7 @@ Ready for Review
 - Required source audits and `git diff --check`: passed.
 
 ### Handoff Evidence
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-020`, branch `task/ARCH-021-COMMERCE-020`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-020`, branch `task/ARCH-021-COMMERCE-020`.
 - Launcher preparation supplied synchronized dedicated worktrees and recursive submodule materialization; database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
@@ -377,11 +398,13 @@ Ready for Review
 - Parent report will be committed and pushed on the matching parent task branch; both worktrees are clean after publication.
 
 ### Deviations
+
 - The repository-wide typecheck and full suite retain unrelated baseline failures. The focused workspace stale-CAS failure is outside this task's changed files and reproduces independently.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 5
 
 ### Review Notes
@@ -418,7 +441,6 @@ Task-owned TypeScript diagnostics:          zero
 The repository-wide suite/typecheck retain unrelated baseline failures documented in the Completion Report; no remaining failure or diagnostic is attributable to the final C020-owned Tool source/tests reviewed here.
 
 COMMERCE-020 is Complete. All other dependencies of COMMERCE-021 and COMMERCE-022 are already Complete, so both dependants are promoted to Ready.
-
 
 #### Attempt 4 review — 2026-09-25
 
@@ -517,7 +539,7 @@ tests/tool-operation-reconciliation.test.ts
 This file MUST import and invoke the real exported:
 
 ```ts
-reconcileToolOperation
+reconcileToolOperation;
 ```
 
 Use bounded `vi.mock(...)` modules for exactly the external boundaries required by that Server Action, including:
@@ -766,7 +788,6 @@ AND the Completion Report records the actual final evidence
 
 Then push both mirrored branches, return control to `moda_architect`, and STOP. Do not begin COMMERCE-021 or COMMERCE-022.
 
-
 #### Attempt 3 review — 2026-09-25
 
 Reviewed implementation `52a27ba` and the submitted Attempt 3 Completion Report
@@ -816,7 +837,7 @@ tests/tool-operation-reconciliation.test.ts
 direct:
 
 ```ts
-new LifecycleError('CONFLICT', 'tool already exists')
+new LifecycleError("CONFLICT", "tool already exists");
 ```
 
 falls through to `INTERNAL_ERROR`.
@@ -1764,7 +1785,7 @@ Every returned mutation result MUST preserve the submitted `operationId`.
 Unexpected/unsupported failures MUST be emitted through the approved shared logger:
 
 ```ts
-import { createLogger } from '@modainteract/moda-interact-shared/logging';
+import { createLogger } from "@modainteract/moda-interact-shared/logging";
 ```
 
 Do not use `console.log`, `console.error`, Pino/Winston, or a Commerce-local generic logger. Pass the original thrown `Error`/value to the shared logger; do not log `DATABASE_URL`, credentials, tokens, authorization headers or connection strings.
@@ -1864,13 +1885,10 @@ Required corrections:
 1. Import and call exactly:
 
 ```ts
-requireStudioPlatformRole('ADMIN')
+requireStudioPlatformRole("ADMIN");
 ```
 
-from `lib/auth/merchant-access.ts`.
-2. Keep mutation-origin validation and `OperationIdSchema` validation.
-3. Query `CommerceAuditEvent` by exact operation id and current server-derived Commerce environment.
-4. Replace `action: { startsWith: 'TOOL_' }` with an explicit enum allow-list containing exactly:
+from `lib/auth/merchant-access.ts`. 2. Keep mutation-origin validation and `OperationIdSchema` validation. 3. Query `CommerceAuditEvent` by exact operation id and current server-derived Commerce environment. 4. Replace `action: { startsWith: 'TOOL_' }` with an explicit enum allow-list containing exactly:
 
 ```text
 CREATE_TOOL
@@ -1882,12 +1900,7 @@ ENABLE_TOOL
 DISABLE_TOOL
 ```
 
-Do not use prefix matching for the Prisma enum.
-5. Development bypass / SUPER_ADMIN may reconcile any matching Tool audit row.
-6. PLATFORM_ADMIN may reconcile only when `actorAdminId` is null or equals the current principal id; a different non-null actor id returns `FORBIDDEN`.
-7. P1001/P1002/P1008/P1017 return `DATABASE_UNAVAILABLE` and do not clear client UNCONFIRMED state.
-8. Unexpected failures use `@modainteract/moda-interact-shared/logging` and return `INTERNAL_ERROR`. Remove `console.error`.
-9. The action performs zero mutations and never invokes any Tool mutation Server Action/service method.
+Do not use prefix matching for the Prisma enum. 5. Development bypass / SUPER_ADMIN may reconcile any matching Tool audit row. 6. PLATFORM_ADMIN may reconcile only when `actorAdminId` is null or equals the current principal id; a different non-null actor id returns `FORBIDDEN`. 7. P1001/P1002/P1008/P1017 return `DATABASE_UNAVAILABLE` and do not clear client UNCONFIRMED state. 8. Unexpected failures use `@modainteract/moda-interact-shared/logging` and return `INTERNAL_ERROR`. Remove `console.error`. 9. The action performs zero mutations and never invokes any Tool mutation Server Action/service method.
 
 #### CR-6 — Complete the R8 tests; the current two contract-shape assertions are insufficient
 

@@ -21,6 +21,7 @@ enables:
 created: 2026-09-29
 updated: 2026-09-29
 ---
+
 # Render persisted Policy Operation Tool authoring
 
 ## Architecture
@@ -87,7 +88,7 @@ Focused UI tests must exercise a generic registered `POLICY_OPERATION` fixture.
 When the selected persisted Tool revision parses as:
 
 ```ts
-definition.execution.kind === "POLICY_OPERATION"
+definition.execution.kind === "POLICY_OPERATION";
 ```
 
 Studio must render the canonical authoring tabs rather than falling into an unsupported/blank state.

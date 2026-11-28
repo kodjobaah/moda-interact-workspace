@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-001
 enables:
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -44,17 +44,17 @@ This task consumes SHOPIFY-001's authenticated request context. Its read cache i
 
 Paths are relative to `moda-interact`. The edit map is exhaustive for production changes.
 
-| Existing path | Required edit |
-|---|---|
-| `app/services/merchant-support/merchant-support.service.ts` | Add the narrow count and batch-acknowledgement APIs; combine inbox aggregates; combine thread writes; catch queue acquisition and publication failures after commit |
-| `app/services/merchant-support/merchant-support-observability.server.ts` | Extend existing Shared-based semantic diagnostics for badge/list/acknowledgement/compose/queue failures, with original safe errors and causes |
-| `app/routes/app/route.jsx` | Replace only the full support-page call with the new unread-count API; preserve SHOPIFY-001 middleware/context and all navigation fields |
-| `app/routes/app/merchant-support/route.jsx` | Pass framework context, consume `getMerchantRequestContext`, keep independent `assertSupportShop`, accept the bounded batch intent, and issue one batch request from the visible-page effect |
-| `tests/unit/merchant-support-service.test.ts` | Assert read/write budgets and unchanged projection/translation/version behaviour |
-| `tests/unit/merchant-support-route.test.ts` | Assert request shape, batch validation, already-read success, one explicit refresh and independent support authorization |
-| `tests/unit/merchant-support-observability.test.ts` | Assert actual Shared output and failure isolation |
-| `tests/unit/merchant-support-recovery-i18n.test.ts` | Retain localized system-message actions and translated-message visibility |
-| `package.json` | Add exactly the two scripts below; no dependency changes |
+| Existing path                                                            | Required edit                                                                                                                                                                                |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/merchant-support/merchant-support.service.ts`              | Add the narrow count and batch-acknowledgement APIs; combine inbox aggregates; combine thread writes; catch queue acquisition and publication failures after commit                          |
+| `app/services/merchant-support/merchant-support-observability.server.ts` | Extend existing Shared-based semantic diagnostics for badge/list/acknowledgement/compose/queue failures, with original safe errors and causes                                                |
+| `app/routes/app/route.jsx`                                               | Replace only the full support-page call with the new unread-count API; preserve SHOPIFY-001 middleware/context and all navigation fields                                                     |
+| `app/routes/app/merchant-support/route.jsx`                              | Pass framework context, consume `getMerchantRequestContext`, keep independent `assertSupportShop`, accept the bounded batch intent, and issue one batch request from the visible-page effect |
+| `tests/unit/merchant-support-service.test.ts`                            | Assert read/write budgets and unchanged projection/translation/version behaviour                                                                                                             |
+| `tests/unit/merchant-support-route.test.ts`                              | Assert request shape, batch validation, already-read success, one explicit refresh and independent support authorization                                                                     |
+| `tests/unit/merchant-support-observability.test.ts`                      | Assert actual Shared output and failure isolation                                                                                                                                            |
+| `tests/unit/merchant-support-recovery-i18n.test.ts`                      | Retain localized system-message actions and translated-message visibility                                                                                                                    |
+| `package.json`                                                           | Add exactly the two scripts below; no dependency changes                                                                                                                                     |
 
 New files:
 
@@ -93,15 +93,15 @@ No new support message kind, translated copy, queue identity, source-key/idempot
 
 Apply the common mandatory server-error contract. Reuse the existing support semantic adapter; Shared remains the only serializer/sink/redactor. Pass original safe Error plus explicit available code/cause chain of at most four entries. Preserve thrown cause; do not log message bodies, translations, customer details or Redis URL. No database read is permitted solely to enrich a log.
 
-| Failure/injection | Owning diagnostic | Required outcome |
-|---|---|---|
-| Badge SELECT or inbox page/aggregate SELECT rejects with a Prisma/driver marker and cause | Support reader; operation distinguishes badge/page/aggregate | One Shared error with original safe message/code/cause; propagate original error; no fabricated zero badge or empty inbox |
-| Batch transaction/SQL fails | Batch service | Original database failure once; rollback; HTTP error remains operational, not `{marked:true}` |
-| Compose transaction/insert fails | Support action's existing send-failure boundary | Original error/code/cause once; existing bounded `SEND_FAILED` response; no partial thread/message/translation |
-| Queue creation/old-queue close/add rejects after commit | Existing translation-dispatch diagnostic, warn | Original error/cause once, durable success unchanged |
-| Missing optional queue configuration | Internal unavailable classification only if dispatch was needed | No invented provider error; translation remains PENDING |
-| Invalid payload, foreign/unavailable ID, already-read valid ID | Expected control flow | Preserve defined HTTP/marked outcomes; no fabricated operational error |
-| Throwing Shared sink | Shared isolation | Database result, rollback and response unchanged |
+| Failure/injection                                                                         | Owning diagnostic                                               | Required outcome                                                                                                          |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Badge SELECT or inbox page/aggregate SELECT rejects with a Prisma/driver marker and cause | Support reader; operation distinguishes badge/page/aggregate    | One Shared error with original safe message/code/cause; propagate original error; no fabricated zero badge or empty inbox |
+| Batch transaction/SQL fails                                                               | Batch service                                                   | Original database failure once; rollback; HTTP error remains operational, not `{marked:true}`                             |
+| Compose transaction/insert fails                                                          | Support action's existing send-failure boundary                 | Original error/code/cause once; existing bounded `SEND_FAILED` response; no partial thread/message/translation            |
+| Queue creation/old-queue close/add rejects after commit                                   | Existing translation-dispatch diagnostic, warn                  | Original error/cause once, durable success unchanged                                                                      |
+| Missing optional queue configuration                                                      | Internal unavailable classification only if dispatch was needed | No invented provider error; translation remains PENDING                                                                   |
+| Invalid payload, foreign/unavailable ID, already-read valid ID                            | Expected control flow                                           | Preserve defined HTTP/marked outcomes; no fabricated operational error                                                    |
+| Throwing Shared sink                                                                      | Shared isolation                                                | Database result, rollback and response unchanged                                                                          |
 
 ## Work Items
 

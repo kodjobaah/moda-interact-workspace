@@ -15,7 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: [ARCH-077-SHARED-001, ARCH-077-BACKGROUND-001, ARCH-077-SHOPIFY-002, ARCH-077-SHOPIFY-004]
+enables:
+  [
+    ARCH-077-SHARED-001,
+    ARCH-077-BACKGROUND-001,
+    ARCH-077-SHOPIFY-002,
+    ARCH-077-SHOPIFY-004,
+  ]
 created: 2026-11-17
 updated: 2026-11-17
 ---

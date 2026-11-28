@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-014-DATABASE-004
+  - ARCH-014-DATABASE-004
 enables:
-- ARCH-014-BACKGROUND-006
+  - ARCH-014-BACKGROUND-006
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -210,7 +210,6 @@ Validation limitations:
 - `npm run migrate:deploy`: blocked by pre-existing Prisma `P3009`; migration `20260915140000_arch015_fractional_provider_usage_snapshots` previously failed in the local database. No migration repair or resolve action was performed.
 
 Changed implementation files are limited to the requested schema, migration, validator, and generated ERD artifacts. Parent task metadata is set to `review`; `executor` and `claimed_at` are cleared. No Architect Review section was modified.
-
 
 ## Architect Review
 

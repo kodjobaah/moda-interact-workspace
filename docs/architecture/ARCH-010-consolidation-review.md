@@ -39,13 +39,13 @@ Accepted-history reconciliation is not a task merge. BACKGROUND-001 remains Comp
 
 Safe merges:
 
-| Superseded task | Active owner | Reason |
-|---|---|---|
+| Superseded task  | Active owner     | Reason                                                                                                              |
+| ---------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `BACKGROUND-016` | `BACKGROUND-012` | same reconciliation service, same provider snapshot, same dependencies, mutually exclusive lifecycle classification |
-| `BACKGROUND-017` | `BACKGROUND-013` | same execution-policy boundary/paths; retain distinct NO_CONTRACT vs FROZEN reasons |
-| `SHOPIFY-010` | `SHOPIFY-014` | component is pure presentation of the top-up adapter contract; same feature boundary |
-| `SHOPIFY-011` | `SHOPIFY-015` | component is pure presentation of the Shopify-hosted plan-management flow |
-| `SHOPIFY-019` | `SHOPIFY-016` | same merchant surfaces/action guards; one explicit lifecycle-restriction state matrix is safer |
+| `BACKGROUND-017` | `BACKGROUND-013` | same execution-policy boundary/paths; retain distinct NO_CONTRACT vs FROZEN reasons                                 |
+| `SHOPIFY-010`    | `SHOPIFY-014`    | component is pure presentation of the top-up adapter contract; same feature boundary                                |
+| `SHOPIFY-011`    | `SHOPIFY-015`    | component is pure presentation of the Shopify-hosted plan-management flow                                           |
+| `SHOPIFY-019`    | `SHOPIFY-016`    | same merchant surfaces/action guards; one explicit lifecycle-restriction state matrix is safer                      |
 
 The surviving tasks were rewritten rather than told to "do both old tasks". Each contains exact inspect paths, ordered state transitions, forbidden behaviour, numbered tests, validation requirements and STOP conditions suitable for GPT-5.6 Luna.
 
@@ -114,7 +114,6 @@ The exact selected campaign grant lot is promotion authority; there is no aggreg
 ARCH-010-SHOPIFY-026
 ARCH-010-ADMIN-003
 ```
-
 
 ## Purchase-lifecycle/refund forward correction — 2026-09-13
 
@@ -256,6 +255,7 @@ ARCH-010-SHOPIFY-003    -> Ready
 Only these direct dependants are promoted here. Their own dependants remain gated
 until the corresponding newly Ready task is separately implemented and
 architect-accepted Complete.
+
 ## Post-review update — SHOPIFY-021 Attempt 4 accepted
 
 `ARCH-010-SHOPIFY-021` Attempt 4 is architect-accepted Complete.
@@ -746,4 +746,3 @@ Current automatic implementation-ready frontier:
 ARCH-010-SHOPIFY-026
 ARCH-010-ADMIN-003
 ```
-

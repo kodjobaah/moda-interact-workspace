@@ -50,7 +50,6 @@ New continuations are unsigned versioned position envelopes (base64url JSON wher
 
 Compatibility: make a coordinated breaking deployment of these internal pre-production continuations. Old Moda HMAC product v2, encrypted catalogue and Commerce signed tokens are not migrated or verified: return the established bounded INVALID_INPUT restart instruction, allowing the caller to retry from cursor null. Do not infer legacy tokens as arbitrary valid provider cursors. No public tool names, Shared cursor field types or provider cursor protocols change. Rollback restarts pagination; no durable business data migration. Confirm actual deployment context before execution; if production compatibility is now required, return that conflict to the architect rather than inventing a bridge.
 
-
 ## Work Items
 
 - [x] Inventory all owned paginated operations and remove cursor cryptography/binding/secret gates.
@@ -122,13 +121,13 @@ Six task-owned implementation files:
 
 ### Work Completed / Owned Pagination Inventory
 
-| Operation | Pagination handling | Preserved authority / limits |
-| --- | --- | --- |
-| Local `shopify.searchProducts` | Unsigned base64url UTF-8 JSON `{version:3,progress:{kind:'variants',after:<native edge>}}` | Authorize current active Shop ID/domain before every call; resolve current offline session/provider; apply current query/price/availability/currency/market filters |
-| Local qualifying/similar recommendations | Reuse the same product search adapter and its positions | Existing discount evaluation, basket/product facts, provider budget and recommendation policy retained |
-| Product-facts collection traversal | Native internal GraphQL `after` positions, unchanged | Fixed documents, authenticated context, request limit12, collection bound1000 and deadlines retained |
-| Native Shopify discount traversal | Native provider opaque cursors, unchanged | Current tenant/session/scopes/NONE/FIXED/AI policy and native provider protocol retained |
-| Native Woo discount traversal | Existing tenant-scoped Prisma composite cursor, unchanged | Current effective policy/override, catalogue eligibility, selected discounts and parameterized tenant predicates retained |
+| Operation                                | Pagination handling                                                                        | Preserved authority / limits                                                                                                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local `shopify.searchProducts`           | Unsigned base64url UTF-8 JSON `{version:3,progress:{kind:'variants',after:<native edge>}}` | Authorize current active Shop ID/domain before every call; resolve current offline session/provider; apply current query/price/availability/currency/market filters |
+| Local qualifying/similar recommendations | Reuse the same product search adapter and its positions                                    | Existing discount evaluation, basket/product facts, provider budget and recommendation policy retained                                                              |
+| Product-facts collection traversal       | Native internal GraphQL `after` positions, unchanged                                       | Fixed documents, authenticated context, request limit12, collection bound1000 and deadlines retained                                                                |
+| Native Shopify discount traversal        | Native provider opaque cursors, unchanged                                                  | Current tenant/session/scopes/NONE/FIXED/AI policy and native provider protocol retained                                                                            |
+| Native Woo discount traversal            | Existing tenant-scoped Prisma composite cursor, unchanged                                  | Current effective policy/override, catalogue eligibility, selected discounts and parameterized tenant predicates retained                                           |
 
 - Removed the only Moda-owned pagination cryptography found in Commerce: product HMAC signing/verification, TTL, shop/query/filter/currency/market comparisons and secret constructor input. No alternate key, store, verifier, hidden binding or compatibility path.
 - Removed the early preview factory return that previously exposed only merchant knowledge without a sufficiently long secret. Basket, search, recommendations and discount registrations now remain available; execution still enforces their actual prerequisites.

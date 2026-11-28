@@ -21,6 +21,7 @@ enables: []
 created: 2026-10-22
 updated: 2026-10-22
 ---
+
 # ARCH-035-SYSTEM-TEST-006: Certify live WooCommerce Promotions selection and history
 
 ## Architecture

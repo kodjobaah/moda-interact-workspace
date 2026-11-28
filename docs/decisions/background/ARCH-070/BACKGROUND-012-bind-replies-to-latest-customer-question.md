@@ -129,7 +129,6 @@ None. No Shared publication, model/provider/token change, live send or quota res
 
 Root must await exact final CI and architect acceptance before authorized merge; live final canary after012+013 deployed. Existing test conversation has exhausted19 normal automated messages plus one terminal message, so root must use a genuine fresh authorized test checkout or request a scoped policy decision rather than reset usage.
 
-
 ## Architect Review
 
 ### Review Status
@@ -155,7 +154,6 @@ Background application authority; no Shared business policy.
 ### Follow-up
 
 Root normal execution path.
-
 
 ### Superseding latest-only and moderation authority contract
 

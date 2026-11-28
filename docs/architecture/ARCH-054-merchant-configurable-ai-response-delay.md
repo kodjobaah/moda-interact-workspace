@@ -17,14 +17,14 @@ The feature is pre-production; a coordinated breaking database and contract roll
 
 ## Problem
 
-`ShopSettings` has `recoveryDelayMinutes` for *initial recovery outreach*, not for replies. `BackgroundRuntimeConfig.conversationQuietWindowMs` (default 3000) and `conversationMaxSettleWindowMs` (default 10000) combine customer fragments, but do not offer merchant-specific AI waiting. `ConversationTurnProcessor` schedules BullMQ jobs keyed by conversation ID/inbound version and uses `Conversation.pendingTurnStartedAt`, `inboundVersion`, `lastProcessedVersion`, and processing leases. The recovery-only AI/HUMAN fence reads `Conversation.controlRevision` via `AiTurnOwnershipService`; Shopify and hosted WooCommerce have separate control transitions. HUMAN commands already use a durable, direct dispatch workflow. There is no merchant-configurable AI response delay or durable per-turn eligibility deadline.
+`ShopSettings` has `recoveryDelayMinutes` for _initial recovery outreach_, not for replies. `BackgroundRuntimeConfig.conversationQuietWindowMs` (default 3000) and `conversationMaxSettleWindowMs` (default 10000) combine customer fragments, but do not offer merchant-specific AI waiting. `ConversationTurnProcessor` schedules BullMQ jobs keyed by conversation ID/inbound version and uses `Conversation.pendingTurnStartedAt`, `inboundVersion`, `lastProcessedVersion`, and processing leases. The recovery-only AI/HUMAN fence reads `Conversation.controlRevision` via `AiTurnOwnershipService`; Shopify and hosted WooCommerce have separate control transitions. HUMAN commands already use a durable, direct dispatch workflow. There is no merchant-configurable AI response delay or durable per-turn eligibility deadline.
 
 ## Agreed behaviour and non-goals
 
 1. A merchant sets **any whole number of minutes 0–30 inclusive**; default **0**. Reject strings, fractions, negatives, >30, NaN, unknown keys, unauthorised writes and revision conflicts at each public boundary.
 2. Delay applies only to **CommerceAgent-generated customer replies** on active recovery conversations while `controlMode=AI`. It applies to every new pending AI turn, not merely the first reply after outreach. The delay is **additional to** the existing quiet/maximum-settle calculation. Zero retains the old settle-first behaviour.
 3. The anchor is the **first processable customer message of a pending AI turn**, not the initial outreach send, nor the last message received. For text, use the transaction's first committed customer-message receipt time; for audio, use the first successful transcription-completion time. Subsequent customer messages join the same pending turn and **must not move the AI deadline**, even if an inbound version changes.
-4. Record the merchant's delay and `controlRevision` **once** when that pending turn is opened; changes to merchant settings affect only *future* turns. A HUMAN→AI cycle never resurrects work scheduled under an earlier control revision.
+4. Record the merchant's delay and `controlRevision` **once** when that pending turn is opened; changes to merchant settings affect only _future_ turns. A HUMAN→AI cycle never resurrects work scheduled under an earlier control revision.
 5. Human-written replies are **never delayed by this setting**. Existing `HUMAN_TEXT` and permitted human follow-up commands continue through existing moderation, entitlement, tenant ownership, 24-hour window, idempotency and dispatch gates. The feature does not guarantee instant provider delivery; it only adds **zero discretionary waiting** to HUMAN messages.
 6. Do not delay STOP/unsubscribe handling, safety/abuse controls, provider receipts, initial recovery outreach, configured no-response follow-up, or deterministic routing guidance. The configurable delay gates an **AGENT model reply**, not unrelated AUTOMATION/Meta operations.
 7. Exact contextual routing continues to use the quoted outbound Meta ID, recovery-scoped shop ownership and the customer's normalised shop-scoped phone. A person contacting two shops through one Meta sender must have independently scheduled conversations and cannot leak data between merchants.
@@ -34,18 +34,18 @@ The feature is pre-production; a coordinated breaking database and contract roll
 
 ## Current implementation evidence
 
-| Boundary | Inspected source | Existing capability |
-|---|---|---|
-| Durable state | `moda-interact-database/prisma/schema.prisma` | `ShopSettings`, `Conversation` version/claim/control fields |
-| Text inbound | `moda-interact-background/src/services/conversation.service.ts` | Atomic message write/inbound-version update; pending-turn start |
-| Audio inbound | `moda-interact-background/src/services/inbound-whatsapp-audio.service.ts` | Version increments at transcription completion |
-| Worker | `moda-interact-background/src/services/conversation-turn-processor.service.ts` | `settleDelay`, versioned job IDs, BullMQ `moveToDelayed`, claim/release |
-| Ownership | `moda-interact-background/src/services/recovery-conversation/ai-turn-ownership.service.ts` | Recovery, shop, controlMode/revision checks |
-| Shopify control | `moda-interact/app/services/recoveries/recovery-human-commands.server.ts` | Atomic `controlRevision` increment |
-| Woo control | `moda-interact-api/src/merchant/conversations/control/service.ts` | Authenticated control transition within transaction |
-| Shopify settings | `app/routes/app/recovery-settings/*`, `app/routes/app/settings-save/route.ts` | Authenticated settings loader and save |
-| Woo settings | `moda-interact-api/src/merchant/recovery-policy/*`, `moda-interact-woocommerce/includes/Rest/RecoveryPolicyController.php` | Hosted API + protected WordPress REST pattern |
-| Human send | `moda-interact-api/src/merchant/conversations/messages/*` and Shopify human commands | Independent immediate durable HUMAN path |
+| Boundary         | Inspected source                                                                                                           | Existing capability                                                     |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Durable state    | `moda-interact-database/prisma/schema.prisma`                                                                              | `ShopSettings`, `Conversation` version/claim/control fields             |
+| Text inbound     | `moda-interact-background/src/services/conversation.service.ts`                                                            | Atomic message write/inbound-version update; pending-turn start         |
+| Audio inbound    | `moda-interact-background/src/services/inbound-whatsapp-audio.service.ts`                                                  | Version increments at transcription completion                          |
+| Worker           | `moda-interact-background/src/services/conversation-turn-processor.service.ts`                                             | `settleDelay`, versioned job IDs, BullMQ `moveToDelayed`, claim/release |
+| Ownership        | `moda-interact-background/src/services/recovery-conversation/ai-turn-ownership.service.ts`                                 | Recovery, shop, controlMode/revision checks                             |
+| Shopify control  | `moda-interact/app/services/recoveries/recovery-human-commands.server.ts`                                                  | Atomic `controlRevision` increment                                      |
+| Woo control      | `moda-interact-api/src/merchant/conversations/control/service.ts`                                                          | Authenticated control transition within transaction                     |
+| Shopify settings | `app/routes/app/recovery-settings/*`, `app/routes/app/settings-save/route.ts`                                              | Authenticated settings loader and save                                  |
+| Woo settings     | `moda-interact-api/src/merchant/recovery-policy/*`, `moda-interact-woocommerce/includes/Rest/RecoveryPolicyController.php` | Hosted API + protected WordPress REST pattern                           |
+| Human send       | `moda-interact-api/src/merchant/conversations/messages/*` and Shopify human commands                                       | Independent immediate durable HUMAN path                                |
 
 ## Exact durable model
 
@@ -111,11 +111,19 @@ Because some old queued jobs may still arrive, **every** read, claim and outboun
 Shared published entrypoint: `@modainteract/moda-interact-shared/ai-response-delay` (new `src/ai-response-delay.ts`, package exports AND `tsup.config.ts` entry). The owner defines strict Zod schemas and inferred types. `AiResponseDelayMinutesSchema` is `z.number().int().min(0).max(30)`; `AiResponseDelayRevisionSchema` accepts `UNCONFIGURED` or an ISO millisecond UTC timestamp. `MerchantAiResponseDelayReadV1Schema` is exactly `{schemaVersion:1, revision, aiResponseDelayMinutes}`; `MerchantAiResponseDelayWriteV1Schema` is exactly `{schemaVersion:1, expectedRevision, aiResponseDelayMinutes}`. Both are strict; there is no `v2`, no independent business policy in Zod, and no mutable conversation turn field in the merchant-facing wire contract.
 
 ```json
-{ "schemaVersion": 1, "expectedRevision": "UNCONFIGURED", "aiResponseDelayMinutes": 7 }
+{
+  "schemaVersion": 1,
+  "expectedRevision": "UNCONFIGURED",
+  "aiResponseDelayMinutes": 7
+}
 ```
 
 ```json
-{ "schemaVersion": 1, "revision": "2026-10-31T16:28:55.123Z", "aiResponseDelayMinutes": 7 }
+{
+  "schemaVersion": 1,
+  "revision": "2026-10-31T16:28:55.123Z",
+  "aiResponseDelayMinutes": 7
+}
 ```
 
 Woo hosted API route: `GET/PUT /v1/merchant/ai-response-delay` with the existing authenticated Woo installation principal; WordPress proxy: `GET/PUT /wp-json/moda-interact/v1/merchant/ai-response-delay`. Shopify uses its existing authenticated `/app/recovery-settings` UI and `settings-save` action with a distinct `ai-response-delay` intent; it does not call the Woo hosted API. The stored configuration is one `ShopSettings` row per shop, not a new per-platform setting. `revision` is the current settings `updatedAt` or `UNCONFIGURED` where a valid Woo shop has no settings row; writes take the existing Shop row lock, use optimistic revision checking, advance `updatedAt` monotonically, and reject invalid requests without mutating other settings.
@@ -145,21 +153,21 @@ Database migration → Shared implementation acceptance → Shared publication �
 
 ## Decisions / task graph
 
-| Task | Owner | Current status | Depends on |
-|---|---|---|---|
-| ARCH-054-DATABASE-001 | moda_database | Complete | — |
-| ARCH-054-SHARED-001 | moda_shared | Complete | — |
-| ARCH-054-SHARED-002 | moda_shared | Complete | SHARED-001 |
-| ARCH-054-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
-| ARCH-054-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001, API-002, SHOPIFY-002 |
-| ARCH-054-BACKGROUND-003 | moda_background | Complete | BACKGROUND-002 |
-| ARCH-054-API-001 | moda_api | Complete | DATABASE-001, SHARED-002 |
-| ARCH-054-API-002 | moda_api | Complete | DATABASE-001 |
-| ARCH-054-SHOPIFY-001 | moda_app | Complete | DATABASE-001, SHARED-002 |
-| ARCH-054-SHOPIFY-002 | moda_app | Complete | DATABASE-001 |
-| ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Complete | API-001 |
-| ARCH-054-SYSTEM-TEST-001 | moda_system_test | Ready | all implementation/release tasks |
-| ARCH-054-SYSTEM-TEST-002 | moda_system_test | Pending | SYSTEM-TEST-001, BACKGROUND-003 |
+| Task                     | Owner            | Current status | Depends on                           |
+| ------------------------ | ---------------- | -------------- | ------------------------------------ |
+| ARCH-054-DATABASE-001    | moda_database    | Complete       | —                                    |
+| ARCH-054-SHARED-001      | moda_shared      | Complete       | —                                    |
+| ARCH-054-SHARED-002      | moda_shared      | Complete       | SHARED-001                           |
+| ARCH-054-BACKGROUND-001  | moda_background  | Complete       | DATABASE-001                         |
+| ARCH-054-BACKGROUND-002  | moda_background  | Complete       | BACKGROUND-001, API-002, SHOPIFY-002 |
+| ARCH-054-BACKGROUND-003  | moda_background  | Complete       | BACKGROUND-002                       |
+| ARCH-054-API-001         | moda_api         | Complete       | DATABASE-001, SHARED-002             |
+| ARCH-054-API-002         | moda_api         | Complete       | DATABASE-001                         |
+| ARCH-054-SHOPIFY-001     | moda_app         | Complete       | DATABASE-001, SHARED-002             |
+| ARCH-054-SHOPIFY-002     | moda_app         | Complete       | DATABASE-001                         |
+| ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Complete       | API-001                              |
+| ARCH-054-SYSTEM-TEST-001 | moda_system_test | Ready          | all implementation/release tasks     |
+| ARCH-054-SYSTEM-TEST-002 | moda_system_test | Pending        | SYSTEM-TEST-001, BACKGROUND-003      |
 
 ## Open questions
 
@@ -172,16 +180,13 @@ None blocking task definition. Whether to add optional merchant notifications fo
 - 2026-11-01: Accepted ARCH-054-WOOCOMMERCE-001 at Attempt 1 after reviewing the protected Woo REST proxy, settings UI and submitted validation. No downstream task became newly eligible.
 - 2026-11-02: Accepted ARCH-054-BACKGROUND-001 at Attempt 1 after reviewing the text/audio transaction capture, branch/worktree evidence, and successful four-test PostgreSQL integration run. BACKGROUND-002 is Ready; no implementation was started.
 
-
 ### 2 November 2026 — BACKGROUND-002 Attempt 1 review
 
 Changes Requested on implementation `35772c5`: retain the frozen deadline/control-revision implementation, close the final current-inbound-version dispatch-admission race, and add recovery-specific PostgreSQL/Redis validation of delay and audited takeover/dispatch races. Independent selected unit run passed 100 tests; an adversarial before-provider ownership-await regression reproduced stale send admission. BACKGROUND-002 returns to Ready with claim cleared, Attempt 1 preserved; BACKGROUND-003 and terminal system tests remain Pending.
 
-
 ### 2 November 2026 — BACKGROUND-002 Attempt 2 accepted
 
 Accepted `64d1be0`: original inbound version now reaches both locked final send fences, resolving the stale-dispatch race. Independent validation passed 129 focused unit tests and 11 disposable PostgreSQL/Redis integration tests, including recovery delay and both admission race orderings. BACKGROUND-002 is Complete; BACKGROUND-003 is Ready, unclaimed at Attempt 0. Both terminal system tasks remain Pending; ARCH-054 is not yet implemented end to end.
-
 
 ## BACKGROUND-003 acceptance — 2 November 2026
 

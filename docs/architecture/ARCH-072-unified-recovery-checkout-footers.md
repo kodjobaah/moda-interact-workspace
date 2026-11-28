@@ -43,9 +43,9 @@ PRODUCTION / COMPATIBLE ROLLOUT. One Background-owned implementation -> architec
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Dependencies |
-|---|---|---|---|
-| ARCH-072-BACKGROUND-001 | moda_background | Complete | None |
+| Task                    | Owner           | Status   | Dependencies |
+| ----------------------- | --------------- | -------- | ------------ |
+| ARCH-072-BACKGROUND-001 | moda_background | Complete | None         |
 
 ## Validation / Completion Gate
 

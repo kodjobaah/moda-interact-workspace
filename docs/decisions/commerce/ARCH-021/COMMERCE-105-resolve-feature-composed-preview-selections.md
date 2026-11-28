@@ -205,7 +205,7 @@ Extend the saved-selection result/Preview loader boundary so Feature Behaviour i
 featureBehaviours: Array<{
   featureId: string;
   behaviourPrompt: string;
-}>
+}>;
 ```
 
 For `FEATURES`, emit exactly one entry per selected Feature, including Features with zero Capabilities and Features with an empty Behaviour prompt.

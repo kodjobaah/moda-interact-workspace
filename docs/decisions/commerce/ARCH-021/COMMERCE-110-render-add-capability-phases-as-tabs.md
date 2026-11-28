@@ -50,9 +50,7 @@ Manual validation after COMMERCE-104 shows that Add Capability still renders its
 
 ```tsx
 <nav aria-label="Capability setup">
-  <ol className="tab-list">
-    ...
-  </ol>
+  <ol className="tab-list">...</ol>
 </nav>
 ```
 
@@ -194,7 +192,7 @@ Do not introduce a second tab-specific availability function.
 Tab disabled state MUST be:
 
 ```ts
-!isPhaseAvailable(item) || pending || outcomeUnknown
+!isPhaseAvailable(item) || pending || outcomeUnknown;
 ```
 
 Do not change the meaning of:

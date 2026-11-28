@@ -73,7 +73,6 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 Own `src/commerce/execution/`. Import004 context types; do not edit its authorizer. Implement query/policy ports with fixtures here;013 installs real005/015/006/016/007 providers.
 
-
 ## Dependencies
 
 - ARCH-020-COMMERCE-004
