@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-014-BACKGROUND-001
+  - ARCH-014-BACKGROUND-001
 enables:
-- ARCH-014-BACKGROUND-004
-- ARCH-014-BACKGROUND-005
+  - ARCH-014-BACKGROUND-004
+  - ARCH-014-BACKGROUND-005
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -305,7 +305,7 @@ The billing entrypoint already starts `backgroundRuntimeConfigService` before co
 Replace the queued-job construction:
 
 ```ts
-new ShopifySubscriptionLifecycleReconciliationService(this.database)
+new ShopifySubscriptionLifecycleReconciliationService(this.database);
 ```
 
 with construction that receives the same captured `runtimeConfig` in the existing runtime-config constructor slot.
@@ -337,13 +337,13 @@ Do not remove the publisher's constructor/test defaults if existing unit tests s
 Change `recordFrozenProviderFailure(...)` to receive the same captured runtime snapshot (or the exact required `billingFrozenRecheckSeconds` value) and replace:
 
 ```ts
-60 * 60 * 1000
+60 * 60 * 1000;
 ```
 
 with:
 
 ```ts
-runtimeConfig.billingFrozenRecheckSeconds * 1000
+runtimeConfig.billingFrozenRecheckSeconds * 1000;
 ```
 
 This preserves the existing semantic: a provider failure while reconciling a FROZEN subscription schedules the next frozen recheck using the Admin-controlled frozen interval.

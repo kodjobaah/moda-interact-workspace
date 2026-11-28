@@ -52,14 +52,14 @@ hard-coded list of "supported Moda countries".
 
 Moda uses established identifiers throughout the platform:
 
-| Concern | Canonical standard | Examples |
-| --- | --- | --- |
-| Language / locale | BCP-47 | `en-GB`, `fr-FR`, `pt-BR`, `ar` |
-| Country | ISO 3166-1 alpha-2 | `GB`, `FR`, `BR` |
-| Currency | ISO 4217 | `GBP`, `EUR`, `BRL` |
-| Phone | E.164 | `+447...`, `+5511...` |
-| Time zone | IANA | `Europe/London`, `America/Sao_Paulo` |
-| Stored timestamps | UTC instant | `2026-09-05T14:00:00Z` |
+| Concern           | Canonical standard | Examples                             |
+| ----------------- | ------------------ | ------------------------------------ |
+| Language / locale | BCP-47             | `en-GB`, `fr-FR`, `pt-BR`, `ar`      |
+| Country           | ISO 3166-1 alpha-2 | `GB`, `FR`, `BR`                     |
+| Currency          | ISO 4217           | `GBP`, `EUR`, `BRL`                  |
+| Phone             | E.164              | `+447...`, `+5511...`                |
+| Time zone         | IANA               | `Europe/London`, `America/Sao_Paulo` |
+| Stored timestamps | UTC instant        | `2026-09-05T14:00:00Z`               |
 
 Provider-specific values are mapped at provider boundaries. For example, a
 Meta/WhatsApp provider language code is not automatically the canonical Moda
@@ -272,14 +272,14 @@ logic. Provider availability can change independently of Moda releases.
 
 ARCH-005 spans several repositories:
 
-| Repository / agent | Internationalisation responsibility |
-| --- | --- |
-| `moda-interact-shared` / `moda_shared` | Canonical language/country/currency/time-zone contracts |
-| `moda-interact-database` / `moda_database` | Merchant defaults, conversation context and template variants |
-| `moda-interact` / `moda_app` | Shopify context capture and merchant UI localisation |
-| `moda-interact-background` / `moda_background` | Propagate international context; select/send approved proactive WhatsApp templates; resolve active-conversation language; execute/localise CommerceAgent turns |
-| `moda-interact-messaging` / `moda_messaging` | Stateless Meta/WhatsApp inbound webhook ingress, validation/normalisation and publication of inbound events |
-| `moda-interact-system-test` / `moda_system_test` | Multi-market and multilingual integrated verification |
+| Repository / agent                               | Internationalisation responsibility                                                                                                                            |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `moda-interact-shared` / `moda_shared`           | Canonical language/country/currency/time-zone contracts                                                                                                        |
+| `moda-interact-database` / `moda_database`       | Merchant defaults, conversation context and template variants                                                                                                  |
+| `moda-interact` / `moda_app`                     | Shopify context capture and merchant UI localisation                                                                                                           |
+| `moda-interact-background` / `moda_background`   | Propagate international context; select/send approved proactive WhatsApp templates; resolve active-conversation language; execute/localise CommerceAgent turns |
+| `moda-interact-messaging` / `moda_messaging`     | Stateless Meta/WhatsApp inbound webhook ingress, validation/normalisation and publication of inbound events                                                    |
+| `moda-interact-system-test` / `moda_system_test` | Multi-market and multilingual integrated verification                                                                                                          |
 
 ## Representative verification
 

@@ -45,6 +45,7 @@ Render the existing plan-gated merchant feature preference cards and interaction
 Shopify app/components/settings/FeaturePreferences.tsx renders required non-editable features and optional automatically submitted toggles; it is embedded in RecoverySettingsView, not a separate top-level AI settings page.
 
 Source references:
+
 - Shopify: app/components/settings/FeaturePreferences.tsx; app/routes/app/recovery-settings/RecoverySettingsView.tsx.
 - Woo: src/recovery-settings/recovery-settings-screen.js.
 
@@ -188,7 +189,6 @@ Accepted — 2026-10-16, per the user's explicit architect-review direction for 
 ### Review Notes
 
 The bounded Woo UI implementation, task-local tests, 20-locale verification, repository JS regression suite, build and production package were reviewed as recorded above. The production client does not invent or call a feature-preference endpoint; ARCH-035-API-003 is superseded and the UI remains unavailable until an approved contract exists. Independent LocalWP navigation/keyboard/responsive evidence was not observed because the provided LocalWP URLs failed with `ERR_SSL_PROTOCOL_ERROR` and the ngrok URL was offline (`ERR_NGROK_3200`). The developer explicitly authorized completion with that evidence waived; this is an accepted exception, not a test pass.
-
 
 **Architect reconciliation (2026-10-16):** Recovery policy prerequisite WOOCOMMERCE-002 is now Complete. The feature-preferences section is absent. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
 

@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-016
 architecture_id: ARCH-010
-title: Reconcile Shopify subscription freeze and unfreeze without losing entitlement
+title:
+  Reconcile Shopify subscription freeze and unfreeze without losing entitlement
   history
 task_kind: implementation
 domain: background
@@ -16,14 +17,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-BACKGROUND-007
-- ARCH-010-BACKGROUND-010
-- ARCH-010-BACKGROUND-015
-- ARCH-010-SHARED-008
+  - ARCH-010-DATABASE-013
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-010
+  - ARCH-010-BACKGROUND-015
+  - ARCH-010-SHARED-008
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 superseded_by: ARCH-010-BACKGROUND-012
 ---
 
@@ -240,8 +241,8 @@ STOP if canonical BACKGROUND-007/010 helpers cannot be reused without changing t
 ## Completion Report
 
 ### Status
-Not started.
 
+Not started.
 
 ## Final promotional balance across freeze
 

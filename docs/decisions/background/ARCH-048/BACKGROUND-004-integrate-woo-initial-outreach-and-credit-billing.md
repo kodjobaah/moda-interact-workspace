@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-048-BACKGROUND-006
-- ARCH-045-BACKGROUND-005
+  - ARCH-048-BACKGROUND-006
+  - ARCH-045-BACKGROUND-005
 enables:
-- ARCH-048-BACKGROUND-005
-created: '2026-10-23'
+  - ARCH-048-BACKGROUND-005
+created: "2026-10-23"
 updated: 2026-10-24
 ---
 
@@ -190,7 +190,7 @@ Evidence: developer terminal captures `typescript(20261024-011142)`, `typescript
 - Incremental patch application/`git diff --check`: no whitespace errors reported in the developer application captures; full task code and tests were subsequently committed and pushed as `722593e` to `origin/task/ARCH-048-BACKGROUND-004`.
 - Earlier unsuccessful checks were resolved or replaced: a direct integration invocation initially could not resolve `prisma`; the npm runner fixed CLI resolution. First DB run was **6/7** because the simulated sender omitted ARCH-040 control-revision admission metadata; corrected to **7/7**. `npm run test:shopify` discovered no tests because the standard Vitest config excludes `tests/integration/**`; the specified **254/254** Shopify-recovery unit regression suite passed instead. The live Shopify integration test was **not** executed.
 - **Review-correction validation, `typescript(20261024-094540)` (2026-10-24):** `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` **39/39 passed**; `npm run build` (`prisma generate` / `tsc`) returned without reported error; touched-file `npx eslint src/services/woocommerce-recovery/woo-recovery-outreach.service.ts tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` produced **no diagnostics**, and the next shell command ran; `npm run test:integration -- tests/integration/arch048-woo-initial-outreach.integration.test.ts` **7/7 passed**, including concurrency, exact-once credit/usage, order event races and local STOP.
-- **Patch-application discrepancy:** that same capture shows `git apply --check --whitespace=error-all` and `git apply --whitespace=error-all` for `ARCH-048-BACKGROUND-004-attempt2-eslint-fix-after-review-corrections.patch` both **failed to apply at service line 442**. The supplied source already contains the intended post-catch `AggregateError` shape, so the successful tests/lint are evidence for the *source snapshot* rather than evidence that this last incremental patch applied. A subsequent `git diff --check` reported no error, but the failed `git apply --check` must not be recorded as passed.
+- **Patch-application discrepancy:** that same capture shows `git apply --check --whitespace=error-all` and `git apply --whitespace=error-all` for `ARCH-048-BACKGROUND-004-attempt2-eslint-fix-after-review-corrections.patch` both **failed to apply at service line 442**. The supplied source already contains the intended post-catch `AggregateError` shape, so the successful tests/lint are evidence for the _source snapshot_ rather than evidence that this last incremental patch applied. A subsequent `git diff --check` reported no error, but the failed `git apply --check` must not be recorded as passed.
 - **Attempt 2 validation run from the canonical implementation worktree on 2026-10-24:** focused outreach unit suite **39/39 passed**; touched-file ESLint emitted no diagnostics; `npm run build` completed Prisma generation and TypeScript compilation without errors; dedicated PostgreSQL/Redis outreach integration suite **7/7 passed**; Shopify recovery, consent, routing, WhatsApp and billing regression selection **471/471 passed across 37 files**; `git diff --check origin/main...HEAD` passed.
 - VS Code `runTests` did not discover the linked-worktree test path; the same focused test was run successfully using the repository's declared `npx vitest run` command from the canonical implementation worktree.
 - No live Meta delivery, production ARCH-046 final-permit integration, completed BG005 worker composition or end-to-end system test is claimed by these results.

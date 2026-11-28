@@ -158,7 +158,6 @@ The operation must perform ACTIVE matched-unit counting, candidate selection,
 ambiguity evaluation and all new grants inside one Serializable transaction so
 concurrent reconciliation retries the entire budget calculation.
 
-
 ### A. Remove pack activation from App Events HTTP-success path
 
 In the durable App Events publisher:
@@ -202,7 +201,7 @@ Validate before using:
 
 - finite number;
 - integer;
-- >= 0;
+- > = 0;
 - belongs to exact configured pack meter for the effective plan/current cycle.
 
 If provider quantity is missing/non-finite/negative/non-integer or the meter cannot be identified exactly, activate nothing and route through the existing reconciliation attention/diagnostic outcome.
@@ -504,7 +503,7 @@ Required corrections for Attempt 2:
    `BillingReconciliationService.reconcilePackPurchases()` currently returns
    `{ activatedCount: 0, discrepancy: null }` whenever
    `currentPeriodStart/currentPeriodEnd` is absent. `provider == null` may
-   legitimately mean no current contract, but a *present* Partner subscription
+   legitimately mean no current contract, but a _present_ Partner subscription
    without an exact current cycle is invalid reconciliation scope and must be
    surfaced through the existing discrepancy/attention path. Activate nothing
    and return/log an `invalid-scope` diagnostic (or the existing equivalent)
@@ -602,7 +601,7 @@ activation/counter grant is exactly-once under the existing Serializable retry
 boundary.
 
 Attempt 1 was Partial before the corrections recorded above.
- The core provider-confirmed budget architecture is implemented and
+The core provider-confirmed budget architecture is implemented and
 transport acknowledgement no longer grants credits. Conformance remains
 incomplete because the linked UsageEvent is not scoped to the exact pack meter
 (and shop), accepted ARCH-007 repaired-attention re-entry is lost, a present

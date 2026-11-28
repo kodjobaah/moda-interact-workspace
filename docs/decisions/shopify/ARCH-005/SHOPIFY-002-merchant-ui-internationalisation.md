@@ -329,7 +329,7 @@ Use the Shared direction helper for application chrome.
 Customer-authored/free text remains:
 
 ```tsx
-dir="auto"
+dir = "auto";
 ```
 
 Do not force merchant UI direction onto customer message content.
@@ -667,7 +667,6 @@ background/messaging repositories
 
 Return this same task to `status: review`, complete the Completion Report for
 Attempt 2, leave Architect Review unchanged, and STOP. No commit or push.
-
 
 ## Architect Review
 

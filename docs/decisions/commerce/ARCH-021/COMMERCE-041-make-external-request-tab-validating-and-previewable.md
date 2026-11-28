@@ -47,7 +47,7 @@ Make the External HTTP Request tab the complete non-network authoring checkpoint
 Developer manual review after COMMERCE-039 identified three Request-tab defects:
 
 1. Request controls are edited through `ExternalHttpExecutionSchema.safeParse(...)`; when an intermediate edit is invalid the update is silently discarded, so the author receives no useful error and may see the field snap back or appear not to accept input.
-2. The safe `Preview request` capability from COMMERCE-023 is presented under the Test tab even though it answers the Request-tab question: *what HTTP request will this definition construct?*
+2. The safe `Preview request` capability from COMMERCE-023 is presented under the Test tab even though it answers the Request-tab question: _what HTTP request will this definition construct?_
 3. The Request tab contains a disabled `Manage connections` button during local-only new-Tool authoring. Connection management is a separate Studio domain and navigating there would abandon the local creation session. The product decision is to remove this button from the Tool Request surface rather than preserve/navigation-couple a local creation session.
 
 The target Request tab is still zero-provider-I/O. It validates and previews request construction only. Real provider execution belongs to the later Test-tab review and is not part of this task.
@@ -267,12 +267,15 @@ The Request preview remains a descriptor preview, not evidence of a successful p
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 `app/styles.css`; `src/commerce/integration/external/index.ts`; `src/commerce/tool-authoring/external-validation.ts`; `src/commerce/tool-definition/contracts.ts`; `src/studio/external-http/editor.tsx`; `src/studio/external-http/request-tab.tsx`; `src/studio/external-http/test-tab.tsx`; `src/studio/tools/external-validation-server-actions.ts`; `src/studio/tools/new-tool-editor.tsx`; `src/studio/tools/tool-editor.tsx`; `tests/external-tool-authoring-server-actions.test.ts`; `tests/external-tool-authoring-validation.test.ts`; `tests/external-tools-ui.test.tsx`; `tests/tool-authoring-screen.test.tsx`.
 
 ### Work Completed
+
 Added strict Request-only authoritative validation through the existing metadata-only connection port, with declarative mapping checks and bounded JavaScript request compilation. Added an ADMIN-authorized Server Action and wired both new-tool and persisted-draft editors.
 
 Moved safe request preview and sample arguments to Request, rendered the GET origin/path/query with redacted auth state and descriptor headers, and left Test as a truthful no-live-testing placeholder. Request-local form state keeps invalid intermediate values visible across every tab; validation and preview results are keyed to their relevant inputs and stale outputs remain hidden. Removed Manage connections navigation without adding persistence or provider calls.
@@ -280,6 +283,7 @@ Moved safe request preview and sample arguments to Request, rendered the GET ori
 Implementation commit: `a37dcfc` (`feat(commerce): validate and preview external requests`), pushed to `task/ARCH-021-COMMERCE-041` in `moda-interact-commerce`.
 
 ### Validation Results
+
 Passed: `npm run test:arch021-tool-authoring-common` (85 tests); `npm run test:arch020-external-tools-ui` (17 tests); `npm run test:arch021-external-tool-authoring-validation` (45 tests); focused `tests/tool-authoring-screen.test.tsx` (10 tests). UI coverage also verifies new-tool persistence remains untouched by validation/preview, safe descriptor output, invalid text retention, free tab navigation, and stale in-flight preview suppression.
 
 Passed: targeted ESLint for all changed TypeScript/TSX files; editor diagnostics report no errors in changed TypeScript/TSX files; `git diff --check`.
@@ -287,6 +291,7 @@ Passed: targeted ESLint for all changed TypeScript/TSX files; editor diagnostics
 Repository `npm run typecheck` remains red with 249 diagnostics across 20 files outside this task's changed files. No diagnostics were reported for changed files.
 
 ### Task Execution Evidence
+
 Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-041`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-041`; both task branches are `task/ARCH-021-COMMERCE-041`. Both worktrees were newly created; shared workspace and implementation checkouts were not switched or mutated, and no other task worktree was reused.
 
 Start synchronization per launcher: parent and implementation remote task fast-forward were `not-needed`; `origin/main` was `already-current` in both. Recursive implementation submodule sync and initialization passed; `database` is at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
@@ -294,20 +299,25 @@ Start synchronization per launcher: parent and implementation remote task fast-f
 Parent claim was committed and pushed as `3afc6c08350a0bc1132539e36f48eb3675487f1e`. Implementation commit `a37dcfc` is pushed. Architect Review remains unchanged.
 
 ### Deviations
+
 None
 
 ### Assumptions
+
 None
 
 ### Unresolved Issues
+
 None
 
 ### Architectural Concerns
+
 None
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1
 
 ### Review Notes
@@ -323,6 +333,7 @@ The architect explicitly confirms that COMMERCE-041 does **not** own cross-tab g
 Request validation/preview are non-mutating and zero-provider-I/O. Validation uses only the bounded Request inputs and safe connection metadata; preview produces the safe descriptor and never reads credentials or performs transport/DNS work. COMMERCE-040 bounded JavaScript binding semantics remain in force.
 
 ### Reviewed Files
+
 - `src/studio/external-http/request-tab.tsx`
 - `src/studio/external-http/test-tab.tsx`
 - `src/studio/external-http/editor.tsx`
@@ -337,6 +348,7 @@ Request validation/preview are non-mutating and zero-provider-I/O. Validation us
 - `tests/external-tool-authoring-validation.test.ts`
 
 ### Validation Reviewed
+
 Accepted submitted evidence:
 
 ```text
@@ -363,7 +375,9 @@ zero DNS/transport/credential-read behavior is covered
 ```
 
 ### Architecture Conformance
+
 Conforms. COMMERCE-041 remains a bounded Request-tab follow-up. It does not redesign Response, Agent contract or Review, introduce progression gating, add provider execution, change database schema, or alter the accepted atomic creation lifecycle.
 
 ### Follow-up
+
 `ARCH-021-COMMERCE-042` is promoted to `ready` to complete the JavaScript-specific Request binding/editor UX. Manual review should remain on the Request tab until COMMERCE-042 is accepted.

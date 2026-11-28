@@ -15,48 +15,48 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-001
-- ARCH-010-DATABASE-002
-- ARCH-010-DATABASE-003
-- ARCH-010-DATABASE-004
-- ARCH-010-DATABASE-005
-- ARCH-010-DATABASE-006
-- ARCH-010-DATABASE-007
-- ARCH-010-DATABASE-008
-- ARCH-010-DATABASE-009
-- ARCH-010-DATABASE-010
-- ARCH-010-DATABASE-011
+  - ARCH-010-DATABASE-001
+  - ARCH-010-DATABASE-002
+  - ARCH-010-DATABASE-003
+  - ARCH-010-DATABASE-004
+  - ARCH-010-DATABASE-005
+  - ARCH-010-DATABASE-006
+  - ARCH-010-DATABASE-007
+  - ARCH-010-DATABASE-008
+  - ARCH-010-DATABASE-009
+  - ARCH-010-DATABASE-010
+  - ARCH-010-DATABASE-011
 enables:
-- ARCH-010-ADMIN-002
-- ARCH-010-ADMIN-004
-- ARCH-010-ADMIN-006
-- ARCH-010-ADMIN-008
-- ARCH-010-ADMIN-010
-- ARCH-010-BACKGROUND-001
-- ARCH-010-BACKGROUND-002
-- ARCH-010-BACKGROUND-003
-- ARCH-010-BACKGROUND-006
-- ARCH-010-BACKGROUND-007
-- ARCH-010-BACKGROUND-009
-- ARCH-010-BACKGROUND-010
-- ARCH-010-BACKGROUND-011
-- ARCH-010-BACKGROUND-012
-- ARCH-010-BACKGROUND-014
-- ARCH-010-BACKGROUND-016
-- ARCH-010-BACKGROUND-019
-- ARCH-010-SHOPIFY-003
-- ARCH-010-SHOPIFY-004
-- ARCH-010-SHOPIFY-006
-- ARCH-010-SHOPIFY-007
-- ARCH-010-SHOPIFY-009
-- ARCH-010-SHOPIFY-017
-- ARCH-010-SHOPIFY-018
-- ARCH-010-SHOPIFY-021
-- ARCH-010-SHOPIFY-022
-- ARCH-010-SHOPIFY-023
-- ARCH-010-SYSTEM-TEST-005
+  - ARCH-010-ADMIN-002
+  - ARCH-010-ADMIN-004
+  - ARCH-010-ADMIN-006
+  - ARCH-010-ADMIN-008
+  - ARCH-010-ADMIN-010
+  - ARCH-010-BACKGROUND-001
+  - ARCH-010-BACKGROUND-002
+  - ARCH-010-BACKGROUND-003
+  - ARCH-010-BACKGROUND-006
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-BACKGROUND-010
+  - ARCH-010-BACKGROUND-011
+  - ARCH-010-BACKGROUND-012
+  - ARCH-010-BACKGROUND-014
+  - ARCH-010-BACKGROUND-016
+  - ARCH-010-BACKGROUND-019
+  - ARCH-010-SHOPIFY-003
+  - ARCH-010-SHOPIFY-004
+  - ARCH-010-SHOPIFY-006
+  - ARCH-010-SHOPIFY-007
+  - ARCH-010-SHOPIFY-009
+  - ARCH-010-SHOPIFY-017
+  - ARCH-010-SHOPIFY-018
+  - ARCH-010-SHOPIFY-021
+  - ARCH-010-SHOPIFY-022
+  - ARCH-010-SHOPIFY-023
+  - ARCH-010-SYSTEM-TEST-005
 created: 2026-09-12
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-DATABASE-013: Materialise the clean ARCH-010 first-production database baseline
@@ -568,9 +568,11 @@ The implementation agent does not reopen or edit DATABASE-001 through DATABASE-0
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `prisma/schema.prisma`
 - `prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql`
 - `prisma/migrations/**` old development migration SQL removed; `migration_lock.toml` retained
@@ -580,6 +582,7 @@ Ready for Review.
 - `package.json`
 
 ### Work Completed
+
 - Materialised the final ARCH-010 first-production Prisma schema, including DATABASE-001 through DATABASE-011 accepted state and the valid DATABASE-012 economics requirements.
 - Removed development-only cancellation, allowance-adjustment, legacy entitlement, refund automation, and campaign-less promotional compatibility constructs.
 - Replaced the accumulated migration chain with exactly one empty-database baseline migration and retained the PostgreSQL migration lock.
@@ -588,6 +591,7 @@ Ready for Review.
 - Reworked Attempt 2 from the Architect Review by restoring the accepted PostgreSQL-only integrity checks, adding the final reservation source-shape constraint, and completing the verified-economics index/currency contract.
 
 ### Validation Results
+
 - Prerequisites: parent task records for DATABASE-001 through DATABASE-011 are all `status: complete`; implementation history reaches accepted DATABASE-011 commit `813626d`.
 - `npm run format`: passed.
 - `npm run validate`: passed.
@@ -601,18 +605,23 @@ Ready for Review.
 - Explicit removed-name scan across final schema, migration, seed, and ERD returned no matches for the required removed compatibility names; validator literals are test-only assertions for that scan.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 ARCH-010 billing/lifecycle state has not entered production.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ### Git / VCS
+
 Implementation worktree: `moda-interact-workspace.worktrees/ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; commit `f4d25d4`; pushed to `origin/task/ARCH-010-DATABASE-013`.
 Parent worktree: `moda-interact-workspace-task-ARCH-010-DATABASE-013`; branch `task/ARCH-010-DATABASE-013`; commit `18213c3`; pushed to `origin/task/ARCH-010-DATABASE-013`.
 Shared workspace checkout switched/mutated: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no. Submodule gitlink staged: no. Merged to implementation main: no. Merged to workspace main: no.
@@ -620,6 +629,7 @@ Shared workspace checkout switched/mutated: no. Shared implementation checkout s
 ## Architect Review
 
 ### Review Status
+
 Changes Requested — Attempt 1
 
 ### Review Notes
@@ -959,4 +969,3 @@ ARCH-010-BACKGROUND-015
 ```
 
 No system-test task is auto-started.
-

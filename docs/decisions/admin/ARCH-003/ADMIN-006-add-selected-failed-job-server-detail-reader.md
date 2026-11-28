@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add selected failed-job server detail reader
 
 ## Architecture
@@ -175,14 +176,17 @@ Admin model.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/lib/admin/queue-monitor.ts`
 - `moda-interact-admin/src/app/api/admin/queues/failed/detail/route.ts`
 - `moda-interact-admin/tests/security/admin-failed-job-detail.test.mjs`
 
 ### Work Completed
+
 - Added the allowlisted `readFailedJobDetail` server reader using approved queue
   definitions and BullMQ `getJob`/`getJobState` access.
 - Added the stable plain `FailedJobDetail` model with normalized ISO timestamps,
@@ -198,6 +202,7 @@ Ready for Review.
   stacktrace diagnostics.
 
 ### Validation Results
+
 - Focused detail reader/API tests: 4 passed.
 - `npm test`: 48 passed.
 - `npm exec tsc -- --noEmit`: passed.
@@ -207,17 +212,21 @@ Ready for Review.
 - `git diff --check`: passed.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 - BullMQ job data is already JSON-deserialized by BullMQ and is therefore safe
   to return as the normalized diagnostic payload; raw Queue/Job instances are
   never returned.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

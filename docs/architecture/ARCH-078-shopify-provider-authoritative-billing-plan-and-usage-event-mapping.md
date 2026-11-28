@@ -89,16 +89,17 @@ Do not add a diagnostic table, enum, queue, scheduler, shared-package dependency
 
 ### 5. Subscription state and error semantics
 
-| Condition | Subscription status | Sync error fields | Admin handling |
-|---|---|---|---|
-| Shopify plan handle has no local operational or catalogue mapping | `UNMAPPED` | `lastSyncErrorCode = null`, `lastSyncErrorAt = null` | Existing exact-handle plan registration workflow |
-| Valid plan, one or more provider usage events lack catalogue entries | Remains provider-derived `ACTIVE` or `TRIALING` | No sync error | Show unmapped handles in existing Admin billing mapping view |
-| All provider usage events are mapped | Provider-derived `ACTIVE` or `TRIALING` | No sync error | No mapping warning |
-| Catalogue has an event Shopify does not return | Unchanged | No sync error | Ignore |
-| Actual Shopify API/provider failure | Existing genuine failure handling | Existing error semantics | Existing Sync Errors workflow |
-| Actual database/materialisation/period-integrity failure | Existing genuine failure handling | Existing error semantics | Existing Sync Errors workflow |
+| Condition                                                            | Subscription status                             | Sync error fields                                    | Admin handling                                               |
+| -------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| Shopify plan handle has no local operational or catalogue mapping    | `UNMAPPED`                                      | `lastSyncErrorCode = null`, `lastSyncErrorAt = null` | Existing exact-handle plan registration workflow             |
+| Valid plan, one or more provider usage events lack catalogue entries | Remains provider-derived `ACTIVE` or `TRIALING` | No sync error                                        | Show unmapped handles in existing Admin billing mapping view |
+| All provider usage events are mapped                                 | Provider-derived `ACTIVE` or `TRIALING`         | No sync error                                        | No mapping warning                                           |
+| Catalogue has an event Shopify does not return                       | Unchanged                                       | No sync error                                        | Ignore                                                       |
+| Actual Shopify API/provider failure                                  | Existing genuine failure handling               | Existing error semantics                             | Existing Sync Errors workflow                                |
+| Actual database/materialisation/period-integrity failure             | Existing genuine failure handling               | Existing error semantics                             | Existing Sync Errors workflow                                |
 
 A usage-event mapping discrepancy must not:
+
 - change an otherwise valid `ACTIVE`/`TRIALING` subscription to `SYNC_ERROR`;
 - populate `lastSyncErrorCode` or `lastSyncErrorAt`;
 - prevent a valid plan from being materialised;
@@ -130,13 +131,13 @@ Reuse the existing `/billing?view=unmapped` Unmapped Subscriptions view.
 
 ## Repository ownership and task order
 
-| Task | Repository | Responsibility | Dependency |
-|---|---|---|---|
-| `ARCH-078-DATABASE-001` | `moda-interact-database` | Add the durable Subscription array and forward migration | None |
-| `ARCH-078-BACKGROUND-001` | `moda-interact-background` | Correct provider-authoritative mapping across Background reconciliation/lifecycle paths | DATABASE-001 |
-| `ARCH-078-SHOPIFY-001` | `moda-interact` | Correct Shopify app plan resolution and initial/current subscription projection | DATABASE-001 |
-| `ARCH-078-ADMIN-001` | `moda-interact-admin` | Display and resolve plan/usage-event mapping attention in existing billing Admin | DATABASE-001 |
-| `ARCH-078-SYSTEM-TEST-001` | `moda-interact-system-test` | Verify the complete cross-repository lifecycle | DATABASE-001, BACKGROUND-001, SHOPIFY-001, ADMIN-001 |
+| Task                       | Repository                  | Responsibility                                                                          | Dependency                                           |
+| -------------------------- | --------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `ARCH-078-DATABASE-001`    | `moda-interact-database`    | Add the durable Subscription array and forward migration                                | None                                                 |
+| `ARCH-078-BACKGROUND-001`  | `moda-interact-background`  | Correct provider-authoritative mapping across Background reconciliation/lifecycle paths | DATABASE-001                                         |
+| `ARCH-078-SHOPIFY-001`     | `moda-interact`             | Correct Shopify app plan resolution and initial/current subscription projection         | DATABASE-001                                         |
+| `ARCH-078-ADMIN-001`       | `moda-interact-admin`       | Display and resolve plan/usage-event mapping attention in existing billing Admin        | DATABASE-001                                         |
+| `ARCH-078-SYSTEM-TEST-001` | `moda-interact-system-test` | Verify the complete cross-repository lifecycle                                          | DATABASE-001, BACKGROUND-001, SHOPIFY-001, ADMIN-001 |
 
 DATABASE-001 is the only prerequisite. BACKGROUND-001, SHOPIFY-001 and ADMIN-001 may proceed in parallel after the accepted database migration and regenerated Prisma client are available. SYSTEM-TEST-001 runs last.
 

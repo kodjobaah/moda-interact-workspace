@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-SHARED-012
-- ARCH-052-ADMIN-002
+  - ARCH-052-SHARED-012
+  - ARCH-052-ADMIN-002
 enables:
-- ARCH-052-BACKGROUND-008
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-- ARCH-052-SYSTEM-TEST-003
+  - ARCH-052-BACKGROUND-008
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+  - ARCH-052-SYSTEM-TEST-003
 created: 2026-10-30
 updated: 2026-10-31
 ---
@@ -52,7 +52,7 @@ For **every new initial recovery template revision** that ARCH-052 can select, i
 
 - The **visible BODY** must identify the exact merchant using trusted `shop.name` (`RecoveryTemplateSemanticKeySchema` already supports this variable). Do not rely on the shared WhatsApp sender profile or an optional image/logo for merchant identity. The displayed merchant name must be a bound AST variable supplied from the current authenticated recovery shop, not model-written copy or a client-supplied free-text value.
 - Include the following **English semantic reference** (not literal text to paste across 20 locales): for CHECKOUT, `From {{shop.name}}. Need help with this basket? Use WhatsApp's Reply option on this message, then type your question or send a voice note (up to 2 minutes).` For ALTERNATIVE_PRODUCT, replace `this basket` with `this offer or your basket`. The `{{shop.name}}` notation denotes a real existing semantic binding, not a raw escaped template string.
-- The instruction MUST say to use WhatsApp's **Reply option on this specific message**, not merely to type in the chat. The locale translation must preserve that operation, the two permitted input types (text or voice note), the existing two-minute voice limit, and the distinction between the recovery basket and an optional *different* promotional product.
+- The instruction MUST say to use WhatsApp's **Reply option on this specific message**, not merely to type in the chat. The locale translation must preserve that operation, the two permitted input types (text or voice note), the existing two-minute voice limit, and the distinction between the recovery basket and an optional _different_ promotional product.
 - Author/freeze a **new, independently approved immutable Meta revision** for each affected combination of shop/WABA, purpose, target, header kind and locale. Never mutate an already approved frozen revision or reuse its approval for different body copy. Do not add a new Meta purpose enum, footer parameter, URL button, placeholder, Shared schema or data model solely for this instruction.
 - Only published, provider-approved revisions carrying the shop-name and contextual-Reply semantics are eligible for ARCH-052 initial sends. Old approved revisions remain historical/usable by otherwise unaffected workflows, but **cannot be selected as the compliant initial-outreach revision**. When the required approved revision is not yet available, Background-008 must fail closed with a typed no-send (not silently send copy lacking the instruction).
 - Update the established i18n catalogues for all 20 supported locales, protecting variables/placeholder counts and Meta body lengths; do not make translation-specific assumptions about merchant names. The Admin preview and submitted provider template must show identical semantics.
@@ -226,7 +226,6 @@ guard needs the correction above before acceptance.
 
 Attempt 2 is resubmitted for architect review after the wording guard and
 regression case passed. Do not start dependent tasks before acceptance.
-
 
 ### Attempt 2 Architect Review — Accepted
 

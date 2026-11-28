@@ -160,7 +160,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 The service may own its internal database transaction for support-message persistence exactly as today. Do not combine it with generic merchant-support ownership.
 
-
 ## Completion Report
 
 ### Status
@@ -181,6 +180,7 @@ Review
 - Added eight focused tests covering provider-ID and cycle-fallback identity, message compatibility, source-key replay, stored/configured language, translated-message persistence, dispatch-after-commit, persistence/dispatch failure isolation, and the missing-identity rethrow after billing commit.
 
 Review correction (Attempt 2; report-only, A1-R1):
+
 - All five Acceptance Criteria above are satisfied by the implementation and validation evidence recorded here.
 - Reviewed and pushed implementation commit: `209a36138dd438815c3ee360298a97db6d2d6f85`.
 - Architect-reviewed parent report commit: `723de58dad8e15775afe24d229b0d12bf8da1ad6`.
@@ -189,25 +189,25 @@ Review correction (Attempt 2; report-only, A1-R1):
 - Final parent report branch is `task/ARCH-025-SHOPIFY-009`; the report correction is committed and pushed, and the worktree is clean and aligned with `origin/task/ARCH-025-SHOPIFY-009`.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-009`
-  parent branch: `task/ARCH-025-SHOPIFY-009`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-009`
-  implementation branch: `task/ARCH-025-SHOPIFY-009`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-009`
+parent branch: `task/ARCH-025-SHOPIFY-009`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-009`
+implementation branch: `task/ARCH-025-SHOPIFY-009`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
 
 ### Validation Results
 

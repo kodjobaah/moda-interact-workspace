@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-053-SHARED-001
+  - ARCH-053-SHARED-001
 enables:
-- ARCH-053-API-001
-- ARCH-053-API-002
-- ARCH-053-BACKGROUND-001
+  - ARCH-053-API-001
+  - ARCH-053-API-002
+  - ARCH-053-BACKGROUND-001
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -78,7 +78,6 @@ The one browser-safe published `@modainteract/moda-interact-shared/woocommerce` 
 - `ARCH-053-API-001`
 - `ARCH-053-API-002`
 
-
 ## Acceptance Criteria
 
 - [x] Apply approved package version and publish using existing release workflow.
@@ -125,6 +124,7 @@ dependencies:
 zod: ^4.0.0, semver: 7.8.5, winston: 3.19.0, bullmq-otel: ^2.0.1, winston-loki: 6.1.7, @langchain/core: 1.2.13, libphonenumber-js: 1.12.30, @opentelemetry/api: ^1.9.0, intl-messageformat: ^10.7.18, @langchain/langgraph: 1.4.15, @langchain/openrouter: 0.4.15, @opentelemetry/api-logs: 0.221.0, @opentelemetry/sdk-logs: 0.221.0, @opentelemetry/sdk-node: 0.221.0, @prisma/instrumentation: ^6.19.3, @opentelemetry/resources: ^2.10.0, @opentelemetry/sdk-metrics: ^2.10.0, @opentelemetry/sdk-trace-base: ^2.10.0, @opentelemetry/context-async-hooks: ^2.10.0, @opentelemetry/instrumentation-http: 0.221.0, @opentelemetry/instrumentation-undici: 0.31.0, @opentelemetry/exporter-logs-otlp-http: 0.221.0, @opentelemetry/exporter-trace-otlp-http: 0.221.0, @opentelemetry/exporter-metrics-otlp-http: 0.221.0
 
 maintainers:
+
 - kwadwoafriyie <kodjo_baah@hotmail.com>
 
 dist-tags:

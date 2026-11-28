@@ -14,7 +14,13 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-ADMIN-001", "ARCH-047-ADMIN-003", "ARCH-047-ADMIN-005"]
+depends_on:
+  [
+    "ARCH-049-DATABASE-001",
+    "ARCH-049-ADMIN-001",
+    "ARCH-047-ADMIN-003",
+    "ARCH-047-ADMIN-005",
+  ]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
 updated: 2026-10-28
@@ -60,7 +66,13 @@ Read `ShopBrand.whatsAppMedia.roles[role]`; only present as selectable IMAGE hea
 Inspection of the 26 October snapshot shows that the accepted ARCH-047 Admin compiler currently emits **TEXT** headers only; a READY-media picker alone cannot create a sendable IMAGE template. Extend the **existing** ARCH-047 Admin authoring/compiler modules in the Admin repository (do not create a second compiler) so the editor offers one IMAGE-header role (`LOGO`, `SQUARE_LOGO`, `COVER_IMAGE`), displays the verified image, and stores a semantic role binding without embedding the shop-specific media URL. Persist the frozen runtime binding in `WhatsAppTemplateMetaRegistration.parameterBindingsSnapshot` using this proposed version-one extension:
 
 ```json
-{"schemaVersion":1,"header":[],"headerMediaRole":"LOGO","body":[],"buttons":[]}
+{
+  "schemaVersion": 1,
+  "header": [],
+  "headerMediaRole": "LOGO",
+  "body": [],
+  "buttons": []
+}
 ```
 
 TEXT-header projections omit `headerMediaRole`; IMAGE headers must contain `HEADER` with `format: "IMAGE"` in the frozen `componentsSnapshot`. The source AST should contain only the corresponding semantic `shopBrandMediaRole`; full production examples/bindings must be fixed before template submission. The Background-004 adapter consumes exactly this field; Admin and Background must test identical frozen-projection digests and reject mismatches. Once content is saved, preserve ARCH-047 create-new-template immutability.
@@ -186,19 +198,19 @@ The untracked `typescript` shell recording shown in the developer's Git status i
 
 Evidence: developer terminal recordings `typescript(20261027-131801)` (after initial database-submodule repair) and `typescript(20261027-133829)` (after correcting the compiler-vector test), plus the uploaded combined task-worktree archive `moda-interact-workspace-ARCH-049-ADMIN-002.zip`.
 
-| Check / command | Result / evidence |
-| --- | --- |
-| `npm run prisma:generate` / `npm run prisma:validate` | **PASS** after the Database submodule was initialised; Prisma v6.19.3 client generated and schema valid. Earlier missing-submodule failures are superseded by this passing run. |
-| `npm run test:arch049-admin-media:unit` | **PASS**, 18 tests (readiness/tenant/role/component/compiler/frozen projection) plus 1 merchant-support SQL security test, **19/19**. Repeated successfully after the TypeScript correction. |
-| `npm run test:arch049-admin-media:postgres` | **PASS**, disposable PostgreSQL migration/schema integration, two shop-scoped media rows, cross-shop key rejection, and `commerce."ShopBrand"` query. Runner reports `PASS ARCH-049 ADMIN-002 disposable PostgreSQL`. |
-| `npm run test:arch047-admin-authoring:unit` | **PASS**, 28/28 existing authoring regressions. |
-| `npm run test:arch047-admin-meta:unit` | **PASS**, 12 Meta unit tests plus 1 UI test, **13/13**. |
-| `npx tsc --noEmit` | **PASS** in the later `133829` log; previous `TS2339` in the projection-vector test was corrected by narrowing the compiler family. |
-| `npm run build` | **PASS** (Next.js 16.3.3); webpack compilation, TypeScript and page optimisation finish successfully. Non-fatal BullMQ critical-dependency and optional `@valkey/valkey-glide` resolution warnings remain. |
-| `npm run lint` | **PASS with 0 errors, 1 warning** in the Database submodule's `eslint.config.mjs` (anonymous default export); not changed by this task. |
-| `git diff --check` | No whitespace errors reported in the terminal validation sequence. |
-| Review snapshot vs corrected patch | **PASS** in this review-submission preparation: 35/35 task implementation files match the corrected Attempt 2 patch byte-for-byte. |
-| Fresh developer-update rerun (27 October) | **PASS**: media/security 19/19, disposable PostgreSQL 1/1, ARCH-047 authoring 28/28, ARCH-047 Meta 13/13, `npx tsc --noEmit`, and `npm run build`; `npm run lint` had 0 errors and the same one Database-submodule warning. `git show --check HEAD` passed. |
+| Check / command                                       | Result / evidence                                                                                                                                                                                                                                           |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run prisma:generate` / `npm run prisma:validate` | **PASS** after the Database submodule was initialised; Prisma v6.19.3 client generated and schema valid. Earlier missing-submodule failures are superseded by this passing run.                                                                             |
+| `npm run test:arch049-admin-media:unit`               | **PASS**, 18 tests (readiness/tenant/role/component/compiler/frozen projection) plus 1 merchant-support SQL security test, **19/19**. Repeated successfully after the TypeScript correction.                                                                |
+| `npm run test:arch049-admin-media:postgres`           | **PASS**, disposable PostgreSQL migration/schema integration, two shop-scoped media rows, cross-shop key rejection, and `commerce."ShopBrand"` query. Runner reports `PASS ARCH-049 ADMIN-002 disposable PostgreSQL`.                                       |
+| `npm run test:arch047-admin-authoring:unit`           | **PASS**, 28/28 existing authoring regressions.                                                                                                                                                                                                             |
+| `npm run test:arch047-admin-meta:unit`                | **PASS**, 12 Meta unit tests plus 1 UI test, **13/13**.                                                                                                                                                                                                     |
+| `npx tsc --noEmit`                                    | **PASS** in the later `133829` log; previous `TS2339` in the projection-vector test was corrected by narrowing the compiler family.                                                                                                                         |
+| `npm run build`                                       | **PASS** (Next.js 16.3.3); webpack compilation, TypeScript and page optimisation finish successfully. Non-fatal BullMQ critical-dependency and optional `@valkey/valkey-glide` resolution warnings remain.                                                  |
+| `npm run lint`                                        | **PASS with 0 errors, 1 warning** in the Database submodule's `eslint.config.mjs` (anonymous default export); not changed by this task.                                                                                                                     |
+| `git diff --check`                                    | No whitespace errors reported in the terminal validation sequence.                                                                                                                                                                                          |
+| Review snapshot vs corrected patch                    | **PASS** in this review-submission preparation: 35/35 task implementation files match the corrected Attempt 2 patch byte-for-byte.                                                                                                                          |
+| Fresh developer-update rerun (27 October)             | **PASS**: media/security 19/19, disposable PostgreSQL 1/1, ARCH-047 authoring 28/28, ARCH-047 Meta 13/13, `npx tsc --noEmit`, and `npm run build`; `npm run lint` had 0 errors and the same one Database-submodule warning. `git show --check HEAD` passed. |
 
 The React tests validate native labelled radio controls, disabled non-READY states, alt text and responsive Tailwind breakpoint markup. **Real-browser keyboard/screen-reader interaction and mobile viewport layout were not recorded as manually tested**; the handoff recommends this for final integration review, and static rendering is not misrepresented as a browser smoke test.
 

@@ -14,17 +14,29 @@ export type GrafanaNavigation = {
 };
 
 function deploymentEnvironment(): string {
-  return process.env.DEPLOYMENT_ENVIRONMENT_NAME?.trim() || process.env.NODE_ENV || "development";
+  return (
+    process.env.DEPLOYMENT_ENVIRONMENT_NAME?.trim() ||
+    process.env.NODE_ENV ||
+    "development"
+  );
 }
 
-function safeGrafanaUrl(raw: string | undefined, environment: string): string | null {
+function safeGrafanaUrl(
+  raw: string | undefined,
+  environment: string,
+): string | null {
   if (!raw?.trim()) return null;
 
   try {
     const url = new URL(raw.trim());
-    const localDevelopment = environment === "development" && ["localhost", "127.0.0.1"].includes(url.hostname);
+    const localDevelopment =
+      environment === "development" &&
+      ["localhost", "127.0.0.1"].includes(url.hostname);
 
-    if (url.protocol !== "https:" && !(localDevelopment && url.protocol === "http:")) {
+    if (
+      url.protocol !== "https:" &&
+      !(localDevelopment && url.protocol === "http:")
+    ) {
       return null;
     }
 
@@ -41,10 +53,26 @@ export function getGrafanaNavigation(): GrafanaNavigation {
   const baseUrl = safeGrafanaUrl(process.env.GRAFANA_BASE_URL, environment);
 
   const candidates: Array<[string, string, string | undefined]> = [
-    ["Platform dashboard", "Open the main Moda Interact operational dashboard.", process.env.GRAFANA_PLATFORM_DASHBOARD_URL],
-    ["Logs", "Search private application and infrastructure logs in Grafana.", process.env.GRAFANA_LOGS_URL],
-    ["Traces", "Inspect distributed traces and request correlation in Grafana.", process.env.GRAFANA_TRACES_URL],
-    ["Metrics", "Inspect platform and service metrics in Grafana.", process.env.GRAFANA_METRICS_URL],
+    [
+      "Platform dashboard",
+      "Open the main Moda Interact operational dashboard.",
+      process.env.GRAFANA_PLATFORM_DASHBOARD_URL,
+    ],
+    [
+      "Logs",
+      "Search private application and infrastructure logs in Grafana.",
+      process.env.GRAFANA_LOGS_URL,
+    ],
+    [
+      "Traces",
+      "Inspect distributed traces and request correlation in Grafana.",
+      process.env.GRAFANA_TRACES_URL,
+    ],
+    [
+      "Metrics",
+      "Inspect platform and service metrics in Grafana.",
+      process.env.GRAFANA_METRICS_URL,
+    ],
   ];
 
   const links = candidates.flatMap(([label, description, raw]) => {

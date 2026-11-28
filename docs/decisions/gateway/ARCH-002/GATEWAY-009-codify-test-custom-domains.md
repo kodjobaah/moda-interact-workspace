@@ -21,6 +21,7 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
+
 # Codify Render Test Custom Domains in the Canonical Blueprint
 
 ## Architecture

@@ -20,25 +20,25 @@ Read relevant task definitions and review context from ARCH-055 DATABASE-001, BA
 
 ### Exact schema bytes
 
-| Location | Bytes | Models | SHA-256 | Comparison with current canonical DB |
-|---|---:|---:|---|---|
-| `DB/prisma/schema.prisma` | 191864 | 130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Canonical |
-| `BG/database/prisma/schema.prisma` | 191864 | 130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Identical bytes |
-| `SHOPIFY/database/prisma/schema.prisma` | 191864 | 130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Identical bytes |
-| `moda-interact-admin/database/prisma/schema.prisma` | 191864 | 130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Identical bytes |
-| `API/database/prisma/schema.prisma` | 191707 | 130 | `45df5e44bdc1e7e29495e391a1754477f0df362c667d648f4b6893b6541f5c0d` | Still old canonical schema |
-| `moda-interact-commerce/database/prisma/schema.prisma` | 191485 | 130 | `9d1041441f53cabbeee9083787ab7b3aff076c744282724b8fc5e2766f184edf` | Earlier pre-existing divergence |
-| `moda-interact-mcp/database/prisma/schema.prisma` | 161588 | 117 | `220e0d9e6e7960a3e89264998a776911b5dd442f839ec5618063724d49c32ae2` | Earlier pre-existing divergence |
+| Location                                               |  Bytes | Models | SHA-256                                                            | Comparison with current canonical DB |
+| ------------------------------------------------------ | -----: | -----: | ------------------------------------------------------------------ | ------------------------------------ |
+| `DB/prisma/schema.prisma`                              | 191864 |    130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Canonical                            |
+| `BG/database/prisma/schema.prisma`                     | 191864 |    130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Identical bytes                      |
+| `SHOPIFY/database/prisma/schema.prisma`                | 191864 |    130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Identical bytes                      |
+| `moda-interact-admin/database/prisma/schema.prisma`    | 191864 |    130 | `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052` | Identical bytes                      |
+| `API/database/prisma/schema.prisma`                    | 191707 |    130 | `45df5e44bdc1e7e29495e391a1754477f0df362c667d648f4b6893b6541f5c0d` | Still old canonical schema           |
+| `moda-interact-commerce/database/prisma/schema.prisma` | 191485 |    130 | `9d1041441f53cabbeee9083787ab7b3aff076c744282724b8fc5e2766f184edf` | Earlier pre-existing divergence      |
+| `moda-interact-mcp/database/prisma/schema.prisma`      | 161588 |    117 | `220e0d9e6e7960a3e89264998a776911b5dd442f839ec5618063724d49c32ae2` | Earlier pre-existing divergence      |
 
 Current canonical, Background, Shopify and Admin migration trees contain **72 regular files: 71 migration.sql files and migration_lock.toml**. All 72 are byte-identical across those four copies. API has 69 regular files, lacking exactly the three ARCH-055 additions. Commerce has 67, lacking those three plus `20261031110000_arch016_remove_recovery_lifetime_check` and `20261031170000_arch054_merchant_ai_response_delay`. MCP has 53, with 19 canonical files absent. Every migration-tree file shared with canonical has identical bytes; no extra or changed common file was found in those nested trees. Commerce/MCP divergence already existed in the old snapshot and was not introduced by this update.
 
 All **69 previous canonical migration-tree files retain their exact bytes** in the updated canonical tree. The forward additions are:
 
-| Migration | Bytes | SHA-256 |
-|---|---:|---|
-| `20261102120000_arch055_rest_read_lifecycle/migration.sql` | 3465 | `c129466fdb53190b7f8ce6c2d3a04867c6bacbd55e334c5e0bceeb1b28e4e53b` |
-| `20261102121000_arch055_human_follow_up_claim_identity/migration.sql` | 1263 | `e4689790fbba7f606803b2d0370a66ba8b4f57bb3cb0b67b154336f90c2d41fb` |
-| `20261102122000_arch055_upload_intake_identity/migration.sql` | 975 | `e9ce08d49576f84a4e1b95c39637c69e97f0f620b4fae608fadf2712fefb6a37` |
+| Migration                                                             | Bytes | SHA-256                                                            |
+| --------------------------------------------------------------------- | ----: | ------------------------------------------------------------------ |
+| `20261102120000_arch055_rest_read_lifecycle/migration.sql`            |  3465 | `c129466fdb53190b7f8ce6c2d3a04867c6bacbd55e334c5e0bceeb1b28e4e53b` |
+| `20261102121000_arch055_human_follow_up_claim_identity/migration.sql` |  1263 | `e4689790fbba7f606803b2d0370a66ba8b4f57bb3cb0b67b154336f90c2d41fb` |
+| `20261102122000_arch055_upload_intake_identity/migration.sql`         |   975 | `e9ce08d49576f84a4e1b95c39637c69e97f0f620b4fae608fadf2712fefb6a37` |
 
 ### API integration gap and practical consequence
 
@@ -77,15 +77,15 @@ The partial unique index is migration-owned rather than a blanket Prisma `@@uniq
 
 ## 3. ARCH-055 ownership through the application boundaries
 
-| Boundary | Source evidence | Disposition |
-|---|---|---|
-| New Woo command admission | `API/src/merchant/conversations/messages/admission.service.ts:98–105,138–153,173–195` | Public replay occurs first. Fresh command UUID becomes both attempt initiationKey and command followUpClaimKey in the same transaction. Public request key remains separate. Runtime integration still needs the API schema correction above. |
-| New Shopify command admission | `SHOPIFY/app/services/recoveries/recovery-human-commands.server.ts:183–194,253–274` | Same distinction: replay existing command, generate UUID only for a new command, claim attempt and persist command together. HUMAN_TEXT stores NULL. |
-| Claimed command load | `BG/src/services/recovery-conversation/merchant-send-command.service.ts:61–79` | Lease/provider checks precede key validation; missing/blank template key raises typed integrity error before context evaluation. Stored value is carried verbatim; no fallback to request/public key/command ID for historical rows. |
-| Dispatcher and restart | `human-command-dispatcher.service.ts:202–228,509–531` | Loads/validates key before evaluator/cancellation, passes exact key to claimSequenceTwo, and on already-claimed replay queries the same persisted owner. Final returned attempt must equal the command's immutable FK. |
-| Final provider fence | `outbound-send-fence.service.ts:103–154` | Locked command select includes persisted key. Missing/blank key logs typed error and suppresses; attempt is locked and must be HUMAN/PENDING, match key, and have no outbound/sent evidence. |
-| Cancellation/release | `follow-up-claim-cancellation.service.ts:141–175,196–232` | Under Shop → Conversation → Command → Attempt locks, validates exact key and provider evidence. Durable command cancellation precedes credit release; conditional attempt reset retains expected attempt, recovery, sequence, HUMAN owner, key and unsent predicates. |
-| Repair | `follow-up-claim-cancellation.service.ts:71–92,101–124` | Bounded LIMIT 25 scan joins the command's attempt FK and persisted owner. Provisional credit release is outside first transaction; second transaction rechecks durable credit/ownership before reset. Missing/blank keys are excluded, deliberately requiring integrity repair rather than an unsafe guessed owner. |
+| Boundary                      | Source evidence                                                                       | Disposition                                                                                                                                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New Woo command admission     | `API/src/merchant/conversations/messages/admission.service.ts:98–105,138–153,173–195` | Public replay occurs first. Fresh command UUID becomes both attempt initiationKey and command followUpClaimKey in the same transaction. Public request key remains separate. Runtime integration still needs the API schema correction above.                                                                       |
+| New Shopify command admission | `SHOPIFY/app/services/recoveries/recovery-human-commands.server.ts:183–194,253–274`   | Same distinction: replay existing command, generate UUID only for a new command, claim attempt and persist command together. HUMAN_TEXT stores NULL.                                                                                                                                                                |
+| Claimed command load          | `BG/src/services/recovery-conversation/merchant-send-command.service.ts:61–79`        | Lease/provider checks precede key validation; missing/blank template key raises typed integrity error before context evaluation. Stored value is carried verbatim; no fallback to request/public key/command ID for historical rows.                                                                                |
+| Dispatcher and restart        | `human-command-dispatcher.service.ts:202–228,509–531`                                 | Loads/validates key before evaluator/cancellation, passes exact key to claimSequenceTwo, and on already-claimed replay queries the same persisted owner. Final returned attempt must equal the command's immutable FK.                                                                                              |
+| Final provider fence          | `outbound-send-fence.service.ts:103–154`                                              | Locked command select includes persisted key. Missing/blank key logs typed error and suppresses; attempt is locked and must be HUMAN/PENDING, match key, and have no outbound/sent evidence.                                                                                                                        |
+| Cancellation/release          | `follow-up-claim-cancellation.service.ts:141–175,196–232`                             | Under Shop → Conversation → Command → Attempt locks, validates exact key and provider evidence. Durable command cancellation precedes credit release; conditional attempt reset retains expected attempt, recovery, sequence, HUMAN owner, key and unsent predicates.                                               |
+| Repair                        | `follow-up-claim-cancellation.service.ts:71–92,101–124`                               | Bounded LIMIT 25 scan joins the command's attempt FK and persisted owner. Provisional credit release is outside first transaction; second transaction rechecks durable credit/ownership before reset. Missing/blank keys are excluded, deliberately requiring integrity repair rather than an unsafe guessed owner. |
 
 The relevant source satisfies the intended key separation: distinct shops may use the same public request idempotency key while each fresh attempt gets a different internal identity. Historical cancellation cannot borrow a newly reclaimed attempt's identity. The new key does **not** change the billing idempotency namespace: billing remains tied to the shared outreach attempt (`recovery-follow-up-billing.service.ts:79,147–149`). This preserves accounting across cancellation/reclaim but also means BS-05's older reservation-lineage issue is unaffected.
 
@@ -105,15 +105,15 @@ These counts are descriptions, not a recommendation to remove safety checks. Con
 
 ## 4. Previous BS findings — every disposition
 
-| Prior finding | Updated disposition | Classification retained | Principal evidence |
-|---|---|---|---|
-| BS-01 Pending knowledge prefix starvation | **Open; unchanged** | Statically demonstrated liveness gap | `merchant-knowledge-reconciliation.service.ts:45–75`; minute/page100 wiring unchanged |
-| BS-02 Repeated DELETED upload cleanup | **Open; unchanged** | Confirmed repeated work and unbounded cycle; scale cost unmeasured | `merchant-knowledge-upload-cleanup.service.ts:40–49,60–157`; no acknowledgement field |
-| BS-03 Per-source entitlement amplification | **Open; unchanged** | Confirmed repeated reads/O(S²) transferred ID rows; optimization candidate | `merchant-knowledge-entitlement-reconciliation.service.ts:138–160,197–249`; eligibility:124–180 |
-| BS-04 Duplicate paid meter read | **Open; unchanged** | Exact redundant client read in the same transaction | `paid-included-recovery-reservation.service.ts:307–316,348,509–517` |
-| BS-05 Ambiguous historical compensation source | **Open; unchanged** | Conditional correctness risk; live occurrence and regression reproduction unproven | `recovery-delivery-compensation/lineage.ts:85–96`; paid revalidation:255–272 |
-| BS-06 Global billing reconstruction | **Open; unchanged** | Confirmed unbounded selection/publication; scale impact unmeasured | `billing-subscription-reconciliation/reconciliation-queue.service.ts:45–119`; billing entrypoint:241–245 |
-| BS-07 Serial item/catalogue/chunk writes | **Open; unchanged** | Confirmed O(N) transaction calls; optimization candidate | Translation assembly:80–147; catalogue loops; knowledge promotion:414–495 |
+| Prior finding                                  | Updated disposition | Classification retained                                                            | Principal evidence                                                                                       |
+| ---------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| BS-01 Pending knowledge prefix starvation      | **Open; unchanged** | Statically demonstrated liveness gap                                               | `merchant-knowledge-reconciliation.service.ts:45–75`; minute/page100 wiring unchanged                    |
+| BS-02 Repeated DELETED upload cleanup          | **Open; unchanged** | Confirmed repeated work and unbounded cycle; scale cost unmeasured                 | `merchant-knowledge-upload-cleanup.service.ts:40–49,60–157`; no acknowledgement field                    |
+| BS-03 Per-source entitlement amplification     | **Open; unchanged** | Confirmed repeated reads/O(S²) transferred ID rows; optimization candidate         | `merchant-knowledge-entitlement-reconciliation.service.ts:138–160,197–249`; eligibility:124–180          |
+| BS-04 Duplicate paid meter read                | **Open; unchanged** | Exact redundant client read in the same transaction                                | `paid-included-recovery-reservation.service.ts:307–316,348,509–517`                                      |
+| BS-05 Ambiguous historical compensation source | **Open; unchanged** | Conditional correctness risk; live occurrence and regression reproduction unproven | `recovery-delivery-compensation/lineage.ts:85–96`; paid revalidation:255–272                             |
+| BS-06 Global billing reconstruction            | **Open; unchanged** | Confirmed unbounded selection/publication; scale impact unmeasured                 | `billing-subscription-reconciliation/reconciliation-queue.service.ts:45–119`; billing entrypoint:241–245 |
+| BS-07 Serial item/catalogue/chunk writes       | **Open; unchanged** | Confirmed O(N) transaction calls; optimization candidate                           | Translation assembly:80–147; catalogue loops; knowledge promotion:414–495                                |
 
 ### BS-01 — Pending merchant-knowledge repair starvation: unchanged, open liveness gap
 

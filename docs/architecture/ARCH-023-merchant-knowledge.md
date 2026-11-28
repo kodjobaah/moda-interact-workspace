@@ -580,7 +580,6 @@ merchantKnowledge.dataFormats.<DATA_FORMAT_KEY>.label
 All 20 supported locale catalogues must contain these initial keys before ARCH-023
 integrated acceptance.
 
-
 ### D3 — content units are deterministic and language-neutral
 
 One content unit is four normalized Unicode code points:
@@ -1110,7 +1109,6 @@ read URL.
 Background already owns asynchronous business workflows. Web fetch/file extraction,
 content limiting, embeddings and revision promotion therefore remain Background-owned.
 
-
 ### D15 — locator replacement, refresh/reprocess and entitlement changes are revisioned
 
 Each `MerchantKnowledgeSource` has a monotonically increasing `currentGeneration`.
@@ -1165,7 +1163,6 @@ remain unchanged.
 
 A worker must not promote a revision if its generation no longer equals
 `source.currentGeneration`.
-
 
 ### D16 — `WEB_PAGE` sources are public HTTPS URLs subject to SSRF policy
 
@@ -1296,8 +1293,8 @@ During a CommerceAgent turn:
 9. Commerce selects only the first `maxKnowledgeSources` of those currently allowed
    sources ordered by `(position ASC, id ASC)`;
 10. if `purposes` was supplied, Commerce further filters the entitled sources by
-   `MerchantKnowledgePurpose.key`; source language does not exclude an otherwise-entitled
-   source;
+    `MerchantKnowledgePurpose.key`; source language does not exclude an otherwise-entitled
+    source;
 11. Commerce embeds the query using the current D17 embedding environment;
 12. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
     chunks with matching embedding provenance;
@@ -1362,15 +1359,15 @@ is allowed within current plan limits; source/revision data remains non-destruct
 
 For Feature key `merchant_knowledge`, C2 is enforced as follows:
 
-| Boundary | `allowedSourceTypes` | `maxKnowledgeSources` | `maxContentUnitsPerSource` |
-|---|---|---|---|
-| Admin plan authoring | select only from active Purpose/Data Format catalogue rows; no plan-name branches | validate positive/bounded value | validate positive/bounded value |
-| BillingPlan materialisation | validate selected keys against the active catalogue and copy unchanged | validate/copy configuration unchanged | validate/copy configuration unchanged |
-| Shopify UI | offer only currently plan-entitled Purpose/Data Format pairs; existing FeaturePreferences controls merchant opt-in | display `configured / max` for currently allowed sources | display source usage / max |
-| Shopify server action | reject create/upload/finalize when the pair is not currently allowed; configuration remains allowed while merchant opt-in is OFF | reject creation that would exceed the allowance after filtering to currently allowed sources | no content decision before fetch |
-| Background processing | require current plan entitlement **and enabled merchant preference**, then re-check source pair | re-check source position within the ordered currently allowed set | normalize/truncate before chunking/embedding |
-| Commerce lookup | require current plan entitlement **and enabled merchant preference**, then exclude disallowed pairs | search only the first N currently allowed sources | consume ACTIVE indexed content |
-| Background reconciliation | leave disabled/disallowed sources dormant and do not enqueue/process them until effective activation/entitlement returns | retain excess allowed sources but do not enqueue/process them | automatically reprocess oversized ACTIVE effectively-enabled sources after a decrease |
+| Boundary                    | `allowedSourceTypes`                                                                                                             | `maxKnowledgeSources`                                                                        | `maxContentUnitsPerSource`                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Admin plan authoring        | select only from active Purpose/Data Format catalogue rows; no plan-name branches                                                | validate positive/bounded value                                                              | validate positive/bounded value                                                       |
+| BillingPlan materialisation | validate selected keys against the active catalogue and copy unchanged                                                           | validate/copy configuration unchanged                                                        | validate/copy configuration unchanged                                                 |
+| Shopify UI                  | offer only currently plan-entitled Purpose/Data Format pairs; existing FeaturePreferences controls merchant opt-in               | display `configured / max` for currently allowed sources                                     | display source usage / max                                                            |
+| Shopify server action       | reject create/upload/finalize when the pair is not currently allowed; configuration remains allowed while merchant opt-in is OFF | reject creation that would exceed the allowance after filtering to currently allowed sources | no content decision before fetch                                                      |
+| Background processing       | require current plan entitlement **and enabled merchant preference**, then re-check source pair                                  | re-check source position within the ordered currently allowed set                            | normalize/truncate before chunking/embedding                                          |
+| Commerce lookup             | require current plan entitlement **and enabled merchant preference**, then exclude disallowed pairs                              | search only the first N currently allowed sources                                            | consume ACTIVE indexed content                                                        |
+| Background reconciliation   | leave disabled/disallowed sources dormant and do not enqueue/process them until effective activation/entitlement returns         | retain excess allowed sources but do not enqueue/process them                                | automatically reprocess oversized ACTIVE effectively-enabled sources after a decrease |
 
 Plan source-type entitlement is always read from the shop's **current materialised
 BillingPlanFeature.configuration**. A future/pending next-cycle plan MUST NOT affect
@@ -1424,15 +1421,15 @@ That does not give the returned content instruction authority or action authorit
 
 The trust/authority model is:
 
-| Source | May supply facts | May override model instructions | May create customer intent/consent/approval | May authorize a side-effecting Tool |
-|---|---|---|---|---|
-| Code-owned Level-1 kernel | n/a | authoritative security instruction | no | defines the rules only |
-| Trusted `hostInstructions` / host state | yes | may add/narrow below Level 1 | only when the host contract explicitly represents trusted customer/workflow authority | only through trusted runtime policy |
-| Customer-authored conversation message | customer-stated facts | no | yes, for that customer's expressed objective/request | no by itself; normal Tool/runtime validation still applies |
-| Internal authoritative Tool result | yes, for fields guaranteed by its Tool contract | **never** | **never** | **never** |
-| Studio-authored external HTTP Tool result | only as defined by its Tool contract | **never** | **never** | **never** |
-| Merchant Knowledge / retrieved document | reference facts | **never** | **never** | **never** |
-| Catalogue/provider data | as defined by its Tool contract | **never** | **never** | **never** |
+| Source                                    | May supply facts                                | May override model instructions    | May create customer intent/consent/approval                                           | May authorize a side-effecting Tool                        |
+| ----------------------------------------- | ----------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Code-owned Level-1 kernel                 | n/a                                             | authoritative security instruction | no                                                                                    | defines the rules only                                     |
+| Trusted `hostInstructions` / host state   | yes                                             | may add/narrow below Level 1       | only when the host contract explicitly represents trusted customer/workflow authority | only through trusted runtime policy                        |
+| Customer-authored conversation message    | customer-stated facts                           | no                                 | yes, for that customer's expressed objective/request                                  | no by itself; normal Tool/runtime validation still applies |
+| Internal authoritative Tool result        | yes, for fields guaranteed by its Tool contract | **never**                          | **never**                                                                             | **never**                                                  |
+| Studio-authored external HTTP Tool result | only as defined by its Tool contract            | **never**                          | **never**                                                                             | **never**                                                  |
+| Merchant Knowledge / retrieved document   | reference facts                                 | **never**                          | **never**                                                                             | **never**                                                  |
+| Catalogue/provider data                   | as defined by its Tool contract                 | **never**                          | **never**                                                                             | **never**                                                  |
 
 An action objective therefore has to exist independently of the Tool result that supplies
 facts used to evaluate that objective.
@@ -2175,8 +2172,26 @@ Export target: `@modainteract/moda-interact-shared/internationalization`
 
 ```ts
 export const MODA_SUPPORTED_LANGUAGE_TAGS = [
-  "zh-Hans", "zh-Hant", "cs", "da", "nl", "en", "fi", "fr", "de", "it",
-  "ja", "ko", "nb", "pl", "pt-BR", "pt-PT", "es", "sv", "th", "tr",
+  "zh-Hans",
+  "zh-Hant",
+  "cs",
+  "da",
+  "nl",
+  "en",
+  "fi",
+  "fr",
+  "de",
+  "it",
+  "ja",
+  "ko",
+  "nb",
+  "pl",
+  "pt-BR",
+  "pt-PT",
+  "es",
+  "sv",
+  "th",
+  "tr",
 ] as const;
 ```
 
@@ -2193,19 +2208,26 @@ Consumers: `moda-interact-admin`, `moda-interact`, `moda-interact-background`,
 `moda-interact-commerce`.
 
 ```ts
-export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION = 1 as const;
+export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION =
+  1 as const;
 
-export const MerchantKnowledgeAllowedSourceTypeSchema = z.object({
-  purposeKey: z.string().trim().min(1).max(64),
-  dataFormatKey: z.string().trim().min(1).max(32),
-}).strict();
+export const MerchantKnowledgeAllowedSourceTypeSchema = z
+  .object({
+    purposeKey: z.string().trim().min(1).max(64),
+    dataFormatKey: z.string().trim().min(1).max(32),
+  })
+  .strict();
 
-export const MerchantKnowledgeFeatureConfigurationSchema = z.object({
-  schemaVersion: z.literal(1),
-  maxKnowledgeSources: z.number().int().min(1).max(100),
-  maxContentUnitsPerSource: z.number().int().min(1).max(25000),
-  allowedSourceTypes: z.array(MerchantKnowledgeAllowedSourceTypeSchema).max(100),
-}).strict();
+export const MerchantKnowledgeFeatureConfigurationSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    maxKnowledgeSources: z.number().int().min(1).max(100),
+    maxContentUnitsPerSource: z.number().int().min(1).max(25000),
+    allowedSourceTypes: z
+      .array(MerchantKnowledgeAllowedSourceTypeSchema)
+      .max(100),
+  })
+  .strict();
 ```
 
 `allowedSourceTypes` MUST contain no duplicate `(purposeKey, dataFormatKey)` pair.
@@ -2253,7 +2275,6 @@ currently active/allowed.
 
 No downstream consumer may invent local aliases for these keys.
 
-
 ### C4 — Merchant Knowledge processing queue
 
 Owner: `moda-interact-shared`
@@ -2269,16 +2290,19 @@ Consumer: `moda-interact-background`
 
 ```ts
 export const MERCHANT_KNOWLEDGE_QUEUE_NAME = "merchant-knowledge" as const;
-export const MERCHANT_KNOWLEDGE_PROCESS_JOB_NAME = "process-source-revision" as const;
+export const MERCHANT_KNOWLEDGE_PROCESS_JOB_NAME =
+  "process-source-revision" as const;
 export const MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION = 1 as const;
 
-export const MerchantKnowledgeProcessSourceRevisionJobSchema = z.object({
-  schemaVersion: z.literal(1),
-  shopId: z.string().trim().min(1).max(128),
-  sourceRevisionId: z.string().trim().min(1).max(128),
-  generation: z.number().int().positive(),
-  requestedAt: z.iso.datetime({ offset: true }),
-}).strict();
+export const MerchantKnowledgeProcessSourceRevisionJobSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    shopId: z.string().trim().min(1).max(128),
+    sourceRevisionId: z.string().trim().min(1).max(128),
+    generation: z.number().int().positive(),
+    requestedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
 ```
 
 The deterministic BullMQ job id is:
@@ -2586,7 +2610,6 @@ post-commit processing decision
 
 An abandoned PENDING_UPLOAD asset does not consume `maxKnowledgeSources`.
 
-
 ### Flow E — Background source processing and entitlement reconciliation
 
 ```text
@@ -2644,7 +2667,6 @@ reconciliation creates an `ENTITLEMENT_CHANGE` PENDING revision using the same c
 URL or uploaded asset and enqueues it through C4.
 
 It does not automatically reprocess on allowance increases.
-
 
 ### Flow F — conversation lookup
 
@@ -2723,7 +2745,6 @@ the same generation invariant and current locator.
 
 Queue publication is outside the transaction. Reconciliation recovers committed PENDING
 work that did not reach BullMQ.
-
 
 ### Knowledge processing promotion transaction
 
@@ -3216,7 +3237,6 @@ The exact existing R2 credential/bucket environment names and deployment binding
 deferred until Patch 5 inspection of current Gateway/R2 wiring. Patch 1 fixes the
 security/ownership semantics above rather than inventing a second storage service.
 
-
 ## Rollout / Migration
 
 Rollout classification: **pre-production/breaking for the new Merchant Knowledge data
@@ -3432,6 +3452,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - Confirmed missing or disabled `ShopFeaturePreference` returns non-retryable `DENIED` before embedding or pgvector retrieval, leaves retained source/revision/chunk state unchanged and does not create a preference row; enabling the same preference immediately retrieves the retained matching ACTIVE chunk.
 - Accepted the task-owned `pgvector/pgvector:pg17` runner with all 22 Prisma migrations, loopback-only ephemeral database exposure and verified teardown, plus 32 focused tests, typecheck, targeted lint/diagnostics, runner syntax and whitespace validation.
 - Marked COMMERCE-004 Complete / Accepted Attempt 2. It declares no `enables`; SYSTEM-TEST-002 remains Pending on its other implementation/infrastructure prerequisites.
+
 ### 2026-10-01 — SHOPIFY-005 Attempt 3 accepted
 
 - Accepted the evidence-only Attempt 3 with the implementation unchanged at `244f3f60035c3651168571869234ab23654854d3`.
@@ -3458,6 +3479,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - Accepted the evidence-only Attempt 2 after the canonical parent and Commerce task worktrees were synchronized and the required worktree/provenance packet, completed checklists, corrected lint count and categorized full-suite failure inventory were recorded.
 - Confirmed the Commerce implementation remained unchanged: Platform plus optional Shop Instructions are additive, exposed through the fixed reserved MCP prompts, consumed in the same order by Preview, and no Background files were modified.
 - Marked COMMERCE-003 Complete / Accepted Attempt 2. No implementation task is promoted by this acceptance because COMMERCE-003 declares no `enables`; the separate Background host-consumption follow-up remains mandatory before final ARCH-023 system acceptance.
+
 ### 2026-10-01 — SHOPIFY-004 Attempt 2 accepted
 
 - Accepted the Merchant Knowledge Recovery Settings control plane and WEB_PAGE lifecycle after closing all three Attempt 1 server-boundary findings.
@@ -3479,6 +3501,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - Confirmed the exact legacy state transitions by compare-and-set inside the existing authenticated Merchant Pricing Plan transaction, with one normal `PLAN_CATALOG_CHANGED` audit event; already-target state is idempotent and conflicting state fails closed.
 - Confirmed no `ShopFeaturePreference` rows are seeded or mutated, generic Feature creation/deactivation cannot conflict with the fixed policy, and plan mappings/C2 configuration remain unchanged.
 - Marked ADMIN-004 Complete and promoted `ARCH-023-SHOPIFY-004` and `ARCH-023-BACKGROUND-006` to Ready. `ARCH-023-COMMERCE-004` remains Pending on COMMERCE-002. Corrected BACKGROUND-004 to Pending until its new BACKGROUND-006 dependency completes.
+
 ### 2026-09-30 — COMMERCE-002 Attempt 4 accepted
 
 - Accepted the convergent Merchant Knowledge Tool/Capability/release bootstrap on the accepted direct ARCH-021 model with `Feature.activationMode = MERCHANT_OPT_IN` and zero `ShopFeaturePreference` writes.
@@ -3535,6 +3558,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - Kept the required pending-category PostgreSQL transaction proof open. Attempt 2 must exercise the production Prisma mutation against a task-local disposable PostgreSQL database with accepted migrations and prove success plus rollback/CAS behavior, including the audit uniqueness fix.
 - Required exact launcher-resolved worktree/branch, synchronization and recursive-submodule evidence in the Completion Report.
 - Returned ADMIN-003 to Ready with Attempt 1 preserved. No dependent task was promoted and no database/Commerce/Shopify follow-on work was started.
+
 ### 2026-09-30 — COMMERCE-001 Attempt 2 accepted
 
 - Accepted `merchantKnowledge.lookup@1.0.0` after the strengthened live test invoked the production `retrieveMerchantKnowledge()` path against a disposable `pgvector/pgvector:pg17` database with all 21 migrations applied.
@@ -3576,6 +3600,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - Identified durable ARCH-017 coordination drift: the ARCH-017 parent architecture and later Shopify task records describe SHOPIFY-001 as Complete, while its individual authoritative task YAML in this workspace still says `ready` / `attempt: 0` and contains no durable Architect Review. That record must be reconciled before its branch is treated as merge-authorised.
 - Required normal developer integration of the architect-accepted ARCH-017 Shopify lifecycle chain into the canonical `moda-interact` base before SHOPIFY-001 may return to Ready.
 - Left SHOPIFY-002 Ready because it is independent of SHOPIFY-001. SHOPIFY-003 and SHOPIFY-004 remain gated on SHOPIFY-001 completion.
+
 ### 2026-09-30 — ADMIN-001 Attempt 2 accepted
 
 - Accepted the Merchant Knowledge pricing-plan entitlement authoring path at Attempt 2.
@@ -3584,6 +3609,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - Confirmed C2 plus active Purpose/Data Format catalogue validation, explicit existing-plan repair, exact Shared `1.0.1` adoption and the accepted database revision.
 - Reviewed 19/19 focused unit tests and 12/12 focused pricing security tests as passing, together with Prisma validation, TypeScript, production build, changed-file diagnostics and `git diff --check`; recorded broad unit/lint failures remain outside the changed ADMIN-001 surface.
 - Marked ADMIN-001 Complete. COMMERCE-002 remains Pending because COMMERCE-001 is not yet Complete; no task becomes newly Ready solely from this acceptance.
+
 ### 2026-09-30 — BACKGROUND-003 Attempt 1 changes requested
 
 - Reviewed private R2 acquisition, CSV/XLSX extraction and database-backed upload cleanup as substantially architecture-conformant.
@@ -3608,6 +3634,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - Confirmed the Attempt 2 implementation delta is only the PostgreSQL integration test; production source, dependency pins, database gitlink/schema/migrations and locale catalogues are unchanged from the substantively conformant Attempt 1 implementation.
 - Confirmed canonical launcher/worktree synchronization and recursive-submodule evidence. Submitted implementation is `e287ba7b246dc1fd40e752512c47ad823fc18d0a`; submitted parent report is `aa5b7190e43bc975a337b71607198e58c1edf098`.
 - Marked SHOPIFY-002 Complete. SHOPIFY-003 remains Pending because SHOPIFY-001 is still Ready, not Complete; no downstream task was started.
+
 ### 2026-09-30 — BACKGROUND-001 Attempt 4 accepted
 
 - Accepted the dedicated Merchant Knowledge worker/entitlement/PENDING-reconciliation foundation at Attempt 4.
@@ -3655,6 +3682,7 @@ through bounded task reviews without changing the agreed architecture contract.
 - No database correction task or migration is required. DATABASE-001 remains Complete,
   ADMIN-002 returns to Ready for Attempt 2, and ADMIN-003 remains gated on ADMIN-002
   completion.
+
 ### 2026-09-30 — SHARED-002 Attempt 1 accepted
 
 - Accepted the publication-only `ARCH-023-SHARED-002` release gate after verifying that Shared source is unchanged from accepted SHARED-001 and release metadata advances exactly `1.0.0 -> 1.0.1`.
@@ -3745,6 +3773,7 @@ through bounded task reviews without changing the agreed architecture contract.
   execution validation.
 - Defined exact target tables, keys, indexes and cross-application contracts for review
   before implementation-task creation.
+
 ### 2026-10-01 — SHOPIFY-005 Attempt 1 review
 
 - Returned SHOPIFY-005 to Ready for Attempt 2 because the original Content-Type-only presigned PUT remained replayable for 600 seconds and could overwrite an immutable uploaded asset.

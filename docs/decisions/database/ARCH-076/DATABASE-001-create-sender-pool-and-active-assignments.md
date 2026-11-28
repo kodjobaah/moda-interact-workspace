@@ -221,7 +221,6 @@ The SQL contract remains five new tables, eight foreign keys, thirteen CHECKs, n
 
 DATABASE-001 is independently Ready: it supplies sender-pool storage only. The same-Conversation renewed-credit amendment belongs to separate DATABASE-002 and BACKGROUND-005 definitions and does not authorize adding allowance fields or billing policy here. No downstream task is promoted by this definition review. No implementation worktree, claim, schema migration or live mutation has been performed by the architect.
 
-
 ### 15 November definition amendment
 
 Historical fixed SQL must be regenerated for the restored five-entity contract plus R15 evidence; hardcoded router policy remains superseded. Historical claim/review evidence above is retained as history, not approval of the replacement implementation. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.

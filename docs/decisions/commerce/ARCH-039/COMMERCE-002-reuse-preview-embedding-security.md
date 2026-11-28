@@ -24,7 +24,6 @@ created: 2026-10-14
 updated: 2026-10-15
 ---
 
-
 # Migrate Commerce Preview and embedding credential readers to Shared
 
 ## Architecture

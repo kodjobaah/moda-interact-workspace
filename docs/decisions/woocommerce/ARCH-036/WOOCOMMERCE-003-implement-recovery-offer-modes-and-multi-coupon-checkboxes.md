@@ -35,7 +35,6 @@ Enable the agreed three Recovery Offer modes using the existing Woo coupon catal
 
 ## Context
 
-
 ARCH-035-WOOCOMMERCE-011 already offers a preview-only native coupon picker. API-002 is the sole new hosted read/write endpoint for the merchant selection and offers; Background synchronises Woo coupon pages directly using the approved encrypted grant; no outbound coupon verification is part of ARCH-036. No new API coupon proxy/proof endpoint or Shared response schema is required; coupon eligibility, redemption, CommerceAgent and outbound recovery are explicitly out of scope.
 
 ## Scope
@@ -68,7 +67,6 @@ Modular React recovery offer cards, accessible checkbox list with bounded search
 - [ ] Verify both WordPress navigation stages and responsive behavior with manual LocalWP desktop/narrow-viewport interaction and screenshots.
 
 ## Interfaces / Contracts
-
 
 Privileged WordPress REST proxy to API-002's API-owned GET/PUT merchant discount catalogue/offer endpoints; existing `ShopifyDiscount` IDs/selected `isAvailable` flags and `ShopSettings` mode. No new Shared npm schema or coupon-upload event.
 

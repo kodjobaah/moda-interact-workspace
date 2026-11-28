@@ -126,9 +126,11 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Attempt 2 complete; returned to `moda_architect` for review.
 
 ### Files Changed
+
 - `prisma/schema.prisma`
 - `prisma/migrations/20260911020000_add_recovery_admission_block_state/migration.sql`
 - `scripts/validate-checkout-recovery-capacity-schema.mjs`
@@ -136,6 +138,7 @@ Attempt 2 complete; returned to `moda_architect` for review.
 - `docs/generated/prisma-erd.puml`
 
 ### Work Completed
+
 - Added the commerce `RecoveryAdmissionBlockReason` enum with `RECOVERY_CAPACITY_EXHAUSTED`.
 - Added nullable `admissionBlockedAt` and `admissionBlockReason` fields to `CheckoutRecovery`.
 - Added the bounded repair/resume index on `[shopId, admissionBlockReason, status, detectedAt]`.
@@ -144,6 +147,7 @@ Attempt 2 complete; returned to `moda_architect` for review.
 - Regenerated the version-controlled PlantUML ERD.
 
 ### Validation Results
+
 - `npm run prisma:generate` passed.
 - `npm run format` passed.
 - `npm run validate` passed.
@@ -157,21 +161,22 @@ Attempt 2 complete; returned to `moda_architect` for review.
 Attempt 2 re-ran the complete Architect Review validation set without changing the recovery-capacity implementation logic.
 
 ### Git / VCS
+
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-005
-  parent branch: task/ARCH-010-DATABASE-005
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-005
-  implementation branch: task/ARCH-010-DATABASE-005
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-005
+parent branch: task/ARCH-010-DATABASE-005
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-005
+implementation branch: task/ARCH-010-DATABASE-005
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes, merge commit c013bed
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: yes, merge commit f4b5506
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes, merge commit c013bed
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: yes, merge commit f4b5506
 
 Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-005
 Implementation branch: task/ARCH-010-DATABASE-005
@@ -185,6 +190,7 @@ Parent Attempt 2 claim commit: 0a7f653 chore: reclaim ARCH-010-DATABASE-005 revi
 Parent task branch pushed to origin.
 
 ### Deviations / Assumptions
+
 - No deviations from the task scope. The schema does not add a new `CheckoutRecoveryStatus` value and does not enforce the application-owned DETECTED-only invariant through a cross-column CHECK.
 
 ### Architect Review

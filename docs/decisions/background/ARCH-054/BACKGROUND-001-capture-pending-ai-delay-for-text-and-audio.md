@@ -22,9 +22,7 @@ created: 2026-10-31
 updated: 2026-11-02
 ---
 
-
 # ARCH-054-BACKGROUND-001: Atomically freeze AI delay when inbound text or voice opens a turn
-
 
 ## Architecture
 
@@ -34,26 +32,21 @@ Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md
 
 Coordinator: `moda_architect`. Task materialised on the parent `task/ARCH-054-BACKGROUND-001` branch and implemented in its dedicated Background task worktree.
 
-
 ## Objective
 
 Capture one source-backed deadline and control revision for the first processable customer inbound of each AI-controlled recovery turn.
-
 
 ## Context
 
 ARCH-054 adds a **merchant-selectable integer 0–30 minute AI reply delay** to the existing ARCH-040 recovery-conversation processor and handover controls, leaving merchant-authored HUMAN replies without configured delay. See the parent architecture and current snapshot for specific boundaries.
 
-
 ## Scope
 
 Create `src/services/conversation-ai-delay/pending-turn-deadline.ts` (pure clock/boundary helper) and `src/services/conversation-ai-delay/pending-turn-repository.ts` (database transaction helper). Modify `src/services/conversation.service.ts` and `src/services/inbound-whatsapp-audio.service.ts`; update typed turn state projections and focused unit/PostgreSQL integration tests. No standalone worker/queue or UI changes.
 
-
 ## Out of Scope
 
 No unrelated architecture changes, new standalone chat service, per-user timer jobs, invented provider error explanations, or updates to `docs/decisions/**/_index.md`. No implementation outside the assigned repository.
-
 
 ## Requirements
 
@@ -64,35 +57,29 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 - For non-recovery/standalone conversations, retain current non-merchant delay behaviour. No network or queue publish inside the transaction; enqueue only after commit and use existing versioned job identity. Preserve 3s/10s settle config untouched.
 - If duplicate webhook or retries occur, preserve the first deadline. On DB/persistence error, log original exception through Shared and propagate; no unobserved catch-and-continue.
 
-
 ## Work Items
 
 - [x] Implement exact pure deadline computation and transaction helper (one owner, reusable for text/audio).
 - [x] Modify first-text and audio completion paths; update `ConversationTurnState` projection with pending triple and original `controlMode`/`controlRevision`.
 - [x] Add tests for 0,1,7,30, duplicate/out-of-order, concurrent first texts, mixed text/audio, settings changed mid-turn, HUMAN-mode inbound, tenant ownership and actual DB rollback.
 
-
 ## Interfaces / Contracts
 
 Internal pure `computePendingAiNotBeforeAt({pendingStartedAt:Date,delayMinutes:0..30}):Date` with no new public Shared type. Database writes use prisma transaction and contract from DATABASE-001. The observed job remains `{ conversationId, observedVersion }` using existing `conversation-turn__<id>__<version>` jobId.
-
 
 ## Dependencies
 
 - ARCH-054-DATABASE-001
 
-
 ## Enables
 
 - ARCH-054-BACKGROUND-002
-
 
 ## Acceptance Criteria
 
 - [x] Only one deadline and captured revision per pending turn; simultaneous first inbound races do not create two anchors.
 - [x] No AI deadline for HUMAN inbound, failed audio or unrelated nonrecovery; normal inbound persistence and moderation remain intact.
 - [x] No duplicate Meta send or extra credit caused by inbound retry; real DB transaction validates atomicity.
-
 
 ## Validation
 
@@ -102,16 +89,13 @@ Internal pure `computePendingAiNotBeforeAt({pendingStartedAt:Date,delayMinutes:0
 - [x] Changed-file ESLint — passed.
 - [x] `git diff --check` — passed.
 
-
 ## Stop Condition
 
 After all required Work Items, Acceptance Criteria and Validation are complete, update Completion Report, set status to `review`, return control to `moda_architect` and **STOP**. Do not implement dependent tasks. Publication tasks do not rerun accepted implementation validation.
 
-
 ## Implementation Notes
 
 Do not perform a network call while a DB transaction is open. Source original cause and provider diagnostic must be logged/redacted, never rewritten as a guessed message. Existing inbound audio service presently sets pendingTurnStartedAt to transcription-completion now: extend it, do not create a second audio dispatcher.
-
 
 ## Completion Report
 
@@ -181,7 +165,6 @@ Ready for Review: implementation, acceptance criteria and required validation ar
 - Current implementation task branch head, including the origin/main merge: `b0ea947ee392b2741bf8de3683e458208a83fa25`; pushed to `origin/task/ARCH-054-BACKGROUND-001` and verified equal to the remote ref.
 - Parent task branch synchronization head: `89c9890ba95d757f49c5c5e5e52a5077f10d825a`.
 - Parent task report commit: `e1c43f194f6af925b77931914d54433d86108ef0`; pushed to `origin/task/ARCH-054-BACKGROUND-001` and verified equal to the remote ref.
-
 
 ## Architect Review
 

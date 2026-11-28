@@ -39,7 +39,6 @@ The developer explicitly chose to keep provider eligibility and merchant checkbo
 
 ## Context
 
-
 For **WooCommerce records only**, `isAvailable=true` means selected by the merchant; for Shopify it retains its existing provider-availability meaning. Provider status, fixedSelectable, dates and catalogue freshness decide which coupons appear. The API reads the existing catalogue maintained by BACKGROUND-001 and writes selected flags plus the **real internal** `ShopSettings.fixedShopifyDiscountId` anchor to satisfy unchanged FIXED SQL checks. The API does **not** retrieve Woo coupon pages from the provider, determine which coupon to offer, or prove checkout eligibility. Neither offer execution nor CommerceAgent is in this session.
 
 ## Scope
@@ -54,7 +53,6 @@ Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT 
 - No implementation of tasks listed under Enables; return to the architect at the defined stop point.
 
 ## Requirements
-
 
 - Catalogue GET lists all shop-scoped CURRENT, ACTIVE, fixedSelectable, in-date, supported positive-value coupons with bounded stable pagination/search, **including unchecked** rows; checked state comes from `isAvailable`. A missing, stale or non-current catalogue is not an empty successful catalogue.
 - Authenticated Woo installation uses the existing PHP privileged WordPress REST boundary; no browser-to-Moda hosted direct call and no new Shared data-schema dependency. Define the endpoint's own versioned OpenAPI contract in `moda-interact-api`.
@@ -73,16 +71,13 @@ Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT 
 
 ## Interfaces / Contracts
 
-
 API-owned versioned GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merchant/discount-offers`, authenticated Woo installation and existing WordPress REST facade. Existing `ShopSettings` and `ShopifyDiscount` only. **No new Shared contract or provider REST read/proof endpoint.**
 
 ## Dependencies
 
-
 - `ARCH-036-BACKGROUND-001` — complete, current normalized coupons needed for listing and selection.
 
 ## Enables
-
 
 - `ARCH-036-WOOCOMMERCE-003`
 - `ARCH-036-BACKGROUND-003`
@@ -108,7 +103,6 @@ API-owned versioned GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merch
 After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
-
 
 Implement only Woo merchant-facing catalogue read and selection persistence. Background owns the provider coupon-list sync; send-time proof and CommerceAgent are outside this session. Preserve current policy delay/follow-up and admin override without introducing false discount eligibility claims. Use the API repository's own contract tests and real existing-schema PostgreSQL concurrency/FK checks.
 

@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-SHOPIFY-002
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-SHOPIFY-002
 enables:
-- ARCH-010-SHOPIFY-003
-- ARCH-010-SHOPIFY-009
-- ARCH-010-SHOPIFY-018
+  - ARCH-010-SHOPIFY-003
+  - ARCH-010-SHOPIFY-009
+  - ARCH-010-SHOPIFY-018
 created: 2026-09-12
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-SHOPIFY-023: Conform Shopify billing runtime to the clean first-production baseline
@@ -159,7 +159,6 @@ remove those compatibility assumptions and target DATABASE-013's final model.
 
 Do **not** implement the downstream top-up/refund/promotion UI tasks in this correction task.
 
-
 ### 6. Remove Free-only exhaustion message compatibility
 
 The supplied Shopify runtime still contains `BILLING_FREE_ALLOWANCE_EXHAUSTED` UI action/test handling. SHARED-007 removes that development-only code. Delete the obsolete handler/test branch and use only the generic `BILLING_RECOVERY_CAPACITY_EXHAUSTED` contract for first-production full-capacity exhaustion.
@@ -234,9 +233,9 @@ No new cross-service contract is introduced.
 6. No local duplicate of a removed Shared billing/cancellation contract remains.
 7. Shopify source/tests contain no `BILLING_FREE_ALLOWANCE_EXHAUSTED` compatibility handler; generic `BILLING_RECOVERY_CAPACITY_EXHAUSTED` remains supported.
 8. Any directly encountered old refund/promotion compatibility has been removed without implementing downstream feature scope.
-8. Focused billing-service tests cover canonical lifetime counter arithmetic under both Free and Paid mapped-plan states.
-9. Repository-wide search verifies removed baseline symbols are absent from implementation/test code except intentional historical documentation outside repository implementation ownership.
-10. Required repository validation passes or only documented unchanged baseline failures remain.
+9. Focused billing-service tests cover canonical lifetime counter arithmetic under both Free and Paid mapped-plan states.
+10. Repository-wide search verifies removed baseline symbols are absent from implementation/test code except intentional historical documentation outside repository implementation ownership.
+11. Required repository validation passes or only documented unchanged baseline failures remain.
 
 ## Validation
 
@@ -640,4 +639,3 @@ Pending -> Ready
 `SHOPIFY-003` remains Pending because `ARCH-010-BACKGROUND-003` is not Complete.
 
 `SHOPIFY-009` remains Pending because `ARCH-010-SHOPIFY-004` is not Complete.
-

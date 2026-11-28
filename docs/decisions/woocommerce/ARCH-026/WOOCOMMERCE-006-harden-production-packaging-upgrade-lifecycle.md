@@ -716,7 +716,6 @@ Accepted. The self-contained plugin artifact preserves the accepted WOO-005 read
 
 The original correction contract is retained below. Its `Changes Requested` outcome has been superseded by the Attempt 2 acceptance above.
 
-
 #### Review Status
 
 Changes Requested — Attempt 1 (2026-10-08).

@@ -36,19 +36,19 @@ Use `@modainteract/moda-interact-shared/logging`. Reuse existing domain observab
 
 ### Required fields when they exist at the source
 
-| Field | Requirement |
-|---|---|
-| `event` | Stable domain/action name, e.g. `shopify.billing.provider_failed`; no architecture/task ID |
-| `operation` / `stage` | Actual failed operation or phase, not an assumed provider cause |
-| `origin` | `provider_response`, `sdk_exception`, `transport`, `database` or `internal`, according to evidence |
-| `error` | Original safe exception; its actual name/message must reach the emitted Shared record |
-| `cause` / `causeChain` | Available original causes, supplied explicitly through Shared fields; bounded to four known cause entries, without a custom serializer |
-| `databaseCode` | Actual Prisma/driver code when available, e.g. P2021/P2034; never a guessed code |
-| `provider` / `httpStatus` / `providerRequestId` | Actual safe source values; omit absent values |
-| `providerError` | Original safe provider code/message/details, including GraphQL HTTP-200 errors |
-| `reasonCode` | Optional Moda classification in addition to original evidence |
-| Correlation | Available trusted Shop/operation/recovery/job/delivery/command IDs and fixed route name; never credentials |
-| `redactionApplied` / `truncated` | Explicit when error text/details were redacted or shortened |
+| Field                                           | Requirement                                                                                                                            |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `event`                                         | Stable domain/action name, e.g. `shopify.billing.provider_failed`; no architecture/task ID                                             |
+| `operation` / `stage`                           | Actual failed operation or phase, not an assumed provider cause                                                                        |
+| `origin`                                        | `provider_response`, `sdk_exception`, `transport`, `database` or `internal`, according to evidence                                     |
+| `error`                                         | Original safe exception; its actual name/message must reach the emitted Shared record                                                  |
+| `cause` / `causeChain`                          | Available original causes, supplied explicitly through Shared fields; bounded to four known cause entries, without a custom serializer |
+| `databaseCode`                                  | Actual Prisma/driver code when available, e.g. P2021/P2034; never a guessed code                                                       |
+| `provider` / `httpStatus` / `providerRequestId` | Actual safe source values; omit absent values                                                                                          |
+| `providerError`                                 | Original safe provider code/message/details, including GraphQL HTTP-200 errors                                                         |
+| `reasonCode`                                    | Optional Moda classification in addition to original evidence                                                                          |
+| Correlation                                     | Available trusted Shop/operation/recovery/job/delivery/command IDs and fixed route name; never credentials                             |
+| `redactionApplied` / `truncated`                | Explicit when error text/details were redacted or shortened                                                                            |
 
 Shared 3.1.0 serializes an Error's name/message, not its custom properties/cause automatically. Passing `{error}` alone therefore does not prove that a Prisma code or cause survived. The owning adapter supplies those available fields explicitly, lets Shared own serialization/bounds, and preserves the actual Error `cause` during propagation. Known wrapper chains can supply their existing cause objects; do not invent a reusable competing recursive serializer.
 

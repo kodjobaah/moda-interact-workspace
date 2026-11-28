@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-056-BACKGROUND-002
-- ARCH-056-BACKGROUND-003
-- ARCH-028-BACKGROUND-012
-- ARCH-050-BACKGROUND-002
-- ARCH-050-BACKGROUND-003
-- ARCH-052-BACKGROUND-018
-- ARCH-053-BACKGROUND-005
+  - ARCH-056-BACKGROUND-002
+  - ARCH-056-BACKGROUND-003
+  - ARCH-028-BACKGROUND-012
+  - ARCH-050-BACKGROUND-002
+  - ARCH-050-BACKGROUND-003
+  - ARCH-052-BACKGROUND-018
+  - ARCH-053-BACKGROUND-005
 enables:
-- ARCH-056-SYSTEM-TEST-001
-created: '2026-11-03'
+  - ARCH-056-SYSTEM-TEST-001
+created: "2026-11-03"
 updated: 2026-11-04
 ---
 
@@ -145,17 +145,17 @@ Apply the parent architecture's mandatory revision-2 logging acceptance contract
 
 Use per-invocation stage and identity state, not mutable fields shared by concurrent calls. Include only available shop/recovery/attempt/message/job identity. Retain source-provided request IDs where available; do not add a tracing protocol or copy raw provider responses downstream. The Meta adapter and protected moderation source remain the owners of their detailed source diagnostics.
 
-| Selected boundary | Stable event and owner | Required emitted evidence |
-|---|---|---|
-| Received optional failure followed by neutral fallback | Facade, new `recovery_template.initial_fallback.degraded` | Warn before PREPARED/BLOCKED/RETRY conversion with trigger, stage, known IDs and received safe source diagnostic when one exists. A typed failure without an exception retains its reason and creates no providerError. |
-| Actual required-state fallback exception | Existing `recovery_template.initial_fallback.failed`, with existing facade error context | Log the actual safe required-state error and rethrow that same exception. Do not substitute an optional-enrichment cause or hide it in a reason-only retry. |
-| Continuation failure before the established finalization stages | Initiation, new `recovery.initial_outreach.progress.failed` | Stage `classification`, `preparation`, `credit_revalidation` or `dispatch`, safe actual diagnostic and known IDs, including direct service entry. Original exception remains the thrown value. |
-| Typed progress hold or business block | Continuation, new `recovery.initial_outreach.progress.held` and `.blocked` | Warn with actual reason, optional creditReason and known IDs. No invented originating exception, provider response or successful completion. Held work remains visible under the existing bounded retry contract. |
-| Billing/Support/recovery-status/follow-up error | Existing Shopify/Woo finalization and atomic Support failure events | Retain safe original message and exact existing stage. Keep validated IDs, original throw identity and best-effort sink behavior; do not duplicate source response bodies. |
-| Woo outreach contextual failure | Existing `woocommerce.recovery.outreach.failed` | Replace generic-only failed() diagnostics with safe actual source wording plus existing stage/IDs. Keep privacy and unchanged exception propagation; do not modify resumed-settlement policy. |
-| Woo preflight/release or send/compensation double failure | Existing aggregation catch, using `woocommerce.recovery.outreach.failed` | Before throwing the aggregate, emit explicit preflightError/releaseError or sendError/compensationError fields, each retaining an independently bounded safe original message/code. Aggregate-only output is insufficient. |
-| Candidate materialization and cleanup both fail | Worker, new `recovery.pending_candidate.processing_cleanup_failed` | Emit explicit materializationError and cleanupError with available queue/job/attempt/shop context before constructing/throwing the composite. Both messages must remain independently visible after Shared serialization. |
-| Failed candidate/job or worker error | Existing `recovery.pending_candidate.job_failed`, `.worker_error`, and Woo job failure events | Safe actual boundary diagnostic and available queue/job/attempt/shop context. Retain real listeners in tests and invoke them. Their outer record does not replace source or component diagnostics. |
+| Selected boundary                                               | Stable event and owner                                                                        | Required emitted evidence                                                                                                                                                                                                  |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Received optional failure followed by neutral fallback          | Facade, new `recovery_template.initial_fallback.degraded`                                     | Warn before PREPARED/BLOCKED/RETRY conversion with trigger, stage, known IDs and received safe source diagnostic when one exists. A typed failure without an exception retains its reason and creates no providerError.    |
+| Actual required-state fallback exception                        | Existing `recovery_template.initial_fallback.failed`, with existing facade error context      | Log the actual safe required-state error and rethrow that same exception. Do not substitute an optional-enrichment cause or hide it in a reason-only retry.                                                                |
+| Continuation failure before the established finalization stages | Initiation, new `recovery.initial_outreach.progress.failed`                                   | Stage `classification`, `preparation`, `credit_revalidation` or `dispatch`, safe actual diagnostic and known IDs, including direct service entry. Original exception remains the thrown value.                             |
+| Typed progress hold or business block                           | Continuation, new `recovery.initial_outreach.progress.held` and `.blocked`                    | Warn with actual reason, optional creditReason and known IDs. No invented originating exception, provider response or successful completion. Held work remains visible under the existing bounded retry contract.          |
+| Billing/Support/recovery-status/follow-up error                 | Existing Shopify/Woo finalization and atomic Support failure events                           | Retain safe original message and exact existing stage. Keep validated IDs, original throw identity and best-effort sink behavior; do not duplicate source response bodies.                                                 |
+| Woo outreach contextual failure                                 | Existing `woocommerce.recovery.outreach.failed`                                               | Replace generic-only failed() diagnostics with safe actual source wording plus existing stage/IDs. Keep privacy and unchanged exception propagation; do not modify resumed-settlement policy.                              |
+| Woo preflight/release or send/compensation double failure       | Existing aggregation catch, using `woocommerce.recovery.outreach.failed`                      | Before throwing the aggregate, emit explicit preflightError/releaseError or sendError/compensationError fields, each retaining an independently bounded safe original message/code. Aggregate-only output is insufficient. |
+| Candidate materialization and cleanup both fail                 | Worker, new `recovery.pending_candidate.processing_cleanup_failed`                            | Emit explicit materializationError and cleanupError with available queue/job/attempt/shop context before constructing/throwing the composite. Both messages must remain independently visible after Shared serialization.  |
+| Failed candidate/job or worker error                            | Existing `recovery.pending_candidate.job_failed`, `.worker_error`, and Woo job failure events | Safe actual boundary diagnostic and available queue/job/attempt/shop context. Retain real listeners in tests and invoke them. Their outer record does not replace source or component diagnostics.                         |
 
 At every selected aggregation catch, emit the named original components while they are still independently available, then preserve both objects in application propagation. Keep the candidate's existing primary failure/retry-marker behavior; do not rely on a concatenated outer string to expose a cleanup failure. Replace Woo's test that requires total omission of the original diagnostic with a safe-message assertion that retains the harmless wording and excludes sensitive portions. The actual error object remains unchanged for the caller.
 
@@ -211,10 +211,17 @@ The method verifies the persisted shop/platform/recovery and same sequence-one a
 Export `InitialOutreachHeldError` from the initiation module, with bounded `recoveryId`, reason and optional creditReason. Materializer/direct initial callers convert `held` into this error so the worker cannot acknowledge a held state as complete. A genuine dependency error is rethrown unchanged, rather than wrapped as a semantic hold. Add these materialization result variants:
 
 ```ts
-{ outcome: "recovery-reconciled"; checkoutToken: string; recoveryId: string }
-{ outcome: "deferred-initial-outreach"; checkoutToken: string;
-  recoveryId: string; reason: "pre-permit-refused" | "provider-rejected" |
-    "recipient-unreachable" }
+{
+  outcome: "recovery-reconciled";
+  checkoutToken: string;
+  recoveryId: string;
+}
+{
+  outcome: "deferred-initial-outreach";
+  checkoutToken: string;
+  recoveryId: string;
+  reason: "pre-permit-refused" | "provider-rejected" | "recipient-unreachable";
+}
 ```
 
 Keep the existing `materializeMaturedCandidate(candidate, options)` options object, `jobId`, `retrySuppressionAdmission`, source routing, missing-recipient update behavior, and ordinary existing result variants compatible. Existing `recovery-created` describes creation of a recovery row; it must never be presented as proof of a successful send. Preserve the public `handleCheckoutCreated` return shape for existing event/suppression/capacity callers while moving shared classification/preparation logic into local helpers as necessary.
@@ -282,20 +289,20 @@ Start from the accepted BG002/BG003 commits. Do not duplicate their billing reso
 
 Drive the actual candidate handler/materializer with real SQL and bounded Redis job execution where applicable, not only a direct service mock:
 
-| Stopped boundary | Required next execution |
-|---|---|
-| Recovery inserted; required customer/read fails | Same generation; original error fails first job; retry reaches preparation rather than `no-op-existing`. |
-| Attempt exists; required lifetime/preparation read fails | Same attempt; technical retry survives facade/fallback; optional offer outage still allows approved neutral preparation. |
-| Exact credit RESERVED, no message | Revalidate/reuse that source; no second reservation/current-period replacement. |
-| Message and usage committed, no permit | Same message/usage through BG003; no second quantity or HTTP permission. |
-| Permit committed, no outcome, including HTTP success then receipt DB failure | Visible held/failed job with original evidence; zero retry HTTP, zero speculative release/commit. |
-| Confirmed receipt, credit not committed | Exact BG002 settlement; no template/admit/provider work. A held source prevents all later completion. |
-| Credit committed, Support rolls back | Replay already committed credit and one atomic attempt/notice transition. |
-| Support/attempt commits, recovery status update fails | Bypass fallback and its INVALID_ATTEMPT guard; one notice; finish conditional status update. |
-| Recovery status commits, follow-up enqueue fails | Same stored due date and job identity, no second message/credit/notice. |
-| Finalized due null or non-null, policy then changes | Preserve the exact stored value; no null-to-date conversion on replay. |
-| Confirmed receipt followed by STOP/order/pause/terminal state | Reconcile observed receipt/credit without new provider work or terminal-state downgrade; current follow-up guards remain. |
-| Failed candidate exhausts bounded retries | Job remains failed/visible; no false acknowledgement or claim of autonomous SQL scanning. Explicit retry enters the same real handler. |
+| Stopped boundary                                                             | Required next execution                                                                                                                |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Recovery inserted; required customer/read fails                              | Same generation; original error fails first job; retry reaches preparation rather than `no-op-existing`.                               |
+| Attempt exists; required lifetime/preparation read fails                     | Same attempt; technical retry survives facade/fallback; optional offer outage still allows approved neutral preparation.               |
+| Exact credit RESERVED, no message                                            | Revalidate/reuse that source; no second reservation/current-period replacement.                                                        |
+| Message and usage committed, no permit                                       | Same message/usage through BG003; no second quantity or HTTP permission.                                                               |
+| Permit committed, no outcome, including HTTP success then receipt DB failure | Visible held/failed job with original evidence; zero retry HTTP, zero speculative release/commit.                                      |
+| Confirmed receipt, credit not committed                                      | Exact BG002 settlement; no template/admit/provider work. A held source prevents all later completion.                                  |
+| Credit committed, Support rolls back                                         | Replay already committed credit and one atomic attempt/notice transition.                                                              |
+| Support/attempt commits, recovery status update fails                        | Bypass fallback and its INVALID_ATTEMPT guard; one notice; finish conditional status update.                                           |
+| Recovery status commits, follow-up enqueue fails                             | Same stored due date and job identity, no second message/credit/notice.                                                                |
+| Finalized due null or non-null, policy then changes                          | Preserve the exact stored value; no null-to-date conversion on replay.                                                                 |
+| Confirmed receipt followed by STOP/order/pause/terminal state                | Reconcile observed receipt/credit without new provider work or terminal-state downgrade; current follow-up guards remain.              |
+| Failed candidate exhausts bounded retries                                    | Job remains failed/visible; no false acknowledgement or claim of autonomous SQL scanning. Explicit retry enters the same real handler. |
 
 Also test conflicting tenants/keys, missing lineage, all billing held reasons at the consumption boundary, the narrow legacy false-failure guard, current suppression wake-up behavior, neutral no-offer actual dispatch, genuine 131026/cancellation preservation, Woo production disabled plus confirmed-before-gate, and sequence-two compatibility. In the task-owned Support integration suite, force both finalizer/final-fence winner orders using a Shop with no existing Support thread. Execute actual first-thread and recovery-linked notice inserts and their immediate FK checks; observe Shop KEY SHARE before attempt ownership, unchanged-pointer validation, one atomic notice/attempt result and no fence/attempt/parent cycle. A pre-created thread or mocked notice insert alone does not exercise this boundary.
 
@@ -305,16 +312,16 @@ The existing queue remains three attempts with its accepted backoff/removal poli
 
 Use the actual installed Shared createLogger with a capture sink (or a test-only factory interception that delegates to it), record version/resolution and serialize/parse captured records. Assert the selected safe original/component message field, event, level, service/environment, exact stage and known identity. Mocked logger argument checks and rejection-only tests remain useful but do not establish emission. Verify absence of injected secrets/PII, explicit redaction/truncation, no fabricated providerError, original thrown-object identity or approved typed result, and unchanged business behavior with a throwing sink.
 
-| Owned test module | Required logging proof |
-|---|---|
-| `tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts` | Replace the unexpected-DB-error reason-only RETRY expectation with emitted safe source marker plus rejection by that same exception. Test actual missing/invalid lifetime exceptions separately from business lifetime denial. |
-| `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts` | Optional failure followed by PREPARED neutral fallback still emits its safe source/degradation marker. Required fallback error retains its actual identity/cause instead of unrelated optional cause; no-error typed outcomes have no invented providerError. |
-| `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` | Replace generic-only failure-output expectation with safe source wording/stage/IDs and exclusion of sensitive portions. Verify independent emitted markers plus retained aggregate objects for preflight/release and send/compensation pairs. |
-| `tests/unit/workers/pending-recovery-candidate.worker.test.ts` | Retain and invoke failed/error callbacks in the harness. Distinct materialization and cleanup errors appear under their own named fields through actual Shared serialization, with queue/job/attempt/shop context and preserved composite/retry-marker behavior. |
-| `tests/unit/services/checkout-recovery/initial-outreach-progress.test.ts` | Direct and queued continuation failure emits actual stage/message and rethrows unchanged; held/blocked results retain exact reasons and never claim completed work or invented source diagnostics. |
-| `tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts` | Supplement the existing four-stage original-object tests with emitted original-safe name/message and correlation; a throwing sink cannot replace the failure or continue status/follow-up work. |
-| `tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts` | Actual emitted persistence message/category and only validated IDs. No notice/customer content; logging failure cannot undo a committed transaction or mask its failure. |
-| `tests/unit/services/woocommerce-recovery/woo-confirmed-initial-settlement.test.ts` | Actual adapter finalization-stage/message output, truthful held diagnostics, and no logging-induced sent/notice/sequence-two behavior. |
+| Owned test module                                                                                | Required logging proof                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts`    | Replace the unexpected-DB-error reason-only RETRY expectation with emitted safe source marker plus rejection by that same exception. Test actual missing/invalid lifetime exceptions separately from business lifetime denial.                                   |
+| `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`  | Optional failure followed by PREPARED neutral fallback still emits its safe source/degradation marker. Required fallback error retains its actual identity/cause instead of unrelated optional cause; no-error typed outcomes have no invented providerError.    |
+| `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts`                 | Replace generic-only failure-output expectation with safe source wording/stage/IDs and exclusion of sensitive portions. Verify independent emitted markers plus retained aggregate objects for preflight/release and send/compensation pairs.                    |
+| `tests/unit/workers/pending-recovery-candidate.worker.test.ts`                                   | Retain and invoke failed/error callbacks in the harness. Distinct materialization and cleanup errors appear under their own named fields through actual Shared serialization, with queue/job/attempt/shop context and preserved composite/retry-marker behavior. |
+| `tests/unit/services/checkout-recovery/initial-outreach-progress.test.ts`                        | Direct and queued continuation failure emits actual stage/message and rethrows unchanged; held/blocked results retain exact reasons and never claim completed work or invented source diagnostics.                                                               |
+| `tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts`            | Supplement the existing four-stage original-object tests with emitted original-safe name/message and correlation; a throwing sink cannot replace the failure or continue status/follow-up work.                                                                  |
+| `tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts` | Actual emitted persistence message/category and only validated IDs. No notice/customer content; logging failure cannot undo a committed transaction or mask its failure.                                                                                         |
+| `tests/unit/services/woocommerce-recovery/woo-confirmed-initial-settlement.test.ts`              | Actual adapter finalization-stage/message output, truthful held diagnostics, and no logging-induced sent/notice/sequence-two behavior.                                                                                                                           |
 
 Extend the already declared actual-worker integration scenario with one captured materialization/cleanup compound-failure record and one confirmed-receipt/finalization error record. Inspect actual emitted records separately from SQL/provider state assertions; a report that merely copies an injected string is not log-delivery evidence. Keep existing source adapter detail ownership and moderation privacy; no provider parser or generic log-serialization implementation is added.
 

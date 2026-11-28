@@ -379,6 +379,7 @@ the retired inline setters:
      catalogue/read-only assertions.
 
 Do **not**:
+
 - weaken or remove a test;
 - rename tests;
 - change loader scope/order;

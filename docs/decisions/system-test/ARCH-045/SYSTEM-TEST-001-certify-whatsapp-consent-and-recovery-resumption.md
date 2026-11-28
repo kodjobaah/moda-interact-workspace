@@ -29,6 +29,7 @@ enables: []
 created: 2026-10-20
 updated: 2026-11-02
 ---
+
 # Certify Shopify phone-consent sync and normal reconciliation gating
 
 ## Architecture

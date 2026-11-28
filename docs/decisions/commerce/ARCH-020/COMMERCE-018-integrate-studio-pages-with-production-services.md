@@ -235,7 +235,7 @@ C20 execution evidence:
   targets were not provisioned.
 - `npm run test:arch020-studio-integration:c20` — blocked before tests with the
   exact error `C20_FIXTURE_UNSAFE_DATABASE_TARGET: disposable C20 targets are
-  required`; no C20 tests are claimed as passed.
+required`; no C20 tests are claimed as passed.
 
 No live provider, production credential, non-task-owned infrastructure, fixture
 service, MCP route, preview runtime, Shared package, or database schema was
@@ -428,7 +428,6 @@ make no downstream task Ready. The next authorized `/moda-task` claim increments
 Attempt 2 exactly once. COMMERCE-012, COMMERCE-024, GATEWAY-001 and terminal system
 validation remain gated.
 
-
 ### Readiness reconciliation after COMMERCE-013 Attempt 9 acceptance — 2026-09-21
 
 Ready, Attempt 0 retained; executor/claimed_at null. COMMERCE-013 implementation
@@ -438,7 +437,6 @@ Preserve native-basic monetary discount profiles as UNSUPPORTED while provider
 rounding semantics are unproven; do not estimate savings or implement missing
 provider semantics in this composition task. PostgreSQL adapter timeout diagnosis
 and live infrastructure evidence remain separately developer-owned.
-
 
 ### Attempt 2 Review — Changes Requested — 2026-09-21
 
@@ -482,7 +480,7 @@ Correction contract:
 
 The eligibility mapper currently uses `capability?.featureId ?? value.capabilityId`.
 For BASE/RECOVERY_POLICY members (or a missing publication capability), that invents a
-feature ID from the capability ID. A1-R6 required *feature-bound* candidate
+feature ID from the capability ID. A1-R6 required _feature-bound_ candidate
 capabilities to use their actual publication feature identity and prohibited inferred
 identity.
 
@@ -579,7 +577,6 @@ Return this same task to its configured `/moda-task` correction path. Preserve
 `attempt: 2`; the next authorized claim increments once to Attempt 3.
 COMMERCE-012, COMMERCE-024, GATEWAY-001 and terminal system validation remain gated.
 Do not start or promote a dependent task from this review.
-
 
 ### Attempt 3 Review — Blocked with producer correction materialised — 2026-09-21
 
@@ -1137,30 +1134,29 @@ Create this exact tool definition in the test:
 
 ```ts
 const authoredToolDefinition = {
-  name: 'c20_studio_authored_lookup',
-  definitionVersion: '1.0.0',
-  description: 'C20 Studio authored catalogue lookup.',
+  name: "c20_studio_authored_lookup",
+  definitionVersion: "1.0.0",
+  description: "C20 Studio authored catalogue lookup.",
   inputSchema: {
-    type: 'object',
+    type: "object",
     properties: {},
     additionalProperties: false,
   },
   execution: {
-    kind: 'SHOPIFY_STOREFRONT_QUERY',
-    executorVersion: '1.0.0',
-    apiVersion: '2026-07',
+    kind: "SHOPIFY_STOREFRONT_QUERY",
+    executorVersion: "1.0.0",
+    apiVersion: "2026-07",
     schemaHash:
-      '54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc',
-    document:
-      'query C20StudioCatalog { products(first: 1) { nodes { id } } }',
-    operationName: 'C20StudioCatalog',
+      "54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc",
+    document: "query C20StudioCatalog { products(first: 1) { nodes { id } } }",
+    operationName: "C20StudioCatalog",
     variables: {},
-    resultPath: 'products.nodes',
+    resultPath: "products.nodes",
   },
   responseTemplate: {
-    kind: 'text',
-    text: '{{result.value}}',
-    unavailable: 'C20 Studio catalogue data is unavailable.',
+    kind: "text",
+    text: "{{result.value}}",
+    unavailable: "C20 Studio catalogue data is unavailable.",
   },
 } as const;
 ```
@@ -1170,7 +1166,7 @@ Call:
 ```ts
 services.validateToolDefinition({
   definition: authoredToolDefinition,
-})
+});
 ```
 
 and require:
@@ -1232,8 +1228,8 @@ Before publishing that capability revision, execute the already configured unava
 discovery path:
 
 ```ts
-const discovery = await services.searchDocumentation({ query: 'product' });
-expect(discovery.kind).toBe('unavailable');
+const discovery = await services.searchDocumentation({ query: "product" });
+expect(discovery.kind).toBe("unavailable");
 ```
 
 Then reread:
@@ -1267,10 +1263,10 @@ Use exactly:
 
 ```ts
 const authoredResponseContract = {
-  version: 'response.v1',
-  instructions: 'Answer only from C20 Studio authoring facts.',
+  version: "response.v1",
+  instructions: "Answer only from C20 Studio authoring facts.",
   detailsSchema: {
-    type: 'object',
+    type: "object",
     properties: {},
     additionalProperties: false,
   },
@@ -1283,8 +1279,8 @@ Call:
 services.validateResponseContract({
   responseContract: authoredResponseContract,
   example: {},
-  contentHash: 'c20-studio-s01-response-contract',
-})
+  contentHash: "c20-studio-s01-response-contract",
+});
 ```
 
 and require:
@@ -1339,7 +1335,7 @@ No array-index-derived IDs or latest-revision substitution is permitted.
 Before activation read:
 
 ```ts
-services.getRelease(fixture.releases.active.releaseId)
+services.getRelease(fixture.releases.active.releaseId);
 ```
 
 and capture its real `activePointerVersion`.

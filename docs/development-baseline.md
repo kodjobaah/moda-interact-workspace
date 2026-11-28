@@ -53,6 +53,7 @@ For deliberate deep dependency/Zod diagnostics when relevant:
 ```
 
 <!-- MODA-WORKSPACE-ROOT-CONTRACT:START -->
+
 ## ENV-PATH-001 — Stable workspace support paths
 
 **Disposition:** EXPECTED
@@ -248,6 +249,7 @@ The source code, package manifests and current doctor output remain
 authoritative if this document becomes stale.
 
 <!-- MODA-TYPECHECK-001:START -->
+
 ## TYPECHECK-001 — Existing `moda-interact` repository-wide TypeScript errors
 
 **Disposition:** KNOWN BASELINE DEBT
@@ -345,6 +347,7 @@ At SHOPIFY-003 `37c62cd`, the task-relevant access-policy syntax repair allows f
 <!-- MODA-TYPECHECK-001:END -->
 
 <!-- MODA-ARCH025-TEST-001:START -->
+
 ## ARCH025-TEST-001 — ARCH-025 frozen BillingService and full-suite pre-task failures
 
 **Disposition:** WARN
@@ -450,6 +453,7 @@ than requiring ARCH-025 extraction tasks to recreate the old failure set.
 <!-- MODA-ARCH025-TEST-001:END -->
 
 <!-- MODA-ARCH025-ADMIN-TEST-001:START -->
+
 ## ARCH025-ADMIN-TEST-001 — Inherited Admin validation failures during QueueMonitor extraction
 
 **Disposition:** WARN
@@ -559,6 +563,7 @@ old failure set.
 <!-- MODA-ARCH025-ADMIN-TEST-001:END -->
 
 <!-- MODA-ARCH025-BACKGROUND-TEST-001:START -->
+
 ## ARCH025-BACKGROUND-TEST-001 — ARCH-025 Background full-suite pre-task failures
 
 **Disposition:** WARN
@@ -653,6 +658,7 @@ to the smaller observed set or mark it resolved.
 <!-- MODA-ARCH025-BACKGROUND-TEST-001:END -->
 
 <!-- MODA-ARCH025-ADMIN-BUILDER-TEST-001:START -->
+
 ## ARCH025-ADMIN-BUILDER-TEST-001 — Inherited Admin failures during pricing-plan builder extraction
 
 **Disposition:** WARN
@@ -772,6 +778,7 @@ the documented failures.
 <!-- MODA-ARCH025-ADMIN-BUILDER-TEST-001:END -->
 
 <!-- MODA-ARCH025-COMMERCE-TEST-001:START -->
+
 ## ARCH025-COMMERCE-TEST-001 — ARCH-025 Commerce inherited Studio/full-suite failures
 
 **Disposition:** WARN

@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-043-DATABASE-001
-- ARCH-043-ADMIN-002
+  - ARCH-043-DATABASE-001
+  - ARCH-043-ADMIN-002
 enables:
-- ARCH-043-BACKGROUND-002
+  - ARCH-043-BACKGROUND-002
 created: 2026-10-18
 updated: 2026-10-18
 ---
@@ -66,26 +66,26 @@ The user approved exactly two ARCH-043 Background tasks: service/contracts (`BAC
 
 The service's **key catalog** must reflect exactly these 18 Admin-approved PostgreSQL keys (no historical `merchantKnowledge.upload`, `support.translation`, or `ai.providers.openAiTranslationApiKey`):
 
-| Canonical key | Background read contract |
-|---|---|
-| `auth.admin` | Registry-known only; denied to Background |
-| `auth.commerce` | Registry-known only; denied to Background |
-| `commerce.bootstrap` | Registry-known only; denied to Background |
-| `commerce.connectionKeys` | `{connectionKeysJson,activeKeyId,commandHmacKey?}`; decrypt/validate as one envelope |
-| `shopify.oauth` | `{apiKey,apiSecret}` |
-| `shopify.partner` | `{accessToken,organizationId,appId,apiVersion?}` |
-| `shopify.appEvents` | `{clientId,clientSecret}` |
-| `merchant.knowledge.r2` | `{endpoint,bucket,accessKeyId,secretAccessKey,maxUploadBytes,maxXlsxUncompressedBytes}` (ONE sealed revision) |
-| `woocommerce.auth` | Registry-known only; no Background platform-owned consumer evidenced |
-| `woocommerce.billing` | Registry-known only; API-004 owns billing consumer |
-| `messaging.meta` | Registry-known only; Messaging integration expressly excluded |
-| `messaging.sender` | `{accessToken,phoneNumberId,businessAccountId}` |
-| `ai.providers` | `{groqApiKey?,openAiApiKey?}`; used as the key for the different providers, selected provider must exist |
-| `speech.transcription` | `{provider,groqModelId,openaiModelId}`; provider is `groq` or `openai` |
-| `woo.couponSync` | All 10 Admin fields (nine timing/batch limits plus `workerConcurrency`) |
-| `admin.grafana` | Registry-known only; denied to Background |
-| `commerce.preview` | Registry-known only; denied to Background |
-| `omini.moderation` | `{baseUrl: string | null, modelId: string}`; non-secret, read-only policy for `ARCH-040-BACKGROUND-006` |
+| Canonical key             | Background read contract                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `auth.admin`              | Registry-known only; denied to Background                                                                     |
+| `auth.commerce`           | Registry-known only; denied to Background                                                                     |
+| `commerce.bootstrap`      | Registry-known only; denied to Background                                                                     |
+| `commerce.connectionKeys` | `{connectionKeysJson,activeKeyId,commandHmacKey?}`; decrypt/validate as one envelope                          |
+| `shopify.oauth`           | `{apiKey,apiSecret}`                                                                                          |
+| `shopify.partner`         | `{accessToken,organizationId,appId,apiVersion?}`                                                              |
+| `shopify.appEvents`       | `{clientId,clientSecret}`                                                                                     |
+| `merchant.knowledge.r2`   | `{endpoint,bucket,accessKeyId,secretAccessKey,maxUploadBytes,maxXlsxUncompressedBytes}` (ONE sealed revision) |
+| `woocommerce.auth`        | Registry-known only; no Background platform-owned consumer evidenced                                          |
+| `woocommerce.billing`     | Registry-known only; API-004 owns billing consumer                                                            |
+| `messaging.meta`          | Registry-known only; Messaging integration expressly excluded                                                 |
+| `messaging.sender`        | `{accessToken,phoneNumberId,businessAccountId}`                                                               |
+| `ai.providers`            | `{groqApiKey?,openAiApiKey?}`; used as the key for the different providers, selected provider must exist      |
+| `speech.transcription`    | `{provider,groqModelId,openaiModelId}`; provider is `groq` or `openai`                                        |
+| `woo.couponSync`          | All 10 Admin fields (nine timing/batch limits plus `workerConcurrency`)                                       |
+| `admin.grafana`           | Registry-known only; denied to Background                                                                     |
+| `commerce.preview`        | Registry-known only; denied to Background                                                                     |
+| `omini.moderation`        | `{baseUrl: string                                                                                             | null, modelId: string}`; non-secret, read-only policy for `ARCH-040-BACKGROUND-006` |
 
 The contract must not invent older separate Merchant Knowledge policy/storage keys, or move support-translation model/provider ownership out of `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration`.
 
@@ -99,11 +99,22 @@ Use the following semantics; filenames may follow repository conventions:
 
 ```ts
 type BackgroundReadableKey =
-  | "woo.couponSync" | "speech.transcription" | "merchant.knowledge.r2"
-  | "commerce.connectionKeys" | "shopify.oauth" | "shopify.partner"
-  | "shopify.appEvents" | "messaging.sender" | "ai.providers" | "omini.moderation";
+  | "woo.couponSync"
+  | "speech.transcription"
+  | "merchant.knowledge.r2"
+  | "commerce.connectionKeys"
+  | "shopify.oauth"
+  | "shopify.partner"
+  | "shopify.appEvents"
+  | "messaging.sender"
+  | "ai.providers"
+  | "omini.moderation";
 
-type ConfigSnapshot<T> = Readonly<{ key: BackgroundReadableKey; version: number; value: Readonly<T> }>;
+type ConfigSnapshot<T> = Readonly<{
+  key: BackgroundReadableKey;
+  version: number;
+  value: Readonly<T>;
+}>;
 type KeyValues = {
   "woo.couponSync": WooCouponSyncPolicy; // exact Admin contract fields/ranges
   "speech.transcription": SpeechPolicy;
@@ -117,13 +128,19 @@ type KeyValues = {
   "omini.moderation": ModerationPolicy; // {baseUrl: string | null, modelId: string}
 };
 interface BackgroundPlatformConfigurationService {
-  read<K extends BackgroundReadableKey>(key: K): Promise<ConfigSnapshot<KeyValues[K]>>;
-  readBundle<K extends BackgroundReadableKey>(keys: readonly K[]): Promise<Readonly<{[P in K]: ConfigSnapshot<KeyValues[P]>}>>;
-  requireModerationOperation(): Promise<Readonly<{
-    moderation: ConfigSnapshot<KeyValues["omini.moderation"]>;
-    providerVersion: number;
-    openAiApiKey: string; // trusted server-only; never log or expose through HTTP
-  }>>;
+  read<K extends BackgroundReadableKey>(
+    key: K,
+  ): Promise<ConfigSnapshot<KeyValues[K]>>;
+  readBundle<K extends BackgroundReadableKey>(
+    keys: readonly K[],
+  ): Promise<Readonly<{ [P in K]: ConfigSnapshot<KeyValues[P]> }>>;
+  requireModerationOperation(): Promise<
+    Readonly<{
+      moderation: ConfigSnapshot<KeyValues["omini.moderation"]>;
+      providerVersion: number;
+      openAiApiKey: string; // trusted server-only; never log or expose through HTTP
+    }>
+  >;
 }
 ```
 

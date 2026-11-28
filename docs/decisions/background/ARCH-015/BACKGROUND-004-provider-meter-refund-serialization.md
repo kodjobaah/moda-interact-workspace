@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-BACKGROUND-003
 enables:
-- ARCH-015-SYSTEM-TEST-001
+  - ARCH-015-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -60,7 +60,7 @@ Do NOT modify the Shopify app, Database, Shared, Admin, or generic App Event pub
 `processDue()` already reads REQUESTED refunds ordered by:
 
 ```ts
-[{ createdAt: "asc" }, { id: "asc" }]
+[{ createdAt: "asc" }, { id: "asc" }];
 ```
 
 Preserve that ordering.
@@ -74,7 +74,9 @@ const visitedMeters = new Set<string>();
 Use this exact collision-safe key function:
 
 ```ts
-function refundMeterKey(refund: Pick<RefundRow, "shopId" | "eventHandleSnapshot">): string {
+function refundMeterKey(
+  refund: Pick<RefundRow, "shopId" | "eventHandleSnapshot">,
+): string {
   return JSON.stringify([refund.shopId, refund.eventHandleSnapshot]);
 }
 ```
@@ -140,15 +142,17 @@ const earlierRefund = await this.database.recoveryCreditRefund.findFirst({
 ### B. unresolved purchase on same meter
 
 ```ts
-const unresolvedPurchase = await this.database.recoveryCreditPurchase.findFirst({
-  where: {
-    shopId: refund.shopId,
-    status: RecoveryCreditPurchaseStatus.REQUESTED,
-    shopifyEventHandleSnapshot: refund.eventHandleSnapshot,
+const unresolvedPurchase = await this.database.recoveryCreditPurchase.findFirst(
+  {
+    where: {
+      shopId: refund.shopId,
+      status: RecoveryCreditPurchaseStatus.REQUESTED,
+      shopifyEventHandleSnapshot: refund.eventHandleSnapshot,
+    },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    select: { id: true },
   },
-  orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-  select: { id: true },
-});
+);
 ```
 
 Return true if either exists.
@@ -209,7 +213,8 @@ Replace this with explicit before/after/conflict classification.
 After:
 
 ```ts
-if (event.shopifyReportState !== ShopifyReportState.REPORTED) return "reconciled";
+if (event.shopifyReportState !== ShopifyReportState.REPORTED)
+  return "reconciled";
 ```
 
 and after a safe `readProviderState(refund)`, use EXACTLY the frozen fields already on `RecoveryCreditRefund`.

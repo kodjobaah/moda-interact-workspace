@@ -29,6 +29,7 @@ updated: 2026-09-08
 ## Non-negotiable product behavior
 
 Never use:
+
 ```text
 1 inbound WhatsApp message = 1 CommerceAgent call = 1 outbound reply
 ```
@@ -95,6 +96,7 @@ Update worker metric job-name allowlist to include this internal job.
 When `process-conversation-turn` executes:
 
 Read:
+
 ```text
 inboundVersion
 lastProcessedVersion
@@ -105,15 +107,18 @@ processingStartedAt
 ```
 
 No-op if:
+
 - `observedVersion < inboundVersion` (a newer job exists);
 - `observedVersion <= lastProcessedVersion`;
 - `pendingTurnStartedAt` is null.
 
 If current time is still before BOTH:
+
 ```text
 lastInboundAt + 3000
 pendingTurnStartedAt + 10000
 ```
+
 then reschedule the same observed version for the earlier of those two deadlines and return.
 
 ## Conversation-scoped processing lease
@@ -121,16 +126,19 @@ then reschedule the same observed version for the earlier of those two deadlines
 Claim via conditional Prisma `updateMany`.
 
 A claim succeeds only when:
+
 - conversation still has expected `inboundVersion=observedVersion`;
 - `lastProcessedVersion < observedVersion`;
 - no live processor exists.
 
 A processor is stale only when:
+
 ```text
 processingStartedAt < now - 120000ms
 ```
 
 On successful claim set:
+
 ```text
 processingInboundVersion = observedVersion
 processingStartedAt = now
@@ -143,14 +151,17 @@ Never serialize different conversations globally.
 ## Assemble one customer turn
 
 Use `pendingTurnStartedAt` to query persisted INBOUND/CUSTOMER messages for this conversation with:
+
 ```text
 createdAt >= pendingTurnStartedAt
 ```
+
 ordered ascending.
 
 Keep individual messages separately in DB.
 
 For language detection / turn text, join their content in order with newline:
+
 ```text
 message1 + "\n" + message2 + ...
 ```
@@ -168,12 +179,14 @@ reserve normal OUTBOUND_AUTOMATED_MESSAGE slot for conversation
 ```
 
 If normal slot unavailable:
+
 - DO NOT call CommerceAgent/LLM/tools;
 - let accepted BACKGROUND-004 terminal-slot behavior send at most one deterministic terminal reply;
 - mark the current inbound version processed/terminally handled as appropriate;
 - release processing lease.
 
 If terminal slot already used:
+
 - suppress;
 - no CommerceAgent;
 - no WhatsApp provider call;
@@ -187,6 +200,7 @@ A newly arriving raw message is persisted and increments `inboundVersion`, but i
 After agent returns, check `hasChanged(conversationId, observedVersion)`.
 
 If changed:
+
 - DO NOT send stale agent response;
 - release/fail the prepared outbound reservation according to accepted admission semantics;
 - clear processing lease;
@@ -195,11 +209,13 @@ If changed:
 - ensure the newest inbound version has/gets a delayed turn job.
 
 If unchanged and send succeeds:
+
 - set `lastProcessedVersion=observedVersion`;
 - clear `pendingTurnStartedAt`;
 - clear processing fields.
 
 If send/agent throws:
+
 - preserve existing definitive/ambiguous provider behavior;
 - clear/recover processing lease so queue retry can continue safely.
 
@@ -251,9 +267,11 @@ If send/agent throws:
 ## Completion Report
 
 ### Status
+
 Ready for Review (Attempt 4)
 
 ### Files Changed
+
 - `moda-interact-background/src/services/conversation.service.ts`
 - `moda-interact-background/src/services/recovery-routing.service.ts`
 - `moda-interact-background/src/services/conversation-turn-processor.service.ts`
@@ -265,6 +283,7 @@ Ready for Review (Attempt 4)
 - `moda-interact-background/tests/unit/services/conversation-turn-processor.service.test.ts`
 
 ### Work Completed
+
 - Preserved the exact 3-second quiet window, 10-second maximum settle window, 120-second processing lease, stale-version no-ops, and changed deterministic queue IDs to the architect-corrected BullMQ-safe `conversation-turn__<conversationId>__<observedVersion>` form.
 - Made first-unprocessed `pendingTurnStartedAt` initialization conditional inside the receipt transaction and added deterministic `(createdAt, id)` fragment ordering.
 - Extracted the settled-turn processor and integrated it with the existing `whatsapp-events` worker; active jobs use BullMQ `moveToDelayed()` with the worker lock token for same-version resettles.
@@ -279,6 +298,7 @@ Ready for Review (Attempt 4)
 - Added focused regressions for the exact no-colon job ID, resolved clarification context at the processor boundary, and mismatched clarification ownership fail-closed behavior.
 
 ### Validation Results
+
 - `npm run build`: passed, including Prisma generation and strict TypeScript compilation.
 - `npm run prisma:validate`: passed.
 - Focused Attempt 4 processor, routing, recovery-context, and outbound-admission suites: 64 passed.
@@ -287,16 +307,20 @@ Ready for Review (Attempt 4)
 - Strict typecheck via `npm run build`, targeted Prettier check, and `git diff --check`: passed.
 
 ### Deviations
+
 - No live Redis/PostgreSQL worker integration run was available in this validation pass; BullMQ active deferral is covered through the `moveToDelayed`/token/`DelayedError` seam, with durable queue/DB behavior covered by service tests and Prisma/type validation.
 
 ### Assumptions
+
 - The existing `whatsapp-events` queue may carry both external `message-received` jobs and Background-internal `process-conversation-turn` jobs.
 
 ### Unresolved Issues
+
 - The two unrelated pending-recovery candidate baseline failures remain.
 - No commit or push was performed; this Attempt 4 task follows the legacy pre-feature-branch workflow and is returned for architect review.
 
 ### Architectural Concerns
+
 No additional architectural concerns identified. Attempt 4 addresses the latest BullMQ identifier correction and resolved-clarification ownership/context corrections within the existing queue, durable state, and admission boundaries.
 
 ## Architect Review

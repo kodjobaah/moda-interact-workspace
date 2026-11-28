@@ -66,7 +66,7 @@ The October 17 snapshot already has one `whatsapp.Conversation` per `CheckoutRec
 
 ### Exact Prisma schema contract
 
-Add these *new* declarations; keep existing fields and constraints unchanged:
+Add these _new_ declarations; keep existing fields and constraints unchanged:
 
 ```prisma
 enum ConversationControlMode {
@@ -248,8 +248,7 @@ Add the inverse Prisma relation fields required on `Shop`, `Conversation`, `Conv
 - **Precedence:** For mode changes and outbound admission, serialize on the recovery `Conversation` row. For HUMAN suspension checks where the optional shop restriction row is absent, serialize the shop/merchant restriction creation and admission using the same shop-row lock. Use a documented deadlock-safe lock order (shop row when required -> recovery/conversation -> command/attempt/message), and a consistent short transaction for all three cases. No Meta HTTP or Redis call inside any database transaction. Admission committed before takeover/suspension may still result in a later HTTP request; admission **after** takeover/suspension must fail. Do not present this as an absolute cancellation guarantee.
 - **Admitted-but-unknown:** If a process crashes after durable admission, even before a local transport result is persisted, the outcome is conservative `UNKNOWN` until existing provider status/idempotency evidence establishes the result. Do not infer the request was never made, release the permit, roll the command back to `ACCEPTED`, or blindly send again. Reconcile using existing provider receipt identifiers where available; if Meta does not support safe lookup/idempotent replay for that request, quarantine for operational review. Permit, command, message and credit identities remain stable.
 - Add SQL `CHECK`/set-once constraints for the permit tuple, state transition ordering, digest/revision bounds and immutable dispatch identity; allow documented recovery handling `DISPATCH_ADMITTED -> SENT/UNKNOWN/FAILED` but never a second permit for the same command/message. Verify `MerchantConversationSendCommand.providerDispatchKey` equals the linked `ConversationMessage.providerDispatchKey` when present and both belong to the same recovery. No platform discriminator, platform-specific queue reference or duplicate `ConversationMessage` record.
-- **Retention:** For the first release, do not schedule command/idempotency deletion. A future retention job needs a separate reviewed replay horizon and proof that no pending/provider-unknown outcome can be resurrected. Reclaim only leases *before* dispatch admission; preserve admitted tombstones.
-
+- **Retention:** For the first release, do not schedule command/idempotency deletion. A future retention job needs a separate reviewed replay horizon and proof that no pending/provider-unknown outcome can be resurrected. Reclaim only leases _before_ dispatch admission; preserve admitted tombstones.
 
 ### D — Platform-controlled shop human-messaging restriction
 
@@ -257,7 +256,7 @@ Add the inverse Prisma relation fields required on `Shop`, `Conversation`, `Conv
 
 - `HumanMessagingRestrictionStatus = ACTIVE | SUSPENDED`; absent restriction row means ACTIVE (existing shops allowed by default). Do not derive this status from billing entitlements, user preferences, or `Shop.status`.
 - `ShopHumanMessagingRestriction`: `shopId` primary/unique FK to `Shop`, `status`, `revision` (integer, monotonic), `reasonCode` (bounded), `reasonNote` (bounded, nullable, admin-only), `suspendedAt`, `restoredAt`, `updatedAt`. Once created, **never delete the row on restoration**; this prevents revision reset and stale replay.
-- `ShopHumanMessagingRestrictionEvent`: immutable event ID, `shopId`, `fromStatus`, `toStatus`, `revision`, `reasonCode`, optional bounded `reasonNote`, `platformAdminId` FK to `PlatformAdmin`, `createdAt`; indexed by `(shopId, createdAt, id)`. No individual merchant staff identifiers. Existing administrative principal is legitimate because this is a *platform* action.
+- `ShopHumanMessagingRestrictionEvent`: immutable event ID, `shopId`, `fromStatus`, `toStatus`, `revision`, `reasonCode`, optional bounded `reasonNote`, `platformAdminId` FK to `PlatformAdmin`, `createdAt`; indexed by `(shopId, createdAt, id)`. No individual merchant staff identifiers. Existing administrative principal is legitimate because this is a _platform_ action.
 - Enforce only supported status values, unique shop restriction, unique `(shopId, revision)` event, bounded reasons and any nullable/timestamp invariants supported by Prisma/SQL. The event records the reason for **both** suspension and restoration.
 - Updates use atomic compare-and-set plus event insertion in one PostgreSQL transaction and serialize the initial absent-row creation (e.g., lock the Shop row). A concurrent admin update yields a stable stale-revision conflict. `ACTIVE -> SUSPENDED -> ACTIVE -> SUSPENDED` revisions keep increasing.
 - Use an explicit scoped lookup keyed by server-authenticated shop ID. Reads reveal only public status to merchant boundaries; admin-only notes and events must never reach merchant API DTOs.
@@ -272,17 +271,16 @@ Add the inverse Prisma relation fields required on `Shop`, `Conversation`, `Conv
 
 ### Follow-up claim transition matrix (shared HUMAN/automation)
 
-| Existing sequence-2 state | Durable transition | Result |
-|---|---|---|
-| Absent | Insert `sequence=2` once, then claim within the same transaction | One attempt and one original recovery credit source |
-| Existing unclaimed PENDING (including scheduled no-response) | Compare-and-set `initiationKey IS NULL`, set winner and only approved `trigger`/recipient/template snapshot fields atomically | HUMAN may take the same unclaimed row; no new attempt |
-| Already claimed by HUMAN/AGENT/AUTOMATION | Preserve initiator, original trigger and snapshots | A different claimant loses; matching idempotent retry returns prior result |
-| Provider dispatch admitted or UNKNOWN | Retain command/attempt/credit identity | Reconcile; no competing claim or blind second send |
-| Definitively unsent failure | Retry same logical command/attempt if existing policy permits | No new claim, outbound identity or credit |
-| Confirmed send / consumed follow-up | Terminal claim | No further follow-up for the recovery |
+| Existing sequence-2 state                                    | Durable transition                                                                                                            | Result                                                                     |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Absent                                                       | Insert `sequence=2` once, then claim within the same transaction                                                              | One attempt and one original recovery credit source                        |
+| Existing unclaimed PENDING (including scheduled no-response) | Compare-and-set `initiationKey IS NULL`, set winner and only approved `trigger`/recipient/template snapshot fields atomically | HUMAN may take the same unclaimed row; no new attempt                      |
+| Already claimed by HUMAN/AGENT/AUTOMATION                    | Preserve initiator, original trigger and snapshots                                                                            | A different claimant loses; matching idempotent retry returns prior result |
+| Provider dispatch admitted or UNKNOWN                        | Retain command/attempt/credit identity                                                                                        | Reconcile; no competing claim or blind second send                         |
+| Definitively unsent failure                                  | Retry same logical command/attempt if existing policy permits                                                                 | No new claim, outbound identity or credit                                  |
+| Confirmed send / consumed follow-up                          | Terminal claim                                                                                                                | No further follow-up for the recovery                                      |
 
 The claim transaction must bind the selected provider-approved follow-up template and frozen recipient under the recovery's current eligibility. It may replace **unclaimed scheduled** sequence-2 scheduling metadata only if no existing provider submission/claim has occurred; it must not overwrite a claimed offer, sender, recipient or provider receipt. Preserve automatic `NO_RESPONSE_FOLLOW_UP` suppression after any customer reply and recovery terminal-state checks. HUMAN initiation after earlier engagement is a deliberate post-window action, not an extra automatic campaign.
-
 
 ## Work Items
 
@@ -457,6 +455,7 @@ The individual models remain modular inside `schema.prisma`; do not build a gene
 Complete — Attempt 2 developer self-review accepted and developer completion recorded at `2026-10-17T16:53:29Z`. The persistence-only scope is complete; consumer runtime work remains owned by the enabled API, Background, Shopify and Admin tasks.
 
 ### Files Changed
+
 - `moda-interact-database/package.json`
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20261017120000_arch040_recovery_human_handover/migration.sql`
@@ -466,12 +465,14 @@ Complete — Attempt 2 developer self-review accepted and developer completion r
 - `moda-interact-database/scripts/test-arch040-recovery-human-handover-postgres.mjs`
 
 ### Work Completed
+
 - Delivered conversation control revisions and immutable audit, shared sequence-2 follow-up claim identity, recovery-only durable send commands with provider admission evidence, and platform human-messaging restrictions/audit in one fresh Prisma migration.
 - Added structural validation and disposable PostgreSQL migration/contention coverage, including the Attempt 1 fixes: both admission/takeover orders, absent-row HUMAN admission/suspension orders, automated canonical message dispatch evidence, concurrent shop/idempotency insertion, and stale-lease completion fencing.
 - Added sequence-2 fixtures for PENDING, FAILED, CAPACITY_BLOCKED and WAITING_FOR_RESPONSE linked to a SENT canonical ConversationMessage. `RecoveryOutreachAttempt` has no SENT enum state; successful send state belongs to the canonical message and send command.
 - Implementation is pushed on `task/ARCH-040-DATABASE-001` at `ca7b545b77d509adc82acedf0281d45a9dff0435`; the implementation worktree is clean and its HEAD matches the remote task branch.
 
 ### Validation Results
+
 - PASS: `node_modules/.bin/prisma validate --schema prisma/schema.prisma` (Prisma 6.19.3).
 - PASS: `node_modules/.bin/prisma generate --schema prisma/schema.prisma`.
 - PASS: `node scripts/validate-arch040-recovery-human-handover.mjs`.
@@ -482,36 +483,46 @@ Complete — Attempt 2 developer self-review accepted and developer completion r
 - The parent worktree's database submodule pointer `b9cb77a74c5fffa250dc65ed34de23113738d8e8` is uninitialized and unchanged; implementation ran in the isolated task worktree. The optional upgrade rehearsal was not run, as required by the fresh-database-only scope.
 
 ### Deviations
+
 - `RecoveryOutreachAttempt` does not define a SENT enum value. Validation covers `WAITING_FOR_RESPONSE` with a linked canonical `ConversationMessage` in SENT state; no production enum or behavior was changed to satisfy stale validation wording.
 - Consumer API DTO privacy and live sender/credit behavior remain downstream runtime responsibilities and are not implemented or certified by this persistence-only task.
 
 ### Assumptions
+
 Consumers use the documented short-transaction lock order (shop when HUMAN restriction applies, recovery Conversation, then command/attempt/message) and perform no network/Redis call inside the transaction. The PostgreSQL suite exercises persistence locking and permit ordering, not consumer runtime code.
 
 ### Unresolved Issues
+
 None within DATABASE-001 persistence scope. API-003, BACKGROUND-001 and ADMIN-001 are directly eligible after completion, but their canonical parent worktrees/branches are not materialized here and their records were not modified. API-002 additionally depends on ARCH-035-API-013, currently in review. Other downstream tasks have additional prerequisites; SYSTEM-TEST-001 remains pending its manual gate.
 
 ### Architectural Concerns
+
 No API, Background, Shopify, WooCommerce or Admin runtime operations were added. Consumer implementation and runtime validation remain assigned to downstream tasks.
 
 ## Architect Review
 
 ### Review Status
+
 Not conducted; completion is developer-controlled. Attempt 2 acceptance is recorded in the developer self-review below.
 
 ### Review Notes
+
 No separate architect review was requested for developer completion.
 
 ### Reviewed Files
+
 Attempt 2 implementation diff, migration, structural validator, PostgreSQL integration and contention scripts.
 
 ### Validation Reviewed
+
 Prisma validation/generation, structural validation, focused ESLint, fresh 51-migration PostgreSQL suite and implementation diff check.
 
 ### Architecture Conformance
+
 Conforms within the task's persistence-only ownership boundary; consumer runtime behavior remains assigned to downstream tasks.
 
 ### Follow-up
+
 No DATABASE-001 follow-up. Downstream routes remain gated by their declared dependencies and task workflow.
 
 ## Developer Self-Review - Changes Requested (Attempt 1)

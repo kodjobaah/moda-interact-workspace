@@ -47,13 +47,13 @@ Bounded keyset scans/leases/backoff and current-token service are reused; no per
 
 ## Decisions / Tasks
 
-| Task | Owner | State |
-|---|---|---|
+| Task                    | Owner           | State    |
+| ----------------------- | --------------- | -------- |
 | ARCH-073-BACKGROUND-001 | moda_background | Complete |
 | ARCH-073-BACKGROUND-002 | moda_background | Complete |
 | ARCH-073-BACKGROUND-003 | moda_background | Complete |
-| ARCH-073-SHARED-001 | moda_shared | Complete |
-| ARCH-073-SHARED-002 | moda_shared | Complete |
+| ARCH-073-SHARED-001     | moda_shared     | Complete |
+| ARCH-073-SHARED-002     | moda_shared     | Complete |
 | ARCH-073-BACKGROUND-004 | moda_background | Complete |
 
 Dependency graph: basic-name acceptance -> text-header and public-source tasks; additive Shared acceptance -> explicit authorized publication; logo consumer depends on accepted header, public source and publication. Repository tasks are authoritative for execution state.

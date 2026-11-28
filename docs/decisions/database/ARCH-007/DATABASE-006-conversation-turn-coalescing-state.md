@@ -29,6 +29,7 @@ updated: 2026-09-08
 Raw WhatsApp messages are not the same as one logical customer turn.
 
 The existing Conversation already has:
+
 ```text
 inboundVersion
 lastProcessedVersion
@@ -37,6 +38,7 @@ lastMessageAt
 ```
 
 Add only the minimum state needed to:
+
 - remember when the current unprocessed burst started;
 - prevent two CommerceAgent processors running concurrently for one conversation;
 - recover a stale processor lease.
@@ -60,6 +62,7 @@ Add index:
 Do not add a new ConversationTurn table.
 
 Do not remove/change:
+
 ```text
 inboundVersion
 lastProcessedVersion
@@ -69,12 +72,14 @@ lastInboundAt
 ## Semantics
 
 `pendingTurnStartedAt`:
+
 - null when no unprocessed customer turn exists;
 - set when the first inbound message arrives while `inboundVersion == lastProcessedVersion`;
 - remains unchanged while additional fragments arrive before that turn is processed;
 - cleared only when the current latest inbound version has been successfully terminally handled.
 
 `processingInboundVersion` + `processingStartedAt`:
+
 - identify one claimed conversation processor;
 - null outside processing;
 - may be replaced only after the Background-defined stale lease timeout.
@@ -105,9 +110,11 @@ Do not implement timers, BullMQ jobs, or agent behavior here.
 ## Completion Report
 
 ### Status
+
 Ready for Review (Attempt 1)
 
 ### Files Changed
+
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20260908103000_add_conversation_turn_coalescing_state/migration.sql`
 - `moda-interact-database/scripts/validate-recovery-credit-pack-schema.mjs`
@@ -115,12 +122,14 @@ Ready for Review (Attempt 1)
 - `moda-interact-database/docs/generated/erd.png`
 
 ### Work Completed
+
 - Added nullable `pendingTurnStartedAt`, `processingInboundVersion`, and `processingStartedAt` fields to `Conversation`.
 - Added the required `processingStartedAt` index and additive Prisma migration.
 - Added deterministic focused assertions covering field/index presence, additive migration behavior, and preservation of existing rows.
 - Regenerated the Prisma client and ERD artifacts.
 
 ### Validation Results
+
 - `npm run format`: passed.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
@@ -129,15 +138,19 @@ Ready for Review (Attempt 1)
 - `git diff --check`: passed.
 
 ### Deviations
+
 - `prisma migrate dev` could not generate against the inherited remote Render `DATABASE_URL` because an applied DATABASE-005 migration differs from the working tree and Prisma requested a destructive reset. No reset occurred; the equivalent additive migration was authored manually and validated deterministically.
 
 ### Assumptions
+
 - Existing Conversation rows remain valid because all three new fields are nullable and the migration performs no destructive alteration.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

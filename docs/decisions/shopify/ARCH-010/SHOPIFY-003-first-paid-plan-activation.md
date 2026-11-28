@@ -13,15 +13,15 @@ status: complete
 priority: 44
 attempt: 3
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHOPIFY-002
-- ARCH-010-BACKGROUND-002
-- ARCH-010-BACKGROUND-003
-- ARCH-008-SHOPIFY-001
-- ARCH-010-SHOPIFY-023
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHOPIFY-002
+  - ARCH-010-BACKGROUND-002
+  - ARCH-010-BACKGROUND-003
+  - ARCH-008-SHOPIFY-001
+  - ARCH-010-SHOPIFY-023
 enables:
-- ARCH-010-SHOPIFY-004
-- ARCH-010-SHOPIFY-007
+  - ARCH-010-SHOPIFY-004
+  - ARCH-010-SHOPIFY-007
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -190,11 +190,11 @@ At minimum prove:
 17. paid trial/no-cycle fails closed without synthetic period;
 18. invalid included allowance fails closed;
 19. direct-to-Paid first activation creates the one-time lifetime Free grant exactly once; replay does not regrant it;
-19. Free lifetime and purchased balances remain unchanged;
-20. no merchant route points to `moda-interact-admin`;
-21. first BillingPeriod contains DATABASE-004 ownership/snapshot fields;
-22. successful activation schedules nextReconcileAt at periodEnd minus the Shared drain window;
-23. queue-add failure does not roll back successful activation.
+20. Free lifetime and purchased balances remain unchanged;
+21. no merchant route points to `moda-interact-admin`;
+22. first BillingPeriod contains DATABASE-004 ownership/snapshot fields;
+23. successful activation schedules nextReconcileAt at periodEnd minus the Shared drain window;
+24. queue-add failure does not roll back successful activation.
 
 ## Validation
 
@@ -227,15 +227,18 @@ STOP if:
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact/app/routes/app/billing/callback/route.tsx`
 - `moda-interact/app/services/billing/billing.service.ts`
 - `moda-interact/tests/unit/routes/billing-callback.test.ts`
 - `moda-interact/tests/unit/services/billing.service.test.ts`
 
 ### Work Completed
+
 - Preserved the Attempt-1 pending initial Paid intent and existing reconciliation producer.
 - Moved verified first-Paid period/counter creation and onboarding completion into the single `syncSubscription` transaction using the immutable single Partner observation.
 - Revalidated Shop status, onboarding state, exact pending token and transactionally re-read active Paid plan, normal usage meter, allowance, and exact provider cycle before commit.
@@ -245,6 +248,7 @@ Ready for Review.
 - Added regression coverage for the review corrections and retained the exact-period, meter, allowance, replay, balance, provider-null, Partner-failure, and queue-failure cases.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - `npm run test -- tests/unit/routes/billing-callback.test.ts tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing-reconciliation.service.test.ts`: passed, 4 files / 120 tests.
@@ -254,6 +258,7 @@ Ready for Review.
 - `rg -n "moda-interact-admin" app/routes`: passed with no matches.
 
 ### Git / VCS
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
 - Implementation Attempt-1 history preserved: `8c3f15beafc659a875caf38d60544a63c90c71ae`.
@@ -263,15 +268,18 @@ Ready for Review.
 ### Attempt 3 Completion Report
 
 #### Status
+
 Ready for Review.
 
 #### Work Completed
+
 - Added the required `Shop` row `FOR UPDATE` lock after the existing ShopSettings/Subscription lock ordering and before accepting initial Paid activation.
 - Converted deterministic initial-Paid local/provider configuration conflicts, CLOSED or conflicting exact periods, conflicting included counters, and invalid lifetime policy into durable `SYNC_ERROR / INVALID_PAID_PLAN_CONFIGURATION` projections before entitlement creation; Partner transport failures retain the existing bounded retry path.
 - Added executable regression coverage for transactional plan revalidation, usage-meter and allowance failures, Shop locking, inactive shops, stale identity, replay quantity preservation through the initial-Paid branch, closed/conflicting period and counter state, exact drain-window scheduling, and callback durable-error classification.
 - Restored the RecoveryCreditPurchase create payload to the accepted pre-Attempt-2 state; no purchase lifecycle behavior was added.
 
 #### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - `npm run test -- tests/unit/routes/billing-callback.test.ts tests/unit/services/billing.service.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing-reconciliation.service.test.ts`: passed, 4 files / 134 tests.
@@ -281,6 +289,7 @@ Ready for Review.
 - `rg -n "moda-interact-admin" app/routes`: no matches (expected empty scan, exit 1).
 
 #### Git / VCS
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-003`, branch `task/ARCH-010-SHOPIFY-003`.
 - Implementation Attempt-1 history preserved: `8c3f15beafc659a875caf38d60544a63c90c71ae`.
@@ -288,6 +297,7 @@ Ready for Review.
 - Implementation Attempt-3 commit: `c84a361`; pushed to `origin/task/ARCH-010-SHOPIFY-003`.
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review — Attempt 1
@@ -625,7 +635,7 @@ includedRecoveryConversationAllowance = non-integer
 includedRecoveryConversationAllowance > Number.MAX_SAFE_INTEGER
 ```
 
-   Each row must prove:
+Each row must prove:
 
 ```text
 onboardingCompleted remains false
@@ -643,9 +653,9 @@ no successful Subscription activation commit
 pendingPlanId = plan-paid-old
 ```
 
-   Transactional plan/provider resolve another id/handle.
+Transactional plan/provider resolve another id/handle.
 
-   Prove no activation.
+Prove no activation.
 
 3. **does not activate when Shop becomes inactive before commit**
 
@@ -656,7 +666,7 @@ UNINSTALLED
 SUSPENDED
 ```
 
-   Prove no period/counter/onboarding mutation.
+Prove no period/counter/onboarding mutation.
 
 4. **creates exact first Paid period and snapshots from the transactionally reread plan**
 
@@ -720,8 +730,8 @@ promotionalCreditGrant
 merchantPromotionSelection
 ```
 
-   Assert no create/update/updateMany/upsert/delete/deleteMany mutation methods are
-   called.
+Assert no create/update/updateMany/upsert/delete/deleteMany mutation methods are
+called.
 
 10. **unsupported Paid trial records configuration error without one-minute schedule**
 
@@ -1394,8 +1404,6 @@ set the task to `status: review`, clear `executor` / `claimed_at`, commit/push b
 mirrored task branches, then STOP and return to `moda_architect`.
 
 Do not start `ARCH-010-SHOPIFY-004`, `ARCH-010-SHOPIFY-007`, or any system-test task.
-
-
 
 ## Architect Review — Attempt 3
 

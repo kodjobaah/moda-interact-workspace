@@ -21,6 +21,7 @@ enables:
 created: 2026-09-29
 updated: 2026-09-29
 ---
+
 # Live-test Policy Operation Tool candidates through DefinitionExecutor
 
 ## Architecture

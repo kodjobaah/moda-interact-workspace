@@ -192,16 +192,19 @@ names or parse IDs.
 Seed exactly these logical records:
 
 **Staff**
+
 - one active `ADMIN` PlatformAdmin;
 - one active `SUPER_ADMIN` PlatformAdmin.
 
 **Merchants/conversations**
+
 - shop A: ACTIVE Shop -> DETECTED CheckoutRecovery -> RECOVERY Conversation;
 - shop B: ACTIVE Shop -> DETECTED CheckoutRecovery -> RECOVERY Conversation;
 - each recovery uses its own unique checkout token;
 - each conversation has `inboundVersion >= 1` and is recovery-linked, never standalone.
 
 **Feature/plan selection**
+
 - one active Feature with `activationMode = MERCHANT_OPT_IN`;
 - one active BillingPlan;
 - one enabled BillingPlanFeature linking that plan to the Feature;
@@ -321,6 +324,7 @@ c20-fixture:activate-release-2
 ```
 
 **Published Commerce data**
+
 - one enabled CommerceTool;
 - one exact PUBLISHED CommerceToolRevision with a valid
   `CommerceToolDefinitionSchema` definition;
@@ -353,45 +357,74 @@ Do not copy stale JSON that bypasses current schemas.
 
 ```ts
 {
-  environment: 'TEST';
+  environment: "TEST";
   admins: {
-    admin: { id: string; role: 'ADMIN'; email: string };
-    superAdmin: { id: string; role: 'SUPER_ADMIN'; email: string };
-  };
+    admin: {
+      id: string;
+      role: "ADMIN";
+      email: string;
+    }
+    superAdmin: {
+      id: string;
+      role: "SUPER_ADMIN";
+      email: string;
+    }
+  }
   shops: {
-    eligible: { shopId: string; recoveryId: string; conversationId: string };
-    excluded: { shopId: string; recoveryId: string; conversationId: string };
-  };
+    eligible: {
+      shopId: string;
+      recoveryId: string;
+      conversationId: string;
+    }
+    excluded: {
+      shopId: string;
+      recoveryId: string;
+      conversationId: string;
+    }
+  }
   billing: {
     featureId: string;
     featureKey: string;
     planId: string;
-  };
+  }
   tool: {
     toolId: string;
     toolRevisionId: string;
     name: string;
     definitionVersion: string;
-  };
+  }
   capabilities: {
-    base: { capabilityId: string; revisionId: string; key: 'conversation_core' };
-    feature: { capabilityId: string; revisionId: string; key: string; featureId: string };
-  };
+    base: {
+      capabilityId: string;
+      revisionId: string;
+      key: "conversation_core";
+    }
+    feature: {
+      capabilityId: string;
+      revisionId: string;
+      key: string;
+      featureId: string;
+    }
+  }
   releases: {
-    active: { releaseId: string };
-    inactive: { releaseId: string };
-  };
+    active: {
+      releaseId: string;
+    }
+    inactive: {
+      releaseId: string;
+    }
+  }
   activePointer: {
-    environment: 'TEST';
+    environment: "TEST";
     releaseId: string;
     editVersion: number;
-  };
+  }
   originalGrant: {
     grantId: string;
     shopId: string;
     conversationId: string;
     releaseId: string;
-  };
+  }
   operationIds: Readonly<Record<string, string>>;
 }
 ```
@@ -506,7 +539,7 @@ to supply URLs when a local Unix-socket Docker engine is available.
 The agent must use the exact provisioning/run/cleanup procedure in the latest
 Architect Review, then execute:
 
-```bash
+````bash
 npm run c20-fixture:reset
 npm run test:arch020-c20-integration-fixture
 ```bash
@@ -527,7 +560,7 @@ npm run typecheck
 npm run lint -- --quiet
 npm run build
 git diff --check
-```
+````
 
 The focused test must prove F01-F08 with actual database reads and Redis reads. Do not
 mock `PrismaClient`, `PrismaPublicationStorage`, `CommerceLifecycle` or Redis. External
@@ -895,8 +928,8 @@ grantedTools: []
 runnerVersion: "1.0.0"
 ```
 
-   expected database error contains
-   `ARCH020 grant must equal complete tool union`.
+expected database error contains
+`ARCH020 grant must equal complete tool union`.
 
 After the rejected mutations assert:
 

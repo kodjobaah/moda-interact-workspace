@@ -14,14 +14,23 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012", "ARCH-066-COMMERCE-003"]
+depends_on:
+  [
+    "ARCH-066-SHARED-005",
+    "ARCH-066-COMMERCE-001",
+    "ARCH-066-BACKGROUND-002",
+    "ARCH-066-SHARED-012",
+    "ARCH-066-COMMERCE-003",
+  ]
 enables: ["ARCH-066-SYSTEM-TEST-002"]
 created: 2026-11-08
 updated: 2026-11-09
 ---
+
 # Test initial outreach using live checkout product data
 
 ## Scope and exact work
+
 Read ARCH-066 and its two sequence diagrams. This task is definition only; implement only after dependencies complete, in canonical task worktrees. You are not alone in the codebase; preserve unrelated edits. No merchandise-specific assumptions or new per-category schema.
 
 Own Commerce only. NEW `src/commerce/preview/initial-outreach/{contracts,service,checkout-reader,ports,presentation}.ts`; NEW authenticated route `app/api/studio/preview/initial-outreach/route.ts`; NEW `src/studio/test-conversations/initial-outreach-preview-panel.tsx`. Touch existing test-conversations screen/contracts, preview Redis store/activity, selected-shop authorization, provider adapters, package/lockfile and tests.
@@ -37,15 +46,21 @@ Read active initial-outreach template/header/media using existing read-only temp
 Acceptance: Super Admin only including direct endpoint calls, cross-tenant checkout refused before provider I/O, exact live reads including NONE policy, stale/deleted/foreign variant refusal, price/offer changes, duplicate line preservation, no unrelated products, idempotency/cancel/capacity/purge, rendering parity with Background fixtures and side-effect spies. Update existing documentation and scoped UI/service tests; typecheck/lint pass.
 
 ## Completion report
+
 ### Status
+
 Blocked — partial source/route/UI/service/storage foundation published; genuine runtime composition unavailable pending canonical public configured-sender projection.
+
 ### Files changed / implemented foundation
+
 - Exact public Shared5.9.0 package/lock pin, requested integrity verified in lock.
 - New initial-outreach contracts/checkout-reader/ports/presentation/service. Shared normative input/result/render types and evaluator/frozen renderer imported from public subpath; no copied evaluation/render algorithm.
 - Actual list/start/status/cancel Next route handlers and HTTP/runtime modules, explicit Origin enforcement on both POSTs, genuine Super Admin/bypass denial and current selected-shop authorization. Strict body only requestIdUUID+checkoutRecoveryId; query shopId is an untrusted selector resolved server-side.
 - In-memory and Redis existing coordinator extensions with distinct INITIAL_OUTREACH run kind and shared slots/quotas/idempotency/owner fencing. Physical Redis records use existing managed toolTests inventory so existing Admin purge enumeration does not orphan records; no new Admin edits.
 - Separate Initial outreach UI mode/panel, same-shop keyed state reset, full typed result and final body/provenance/parameters display, explicit Simulation and NOT_EVALUATED labels. Ordinary conversation bundle loader rejects server-marked purpose composition, including mixed initial+ordinary selection; initial feature removed from conversational feature choices.
+
 ### Validation actually executed
+
 - `node node_modules/vitest/vitest.mjs run tests/feature-preview-composition.test.ts tests/arch066-initial-outreach-preview.test.ts tests/arch066-initial-outreach-store.test.ts tests/arch066-initial-outreach-ui.test.tsx`: PASS4files25tests, zero skips/failures. Actual handlers test401/403 including bypass, same-origin rejection, selected-shop denial, strict request202/409; reader cursor/native IDs/lineKey/refingerprint; injected service both-provider NONE2reads and duplicate preservation, full frozen body/parity facts, source-change refusal. Real disposable local Redis2client replay/conflict/quota/cancel flag/stale-owner/lease TTL/inventory tests ran (not skipped), cleanup completed.
 - `node node_modules/vitest/vitest.mjs run tests/arch066-initial-outreach-ui.test.tsx tests/test-conversations-screen.test.tsx tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: PASS4files49tests; old conversational/store regressions preserved.
 - Final keyed-shop panel rerun: PASS1file2tests after actual lint correction (no synchronous state reset in effect).
@@ -53,33 +68,43 @@ Blocked — partial source/route/UI/service/storage foundation published; genuin
 - Focused ESLint on all new initial-outreach runtime/route/UI source: final PASSexit0/logempty. Full repository lint not claimed.
 - `git diff --check`: PASS. Published dependency install and Prisma generation succeeded; existing npm audit35 dependency issues noted, no unrelated remediation.
 - All Node checks used exact canonical bootstrap-resolved runtime; no live provider/model/Meta/database environment validation performed.
+
 ### Parity evidence and limits
+
 Test-only frozen inputs reproduce Background source0a601031 `tests/unit/services/recovery-template-integration/arch066-production-none.test.ts`: both platforms, duplicate pair quantities2+1, historical12.50/current12.00GBP, subtotal36.00, saved brand and approved no-offer projection. Actual Shared evaluation/render via injected Studio service yields full exact body `Saved Merchant saved 2 × Live shirt (Blue) and 1 × Live shirt (Blue) for Test customer. Continue https://shop.example/checkout` and expected provenance fields. No Background runtime imports. This is deterministic same-input fixture evidence, NOT real provider validation, independently executed Background production test, or complete parameters/header/media parity acceptance.
+
 ### Architectural blocker / unresolved implementation
+
 Default `getInitialOutreachPreviewService` deliberately returns503 CONFIGURATION/SENDER_UNAVAILABLE. There is NO production outreach host factory yet: real active profile/policy/instruction/model resolution, credential-backed local/MCP tool integration, trusted sender/catalogue/template selection, approved ready media/saved-brand projection composition and full template revision handling remain UNIMPLEMENTED. Test injection is explicit Simulation; it is not a live fallback.
 
 Exact blocker: currently configured WABA exists only in secret `messaging.sender`. Admin `src/lib/admin/platform-configuration/secrets-contracts.ts` declares secret payload accessToken,phoneNumberId,businessAccountId. Background service decrypts the whole sealed payload with canonical AAD before returning identity; Commerce existing configuration allowlist has no public sender projection. WABA cannot be inferred from saved template variants. Architect explicitly prohibited new Commerce sending-credential decrypt access, and is defining Shared013/014 contract/publication plus Admin001 atomic public-projection writer with source-version fencing. No correction task implementation or unapproved correction branch publication performed here.
 
 Other required acceptance remains pending: complete genuine host composition and template/media parity; full actual provider-adapter side-effect-spy matrix; UI/route positive production readiness; comprehensive cancel/deadline terminal lifecycle, result-overflow paths and exact Admin purge execution; all stale/deleted/foreign/price/offer/native bound matrices. Existing store tests prove cancel flag/owner fencing/TTL only, not complete service cancellation acceptance. Historical test title implying cancellation was corrected. No task checklist marked complete merely for foundation tests.
+
 ### Safety / deviations
+
 Blocked partial implementation retained rather than infer sender from assignment, decrypt unrelated secrets, add arbitrary renderer callback, fabricate production identity, claim sending eligibility or invoke real provider/model calls. No recovery/attempt/customer/credit/outbox/template/media mutations added. No live setup/migration, Meta upload/register/send, activation, deployment, package release or follow-on task execution.
+
 ### Git / VCS
+
 Task branch task/ARCH-066-COMMERCE-002 in both repositories.
 Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace.
 Parent worktree /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-COMMERCE-002; implementation worktree /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-COMMERCE-002. No shared/default checkout or another task path mutated.
 Launcher Attempt1 claim48855cc8dfbbab31a4636bf952bd94413be23e4b pushed2026-11-09T00:11:19Z; dependencies passed. Parent reused/implementation created; remote task fast-forward not-needed, origin/main already-current both. Recursive sync/update passed, database039778a4a472db7d09e6b077bb8c8d7c82a58129 ready.
 Implementation078f67a2187ba4701e2fbbf49fa2185837ae9bf7 committed/pushed and remote hash verified. Parent report commit follows this edit on same task branch. No gitlink staged/main merge. Completion mode developer preserved; no Accepted/Complete claim.
 
-
 ## Normative review correction
+
 [Outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md) is mandatory. Use evaluateInitialOutreach and shared frozen-template rendering; no duplicated algorithm or arbitrary render callback. Preserve historical/current prices and checkout-only restriction. Production ALTERNATIVE_PRODUCT_PROMOTION is explicitly refused for this initial path; preserve historical receipt parsing and conversational recommendations. Ready media only in Studio; IMAGE unavailable selects approved TEXT fallback or refuses.
 
 ## Exact HTTP and checkout mapping
+
 Use actual Next app directory `app/`, not nonexistent src/app. Implement GET/POST `app/api/studio/preview/initial-outreach/route.ts`, GET `app/api/studio/preview/initial-outreach/[runId]/route.ts`, POST `app/api/studio/preview/initial-outreach/[runId]/cancel/route.ts`. GET collection lists checkout IDs, createdAt, currency, itemCount only, selected tenant filter and opaque nextCursor; cursor is validated createdAt/id, reject foreign/invalid cursor. POST accepts requestId UUID plus checkoutRecoveryId string only, returns202 {runId,status}; result GET returns existing bounded status plus evaluation/render projection, cancel uses existing cancellation semantics. Unknown fields reject400, unauthenticated401, non-super-admin403, absent/foreign checkout404 (no identity leak), reservation saturation429, idempotency mismatch409. Reuse existing preview same-origin protections and per-user run ownership; changing selected shop cannot read another shop's run.
 
 Checkout reader maps CheckoutRecovery.id/shopId/platform/generation/currency/lineItems and existing trusted checkout URL source. For each raw line map productId,variantId,quantity,price->checkoutUnitPrice; lineKey line-0001 onward in persisted order; title is not an ID fallback. Use existing checkout URL trust rules and fail closed if absent/invalid. Policy and active purpose profile/instructions come from read-only current server resolvers, not posted values. Use `src/commerce/preview/{store,redis-store}.ts` for run reservation/fencing/cancel/TTL/usage; separate purpose namespace INITIAL_OUTREACH under existing preview purge coverage, no live Conversation rows. New store interface methods have in-memory and Redis implementations/tests. Freeze selected source fingerprint and profile/template revisions; repeat same requestId replays, never refetch/recharge invisibly. Before result commit re-read source fingerprint and reject CHECKOUT_CHANGED. UI remains two separate modes; no mixing initial_outreach into conversational feature composition.
 
 ## Deterministic implementation checklist
+
 - [x] Normative outreach input/result/reason types imported from Shared, not redefined in Commerce. Only HTTP list/start/status/cancel wrappers and storage envelope are local Zod types. Map ready evaluation to frozen approved initial-template render projection after read-only catalogue/ready-media checks.
 - [x] Tests/arch066-initial-outreach-preview.test.ts covers actual route handlers, service and UI; tests/arch066-initial-outreach-store.test.ts covers idempotency/ownerToken/purge/TTL with Redis. Status route refuses foreign admin/shop; list never includes contact details or foreign checkout cursor.
 - [x] Add panel to existing test-conversations-screen and drawer with separate purpose selection; SUPER_ADMIN server enforcement on list/start/poll/cancel, not UI hiding alone. Initial purpose cannot be mixed with conversational features and cannot run without selected checkout.
@@ -91,53 +116,67 @@ Checkout reader maps CheckoutRecovery.id/shopId/platform/generation/currency/lin
 SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainteract/moda-interact-shared@5.7.0` and integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==` (source `09e249c5717c8866996624f8855a7d649dfd2c43`). Use this exact artifact and canonical consumer contract; never guess/latest/ranges. Remaining explicit blockers: ARCH-066-COMMERCE-001 and ARCH-066-BACKGROUND-002. Status Pending, unchanged Attempt0/unclaimed. No implementation, deployment or task claim is started by reconciliation.
 
 ## Corrected publication / readiness handoff — 2026-11-08
+
 All explicit prerequisites Complete: Shared005/012, Commerce001 canonical remote181bd35f at Attempt3, Background002 AcceptedAttempt2 explicitly completed. Ready at unchanged Attempt0/unclaimed; execution/completion developer retained. Use `/moda_developer_create ARCH-066-COMMERCE-002` when ready; no execution occurs here.
 Current corrected consumer pin is exactly @modainteract/moda-interact-shared5.9.0, integritysha512-mGjw3KY2iLCGXGS5K7ZjHrsHM6mbooi5Qmcl08zXWlZxLjaL38HY74EUGqMdT79VPGQ1EBsKNnfH9RTI+hY1GA==, superseding historical0055.7pin. Complete012explicitly added as correction publication prerequisite. Existing initial-outreach contract requires strict preparedBrand five same-shop savedcolumns/nulls and fixed authorized READY logo/squareLogo/coverImage media slots; IMAGE/CHECKOUT_PRODUCT header independent, no genericname/rawURL fallback. Reuse recorded Background002 full same-input frozen body/parameters/provenance fixture for independently reviewed Studio parity. No source copy from service/internalShared imports, real send/media mutation or implicit acceptance. Preserve checkout-led/isolated synthetic preview boundaries and real same-shop checkout outreach; system tests remain terminal/manual-gated.
 
 ## Execution ownership amendment — 2026-11-09
+
 Developer explicitly invoked agent implementation via moda-task and authorized synchronization plus claim/source/report publication. Current canonical task is ReadyAttempt0/unclaimed and clean, all explicit prerequisites Complete per published handoff; no existing implementation edits to discard. Agent execution authorized, developer completion retained. Exact5.9.0 pin/current strict brand-media contract and original HTTP/owner/Redis/UI/no-side-effect acceptance remain governing. No production provider/model/customer/Meta mutation, deployment/activation, main or follow-on work authorized; configured read-only validation fixtures and local testports only. Canonical prepare owns new worktrees/claim, no manual attempt increment here.
 
-
 ## Architect Review
+
 ### Review Status
+
 Blocked
+
 ### Review Notes
+
 Reviewed actual implementation078f67a2187ba4701e2fbbf49fa2185837ae9bf7 and reporte6e2a911f. Physical task isolation/preparation packet conforms. Source is clean and remotely published. Current production runtime explicitly throws503 CONFIGURATION/SENDER_UNAVAILABLE; the positive host is injected SIMULATION, so the feature does not yet satisfy live preview acceptance. Do not grant Commerce sender-secret decryption or infer configured WABA from template assignment. Independently inspected Admin secret-service transaction198–238, sealed/disabled discriminator and numeric4..32 sender validator.
+
 ### Reviewed Files
+
 lib/preview/initial-outreach-runtime.ts; initial-outreach-http.ts; actual collection/status/cancel routes; src/commerce/preview/initial-outreach/{service,contracts,ports,presentation,checkout-reader}.ts; preview store/Redis changes; tests/arch066-initial-outreach-preview.test.ts; separate UI and frozen fixture.
+
 ### Validation Reviewed
+
 Focused4files25PASS; existing conversation/store4files49PASS; keyedUI2PASS. Real local Redis2client tests executed without skips. Final TypeScript and scoped ESLint exit0; no full repository lint or live provider verification claimed. Independently verified implementation remote hash and clean state. Exact Shared5.9.0 pinned; fixture both-platform NONE two reads/full frozen body/current versus historical facts preserved. Cancellation test title corrected: only source-change is proven there.
+
 ### Architecture Conformance
+
 Partial repository-owned foundation conforms; required end-to-end capability remains absent. No Accepted/Complete disposition. Status Blocked at unchanged Attempt1, claim cleared; completion authority remains developer. Correction dependencies added, SYSTEM-TEST002 remains gated. Checkout-led withdrawals and concurrent task statuses preserved.
+
 ### Follow-up
+
 SHARED013 strict public configured-sender schema → SHARED014 exact publication → ADMIN001 atomic projection writer/current-active source-version fence. Definitions are materialized and locally committed only; new correction-branch publication rejected by automatic approval review and awaits explicit authorization. No implementation of correction tasks began. After prerequisites Complete, return this SAME Commerce task to Ready for rework: consume published projection without secret values; complete production profile/policy/template/ready-media/local and isolated-MCP provider composition, tool activity and all original missing live/refusal/offer/price/side-effect matrices; prove complete cancellation/deadline/overflow/purge behavior. Never waive original unchecked criteria because dependency contracts exist.
 
-
 ## Correction definition publication reconciliation — 2026-11-09
-Developer explicitly authorized publishing the three prepared definition branches after the earlier automatic approval rejection. Normal pushes succeeded and exact remote hashes verified: SHARED013201f3922e06c59a3387e78b509821a562a9f4b25 (ReadyAttempt0/unclaimed), SHARED014af5e4bc6afa25fdc3d92147e2054f8e26a8e9c23 (PendingAttempt0/unclaimed), ADMIN00190e6bb38d7677a9f691ef0e85960921a9b362a05 (PendingAttempt0/unclaimed). Historical local-only/publication-blocked notes above are superseded only as to definition availability. No implementation worktree/claim/release/follow-on started. Commerce002 remains BlockedAttempt1, claim cleared; all outstanding live and lifecycle acceptance remains required. Next authorized execution entrypoint is /moda-task ARCH-066-SHARED-013.
 
+Developer explicitly authorized publishing the three prepared definition branches after the earlier automatic approval rejection. Normal pushes succeeded and exact remote hashes verified: SHARED013201f3922e06c59a3387e78b509821a562a9f4b25 (ReadyAttempt0/unclaimed), SHARED014af5e4bc6afa25fdc3d92147e2054f8e26a8e9c23 (PendingAttempt0/unclaimed), ADMIN00190e6bb38d7677a9f691ef0e85960921a9b362a05 (PendingAttempt0/unclaimed). Historical local-only/publication-blocked notes above are superseded only as to definition availability. No implementation worktree/claim/release/follow-on started. Commerce002 remains BlockedAttempt1, claim cleared; all outstanding live and lifecycle acceptance remains required. Next authorized execution entrypoint is /moda-task ARCH-066-SHARED-013.
 
 ## Sender prerequisite withdrawal — 2026-11-09
 
 User withdrew configured-sender projection and template-validation requirements for Studio. SHARED013/014 and ADMIN001 are not prerequisites. Historical sender blocker is superseded; do not implement these withdrawn tasks. COMMERCE003 owns removal of the preview gates using SHARED016 preview-only rendering; retain all other unfinished acceptance and Blocked Attempt1 status until rework is reviewed. No Background production checks are changed. No task is accepted/completed by this amendment.
 
-
 ## Architect correction integration / remaining rework contract — 2026-11-09
+
 COMMERCE003source6f01c09630e05950fc3c4362259f0d4c107f0dfc (wholepartialcarry378a758 from078f67) corrects stored-template rendering using exact publicShared5.10.0. Sendersecret/projection/WABA/approval/hash gates are removed only from Studio; historical sender dependencies remain withdrawn. This correction is AcceptedReview, explicit003completionpending. Add003dependency; keep002BlockedAttempt1/unclaimed until003Complete and architect readiness reconciliation. Do not accept/complete002 from003success.
 Remaining SAME002scope: construct genuine current server profile/policy/environment/locale/brand/authorized-ready-media/localandisolatedMCP evaluator host factory (currently preciseHOST_UNAVAILABLE), tool activity and true production read-only mode; original bothplatform/currentvshistorical/offer/refusal/bounds/no-sideeffect scenarios; full cancellation/deadline/overflow/owner/capacity/Adminpurge lifecycle proof. Existing injected SIMULATION fixtures prove bounded mechanics, never live readiness. Preserve current sourcecorrection/publichelpers without copying renderer/classifier or restoring sender gates. Status/attempt/history unchanged; no consumerimplementation begins here.
 
-
 ## Architect same-task rework readiness — 2026-11-09
+
 COMMERCE003explicitlyCompleteAcceptedAttempt1, acceptedsource6f01c09630e05950fc3c4362259f0d4c107f0dfc exactShared5.10.0. Other explicit dependenciesComplete: Shared005/012Attempt1,Commerce001Attempt3,Background002Attempt2. Architectural correction gate cleared; Ready for SAME002rework, preserveAttempt1/history/claimnull. No acceptance or newclaim; next canonicalprepare increments once.
 Latest remaining rework contract above is mandatory: real server-owned profile/policy/environment/locale/brand/authorizedready-media/localandisolatedMCP hostfactory, tool activity, exact live-read-only evaluator/template integration and full original refusal/offer/price/side-effect/cancel/deadline/overflow/fence/capacity/Adminpurge acceptance. CurrentHOST_UNAVAILABLE is unfinishedwork, not successfulreadiness. Preserve accepted003template correction/publichelpers and exact5.10integrity; no senderprojection/gates/productionvalidation changes. User must separately invoke /moda-task ARCH-066-COMMERCE-002; no implementationstarts here. EarlierBlockedstatus/remainblockeduntil003Complete prose is historical, not waivedacceptance.
 
-
 ## Attempt 2 Completion Report — 2026-11-09
+
 ### Status and publication
+
 Ready for Review. Attempt2 retained; claim cleared; completion_mode developer retained. Earlier Attempt1 Blocked report and Architect Review are historical evidence, preserved verbatim. This report implements the latest remaining rework contract after explicit COMMERCE003 completion; no withdrawn sender dependency is restored and no repository-agent acceptance/completion is asserted.
 Implementation committed/pushed: **40b59e777db5b85d8f3444da1abe07170e70496f**, exact origin/task/ARCH-066-COMMERCE-002 hash verified, implementation clean. Parent task/report is committed/pushed on the same mirrored branch by this submission. No main merge, force push or parent implementation gitlink staging.
 
 ### Mandatory rework disposition / acceptance matrix
+
 1. **Genuine default server host — implemented.** `lib/preview/initial-outreach-runtime.ts` now constructs actual Redis store, checkout reader, trusted host, existing local provider/credential execution, optional configured private MCP transport and canonical model runtime. Initialization failures still fail closed; there is no unconditional HOST_UNAVAILABLE or simulation-success fallback. I/O test seam changes database/config/Redis/provider ports only, never substitutes service/host/evaluator/renderer.
 2. **Current immutable profile/configuration — implemented.** New `profile-reader.ts` resolves current server-environment CommerceReleasePointer and immutable same-release CommerceReleasePurposeCapability/member/tool/behaviour snapshots; checks enabled canonical capability/tool and published revision; reuses existing purposeReadOutputSchema and public CommercePurposeProfileSchema. New `host.ts` rechecks actual active PlatformAdmin SUPER_ADMIN and active selected shop, resolves existing effective model/platform/merchant instructions, existing preview execution/platform limits and existing discount policy/override resolver. Run stores profile release/platform revision and frozen template-map fingerprint; replay returns stored identity without recharging/refetching. No draft repoint or browser-provided role/environment/profile/policy is accepted.
 3. **Locale/brand/media — implemented.** Canonical saved Shop.defaultLanguageTag (same source as Background catalogue reader), public canonicaliseLanguageTag, exact then base locale order; no synthetic conversation/customer locale. Existing production caller inspection found no enabled platform-fallback configuration source supplied to recovery preparation, so no invented fallback is enabled. Same-shop saved brand fields/nulls are frozen without domain/name fallback. New `media-reader.ts` reads same-shop durable current-generation READY manifest, exact fingerprint/generation/digest/object-key lineage, configured publicMedia HTTPS origin and canonical derivative namespace; outputs the public PreparedOutreachBrandMediaSchema. No generic logger/schema/renderer/media worker introduced. Selected stored template role chooses frozen LOGO/SQUARE_LOGO/COVER_IMAGE header media; unavailable CHECKOUT_PRODUCT/media refuses through Shared, without URL fabrication or automatic template fallback.
@@ -147,9 +186,11 @@ Implementation committed/pushed: **40b59e777db5b85d8f3444da1abe07170e70496f**, e
 7. **UI/auth/isolation/parity — implemented/preserved.** Genuine SUPER_ADMIN/bypass denial, current role, selected-shop ownership, strict request shape, Origin checks and separate initial/conversation purpose are preserved. Existing UI shows full facts/offer/message/source-template/locale/header/parameters, bounded Shared tool activity, Simulation versus LIVE_READ_ONLY and NOT_EVALUATED production checks. Installed production-versus-Studio renderer parameters and full body are now compared exactly on default factory outputs; canonical Background0a601031 NONE golden body remains identical. Shared public5.10.0 renderer/classification/purpose helpers are used without copied algorithms or sibling runtime imports; production sending checks unchanged.
 
 ### Files changed
+
 `lib/preview/initial-outreach-runtime.ts`; `src/commerce/preview/initial-outreach/{ports,service,host,profile-reader,media-reader}.ts`; `src/commerce/preview/product-reads/{ports,registrations}.ts`; `src/commerce/preview/remote-studio-tool-client.ts`; existing `tests/arch066-initial-outreach-preview.test.ts`; new host/lifecycle/media/refusals test files. No Shared/Admin/Background/Database source edited. No package/lock churn: accepted exact Shared5.10.0 and integrity `sha512-cdXKp0YLPg/yFN5acZNpdZbDfzFqY1MV45rFHh1+Q1e8Wf3VFuR1Ylgr8icorCj9h8pE3CTFTheUuxCEMKCfFw==` verified in installed lock.
 
 ### Validation actually executed
+
 - Canonical workspace bootstrap resolved Node24.19.0; initial bootstrap invocation lacking exported canonical root failed root discovery and was corrected by exporting MODA_WORKSPACE_ROOT. No manual runtime selection/PATH override. Exact-lock `npm install --ignore-scripts` exit0; Prisma generation exit0. Existing peer/deprecation/audit notices were not remediated outside scope.
 - Final `node node_modules/vitest/vitest.mjs run tests/arch066-initial-outreach-preview.test.ts tests/arch066-initial-outreach-store.test.ts tests/arch066-initial-outreach-ui.test.tsx tests/arch066-initial-outreach-template-reader.test.ts tests/arch066-initial-outreach-host.test.ts tests/arch066-initial-outreach-lifecycle.test.ts tests/arch066-initial-outreach-media.test.ts tests/arch066-initial-outreach-refusals.test.ts tests/studio-tool-clients.test.ts tests/current-product-local-execution.test.ts tests/feature-preview-composition.test.ts`: **exit0, 11 files/74 tests passed, zero skips**. Actual disposable local Redis fixtures executed and cleaned up. Receipt `/private/tmp/arch066-commerce002-attempt2-final-tests.log`.
 - After strengthening only exact production-versus-Studio parameters/full-body assertions, impacted host file only rerun: **exit0,5 tests passed**, `/private/tmp/arch066-commerce002-attempt2-parity.log`. No runtime edits followed the combined passing run.
@@ -158,27 +199,40 @@ Implementation committed/pushed: **40b59e777db5b85d8f3444da1abe07170e70496f**, e
 - Interim failures were fixed without weakening canonical checks: host fixtures required complete visibility/definitionVersion/config mock exports; remote observedAt initially stale versus actual runtime clock; IMAGE binding required schemaVersion1; deleted product reason is PRODUCT_NOT_FOUND; quantity bound is positive safe integer, not an invented10000 cap. Initial compiler context/literal issues corrected; final commands above pass.
 
 ### Physical isolation, synchronization and claim evidence
+
 Canonical root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-COMMERCE-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-COMMERCE-002`; same mirrored task branch throughout.
 Before Attempt2, launcher stopped routine main-into-task merge conflicts. Domain owner resolved the12 overlapping add/add/package conflicts to exact accepted003source6f01c096 tree after verifying origin/main tree identical, preserving original002078f67 history through normal two-parent merge **87c835ba6f15066a8c4fa6e9552922cc8a454709**, pushed/remote-verified/clean. No main update/reverse merge/reset/force. Architect then canonical prepare SUCCEEDED: parent reused14cd55ad887210621f03ee187a23b5dab2606b68, implementation reused87c835; both remote task FF not needed and current main already incorporated; recursive sync/update passed with database039778a4a472db7d09e6b077bb8c8d7c82a58129 ready; all five explicit dependencies Complete. Attempt2 codex claim **7fedeb5c2ba4779cad2847148480587997b3a997**, 2026-11-09T03:05:38Z, durably pushed. Startup/claim not repeated by repository agent.
 
 ### Limits / unresolved external evidence
+
 No unresolved source blocker is asserted for bounded002 acceptance; architect review remains required. All provider/model/config/credential I/O in validation is isolated test I/O; actual factory/handlers/provider normalizers/Shared evaluator-renderer/Redis execute, but no live credential-backed hosted verification occurred or is claimed. No production customer data/send, live provider/model call, Meta/media/template write, coupon/credit/attempt/outbox mutation, hosted migration, deployment/activation, package release, main merge or follow-on task execution occurred. SYSTEM-TEST002 stays gated until explicit completion and its own manual/live authority. Current missing/malformed configuration or unavailable ready media still fails closed; preview never grants production admission/delivery readiness.
 
-
 ## Architect Review
+
 ### Review Status
+
 Accepted
+
 ### Review Notes
+
 Attempt2 reviewed actual source40b59e777db5b85d8f3444da1abe07170e70496f and reportb8c53952241736eb3a2f1b101df198847728bd3b. Independently verified clean canonical source and matching remotehash. PriorAttempt1Blocked review remains historical; its sender-projection requirements were explicitlywithdrawn and actual003correction preserved. Normalmain→task merge87c835 retained priorhistory and exact003tree; subsequent canonicalprepare/Attempt2claim/isolation/sync/database039778a4evidence conforms. No sourcework performed by architect.
+
 ### Reviewed Files
+
 Runtime defaultfactory; initial-outreach host/profile/media/checkout/template readers, ports/presentation/contracts/service; existing productread registrations/currentcurrency and privateMCPtransport refactor; actualHTTP/defaultfactory/Redis/lifecycle/media/refusal/UI/provider/client/isolation tests; Adminpurge committedscriptreceipt.
+
 ### Validation Reviewed
+
 Final11files74testsPASS/no skips; actualdefaultHTTP tests run defaultgetter→host→service→realRedis→poll, localShopify/Woo realregisterednormalizers and isolatedMCPwholepath, externalIOmocked. BothproviderNONE executes2distinct-pair reads/fullsamefrozenbody; strengthened parameters/fullbody equality versus installedproductionrenderer impacted5/5PASS afterassertionsonly. Woo currentcurrency comes authenticated existingdata/currencies/current plus canonicalCurrencySchema; crosscurrencymismatchrefuses, no checkoutpricecurrencyrelabel. Media10positive/negativecurrentlineage/role/IMAGEcases;13native/source/price/FIXEDstable+changed cases; realRedis cancel/deadline includingabort-ignoringprovider/source-reread, boundedoverflow, capacity/replay/fences/TTL; originalauth/Origin/tenant/UI and oldclient/provider/featureisolation pass. Productiontsc/scopedESLint/diffcheckpass. ExactunchangedAdminmanagementLua HEADbbb5de630c9af9c103e44f21dd223da8c36cd748/blob7eb490a54fa4bb6f04fc7b9d7876bd2b24870fe7 separatelyexecutedagainstdisposableRedis: activepurgeblocked, completedrecord+inventoryremoved; no copied/siblingsource productiondependency.
+
 ### Architecture Conformance
+
 Genuine defaultfactory now replaces unconditionalHOSTstub, freezes trustedserver environment/currentimmutablepurposeprofile/model/instructions/policy/locale/savedbrand/authorizedREADYmedia, validatesactor/shop and routesreadonlylocalorprivateMCPcalls. No synthetic durableConversation/Attempt; transient internalpreviewcorrelation neverbecomesproductionadmission. Shared5.10publicevaluator/Studiorenderer/classifier/purposehelpers retained without copied businessmechanics, sender/WABA/approval/hashgates remainremoved onlyfromStudio; Backgroundproductionchecks unchanged. Toolactivity uses existingboundedSharedresult, structuredlogging usesSharedlogger. Per-tool12nestedproviderrequestcap and boundedrunenvelope remain distinct fromSharedlogicaltoolbudget; deadlines/cancellationrelease/finalsourcefence tested. No schema/package/release/main/live/customerwrite/Meta/media mutation.
+
 ### Follow-up
+
 Accepted atReview unchangedAttempt2, executor/claimed_atnull; explicitdevelopercompletionpending via /moda_developer_update ARCH-066-COMMERCE-002 complete. SystemTest002 remainsgated untilactual002Complete; usermanual/terminalsystemvalidation and deployment/integration are separate. No livecredential-backed hostedverification claimed; tests isolateexternalIO. No required boundedtasksource blocker remains.
 
-
 ## Explicit developer completion decision — 2026-11-09
+
 Developer invoked /moda_developer_update ARCH-066-COMMERCE-002 complete. Durable AcceptedAttempt2bffd7e9af9f2fcb96ac7a8342c38c3ef999a5fc6 and source40b59e777db5b85d8f3444da1abe07170e70496f independently verified clean/remotelypublished. Complete unchangedAttempt2/executorclaimed_atnull; validation evidence retained, no reruns. SystemTest002explicitdeps002/Background002nowComplete; promoteReadyAttempt0/unclaimed, preservedeveloperexecution/completion and manualcheckpoint. No tests/claim/implementation/live/npm/main/follow-onexecution. HistoricalBlocked/Review/pendingcompletion notes superseded onlybythisexplicitdecision; withdrawnchains and productionchecks preserved.

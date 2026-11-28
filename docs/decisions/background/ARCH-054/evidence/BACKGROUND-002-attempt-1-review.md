@@ -8,26 +8,26 @@ The test temporarily used `tests/unit/services/arch054-bg002-review-race.test.ts
 
 ```typescript
 import { describe, expect, it, vi } from "vitest";
-import type { RenderConversationResponseInput, WrapperRenderResult } from "../../../src/services/conversation-wrappers/contracts.js";
+import type {
+  RenderConversationResponseInput,
+  WrapperRenderResult,
+} from "../../../src/services/conversation-wrappers/contracts.js";
 
 vi.mock("../../../src/lib/db.js", () => ({ default: {} }));
-vi.mock(
-  "../../../src/services/outbound-whatsapp-admission.service.js",
-  () => ({
-    runCommerceAgentAfterAdmission: async (input: any) => {
-      if (input.admission.terminal) {
-        await input.sendPreparedText({
-          ...input.admission,
-          to: input.to,
-          text: "terminal response",
-        });
-        return null;
-      }
-      const result = await input.runAgent(input.context);
-      return result;
-    },
-  }),
-);
+vi.mock("../../../src/services/outbound-whatsapp-admission.service.js", () => ({
+  runCommerceAgentAfterAdmission: async (input: any) => {
+    if (input.admission.terminal) {
+      await input.sendPreparedText({
+        ...input.admission,
+        to: input.to,
+        text: "terminal response",
+      });
+      return null;
+    }
+    const result = await input.runAgent(input.context);
+    return result;
+  },
+}));
 
 import {
   ConversationTurnProcessor,
@@ -94,9 +94,15 @@ function harness(overrides: Partial<any> = {}) {
     admitSettledTurn: vi.fn().mockResolvedValue({ kind: "allowed" }),
   };
   const aiWrapper = {
-    renderConversationResponse: vi.fn(async (input: RenderConversationResponseInput): Promise<WrapperRenderResult> => ({
-      kind: "no-wrapper" as const, body: input.responseBody, reason: "NOT_CONFIGURED" as const,
-    })),
+    renderConversationResponse: vi.fn(
+      async (
+        input: RenderConversationResponseInput,
+      ): Promise<WrapperRenderResult> => ({
+        kind: "no-wrapper" as const,
+        body: input.responseBody,
+        reason: "NOT_CONFIGURED" as const,
+      }),
+    ),
   };
   const runAgent = vi.fn().mockResolvedValue({
     replyText: "reply",
@@ -149,25 +155,48 @@ function harness(overrides: Partial<any> = {}) {
   };
 }
 
-
 it("review: suppresses a version change during the final ownership await", async () => {
- const t = harness(); let version = 3;
- t.loaded.checkoutRecoveryId = "recovery";
- t.conversation.getTurnState.mockImplementation(async () => state({inboundVersion:version, pendingAiControlRevision:2, controlRevision:2, pendingAiNotBeforeAt:first}));
- t.conversation.hasChanged.mockImplementation(async () => version !== 3);
- t.conversation.completeTurn.mockImplementation(async () => version === 3);
- const ownership = {readTurnOwnership:vi.fn(), checkAutomatedTurn:vi.fn(async ({phase}) => {
-   if(phase === "before-provider") version = 4; // customer ingress commits during this DB await
-   return {kind:"allowed"}; // same AI mode and control revision, as in production
- })};
- const processor = new ConversationTurnProcessor({queue:t.queue, conversation:t.conversation, admission:t.admission, abuseAdmission:t.abuseAdmission, ownership,
- loadTurn:async()=>t.loaded, runAgent:t.runAgent, aiWrapper:t.aiWrapper, getResult:(x:any)=>x,
- now:()=>new Date(first.getTime()+20_000), runtimeConfig:t.runtimeConfig, logger:t.logger});
- await processor.process({conversationId:"conversation-1",observedVersion:3});
- expect(version).toBe(4);
- expect(t.admission.sendPreparedText).not.toHaveBeenCalled();
+  const t = harness();
+  let version = 3;
+  t.loaded.checkoutRecoveryId = "recovery";
+  t.conversation.getTurnState.mockImplementation(async () =>
+    state({
+      inboundVersion: version,
+      pendingAiControlRevision: 2,
+      controlRevision: 2,
+      pendingAiNotBeforeAt: first,
+    }),
+  );
+  t.conversation.hasChanged.mockImplementation(async () => version !== 3);
+  t.conversation.completeTurn.mockImplementation(async () => version === 3);
+  const ownership = {
+    readTurnOwnership: vi.fn(),
+    checkAutomatedTurn: vi.fn(async ({ phase }) => {
+      if (phase === "before-provider") version = 4; // customer ingress commits during this DB await
+      return { kind: "allowed" }; // same AI mode and control revision, as in production
+    }),
+  };
+  const processor = new ConversationTurnProcessor({
+    queue: t.queue,
+    conversation: t.conversation,
+    admission: t.admission,
+    abuseAdmission: t.abuseAdmission,
+    ownership,
+    loadTurn: async () => t.loaded,
+    runAgent: t.runAgent,
+    aiWrapper: t.aiWrapper,
+    getResult: (x: any) => x,
+    now: () => new Date(first.getTime() + 20_000),
+    runtimeConfig: t.runtimeConfig,
+    logger: t.logger,
+  });
+  await processor.process({
+    conversationId: "conversation-1",
+    observedVersion: 3,
+  });
+  expect(version).toBe(4);
+  expect(t.admission.sendPreparedText).not.toHaveBeenCalled();
 });
-
 ```
 
 ## Result

@@ -15,17 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-032-ADMIN-001
-- ARCH-032-BACKGROUND-001
-- ARCH-032-COMMERCE-006
-- ARCH-032-GATEWAY-001
-- ARCH-032-MCP-014
-- ARCH-032-MCP-016
-- ARCH-032-MCP-019
-- ARCH-032-MCP-020
+  - ARCH-032-ADMIN-001
+  - ARCH-032-BACKGROUND-001
+  - ARCH-032-COMMERCE-006
+  - ARCH-032-GATEWAY-001
+  - ARCH-032-MCP-014
+  - ARCH-032-MCP-016
+  - ARCH-032-MCP-019
+  - ARCH-032-MCP-020
 enables: []
-created: '2026-10-15'
-updated: '2026-10-15'
+created: "2026-10-15"
+updated: "2026-10-15"
 ---
 
 # ARCH-032-SYSTEM-TEST-002 — Certify standalone MCP production and Studio Live Test boundaries

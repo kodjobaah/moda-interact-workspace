@@ -86,7 +86,6 @@ Show loading, invalid reason, stale version, already suspended/restored, concurr
 
 Admin suspension is one shop-scoped persisted flag/revision, not a Shopify/WooCommerce setting, entitlement or per-user assignment. Both server-side merchant producers must reject new HUMAN actions when suspended; the same BG001/BG002 provider-admission fence must reject even previously accepted commands when suspension commits first. The platform-agnostic dispatcher must never ignore suspension because of command origin. Resume AI and reading existing recovery history remain permitted. Store restricted admin notes only in privileged Admin views and record a stable restriction revision for concurrency; do not add any platform-specific scheduling or separate shop UI permission system.
 
-
 ## Work Items
 
 - [x] Add restriction status and paginated/reason-safe history to the existing selected-tenant server read.
@@ -103,8 +102,8 @@ Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an i
 
 - ARCH-040-DATABASE-001
 
-
 - ARCH-040-DATABASE-005
+
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-001
@@ -222,21 +221,27 @@ No new cross-service contract, database migration, queue, merchant role or AI/au
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes
+
 The Attempt 1 finding is resolved. At `d875e5cccb2144da2b40058861f81eb4b7665908`, the SUPER_ADMIN-only restriction-event projection selects `reasonNote` and the selected-merchant Admin history renders it. Security regression coverage verifies the note is excluded from moderation incident projection/UI alongside message content and scores; PostgreSQL integration verifies the persisted history note. No merchant or recovery API was changed. Attempt 2 passed required focused validation. Since `completion_mode: developer`, this Accepted review does not complete the task.
 
 ### Reviewed Files
+
 `src/app/actions/tenant-human-messaging.ts`; `src/lib/admin/human-messaging-mutations.ts`; `src/lib/admin/human-messaging.ts`; `src/lib/admin/human-messaging-contract.ts`; `src/components/admin/tenant-human-messaging.tsx`; `src/components/admin/human-messaging-controls.tsx`; `src/app/(protected)/page.tsx`; focused unit/security/PostgreSQL tests; `database/prisma/schema.prisma`. The Attempt 2 correction diff was reviewed against `d4558e8f9d45e8893741a8f2569935f5eca8089d`.
 
 ### Validation Reviewed
+
 Attempt 2 validation independently confirmed: `npm run test:arch040-admin-human-messaging:unit` PASS (4 contract + 4 security); `npm run test:arch040-admin-human-messaging:postgres` PASS (1/1 disposable PostgreSQL); `npx tsc --noEmit` PASS (exit 0); `npm run lint` PASS (exit 0, 0 errors and 1 unrelated `database/eslint.config.mjs` warning); `npm run build` PASS (exit 0; existing optional BullMQ/Valkey warnings); `git diff --check` PASS (exit 0). Implementation commit `d875e5cccb2144da2b40058861f81eb4b7665908` is published and the implementation worktree is clean. Both dependencies resolve `complete`; both canonical worktrees are correctly registered and synchronized.
 
 ### Architecture Conformance
+
 Conforms to the task scope. The reason note remains limited to privileged Admin restriction history; moderation incidents remain content/score/note-redacted. No cross-platform or unrelated implementation changes were found in the correction.
 
 ### Follow-up
+
 No further ADMIN-001 work is required. `ARCH-040-SYSTEM-TEST-001` remains dependency-blocked on `ARCH-040-BACKGROUND-008`; it is not started by this completion. Do not merge either task branch to `main`.
 
 ### Developer Self-Review - Changes Requested

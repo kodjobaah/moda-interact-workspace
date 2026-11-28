@@ -19,7 +19,6 @@ moda-interact-background.git
     └── tests/...
 ```
 
-
 ## Physical task worktrees
 
 The branches above must be checked out in two task-specific physical worktrees

@@ -230,7 +230,7 @@ export function resolveCommerceEnvironment(): CommerceEnvironment;
 Use the existing:
 
 ```ts
-resolveDeploymentEnvironmentName()
+resolveDeploymentEnvironmentName();
 ```
 
 from `src/runtime/deployment-environment.ts` as the deployment identity source.
@@ -459,7 +459,9 @@ src/commerce/credential-keyring.ts
 Export exactly:
 
 ```ts
-export function readCommerceCredentialKeyring(): Readonly<Record<string, Uint8Array>>;
+export function readCommerceCredentialKeyring(): Readonly<
+  Record<string, Uint8Array>
+>;
 ```
 
 Read only:
@@ -523,7 +525,7 @@ export function createOpenRouterCredentialResolver(input: {
 createCommerceOpenRouterCredentialAad({
   environment,
   keyId: row.keyId,
-})
+});
 ```
 
 and UTF-8 encode that returned canonical string before calling `decipher.setAAD(...)`;
@@ -547,8 +549,9 @@ src/commerce/production-model.ts
 Export equivalent public testable shapes:
 
 ```ts
-export type ProductionOpenRouterModelFactory =
-  (options: OpenRouterModelClientOptions) => CommerceModelInvoker;
+export type ProductionOpenRouterModelFactory = (
+  options: OpenRouterModelClientOptions,
+) => CommerceModelInvoker;
 
 export async function createProductionCommerceModelInvoker(input: {
   db: PrismaClient;
@@ -566,7 +569,7 @@ export async function createProductionCommerceModelInvoker(input: {
 3. default `createClient` to:
 
 ```ts
-(options) => new OpenRouterModelClient(options)
+(options) => new OpenRouterModelClient(options);
 ```
 
 4. on **every** returned `invoke(request, signal)` call:
@@ -752,7 +755,7 @@ logger: hostLogger.child({
   conversationId: current.id,
   modelSelectionSource: resolved.selectionSource,
   merchantPricingPlanId: resolved.merchantPricingPlanId,
-})
+});
 ```
 
 The Shared runner will add its own `component: "commerce-turn-runner"` child context. Do not include customer name/message content, Tool arguments/results, Merchant Knowledge content, provider payloads or credentials in the host logger.

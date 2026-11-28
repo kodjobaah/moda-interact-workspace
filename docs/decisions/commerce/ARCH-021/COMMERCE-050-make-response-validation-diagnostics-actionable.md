@@ -524,9 +524,11 @@ kinds, publication policy or unrelated authoring diagnostics.
 ## Completion Report
 
 ### Status
+
 Ready for Architect Review (Attempt 2; implementation commit recorded below and pushed)
 
 ### Physical Worktree Isolation
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-050`
 - Parent branch: `task/ARCH-021-COMMERCE-050`
@@ -537,12 +539,14 @@ Ready for Architect Review (Attempt 2; implementation commit recorded below and 
 - Another task worktree reused: no.
 
 ### Start-of-Attempt Synchronization and Claim
+
 - Parent task synchronization started from `b88fe45e` (Attempt 1 review corrections); `origin/main` was already an ancestor. The remote task branch was current before the Attempt 2 claim commit.
 - Implementation synchronization started from `e4f622695c460a588dc788fead80de00ce2fde01`; local branch matched `origin/task/ARCH-021-COMMERCE-050`, and `origin/main` was already an ancestor. No fast-forward or mainline merge was needed.
 - Attempt 2 claim evidence: parent commit `01177a2403d428f5858d0e6fd6083331db6d8b38`, which records `status: in_progress`, `executor: copilot`, `claimed_at: 2026-09-27T07:25:54Z`, `attempt: 2`.
 - Recursive implementation submodules were materialized by the prepared execution. `git submodule status --recursive` verified database commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45` with no uninitialized, mismatched, or unresolved entries. No `--remote` submodule update was used.
 
 ### Files Changed
+
 - `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
 - `moda-interact-commerce/src/commerce/tool-authoring/external-validation.ts`
 - `moda-interact-commerce/tests/external-tools-ui.test.tsx`
@@ -550,6 +554,7 @@ Ready for Architect Review (Attempt 2; implementation commit recorded below and 
 - `moda-interact-commerce/tests/external-tool-authoring-server-actions.test.ts`
 
 ### Work Completed
+
 - Invalid browser-local Visual trees now short-circuit Response validation locally; canonical Visual candidates continue through the authoritative Server Action.
 - Added field/control-specific Visual guidance for all stable derivation codes, including Scalar versus SCALAR_LIST item types; issue paths/codes are confined to collapsed Technical details.
 - Action-level validation failures now render as separate bounded system diagnostics for `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN`, and rejected Promises; server messages and fabricated Response paths are not shown, and `onValidationChange(false)` is preserved.
@@ -557,6 +562,7 @@ Ready for Architect Review (Attempt 2; implementation commit recorded below and 
 - Added UI and Server Action regressions for the manual `field2` reproduction, SCALAR_LIST type/limit, unsafe paths, duplicates, empty projections, server mismatch, JavaScript causes, Direct schema failures, retained edits/navigation, and null payloads.
 
 ### Validation Results
+
 - `npm run test:arch020-external-tools-ui`: passed, 47 tests; includes `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN`, Promise rejection, raw-message suppression, retained Visual/Direct/JavaScript values, validation invalidation and real Request/Response navigation.
 - `npm run test:arch021-external-tool-authoring-validation`: passed, 54 tests across Response validation and Server Actions; includes the existing zero-I/O proof.
 - `npm run test:arch021-tool-authoring-common`: 85 passed, 1 failed. The unchanged `tests/commerce-lifecycle.test.ts` publication fixture uses an empty external `resultSchema`, so it fails with `INVALID_DEFINITION` before its expected `LIVE_TEST_REQUIRED` assertion. No lifecycle fixture or schema/publication semantics were changed for C050.
@@ -566,18 +572,23 @@ Ready for Architect Review (Attempt 2; implementation commit recorded below and 
 - Implementation commit: `823dd4511d195343f2b76dcf1206377960f5b31a`; pushed to `origin/task/ARCH-021-COMMERCE-050`, with upstream parity verified.
 
 ### Deviations
+
 The common Tool-authoring packet retains the unrelated lifecycle fixture failure recorded above; it is outside C050's Response-validation presentation scope.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 The unrelated common-packet lifecycle fixture and repository-wide TypeScript baseline remain for their owning workstreams; no C050-specific issue is unresolved.
 
 ### Architectural Concerns
+
 None.
 
 ### Attempt 2 Commits and Push Parity
+
 - Implementation commit: `823dd4511d195343f2b76dcf1206377960f5b31a`; push to `origin/task/ARCH-021-COMMERCE-050` verified; implementation worktree clean.
 - Final parent Completion Report commit: the parent task branch tip published with this report; exact SHA recorded in the task handoff.
 - Parent push: to be verified against `origin/task/ARCH-021-COMMERCE-050`.
@@ -586,6 +597,7 @@ None.
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes
@@ -752,11 +764,13 @@ The current `result.kind === "error"` branch does:
 setResponseValidation({
   state: "invalid",
   message: "Response validation is unavailable. Keep your edits and retry.",
-  issues: [{
-    path: "/execution/responseProcessing",
-    code: result.code,
-    message: result.message
-  }]
+  issues: [
+    {
+      path: "/execution/responseProcessing",
+      code: result.code,
+      message: result.message,
+    },
+  ],
 });
 ```
 

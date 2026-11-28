@@ -13,11 +13,11 @@ status: complete
 priority: 63
 attempt: 3
 depends_on:
-- ARCH-014-DATABASE-004
+  - ARCH-014-DATABASE-004
 enables:
-- ARCH-014-BACKGROUND-002
-- ARCH-014-BACKGROUND-003
-- ARCH-014-BACKGROUND-004
+  - ARCH-014-BACKGROUND-002
+  - ARCH-014-BACKGROUND-003
+  - ARCH-014-BACKGROUND-004
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -136,8 +136,7 @@ class BackgroundRuntimeLeaseService {
     name,
     work: (handle: BackgroundLeaseHandle) => Promise<T>,
   ): Promise<
-    | { kind: "skipped" }
-    | { kind: "completed"; value: T; leaseLost: boolean }
+    { kind: "skipped" } | { kind: "completed"; value: T; leaseLost: boolean }
   >;
 }
 ```
@@ -358,6 +357,7 @@ Keep the correction strictly inside the common scheduler/lease foundation.
 ### Acceptance boundary
 
 Attempt 3 is acceptable when the dynamic scheduler cannot hold an idle lease until expiry after normal completion and cannot silently outlive the 120-second lease without the common heartbeat lifecycle. Existing unrelated baseline test failures do not block acceptance.
+
 ## Architect Review — Attempt 3
 
 ### Review Status

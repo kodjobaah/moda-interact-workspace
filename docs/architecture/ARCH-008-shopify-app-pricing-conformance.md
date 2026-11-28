@@ -345,15 +345,15 @@ Architect preflight result: no database migration is required.
 
 ## Decisions / Tasks
 
-| Task | Repository | Purpose |
-|---|---|---|
-| `ARCH-008-BACKGROUND-001` | moda-interact-background | Correct App Events receipt/409 retry semantics without changing entitlement confirmation yet. |
-| `ARCH-008-SHOPIFY-001` | moda-interact | Require exact provider/local current-cycle identity before creating a new recovery-credit-pack UsageEvent. |
-| `ARCH-008-BACKGROUND-002` | moda-interact-background | Remove pack activation from 202 and reconcile provider-confirmed aggregate pack units. |
-| `ARCH-008-ADMIN-001` | moda-interact-admin | Establish accurate asynchronous billing labels plus bounded safe read primitives used by redesigned surfaces. |
-| `ARCH-008-ADMIN-002` | moda-interact-admin | Replace global Billing information overload with five URL-backed tabs and detail drawers. |
-| `ARCH-008-ADMIN-003` | moda-interact-admin | Replace Tenant Directory Billing information overload with four URL-backed sub-tabs and reused drawers. |
-| `ARCH-008-SYSTEM-TEST-001` | moda-interact-system-test | Terminal/manual-gated integrated validation of App Pricing semantics and Admin progressive disclosure. |
+| Task                       | Repository                | Purpose                                                                                                       |
+| -------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `ARCH-008-BACKGROUND-001`  | moda-interact-background  | Correct App Events receipt/409 retry semantics without changing entitlement confirmation yet.                 |
+| `ARCH-008-SHOPIFY-001`     | moda-interact             | Require exact provider/local current-cycle identity before creating a new recovery-credit-pack UsageEvent.    |
+| `ARCH-008-BACKGROUND-002`  | moda-interact-background  | Remove pack activation from 202 and reconcile provider-confirmed aggregate pack units.                        |
+| `ARCH-008-ADMIN-001`       | moda-interact-admin       | Establish accurate asynchronous billing labels plus bounded safe read primitives used by redesigned surfaces. |
+| `ARCH-008-ADMIN-002`       | moda-interact-admin       | Replace global Billing information overload with five URL-backed tabs and detail drawers.                     |
+| `ARCH-008-ADMIN-003`       | moda-interact-admin       | Replace Tenant Directory Billing information overload with four URL-backed sub-tabs and reused drawers.       |
+| `ARCH-008-SYSTEM-TEST-001` | moda-interact-system-test | Terminal/manual-gated integrated validation of App Pricing semantics and Admin progressive disclosure.        |
 
 ## Dependency Graph
 

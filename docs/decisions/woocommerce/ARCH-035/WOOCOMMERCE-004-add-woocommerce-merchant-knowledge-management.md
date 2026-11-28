@@ -44,6 +44,7 @@ Build the Woo Recovery Settings Merchant Knowledge management UI following Shopi
 Shopify MerchantKnowledgeSection.tsx is embedded inside Recovery Settings and supports URL/file source disclosure, plan capacity, status, refresh, reorder, edit, replace and delete. Woo currently has no such section.
 
 Source references:
+
 - Shopify: app/components/settings/MerchantKnowledgeSection.tsx; app/routes/app/recovery-settings/RecoverySettingsView.tsx.
 - Woo: src/recovery-settings/recovery-settings-screen.js.
 

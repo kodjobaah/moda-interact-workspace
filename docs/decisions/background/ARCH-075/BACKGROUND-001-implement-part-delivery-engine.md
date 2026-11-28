@@ -158,6 +158,7 @@ Ready for Review. Implementation, required validation and both corrected exact-h
 - No live database/Redis/provider was used for tests. PostgreSQL tests are guarded disposable integration runs with synthetic recipients and mock transports.
 
 Physical worktree isolation (launcher evidence):
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-BACKGROUND-001`, branch `task/ARCH-075-BACKGROUND-001`.
 - Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-BACKGROUND-001`, same branch.

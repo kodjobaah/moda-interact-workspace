@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-056-SYSTEM-TEST-001
+  - ARCH-056-SYSTEM-TEST-001
 enables: []
-created: '2026-11-04'
-updated: '2026-11-04'
+created: "2026-11-04"
+updated: "2026-11-04"
 ---
 
 # ARCH-056-SYSTEM-TEST-002: Replace architecture-based test names
@@ -45,37 +45,37 @@ One owning repository: `moda-interact-system-test`; all implementation paths bel
 
 ### Exact source/script moves
 
-| Existing path | New path |
-|---|---|
+| Existing path                                                        | New path                                                     |
+| -------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `src/harness/recovery/arch028-credit-source-checkout-diagnostics.js` | `src/harness/recovery/credit-source-checkout-diagnostics.js` |
-| `src/harness/recovery/arch028-credit-source-diagnostics.js` | `src/harness/recovery/credit-source-diagnostics.js` |
-| `src/harness/recovery/arch028-credit-source-fixtures.js` | `src/harness/recovery/credit-source-fixtures.js` |
-| `src/harness/recovery/arch028-credit-source-ingress-diagnostics.js` | `src/harness/recovery/credit-source-ingress-diagnostics.js` |
-| `src/harness/recovery/arch028-credit-source-initial-diagnostics.js` | `src/harness/recovery/credit-source-initial-diagnostics.js` |
-| `src/harness/recovery/arch028-credit-source-observation.js` | `src/harness/recovery/credit-source-observation.js` |
-| `src/harness/recovery/arch028-credit-source-receipt-diagnostics.js` | `src/harness/recovery/credit-source-receipt-diagnostics.js` |
-| `src/harness/recovery/arch028-credit-source-scenario.js` | `src/harness/recovery/credit-source-scenario.js` |
-| `src/harness/recovery/arch028-purchased-source-fixture.js` | `src/harness/recovery/purchased-source-fixture.js` |
-| `scripts/run-arch002-observability.js` | `scripts/run-integrated-observability.js` |
-| `scripts/run-arch002-production-readiness.js` | `scripts/run-production-readiness.js` |
-| `scripts/run-arch002-render-test-topology.js` | `scripts/deprecated-render-test-topology.js` |
-| `scripts/run-arch028-compensation-smoke.js` | `scripts/run-terminal-recipient-compensation-smoke.js` |
-| `scripts/system-test-006-developer-validation.sh` | `scripts/deprecated-render-test-validation.sh` |
+| `src/harness/recovery/arch028-credit-source-diagnostics.js`          | `src/harness/recovery/credit-source-diagnostics.js`          |
+| `src/harness/recovery/arch028-credit-source-fixtures.js`             | `src/harness/recovery/credit-source-fixtures.js`             |
+| `src/harness/recovery/arch028-credit-source-ingress-diagnostics.js`  | `src/harness/recovery/credit-source-ingress-diagnostics.js`  |
+| `src/harness/recovery/arch028-credit-source-initial-diagnostics.js`  | `src/harness/recovery/credit-source-initial-diagnostics.js`  |
+| `src/harness/recovery/arch028-credit-source-observation.js`          | `src/harness/recovery/credit-source-observation.js`          |
+| `src/harness/recovery/arch028-credit-source-receipt-diagnostics.js`  | `src/harness/recovery/credit-source-receipt-diagnostics.js`  |
+| `src/harness/recovery/arch028-credit-source-scenario.js`             | `src/harness/recovery/credit-source-scenario.js`             |
+| `src/harness/recovery/arch028-purchased-source-fixture.js`           | `src/harness/recovery/purchased-source-fixture.js`           |
+| `scripts/run-arch002-observability.js`                               | `scripts/run-integrated-observability.js`                    |
+| `scripts/run-arch002-production-readiness.js`                        | `scripts/run-production-readiness.js`                        |
+| `scripts/run-arch002-render-test-topology.js`                        | `scripts/deprecated-render-test-topology.js`                 |
+| `scripts/run-arch028-compensation-smoke.js`                          | `scripts/run-terminal-recipient-compensation-smoke.js`       |
+| `scripts/system-test-006-developer-validation.sh`                    | `scripts/deprecated-render-test-validation.sh`               |
 
 ### Exact test moves
 
-| Existing path | New path |
-|---|---|
-| `test/harness/arch028-compensation-smoke.test.js` | `test/harness/terminal-recipient-compensation-smoke.test.js` |
-| `test/harness/arch028-credit-source-checkout-diagnostics.test.js` | `test/harness/credit-source-checkout-diagnostics.test.js` |
-| `test/harness/arch028-credit-source-ingress-diagnostics.test.js` | `test/harness/credit-source-ingress-diagnostics.test.js` |
-| `test/harness/arch028-credit-source-receipt-diagnostics.test.js` | `test/harness/credit-source-receipt-diagnostics.test.js` |
-| `test/harness/arch028-credit-sources.test.js` | `test/harness/credit-sources.test.js` |
-| `test/harness/arch028-follow-up-diagnostics.test.js` | `test/harness/follow-up-diagnostics.test.js` |
-| `test/harness/arch028-initial-outreach-diagnostics.test.js` | `test/harness/initial-outreach-diagnostics.test.js` |
-| `test/harness/arch028-purchased-source-fixture.test.js` | `test/harness/purchased-source-fixture.test.js` |
-| `test/harness/arch028-terminal-recipient-merchant-ui.test.js` | `test/harness/terminal-recipient-merchant-ui.test.js` |
-| `test/harness/arch028-terminal-recipient-observation.test.js` | `test/harness/terminal-recipient-observation.test.js` |
+| Existing path                                                     | New path                                                     |
+| ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| `test/harness/arch028-compensation-smoke.test.js`                 | `test/harness/terminal-recipient-compensation-smoke.test.js` |
+| `test/harness/arch028-credit-source-checkout-diagnostics.test.js` | `test/harness/credit-source-checkout-diagnostics.test.js`    |
+| `test/harness/arch028-credit-source-ingress-diagnostics.test.js`  | `test/harness/credit-source-ingress-diagnostics.test.js`     |
+| `test/harness/arch028-credit-source-receipt-diagnostics.test.js`  | `test/harness/credit-source-receipt-diagnostics.test.js`     |
+| `test/harness/arch028-credit-sources.test.js`                     | `test/harness/credit-sources.test.js`                        |
+| `test/harness/arch028-follow-up-diagnostics.test.js`              | `test/harness/follow-up-diagnostics.test.js`                 |
+| `test/harness/arch028-initial-outreach-diagnostics.test.js`       | `test/harness/initial-outreach-diagnostics.test.js`          |
+| `test/harness/arch028-purchased-source-fixture.test.js`           | `test/harness/purchased-source-fixture.test.js`              |
+| `test/harness/arch028-terminal-recipient-merchant-ui.test.js`     | `test/harness/terminal-recipient-merchant-ui.test.js`        |
+| `test/harness/arch028-terminal-recipient-observation.test.js`     | `test/harness/terminal-recipient-observation.test.js`        |
 
 All 24 paths are moves with corresponding import/reference updates. Content changes in the moved files are limited to the mapped local identifiers, test-owned names, diagnostic/progress labels, imports and required naming regression assertions. Do not delete cases or retain permanent executable aliases under the old paths.
 
@@ -165,10 +165,10 @@ No application implementation or test rename; no schema/migration, Shared public
 2. An `in_progress` or `review` task with an overlapping writer is a concrete preflight blocker. Return the exact task/file conflict for architect sequencing before a naming mutation; do not silently merge around it or transfer ownership. A `ready` task alone does not add a dependency. Any approved intervening baseline change must be explicitly reconciled into the mapping before proceeding.
 3. The Completion Report must provide the exact old/new executable-reference handoff for these known unfinished owners. Architect reconciliation of their current scope/command guidance is required **before accepting this cleanup**. The executor must not edit those task files, change their lifecycle or rewrite Complete historical reviews:
 
-| Read-only parent task | Snapshot evidence and required handoff |
-|---|---|
-| `docs/decisions/system-test/ARCH-002/SYSTEM-TEST-010-reconcile-production-readiness-validator-with-haproxy.md` | Ready/attempt 0 at lines 9–13; capability objective at 25–27; stale `test/render-blueprint-validation.test.js` evidence at 37–46; bounded HAProxy scope at 50–54. Handoff `run-arch002-production-readiness.js` / `validate:arch002-production-readiness` to the semantic entrypoint/command and their unchanged core-test relationship. The task does not contain a literal old executable command; do not invent one. |
-| `docs/decisions/system-test/ARCH-028/SYSTEM-TEST-001-validate-whatsapp-delivery-compensation-and-suppression.md` | Ready/attempt 0 at lines 12–16; unstarted/manual-gated note at 27; 131026 and uncertainty boundary at 45–47; future fixture work at 86–96; validation at 126–128. Handoff the three scenario IDs, moved credit-source helpers/importers and smoke entrypoint. Preserve its unchanged terminal scope, status and provenance warnings. |
+| Read-only parent task                                                                                            | Snapshot evidence and required handoff                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/decisions/system-test/ARCH-002/SYSTEM-TEST-010-reconcile-production-readiness-validator-with-haproxy.md`   | Ready/attempt 0 at lines 9–13; capability objective at 25–27; stale `test/render-blueprint-validation.test.js` evidence at 37–46; bounded HAProxy scope at 50–54. Handoff `run-arch002-production-readiness.js` / `validate:arch002-production-readiness` to the semantic entrypoint/command and their unchanged core-test relationship. The task does not contain a literal old executable command; do not invent one. |
+| `docs/decisions/system-test/ARCH-028/SYSTEM-TEST-001-validate-whatsapp-delivery-compensation-and-suppression.md` | Ready/attempt 0 at lines 12–16; unstarted/manual-gated note at 27; 131026 and uncertainty boundary at 45–47; future fixture work at 86–96; validation at 126–128. Handoff the three scenario IDs, moved credit-source helpers/importers and smoke entrypoint. Preserve its unchanged terminal scope, status and provenance warnings.                                                                                    |
 
 The line locations identify the reviewed snapshot; use the actual current file at execution. The architect owns any required current reference amendments. Unchanged historical completion text is evidence, not a stale import to repair.
 
@@ -176,38 +176,38 @@ The line locations identify the reviewed snapshot; use the actual current file a
 
 Apply the 11 local symbol changes together with their imports/exports and callers:
 
-| Existing name | Capability name |
-|---|---|
-| `seedArch028CreditSource` | `seedCreditSource` |
-| `seedArch028PurchasedSource` | `seedPurchasedSource` |
-| `readArch028CreditSourceState` | `readCreditSourceState` |
-| `assertArch028InitialCredit` | `assertInitialCredit` |
-| `assertArch028CompensatedCredit` | `assertCompensatedCredit` |
-| `assertArch028CreditReplay` | `assertCreditReplay` |
-| `waitForArch028CreditState` | `waitForCreditState` |
-| `failedArch028InitialCreditChecks` | `failedInitialCreditChecks` |
-| `reportArch028CreditSourceFailure` | `reportCreditSourceFailure` |
-| `runArch028CreditSourceScenario` | `runCreditSourceScenario` |
+| Existing name                          | Capability name                 |
+| -------------------------------------- | ------------------------------- |
+| `seedArch028CreditSource`              | `seedCreditSource`              |
+| `seedArch028PurchasedSource`           | `seedPurchasedSource`           |
+| `readArch028CreditSourceState`         | `readCreditSourceState`         |
+| `assertArch028InitialCredit`           | `assertInitialCredit`           |
+| `assertArch028CompensatedCredit`       | `assertCompensatedCredit`       |
+| `assertArch028CreditReplay`            | `assertCreditReplay`            |
+| `waitForArch028CreditState`            | `waitForCreditState`            |
+| `failedArch028InitialCreditChecks`     | `failedInitialCreditChecks`     |
+| `reportArch028CreditSourceFailure`     | `reportCreditSourceFailure`     |
+| `runArch028CreditSourceScenario`       | `runCreditSourceScenario`       |
 | `registerArch028CreditSourceScenarios` | `registerCreditSourceScenarios` |
 
 Apply only the 56 file-scoped synthetic fixture/label/progress replacements recorded in the canonical naming map. They do not authorize changes to production keys or historical evidence. Preserve all mapped assertions, source-specific semantics, cleanup, timeouts and retry behavior. If another executable consumer is discovered outside the allowlist, return its exact path for an architect scope amendment before editing.
 
 Rename exactly these permanent scenario IDs and their registration/selection/reference consumers:
 
-| Existing name | Capability name |
-|---|---|
-| `RECOVERY-ARCH028-PAID-001` | `RECOVERY-PAID-CREDIT-COMPENSATION-001` |
-| `RECOVERY-ARCH028-PROMO-001` | `RECOVERY-PROMOTIONAL-CREDIT-COMPENSATION-001` |
-| `RECOVERY-ARCH028-PURCHASED-001` | `RECOVERY-PURCHASED-CREDIT-COMPENSATION-001` |
+| Existing name                    | Capability name                                |
+| -------------------------------- | ---------------------------------------------- |
+| `RECOVERY-ARCH028-PAID-001`      | `RECOVERY-PAID-CREDIT-COMPENSATION-001`        |
+| `RECOVERY-ARCH028-PROMO-001`     | `RECOVERY-PROMOTIONAL-CREDIT-COMPENSATION-001` |
+| `RECOVERY-ARCH028-PURCHASED-001` | `RECOVERY-PURCHASED-CREDIT-COMPENSATION-001`   |
 
 Each remains its original implemented, automated, local-provider **L3 / BLACK_BOX** scenario with unchanged `requiredEvidenceClass`, providers, release gates, fixtures, actions and assertions. Preserve the existing paid/promotional/purchased distinctions and 131026-only claims. The new identifiers are a bijection, not additional scenarios or an opportunity to retire existing rows.
 
 ### Reusable commands and deprecation behavior
 
-| Old npm key | New npm key | Exact new command |
-|---|---|---|
-| `validate:arch002-observability` | `validate:integrated-observability` | `node scripts/run-integrated-observability.js` |
-| `validate:arch002-production-readiness` | `validate:production-readiness` | `node scripts/run-production-readiness.js` |
+| Old npm key                             | New npm key                         | Exact new command                              |
+| --------------------------------------- | ----------------------------------- | ---------------------------------------------- |
+| `validate:arch002-observability`        | `validate:integrated-observability` | `node scripts/run-integrated-observability.js` |
+| `validate:arch002-production-readiness` | `validate:production-readiness`     | `node scripts/run-production-readiness.js`     |
 
 Remove the two old npm keys; add only these two semantic replacements. The existing runner remains authoritative. The semantic Background-persistence commands were supplied by System-Test-001 and are reused unchanged.
 
@@ -264,17 +264,17 @@ The exact moved paths, 11 local helper exports, three permanent scenario IDs and
 
 The unchanged successor-facing suite contract is:
 
-| Semantic scenario | Class / layer | Required cases |
-|---|---|---|
-| `REPOSITORY-BACKGROUND-DEPENDENCY-001` | CONTRACT / L1 | D1, D2 |
-| `MESSAGING-INBOUND-PERSISTENCE-001` | INTEGRATION / L2 | I1, I2, I3 |
-| `RECOVERY-CANDIDATE-PROGRESS-001` | BLACK_BOX / L3 | C1, C2, C3 |
-| `RECOVERY-INITIAL-ADMISSION-001` | INTEGRATION / L2 | A1, A2, A3, A4 |
-| `RECOVERY-INITIAL-UNCERTAINTY-001` | BLACK_BOX / L3 | U1, U2, U3 |
+| Semantic scenario                         | Class / layer    | Required cases         |
+| ----------------------------------------- | ---------------- | ---------------------- |
+| `REPOSITORY-BACKGROUND-DEPENDENCY-001`    | CONTRACT / L1    | D1, D2                 |
+| `MESSAGING-INBOUND-PERSISTENCE-001`       | INTEGRATION / L2 | I1, I2, I3             |
+| `RECOVERY-CANDIDATE-PROGRESS-001`         | BLACK_BOX / L3   | C1, C2, C3             |
+| `RECOVERY-INITIAL-ADMISSION-001`          | INTEGRATION / L2 | A1, A2, A3, A4         |
+| `RECOVERY-INITIAL-UNCERTAINTY-001`        | BLACK_BOX / L3   | U1, U2, U3             |
 | `BILLING-INITIAL-OUTREACH-SETTLEMENT-001` | INTEGRATION / L2 | B1, B2, B3, B4, B5, B6 |
-| `RECOVERY-INITIAL-FINALIZATION-001` | BLACK_BOX / L3 | F1, F2, F3, F4 |
-| `RECOVERY-WOO-INITIAL-GATE-001` | INTEGRATION / L2 | W1, W2 |
-| `RECOVERY-FAILED-CANDIDATE-REPAIR-001` | BLACK_BOX / L3 | R1, R2, R3 |
+| `RECOVERY-INITIAL-FINALIZATION-001`       | BLACK_BOX / L3   | F1, F2, F3, F4         |
+| `RECOVERY-WOO-INITIAL-GATE-001`           | INTEGRATION / L2 | W1, W2                 |
+| `RECOVERY-FAILED-CANDIDATE-REPAIR-001`    | BLACK_BOX / L3   | R1, R2, R3             |
 
 Exactly nine scenarios, 30 case IDs, and the accepted contract's 39 mandatory logging assertions across 16 cases remain required. Preserve actual installed Shared provenance, source-message/component/privacy checks, truthfully held outcomes and the existing non-PASS treatment of missing, blocked, failed, not-run or incomplete cases. This task does not change the evidence classes or application contracts underlying those checks.
 

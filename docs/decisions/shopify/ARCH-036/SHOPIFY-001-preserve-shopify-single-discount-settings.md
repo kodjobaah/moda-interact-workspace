@@ -75,7 +75,6 @@ Existing `ShopSettings.fixedShopifyDiscountId`, `ShopifyDiscount.isAvailable` an
 
 ## Enables
 
-
 - `ARCH-036-SYSTEM-TEST-001`
 - `ARCH-036-BACKGROUND-003`
 - `ARCH-036-ADMIN-001`

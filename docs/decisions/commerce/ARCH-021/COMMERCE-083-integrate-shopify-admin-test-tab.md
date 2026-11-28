@@ -470,7 +470,6 @@ Keep provider execution and Result Template rendering on the server.
 
 ## Completion Report
 
-
 ### Status
 
 Blocked: accepted COMMERCE-082 Shopify Admin live-Test implementation is not integrated into the C083 implementation worktree.

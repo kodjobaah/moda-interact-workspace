@@ -197,7 +197,6 @@ model did not launch it.
 
 ===============================================================================
 
-
 ===============================================================================
 DEVELOPER-OWNED VALIDATION HARD STOP
 ===============================================================================
@@ -471,25 +470,26 @@ The architecture may use a topology such as:
           +-----------------+----------------+
           |                 |                |
           v                 v                v
-   moda-interact      moda-messaging      moda-admin
-   private service    private service     private service
-      2..N               2..N                1..N
-          |                 |
-          +--------+--------+
-                   |
-                   v
-               Redis Cloud
-                   |
-       +-----------+-----------+
-       |           |           |
-       v           v           v
- Shopify       Recovery     Messaging /
- workers       workers      CommerceAgent
-       |           |           |
-       +-----------+-----------+
-                   |
-                   v
-              PostgreSQL
+
+moda-interact moda-messaging moda-admin
+private service private service private service
+2..N 2..N 1..N
+| |
++--------+--------+
+|
+v
+Redis Cloud
+|
++-----------+-----------+
+| | |
+v v v
+Shopify Recovery Messaging /
+workers workers CommerceAgent
+| | |
++-----------+-----------+
+|
+v
+PostgreSQL
 
 The exact topology for each architecture initiative is defined by
 moda_architect.
@@ -533,9 +533,9 @@ The gateway must NOT contain:
 Prefer:
 
 receive
-    ->
+->
 apply infrastructure policy
-    ->
+->
 route
 
 and nothing more.
@@ -550,19 +550,19 @@ owning ingress service.
 For example:
 
 Shopify
-    ->
+->
 gateway
-    ->
+->
 moda-interact
-    ->
+->
 verify Shopify HMAC
 
 Meta
-    ->
+->
 gateway
-    ->
+->
 moda-interact-messaging
-    ->
+->
 verify Meta signature
 
 The gateway must preserve provider webhook request bodies and required headers
@@ -622,7 +622,6 @@ Render's service-level load balancing should be used where appropriate.
 Do not add a custom per-service load balancer solely to distribute traffic
 across ordinary scaled Render web/private-service instances unless the
 architecture explicitly requires custom load balancing.
-
 
 ===============================================================================
 RENDER BLUEPRINT / INFRASTRUCTURE AS CODE
@@ -692,7 +691,6 @@ together as the source of truth for architecture-managed Render topology.
 Do not create or revert to a single moda-interact-gateway/render.yaml for
 ARCH-002 unless moda_architect explicitly changes the architecture.
 
-
 BLUEPRINT SCOPE
 
 The Blueprint may define architecture-approved:
@@ -718,7 +716,6 @@ The Blueprint may define architecture-approved:
 
 Redis Cloud remains an external infrastructure dependency unless the parent
 architecture explicitly changes that decision.
-
 
 ARCH-002 ENVIRONMENT ISOLATION
 
@@ -766,7 +763,6 @@ validated by ARCH-002-GATEWAY-005. If a published artifact is insufficient,
 return the capability gap to moda_architect rather than silently falling back to
 file:../moda-interact-shared.
 
-
 REPOSITORY INSPECTION BEFORE DECLARATION
 
 Before declaring or materially changing a service in either canonical Blueprint, inspect the
@@ -796,7 +792,6 @@ If the required runtime capability does not exist:
 
 Do not implement the missing application capability directly.
 
-
 DEVELOPMENT RECREATION
 
 Moda Interact is currently in development.
@@ -821,7 +816,6 @@ A durable resource requires an explicit architecture-approved decision to:
     migrate
     recreate
 
-
 SOURCE OF TRUTH AND DRIFT
 
 Do not rely on undocumented Render dashboard configuration for
@@ -842,7 +836,6 @@ If required configuration cannot be represented in the architecture-approved Blu
 If deployed Render configuration conflicts with the canonical Blueprint files, report the drift to
 moda_architect rather than silently choosing one configuration.
 
-
 SECRETS
 
 Never commit secret values to either canonical Blueprint file.
@@ -858,7 +851,6 @@ for values supplied securely outside source control.
 
 Examples include Shopify, Meta, Redis Cloud, PostgreSQL, Grafana/OTLP and
 LLM/API credentials.
-
 
 OPENTELEMETRY INTEGRATION
 
@@ -891,7 +883,6 @@ Local/development execution may continue to use its own explicit environment
 identity outside the canonical deployed Blueprints.
 
 Test and production OTLP credentials must remain independently configurable.
-
 
 BLUEPRINT VALIDATION
 
@@ -969,11 +960,11 @@ BullMQ/Redis distributes work across worker processes.
 A typical model is:
 
 Redis Cloud / BullMQ
-        |
-        +----> Shopify-event workers
-        +----> recovery workers
-        +----> messaging workers
-        +----> CommerceAgent workers
+|
++----> Shopify-event workers
++----> recovery workers
++----> messaging workers
++----> CommerceAgent workers
 
 Infrastructure should allow worker pools with different workloads to scale
 independently.
@@ -1019,11 +1010,11 @@ the infrastructure scope assigned by moda_architect.
 A queue-aware controller may conceptually use:
 
 BullMQ / Redis metrics
-        ->
+->
 scaling controller
-        ->
+->
 Render API
-        ->
+->
 worker instance count
 
 Do not introduce such a controller prematurely without an architecture task.
@@ -1170,7 +1161,6 @@ Do not duplicate business metrics owned by application services.
 
 Never log secrets, credentials or complete sensitive request payloads.
 
-
 ===============================================================================
 CENTRALIZED OBSERVABILITY
 ===============================================================================
@@ -1228,7 +1218,6 @@ Add a collector only when the architecture requires capabilities such as:
 - credential isolation;
 - provider portability beyond direct exporters.
 
-
 OPENTELEMETRY RESOURCE AND ENVIRONMENT CONVENTIONS
 
 Where OpenTelemetry is part of the approved architecture, infrastructure must
@@ -1283,7 +1272,6 @@ Standard OpenTelemetry environment variables may include, where required:
 
 Use only the variables required by the architecture.
 
-
 OBSERVABILITY FAILURE ISOLATION
 
 The observability backend must not become a correctness dependency.
@@ -1306,7 +1294,6 @@ Use bounded buffering/retry behaviour where supported.
 
 Do not create unbounded telemetry queues or memory usage.
 
-
 OBSERVABILITY COST CONTROL
 
 At high event ingress, verbose per-event logs can become a material cost and
@@ -1326,7 +1313,6 @@ Prefer metrics and targeted structured logs over storing full payloads for every
 high-volume event.
 
 Do not log complete Shopify or Meta webhook payloads by default.
-
 
 ===============================================================================
 OBSERVABILITY INSTRUMENTATION COORDINATION
@@ -1379,12 +1365,10 @@ architecture task.
 
 moda_architect is responsible for creating the corresponding bounded task.
 
-
 SERVICE INSTRUMENTATION ASSESSMENT
 
 When centralized OpenTelemetry observability is part of the architecture,
 evaluate at least the following affected runtime boundaries.
-
 
 moda-interact
 
@@ -1401,7 +1385,6 @@ Expected telemetry may include:
 - request/correlation propagation;
 - canonical service/resource attributes;
 - environment isolation.
-
 
 moda-interact-background
 
@@ -1431,7 +1414,6 @@ Examples may include:
     moda-messaging-worker
     moda-commerce-agent-worker
 
-
 moda-interact-messaging
 
 Owner:
@@ -1447,7 +1429,6 @@ Expected telemetry may include:
 - request/correlation propagation;
 - canonical resource attributes;
 - environment isolation.
-
 
 moda-interact-gateway
 
@@ -1467,7 +1448,6 @@ Expected telemetry may include:
 - canonical resource attributes;
 - environment isolation.
 
-
 moda-interact-admin
 
 Owner:
@@ -1482,7 +1462,6 @@ Expected responsibilities may include:
 - architecture-approved Grafana integration.
 
 moda_admin is not the owner of telemetry collection or transport.
-
 
 moda-interact-system-test
 
@@ -1502,7 +1481,6 @@ Expected validation may include:
 - gateway failures are observable;
 - credentials/secrets are absent from telemetry;
 - internal operational telemetry is not tenant-accessible.
-
 
 OBSERVABILITY GAP REPORTING
 
@@ -1531,7 +1509,6 @@ When a gap is found, report it in a form similar to:
 This report is input to moda_architect.
 
 It is not permission for moda_gateway to modify the owning repository.
-
 
 ===============================================================================
 OBSERVABILITY CONSUMERS
@@ -1722,7 +1699,6 @@ document are authoritative for:
 - validation;
 - rollout order.
 
-
 ===============================================================================
 PREPARED /MODA-TASK EXECUTION FAST PATH
 ===============================================================================
@@ -1820,7 +1796,7 @@ The repository agent MUST NOT edit `## Architect Review`; only
 
 If asked to execute architecture work without a specific task ID:
 
-1. inspect docs/decisions/gateway/*/*.md;
+1. inspect docs/decisions/gateway/_/_.md;
 2. ignore _index.md files;
 3. select only tasks where assigned_agent is moda_gateway;
 4. require status: ready;

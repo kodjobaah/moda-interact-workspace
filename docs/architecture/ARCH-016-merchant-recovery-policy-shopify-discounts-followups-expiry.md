@@ -318,7 +318,6 @@ Every create/update/clear is also written to a dedicated durable recovery-policy
 
 Merchant UI MUST show when an admin override controls the effective policy. Merchant may still edit underlying merchant values; those values become effective only after override removal/expiry.
 
-
 Every runtime consumer of a recovery-policy field MUST consume the same effective-policy precedence. In particular, pending-recovery inactivity scheduling MUST NOT read `ShopSettings.recoveryDelayMinutes` directly:
 
 ```text
@@ -663,22 +662,22 @@ Parallelism is allowed where dependencies permit. Do not serialize tasks merely 
 
 ## Tasks
 
-| Task | Repository | Summary |
-|---|---|---|
-| ARCH-016-DATABASE-001 | moda-interact-database | Persist recovery policy, admin override, discount catalogue, outreach attempts, generations and lifetime config. |
-| ARCH-016-SHARED-001 | moda-interact-shared | Implement, version and publish canonical ARCH-016 queue/policy contracts in one task. |
-| ARCH-016-SHOPIFY-001 | moda-interact | Add scope/webhooks/install lifecycle and app-side sync triggers/invalidation. |
-| ARCH-016-BACKGROUND-001 | moda-interact-background | Reconcile the authoritative Shopify discount catalogue and trigger sync after background subscription/reinstall activation. |
-| ARCH-016-SHOPIFY-002 | moda-interact | Add merchant Recovery Settings route/UI/actions. |
-| ARCH-016-ADMIN-001 | moda-interact-admin | Add checkout-recovery lifetime to platform runtime controls. |
-| ARCH-016-ADMIN-002 | moda-interact-admin | Add tenant recovery-policy visibility and explicit override. |
-| ARCH-016-BACKGROUND-002 | moda-interact-background | Expire stale recovery generations and restart after later checkout activity. |
-| ARCH-016-BACKGROUND-003 | moda-interact-background | Implement chargeable recovery outreach attempts and one no-response follow-up. |
-| ARCH-016-BACKGROUND-004 | moda-interact-background | Apply effective recovery-policy delay, including active Admin overrides, to pending-candidate scheduling and activity rescheduling. |
-| ARCH-016-DATABASE-002 | moda-interact-database | Remove the fixed 1–90 recovery-lifetime CHECK by forward-only migration; preserve the 21-day default. |
-| ARCH-016-BACKGROUND-005 | moda-interact-background | Validate non-negative whole-day lifetimes with no business maximum; make the expiry calculation safe for zero and large integers. |
-| ARCH-016-ADMIN-003 | moda-interact-admin | Allow administrator-entered non-negative integer days, with no max in server validation or UI, preserving audit/version gates. |
-| ARCH-016-SYSTEM-TEST-001 | moda-interact-system-test | Integrated validation after implementation and developer manual testing. |
+| Task                     | Repository                | Summary                                                                                                                             |
+| ------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-016-DATABASE-001    | moda-interact-database    | Persist recovery policy, admin override, discount catalogue, outreach attempts, generations and lifetime config.                    |
+| ARCH-016-SHARED-001      | moda-interact-shared      | Implement, version and publish canonical ARCH-016 queue/policy contracts in one task.                                               |
+| ARCH-016-SHOPIFY-001     | moda-interact             | Add scope/webhooks/install lifecycle and app-side sync triggers/invalidation.                                                       |
+| ARCH-016-BACKGROUND-001  | moda-interact-background  | Reconcile the authoritative Shopify discount catalogue and trigger sync after background subscription/reinstall activation.         |
+| ARCH-016-SHOPIFY-002     | moda-interact             | Add merchant Recovery Settings route/UI/actions.                                                                                    |
+| ARCH-016-ADMIN-001       | moda-interact-admin       | Add checkout-recovery lifetime to platform runtime controls.                                                                        |
+| ARCH-016-ADMIN-002       | moda-interact-admin       | Add tenant recovery-policy visibility and explicit override.                                                                        |
+| ARCH-016-BACKGROUND-002  | moda-interact-background  | Expire stale recovery generations and restart after later checkout activity.                                                        |
+| ARCH-016-BACKGROUND-003  | moda-interact-background  | Implement chargeable recovery outreach attempts and one no-response follow-up.                                                      |
+| ARCH-016-BACKGROUND-004  | moda-interact-background  | Apply effective recovery-policy delay, including active Admin overrides, to pending-candidate scheduling and activity rescheduling. |
+| ARCH-016-DATABASE-002    | moda-interact-database    | Remove the fixed 1–90 recovery-lifetime CHECK by forward-only migration; preserve the 21-day default.                               |
+| ARCH-016-BACKGROUND-005  | moda-interact-background  | Validate non-negative whole-day lifetimes with no business maximum; make the expiry calculation safe for zero and large integers.   |
+| ARCH-016-ADMIN-003       | moda-interact-admin       | Allow administrator-entered non-negative integer days, with no max in server validation or UI, preserving audit/version gates.      |
+| ARCH-016-SYSTEM-TEST-001 | moda-interact-system-test | Integrated validation after implementation and developer manual testing.                                                            |
 
 ## Post-review update — SHARED-001 Attempt 1 Accepted
 
@@ -877,6 +876,7 @@ launcher owns the increment when the task is reclaimed. No ARCH-016 dependency i
 promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
 automatically; the developer manual-testing checkpoint remains before terminal integrated
 testing.
+
 ## Post-review update — SHOPIFY-001 Attempt 2 Changes Requested
 
 `ARCH-016-SHOPIFY-001` Attempt 2 implementation commit `454f882` correctly narrows
@@ -905,7 +905,6 @@ increment on reclaim. No ARCH-016 dependency is promoted by this review.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the developer
 manual-testing checkpoint remains before terminal integrated testing.
 
-
 ## Post-review update — SHOPIFY-001 Attempt 3 Changes Requested
 
 `ARCH-016-SHOPIFY-001` Attempt 3 implementation commit `2ffbd20` correctly adds the
@@ -925,6 +924,7 @@ The task returns to `status: ready`, remains `attempt: 3`, `executor: null` and
 ARCH-016 dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending and is not
 started automatically; the developer manual-testing checkpoint remains before terminal
 integrated testing.
+
 ## Post-review update — ADMIN-002 Attempt 2 Accepted
 
 `ARCH-016-ADMIN-002` Attempt 2 is architect-accepted **Complete** at implementation
@@ -965,6 +965,7 @@ must copy those values exactly rather than infer translations. No ARCH-016 depen
 promoted by this review. `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start
 automatically; the developer manual-testing checkpoint remains before terminal integrated
 testing.
+
 ## Post-review update — BACKGROUND-001 Attempt 1 Changes Requested
 
 `ARCH-016-BACKGROUND-001` Attempt 1 implementation commit `70770d6` establishes the intended
@@ -983,6 +984,7 @@ The task returns to `status: ready`, remains `attempt: 1`, `executor: null` and
 `claimed_at: null`; `/moda-task ARCH-016-BACKGROUND-001` owns the Attempt-2 increment on reclaim.
 No dependency is promoted. `ARCH-016-SYSTEM-TEST-001` remains Pending behind all implementation
 work and the developer manual-testing checkpoint.
+
 ## Post-review update — BACKGROUND-002 Attempt 2 Accepted
 
 `ARCH-016-BACKGROUND-002` Attempt 2 is architect-accepted **Complete** at implementation
@@ -1050,7 +1052,6 @@ launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by th
 `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
 manual-testing checkpoint remains before terminal integrated testing.
 
-
 ## Post-review update — SHOPIFY-002 Attempt 3 Accepted
 
 `ARCH-016-SHOPIFY-002` Attempt 3 is architect-accepted **Complete** at implementation
@@ -1070,6 +1071,7 @@ non-goal are unchanged.
 `ARCH-016-SYSTEM-TEST-001` remains Pending because other implementation dependencies are
 still outstanding and the developer manual-testing checkpoint remains mandatory before
 terminal integrated testing. It is not started automatically by this acceptance.
+
 ## Post-review update — BACKGROUND-003 Attempt 4 Changes Requested
 
 `ARCH-016-BACKGROUND-003` Attempt 4 implementation commit `4bb8e21` correctly adds the
@@ -1100,6 +1102,7 @@ The task remains `attempt: 4`, `executor: null`, `claimed_at: null`; the determi
 launcher owns the increment on reclaim. No ARCH-016 dependency is promoted by this review.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and MUST NOT start automatically; the developer
 manual-testing checkpoint remains before terminal integrated testing.
+
 ## Post-review update — BACKGROUND-001 Attempt 2 Changes Requested
 
 `ARCH-016-BACKGROUND-001` Attempt 2 implementation commit `8665b93` correctly fixes the
@@ -1176,7 +1179,6 @@ contain every independently accepted sibling task, and the developer manual-test
 checkpoint remains mandatory before terminal integrated testing. The system-test task is
 not started automatically by this acceptance.
 
-
 ## Post-review update — BACKGROUND-004 Attempt 1 Accepted
 
 `ARCH-016-BACKGROUND-004` Attempt 1 is architect-accepted **Complete** at implementation
@@ -1198,7 +1200,6 @@ monotonic activity semantics remain unchanged.
 All ARCH-016 implementation tasks are now architect-accepted Complete in this snapshot.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the existing
 developer manual-testing checkpoint remains before the terminal integrated test phase.
-
 
 ## 2026-10-31 architectural amendment — administrator-controlled unbounded lifetime
 

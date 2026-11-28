@@ -6,17 +6,17 @@ The implementation is moving in the correct architectural direction, but ARCH-00
 
 ## Task outcomes
 
-| Task | Architect outcome | Immediate action |
-|---|---|---|
-| ARCH-001-SHARED-001 | Accepted / Complete | None |
-| ARCH-001-SHOPIFY-001 | Changes Requested / In Progress | Normalize Shopify offset timestamps to canonical UTC and use shared schema-version constant |
-| ARCH-001-SHOPIFY-002 | Blocked | Re-review after SHOPIFY-001 correction |
-| ARCH-001-BACKGROUND-001 | Changes Requested / In Progress | Use shared queue/job constants and preserve v1 checkout URL locator |
-| ARCH-001-BACKGROUND-002 | Blocked | After B001: remove stale old cart alias when candidate refresh changes cart token |
-| ARCH-001-BACKGROUND-003 | Blocked | After B001: correct GraphQL 2026-07 count and abandoned-checkout field shapes |
-| ARCH-001-BACKGROUND-004 | Blocked | After B002/B003: make partial materialization/messaging retry resumable; do not remove candidate indexes on retryable failure |
-| ARCH-001-BACKGROUND-005 | Blocked | After B004: strengthen Redis lock/lease/release and tombstone-before-active-job-cancel race handling |
-| ARCH-001-BACKGROUND-006 | Blocked | Re-review after B003 and resolve durable `detectedAt`/checkout-created-time semantics |
+| Task                    | Architect outcome               | Immediate action                                                                                                              |
+| ----------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-001-SHARED-001     | Accepted / Complete             | None                                                                                                                          |
+| ARCH-001-SHOPIFY-001    | Changes Requested / In Progress | Normalize Shopify offset timestamps to canonical UTC and use shared schema-version constant                                   |
+| ARCH-001-SHOPIFY-002    | Blocked                         | Re-review after SHOPIFY-001 correction                                                                                        |
+| ARCH-001-BACKGROUND-001 | Changes Requested / In Progress | Use shared queue/job constants and preserve v1 checkout URL locator                                                           |
+| ARCH-001-BACKGROUND-002 | Blocked                         | After B001: remove stale old cart alias when candidate refresh changes cart token                                             |
+| ARCH-001-BACKGROUND-003 | Blocked                         | After B001: correct GraphQL 2026-07 count and abandoned-checkout field shapes                                                 |
+| ARCH-001-BACKGROUND-004 | Blocked                         | After B002/B003: make partial materialization/messaging retry resumable; do not remove candidate indexes on retryable failure |
+| ARCH-001-BACKGROUND-005 | Blocked                         | After B004: strengthen Redis lock/lease/release and tombstone-before-active-job-cancel race handling                          |
+| ARCH-001-BACKGROUND-006 | Blocked                         | Re-review after B003 and resolve durable `detectedAt`/checkout-created-time semantics                                         |
 
 ## Highest-priority findings
 

@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHOPIFY-004
-- ARCH-010-SHOPIFY-023
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHOPIFY-004
+  - ARCH-010-SHOPIFY-023
 enables:
-- ARCH-010-SHOPIFY-008
-- ARCH-010-SHOPIFY-012
-- ARCH-010-SHOPIFY-016
-- ARCH-010-SHOPIFY-020
+  - ARCH-010-SHOPIFY-008
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-016
+  - ARCH-010-SHOPIFY-020
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -99,7 +99,11 @@ Return a typed projection equivalent to:
 
 ```ts
 type MerchantRecoveryCapacityState = {
-  availability: "AVAILABLE" | "EXHAUSTED" | "CONTRACT_REQUIRED" | "CONFIGURATION_UNAVAILABLE";
+  availability:
+    | "AVAILABLE"
+    | "EXHAUSTED"
+    | "CONTRACT_REQUIRED"
+    | "CONFIGURATION_UNAVAILABLE";
   capacitySource:
     | "FREE_LIFETIME"
     | "PAID_INCLUDED"
@@ -289,6 +293,7 @@ STOP if implementing this task would require treating `BillingPlan` as Shopify p
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
@@ -316,32 +321,32 @@ Ready for Review.
 
 ### Attempt 2 Correction-to-Validation Mapping
 
-| Review requirement | Permanent test evidence | Focused result |
-| --- | --- | --- |
-| 1. Preserve FROZEN Paid period balance | `preserves the Paid informational balance while FROZEN blocks admission` | `CONTRACT_FROZEN`, exact period/promotional/purchased/lifetime balances, provider uncalled |
+| Review requirement                                                  | Permanent test evidence                                                                                                                                             | Focused result                                                                                     |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1. Preserve FROZEN Paid period balance                              | `preserves the Paid informational balance while FROZEN blocks admission`                                                                                            | `CONTRACT_FROZEN`, exact period/promotional/purchased/lifetime balances, provider uncalled         |
 | 2. Missing lifetime fallback fails closed only after higher sources | `returns configuration unavailable when the lifetime Free fallback is missing`; `keeps a deterministic purchased source when the lifetime Free fallback is missing` | Configuration unavailable without higher source; Purchased remains available with missing fallback |
-| 3. Deterministic promotional tests | Suite `beforeEach`/`afterEach` fake-clock hooks | Fixed `2026-09-14T00:00:00.000Z`; 141 focused tests pass |
-| 4. Free promotion outranks purchased/lifetime | `uses promotional capacity first and reduces it by reserved quantity` | `PROMOTIONAL`, remaining 6 |
-| 5. Free zero promotion falls to purchased | `falls from a zero promotional grant to purchased capacity` | `PURCHASED` |
-| 6. Free purchased exhausted falls to lifetime | `falls back to lifetime Free capacity when purchased capacity is exhausted` | `FREE_LIFETIME` |
-| 7. Free fully exhausted | `accounts for reserved lifetime Free credits and reports exhaustion` | `EXHAUSTED` |
-| 8. Paid promotion outranks included | `lets usable promotion outrank paid included capacity` | `PROMOTIONAL` |
-| 9. Paid included outranks purchased | `uses paid included capacity before purchased capacity` | `PAID_INCLUDED` |
-| 10. Paid included exhausted falls to purchased | `falls back from exhausted paid included capacity to purchased capacity` | `PURCHASED` |
-| 11. Paid included plus purchased exhausted falls to lifetime | `falls back from unavailable promotion and exhausted paid capacity to lifetime Free` | `FREE_LIFETIME` |
-| 12. Paid fully exhausted | `returns exhausted when Paid included, purchased, and lifetime Free capacity are zero` | `EXHAUSTED` |
-| 13. Paid reserved/forfeited arithmetic | `uses paid included capacity before purchased capacity` | 30 granted, 4 committed, 3 reserved, 2 forfeited, 21 remaining |
-| 14. Purchased refund hold arithmetic | `reports purchased refund holds in the returned arithmetic` | 20 granted, 5 committed, 2 reserved, 3 refunding, 10 available |
-| 15. Missing Paid period | `returns configuration unavailable for a paid projection with missing period` | `CONFIGURATION_UNAVAILABLE` |
-| 16. Missing Paid counter | `returns configuration unavailable for a paid projection with missing period counter` | `CONFIGURATION_UNAVAILABLE` |
-| 17. FROZEN informational balances | `preserves the Paid informational balance while FROZEN blocks admission` | Exact non-zero informational balances retained |
-| 18. NO_CONTRACT preserved balances | `blocks capacity for NO_CONTRACT even when balances remain` | `CONTRACT_REQUIRED`, source null |
-| 19. NO_CONTRACT zero balances | `keeps NO_CONTRACT blocked with zero balances rather than reporting exhaustion` | `CONTRACT_REQUIRED`, not `EXHAUSTED` |
-| 20. NO_CONTRACT usable promotion | `keeps NO_CONTRACT blocked when a selected promotion is usable` | Promotion visible, source null, admission blocked |
-| 21. No selected usable promotion/query isolation | `queries no aggregate promotional source when no promotion is selected` | Exactly lifetime and purchased counter queries; no aggregate |
-| 22. Local reconciled mapping | `uses paid included capacity before purchased capacity` | Exact local mapping and separate observed handle; no commercial fields |
-| 23. Provider isolation | Representative capacity tests including `preserves the Paid informational balance while FROZEN blocks admission` and NO_CONTRACT cases | `getActiveSubscription` never called |
-| 24. No legacy lifetime authority | `queries no aggregate promotional source when no promotion is selected` plus static scan | No signed/plan-owned/aggregate/usage-event authority |
+| 3. Deterministic promotional tests                                  | Suite `beforeEach`/`afterEach` fake-clock hooks                                                                                                                     | Fixed `2026-09-14T00:00:00.000Z`; 141 focused tests pass                                           |
+| 4. Free promotion outranks purchased/lifetime                       | `uses promotional capacity first and reduces it by reserved quantity`                                                                                               | `PROMOTIONAL`, remaining 6                                                                         |
+| 5. Free zero promotion falls to purchased                           | `falls from a zero promotional grant to purchased capacity`                                                                                                         | `PURCHASED`                                                                                        |
+| 6. Free purchased exhausted falls to lifetime                       | `falls back to lifetime Free capacity when purchased capacity is exhausted`                                                                                         | `FREE_LIFETIME`                                                                                    |
+| 7. Free fully exhausted                                             | `accounts for reserved lifetime Free credits and reports exhaustion`                                                                                                | `EXHAUSTED`                                                                                        |
+| 8. Paid promotion outranks included                                 | `lets usable promotion outrank paid included capacity`                                                                                                              | `PROMOTIONAL`                                                                                      |
+| 9. Paid included outranks purchased                                 | `uses paid included capacity before purchased capacity`                                                                                                             | `PAID_INCLUDED`                                                                                    |
+| 10. Paid included exhausted falls to purchased                      | `falls back from exhausted paid included capacity to purchased capacity`                                                                                            | `PURCHASED`                                                                                        |
+| 11. Paid included plus purchased exhausted falls to lifetime        | `falls back from unavailable promotion and exhausted paid capacity to lifetime Free`                                                                                | `FREE_LIFETIME`                                                                                    |
+| 12. Paid fully exhausted                                            | `returns exhausted when Paid included, purchased, and lifetime Free capacity are zero`                                                                              | `EXHAUSTED`                                                                                        |
+| 13. Paid reserved/forfeited arithmetic                              | `uses paid included capacity before purchased capacity`                                                                                                             | 30 granted, 4 committed, 3 reserved, 2 forfeited, 21 remaining                                     |
+| 14. Purchased refund hold arithmetic                                | `reports purchased refund holds in the returned arithmetic`                                                                                                         | 20 granted, 5 committed, 2 reserved, 3 refunding, 10 available                                     |
+| 15. Missing Paid period                                             | `returns configuration unavailable for a paid projection with missing period`                                                                                       | `CONFIGURATION_UNAVAILABLE`                                                                        |
+| 16. Missing Paid counter                                            | `returns configuration unavailable for a paid projection with missing period counter`                                                                               | `CONFIGURATION_UNAVAILABLE`                                                                        |
+| 17. FROZEN informational balances                                   | `preserves the Paid informational balance while FROZEN blocks admission`                                                                                            | Exact non-zero informational balances retained                                                     |
+| 18. NO_CONTRACT preserved balances                                  | `blocks capacity for NO_CONTRACT even when balances remain`                                                                                                         | `CONTRACT_REQUIRED`, source null                                                                   |
+| 19. NO_CONTRACT zero balances                                       | `keeps NO_CONTRACT blocked with zero balances rather than reporting exhaustion`                                                                                     | `CONTRACT_REQUIRED`, not `EXHAUSTED`                                                               |
+| 20. NO_CONTRACT usable promotion                                    | `keeps NO_CONTRACT blocked when a selected promotion is usable`                                                                                                     | Promotion visible, source null, admission blocked                                                  |
+| 21. No selected usable promotion/query isolation                    | `queries no aggregate promotional source when no promotion is selected`                                                                                             | Exactly lifetime and purchased counter queries; no aggregate                                       |
+| 22. Local reconciled mapping                                        | `uses paid included capacity before purchased capacity`                                                                                                             | Exact local mapping and separate observed handle; no commercial fields                             |
+| 23. Provider isolation                                              | Representative capacity tests including `preserves the Paid informational balance while FROZEN blocks admission` and NO_CONTRACT cases                              | `getActiveSubscription` never called                                                               |
+| 24. No legacy lifetime authority                                    | `queries no aggregate promotional source when no promotion is selected` plus static scan                                                                            | No signed/plan-owned/aggregate/usage-event authority                                               |
 
 ### Launcher Worktree / Synchronization / Submodule Evidence
 
@@ -358,11 +363,9 @@ Ready for Review.
 - Parent claim commit supplied by launcher: `532bd9911c9c022ba559179197a4e9859e9f5310`.
 - Parent report commit: to be recorded after this report update and pushed to `origin/task/ARCH-010-SHOPIFY-009`.
 
-
 ## Final frozen capacity projection
 
 Add a distinct operational availability result such as `CONTRACT_FROZEN`. When durable Subscription.status is FROZEN, informational balances may still be returned, but `canStartRecovery=false` regardless of remaining monthly included, promotional, purchased or lifetime Free capacity. Do not report ordinary `EXHAUSTED` and do not zero balances.
-
 
 ## Required promotional cases
 
@@ -811,4 +814,3 @@ No dependent task becomes Ready solely from this acceptance:
 - `ARCH-010-SHOPIFY-020` still depends on `ARCH-010-SHOPIFY-012`.
 
 Those tasks remain Pending and are not started by this review.
-

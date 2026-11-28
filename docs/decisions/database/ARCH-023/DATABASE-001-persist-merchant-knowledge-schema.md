@@ -493,15 +493,15 @@ The migration must insert these rows if absent by `key`.
 
 Use the following exact seed values:
 
-| id | key | displayName | active | displayOrder |
-|---|---|---|---|---:|
-| `mk-purpose-company-information` | `COMPANY_INFORMATION` | `Company information` | true | 10 |
-| `mk-purpose-customer-support` | `CUSTOMER_SUPPORT` | `Customer support` | true | 20 |
-| `mk-purpose-policies` | `POLICIES` | `Policies` | true | 30 |
-| `mk-purpose-faq` | `FAQ` | `FAQ` | true | 40 |
-| `mk-purpose-product-information` | `PRODUCT_INFORMATION` | `Product information` | true | 50 |
-| `mk-purpose-shipping-and-delivery` | `SHIPPING_AND_DELIVERY` | `Shipping and delivery` | true | 60 |
-| `mk-purpose-pricing` | `PRICING` | `Pricing` | true | 70 |
+| id                                 | key                     | displayName             | active | displayOrder |
+| ---------------------------------- | ----------------------- | ----------------------- | ------ | -----------: |
+| `mk-purpose-company-information`   | `COMPANY_INFORMATION`   | `Company information`   | true   |           10 |
+| `mk-purpose-customer-support`      | `CUSTOMER_SUPPORT`      | `Customer support`      | true   |           20 |
+| `mk-purpose-policies`              | `POLICIES`              | `Policies`              | true   |           30 |
+| `mk-purpose-faq`                   | `FAQ`                   | `FAQ`                   | true   |           40 |
+| `mk-purpose-product-information`   | `PRODUCT_INFORMATION`   | `Product information`   | true   |           50 |
+| `mk-purpose-shipping-and-delivery` | `SHIPPING_AND_DELIVERY` | `Shipping and delivery` | true   |           60 |
+| `mk-purpose-pricing`               | `PRICING`               | `Pricing`               | true   |           70 |
 
 The fixed ids above exist only to make migration seed data deterministic. Runtime contracts use `key`, not these ids.
 
@@ -511,11 +511,11 @@ If the migration encounters an existing row with the same key but a different id
 
 The migration must insert these rows if absent by `key`.
 
-| id | key | displayName | inputKind | canonicalExtension | acceptedContentTypes | active | displayOrder |
-|---|---|---|---|---|---|---|---:|
-| `mk-format-web-page` | `WEB_PAGE` | `Web page` | `REMOTE_URL` | NULL | `["text/html","text/plain"]` | true | 10 |
-| `mk-format-csv` | `CSV` | `CSV spreadsheet` | `UPLOAD` | `.csv` | `["text/csv","application/csv"]` | true | 20 |
-| `mk-format-xlsx` | `XLSX` | `Excel spreadsheet (.xlsx)` | `UPLOAD` | `.xlsx` | `["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]` | true | 30 |
+| id                   | key        | displayName                 | inputKind    | canonicalExtension | acceptedContentTypes                                                    | active | displayOrder |
+| -------------------- | ---------- | --------------------------- | ------------ | ------------------ | ----------------------------------------------------------------------- | ------ | -----------: |
+| `mk-format-web-page` | `WEB_PAGE` | `Web page`                  | `REMOTE_URL` | NULL               | `["text/html","text/plain"]`                                            | true   |           10 |
+| `mk-format-csv`      | `CSV`      | `CSV spreadsheet`           | `UPLOAD`     | `.csv`             | `["text/csv","application/csv"]`                                        | true   |           20 |
+| `mk-format-xlsx`     | `XLSX`     | `Excel spreadsheet (.xlsx)` | `UPLOAD`     | `.xlsx`            | `["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]` | true   |           30 |
 
 If an existing row has the same key, preserve its id and use that id when creating compatibility rows.
 

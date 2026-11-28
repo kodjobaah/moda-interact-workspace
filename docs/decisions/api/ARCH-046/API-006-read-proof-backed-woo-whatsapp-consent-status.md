@@ -37,7 +37,7 @@ Coordinator: `moda_architect`.
 
 **Lifecycle:** Materialised in the canonical parent and API implementation task worktrees and previously claimed as developer Attempt 1. The 2026-11-03 reconciliation reviews published correction commit `369a3e243a480a87085c47c220ab26d45709cca3`. Required acceptance evidence remains incomplete, so status stays `ready` with no claim and Attempt 1 unchanged. Corrections arrived after the previous claim was cleared; this reconciliation does not invent an Attempt 2. The next developer claim must use `/moda_developer_create ARCH-046-API-006`.
 
-**Cross-task gate:** `ARCH-046-WOOCOMMERCE-003` is already `in_progress` and must not be regressed or reclaimed merely because this previously missing prerequisite is now defined. It cannot claim completed *live returning-checkout status* until this API task is completed and a real integration test passes. The system tests below explicitly depend on API-006.
+**Cross-task gate:** `ARCH-046-WOOCOMMERCE-003` is already `in_progress` and must not be regressed or reclaimed merely because this previously missing prerequisite is now defined. It cannot claim completed _live returning-checkout status_ until this API task is completed and a real integration test passes. The system tests below explicitly depend on API-006.
 
 ## Objective
 
@@ -70,11 +70,18 @@ Implement the missing **read-only, installation-authenticated, proof-backed** `P
    - `POST /v1/woocommerce/whatsapp-consent/status` with the existing `x-moda-installation-id` plus bearer authentication, `Content-Type: application/json`, no query string, no cache and **bounded strict JSON**. Require exactly three request keys; reject duplicates/extra keys, invalid version, malformed identifiers, unknown numbers or unexpected encodings. Keep request body <= 512 bytes and no larger than the existing Woo sender's limit.
    - Input:
      ```json
-     {"schemaVersion":"woo.whatsapp-consent-status.v1","canonicalPhone":"447400123456","grantEventId":"woo-consent-example-01"}
+     {
+       "schemaVersion": "woo.whatsapp-consent-status.v1",
+       "canonicalPhone": "447400123456",
+       "grantEventId": "woo-consent-example-01"
+     }
      ```
    - **Only successful valid status probes** return HTTP 200 and **exactly**:
      ```json
-     {"schemaVersion":"woo.whatsapp-consent-status.v1","state":"CONFIRMED_GRANTED"}
+     {
+       "schemaVersion": "woo.whatsapp-consent-status.v1",
+       "state": "CONFIRMED_GRANTED"
+     }
      ```
      or `{ "schemaVersion": "woo.whatsapp-consent-status.v1", "state": "UNVERIFIED" }`. Do not add `reason`, user IDs, canonical phone, evidence IDs or customer metadata to responses. Every response must carry `Cache-Control: no-store`.
    - Unauthorized installation/credential -> `401` generic `unauthorized`; syntactically invalid request -> `400` generic `invalid_request`; too-large input -> `413`; unexpected DB/provider failure -> `503` generic `consent_status_unavailable`. No `CONFIRMED_GRANTED` on any exception. Keep responses compatible with the Woo 4 KB JSON response bound.
@@ -270,7 +277,6 @@ Materialise and execute this developer-owned task when ready; verify actual WOO-
 
 Reviewed published implementation `369a3e243a480a87085c47c220ab26d45709cca3` against the existing task and prior correction list. The executable PHP compatibility gap is resolved. Timing/no-write instrumentation is present but its execution is blocked by Docker storage errors. The named PostgreSQL scenario gaps and customer-identifier diagnostic coverage remain outstanding as detailed in the current Completion Report. Preserve the historical review above; no new claim or attempt was created. Review outcome: Changes Requested, `ready`, null claim, Attempt 1.
 
-
 ## Definition reconciliation — 2026-11-02 (historical)
 
 The canonical task report is Ready following Attempt 1 self-review; the next claim starts Attempt 2, not an unstarted Attempt 0. Implementation 53df5aa adds src/woocommerce/consent-status/{routes,service,contract}.ts; additional uncommitted PHP compatibility fixtures, timing assertions and diagnostic redaction changes are present. Preserve the developer self-review correction contract and existing claim/attempt metadata. Those active edits are not accepted or published by this reconciliation.
@@ -284,7 +290,6 @@ Restored diagnostic redaction and regression coverage in the recreated implement
 Validation passed: 13 status unit tests, 14 active PostgreSQL tests (one opt-in benchmark skipped), typecheck, focused ESLint, and diff checks. Seven warm status probes used three statements each, including one joined evidence query. Local HTTP p50/p95 were 19.91/44.10 ms and joined SQL p50/p95 were 5/20 ms. The measured probes preserved evidence, phone, and recovery state. This run did not independently snapshot every send or billing table.
 
 Implementation and this evidence are local changes for developer reconciliation. Attempt 2 remains in progress.
-
 
 ## Developer Self-Review — Changes Requested (Attempt 2, 2026-11-03)
 
@@ -353,7 +358,6 @@ Base implementation `f78df70` plus local files (SHA-256):
 - `tests/integration/woocommerce/consent-status/status.postgres.test.ts`: `826afc6d6b05bbaac0484bae8fe01e4c1dba271324ea708e79b630cd1d49a3ac`.
 
 The files and parent report are still local. Acceptance applies to these reviewed contents and does not claim publication. Developer-owned metadata remains `in_progress`, executor `developer`, Attempt 3. Reconcile/publish through the developer workflow; explicit developer completion is still required. Downstream tasks remain gated until completion.
-
 
 ## Developer Completion Decision — Attempt 3, 2026-11-03
 

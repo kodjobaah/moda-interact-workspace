@@ -97,9 +97,9 @@ JavaScript uses the existing CodeMirror JavaScript editor with starter source:
 ```js
 function buildRequest({ args }) {
   return {
-    path: '/',
+    path: "/",
     query: {},
-    headers: { accept: 'application/json' }
+    headers: { accept: "application/json" },
   };
 }
 ```
@@ -186,7 +186,7 @@ Publishing remains visible/enabled only for `PLATFORM_SUPER_ADMIN`; PLATFORM_ADM
 
 ### R6 — no fixture-led human test
 
-The production Tool editor must no longer present synthetic external response fixtures as the *normal* "test this tool" workflow. Fixture UI may remain in explicit developer/test-only paths used by automated suites. Real live Tool Test arrives in Phase 4.
+The production Tool editor must no longer present synthetic external response fixtures as the _normal_ "test this tool" workflow. Fixture UI may remain in explicit developer/test-only paths used by automated suites. Real live Tool Test arrives in Phase 4.
 
 ## Work Items
 
@@ -245,14 +245,19 @@ The model/CommerceAgent supplies runtime arguments; this UI only authors `inputS
 ## Completion Report
 
 ### Status
+
 Ready for Review
+
 ### Files Changed
+
 - `src/studio/tools/tool-editor.tsx`
 - `src/studio/external-http/editor.tsx`
 - `src/studio/tools/shopify-admin-editor.tsx`
 - `tests/external-tools-ui.test.tsx`
 - `src/commerce/publication/lifecycle.ts`
+
 ### Work Completed
+
 - Replaced incomplete-DRAFT/full-definition casts with a draft-capable editor state and schema-based readback.
 - Narrowed child editor contracts to execution-owned data.
 - Invalidated external validation success and messages on authoring edits.
@@ -261,7 +266,9 @@ Ready for Review
 - Added explicit dirty -> Save -> Validate -> SUPER_ADMIN publish gating coverage, including `LIVE_TEST_REQUIRED`.
 - Added the exact Validate -> authored edit -> stale-success cleared -> Save -> still-cleared -> Validate regression, including an execution-path edit.
 - Corrected the initial-draft mutation parameter to use the existing `CommerceToolDraftDefinition` contract, removing the task-owned typecheck diagnostic.
+
 ### Validation Results
+
 - `npm run test:arch020-external-tools-ui`: 16/16 passed.
 - Focused four-file Vitest packet (`external-tools-ui`, `tool-authoring-screen`, `studio-workspace`, `studio-integration`): 68/68 passed.
 - Targeted ESLint: passed with zero warnings.
@@ -269,22 +276,31 @@ Ready for Review
 - Static `as ToolDefinition` invariant for the DRAFT editor path: passed.
 - `npm run typecheck`: repository baseline exited 2 with 15 pre-existing diagnostics across seven unrelated files; no diagnostic references a COMMERCE-021 task-owned file after the lifecycle type correction.
 - No Phase 4 live HTTP execution/testing was run.
+
 ### Deviations
+
 - Attempt 6 launcher preparation claimed the task at `2026-09-26T01:06:47Z`, incremented from Attempt 5, committed and pushed claim `f1b83ceec0ed0fa7d4aecad8e1fe2429d2c77920`, and synchronized both worktrees against `origin/main`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, head `4aadb00aae0b305b117da46f34d4250f8c17b7cd` during preparation.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, synchronized implementation lineage `7a033f3` plus merge `ae41898`; recursive database submodule materialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Attempt 6 correction is test/source-only on top of the accepted Attempt 5 implementation; final branch SHAs are supplied by the handoff rather than recorded in this report.
+
 ### Assumptions
+
 - The Attempt 5 implementation lineage and accepted correction behavior remain preserved through the Attempt 6 synchronization merge.
 - Recursive database submodule evidence: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
 ### Unresolved Issues
+
 Repository-wide typecheck still reports 15 pre-existing diagnostics outside the task-owned files; these were not changed.
+
 ### Architectural Concerns
+
 The implementation remains bounded to `moda-interact-commerce`; no cross-repository changes were required. Live external HTTP execution/testing remains out of scope per the task stop condition.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 6
 
 ### Review Notes
@@ -518,10 +534,12 @@ Required result:
    local type is:
 
 ```ts
-type ExternalHttpDraftDefinition =
-  Omit<CommerceToolDraftDefinition, 'execution'> & {
-    execution: ExternalHttpExecution;
-  };
+type ExternalHttpDraftDefinition = Omit<
+  CommerceToolDraftDefinition,
+  "execution"
+> & {
+  execution: ExternalHttpExecution;
+};
 ```
 
 or an equivalent exact type.
@@ -561,7 +579,7 @@ tests/external-tools-ui.test.tsx
 The current implementation correctly sets:
 
 ```ts
-externalValidated = false
+externalValidated = false;
 ```
 
 when execution, description, input schema or response template changes, but it leaves
@@ -650,7 +668,7 @@ Create a small shared test helper or extend the focused test so the UI half rece
 the exact `ToolSummary` value returned by:
 
 ```ts
-createCommerceStudioServices(backend).getTool(toolId, draftRevisionId)
+createCommerceStudioServices(backend).getTool(toolId, draftRevisionId);
 ```
 
 for an incomplete DRAFT.
@@ -895,7 +913,7 @@ tests/studio-workspace.test.tsx
 The failing test currently uses:
 
 ```ts
-const services = new InMemoryStudioServices('stale');
+const services = new InMemoryStudioServices("stale");
 ```
 
 The in-memory fixture's generic Studio mutation contract returns:
@@ -1588,7 +1606,7 @@ Attempt 2 correctly separates malformed Tool-arguments JSON from a rejected prev
 Server Action, but the ToolEditor callback still does:
 
 ```ts
-JSON.parse(inputSchemaText)
+JSON.parse(inputSchemaText);
 ```
 
 inside the async callback passed to `ExternalHttpEditor`.
@@ -1814,7 +1832,7 @@ The submitted implementation currently imports:
 ```ts
 import {
   previewExternalRequestAction,
-  validateExternalToolDefinitionAction
+  validateExternalToolDefinitionAction,
 } from "../../commerce/tool-authoring/server-actions";
 ```
 
@@ -1971,7 +1989,7 @@ so a persisted `DIRECT` definition renders the selector as `VISUAL`.
 Its change handler also types only:
 
 ```ts
-"VISUAL" | "JAVASCRIPT"
+"VISUAL" | "JAVASCRIPT";
 ```
 
 even though `switchMode()` accepts `DIRECT`.

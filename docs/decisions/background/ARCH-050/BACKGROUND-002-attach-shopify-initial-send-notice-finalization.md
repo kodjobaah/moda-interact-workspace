@@ -155,25 +155,25 @@ Return newly discovered cross-repository/schema/security/contract issues to `mod
 ### Task Branch / Worktree Evidence
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-002`
-  parent branch: `task/ARCH-050-BACKGROUND-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-002`
-  implementation branch: `task/ARCH-050-BACKGROUND-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-002`
+parent branch: `task/ARCH-050-BACKGROUND-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-002`
+implementation branch: `task/ARCH-050-BACKGROUND-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  `git submodule sync --recursive`: passed
-  `git submodule update --init --recursive`: passed
-  recorded submodule commit: `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded submodule commit: `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
 
 Launcher claim commit: `9cf7a1d56f2c0a5ee50bde8145efd35f41da6b97` (pushed).
 Implementation commit: `3b5dc7d06205a69e4a814a3005048731c3368b1b` (pushed to `origin/task/ARCH-050-BACKGROUND-002`).

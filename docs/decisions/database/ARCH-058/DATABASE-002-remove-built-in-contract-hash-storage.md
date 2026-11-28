@@ -89,6 +89,7 @@ The migration must be transactional and use the existing database objects rather
    ```
 
    `kind` must equal `BUILT_IN`, name must be one of the two canonical discount names, and version must equal `2.0.0`. Any `contractHash`, extra field, fabricated published identity, unknown name/version, duplicate name, cross-branch name collision, >32 entries or oversized JSON remains invalid. Published entries retain their existing exact five-field shape and provenance checks.
+
 5. Rewrite existing `CommerceConversationGrant.grantedTools` rows in place, preserving JSON array order and every non-built-in entry semantically unchanged, by removing `contractHash` from objects whose `kind == "BUILT_IN"` **and** replacing their canonical legacy `definitionVersion: "1.0.0"` with `"2.0.0"`. Abort rather than rewrite an unknown built-in name/version. Use `jsonb_array_elements(... ) WITH ORDINALITY` and an ordered `jsonb_agg` or an equivalent deterministic transformation. Do not change selected capability keys, release IDs, runner versions or timestamps.
 6. After the rewrite, assert that no built-in entry contains `contractHash` and every row passes the corrected `commerce.arch020_grant_tools` function. Abort the migration if the postcondition fails.
 7. Recreate `arch020_grant_immutable` with its existing semantics exactly: `BEFORE UPDATE ON commerce."CommerceConversationGrant" FOR EACH ROW EXECUTE FUNCTION commerce.arch020_immutable()`. Do not add DELETE immutability that does not exist in the accepted baseline.

@@ -44,14 +44,14 @@ Task completion metadata is useful history, but inspected implementation is the 
 
 ## 3. Keep the category concepts separate
 
-| Concept | Meaning | Valid use in an answer |
-|---|---|---|
-| Global Shopify reference taxonomy | A versioned hierarchy of product concepts, proposed in PostgreSQL for conversations | Interpret intent and propose relevant product categories |
-| Shopify product category | A provider product's assigned standard taxonomy node | Filter or explain that product's category, subject to provider semantics |
-| WooCommerce product category | A native category term within one Woo shop | Filter that authenticated shop using a verified native ID |
-| Moda Store Category | A broad merchant profile and prompt-template classification | Guide tone, domain context and prompt selection |
-| Merchant product/variant result | Provider-backed identity, price, availability and other returned facts | Establish actual products and supported current facts |
-| Merchant Knowledge passage | A tenant-owned retrieved reference passage | Answer supported policy/reference questions; it does not establish live stock or price |
+| Concept                           | Meaning                                                                             | Valid use in an answer                                                                 |
+| --------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Global Shopify reference taxonomy | A versioned hierarchy of product concepts, proposed in PostgreSQL for conversations | Interpret intent and propose relevant product categories                               |
+| Shopify product category          | A provider product's assigned standard taxonomy node                                | Filter or explain that product's category, subject to provider semantics               |
+| WooCommerce product category      | A native category term within one Woo shop                                          | Filter that authenticated shop using a verified native ID                              |
+| Moda Store Category               | A broad merchant profile and prompt-template classification                         | Guide tone, domain context and prompt selection                                        |
+| Merchant product/variant result   | Provider-backed identity, price, availability and other returned facts              | Establish actual products and supported current facts                                  |
+| Merchant Knowledge passage        | A tenant-owned retrieved reference passage                                          | Answer supported policy/reference questions; it does not establish live stock or price |
 
 `CommerceShopProfile` stores one `activeCategoryId`. `CommerceStoreCategoryTaxonomyMapping` maps reference categories to platform prompt categories and has **no `shopId`**. Those mappings are not a per-merchant inventory index. The Shopify onboarding suggestion samples product categories and chooses a weighted Store Category; a default suggestion is possible when matching evidence is absent. This is suitable for onboarding, but not for excluding products from a customer search. [S04, S05]
 
@@ -73,10 +73,10 @@ The new PostgreSQL corpus is independent of both Merchant Knowledge content and 
 
 Commerce's code-defined tools are:
 
-| Tool | Operation | Current input |
-|---|---|---|
+| Tool                       | Operation         | Current input                                                        |
+| -------------------------- | ----------------- | -------------------------------------------------------------------- |
 | `commerce_search_products` | `products.search` | `query`, optional `maximumPrice`, `availableOnly`, `limit`, `cursor` |
-| `commerce_get_product` | `products.get` | `productId`, nullable `variantId` |
+| `commerce_get_product`     | `products.get`    | `productId`, nullable `variantId`                                    |
 
 Search returns at most twenty product records, a cursor and `truncated`. Category names and category IDs already appear in product outputs, but a typed category filter is absent from both the Shared input contract and MCP's allowed argument mappings. Adding a category instruction to the model alone would not add that capability. [S06, S07]
 
@@ -165,14 +165,14 @@ Reuse the existing query-length ceiling of 200 and category-result ceiling of te
 
 The successful output should contain:
 
-| Field | Purpose |
-|---|---|
-| Explicit outcome | Distinguish candidates, no candidates and classified optional unavailability |
-| Taxonomy source and version | Identify the reference system whose IDs were returned |
-| Category ID and full path | Let the model understand and select a real returned concept |
-| Parent/ancestor information | Support interpretation of broad versus narrow categories |
-| Rank or cosine distance | Describe retrieval ordering, with defined metric semantics |
-| Bounded candidate list | Keep the tool useful within the existing turn budget |
+| Field                       | Purpose                                                                      |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| Explicit outcome            | Distinguish candidates, no candidates and classified optional unavailability |
+| Taxonomy source and version | Identify the reference system whose IDs were returned                        |
+| Category ID and full path   | Let the model understand and select a real returned concept                  |
+| Parent/ancestor information | Support interpretation of broad versus narrow categories                     |
+| Rank or cosine distance     | Describe retrieval ordering, with defined metric semantics                   |
+| Bounded candidate list      | Keep the tool useful within the existing turn budget                         |
 
 Internal logs/reader state should also retain the pinned PostgreSQL taxonomy generation and embedding provenance. Avoid copying the full catalogue or operational metadata into every model prompt.
 
@@ -218,11 +218,11 @@ The runner's existing `evidenceIds` represent discount eligibility proofs, inclu
 
 Use `commerce_get_discount_options({limit, cursor})` for bounded discovery and `commerce_get_discount_details({offerId})` for relevant returned offers. Shared already defines these contracts and conditions covering provider identity/status, dates, product/variant/category/collection inclusions and exclusions, value/currency, subtotal and quantity requirements, customer/usage restrictions, sale exclusions, combinations and incomplete facts. MCP should map the existing shop-scoped `ShopifyDiscount.providerSnapshot` records and recheck current authorization on each request. Catalogue reads do not imply a new synchronous provider call for every discount. [S28–S31]
 
-| Effective merchant mode | Recommendation behavior |
-|---|---|
-| `NONE` | Recommend from ordinary product facts; skip discount discovery and promotional claims |
-| `FIXED` | Consider only the currently authorized merchant-selected discounts, including the effective Admin override |
-| `AI_BEST_APPLICABLE` | Discover relevant offers from the current permitted catalogue independently of the selection checkboxes; obey provider status, dates and known conditions |
+| Effective merchant mode | Recommendation behavior                                                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NONE`                  | Recommend from ordinary product facts; skip discount discovery and promotional claims                                                                     |
+| `FIXED`                 | Consider only the currently authorized merchant-selected discounts, including the effective Admin override                                                |
+| `AI_BEST_APPLICABLE`    | Discover relevant offers from the current permitted catalogue independently of the selection checkboxes; obey provider status, dates and known conditions |
 
 `ShopifyDiscount.isAvailable` means merchant selection, not provider availability. Keep the same meaning for Shopify and WooCommerce. A model-selected offer must originate in permitted tool observations; names, merchant prose and previous messages cannot authorize it. A prior initial-outreach offer is useful conversation history, but its earlier eligibility decision does not establish eligibility for a newly recommended purchase. [S28, S30, S32]
 
@@ -238,12 +238,12 @@ For subtotal rules, use complete, current pricing for the evaluated purchase and
 
 The existing pure evaluator distinguishes `SUPPORTED`, `NOT_APPLICABLE` and `UNVERIFIABLE`; retain those meanings. It currently treats minimum-quantity scope and unsupported discount kinds conservatively, and it does not supply general buy-X-get-Y evaluation. The narrower separate-product matcher rejects conditions it cannot establish. Reusing these helpers does not make those cases implemented. A conditional suggestion such as “this offer requires two qualifying items” needs sufficient source facts about the threshold and its scope; an isolated quantity number is insufficient. [S32]
 
-| Established result | Permitted customer-facing claim |
-|---|---|
-| Source conditions support this exact purchase | Describe the supported promotion and how it is used; state a saving only when its calculation is also established |
-| A known condition is not met | Explain the relevant condition or offer another suitable product; do not say the current purchase qualifies |
-| Material conditions are unknown | State that applicability could not be confirmed; omit a guaranteed saving or discounted total |
-| No applicable permitted offer was found | Give the factual product recommendation with scope-appropriate wording; do not claim catalogue-wide absence after incomplete discovery |
+| Established result                            | Permitted customer-facing claim                                                                                                        |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Source conditions support this exact purchase | Describe the supported promotion and how it is used; state a saving only when its calculation is also established                      |
+| A known condition is not met                  | Explain the relevant condition or offer another suitable product; do not say the current purchase qualifies                            |
+| Material conditions are unknown               | State that applicability could not be confirmed; omit a guaranteed saving or discounted total                                          |
+| No applicable permitted offer was found       | Give the factual product recommendation with scope-appropriate wording; do not claim catalogue-wide absence after incomplete discovery |
 
 For example, if verified facts establish a £30 hammer and an applicable 10% product discount with no unresolved material conditions, a £3 merchandise saving and £27 merchandise price can be calculated. If the same offer requires a £50 qualifying subtotal, the single hammer does not qualify. Do not quote a final checkout total without the necessary shipping, tax, allocation and currency facts. These numbers are illustrative and are not claims about the uploaded merchant data.
 
@@ -278,10 +278,10 @@ Database owns a new forward migration under `moda-interact-database/prisma/migra
 
 Two tables are sufficient for the initial design; these names and fields are proposed, not present in the snapshot:
 
-| Proposed table | Required responsibilities |
-|---|---|
+| Proposed table                         | Required responsibilities                                                                                                                                                                                                                                  |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `commerce.ReferenceTaxonomyGeneration` | Generation ID; environment; source; taxonomy version and language; pinned source URL/checksum; embedding provider/model/dimensions/index version and embedding-text format version; expected category count; completion/creation timestamps; active marker |
-| `commerce.ReferenceTaxonomyCategory` | Composite generation/category identity; original category ID; name/full path; nullable parent within the same generation; level/ancestor metadata needed by the resolver; vector and dimension metadata |
+| `commerce.ReferenceTaxonomyCategory`   | Composite generation/category identity; original category ID; name/full path; nullable parent within the same generation; level/ancestor metadata needed by the resolver; vector and dimension metadata                                                    |
 
 Use ordinary logged PostgreSQL tables. No `shopId` is needed on public taxonomy rows, and no per-store copy is created. Keep environment in the generation identity even when environments normally have separate databases. A unique import identity should cover the environment, source/version/language/checksum, embedding provenance and the documented full-path embedding-text format, so repeating the same import can reuse it.
 
@@ -297,11 +297,11 @@ PostgreSQL persistence gives this corpus the database's transaction and WAL beha
 
 Proposed parent entrypoint: `scripts/setup-commerce-product-discovery.mjs`. Keep it a thin orchestrator, with service-local implementations rather than direct cross-service imports:
 
-| Stage | Owner and command surface | Result |
-|---|---|---|
-| Schema and core-feature preparation | Database: existing `npm run migrate:deploy` with new forward migration(s) | pgvector taxonomy tables plus targeted required-feature/plan preparation |
-| Taxonomy import and activation | MCP: proposed `scripts/sync-reference-taxonomy.mjs`, exposed as `npm run taxonomy:sync` | Complete validated generation available for MCP reads |
-| Standard capability publication | Commerce: extend existing `npm run commerce:sync-tools` | Resolver/search/exact-product tools, approved behavior and response-contract updates published through the lifecycle |
+| Stage                               | Owner and command surface                                                               | Result                                                                                                               |
+| ----------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Schema and core-feature preparation | Database: existing `npm run migrate:deploy` with new forward migration(s)               | pgvector taxonomy tables plus targeted required-feature/plan preparation                                             |
+| Taxonomy import and activation      | MCP: proposed `scripts/sync-reference-taxonomy.mjs`, exposed as `npm run taxonomy:sync` | Complete validated generation available for MCP reads                                                                |
+| Standard capability publication     | Commerce: extend existing `npm run commerce:sync-tools`                                 | Resolver/search/exact-product tools, approved behavior and response-contract updates published through the lifecycle |
 
 The proposed operator command is:
 
@@ -359,15 +359,15 @@ This needs an intentional capability output-contract and published behavior chan
 
 ## 8. Information ownership and security
 
-| Owner | Focused responsibility |
-|---|---|
-| Database | New forward migration(s), taxonomy models/constraints/indexes, targeted core `product_search` policy and plan mappings, canonical seed alignment |
-| Shared | Published browser-safe wire contracts, existing selection semantics and reusable credential/vector validation primitives; Node-only exports where needed |
-| MCP | Approved conversation taxonomy manifest/parser/importer, read-only PostgreSQL resolver, current-shop provider/category/product reads, current permitted discount facts |
-| Commerce | Source-controlled standard tool definitions, automatic lifecycle publication, feature behavior/response-contract publication, inspection and Local Preview/Live Test parity |
-| Background | Published Platform/Shop instruction composition, existing model/tool loop, proposed-purchase discount validation/revalidation, conversation admission/delivery |
-| Parent deployment tooling | Thin environment setup wrapper invoking the owned migration/import/publication commands and reporting their results |
-| System Test | Fresh/upgrade setup, rerun/failure/restart/restore and integrated store/conversation behavior after publication/deployment |
+| Owner                     | Focused responsibility                                                                                                                                                      |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database                  | New forward migration(s), taxonomy models/constraints/indexes, targeted core `product_search` policy and plan mappings, canonical seed alignment                            |
+| Shared                    | Published browser-safe wire contracts, existing selection semantics and reusable credential/vector validation primitives; Node-only exports where needed                    |
+| MCP                       | Approved conversation taxonomy manifest/parser/importer, read-only PostgreSQL resolver, current-shop provider/category/product reads, current permitted discount facts      |
+| Commerce                  | Source-controlled standard tool definitions, automatic lifecycle publication, feature behavior/response-contract publication, inspection and Local Preview/Live Test parity |
+| Background                | Published Platform/Shop instruction composition, existing model/tool loop, proposed-purchase discount validation/revalidation, conversation admission/delivery              |
+| Parent deployment tooling | Thin environment setup wrapper invoking the owned migration/import/publication commands and reporting their results                                                         |
+| System Test               | Fresh/upgrade setup, rerun/failure/restart/restore and integrated store/conversation behavior after publication/deployment                                                  |
 
 Admin remains outside the implementation touchpoints: its Redis taxonomy scripts, indexes, runtime reader and UI stay intact. Generic existing Admin plan controls already support system-required features, so their behavior can consume the corrected feature data without an Admin code change. There is no Gateway Redis wiring task for this design. Verify existing PostgreSQL and embedding access for MCP and the operator scripts. [S40, S41]
 
@@ -395,11 +395,11 @@ Reuse existing framework HTTP, provider and model telemetry. Add only missing do
 
 The standard set contains all three capabilities:
 
-| Capability | Execution ownership |
-|---|---|
-| `commerce_resolve_product_categories` | MCP PostgreSQL reference-taxonomy lookup |
-| `commerce_search_products` | MCP current-shop provider search |
-| `commerce_get_product` | MCP exact current-shop product/variant read |
+| Capability                            | Execution ownership                         |
+| ------------------------------------- | ------------------------------------------- |
+| `commerce_resolve_product_categories` | MCP PostgreSQL reference-taxonomy lookup    |
+| `commerce_search_products`            | MCP current-shop provider search            |
+| `commerce_get_product`                | MCP exact current-shop product/variant read |
 
 Reuse the existing `product_search` feature identity and its published product-tool identities. Convert that feature to `ALWAYS_ENABLED`, `systemRequired: true`, active, and include it in every merchant catalogue and operational billing plan. This covers existing and future Free/paid stores that satisfy ordinary Commerce admission. The same conversion pattern exists for `ai_conversations`: feature update, targeted plan-mapping upserts and removal of obsolete opt-in preferences. Align the canonical seed with the new required policy so a later legitimate seed does not restore opt-in; do not run the broad seed during setup. [S38, S39]
 
@@ -427,13 +427,13 @@ MCP already has database configuration. Verify the target PostgreSQL extension/v
 
 Snapshot package metadata differs:
 
-| Repository | Shared package declaration |
-|---|---|
-| Shared source | `3.1.0` |
-| Background | `3.0.0` |
-| Admin | `3.0.0` — remains unchanged in this scope |
-| MCP | `2.8.1` |
-| Commerce | `2.7.2` |
+| Repository    | Shared package declaration                |
+| ------------- | ----------------------------------------- |
+| Shared source | `3.1.0`                                   |
+| Background    | `3.0.0`                                   |
+| Admin         | `3.0.0` — remains unchanged in this scope |
+| MCP           | `2.8.1`                                   |
+| Commerce      | `2.7.2`                                   |
 
 Publish accepted Shared changes first, then adopt the verified package and Database revision in affected MCP/Commerce/Background consumers. Deploy compatible runtime handlers and host validation before running the setup's publication stage. Select versions from real publication evidence; sibling source is not the package installed in a service. [S23]
 
@@ -465,57 +465,57 @@ ARCH-052 remains the dynamic-discount/initial-outreach initiative. Reuse its pro
 
 ## 12. Focused acceptance scenarios
 
-| Scenario | Required observation |
-|---|---|
-| Fresh and upgraded PostgreSQL environment | New forward migration creates valid vector tables/constraints; prior applied migrations are unchanged |
-| Repeated complete setup with identical inputs | Taxonomy import and publication converge to no-op; no duplicate generation/tool or repeated embedding cost |
-| Failed embedding or activation transaction | Prior active generation remains usable; failure exits nonzero with the original safe cause |
-| Concurrent setup, same versus different generation | Same completed input converges; a different concurrent winner produces conflict instead of overwrite |
-| Embedding settings change during preparation | Candidate is not activated against an incompatible current model tuple |
-| Incorrect source checksum, hierarchy or vector dimensions | Import fails before activation; invalid records cannot become the active corpus |
-| PostgreSQL restart and backup/restore | Completed taxonomy and active-generation identity survive; restored queries work with the required extension |
-| Explicit environment differs from deployment target | Setup stops before mutation; it never selects a different environment implicitly |
-| Tool publication fails after successful taxonomy activation | Receipt reports partial completion; rerun reuses taxonomy and finishes publication safely |
-| Unrelated tool revision or feature behavior drifts | Sync preserves unrelated immutable pins/snapshots or stops with a conflict; it does not publish all latest state |
-| Unexpected capability attached to product_search | Provisioning stops for explicit reconciliation before enabling that membership for all stores |
-| Existing/new Free/paid store with absent or false preference | Required resolver/search/exact-read tools are eligible under ALWAYS_ENABLED when ordinary shop/plan/provider admission holds |
-| Existing and future catalogue/operational plans | Core product_search mapping is present; no per-shop provisioning job is needed |
-| New bootstrap and conversational lookup | Neither invokes Admin scripts nor changes its Redis corpus, UI, mappings or settings |
-| Actual fixed Shopify search through actual provider guard | Request passes local validation after the scoped fix; invalid/unbounded documents remain rejected |
-| “I want a hammer” | Agent can discover relevant products using available authorised tools and answer from returned facts |
-| Description instead of product noun | Category lookup can assist “something to knock nails in”, without assuming a measured ranking in advance |
-| Broad or incorrect Store Category | Relevant current-shop product remains discoverable |
-| Product has no standard category | Text/product lookup still finds it |
-| Ambiguous product word | Model performs a bounded useful search or asks one relevant clarification |
-| No good reference candidate | Agent does not equate reference taxonomy absence with merchant product absence |
-| Category filter produces no products | Outcome is distinguished from provider failure and incomplete search; broaden carefully or report limited findings |
-| Truncated products/descendants | Agent does not claim exhaustive absence or that it has inspected every matching product |
-| Two Woo shops reuse numeric category IDs | Current-shop isolation is preserved; cross-shop results never appear |
-| Shopify reference ID supplied as Woo-native ID | Rejected or explicitly unsupported before provider I/O; no guessed mapping |
-| Cursor reused after filter/category change | Rejected; supported pagination remains deterministic |
-| PostgreSQL generation activation during query embedding | Read uses its pinned, retained complete generation; a newer activation does not mix vectors |
-| Same dimensions but changed embedding model | Provenance mismatch prevents a semantically invalid vector query |
-| Classified temporary embedding/PostgreSQL lookup outage | Original safe error is logged; typed category degradation permits an independently successful product search only under the agreed policy |
-| Authorisation revoked or turn stale | Existing hard failure/cancellation behavior remains intact |
-| Product detail missing | Agent does not invent material, weight, compatibility, price or stock |
-| Relevant product with a supported promotion | Recommendation checks permitted offers, validates exact product/variant and purchase facts, and states only supported terms |
-| Merchant mode NONE | No discount discovery or promotional claim; ordinary product recommendation remains possible |
-| FIXED selection changes; AI includes an unselected offer | FIXED respects the current selected set/override; AI catalogue access remains independent of checkboxes |
-| Discount title resembles a taxonomy candidate | Title/similarity alone never establishes eligibility; actual same-shop provider identities and exclusions govern |
-| Two shops reuse a coupon/category ID | Discount details and product targeting remain scoped to the authenticated shop and provider |
-| Three displayed alternatives or changed quantity/variant | Alternatives are assessed separately; changed purchase facts invalidate the earlier assessment |
-| Minimum spend, unknown quantity scope or mismatched currency | Known unmet conditions are distinguished from unverifiable conditions; no invented qualification or money comparison |
-| Individually applicable but incompatible offers | No stacking claim; a supported singleton or supported compatible subset is chosen |
-| Partial/empty/failed discount discovery | Outcomes remain distinct; incomplete or unavailable lookup never becomes “no discounts exist” |
-| Product result succeeds but optional discount lookup fails | Product-only recommendation is possible only under the explicit validated degradation policy; original safe error reaches logs |
-| Offer expires, is deselected, or source/price changes before admission | Selected claim is recomputed or suppressed; stale promotional text is not sent |
-| Canonical facts passed through the conversation response | Versioned selection details are validated; no manufactured legacy evidence ID, unsupported savings or free-text bypass |
-| Recommendation has a code or hypothetical basket change | No code application, discount creation or basket mutation occurs without the appropriate user action |
-| Catalogue text contains instructions | Text remains reference data and cannot change permissions/instructions |
-| New standard capability release published | New/retained conversation grants and pinned descriptors follow the explicit rollout policy; no silent grant expansion |
-| Live versus Studio guidance | Platform/Shop Instructions have the intended host precedence and authorised revisions |
-| Supported customer languages | Actual configured embedding/model path is evaluated; English corpus plus translated UI is not treated as proof of multilingual retrieval quality |
-| Error reaches logger sink | Original safe message/response detail survives, while credentials and sensitive payloads remain redacted |
+| Scenario                                                               | Required observation                                                                                                                             |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fresh and upgraded PostgreSQL environment                              | New forward migration creates valid vector tables/constraints; prior applied migrations are unchanged                                            |
+| Repeated complete setup with identical inputs                          | Taxonomy import and publication converge to no-op; no duplicate generation/tool or repeated embedding cost                                       |
+| Failed embedding or activation transaction                             | Prior active generation remains usable; failure exits nonzero with the original safe cause                                                       |
+| Concurrent setup, same versus different generation                     | Same completed input converges; a different concurrent winner produces conflict instead of overwrite                                             |
+| Embedding settings change during preparation                           | Candidate is not activated against an incompatible current model tuple                                                                           |
+| Incorrect source checksum, hierarchy or vector dimensions              | Import fails before activation; invalid records cannot become the active corpus                                                                  |
+| PostgreSQL restart and backup/restore                                  | Completed taxonomy and active-generation identity survive; restored queries work with the required extension                                     |
+| Explicit environment differs from deployment target                    | Setup stops before mutation; it never selects a different environment implicitly                                                                 |
+| Tool publication fails after successful taxonomy activation            | Receipt reports partial completion; rerun reuses taxonomy and finishes publication safely                                                        |
+| Unrelated tool revision or feature behavior drifts                     | Sync preserves unrelated immutable pins/snapshots or stops with a conflict; it does not publish all latest state                                 |
+| Unexpected capability attached to product_search                       | Provisioning stops for explicit reconciliation before enabling that membership for all stores                                                    |
+| Existing/new Free/paid store with absent or false preference           | Required resolver/search/exact-read tools are eligible under ALWAYS_ENABLED when ordinary shop/plan/provider admission holds                     |
+| Existing and future catalogue/operational plans                        | Core product_search mapping is present; no per-shop provisioning job is needed                                                                   |
+| New bootstrap and conversational lookup                                | Neither invokes Admin scripts nor changes its Redis corpus, UI, mappings or settings                                                             |
+| Actual fixed Shopify search through actual provider guard              | Request passes local validation after the scoped fix; invalid/unbounded documents remain rejected                                                |
+| “I want a hammer”                                                      | Agent can discover relevant products using available authorised tools and answer from returned facts                                             |
+| Description instead of product noun                                    | Category lookup can assist “something to knock nails in”, without assuming a measured ranking in advance                                         |
+| Broad or incorrect Store Category                                      | Relevant current-shop product remains discoverable                                                                                               |
+| Product has no standard category                                       | Text/product lookup still finds it                                                                                                               |
+| Ambiguous product word                                                 | Model performs a bounded useful search or asks one relevant clarification                                                                        |
+| No good reference candidate                                            | Agent does not equate reference taxonomy absence with merchant product absence                                                                   |
+| Category filter produces no products                                   | Outcome is distinguished from provider failure and incomplete search; broaden carefully or report limited findings                               |
+| Truncated products/descendants                                         | Agent does not claim exhaustive absence or that it has inspected every matching product                                                          |
+| Two Woo shops reuse numeric category IDs                               | Current-shop isolation is preserved; cross-shop results never appear                                                                             |
+| Shopify reference ID supplied as Woo-native ID                         | Rejected or explicitly unsupported before provider I/O; no guessed mapping                                                                       |
+| Cursor reused after filter/category change                             | Rejected; supported pagination remains deterministic                                                                                             |
+| PostgreSQL generation activation during query embedding                | Read uses its pinned, retained complete generation; a newer activation does not mix vectors                                                      |
+| Same dimensions but changed embedding model                            | Provenance mismatch prevents a semantically invalid vector query                                                                                 |
+| Classified temporary embedding/PostgreSQL lookup outage                | Original safe error is logged; typed category degradation permits an independently successful product search only under the agreed policy        |
+| Authorisation revoked or turn stale                                    | Existing hard failure/cancellation behavior remains intact                                                                                       |
+| Product detail missing                                                 | Agent does not invent material, weight, compatibility, price or stock                                                                            |
+| Relevant product with a supported promotion                            | Recommendation checks permitted offers, validates exact product/variant and purchase facts, and states only supported terms                      |
+| Merchant mode NONE                                                     | No discount discovery or promotional claim; ordinary product recommendation remains possible                                                     |
+| FIXED selection changes; AI includes an unselected offer               | FIXED respects the current selected set/override; AI catalogue access remains independent of checkboxes                                          |
+| Discount title resembles a taxonomy candidate                          | Title/similarity alone never establishes eligibility; actual same-shop provider identities and exclusions govern                                 |
+| Two shops reuse a coupon/category ID                                   | Discount details and product targeting remain scoped to the authenticated shop and provider                                                      |
+| Three displayed alternatives or changed quantity/variant               | Alternatives are assessed separately; changed purchase facts invalidate the earlier assessment                                                   |
+| Minimum spend, unknown quantity scope or mismatched currency           | Known unmet conditions are distinguished from unverifiable conditions; no invented qualification or money comparison                             |
+| Individually applicable but incompatible offers                        | No stacking claim; a supported singleton or supported compatible subset is chosen                                                                |
+| Partial/empty/failed discount discovery                                | Outcomes remain distinct; incomplete or unavailable lookup never becomes “no discounts exist”                                                    |
+| Product result succeeds but optional discount lookup fails             | Product-only recommendation is possible only under the explicit validated degradation policy; original safe error reaches logs                   |
+| Offer expires, is deselected, or source/price changes before admission | Selected claim is recomputed or suppressed; stale promotional text is not sent                                                                   |
+| Canonical facts passed through the conversation response               | Versioned selection details are validated; no manufactured legacy evidence ID, unsupported savings or free-text bypass                           |
+| Recommendation has a code or hypothetical basket change                | No code application, discount creation or basket mutation occurs without the appropriate user action                                             |
+| Catalogue text contains instructions                                   | Text remains reference data and cannot change permissions/instructions                                                                           |
+| New standard capability release published                              | New/retained conversation grants and pinned descriptors follow the explicit rollout policy; no silent grant expansion                            |
+| Live versus Studio guidance                                            | Platform/Shop Instructions have the intended host precedence and authorised revisions                                                            |
+| Supported customer languages                                           | Actual configured embedding/model path is evaluated; English corpus plus translated UI is not treated as proof of multilingual retrieval quality |
+| Error reaches logger sink                                              | Original safe message/response detail survives, while credentials and sensitive payloads remain redacted                                         |
 
 Use disposable PostgreSQL 17 plus pgvector for the new fresh/upgrade/import/restart/restore proofs. MCP's current integration compose fixture is pg16, so add an explicit isolated pg17 fixture rather than reporting that the existing one meets this contract. [S42]
 
@@ -525,52 +525,52 @@ Use scripted-model integration tests for deterministic orchestration, tenant bou
 
 Paths are relative to the uploaded parent workspace. Line references identify this snapshot and are not claims about later source revisions.
 
-| Ref | Source evidence |
-|---|---|
-| S01 | `moda-interact-admin/src/data/shopify-taxonomy-manifest.json:1–5`; `moda-interact-admin/scripts/sync-shopify-taxonomy.mjs:50–81` |
-| S02 | `moda-interact-admin/scripts/shopify-taxonomy-distribution.mjs:1–91`; `scripts/shopify-taxonomy-redis-sync.mjs:98–176`; `scripts/sync-shopify-taxonomy.mjs:285–311,370–508` in the same Admin repository |
-| S03 | `moda-interact-admin/src/lib/admin/shopify-taxonomy.ts:17–57,333–365,385–501,505–619` |
-| S04 | `moda-interact-database/prisma/schema.prisma:3819–3849,3970–3989,4118–4137` |
-| S05 | `moda-interact/app/services/store-profile/shopify-taxonomy-suggestion.server.ts:3–11,32–120`; `store-category-selection.server.ts:59–106` in the same directory |
-| S06 | `moda-interact-commerce/src/commerce/bootstrap/system-product-tools.ts:5–83`; `moda-interact-shared/src/commerce/schemas.ts:232–254,434–446,471–480` |
-| S07 | `moda-interact-mcp/src/execution/policy/shopify-core-executor.ts:49–54,105–119,139–169`; `shopify-core.ts:53–90,110–197,244–396` in the same directory |
-| S08 | `moda-interact-mcp/src/connections/resolver.ts:70–133`; `connections/shopify/provider.ts:290–318`; `connections/shopify/document.ts:12–62`, all beneath `src/` |
-| S09 | `moda-interact-background/src/agents/commerce.agent.ts:21–61`; `src/commerce/host.ts:104–137,193–244,284–345`; `src/commerce/recovery-instructions.ts:1–6` |
-| S10 | `moda-interact-background/src/commerce/model-resolution.ts:38–40,96–98`; `moda-interact-commerce/src/commerce/agent-configuration/effective-configuration.ts:136–178`; `src/commerce/preview/service.ts:520–523` in Commerce |
-| S11 | `docs/decisions/commerce/ARCH-023/COMMERCE-003-resolve-platform-shop-instructions.md:47–57,551–557`; `docs/decisions/mcp/ARCH-032/MCP-013-shop-scoped-capability-resolution-and-structured-logging.md:41–58`; `moda-interact-background/src/services/recovery-offers/initial-outreach-agent-context.service.ts:178–184` |
-| S12 | `moda-interact-shared/src/commerce/runner/preflight.ts:92–115`; `runner/graph/graph.ts:35–53`; `runner/tool-execution.ts:79–160`; `runner/final-response.ts:24–35`; `schemas.ts:412–431`, all beneath `src/commerce/` |
-| S13 | `moda-interact-background/src/commerce/evidence.ts:58–77,116–135`; `moda-interact-shared/src/commerce/runner/final-response.ts:30–35` |
-| S14 | `moda-interact-mcp/src/connections/ports.ts:16–20`; `connections/resolver.ts:28–59`; `connections/woocommerce/direct-product-reader.ts:85–112,162–229`; `runtime/service-ports.ts:30–60`, all beneath MCP `src/`; `moda-interact-commerce/src/commerce/woocommerce/read-operation-catalogue.ts:136,237–239` |
-| S15 | `moda-interact-mcp/src/execution/merchant-knowledge/contracts.ts:7–30`; `retrieval.ts:45–61,94–144` in the same directory; `moda-interact-database/prisma/schema.prisma:4269–4287` |
-| S16 | `moda-interact-admin/src/lib/admin/shopify-taxonomy-index-management.ts:397–425,427–468,505–524` |
-| S17 | `moda-interact-mcp/src/execution/merchant-knowledge/embedding-runtime.ts:18,68–80,138–148`; `moda-interact-admin/src/lib/admin/shopify-taxonomy-embedding.ts:139–199` |
-| S18 | `moda-interact-admin/src/lib/admin/shopify-taxonomy-embedding.ts:208–256`; `shopify-taxonomy.ts:353–365` in the same directory; `moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts:181–225`; `connections/shopify/provider.ts:128–157,225–242` beneath MCP `src/` |
-| S19 | `moda-interact-background/src/commerce/host-diagnostics.ts:124–161`; `mcp-client.ts:37–46,97–182,343–352`; `host.ts:449–458`; `production-model.ts:131–210,319–330`, all in the same directory; `moda-interact-shared/src/logging/redaction.ts:61–65,101–102` |
-| S20 | `moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.ts:101–121`; `moda-interact-mcp/src/capabilities/resolve.ts:49–93` |
-| S21 | `moda-interact-background/src/commerce/grants.ts:31–44,76–103`; `tests/integration/commerce/host-suites/authority.ts:50–65`; `tests/integration/commerce/host-suites/grants.ts:120–170` in Background |
-| S22 | `moda-interact-gateway/render.test.yaml:313–333`; `moda-interact-gateway/docs/mcp-private-deployment.md` |
-| S23 | `package.json` in `moda-interact-shared`, `moda-interact-background`, `moda-interact-admin`, `moda-interact-mcp` and `moda-interact-commerce` |
-| S24 | `moda-interact-commerce/src/commerce/products/index.ts:261–270`; `src/commerce/preview/local-policy-providers.ts:394–404`; `src/commerce/execution/policy-operation-authoring.ts:7–16` |
-| S25 | `docs/architecture/ARCH-023-merchant-knowledge.md:1237–1265`; `docs/architecture/ARCH-032-standalone-commerce-mcp-extraction.md` |
-| S26 | `moda-interact-commerce/lib/discovery/admin-schema.ts:2`; `moda-interact-mcp/scripts/install-shopify-admin-schema.mjs:5–24`; exact archive inventory |
-| S27 | `moda-interact-mcp/tests/unit/execution/policy/shopify-core.test.ts:37–53`; `moda-interact-mcp/tests/unit/connections/shopify/provider.test.ts:10–11` |
-| S28 | `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md:14–31,40–72` — canonical policy, read-only catalogue facts, built-ins, source-based selection and pre-production scope |
-| S29 | `docs/decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md:12–16,39–60,114–134` — accepted status versus required catalogue/details implementation |
-| S30 | `moda-interact-shared/src/commerce/schemas.ts:177–200,255–342,447–455,481–490` — proposal identity limits, canonical options/details/conditions and distinct legacy evidence output |
-| S31 | `moda-interact-mcp/src/capabilities/prisma-reader.ts:44–78`; `src/execution/discount-tools.ts:27–85`; `src/mcp/registration.ts:40–67`; `src/runtime/service-ports.ts:65–71` — outreach-only policy/projection and unavailable built-in dispatch |
-| S32 | `moda-interact-background/src/agents/initial-outreach-offer.eligibility.ts:20–125,134–157,170–293`; `initial-outreach-offer-product-target.ts:6–47`; `initial-outreach-offer.graph.ts:338–367,505–587`; `initial-outreach-offer.instructions.ts:14–27` in the same directory |
-| S33 | `moda-interact-background/src/agents/initial-outreach-offer.combinations.ts:27–85,95–139` — supported combination/subset checks, without a combined-money guarantee |
-| S34 | `moda-interact-background/src/services/recovery-offers/initial-outreach-agent-context.service.ts:218–229,252–268`; `current-outreach-offer-revalidation.service.ts:205–228,252–284,329–359,393–428`; `current-discount-source-fence.ts`; `recovery-outreach-mcp-selector.service.ts:15–20,119–163` in the same directory |
-| S35 | `moda-interact-shared/src/commerce/response.ts:56–74,114–124`; `moda-interact-background/src/commerce/host.ts:284–305,325–345,375–390`; `moda-interact-database/prisma/schema.prisma:3586–3604` — response details, existing host/grant checks and persisted grant structure |
-| S36 | `moda-interact-database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql:2,230–256`; `prisma/migrations/20261005093000_arch023_embedding_configuration/migration.sql:3–59`; `prisma/schema.prisma:3746–3767,4269–4287,4358–4363`; `moda-interact-mcp/src/execution/merchant-knowledge/retrieval.ts:94–120` — existing pgvector/configuration conventions |
-| S37 | `moda-interact-commerce/package.json:72`; `scripts/sync-system-commerce-tools.mjs:13–32`; `src/commerce/bootstrap/system-commerce-tool-sync.cli.ts:34–71,79–105,108–134,147–205`; `src/commerce/bootstrap/system-commerce-tool-sync.ts:101–170,208–283,289–461` — existing explicit system-tool bootstrap/publication |
-| S38 | `moda-interact-database/prisma/schema.prisma:865–895`; `moda-interact-shared/src/commerce/selection.ts:9–50,87–105` — activation modes and retained-grant identity |
-| S39 | `moda-interact-database/prisma/migrations/20261005143000_ai_conversations_required/migration.sql:16–62,64–116`; `prisma/seed.mjs:118–149` — targeted core-feature conversion precedent and broad-seed overwrite behavior |
-| S40 | `moda-interact-mcp/src/capabilities/records.ts:18–21`; `resolve.ts:77–80,112–120`; `prisma-reader.ts:27–32` in the same directory; `moda-interact-commerce/src/commerce/integration/backend.ts:250–275` — current unconditional preference handling and inspection parity |
+| Ref | Source evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S01 | `moda-interact-admin/src/data/shopify-taxonomy-manifest.json:1–5`; `moda-interact-admin/scripts/sync-shopify-taxonomy.mjs:50–81`                                                                                                                                                                                                                                                                                                                                                 |
+| S02 | `moda-interact-admin/scripts/shopify-taxonomy-distribution.mjs:1–91`; `scripts/shopify-taxonomy-redis-sync.mjs:98–176`; `scripts/sync-shopify-taxonomy.mjs:285–311,370–508` in the same Admin repository                                                                                                                                                                                                                                                                         |
+| S03 | `moda-interact-admin/src/lib/admin/shopify-taxonomy.ts:17–57,333–365,385–501,505–619`                                                                                                                                                                                                                                                                                                                                                                                            |
+| S04 | `moda-interact-database/prisma/schema.prisma:3819–3849,3970–3989,4118–4137`                                                                                                                                                                                                                                                                                                                                                                                                      |
+| S05 | `moda-interact/app/services/store-profile/shopify-taxonomy-suggestion.server.ts:3–11,32–120`; `store-category-selection.server.ts:59–106` in the same directory                                                                                                                                                                                                                                                                                                                  |
+| S06 | `moda-interact-commerce/src/commerce/bootstrap/system-product-tools.ts:5–83`; `moda-interact-shared/src/commerce/schemas.ts:232–254,434–446,471–480`                                                                                                                                                                                                                                                                                                                             |
+| S07 | `moda-interact-mcp/src/execution/policy/shopify-core-executor.ts:49–54,105–119,139–169`; `shopify-core.ts:53–90,110–197,244–396` in the same directory                                                                                                                                                                                                                                                                                                                           |
+| S08 | `moda-interact-mcp/src/connections/resolver.ts:70–133`; `connections/shopify/provider.ts:290–318`; `connections/shopify/document.ts:12–62`, all beneath `src/`                                                                                                                                                                                                                                                                                                                   |
+| S09 | `moda-interact-background/src/agents/commerce.agent.ts:21–61`; `src/commerce/host.ts:104–137,193–244,284–345`; `src/commerce/recovery-instructions.ts:1–6`                                                                                                                                                                                                                                                                                                                       |
+| S10 | `moda-interact-background/src/commerce/model-resolution.ts:38–40,96–98`; `moda-interact-commerce/src/commerce/agent-configuration/effective-configuration.ts:136–178`; `src/commerce/preview/service.ts:520–523` in Commerce                                                                                                                                                                                                                                                     |
+| S11 | `docs/decisions/commerce/ARCH-023/COMMERCE-003-resolve-platform-shop-instructions.md:47–57,551–557`; `docs/decisions/mcp/ARCH-032/MCP-013-shop-scoped-capability-resolution-and-structured-logging.md:41–58`; `moda-interact-background/src/services/recovery-offers/initial-outreach-agent-context.service.ts:178–184`                                                                                                                                                          |
+| S12 | `moda-interact-shared/src/commerce/runner/preflight.ts:92–115`; `runner/graph/graph.ts:35–53`; `runner/tool-execution.ts:79–160`; `runner/final-response.ts:24–35`; `schemas.ts:412–431`, all beneath `src/commerce/`                                                                                                                                                                                                                                                            |
+| S13 | `moda-interact-background/src/commerce/evidence.ts:58–77,116–135`; `moda-interact-shared/src/commerce/runner/final-response.ts:30–35`                                                                                                                                                                                                                                                                                                                                            |
+| S14 | `moda-interact-mcp/src/connections/ports.ts:16–20`; `connections/resolver.ts:28–59`; `connections/woocommerce/direct-product-reader.ts:85–112,162–229`; `runtime/service-ports.ts:30–60`, all beneath MCP `src/`; `moda-interact-commerce/src/commerce/woocommerce/read-operation-catalogue.ts:136,237–239`                                                                                                                                                                      |
+| S15 | `moda-interact-mcp/src/execution/merchant-knowledge/contracts.ts:7–30`; `retrieval.ts:45–61,94–144` in the same directory; `moda-interact-database/prisma/schema.prisma:4269–4287`                                                                                                                                                                                                                                                                                               |
+| S16 | `moda-interact-admin/src/lib/admin/shopify-taxonomy-index-management.ts:397–425,427–468,505–524`                                                                                                                                                                                                                                                                                                                                                                                 |
+| S17 | `moda-interact-mcp/src/execution/merchant-knowledge/embedding-runtime.ts:18,68–80,138–148`; `moda-interact-admin/src/lib/admin/shopify-taxonomy-embedding.ts:139–199`                                                                                                                                                                                                                                                                                                            |
+| S18 | `moda-interact-admin/src/lib/admin/shopify-taxonomy-embedding.ts:208–256`; `shopify-taxonomy.ts:353–365` in the same directory; `moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts:181–225`; `connections/shopify/provider.ts:128–157,225–242` beneath MCP `src/`                                                                                                                                                                                           |
+| S19 | `moda-interact-background/src/commerce/host-diagnostics.ts:124–161`; `mcp-client.ts:37–46,97–182,343–352`; `host.ts:449–458`; `production-model.ts:131–210,319–330`, all in the same directory; `moda-interact-shared/src/logging/redaction.ts:61–65,101–102`                                                                                                                                                                                                                    |
+| S20 | `moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.ts:101–121`; `moda-interact-mcp/src/capabilities/resolve.ts:49–93`                                                                                                                                                                                                                                                                                                                                      |
+| S21 | `moda-interact-background/src/commerce/grants.ts:31–44,76–103`; `tests/integration/commerce/host-suites/authority.ts:50–65`; `tests/integration/commerce/host-suites/grants.ts:120–170` in Background                                                                                                                                                                                                                                                                            |
+| S22 | `moda-interact-gateway/render.test.yaml:313–333`; `moda-interact-gateway/docs/mcp-private-deployment.md`                                                                                                                                                                                                                                                                                                                                                                         |
+| S23 | `package.json` in `moda-interact-shared`, `moda-interact-background`, `moda-interact-admin`, `moda-interact-mcp` and `moda-interact-commerce`                                                                                                                                                                                                                                                                                                                                    |
+| S24 | `moda-interact-commerce/src/commerce/products/index.ts:261–270`; `src/commerce/preview/local-policy-providers.ts:394–404`; `src/commerce/execution/policy-operation-authoring.ts:7–16`                                                                                                                                                                                                                                                                                           |
+| S25 | `docs/architecture/ARCH-023-merchant-knowledge.md:1237–1265`; `docs/architecture/ARCH-032-standalone-commerce-mcp-extraction.md`                                                                                                                                                                                                                                                                                                                                                 |
+| S26 | `moda-interact-commerce/lib/discovery/admin-schema.ts:2`; `moda-interact-mcp/scripts/install-shopify-admin-schema.mjs:5–24`; exact archive inventory                                                                                                                                                                                                                                                                                                                             |
+| S27 | `moda-interact-mcp/tests/unit/execution/policy/shopify-core.test.ts:37–53`; `moda-interact-mcp/tests/unit/connections/shopify/provider.test.ts:10–11`                                                                                                                                                                                                                                                                                                                            |
+| S28 | `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md:14–31,40–72` — canonical policy, read-only catalogue facts, built-ins, source-based selection and pre-production scope                                                                                                                                                                                                                                                                            |
+| S29 | `docs/decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md:12–16,39–60,114–134` — accepted status versus required catalogue/details implementation                                                                                                                                                                                                                                                                                                     |
+| S30 | `moda-interact-shared/src/commerce/schemas.ts:177–200,255–342,447–455,481–490` — proposal identity limits, canonical options/details/conditions and distinct legacy evidence output                                                                                                                                                                                                                                                                                              |
+| S31 | `moda-interact-mcp/src/capabilities/prisma-reader.ts:44–78`; `src/execution/discount-tools.ts:27–85`; `src/mcp/registration.ts:40–67`; `src/runtime/service-ports.ts:65–71` — outreach-only policy/projection and unavailable built-in dispatch                                                                                                                                                                                                                                  |
+| S32 | `moda-interact-background/src/agents/initial-outreach-offer.eligibility.ts:20–125,134–157,170–293`; `initial-outreach-offer-product-target.ts:6–47`; `initial-outreach-offer.graph.ts:338–367,505–587`; `initial-outreach-offer.instructions.ts:14–27` in the same directory                                                                                                                                                                                                     |
+| S33 | `moda-interact-background/src/agents/initial-outreach-offer.combinations.ts:27–85,95–139` — supported combination/subset checks, without a combined-money guarantee                                                                                                                                                                                                                                                                                                              |
+| S34 | `moda-interact-background/src/services/recovery-offers/initial-outreach-agent-context.service.ts:218–229,252–268`; `current-outreach-offer-revalidation.service.ts:205–228,252–284,329–359,393–428`; `current-discount-source-fence.ts`; `recovery-outreach-mcp-selector.service.ts:15–20,119–163` in the same directory                                                                                                                                                         |
+| S35 | `moda-interact-shared/src/commerce/response.ts:56–74,114–124`; `moda-interact-background/src/commerce/host.ts:284–305,325–345,375–390`; `moda-interact-database/prisma/schema.prisma:3586–3604` — response details, existing host/grant checks and persisted grant structure                                                                                                                                                                                                     |
+| S36 | `moda-interact-database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql:2,230–256`; `prisma/migrations/20261005093000_arch023_embedding_configuration/migration.sql:3–59`; `prisma/schema.prisma:3746–3767,4269–4287,4358–4363`; `moda-interact-mcp/src/execution/merchant-knowledge/retrieval.ts:94–120` — existing pgvector/configuration conventions                                                                                         |
+| S37 | `moda-interact-commerce/package.json:72`; `scripts/sync-system-commerce-tools.mjs:13–32`; `src/commerce/bootstrap/system-commerce-tool-sync.cli.ts:34–71,79–105,108–134,147–205`; `src/commerce/bootstrap/system-commerce-tool-sync.ts:101–170,208–283,289–461` — existing explicit system-tool bootstrap/publication                                                                                                                                                            |
+| S38 | `moda-interact-database/prisma/schema.prisma:865–895`; `moda-interact-shared/src/commerce/selection.ts:9–50,87–105` — activation modes and retained-grant identity                                                                                                                                                                                                                                                                                                               |
+| S39 | `moda-interact-database/prisma/migrations/20261005143000_ai_conversations_required/migration.sql:16–62,64–116`; `prisma/seed.mjs:118–149` — targeted core-feature conversion precedent and broad-seed overwrite behavior                                                                                                                                                                                                                                                         |
+| S40 | `moda-interact-mcp/src/capabilities/records.ts:18–21`; `resolve.ts:77–80,112–120`; `prisma-reader.ts:27–32` in the same directory; `moda-interact-commerce/src/commerce/integration/backend.ts:250–275` — current unconditional preference handling and inspection parity                                                                                                                                                                                                        |
 | S41 | `moda-interact-admin/src/lib/admin/merchant-knowledge-plan-policy.ts:99–111`; `merchant/pricing-plan-feature-controls.ts:56–67`; `merchant/merchant-pricing-plan-feature-persistence.ts:31–54` below the same Admin lib directory; `moda-interact/app/services/billing/billing-plan-resolution.service.ts:142–149`; `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.ts:220–227` — existing generic required-plan behavior, without Admin code changes |
-| S42 | `moda-interact-database/package.json` (`migrate:deploy`); `moda-interact-mcp/package.json` (no taxonomy import script yet); `moda-interact-mcp/scripts/install-shopify-admin-schema.mjs:5–28`; `moda-interact-mcp/tests/integration/compose.yaml:5`; `moda-interact-gateway/render.test.yaml:313–333` — actual environment/script prerequisites |
-| S43 | `docs/observability/shared-logging.md`; `moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.cli.ts:79–93,195–205` — shared logger and original safe Prisma diagnostic preservation |
-| S44 | `moda-interact-commerce/src/commerce/publication/lifecycle.ts:245–321`; `docs/decisions/commerce/ARCH-052/COMMERCE-006-bootstrap-product-search-and-get-product-tools.md:38–45,61` — latest-state release construction versus exact additive successor and explicit provisioning policy |
+| S42 | `moda-interact-database/package.json` (`migrate:deploy`); `moda-interact-mcp/package.json` (no taxonomy import script yet); `moda-interact-mcp/scripts/install-shopify-admin-schema.mjs:5–28`; `moda-interact-mcp/tests/integration/compose.yaml:5`; `moda-interact-gateway/render.test.yaml:313–333` — actual environment/script prerequisites                                                                                                                                  |
+| S43 | `docs/observability/shared-logging.md`; `moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.cli.ts:79–93,195–205` — shared logger and original safe Prisma diagnostic preservation                                                                                                                                                                                                                                                                          |
+| S44 | `moda-interact-commerce/src/commerce/publication/lifecycle.ts:245–321`; `docs/decisions/commerce/ARCH-052/COMMERCE-006-bootstrap-product-search-and-get-product-tools.md:38–45,61` — latest-state release construction versus exact additive successor and explicit provisioning policy                                                                                                                                                                                          |
 
 ### Official references checked on 4 November 2026
 

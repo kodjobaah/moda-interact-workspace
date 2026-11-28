@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-014-DATABASE-002
-- ARCH-014-ADMIN-003
+  - ARCH-014-DATABASE-002
+  - ARCH-014-ADMIN-003
 enables:
-- ARCH-014-SYSTEM-TEST-001
+  - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -195,9 +195,9 @@ Represent client builder highlights exactly as:
 
 ```ts
 type MerchantPricingBuilderHighlight = {
-  contentKey: string;     // canonical UUID, stable across reorder/edit
-  title: string;          // English source title
-  description: string;    // English source description
+  contentKey: string; // canonical UUID, stable across reorder/edit
+  title: string; // English source title
+  description: string; // English source description
 };
 ```
 
@@ -236,7 +236,7 @@ contentKey unique within the plan
 For a new highlight generate the key exactly once with:
 
 ```js
-crypto.randomUUID()
+crypto.randomUUID();
 ```
 
 Store that key in component state. Moving a highlight MUST NOT change its key. Editing title/description MUST NOT change its key.

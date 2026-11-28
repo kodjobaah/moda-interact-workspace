@@ -853,4 +853,3 @@ model through `GROQ_COMMERCE_MODEL`.
 until every dependency in its authoritative task metadata is Complete. The
 Background Render deployment must provide `GROQ_COMMERCE_MODEL` before integrated
 system validation.
-

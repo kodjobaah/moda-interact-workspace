@@ -137,7 +137,9 @@ DIRECT | VISUAL | JAVASCRIPT
 This is prohibited everywhere outside browser-local Response UI state:
 
 ```ts
-{ kind: "AUTOMATIC" }
+{
+  kind: "AUTOMATIC";
+}
 ```
 
 Do not add `AUTOMATIC` to:

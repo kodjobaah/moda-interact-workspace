@@ -15,18 +15,18 @@ The downstream background tasks were not actually architect-reviewed in the subm
 
 ## Current task state
 
-| Task | Decision |
-|---|---|
-| ARCH-001-SHARED-001 | Complete / Accepted |
-| ARCH-001-SHOPIFY-001 | Complete / Accepted |
-| ARCH-001-SHOPIFY-002 | Complete / Accepted |
-| ARCH-001-BACKGROUND-001 | Complete / Accepted |
+| Task                    | Decision                        |
+| ----------------------- | ------------------------------- |
+| ARCH-001-SHARED-001     | Complete / Accepted             |
+| ARCH-001-SHOPIFY-001    | Complete / Accepted             |
+| ARCH-001-SHOPIFY-002    | Complete / Accepted             |
+| ARCH-001-BACKGROUND-001 | Complete / Accepted             |
 | ARCH-001-BACKGROUND-002 | In Progress / Changes Requested |
 | ARCH-001-BACKGROUND-003 | In Progress / Changes Requested |
-| ARCH-001-BACKGROUND-004 | Blocked |
-| ARCH-001-BACKGROUND-005 | Blocked |
-| ARCH-001-BACKGROUND-006 | Blocked on BACKGROUND-003 only |
-| ARCH-001-GATEWAY-001 | Ready |
+| ARCH-001-BACKGROUND-004 | Blocked                         |
+| ARCH-001-BACKGROUND-005 | Blocked                         |
+| ARCH-001-BACKGROUND-006 | Blocked on BACKGROUND-003 only  |
+| ARCH-001-GATEWAY-001    | Ready                           |
 
 ## Findings requiring correction
 

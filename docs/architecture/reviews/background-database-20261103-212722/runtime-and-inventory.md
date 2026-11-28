@@ -6,29 +6,29 @@ The baseline is `moda-interact-workspace(20261102-112817).zip`, SHA-256 `ee42bb8
 
 The archive comparison finds 146 added, 315 modified and four removed regular files. Background `src/` contains seven added and 22 modified files, with no removals. The new review is a standalone addition because the prior review directory is absent from the updated archive. It does not require the previous review patch to have been applied.
 
-| Source metric | Previous | Updated | Change |
-| --- | ---: | ---: | ---: |
-| TypeScript source files | 481 | 488 | +7 |
-| TypeScript source lines | 70,139 | 71,324 | +1,185 |
-| Worker modules | 25 | 25 | 0 |
-| Files containing direct database client sites | 198 | 201 | +3 |
-| ORM read sites | 433 | 438 | +5 |
-| ORM write sites | 358 | 359 | +1 |
-| Raw SQL query/execute sites | 236 | 238 | +2 |
-| Explicit transaction-boundary sites | 162 | 162 | 0 |
-| Total direct sites, including transaction boundaries | 1,189 | 1,197 | +8 |
-| Separately indexed SQL-wrapper invocations | 59 | 59 | 0 |
+| Source metric                                        | Previous | Updated | Change |
+| ---------------------------------------------------- | -------: | ------: | -----: |
+| TypeScript source files                              |      481 |     488 |     +7 |
+| TypeScript source lines                              |   70,139 |  71,324 | +1,185 |
+| Worker modules                                       |       25 |      25 |      0 |
+| Files containing direct database client sites        |      198 |     201 |     +3 |
+| ORM read sites                                       |      433 |     438 |     +5 |
+| ORM write sites                                      |      358 |     359 |     +1 |
+| Raw SQL query/execute sites                          |      236 |     238 |     +2 |
+| Explicit transaction-boundary sites                  |      162 |     162 |      0 |
+| Total direct sites, including transaction boundaries |    1,189 |   1,197 |     +8 |
+| Separately indexed SQL-wrapper invocations           |       59 |      59 |      0 |
 
 The same bounded lexical scanner was used for both inputs. These are source locations, not queries per job, executed SQL statements, active production paths or performance measurements. SQL-function internals, relation expansion and Shared package implementation are outside this index. The scanner is not a TypeScript parser or type checker. The 109 excluded non-database candidates are unchanged. Wrapper calls must not be added to their underlying raw implementation sites to estimate database load.
 
 The net eight additional sites arise from four file-level changes:
 
-| File under `moda-interact-background/src/` | Change in direct sites |
-| --- | --- |
-| `services/conversation-ai-delay/pending-turn-repair.ts` | One new raw SELECT site. |
-| `services/conversation-ai-delay/pending-turn-repository.ts` | One read, two mutually exclusive write sites, one raw locking-read site. |
-| `services/inbound-whatsapp-audio.service.ts` | Two former inline write sites removed as pending-turn handling moves into the shared helper. |
-| `services/recovery-template-integration/initial-no-offer-fallback.service.ts` | Four read sites and one write site. |
+| File under `moda-interact-background/src/`                                    | Change in direct sites                                                                       |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `services/conversation-ai-delay/pending-turn-repair.ts`                       | One new raw SELECT site.                                                                     |
+| `services/conversation-ai-delay/pending-turn-repository.ts`                   | One read, two mutually exclusive write sites, one raw locking-read site.                     |
+| `services/inbound-whatsapp-audio.service.ts`                                  | Two former inline write sites removed as pending-turn handling moves into the shared helper. |
+| `services/recovery-template-integration/initial-no-offer-fallback.service.ts` | Four read sites and one write site.                                                          |
 
 Unchanged site counts elsewhere do not mean unchanged behaviour. Existing call arguments, conditions and helper execution paths changed in several services. In particular, helper extraction changes branch execution budgets even where the caller's syntactic count stays the same.
 

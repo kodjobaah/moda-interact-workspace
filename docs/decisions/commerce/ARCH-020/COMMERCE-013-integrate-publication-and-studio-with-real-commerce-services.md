@@ -87,14 +87,14 @@ that SHA in the mapping document; pending producer symbols must not be guessed.
 
 Binding wiring table (paths relative to Commerce repository):
 
-| Source/export | Destination | Required adapter/file |
-|---|---|---|
-| `src/commerce/publication/lifecycle.ts: CommerceLifecycle`; `ports.ts: PublicationStoragePort` | Durable publication facade | `backend/publication-storage.ts`, `backend/publication.ts` |
-| `lib/discovery/compiler.ts: createCommerceCompiler` | `QueryValidationPort.validate({definition})` | `backend/query-validation.ts`: compile the exact execution/input schema, validate mapping/output/template through accepted validators; bounded INVALID_DEFINITION vs unavailable errors |
-| `execution/ports.ts: createPolicyOperationRegistry`;005 `createQueryExecutionPort` |014 `createDefinitionExecutor` | `backend/executors.ts`: one immutable exact-version registry shared with publication availability |
-|015 `createProductPolicyAdapters`,006 `createDiscountRuleReader`/`getDiscountOptions`,016 `createDiscountEvaluationAdapter` | Policy registry | preserve operation input/output; adapt context without resetting budget/deadline or deriving shop from arguments |
-|007 accepted recommendation descriptors | Policy registry | record its actual exported symbol on accepted source before Ready; no invented handler name |
-|004 `resolveAuthorizedSnapshot`, `createMcpService`, assertion verifier | `/api/mcp` | `backend/authorization.ts`, backend facade and existing MCP route only |
+| Source/export                                                                                                               | Destination                                  | Required adapter/file                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/commerce/publication/lifecycle.ts: CommerceLifecycle`; `ports.ts: PublicationStoragePort`                              | Durable publication facade                   | `backend/publication-storage.ts`, `backend/publication.ts`                                                                                                                              |
+| `lib/discovery/compiler.ts: createCommerceCompiler`                                                                         | `QueryValidationPort.validate({definition})` | `backend/query-validation.ts`: compile the exact execution/input schema, validate mapping/output/template through accepted validators; bounded INVALID_DEFINITION vs unavailable errors |
+| `execution/ports.ts: createPolicyOperationRegistry`;005 `createQueryExecutionPort`                                          | 014 `createDefinitionExecutor`               | `backend/executors.ts`: one immutable exact-version registry shared with publication availability                                                                                       |
+| 015 `createProductPolicyAdapters`,006 `createDiscountRuleReader`/`getDiscountOptions`,016 `createDiscountEvaluationAdapter` | Policy registry                              | preserve operation input/output; adapt context without resetting budget/deadline or deriving shop from arguments                                                                        |
+| 007 accepted recommendation descriptors                                                                                     | Policy registry                              | record its actual exported symbol on accepted source before Ready; no invented handler name                                                                                             |
+| 004 `resolveAuthorizedSnapshot`, `createMcpService`, assertion verifier                                                     | `/api/mcp`                                   | `backend/authorization.ts`, backend facade and existing MCP route only                                                                                                                  |
 
 Typed product/rule/evidence interfaces are their accepted module exports; C19
 field semantics and C18 evidence separation remain authoritative. This task owns
@@ -186,14 +186,14 @@ auth entrypoint test, package scripts, and `docs/commerce-backend-integration.md
 
 ### C20 Requirement Matrix
 
-| Requirement | Evidence / disposition |
-| --- | --- |
-| B01 | Compiler validation and publication integration are wired; focused lifecycle and execution tests pass. Real PostgreSQL publication rows remain developer validation. |
-| B02 | Serializable transaction, advisory lock, replay audit and atomic write path are implemented. Two-connection race/rollback evidence remains pending isolated PostgreSQL validation. |
-| B03 | MCP route composes verified assertions, authorization snapshot and exact execution registry; request-scoped identity is preserved. Live grant/provider evidence remains pending. |
-| B04 | Exact `1.0.0` policy registration and immutable registry are composed from accepted exports; renamed/adapter/provider budget scenarios are covered by prerequisite tests and require integrated provider evidence. |
-| B05 | Server-only facade, no fixture registration, typed unavailable behavior, and production build are verified. |
-| B06 | Capability and tool enable/disable require `expectedUpdatedAt`, hash the strict request, compare inside the transaction, and update the timestamp. Focused suite passes. |
+| Requirement | Evidence / disposition                                                                                                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| B01         | Compiler validation and publication integration are wired; focused lifecycle and execution tests pass. Real PostgreSQL publication rows remain developer validation.                                               |
+| B02         | Serializable transaction, advisory lock, replay audit and atomic write path are implemented. Two-connection race/rollback evidence remains pending isolated PostgreSQL validation.                                 |
+| B03         | MCP route composes verified assertions, authorization snapshot and exact execution registry; request-scoped identity is preserved. Live grant/provider evidence remains pending.                                   |
+| B04         | Exact `1.0.0` policy registration and immutable registry are composed from accepted exports; renamed/adapter/provider budget scenarios are covered by prerequisite tests and require integrated provider evidence. |
+| B05         | Server-only facade, no fixture registration, typed unavailable behavior, and production build are verified.                                                                                                        |
+| B06         | Capability and tool enable/disable require `expectedUpdatedAt`, hash the strict request, compare inside the transaction, and update the timestamp. Focused suite passes.                                           |
 
 Former I01-I09 ownership is preserved: I01/06/07 are COMMERCE-018, I09 is
 COMMERCE-019, and I02/03/04/05/08 are represented by this backend boundary and
@@ -269,40 +269,40 @@ gitlink, downstream task, or Architect Review text was changed.
 ### A1 correction checklist
 
 - [x] **A1-R1:** `getCommerceBackend()` now lazily assembles the production
-  server boundary from validated configuration, Prisma, accepted auth and
-  provider/policy adapters; injected construction remains test-only and missing
-  configuration fails closed with the bounded unavailable result.
+      server boundary from validated configuration, Prisma, accepted auth and
+      provider/policy adapters; injected construction remains test-only and missing
+      configuration fails closed with the bounded unavailable result.
 - [x] **A1-R2:** publication persistence now writes only changed mutable rows,
-  inserts immutable rows and audits once, preserves publisher metadata on a real
-  draft-to-published transition, and keeps pointer/member/business writes in the
-  locked transaction.
+      inserts immutable rows and audits once, preserves publisher metadata on a real
+      draft-to-published transition, and keeps pointer/member/business writes in the
+      locked transaction.
 - [x] **A1-R3:** CAS timestamps are reconstructed with exact Date precision for
-  tools and capabilities, preserving non-zero milliseconds and same-second
-  token changes.
+      tools and capabilities, preserving non-zero milliseconds and same-second
+      token changes.
 - [x] **A1-R4:** the facade now owns typed, authorized read-only
-  `saved.readSelection`, `inspection.listShops`, and `inspection.inspectShop`
-  adapters with bounded inputs, exact revision selection, and no grant/token or
-  customer-history writes.
+      `saved.readSelection`, `inspection.listShops`, and `inspection.inspectShop`
+      adapters with bounded inputs, exact revision selection, and no grant/token or
+      customer-history writes.
 - [x] **A1-R5:** query validation now invokes Shared's accepted full publication
-  validator against the pinned compiler output, including response templates,
-  before lifecycle writes.
+      validator against the pinned compiler output, including response templates,
+      before lifecycle writes.
 - [x] **A1-R6:** executable B01-B06-labelled scenarios run through the backend
-  facade and lifecycle boundary; the disposable PostgreSQL replay/CAS/rollback
-  rehearsal has a declared command and remains separately developer-owned.
+      facade and lifecycle boundary; the disposable PostgreSQL replay/CAS/rollback
+      rehearsal has a declared command and remains separately developer-owned.
 
 ### Validation Results
 
 Executed in the implementation worktree with Node `v24.21.0` and npm `11.19.0`:
 
-| Command | Result |
-|---|---|
-| `npm run test:arch020-backend-integration` | **passed: 4 files, 52 tests** |
-| `npm run lint` | **passed** |
-| `npm run typecheck` | **passed**; Next route types generated and `tsc --noEmit` completed |
-| `npm run build` | **passed**; Prisma Client `6.19.3` generated and Next production build completed |
-| `git diff --check` | **passed** |
+| Command                                             | Result                                                                                                                                                                                        |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch020-backend-integration`          | **passed: 4 files, 52 tests**                                                                                                                                                                 |
+| `npm run lint`                                      | **passed**                                                                                                                                                                                    |
+| `npm run typecheck`                                 | **passed**; Next route types generated and `tsc --noEmit` completed                                                                                                                           |
+| `npm run build`                                     | **passed**; Prisma Client `6.19.3` generated and Next production build completed                                                                                                              |
+| `git diff --check`                                  | **passed**                                                                                                                                                                                    |
 | `npm run test:arch020-backend-integration:database` | **static schema/migration/ERD checks passed**; migration rehearsal failed closed with `AssertionError: Local isolated target required` because no `DATABASE_URL`/isolated target was supplied |
-| `npm run test:arch020-backend-integration:postgres` | **pending**; failed closed before container creation with `Set ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1 to authorize creation and removal of one disposable Docker container.` |
+| `npm run test:arch020-backend-integration:postgres` | **pending**; failed closed before container creation with `Set ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1 to authorize creation and removal of one disposable Docker container.`             |
 
 The database command made no database connection. PostgreSQL two-connection
 fresh/upgrade, replay/CAS, rollback and race evidence remains pending developer
@@ -338,38 +338,38 @@ was changed.
 ### A2 correction checklist
 
 - [x] **A2-R1:** Storefront transport now sends only the approved tokenless
-  headers to a validated `myshopify.com` Storefront path and returns the
-  response stream directly to the bounded query reader. Installation tokens
-  remain confined to the privileged Admin provider path. Existing query cleanup
-  handles oversized and aborted streams.
+      headers to a validated `myshopify.com` Storefront path and returns the
+      response stream directly to the bounded query reader. Installation tokens
+      remain confined to the privileged Admin provider path. Existing query cleanup
+      handles oversized and aborted streams.
 - [x] **A2-R2:** Production policy composition now builds the accepted product
-  adapters, discount reader/options, discount evaluator, and qualifying/similar
-  recommendation operations in one immutable exact-version registry. Missing
-  cursor configuration leaves the registry unavailable instead of advertising
-  placeholder operations. Nested adapters receive the original context budget
-  and deadline.
+      adapters, discount reader/options, discount evaluator, and qualifying/similar
+      recommendation operations in one immutable exact-version registry. Missing
+      cursor configuration leaves the registry unavailable instead of advertising
+      placeholder operations. Nested adapters receive the original context budget
+      and deadline.
 - [x] **A2-R3:** Initial resolve reads the active environment release pointer;
-  execute preserves the grant's selected capability keys and pinned tool
-  provenance. Current eligibility now checks capability state, feature active
-  state, shop preference, active/trial billing plan and feature association,
-  recovery status, durable conversation recovery identity, and a bounded fresh
-  processing lease. No assertion recovery identifier is substituted for a
-  missing durable link.
+      execute preserves the grant's selected capability keys and pinned tool
+      provenance. Current eligibility now checks capability state, feature active
+      state, shop preference, active/trial billing plan and feature association,
+      recovery status, durable conversation recovery identity, and a bounded fresh
+      processing lease. No assertion recovery identifier is substituted for a
+      missing durable link.
 - [x] **A2-R4:** Publication writes normalize nullable hashes and canonicalize
-  JSON before comparing original transaction rows, so untouched drafts and
-  reordered equivalent JSON produce no writes. Transaction timestamps advance
-  strictly even within one wall-clock millisecond; immutable rows remain
-  insert-only and CAS predicates remain locked.
+      JSON before comparing original transaction rows, so untouched drafts and
+      reordered equivalent JSON produce no writes. Transaction timestamps advance
+      strictly even within one wall-clock millisecond; immutable rows remain
+      insert-only and CAS predicates remain locked.
 - [x] **A2-R5:** Saved-selection reads reject duplicate, missing, incomplete,
-  invalid, or inconsistent records instead of filtering them; release members
-  preserve stored position order and tool bindings are verified. Draft input
-  carries the response contract boundary and reads remain staff-authorized and
-  read-only. Inspection remains typed and read-only with current feature state.
+      invalid, or inconsistent records instead of filtering them; release members
+      preserve stored position order and tool bindings are verified. Draft input
+      carries the response contract boundary and reads remain staff-authorized and
+      read-only. Inspection remains typed and read-only with current feature state.
 - [x] **A2-R6:** `test:arch020-backend-integration:postgres` now first invokes a
-  real `PrismaPublicationStorage` transaction rehearsal, then retains the
-  accepted migration, replay, rollback, revision-race and pointer-CAS SQL
-  checks. The command separates actual adapter evidence from developer-owned
-  disposable infrastructure evidence.
+      real `PrismaPublicationStorage` transaction rehearsal, then retains the
+      accepted migration, replay, rollback, revision-race and pointer-CAS SQL
+      checks. The command separates actual adapter evidence from developer-owned
+      disposable infrastructure evidence.
 
 ### Source and dependency mapping
 
@@ -391,16 +391,16 @@ shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, MCP SDK `1.30.0`.
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
 
-| Command | Result |
-| --- | --- |
-| `npm run test:arch020-backend-integration` | passed, 4 files / 59 tests |
-| `npm run typecheck` | passed; route type generation and `tsc --noEmit` passed |
-| `npm run lint` | passed with zero warnings/errors |
-| `npm run build` | passed; Prisma Client 6.19.3 and Next production build completed |
-| `git diff --check` | passed |
-| `npm run test:arch020-backend-integration:postgres` | real PrismaPublicationStorage rehearsal passed 1/1; disposable SQL phase stopped at its explicit Docker authorization gate |
-| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration rehearsal failed closed with `AssertionError: Local isolated target required` before database connection |
-| `PATH=/usr/bin:/bin npm run test:arch020-backend-integration:database` | not executable in this macOS shell because the restricted PATH has no `npm`; normal workspace toolchain result is recorded above |
+| Command                                                                | Result                                                                                                                                                        |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch020-backend-integration`                             | passed, 4 files / 59 tests                                                                                                                                    |
+| `npm run typecheck`                                                    | passed; route type generation and `tsc --noEmit` passed                                                                                                       |
+| `npm run lint`                                                         | passed with zero warnings/errors                                                                                                                              |
+| `npm run build`                                                        | passed; Prisma Client 6.19.3 and Next production build completed                                                                                              |
+| `git diff --check`                                                     | passed                                                                                                                                                        |
+| `npm run test:arch020-backend-integration:postgres`                    | real PrismaPublicationStorage rehearsal passed 1/1; disposable SQL phase stopped at its explicit Docker authorization gate                                    |
+| `npm run test:arch020-backend-integration:database`                    | static schema/migration/ERD checks passed; migration rehearsal failed closed with `AssertionError: Local isolated target required` before database connection |
+| `PATH=/usr/bin:/bin npm run test:arch020-backend-integration:database` | not executable in this macOS shell because the restricted PATH has no `npm`; normal workspace toolchain result is recorded above                              |
 
 ### B01-B06 evidence disposition
 
@@ -437,25 +437,25 @@ changed.
 ### A3 correction checklist
 
 - [x] **A3-R1:** privileged Admin requests use `X-Shopify-Access-Token`,
-  redirect rejection, bounded JSON parsing, installation scope resolution,
-  cursor/first pagination, and persisted raw discount value/target/minimum/
-  restriction/semantics facts. Missing or unsupported facts remain fail-closed;
-  Storefront remains tokenless.
+      redirect rejection, bounded JSON parsing, installation scope resolution,
+      cursor/first pagination, and persisted raw discount value/target/minimum/
+      restriction/semantics facts. Missing or unsupported facts remain fail-closed;
+      Storefront remains tokenless.
 - [x] **A3-R2:** initial no-grant manifests are built only from currently
-  eligible associations; execute retains the grant's pinned selected keys and
-  provenance. Association configuration limits are propagated and the lease
-  boundary matches Background's 120,000 ms admission rule.
+      eligible associations; execute retains the grant's pinned selected keys and
+      provenance. Association configuration limits are propagated and the lease
+      boundary matches Background's 120,000 ms admission rule.
 - [x] **A3-R3:** metadata CAS timestamps derive from locked persisted row
-  tokens, so separate transactions at a frozen clock receive distinct tokens;
-  full timestamp precision and replay hashing remain intact.
+      tokens, so separate transactions at a frozen clock receive distinct tokens;
+      full timestamp precision and replay hashing remain intact.
 - [x] **A3-R4:** draft selections use strict non-empty 32/64 bounds, cross-list
-  uniqueness, response-contract validation/hash, and canonical current content
-  hashes. Inspection remains staff-authorized/read-only and now returns a
-  candidate manifest plus explicit feature/preference exclusions.
+      uniqueness, response-contract validation/hash, and canonical current content
+      hashes. Inspection remains staff-authorized/read-only and now returns a
+      candidate manifest plus explicit feature/preference exclusions.
 - [x] **A3-R5:** the real Prisma rehearsal now exercises lifecycle create,
-  durable replay and mismatched replay, stale timestamp CAS, two independent
-  Prisma connections, and injected transaction rollback. Audit target columns
-  are carried through lifecycle state and satisfy the canonical database check.
+      durable replay and mismatched replay, stale timestamp CAS, two independent
+      Prisma connections, and injected transaction rollback. Audit target columns
+      are carried through lifecycle state and satisfy the canonical database check.
 
 ### Source and dependency mapping
 
@@ -476,14 +476,14 @@ shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, and MCP SDK `1.30.0`.
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
 
-| Command | Result |
-| --- | --- |
-| `npm run test:arch020-backend-integration` | passed, 4 files / 59 tests |
-| `npm run typecheck` | passed; route type generation and `tsc --noEmit` passed |
-| `npm run lint` | passed with zero warnings/errors |
-| `npm run build` | passed; Prisma Client 6.19.3 and Next production build completed |
-| `git diff --check` | passed |
-| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration phase failed closed before connection with `Local isolated target required` |
+| Command                                             | Result                                                                                                                                                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch020-backend-integration`          | passed, 4 files / 59 tests                                                                                                                                                |
+| `npm run typecheck`                                 | passed; route type generation and `tsc --noEmit` passed                                                                                                                   |
+| `npm run lint`                                      | passed with zero warnings/errors                                                                                                                                          |
+| `npm run build`                                     | passed; Prisma Client 6.19.3 and Next production build completed                                                                                                          |
+| `git diff --check`                                  | passed                                                                                                                                                                    |
+| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration phase failed closed before connection with `Local isolated target required`                                          |
 | `npm run test:arch020-backend-integration:postgres` | real Prisma adapter rehearsal passed 2/2; subsequent disposable-Docker SQL phase stopped at its explicit `ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1` authorization gate |
 
 The PostgreSQL pass exercised durable publication rows/audits, one-effect
@@ -516,27 +516,27 @@ main branch, or Architect Review text was changed.
 ### A4 correction checklist
 
 - [x] **A4-R1:** No-grant authorization now names prompts with the resolved
-  active manifest release ID and derives granted tools only from the filtered
-  manifest members. A capability with an excluded feature cannot leave an
-  empty-capability tool in the canonical manifest. Pinned grant execution
-  provenance remains unchanged.
+      active manifest release ID and derives granted tools only from the filtered
+      manifest members. A capability with an excluded feature cannot leave an
+      empty-capability tool in the canonical manifest. Pinned grant execution
+      provenance remains unchanged.
 - [x] **A4-R2:** Production discount reads now use the privileged Admin
-  installation token, current `read_discounts` scope, cursor/first pagination,
-  actual basic percentage/fixed value, targets, minimums, status and bounded
-  provider semantics. Response bytes are streamed and bounded before JSON
-  parsing, with cancellation and reader cleanup. Storefront remains tokenless.
+      installation token, current `read_discounts` scope, cursor/first pagination,
+      actual basic percentage/fixed value, targets, minimums, status and bounded
+      provider semantics. Response bytes are streamed and bounded before JSON
+      parsing, with cancellation and reader cleanup. Storefront remains tokenless.
 - [x] **A4-R3:** Inspection now reads the active release, published capability
-  revisions, feature state, shop preferences, subscription plan features and
-  recovery state. Its concrete result returns real capability/revision IDs,
-  ordered tool revision bindings, a bounded manifest and explicit exclusion
-  reasons. Saved DRAFT selections now resolve capability-bound tool revisions,
-  validate ownership/status, reject inconsistent bindings and return exact
-  definitions/hashes.
+      revisions, feature state, shop preferences, subscription plan features and
+      recovery state. Its concrete result returns real capability/revision IDs,
+      ordered tool revision bindings, a bounded manifest and explicit exclusion
+      reasons. Saved DRAFT selections now resolve capability-bound tool revisions,
+      validate ownership/status, reject inconsistent bindings and return exact
+      definitions/hashes.
 - [x] **A4-R4:** The real Prisma rehearsal now creates a valid publication,
-  durably replays it, contends on the same metadata CAS token across two
-  connections, and injects failure after `writeState` to verify business,
-  pointer and audit rollback. Lifecycle audit target derivation was corrected
-  so published revision audits satisfy the canonical target constraint.
+      durably replays it, contends on the same metadata CAS token across two
+      connections, and injects failure after `writeState` to verify business,
+      pointer and audit rollback. Lifecycle audit target derivation was corrected
+      so published revision audits satisfy the canonical target constraint.
 
 ### Source and dependency mapping
 
@@ -559,14 +559,14 @@ shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, MCP SDK `1.30.0`.
 Implementation worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
 
-| Command | Result |
-| --- | --- |
-| `npm run test:arch020-backend-integration` | passed, 4 files / 59 tests |
-| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
-| `npm run lint` | passed with zero warnings/errors |
-| `npm run build` | passed; Prisma Client 6.19.3 and Next production build completed |
-| `git diff --check` | passed |
-| `npm run test:arch020-backend-integration:postgres` | real Prisma rehearsal passed 2/2; disposable Docker SQL phase stopped at its explicit authorization gate |
+| Command                                             | Result                                                                                                                                               |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch020-backend-integration`          | passed, 4 files / 59 tests                                                                                                                           |
+| `npm run typecheck`                                 | passed; Next route type generation and `tsc --noEmit` passed                                                                                         |
+| `npm run lint`                                      | passed with zero warnings/errors                                                                                                                     |
+| `npm run build`                                     | passed; Prisma Client 6.19.3 and Next production build completed                                                                                     |
+| `git diff --check`                                  | passed                                                                                                                                               |
+| `npm run test:arch020-backend-integration:postgres` | real Prisma rehearsal passed 2/2; disposable Docker SQL phase stopped at its explicit authorization gate                                             |
 | `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration rehearsal failed closed with `AssertionError: Local isolated target required` before connection |
 
 Actual PostgreSQL evidence includes durable publication rows/audits, one-effect
@@ -605,29 +605,29 @@ changed.
 ### A5 correction checklist
 
 - [x] **A5-R1:** Replaced invalid abstract Discount union selections with
-  concrete `DiscountCodeBasic` and `DiscountAutomaticBasic` fragments. Minimum
-  fields use Shopify's `DiscountMinimumQuantity` and
-  `DiscountMinimumSubtotal` members. Product and variant target connections,
-  pagination cursors, codes, supported percentage/fixed values and dates are
-  mapped from the actual privileged response. Null minimum is treated as known
-  absence only when `minimumRequirement` is present; omitted minimum remains
-  unknown. Restriction completeness and allocation/rounding semantics remain
-  fail-closed because this read does not establish them. The Admin document is
-  exported for schema/fixture validation and keeps the installation token in
-  the privileged `X-Shopify-Access-Token` path.
+      concrete `DiscountCodeBasic` and `DiscountAutomaticBasic` fragments. Minimum
+      fields use Shopify's `DiscountMinimumQuantity` and
+      `DiscountMinimumSubtotal` members. Product and variant target connections,
+      pagination cursors, codes, supported percentage/fixed values and dates are
+      mapped from the actual privileged response. Null minimum is treated as known
+      absence only when `minimumRequirement` is present; omitted minimum remains
+      unknown. Restriction completeness and allocation/rounding semantics remain
+      fail-closed because this read does not establish them. The Admin document is
+      exported for schema/fixture validation and keeps the installation token in
+      the privileged `X-Shopify-Access-Token` path.
 - [x] **A5-R2:** Product/Admin provider reads now use the shared bounded byte
-  streaming reader before JSON parsing, preserving abort signals, reader
-  cleanup and response bounds. Storefront remains tokenless and returns its
-  bounded response stream to the accepted query transport.
+      streaming reader before JSON parsing, preserving abort signals, reader
+      cleanup and response bounds. Storefront remains tokenless and returns its
+      bounded response stream to the accepted query transport.
 - [x] **A5-R3:** Explicitly selected saved DRAFT tool revisions are now allowed
-  to return their current validated definition/hash. Capability-bound tool
-  revisions still require PUBLISHED status, ownership/binding consistency and
-  complete record resolution; unpublished bound-only revisions fail closed.
+      to return their current validated definition/hash. Capability-bound tool
+      revisions still require PUBLISHED status, ownership/binding consistency and
+      complete record resolution; unpublished bound-only revisions fail closed.
 - [x] **A5-R4:** Inspection now receives the immutable validated deployment
-  environment from `CommerceBackendDependencies`, the same value used by
-  production authorization/publication composition. It no longer reads
-  `COMMERCE_ENVIRONMENT` or defaults to DEVELOPMENT, so TEST/STAGING/PRODUCTION
-  inspection and resolution use the same active release pointer.
+      environment from `CommerceBackendDependencies`, the same value used by
+      production authorization/publication composition. It no longer reads
+      `COMMERCE_ENVIRONMENT` or defaults to DEVELOPMENT, so TEST/STAGING/PRODUCTION
+      inspection and resolution use the same active release pointer.
 
 ### Focused source and dependency mapping
 
@@ -659,13 +659,13 @@ shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, and MCP SDK `1.30.0`.
 Implementation worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
 
-| Command | Result |
-| --- | --- |
-| `npm run test:arch020-backend-integration` | passed, 4 files / 59 tests |
-| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
-| `npm run lint` | passed with zero warnings/errors |
-| `npm run build` | passed; Prisma Client 6.19.3 and Next production build completed |
-| `git diff --check` | passed |
+| Command                                             | Result                                                                                                                                                      |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch020-backend-integration`          | passed, 4 files / 59 tests                                                                                                                                  |
+| `npm run typecheck`                                 | passed; Next route type generation and `tsc --noEmit` passed                                                                                                |
+| `npm run lint`                                      | passed with zero warnings/errors                                                                                                                            |
+| `npm run build`                                     | passed; Prisma Client 6.19.3 and Next production build completed                                                                                            |
+| `git diff --check`                                  | passed                                                                                                                                                      |
 | `npm run test:arch020-backend-integration:postgres` | real Prisma publication rehearsal passed 2/2; disposable SQL phase stopped at the explicit `ARCH020_REHEARSAL_ALLOW_DISPOSABLE_DOCKER=1` authorization gate |
 | `npm run test:arch020-backend-integration:database` | static schema/migration/ERD schema checks passed; migration rehearsal failed closed before connection with `AssertionError: Local isolated target required` |
 
@@ -712,22 +712,22 @@ branch, downstream task, or Architect Review text was changed.
 ### A6 correction checklist
 
 - [x] **A6-R1:** Production native-basic discount normalization now retains
-  customer/context, usage, combination, status, value, target, and minimum
-  evidence. A pinned native-basic semantics profile is applied only to the
-  concrete basic Shopify types and is documented in
-  `docs/discount-support-matrix.md`; incomplete restrictions, minima, targets,
-  status, values, and non-basic provider shapes remain non-qualifying. Explicit
-  null minima are known absence, omitted/unrecognized minima are unknown, and
-  mixed product/variant targets are returned as incomplete rather than being
-  mislabeled as variants. Focused deterministic fixtures cover fixed,
-  percentage, restricted, and mixed-target normalization through the accepted
-  reader contract.
+      customer/context, usage, combination, status, value, target, and minimum
+      evidence. A pinned native-basic semantics profile is applied only to the
+      concrete basic Shopify types and is documented in
+      `docs/discount-support-matrix.md`; incomplete restrictions, minima, targets,
+      status, values, and non-basic provider shapes remain non-qualifying. Explicit
+      null minima are known absence, omitted/unrecognized minima are unknown, and
+      mixed product/variant targets are returned as incomplete rather than being
+      mislabeled as variants. Focused deterministic fixtures cover fixed,
+      percentage, restricted, and mixed-target normalization through the accepted
+      reader contract.
 - [x] **A6-R2:** Every capability-bound tool revision is now checked for exact
-  owner binding and `PUBLISHED` status before it is unioned with explicitly
-  selected draft tool revisions. Standalone selected DRAFT definitions still
-  return their validated current definition/hash; explicit selection can no
-  longer excuse an unpublished capability binding. Missing records and
-  inconsistent bindings remain fail closed.
+      owner binding and `PUBLISHED` status before it is unioned with explicitly
+      selected draft tool revisions. Standalone selected DRAFT definitions still
+      return their validated current definition/hash; explicit selection can no
+      longer excuse an unpublished capability binding. Missing records and
+      inconsistent bindings remain fail closed.
 
 ### Source and dependency mapping
 
@@ -760,16 +760,16 @@ shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, MCP SDK `1.30.0`.
 Implementation worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
 
-| Command | Result |
-| --- | --- |
-| `npm run test:arch020-backend-integration` | **passed: 4 files, 60 tests** |
-| `npm run typecheck` | **passed**; Next route type generation and `tsc --noEmit` completed |
-| `npm run lint` | **passed** with no reported errors |
-| `npm run build` | **passed**; Prisma Client `6.19.3` generated and Next production build completed |
-| `git diff --check` | **passed** |
-| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD check **passed**; migration validator failed closed with `AssertionError: Local isolated target required` before any DB connection |
-| `PATH=/usr/bin:/bin npm run test:arch020-backend-integration:database` | **not executable** in this macOS shell: `zsh: command not found: npm` |
-| `npm run test:arch020-backend-integration:postgres` | first real Prisma adapter smoke test **passed**; second mutation/replay/CAS/rollback test **failed before injected rollback** with `CAS_CONFLICT` where the reusable target expected `INJECTED_REHEARSAL_FAILURE` |
+| Command                                                                | Result                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch020-backend-integration`                             | **passed: 4 files, 60 tests**                                                                                                                                                                                     |
+| `npm run typecheck`                                                    | **passed**; Next route type generation and `tsc --noEmit` completed                                                                                                                                               |
+| `npm run lint`                                                         | **passed** with no reported errors                                                                                                                                                                                |
+| `npm run build`                                                        | **passed**; Prisma Client `6.19.3` generated and Next production build completed                                                                                                                                  |
+| `git diff --check`                                                     | **passed**                                                                                                                                                                                                        |
+| `npm run test:arch020-backend-integration:database`                    | static schema/migration/ERD check **passed**; migration validator failed closed with `AssertionError: Local isolated target required` before any DB connection                                                    |
+| `PATH=/usr/bin:/bin npm run test:arch020-backend-integration:database` | **not executable** in this macOS shell: `zsh: command not found: npm`                                                                                                                                             |
+| `npm run test:arch020-backend-integration:postgres`                    | first real Prisma adapter smoke test **passed**; second mutation/replay/CAS/rollback test **failed before injected rollback** with `CAS_CONFLICT` where the reusable target expected `INJECTED_REHEARSAL_FAILURE` |
 
 The PostgreSQL command therefore does not provide a passing 2/2 rehearsal
 claim for Attempt 7. The observed failure is the existing reused-target
@@ -827,7 +827,6 @@ COMMERCE-018 and COMMERCE-019 become **Ready, Attempt 0 retained, claims null**,
 
 COMMERCE-012, deployment and final/system gates remain subject to their other dependencies and explicit developer/manual validation. This task acceptance is not an ARCH-020 Implemented decision, main merge, deployment, gitlink update or live-provider approval. Prior reviews are retained below as history.
 
-
 ### Attempt 8 — Changes Requested (2026-09-21)
 
 Reviewer: moda_architect. Reviewed implementation `13805d22c6850d43537031a48c438a6b1f1a0a7c` and parent report `de6b2829a1b86b553fc5c67561325e3d8790348a`; submitted dedicated worktrees clean and remote heads verified. **Changes Requested; Ready, Attempt 8 retained; executor/claimed_at null.**
@@ -861,7 +860,6 @@ Reran focused backend integration: **61/61 passed**. Existing architect harness 
 Submitted typecheck/lint/build/static database evidence reviewed. PostgreSQL evidence remains one passing scenario and one 60-second timeout; this attempt does not establish mutation/replay/CAS/rollback completion. No storage or rehearsal source changed, so the timeout is not presented as a demonstrated regression or the reason for Changes Requested. Its cause remains unproven without the isolated-target investigation. Migration, disposable SQL, Redis/container and final manual system validation remain developer-owned; no such infrastructure operation was performed here.
 
 Ready for corrections; Attempt 8 retained and claims cleared. No acceptance, implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-018/019 remain Pending. Historical reviews remain below.
-
 
 ### Attempt 7 — Changes Requested (2026-09-21)
 
@@ -911,22 +909,22 @@ or Architect Review text was changed.
 ### A7 correction checklist
 
 - [x] **A7-R1:** Removed the invalid `first`, `nodes`, and `pageInfo` selections
-  from `DiscountCustomers` and `DiscountCustomerSegments` in the exported
-  `SHOPIFY_DISCOUNT_RULE_QUERY`. Restricted typenames remain mapped to
-  `UNSUPPORTED` without enumerating customer or segment identities. The exact
-  exported production document is validated against the pinned
-  `admin_2026-07.json.gz` schema, and the production discount fetch is exercised
-  with synthetic supported and restricted responses using the Admin token path.
+      from `DiscountCustomers` and `DiscountCustomerSegments` in the exported
+      `SHOPIFY_DISCOUNT_RULE_QUERY`. Restricted typenames remain mapped to
+      `UNSUPPORTED` without enumerating customer or segment identities. The exact
+      exported production document is validated against the pinned
+      `admin_2026-07.json.gz` schema, and the production discount fetch is exercised
+      with synthetic supported and restricted responses using the Admin token path.
 - [x] **A7-R2:** Added provider evidence and a bounded native-basic calculation
-  profile to `docs/discount-support-matrix.md`: Shopify's `DiscountAmount`
-  contract establishes EACH versus spread allocation, `DiscountCodeBasic`
-  establishes no shipping discount, and Shopify's amount-off guide establishes
-  product-price subtotal treatment and proportional allocation. The focused
-  production assembly test feeds the normalized provider result through the
-  accepted reader and evaluator using two fractional lines where line and total
-  rounding differ, asserting the supported result (`$0.04` savings from `$0.06`)
-  and restricted responses remain non-qualifying. No non-basic or incomplete
-  shape receives the profile.
+      profile to `docs/discount-support-matrix.md`: Shopify's `DiscountAmount`
+      contract establishes EACH versus spread allocation, `DiscountCodeBasic`
+      establishes no shipping discount, and Shopify's amount-off guide establishes
+      product-price subtotal treatment and proportional allocation. The focused
+      production assembly test feeds the normalized provider result through the
+      accepted reader and evaluator using two fractional lines where line and total
+      rounding differ, asserting the supported result (`$0.04` savings from `$0.06`)
+      and restricted responses remain non-qualifying. No non-basic or incomplete
+      shape receives the profile.
 
 ### Source and dependency SHA mapping
 
@@ -958,15 +956,15 @@ shared `0.13.1`, Prisma `6.19.3`, Next `16.3.5`, and MCP SDK `1.30.0`.
 Implementation worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
 
-| Command | Result |
-| --- | --- |
-| `npm run test:arch020-backend-integration -- --run tests/backend-integration.test.ts` | passed, 4 files / 61 tests |
-| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
-| `npm run lint` | passed with no reported errors |
-| `npm run build` | passed; Prisma Client `6.19.3` generated and Next production build completed |
-| `git diff --check` | passed |
-| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD schema checks passed; migration validator stopped before connection with `AssertionError: Local isolated target required` |
-| `npm run test:arch020-backend-integration:postgres` | real isolated-target rehearsal: 1 test passed; mutation/replay/CAS/rollback test timed out at 60 seconds; disposable SQL phase did not run after the failed Vitest phase |
+| Command                                                                               | Result                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run test:arch020-backend-integration -- --run tests/backend-integration.test.ts` | passed, 4 files / 61 tests                                                                                                                                               |
+| `npm run typecheck`                                                                   | passed; Next route type generation and `tsc --noEmit` passed                                                                                                             |
+| `npm run lint`                                                                        | passed with no reported errors                                                                                                                                           |
+| `npm run build`                                                                       | passed; Prisma Client `6.19.3` generated and Next production build completed                                                                                             |
+| `git diff --check`                                                                    | passed                                                                                                                                                                   |
+| `npm run test:arch020-backend-integration:database`                                   | static schema/migration/ERD schema checks passed; migration validator stopped before connection with `AssertionError: Local isolated target required`                    |
+| `npm run test:arch020-backend-integration:postgres`                                   | real isolated-target rehearsal: 1 test passed; mutation/replay/CAS/rollback test timed out at 60 seconds; disposable SQL phase did not run after the failed Vitest phase |
 
 Actual Attempt 8 evidence is the 61-test focused suite, exported-document
 schema validation, synthetic production Admin fetches, accepted evaluator
@@ -987,7 +985,6 @@ Task fields are clean for review: `status: review`, `executor: null`,
 implementation branch. The parent report commit and both push results will be
 recorded after this report edit. No downstream task was launched; no main branch
 was merged or updated.
-
 
 ### Attempt 6 — Changes Requested (2026-09-21)
 
@@ -1023,7 +1020,6 @@ Validate ownership and PUBLISHED status for **each bound revision** before or in
 Reran focused backend integration: **59/59 passed**. Temporary architect harness `/tmp/c013-a6-review/review.test.ts`: **11 passed, 1 failed**; the remaining failure reproduces successful resolution of an unpublished capability binding when also explicitly selected. It uses the actual facade with a recording Prisma port; the schema assertion reads the pinned local Shopify artifact. Prior draft-preview and TEST inspection regressions now pass. Source tracing through the accepted reader/evaluator establishes the unconditional unsupported discount behavior. Submitted PostgreSQL rehearsal 2/2 and typecheck/lint/build evidence reviewed; no database, Docker, migration, Redis or container operation was performed during this review.
 
 Status is Ready for corrections, Attempt 6 retained, claim cleared. No acceptance, implementation edits, main merge, gitlink update or downstream promotion. COMMERCE-018/019 remain Pending. Developer-owned infrastructure/migration validation and the final manual system-test gate remain separate; they are not the reason for this Changes Requested decision.
-
 
 ### Attempt 5 — Changes Requested (2026-09-21)
 
@@ -1066,8 +1062,6 @@ Pass the immutable validated environment into inspection from the backend compos
 #### Architect verification and disposition
 
 Reran `npm run test:arch020-backend-integration`: **59/59 passed**. Prior no-grant production factory fixture: **1/1 passed**; earlier adapter/facade regressions: **8/8 passed**. Expanded architect harness `/tmp/c013-a5-review/review.test.ts`: **8 passed, 2 failed**, reproducing the explicit saved-DRAFT rejection and TEST inspection querying DEVELOPMENT. These exercise the actual backend facade with a recording Prisma port; they are not live database evidence. Submitted database 2/2 evidence and its improved mutation/replay/contention/rollback source reviewed; no database/Docker action was performed by this review. Submitted typecheck/lint/build/diff evidence reviewed without redundant reruns. No implementation/main/gitlink mutation, acceptance or downstream promotion. COMMERCE-018/019 remain Pending. Keep developer-owned disposable infrastructure/migration validation and the final manual system-test gate.
-
-
 
 ### Attempt 4 — Changes Requested (2026-09-21)
 
@@ -1295,7 +1289,6 @@ Awaiting implementation.
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
 
-
 ## Architect readiness reconciliation — COMMERCE-007 acceptance — 2026-09-21
 
 Promoted **Ready**, Attempt 0 retained, executor/claimed_at null. COMMERCE-003/004/005/006/007/011/014/015/016 are architect-accepted Complete, including COMMERCE-007 Attempt 7 at `e08b896`. All explicit prerequisites are satisfied. Normal preparation owns synchronization and claim and must consume actual accepted source. No automatic launch, implementation change, main integration or gitlink update.
@@ -1314,17 +1307,17 @@ were not edited.
 ### A8 correction checklist
 
 - [x] **A8-R1:** Production discount minimum normalization is target-aware:
-  `BASKET` is used only for an explicit `ALL` target, while recognized product,
-  variant, and collection targets use `ELIGIBLE_LINES`. Unknown or incomplete
-  targets do not claim a minimum basis and remain non-qualifying.
+      `BASKET` is used only for an explicit `ALL` target, while recognized product,
+      variant, and collection targets use `ELIGIBLE_LINES`. Unknown or incomplete
+      targets do not claim a minimum basis and remain non-qualifying.
 - [x] **A8-R2:** Production normalization no longer asserts unproven
-  HALF_UP/LINE calculation semantics. Native-basic percentage and fixed rules
-  now carry `semantics: null`, causing the accepted reader/evaluator to fail
-  closed with `SEMANTICS_UNPROVEN` until independent provider evidence exists.
-  The support matrix retains proven subtotal/allocation facts and explicitly
-  treats the rounding mode and rounding point as unresolved. Synthetic
-  fractional-line coverage is retained only as evaluator regression behavior,
-  not provider proof.
+      HALF_UP/LINE calculation semantics. Native-basic percentage and fixed rules
+      now carry `semantics: null`, causing the accepted reader/evaluator to fail
+      closed with `SEMANTICS_UNPROVEN` until independent provider evidence exists.
+      The support matrix retains proven subtotal/allocation facts and explicitly
+      treats the rounding mode and rounding point as unresolved. Synthetic
+      fractional-line coverage is retained only as evaluator regression behavior,
+      not provider proof.
 
 ### Files changed
 
@@ -1340,15 +1333,15 @@ were not edited.
 Implementation worktree:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-013`.
 
-| Command | Result |
-| --- | --- |
-| `npm run test:arch020-backend-integration -- --run tests/backend-integration.test.ts` | passed, 4 files / 61 tests |
-| `npm run typecheck` | passed; Next route type generation and `tsc --noEmit` passed |
-| `npm run lint` | passed with no reported errors |
-| `npm run build` | passed; Prisma Client `6.19.3` generated and Next production build completed |
-| `git diff --check` | passed |
-| `npm run test:arch020-backend-integration:database` | static schema/migration/ERD checks passed; migration validator stopped with `AssertionError: Local isolated target required` |
-| `npm run test:arch020-backend-integration:postgres` | 1 test passed; mutation/replay/CAS/rollback rehearsal timed out at 60 seconds |
+| Command                                                                               | Result                                                                                                                       |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch020-backend-integration -- --run tests/backend-integration.test.ts` | passed, 4 files / 61 tests                                                                                                   |
+| `npm run typecheck`                                                                   | passed; Next route type generation and `tsc --noEmit` passed                                                                 |
+| `npm run lint`                                                                        | passed with no reported errors                                                                                               |
+| `npm run build`                                                                       | passed; Prisma Client `6.19.3` generated and Next production build completed                                                 |
+| `git diff --check`                                                                    | passed                                                                                                                       |
+| `npm run test:arch020-backend-integration:database`                                   | static schema/migration/ERD checks passed; migration validator stopped with `AssertionError: Local isolated target required` |
+| `npm run test:arch020-backend-integration:postgres`                                   | 1 test passed; mutation/replay/CAS/rollback rehearsal timed out at 60 seconds                                                |
 
 The focused suite also validates the exported Shopify Admin document against
 the pinned `admin_2026-07` schema and exercises synthetic production Admin

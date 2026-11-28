@@ -164,16 +164,23 @@ Shopify Dev MCP remains an explicit developer oracle owned by COMMERCE-018; it i
 ## Completion Report
 
 ### Status
+
 Ready for Review — Attempt 2
+
 ### Files Changed
+
 - `src/commerce/tool-authoring/admin-validation.ts`
 - `src/studio/tools/admin-validation-server-actions.ts`
 - `tests/shopify-admin-authoring-validation.test.ts`
+
 ### Work Completed
+
 - Normalized compiler-origin Admin GraphQL diagnostics to the canonical slash-delimited `/execution/...` path contract.
 - Preserved the zero-provider-I/O local compiler boundary, server-owned API version/schema hash metadata, explicit COMMERCE-019 action results, and ADMIN platform-role authorization.
 - Added exact operation, schema-hash, connection-bound, and variable compiler-path regression assertions.
+
 ### Validation Results
+
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-024`; launcher synchronized `task/ARCH-021-COMMERCE-024`, remote parity was `not-needed`, and parent head before report work was `2fd3e0f1c406f8069a124fe2e32b407c283e8289`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-024`; launcher synchronized `task/ARCH-021-COMMERCE-024`, remote parity was `not-needed`, and implementation head before correction was `c98cd0b27e07d441a0561552888d5d96f7501cfa`.
 - Launcher claim: `--prepare --executor copilot --json` succeeded; dependency gate passed; Attempt 2 claimed; parent claim commit `2fd3e0f1c406f8069a124fe2e32b407c283e8289` was committed and pushed.
@@ -186,18 +193,27 @@ Ready for Review — Attempt 2
 - `npm run typecheck`: blocked by 267 pre-existing diagnostics across 34 unrelated files; zero diagnostics were reported in the three C024 task-owned files.
 - `git diff --check`: passed.
 - Final implementation worktree was clean after commit/push; parent worktree was clean before this report update. Branch/remote parity was verified with `git rev-parse HEAD` and `git rev-parse @{u}`.
+
 ### Deviations
+
 - Full typecheck remains non-blocking only because diagnostics are outside the C024 task-owned files and include existing generated-Prisma/module baseline failures.
+
 ### Assumptions
+
 - COMMERCE-019 remains authoritative for publication gating and `LIVE_TEST_REQUIRED`; this task creates no live-test receipt or publication evidence.
+
 ### Unresolved Issues
+
 - None within C024 scope.
+
 ### Architectural Concerns
+
 None
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes

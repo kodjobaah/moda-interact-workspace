@@ -1,4 +1,5 @@
 ---
+
 id: ARCH-040-WOOCOMMERCE-003
 architecture_id: ARCH-040
 title: Add takeover and replies within Woo Recovery Detail

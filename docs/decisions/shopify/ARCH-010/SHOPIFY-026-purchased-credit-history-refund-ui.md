@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-SHOPIFY-025
-- ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-025
+  - ARCH-010-SHOPIFY-012
 enables:
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-13
 updated: 2026-09-14
 ---
@@ -297,9 +297,11 @@ STOP if SHOPIFY-025 does not expose all lifecycle/action states required for det
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact/app/routes.ts`
 - `moda-interact/app/routes/app/billing/recovery-credit-purchases/route.tsx`
 - `moda-interact/app/components/dashboard/RecoveryCreditPurchaseManager.jsx`
@@ -309,6 +311,7 @@ Ready for Review.
 - `moda-interact/tests/unit/recovery-credit-purchase-manager.test.tsx`
 
 ### Work Completed
+
 - Added the authenticated canonical `/app/billing/recovery-credit-purchases` route using the SHOPIFY-025 loader/action contract, bounded to the server page/pageSize limits and the server-owned purchase IDs, amounts and outcomes.
 - Added Active, Refund pending, Completed, Refunded and All views. All exposes REQUESTED as awaiting Shopify confirmation without selection controls.
 - Added eligible ACTIVE selection only when server `availableAmount > 0`, current-page unique select-all, bounded multi-purchase submission, no quantity or money inputs, and no browser quantity/money authority.
@@ -320,6 +323,7 @@ Ready for Review.
 - Added merchant catalogue parity through the existing catalogue registry with English fallback values for all supported merchant locales.
 
 ### Second Review Findings and Fixes
+
 - Initially omitted: no dedicated route/component test covered the 23 required UI checks; added `tests/unit/recovery-credit-purchase-manager.test.tsx` with lifecycle, selection, internal-data, payload, authentication and route-registration assertions.
 - Initially omitted: `eligibleVisible` was recreated for every render and used by a cleanup effect that always returned a new array; memoized it to prevent render-loop state churn.
 - Initially incorrect: REFUNDED rows displayed `expectedProviderAmount/currency` as confirmed settlement money even though SHOPIFY-025 does not expose provider-confirmed settlement fields; removed that speculative display while retaining persisted refunded credit quantity and completion date.
@@ -327,6 +331,7 @@ Ready for Review.
 - Second-review feedback: route authentication, read/manage capability metadata, route registration, production navigation, server-owned IDs/amounts, current-page selection, confirmation statements, independent outcomes, reactivation gating, terminal controls, internal-data omission and i18n parity are present and covered by focused tests.
 
 ### Requirement and Test Checklist
+
 1. Dedicated authenticated route: satisfied by explicit route and authenticated loader/action assertions.
 2. Billing surface link preserving top-up CTA: satisfied and covered by billing purchase hub test.
 3. Active, Refund pending, Completed, Refunded and All views: satisfied by filter model and focused render test.
@@ -352,6 +357,7 @@ Ready for Review.
 23. Component/route tests, typecheck/build/lint and diff check: focused tests, build, changed-file lint and diff check passed; typecheck remains baseline-blocked only outside task files.
 
 ### Correction Checklist
+
 - The launcher/task context identified `rework_required`, but the complete authoritative task file contained no `## Architect Review` section or Changes Requested items. No review section was edited; the full task acceptance criteria were treated as the correction checklist.
 - Authenticated route and production navigation: implemented.
 - Lifecycle filters, REQUESTED visibility/non-selection and bounded pagination: implemented.
@@ -362,6 +368,7 @@ Ready for Review.
 - Persisted settlement/money safety, cross-shop/internal data safety and merchant i18n: implemented.
 
 ### Validation Results
+
 - Passed final focused suite: `tests/unit/recovery-credit-purchase-manager.test.tsx`, `tests/unit/routes/explicit-route-config.test.ts`, `tests/unit/billing-purchase-hub.test.tsx`, `tests/unit/billing-i18n.test.ts`, `tests/unit/merchant-i18n.test.ts`, `tests/unit/services/recovery-credit-purchase-management.service.test.ts` (6 files, 42 tests).
 - Passed changed-file ESLint; only the repository's existing unsupported-TypeScript-version warning was emitted.
 - Passed `git diff --check`.
@@ -371,6 +378,7 @@ Ready for Review.
 - Contract limitations for architect review: SHOPIFY-025 exposes bounded pagination but no lifecycle filter parameter, so the UI filters only the loaded bounded page and does not claim complete lifecycle totals; SHOPIFY-025 also does not expose provider-confirmed refund amount/currency, so the UI omits that value rather than displaying `expectedProviderAmount` as settlement.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-026`.
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-026`.
 - Mirrored branch: `task/ARCH-010-SHOPIFY-026`.
@@ -380,6 +388,7 @@ Ready for Review.
 - Parent report commits/pushes: `392789d`, `cf0cff0`, `cd7a884`, and the final evidence correction, all pushed to `origin/task/ARCH-010-SHOPIFY-026`.
 
 ### Architect Review
+
 Pending. The task is returned for architect review; this agent made no architect acceptance decision.
 
 ## Completion Report — Attempt 3 Final Audit
@@ -546,7 +555,7 @@ const where: Prisma.RecoveryCreditPurchaseWhereInput = {
 Use this same `where` variable, unchanged, in BOTH:
 
 ```ts
-this.database.recoveryCreditPurchase.count({ where })
+this.database.recoveryCreditPurchase.count({ where });
 ```
 
 and:
@@ -637,7 +646,9 @@ const FILTER_TO_STATUS: Record<
   ALL: undefined,
 };
 
-function resolvePurchaseHistoryFilter(value: string | null): PurchaseHistoryFilter {
+function resolvePurchaseHistoryFilter(
+  value: string | null,
+): PurchaseHistoryFilter {
   return PURCHASE_HISTORY_FILTERS.includes(value as PurchaseHistoryFilter)
     ? (value as PurchaseHistoryFilter)
     : "ACTIVE";
@@ -724,19 +735,19 @@ because navigation still writes filter/page query parameters.
 Delete the current client authority line:
 
 ```js
-const filter =
-  FILTERS.includes(searchParams.get("filter"))
-    ? searchParams.get("filter")
-    : "ACTIVE";
+const filter = FILTERS.includes(searchParams.get("filter"))
+  ? searchParams.get("filter")
+  : "ACTIVE";
 ```
 
 Delete the current lifecycle filtering line:
 
 ```js
 const visible = useMemo(
-  () => filter === "ALL"
-    ? purchases
-    : purchases.filter((purchase) => purchase.status === filter),
+  () =>
+    filter === "ALL"
+      ? purchases
+      : purchases.filter((purchase) => purchase.status === filter),
   [filter, purchases],
 );
 ```
@@ -750,16 +761,13 @@ const visible = purchases;
 Keep current-page eligibility separate:
 
 ```js
-const eligibleVisible = useMemo(
-  () => visible.filter(eligible),
-  [visible],
-);
+const eligibleVisible = useMemo(() => visible.filter(eligible), [visible]);
 ```
 
 `eligible(...)` MUST remain:
 
 ```js
-purchase.status === "ACTIVE" && purchase.availableAmount > 0
+purchase.status === "ACTIVE" && purchase.availableAmount > 0;
 ```
 
 Changing a tab MUST continue to:
@@ -822,8 +830,8 @@ add:
 
 ```ts
 const hasMappedCurrentContract =
-  data.verificationState === "ACTIVE_SUBSCRIPTION"
-  && mappingStatus === "MAPPED";
+  data.verificationState === "ACTIVE_SUBSCRIPTION" &&
+  mappingStatus === "MAPPED";
 ```
 
 In `topUpState`, replace exactly these three properties:
@@ -847,11 +855,11 @@ Leave the existing `purchaseEligible` expression MAPPED-gated.
 Do NOT change or suppress:
 
 ```ts
-paidIncludedCreditsAvailable
-freeLifetimeCreditsAvailable
-promotionalCreditsAvailable
-purchasedCreditsAvailable
-latestPurchase
+paidIncludedCreditsAvailable;
+freeLifetimeCreditsAvailable;
+promotionalCreditsAvailable;
+purchasedCreditsAvailable;
+latestPurchase;
 ```
 
 Do NOT zero or hide the SHOPIFY-009 `capacity` object because the commercial
@@ -880,23 +888,24 @@ app/components/dashboard/BillingPurchaseHub.jsx
 The `stateCopy` precedence MUST be exactly:
 
 ```js
-const stateCopy = lifecycleState === "FROZEN"
-  ? i18n.t("billing.frozenDescription")
-  : scheduledCancellation && !pending && current?.currentPeriodEnd
-    ? i18n.t("billing.cancelAtPeriodEndOn", {
-        date: i18n.formatDate(current.currentPeriodEnd),
-      })
-    : capacity?.availability === "CONTRACT_REQUIRED"
-      ? i18n.t("billing.contractRequiredDescription")
-      : billingPeriodPhase === "DRAINING"
-        || billingPeriodPhase === "RECONCILING"
-        ? i18n.t("billing.configurationUnavailableDescription")
-        : verificationState === "VERIFICATION_UNAVAILABLE"
-          ? i18n.t("billing.verificationUnavailableDescription")
-          : verificationState === "ACTIVE_SUBSCRIPTION"
-            && mappingStatus === "UNMAPPED"
-            ? i18n.t("billing.configurationUnavailableDescription")
-            : null;
+const stateCopy =
+  lifecycleState === "FROZEN"
+    ? i18n.t("billing.frozenDescription")
+    : scheduledCancellation && !pending && current?.currentPeriodEnd
+      ? i18n.t("billing.cancelAtPeriodEndOn", {
+          date: i18n.formatDate(current.currentPeriodEnd),
+        })
+      : capacity?.availability === "CONTRACT_REQUIRED"
+        ? i18n.t("billing.contractRequiredDescription")
+        : billingPeriodPhase === "DRAINING" ||
+            billingPeriodPhase === "RECONCILING"
+          ? i18n.t("billing.configurationUnavailableDescription")
+          : verificationState === "VERIFICATION_UNAVAILABLE"
+            ? i18n.t("billing.verificationUnavailableDescription")
+            : verificationState === "ACTIVE_SUBSCRIPTION" &&
+                mappingStatus === "UNMAPPED"
+              ? i18n.t("billing.configurationUnavailableDescription")
+              : null;
 ```
 
 This preserves later lifecycle/cancellation precedence while restoring the
@@ -2343,7 +2352,6 @@ Set the complete `billingPurchases.*` namespace to these exact key/value pairs (
 }
 ```
 
-
 ---
 
 ## Correction 3C — deterministic locale validation
@@ -2377,7 +2385,7 @@ For each locale, assert:
 Placeholder comparison MUST extract placeholder names with semantics equivalent to:
 
 ```ts
-/\{([A-Za-z][A-Za-z0-9_]*)\}/g
+/\{([A-Za-z][A-Za-z0-9_]*)\}/g;
 ```
 
 The test MUST inspect raw locale JSON files. It MUST NOT rely on `catalogues.js`
@@ -2426,7 +2434,7 @@ listPurchaseHistory({
   page: 1,
   pageSize: 2,
   status: RecoveryCreditPurchaseStatus.ACTIVE,
-})
+});
 ```
 
 assert:
@@ -2647,6 +2655,7 @@ both implementation and parent worktrees are clean and pushed
 ```
 
 `ARCH-010-SYSTEM-TEST-003` remains gated until SHOPIFY-026 is accepted Complete.
+
 ## Architect Review — Attempt 3
 
 ### Decision

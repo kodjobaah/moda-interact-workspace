@@ -17,6 +17,7 @@ enables: []
 created: 2026-09-05
 updated: 2026-09-05T08:59:00Z
 ---
+
 # Correct Shopify dashboard CheckoutRecovery conversation relation
 
 ## Architecture
@@ -95,7 +96,7 @@ include: {
 Both routes also dereference:
 
 ```js
-recovery.conversations[0]
+recovery.conversations[0];
 ```
 
 The current component DTO in:
@@ -107,7 +108,7 @@ app/components/dashboard/RecoveryChart.jsx
 still expects a UI property named:
 
 ```js
-selectedRecovery.conversations
+selectedRecovery.conversations;
 ```
 
 That UI DTO name is not itself a Prisma relation and may remain plural.
@@ -117,7 +118,7 @@ That UI DTO name is not itself a Prisma relation and may remain plural.
 Update the Prisma loader boundary to use the canonical singular relation:
 
 ```js
-conversation
+conversation;
 ```
 
 ### Main dashboard
@@ -141,13 +142,13 @@ conversation: {
 and runtime accesses must use:
 
 ```js
-recovery.conversation
+recovery.conversation;
 ```
 
 instead of:
 
 ```js
-recovery.conversations[0]
+recovery.conversations[0];
 ```
 
 This includes:
@@ -179,13 +180,13 @@ conversation: {
 and source-resolution logic must use:
 
 ```js
-recovery.conversation
+recovery.conversation;
 ```
 
 instead of:
 
 ```js
-recovery.conversations[0]
+recovery.conversations[0];
 ```
 
 ## UI DTO Compatibility
@@ -195,19 +196,21 @@ Do **not** require a dashboard component redesign for this correction.
 Where `RecoveryChart.jsx` currently consumes:
 
 ```js
-recovery.conversations
+recovery.conversations;
 ```
 
 the loader may continue returning the existing UI DTO shape:
 
 ```js
 conversations: conversation
-  ? [{
-      id: conversation.id,
-      type: conversation.type,
-      summary: conversation.summary,
-    }]
-  : []
+  ? [
+      {
+        id: conversation.id,
+        type: conversation.type,
+        summary: conversation.summary,
+      },
+    ]
+  : [];
 ```
 
 This keeps the component contract stable while correcting the Prisma/database

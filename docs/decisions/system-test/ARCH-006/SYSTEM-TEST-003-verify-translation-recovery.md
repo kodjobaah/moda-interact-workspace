@@ -51,6 +51,7 @@ Integrated architecture scenarios around DB state, BullMQ loss/failure, worker r
 ## Requirements
 
 Cover at least:
+
 1. DB commit succeeds, initial dispatch enqueue fails -> startup/periodic reconciliation restores work.
 2. Redis waiting/delayed jobs are lost -> restart reconstructs PENDING/READY/overdue-poll/provider-completed work.
 3. Existing waiting/delayed/active deterministic job is reused, not duplicated.

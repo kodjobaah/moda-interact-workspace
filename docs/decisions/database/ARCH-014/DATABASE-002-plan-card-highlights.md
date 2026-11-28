@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-014-DATABASE-001
+  - ARCH-014-DATABASE-001
 enables:
-- ARCH-014-ADMIN-004
-- ARCH-014-SHOPIFY-002
+  - ARCH-014-ADMIN-004
+  - ARCH-014-SHOPIFY-002
 created: 2026-09-15
 updated: 2026-09-15
 ---

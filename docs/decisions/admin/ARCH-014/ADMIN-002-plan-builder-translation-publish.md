@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-014-DATABASE-001
-- ARCH-014-ADMIN-001
+  - ARCH-014-DATABASE-001
+  - ARCH-014-ADMIN-001
 enables:
-- ARCH-014-ADMIN-003
-- ARCH-014-SYSTEM-TEST-001
+  - ARCH-014-ADMIN-003
+  - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -551,7 +551,7 @@ Implement all cases below; do not replace them with broad snapshot tests.
 11. handle/name/source-locale/schema mismatch;
 12. unexpected fields rejected;
 13. English source mismatch;
-14. >256KiB file rejected before parsing.
+14. > 256KiB file rejected before parsing.
 
 ### Builder payload
 

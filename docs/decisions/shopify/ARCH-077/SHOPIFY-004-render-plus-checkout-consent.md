@@ -100,14 +100,14 @@ logs, the local database and the Admin API (CLI GraphiQL).
 Verified live:
 
 - Verified signed session JWT: server log shows `Authenticating checkout
-  request` → `Validating session token` → `Session token is valid - validated`
+request` → `Validating session token` → `Session token is valid - validated`
   for every status/decision call (e.g. 09:13:14Z, 09:14:08Z, 11:15:25Z), via
   `authenticate.public.checkout`, with shop gate `commerce.Shop` = ACTIVE.
 - Actual checkoutToken: extension rendered only on a real checkout with a
   checkout token; the receipt bound to that token verified on reload and on
   the same checkout session at 11:15:25Z.
 - Exact English wording displayed: `Send me WhatsApp shopping updates,
-  reminders and offers.`
+reminders and offers.`
 - No auto-GRANT on render: fresh checkout rendered unchecked with no write.
 - GRANT: explicit check issued a fresh `kind=x` receipt, wrote only the
   `moda_wa_consent_v1` checkout attribute, confirmed Shopify `type:'success'`
@@ -215,7 +215,6 @@ Not live-verified, with reason:
 - `git submodule update --init --recursive`: passed
 - Recorded submodule commit: `database` at
   `0a9edc7c0c30e0a405d89efec624bc9338b4ac17`
-
 
 ## Architect Review — 18 November 2026 — ACCEPTED (Attempt 2)
 

@@ -117,18 +117,18 @@ do not assume every reported failure is new or code-owned.
 ## Work Items
 
 - [x] Capture exact starting revision, runtime/tool versions, declared and
-  installed dependency state, and full unit/integration failure identities.
+      installed dependency state, and full unit/integration failure identities.
 - [x] Establish a reproducible baseline after resolving local dependency
-  installation mismatches without masking package/export defects.
+      installation mismatches without masking package/export defects.
 - [x] Classify each reported failure and identify its owning repository or
-  environment boundary before source/test edits.
+      environment boundary before source/test edits.
 - [x] Report any confirmed Shared/workspace-owned issue to `moda_architect` and
-  stop affected work until the correct dependency is accepted.
+      stop affected work until the correct dependency is accepted.
 - [x] Correct confirmed Background-owned defects and add/adjust focused tests
-  without weakening behavioral coverage.
+      without weakening behavioral coverage.
 - [x] Run complete Background unit and integration validation on the final
-  task revision; update this Completion Report with exact totals and remaining
-  failures.
+      task revision; update this Completion Report with exact totals and remaining
+      failures.
 
 ## Interfaces / Contracts
 
@@ -151,38 +151,38 @@ None.
 ## Acceptance Criteria
 
 - [x] Starting-revision unit and integration outcomes are reproducible or
-  explicitly classified as intermittent with supporting rerun evidence.
+      explicitly classified as intermittent with supporting rerun evidence.
 - [x] Every failure from the reported run is classified as install/export,
-  workspace environment, Shared-owned, Background-owned, established baseline,
-  or non-reproducible; no failure is assumed to be a code regression solely
-  because it appeared in the full run.
+      workspace environment, Shared-owned, Background-owned, established baseline,
+      or non-reproducible; no failure is assumed to be a code regression solely
+      because it appeared in the full run.
 - [x] The `./identity` and `./whatsapp-template-events` resolution is proven to
-  be either a stale local installation or a Shared package/release defect; no
-  Background workaround duplicates or hides the Shared export.
+      be either a stale local installation or a Shared package/release defect; no
+      Background workaround duplicates or hides the Shared export.
 - [x] Any Shared-owned work is separately task-tracked and explicitly gated by
-  architect-managed dependencies before the corresponding Background fix.
+      architect-managed dependencies before the corresponding Background fix.
 - [x] Confirmed Background-owned failures are corrected without weakening
-  unrelated assertions or changing behavior to match an unverified expectation.
+      unrelated assertions or changing behavior to match an unverified expectation.
 - [x] Full `npm run test:unit` and `npm run test:integration` pass on the final
-  task revision. If an external owner/environment blocker prevents completion,
-  the task is returned as blocked with exact evidence rather than reported as
-  complete.
+      task revision. If an external owner/environment blocker prevents completion,
+      the task is returned as blocked with exact evidence rather than reported as
+      complete.
 - [x] No new or worsened failure identity is left unexplained; full-suite
-  results and any proposed baseline changes are reported to `moda_architect`.
+      results and any proposed baseline changes are reported to `moda_architect`.
 
 ## Validation
 
 - [x] Baseline `npm run test:unit` on the exact starting revision after dependency
-  state is recorded.
+      state is recorded.
 - [x] Baseline `npm run test:integration` on the exact starting revision after
-  dependency state is recorded.
+      dependency state is recorded.
 - [x] Attempt 2 full `npm run test:unit` on merged commit
-  `caa415fe5743e16693da79da8ab5e81f3d09259f` — 293 files / 3,024 tests passed.
+      `caa415fe5743e16693da79da8ab5e81f3d09259f` — 293 files / 3,024 tests passed.
 - [x] Attempt 2 full `npm run test:integration` on merged commit
-  `caa415fe5743e16693da79da8ab5e81f3d09259f` — 5/5 files and 13/13 tests
-  passed; the prior scheduling failure did not recur.
+      `caa415fe5743e16693da79da8ab5e81f3d09259f` — 5/5 files and 13/13 tests
+      passed; the prior scheduling failure did not recur.
 - [x] Focused reruns for corrected Background-owned failures and any intermittent
-  failures, with exact commands and outcomes recorded.
+      failures, with exact commands and outcomes recorded.
 - [x] `git diff --check`.
 
 ## Stop Condition
@@ -256,9 +256,9 @@ Attempt 1 was blocked at review because full integration reproduced the ARCH-007
 - Starting revision: `npm run test:integration` passed 5 files / 13 tests on
   its first run.
 - Focused after corrections: `npx vitest run
-  tests/unit/services/matured-candidate.materialization.test.ts` passed 31/31;
+tests/unit/services/matured-candidate.materialization.test.ts` passed 31/31;
   `npx vitest run tests/unit/services/checkout-refresh.test.ts
-  tests/unit/services/conversation-moderation/automated-template-input.test.ts`
+tests/unit/services/conversation-moderation/automated-template-input.test.ts`
   passed 28/28; `npx vitest run tests/unit/runtime/observability-startup.test.ts`
   passed 10/10.
 - Attempt 1 final `npm run test:unit`: passed, 291 files / 3,013 tests.
@@ -412,10 +412,10 @@ Before resubmission, correct the following report/evidence issues:
    - `tests/unit/services/conversation-moderation/automated-template-input.test.ts`:
      expected JSON omitted the explicit `textHeader: null` and
      `imageHeader: null` fields.
-   Compare identities with `ARCH025-BACKGROUND-TEST-001` explicitly. The
-   matured-candidate test identity overlaps that historical entry, but the
-   current failed behavior/reason was the stale selector mock; do not imply the
-   baseline proves identical cause.
+     Compare identities with `ARCH025-BACKGROUND-TEST-001` explicitly. The
+     matured-candidate test identity overlaps that historical entry, but the
+     current failed behavior/reason was the stale selector mock; do not imply the
+     baseline proves identical cause.
 2. Record the missing launcher evidence from the prepared packet: canonical
    workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent
    task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-001`;
@@ -473,7 +473,6 @@ acceptance. At the time of this review, the task remained `blocked` until report
 ### Follow-up
 
 On Attempt 2, complete the report/evidence corrections above, rerun the full unit and integration suites after `ARCH-007-BACKGROUND-012`, and resubmit for Architect Review. The dependency is Complete and the task is Ready; no claim has been made.
-
 
 ### Review Status
 

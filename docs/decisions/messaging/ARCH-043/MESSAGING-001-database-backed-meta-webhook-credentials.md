@@ -49,25 +49,25 @@ Replace the Messaging app's environment-variable Meta webhook **GET verification
 
 **Only these Messaging repository source, dependency and test touchpoints are authorised:**
 
-| Existing/new path relative to `moda-interact-messaging/` | Required operation and ownership |
-|---|---|
-| `package.json`, `package-lock.json` | Add `pg` runtime dependency and `@types/pg` development types using the repository's npm lockfile; do not upgrade Shared or unrelated dependencies. |
-| `app/lib/platform-configuration/meta-contract.server.ts` **NEW** | Local, server-only `messaging.meta` purpose types, exact closed-field validator, typed safe failure codes and row/snapshot interfaces. |
-| `app/lib/platform-configuration/meta-repository.server.ts` **NEW** | Single-key `pg`-backed read-only PostgreSQL adapter; parameterised SQL, injectable query dependency, at most one row. |
-| `app/lib/platform-configuration/meta-reader.server.ts` **NEW** | Injectable read/decrypt/validate service using only existing Shared Node crypto, frozen ARCH-043 AAD, independent keyring provider and redacted structured outcomes. |
-| `app/lib/platform-configuration/meta-production.server.ts` **NEW** | Server-only production composition of bounded `pg.Pool`, trusted environment identity, external unseal material, reader and Shared logger. |
-| `app/lib/whatsapp/webhook-auth.server.ts` | Make HMAC checking credential-argument-driven; remove both environment-backed Meta-secret getters. Preserve exact raw-body HMAC and constant-time signature comparison. |
-| `app/routes/whatsapp.tsx` | Await one credentials snapshot per eligible GET or signed POST; preserve GET/POST separation, response bodies and dispatcher injection; add fail-closed redacted configuration-unavailable response. |
-| `app/lib/observability/whatsapp-ingress-telemetry.ts` | Extend **existing** bounded semantic telemetry to cover configuration-unavailable POST as reason `configuration_unavailable` / HTTP `503`, without introducing a duplicate request metric or new telemetry framework. |
-| `tests/platform-configuration-meta-reader.test.mjs` **NEW** | Strict envelope/contract/AAD/rotation/malformed/secret-redaction unit tests using injected row repository and keyring. |
-| `tests/platform-configuration-meta-postgres.test.mjs` **NEW** | Disposable PostgreSQL integration checks for the parameterised `pg` repository and committed row revisions; explicit opt-in test database guard. |
-| `tests/whatsapp-webhook-auth.test.mjs` | Adapt HMAC tests to explicit secret parameter and GET tests to injectable configuration reader; remove env-secret fixture reliance. |
-| `tests/whatsapp-webhook-route.test.mjs` | Adapt signed, unsigned, malformed, mixed-event, publisher-failure and authentication tests to reader injection. |
-| `tests/whatsapp-template-status-route.test.mjs` | Preserve all template-status acceptance and queue-failure tests using injected credentials. |
-| `tests/whatsapp-webhook-preflight-telemetry.test.mjs` | Preserve preflight/telemetry assertions with DB-backed reader test seam. |
-| `tests/whatsapp-queue-telemetry.test.mjs` | Preserve optional Redis/trace test, replacing `META_APP_SECRET` test env mutation with injected credentials. |
-| `tests/whatsapp-ingress-telemetry.test.mjs` | Assert bounded `configuration_unavailable`/503 observation and failure isolation. |
-| `README.md` | Document database-backed webhook credential source, required external runtime inputs, readiness/failure semantics and removal of old runtime token requirements. |
+| Existing/new path relative to `moda-interact-messaging/`           | Required operation and ownership                                                                                                                                                                                      |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`, `package-lock.json`                                | Add `pg` runtime dependency and `@types/pg` development types using the repository's npm lockfile; do not upgrade Shared or unrelated dependencies.                                                                   |
+| `app/lib/platform-configuration/meta-contract.server.ts` **NEW**   | Local, server-only `messaging.meta` purpose types, exact closed-field validator, typed safe failure codes and row/snapshot interfaces.                                                                                |
+| `app/lib/platform-configuration/meta-repository.server.ts` **NEW** | Single-key `pg`-backed read-only PostgreSQL adapter; parameterised SQL, injectable query dependency, at most one row.                                                                                                 |
+| `app/lib/platform-configuration/meta-reader.server.ts` **NEW**     | Injectable read/decrypt/validate service using only existing Shared Node crypto, frozen ARCH-043 AAD, independent keyring provider and redacted structured outcomes.                                                  |
+| `app/lib/platform-configuration/meta-production.server.ts` **NEW** | Server-only production composition of bounded `pg.Pool`, trusted environment identity, external unseal material, reader and Shared logger.                                                                            |
+| `app/lib/whatsapp/webhook-auth.server.ts`                          | Make HMAC checking credential-argument-driven; remove both environment-backed Meta-secret getters. Preserve exact raw-body HMAC and constant-time signature comparison.                                               |
+| `app/routes/whatsapp.tsx`                                          | Await one credentials snapshot per eligible GET or signed POST; preserve GET/POST separation, response bodies and dispatcher injection; add fail-closed redacted configuration-unavailable response.                  |
+| `app/lib/observability/whatsapp-ingress-telemetry.ts`              | Extend **existing** bounded semantic telemetry to cover configuration-unavailable POST as reason `configuration_unavailable` / HTTP `503`, without introducing a duplicate request metric or new telemetry framework. |
+| `tests/platform-configuration-meta-reader.test.mjs` **NEW**        | Strict envelope/contract/AAD/rotation/malformed/secret-redaction unit tests using injected row repository and keyring.                                                                                                |
+| `tests/platform-configuration-meta-postgres.test.mjs` **NEW**      | Disposable PostgreSQL integration checks for the parameterised `pg` repository and committed row revisions; explicit opt-in test database guard.                                                                      |
+| `tests/whatsapp-webhook-auth.test.mjs`                             | Adapt HMAC tests to explicit secret parameter and GET tests to injectable configuration reader; remove env-secret fixture reliance.                                                                                   |
+| `tests/whatsapp-webhook-route.test.mjs`                            | Adapt signed, unsigned, malformed, mixed-event, publisher-failure and authentication tests to reader injection.                                                                                                       |
+| `tests/whatsapp-template-status-route.test.mjs`                    | Preserve all template-status acceptance and queue-failure tests using injected credentials.                                                                                                                           |
+| `tests/whatsapp-webhook-preflight-telemetry.test.mjs`              | Preserve preflight/telemetry assertions with DB-backed reader test seam.                                                                                                                                              |
+| `tests/whatsapp-queue-telemetry.test.mjs`                          | Preserve optional Redis/trace test, replacing `META_APP_SECRET` test env mutation with injected credentials.                                                                                                          |
+| `tests/whatsapp-ingress-telemetry.test.mjs`                        | Assert bounded `configuration_unavailable`/503 observation and failure isolation.                                                                                                                                     |
+| `README.md`                                                        | Document database-backed webhook credential source, required external runtime inputs, readiness/failure semantics and removal of old runtime token requirements.                                                      |
 
 Test helpers may be placed under `tests/helpers/` **only** if necessary for deterministic fixture reuse across the listed tests; do not add a second configuration service or unrelated production modules.
 
@@ -85,7 +85,7 @@ Test helpers may be placed under `tests/helpers/` **only** if necessary for dete
 ### R1 — Fixed database and plaintext contract
 
 - Key literal: `messaging.meta`; environment: trusted deployment `DEPLOYMENT_ENVIRONMENT_NAME` (the test deployment is `test`). Never accept environment/key from HTTP query, webhook body, tenant, WABA or Meta payload. Enforce allowlist `local|test|development|staging|production`; hosted deployments must explicitly supply `DEPLOYMENT_ENVIRONMENT_NAME` (do not silently use `NODE_ENV=production` to select a database record).
-- Read **one** fresh snapshot per eligible webhook HTTP request; no across-request cache, timer, last-known-good or environment secret fallback. Reuse only the *connection pool*, never the plaintext credential snapshot.
+- Read **one** fresh snapshot per eligible webhook HTTP request; no across-request cache, timer, last-known-good or environment secret fallback. Reuse only the _connection pool_, never the plaintext credential snapshot.
 - Existing table/fields: `public."PlatformConfiguration"` with `environment: string`, `key: string`, `version: positive integer`, `value: JSON object`. Unique `(environment,key)` already exists; do not add schema/migration.
 - Decrypted plaintext must be an object with **exactly two own fields** named `appSecret` and `verifyToken`; both nonempty trimmed strings, UTF-8 length ≤4096 each, no control characters, no additional properties; bound whole plaintext JSON to ≤8192 UTF-8 bytes. Match Admin `secret-validation.ts` rules for `messaging.meta`, not the API's older uppercase-name interpretation.
 - Expose neither plaintext credentials nor the sealed row outside the server reader or into request/response/log/error objects. The caller gets a readonly `{ key, version, value: {appSecret, verifyToken} }` snapshot; never expose the raw stored envelope.
@@ -96,7 +96,7 @@ Test helpers may be placed under `tests/helpers/` **only** if necessary for dete
 - Validate key ID against `/^[A-Za-z0-9_-]{1,64}$/` and disallow `__proto__`, `prototype`, `constructor`. Parse `nonce`, `ciphertext`, `authTag` as strict **canonical standard base64** (not base64url), with `nonce` = 12 decoded bytes, `authTag` = 16 decoded bytes, ciphertext nonempty and bounded ≤8192 decoded bytes; round-trip base64 must match input.
 - AAD bytes **must** be `JSON.stringify(["moda-platform-config-v1", environment, "messaging.meta", version, 1])` after validating trusted environment, fixed purpose and positive safe-integer version. No different spacing, additional fields, JSON object representation or fallback AAD. Authentication must fail if environment, purpose, version, ciphertext, nonce or auth tag is changed.
 - Import **only existing** published `decryptCredential`, `parseCredentialKeyring`, `resolveActiveCredentialKey` and types from `@modainteract/moda-interact-shared/security/credentials/node`. Do not implement AES-GCM or keyring parsing locally or modify Shared.
-- The *independent* external `MODA_CONFIG_UNSEAL_KEY` and `MODA_CONFIG_UNSEAL_ACTIVE_KEY_ID` supply the wrapping keyring and active key selection; parse/validate on each read (not module import), allowing old-row key IDs during rotation. Never use `messaging.sender` token, Commerce credential keyring, Meta app secret or a generated default as an unseal key.
+- The _independent_ external `MODA_CONFIG_UNSEAL_KEY` and `MODA_CONFIG_UNSEAL_ACTIVE_KEY_ID` supply the wrapping keyring and active key selection; parse/validate on each read (not module import), allowing old-row key IDs during rotation. Never use `messaging.sender` token, Commerce credential keyring, Meta app secret or a generated default as an unseal key.
 - An absent/wrong keyring, tampered envelope, wrong AAD or malformed plaintext fails closed. Do not expose raw driver, crypto, PostgreSQL or decryption exceptions; log bounded reason codes only.
 
 ### R3 — Exact service and repository interfaces
@@ -120,7 +120,7 @@ export type MetaCredentialsSnapshot = Readonly<{
   value: MetaWebhookCredentials;
 }>;
 export type MetaConfigurationFailureCode =
-  | "MISSING" | "DISABLED" | "INVALID" | "UNSEAL_FAILED" | "DB_UNAVAILABLE";
+  "MISSING" | "DISABLED" | "INVALID" | "UNSEAL_FAILED" | "DB_UNAVAILABLE";
 export class MetaConfigurationFailure extends Error {
   readonly code: MetaConfigurationFailureCode;
 }
@@ -154,6 +154,7 @@ LIMIT 2
 ```
 
 Bind `$1` to the validated trusted environment and `$2` to the literal `messaging.meta`. Reject >1 result; validate returned `environment`, `key` and `version` again in the reader. Return `null` for zero rows. Map DB/connection timeouts to `DB_UNAVAILABLE`, never include SQL text, URL or driver error in public failure messages. Do **not** read audit table or other secret purposes.
+
 - Production composition owns a lazily connected process-local `pg.Pool` with a small bounded pool (default max 2), explicit finite connect/query timeouts and safe idle-client error reporting; close connections in test teardown. Do not open a PostgreSQL connection at module-import time or create one pool per HTTP request.
 - Shared `createLogger({serviceName:'moda-interact-messaging', environment})` for structured success/failure events, e.g. `messaging.platform_configuration.read_succeeded` / `read_failed`. Only `{key:'messaging.meta',reasonCode,version?,correlationId}` and already-validated deployment identity may appear; never include token, secret, ciphertext, wrapping keys, AAD, DB URL, raw row or error message/stack. Logging-sink errors must not alter webhook correctness; application failures must **not** be silently swallowed.
 - The reader must be injectable in tests and used by both GET and POST. All calls to `.read()` represent an **operation-time** database read, so rotation/revocation is visible without redeploy.
@@ -327,7 +328,6 @@ Conforms to the ARCH-043 Messaging-only `messaging.meta` scope, database and Adm
 No task dependency is enabled by this standalone definition. External Render configuration and hosted cutover verification remain documented rollout work; no Gateway or System Test task is created or promoted here.
 
 ### Attempt 1 Architect Review — Changes Requested
-
 
 ### Review Status
 

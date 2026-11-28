@@ -278,7 +278,6 @@ and set `redactionApplied`. Implementation commit `82448f2` is pushed to
 No scope deviations or new blockers. The prior Gateway `META_APP_ID` configuration
 follow-up remains unchanged. Attempt 2 has been accepted by architect review; no live Meta upload or provider approval is claimed.
 
-
 ## Architect Review — Attempt 2
 
 ### Review Status

@@ -38,7 +38,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Create one deduplicated merchant SYSTEM support message for a corrected, recovery-linked terminal delivery failure only after financial correction and every *applicable* reachability update have durably succeeded.
+Create one deduplicated merchant SYSTEM support message for a corrected, recovery-linked terminal delivery failure only after financial correction and every _applicable_ reachability update have durably succeeded.
 
 ## Context
 

@@ -18,6 +18,7 @@ enables: []
 created: 2026-09-04
 updated: 2026-09-05
 ---
+
 # Integrate paginated filtered queue-job diagnostics into drawer workflow
 
 ## Objective

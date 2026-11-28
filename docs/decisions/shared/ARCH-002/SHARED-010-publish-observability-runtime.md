@@ -13,18 +13,19 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-SHARED-007
-- ARCH-002-SHARED-008
-- ARCH-002-SHARED-009
-- ARCH-002-SHARED-011
+  - ARCH-002-SHARED-007
+  - ARCH-002-SHARED-008
+  - ARCH-002-SHARED-009
+  - ARCH-002-SHARED-011
 enables:
-- ARCH-002-SHOPIFY-003
-- ARCH-002-BACKGROUND-003
-- ARCH-002-MESSAGING-002
-- ARCH-002-ADMIN-002
+  - ARCH-002-SHOPIFY-003
+  - ARCH-002-BACKGROUND-003
+  - ARCH-002-MESSAGING-002
+  - ARCH-002-ADMIN-002
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Publish shared observability runtime release
 
 ## Architecture

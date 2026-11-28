@@ -22,6 +22,7 @@ enables:
 created: 2026-10-13
 updated: 2026-10-14
 ---
+
 # Manage Price Plan LIVE CommerceAgent overrides
 
 ## Architecture
@@ -46,6 +47,7 @@ ARCH-024 assigns Commerce models on MerchantPricingPlan, not BillingPlan. Plan i
 - Display the inherited LIVE Platform value and source when each `budget` JSON key is absent, without persisting the computed value as an override; show a read-only **effective plan budget** and independent field sources.
 - Implement audited version-checked plan policy changes and explicit clear-to-inherit actions, a required audit reason, single-flight Save, inline validation, conflict/reload recovery, and a scoped paginated **Policy History** (actor, time, reason, before/after).
 - Preserve current price-plan publication, translations, economics and model association workflow.
+
 ## Out of Scope
 
 - Do not create another plan editor, duplicate BillingPlan fields or modify live shop policy.

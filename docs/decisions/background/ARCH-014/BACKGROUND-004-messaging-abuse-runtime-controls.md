@@ -15,10 +15,10 @@ executor:
 claimed_at:
 attempt: 1
 depends_on:
-- ARCH-014-BACKGROUND-002
-- ARCH-014-BACKGROUND-003
+  - ARCH-014-BACKGROUND-002
+  - ARCH-014-BACKGROUND-003
 enables:
-- ARCH-014-BACKGROUND-005
+  - ARCH-014-BACKGROUND-005
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -173,6 +173,7 @@ Validation evidence:
 - Editor diagnostics for all five changed files: no errors.
 
 Limitations: npm install reported pre-existing audit warnings for three high-severity vulnerabilities and install-script approval notices; no dependency files were changed. No database, queue, schema, Redis key namespace, or Admin-editable window changes were made.
+
 ## Architect Review
 
 ### Review Status

@@ -15,20 +15,20 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-BACKGROUND-002
-- ARCH-010-BACKGROUND-011
-- ARCH-007-BACKGROUND-003
-- ARCH-007-BACKGROUND-009
-- ARCH-010-BACKGROUND-019
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-BACKGROUND-002
+  - ARCH-010-BACKGROUND-011
+  - ARCH-007-BACKGROUND-003
+  - ARCH-007-BACKGROUND-009
+  - ARCH-010-BACKGROUND-019
 enables:
-- ARCH-010-BACKGROUND-007
-- ARCH-010-BACKGROUND-012
-- ARCH-010-SHOPIFY-008
-- ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-012
+  - ARCH-010-SHOPIFY-008
+  - ARCH-010-SYSTEM-TEST-001
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-BACKGROUND-009: Persist recovery exhaustion and resume blocked recoveries when capacity returns
@@ -359,9 +359,11 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Ready for architect review.
 
 ### Files Changed
+
 - `moda-interact-background/src/domain/recovery-capacity-resume.ts`
 - `moda-interact-background/src/services/recovery-capacity-resume.service.ts`
 - `moda-interact-background/src/services/recovery-billing.service.ts`
@@ -373,6 +375,7 @@ Ready for architect review.
 - `moda-interact-background/tests/unit/workers/recovery-capacity-resume.worker.test.ts`
 
 ### Work Completed
+
 - Changed full-capacity admission to the canonical `capacity-exhausted` result and retained the existing promotion/purchased/lifetime/included routing without paid overage.
 - Persisted `RECOVERY_CAPACITY_EXHAUSTED` and the first block timestamp on DETECTED recoveries; successful MESSAGE_SENT transitions clear both fields.
 - Added deterministic generic Free/Paid exhaustion epochs using durable subscription, billing-period, entitlement-counter, and pack facts.
@@ -381,6 +384,7 @@ Ready for architect review.
 - Corrected exhaustion epochs to include selected promotional grant state, kept ambiguous and bounded Shopify lookup outcomes retryable, cleared stale block fields on order completion, and advanced continuation jobs past the last processed recovery.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - Focused billing suite: `npx vitest run tests/unit/services/recovery-billing.service.test.ts`, 60/60 passed.
@@ -391,13 +395,14 @@ Ready for architect review.
 - `npm run build`: blocked by the same pre-existing accepted-gitlink Prisma/client drift; `git diff --check`: passed.
 
 ### Git / VCS
+
 Implementation repository: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009` on `task/ARCH-010-BACKGROUND-009`, pushed at commit `2a6ef86`.
 Parent repository: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009` on `task/ARCH-010-BACKGROUND-009`, claim commit `9d0cbba` pushed.
 Attempt 2 sync evidence: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009` were verified on the task branch after parent/main synchronization. Implementation HEAD contains BG8 commit `b4ef7c885e03009f6622894230ab54a87bf4364a` and current Background `origin/main` `a585139bb5f4c42d30ce0cc303f738f0c93c70b2` as ancestors. Attempt 2 correction commit `2a6ef86` is pushed.
 
 ### Architect Review
-Requested. Self-acceptance is not performed.
 
+Requested. Self-acceptance is not performed.
 
 ## Final promotional capacity and restoration
 
@@ -713,6 +718,7 @@ When applying BG9 changes to overlapping files, use these deterministic ownershi
 If `git merge --no-edit origin/main` produces conflicts, resolve them only when the result can satisfy the ownership rules above without architectural guesswork. Do **not** use whole-file `--ours` or `--theirs` on the overlapping billing/checkout files.
 
 If a conflict cannot be resolved while preserving the listed BG8 invariants and the bounded BG9 corrections, STOP and return the exact conflicted files/hunks to `moda_architect`. Do not implement an alternative billing boundary design inside BG9.
+
 #### Correction 7 — record the mandatory Attempt 2 worktree/synchronisation evidence exactly
 
 Attempt 1 used the correct-looking dedicated paths, but the Completion Report does not contain the complete mandatory physical-isolation/start-of-attempt evidence structure. Do not invent historical Attempt 1 evidence.
@@ -793,6 +799,7 @@ npm run test:integration
 npm run build
 git diff --check
 ```
+
 If one of the suggested new test filenames differs because the repository already has a better matching harness, use that harness and record the exact command. All BG9-owned focused tests must pass.
 
 The known full-suite/build Prisma/client drift may remain non-green only if the Attempt 2 report demonstrates that the failing diagnostics are pre-existing/unrelated to BG9 and none originates from a BG9-touched source/test file. Do not modify unrelated purchased-refund or observability code merely to make this task green.
@@ -1250,35 +1257,35 @@ Ready for architect review. Self-acceptance is not performed.
 
 ### Physical worktree isolation
 
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009
-  parent branch: task/ARCH-010-BACKGROUND-009
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009
-  implementation branch: task/ARCH-010-BACKGROUND-009
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-009
+parent branch: task/ARCH-010-BACKGROUND-009
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-009
+implementation branch: task/ARCH-010-BACKGROUND-009
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 ### Start-of-attempt synchronization
 
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 ### Database submodule
 
-  database submodule initialized: yes
-  database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
-  database submodule HEAD: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
-  database gitlink staged/changed: no
+database submodule initialized: yes
+database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+database submodule HEAD: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+database gitlink staged/changed: no
 
 ### BG8/main integration
 
-  Background origin/main SHA incorporated: a585139bb5f4c42d30ce0cc303f738f0c93c70b2
-  BG8 accepted commit b4ef7c885e03009f6622894230ab54a87bf4364a is ancestor of implementation HEAD: yes
-  BG8 merge commit a585139bb5f4c42d30ce0cc303f738f0c93c70b2 is ancestor of implementation HEAD: yes
-  BG8 preservation gate passed: yes
+Background origin/main SHA incorporated: a585139bb5f4c42d30ce0cc303f738f0c93c70b2
+BG8 accepted commit b4ef7c885e03009f6622894230ab54a87bf4364a is ancestor of implementation HEAD: yes
+BG8 merge commit a585139bb5f4c42d30ce0cc303f738f0c93c70b2 is ancestor of implementation HEAD: yes
+BG8 preservation gate passed: yes
 
 ### Validation Results
 

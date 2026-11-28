@@ -15,7 +15,6 @@ updated: 2026-10-06
 
 > **Final-state reading rule:** This file retains numbered iteration headings as design provenance, but those headings are **not independent current contracts**. Implementers must use the consolidated invariants near the top of this document plus the exact current `ARCH-010-*` task. Earlier iteration-scoped phrases such as “later iteration”, “not in this iteration” or pre-promotion/pre-freeze capacity examples describe the design sequence only and must not override the final ARCH-010 state. For a non-iterative readable model, use [`../product/pricing-and-billing-model.md`](../product/pricing-and-billing-model.md). For explicit old→new rules, use [`ARCH-010-supersession-map.md`](ARCH-010-supersession-map.md).
 
-
 > **Promotional-campaign amendment (2026-09-12):** The final first-release promo model is optional merchant opt-in campaigns, not direct non-expiring Admin grants. See [`ARCH-010-promotional-campaigns.md`](ARCH-010-promotional-campaigns.md). A selected usable promotion is the **highest-priority** recovery source. Older Iteration-12 text describing lifetime/unselected direct grants is design provenance only.
 
 > **First-production baseline amendment (2026-09-12):** ARCH-010 is now the clean first-production database/runtime baseline. [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md) is binding over any older compatibility/backfill wording retained below as design provenance. First production has no `BillingPlan.freeLifetimeConversationAllowance`, `BillingAllowanceAdjustment`, old `FREE_RECOVERY_LIFETIME`, aggregate `PROMOTIONAL_RECOVERY_CREDITS`, local cancellation state machine, `MIGRATION_RECONCILED`, purchase `REFUNDED` state, negative-App-Event refund correction model, or campaign-less promotional grant fallback. Implementers MUST NOT preserve those removed concepts merely because an earlier iteration mentions them.
@@ -545,8 +544,6 @@ In the inspected workspace, `moda-billing-worker-production` and `moda-billing-w
 - `ARCH-010-BACKGROUND-001` — consume/retry/rebuild pending subscription reconciliation using Shopify verification.
 - `ARCH-010-GATEWAY-001` — give the existing billing worker `REDIS_URL` through the canonical Render Redis env groups.
 - `ARCH-010-SHOPIFY-002` — revised to persist pending Free selection and publish a best-effort reconciliation hint when immediate verification is unresolved.
-
-
 
 # Iteration 3 — Installed / No plan -> Paid plan active / first billing period
 
@@ -1344,8 +1341,6 @@ No new Shared, Messaging, Gateway or Admin task is required. The existing ARCH-0
 
 Canonical billing-period transition/renewal: verify Shopify current subscription/cycle and atomically rotate the exact provider BillingPeriod. For Paid, close/forfeit the old monthly included allowance and grant the successor allowance exactly once. For Free, rotate only commercial/App-Event cycle scope and never reset lifetime Free entitlement. The transition is reusable by normal renewal and reinstall.
 
-
-
 # Iteration 6 — Canonical Shopify App Pricing BillingPeriod transition / same-plan renewal
 
 ## Scope
@@ -1795,17 +1790,17 @@ This is a projection, not new authoritative persisted state.
 
 ### Behaviour matrix
 
-| Subscription/capacity | New checkout recovery | Existing admitted recovery conversation | Shopify event correlation | Merchant UI/history | Top-up purchase | Plan selection |
-|---|---|---|---|---|---|---|
-| Free + promotional available | allowed from promotional first | continues | continues | available; show promotional/purchased/lifetime balances separately | only when server eligibility permits | available |
-| Free + promotional exhausted + purchased available | allowed from purchased | continues | continues | available | only when server eligibility permits | available |
-| Free + promotional/purchased exhausted + lifetime Free available | allowed from lifetime Free | continues | continues | available | only when server eligibility permits | available |
-| Free + all three lifetime sources exhausted | **blocked** | continues | continues | available; show capacity-exhausted state | only when server eligibility permits | available |
-| Paid + selected usable promo | allowed from selected promotion first | continues | continues | available; show selected promo/expiry/fallback | only when server eligibility permits and not draining/reconciling | available |
-| Paid + no usable selected promo + included available | allowed from current-period included counter | continues | continues | available | only when server eligibility permits and not draining/reconciling | available |
-| Paid + no usable promo + included exhausted + purchased available | allowed from purchased | continues | continues | available | same existing eligibility | available |
-| Paid + no usable promo + included/purchased exhausted + lifetime Free available | allowed from lifetime Free | continues | continues | available; show lifetime Free fallback | same existing eligibility | available |
-| Paid all sources exhausted | **blocked** until capacity is restored | continues | continues | available; show capacity-exhausted state | same existing eligibility | available |
+| Subscription/capacity                                                           | New checkout recovery                        | Existing admitted recovery conversation | Shopify event correlation | Merchant UI/history                                                | Top-up purchase                                                   | Plan selection |
+| ------------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------- | ------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------- | -------------- |
+| Free + promotional available                                                    | allowed from promotional first               | continues                               | continues                 | available; show promotional/purchased/lifetime balances separately | only when server eligibility permits                              | available      |
+| Free + promotional exhausted + purchased available                              | allowed from purchased                       | continues                               | continues                 | available                                                          | only when server eligibility permits                              | available      |
+| Free + promotional/purchased exhausted + lifetime Free available                | allowed from lifetime Free                   | continues                               | continues                 | available                                                          | only when server eligibility permits                              | available      |
+| Free + all three lifetime sources exhausted                                     | **blocked**                                  | continues                               | continues                 | available; show capacity-exhausted state                           | only when server eligibility permits                              | available      |
+| Paid + selected usable promo                                                    | allowed from selected promotion first        | continues                               | continues                 | available; show selected promo/expiry/fallback                     | only when server eligibility permits and not draining/reconciling | available      |
+| Paid + no usable selected promo + included available                            | allowed from current-period included counter | continues                               | continues                 | available                                                          | only when server eligibility permits and not draining/reconciling | available      |
+| Paid + no usable promo + included exhausted + purchased available               | allowed from purchased                       | continues                               | continues                 | available                                                          | same existing eligibility                                         | available      |
+| Paid + no usable promo + included/purchased exhausted + lifetime Free available | allowed from lifetime Free                   | continues                               | continues                 | available; show lifetime Free fallback                             | same existing eligibility                                         | available      |
+| Paid all sources exhausted                                                      | **blocked** until capacity is restored       | continues                               | continues                 | available; show capacity-exhausted state                           | same existing eligibility                                         | available      |
 
 Recovery-capacity exhaustion does not disable `AI_CONVERSATIONS`, `PRODUCT_SEARCH` or `ORDER_SUPPORT` merely because checkout-recovery capacity is empty. Their existing plan feature mappings and safety policy remain authoritative.
 
@@ -2050,8 +2045,6 @@ This exhaustion iteration does not itself implement:
 ## Next iteration
 
 Review the **purchased top-up transition** end to end: merchant request -> Shopify App Event -> asynchronous provider confirmation -> purchased-credit activation, how a newly activated pack restores/replays blocked recoveries.
-
-
 
 ## Iteration 8 — Merchant billing actions: top-up purchase and Shopify-hosted plan changes
 
@@ -3112,7 +3105,6 @@ If historical state says `UNFROZEN` but `activeSubscription` is still null, rema
 
 After successful unfreeze, normal `nextReconcileAt` scheduling is restored. Existing capacity-blocked recoveries may receive the normal capacity-resume hint only after the subscription projection is executable again.
 
-
 ### Frozen Shopify-event processing boundary
 
 Shopify webhook ingress remains intentionally lightweight and unchanged during a subscription freeze:
@@ -3180,7 +3172,6 @@ BACKGROUND-012 must therefore no longer interpret `activeSubscription = null` by
 
 Existing cancellation, rollover, capacity and billing-action tasks are amended to consume this provider-state distinction rather than treating provider null as cancellation.
 
-
 # Iteration 12 — Optional promotional recovery campaigns
 
 Iteration 12 is amended for first release: promotions are **offers**, not automatic Admin grants. Multiple GLOBAL/PLAN/SHOP campaigns may run at once. Merchants see currently-running campaigns for which they are eligible and opt into one. A Shop may have at most one still-usable selected promotion for new recovery admission.
@@ -3219,7 +3210,6 @@ Exact campaign targeting, merchant selection, expiry/reservation semantics and h
 - `SHOPIFY-022` owns merchant promo history.
 - `BACKGROUND-019` owns selected-promo-first reservation/commit/release.
 - `SYSTEM-TEST-003` validates targeting, opt-in, exclusivity, expiry/reopen/history and promo-first consumption.
-
 
 # Final consolidation and implementation acceptance boundary
 
@@ -3285,8 +3275,6 @@ The following are intentionally deferred and must not be improvised by implement
 - deterministic Shopify shop re-identification redesign beyond the current accepted identity mechanism.
 
 If any deferred condition becomes required by real provider behaviour, return to `moda_architect` rather than extending an existing task silently.
-
-
 
 ## Admin commercial guardrail — upgrade economics
 

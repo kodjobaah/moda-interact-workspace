@@ -13,9 +13,7 @@ logger.info(...)
 The Node export pipeline is installed once per process:
 
 ```ts
-import {
-  initNodeOpenTelemetryLogging,
-} from "@modainteract/moda-interact-shared/logging/node";
+import { initNodeOpenTelemetryLogging } from "@modainteract/moda-interact-shared/logging/node";
 
 initNodeOpenTelemetryLogging({
   serviceName: "moda-interact",
@@ -26,9 +24,7 @@ initNodeOpenTelemetryLogging({
 Application modules continue to use:
 
 ```ts
-import {
-  createLogger,
-} from "@modainteract/moda-interact-shared/logging";
+import { createLogger } from "@modainteract/moda-interact-shared/logging";
 ```
 
 Do **not** import `/logging/node` from Vite/browser/application modules.

@@ -701,8 +701,11 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
+
 Attempt 2 review correction and required PostgreSQL/pgvector proof complete; submitted for architecture review. Attempt 1 Architect Review remains unchanged.
+
 ### Files Changed
+
 - `moda-interact-commerce/.env.example`
 - `moda-interact-commerce/lib/preview/runtime.ts`
 - `moda-interact-commerce/lib/server/config.ts`
@@ -729,14 +732,18 @@ Attempt 2 review correction and required PostgreSQL/pgvector proof complete; sub
 - `moda-interact-commerce/tests/merchant-knowledge-retrieval.test.ts`
 - `moda-interact-commerce/tests/policy-operation-registry.test.ts`
 - `moda-interact-commerce/tests/preview-model-provider.test.ts`
+
 ### Work Completed
+
 - Adopted the prepared Database gitlink revision and the exact `@modainteract/moda-interact-shared@1.0.1` dependency; no database schema/migration changes or gitlink changes were introduced.
 - Added strict C5 input/output runtime validators, OpenAI embedding configuration and adapter, current-plan Merchant Knowledge entitlement enforcement, tenant/source/provenance-bounded exact pgvector retrieval, and canonical `merchantKnowledge.lookup@1.0.0` registration.
 - Added the exact bounded authoring arguments/result descriptors and the five-match renderer item limit. Runtime Zod validation remains authoritative for enum and literal semantics.
 - Added focused contract, entitlement, embedding, retrieval, registration, rendering, and conditional pgvector tests. No Tool/Capability/release bootstrap or Studio UI was introduced.
 - Corrected the connection-check helper types affected by expanding server configuration.
 - Attempt 2 A1-R1: replaced the unrelated temporary-vector-table smoke test with a disposable PostgreSQL test that invokes production `retrieveMerchantKnowledge` against the migrated ARCH-023 tables. Deterministic fixtures prove cosine ordering and exclude closer cross-shop, superseded-revision, and embedding-model-mismatched chunks.
+
 ### Validation Results
+
 - Attempt 1 focused C5/entitlement/embedding/retrieval/operation/registry/DefinitionExecutor/database-contract packet: 8 files passed, 47 tests passed, 1 test skipped. Attempt 2 replaced that skipped smoke test with the live proof below.
 - Attempt 2 live proof: `tests/merchant-knowledge-policy-postgres.test.ts` passed (1/1) against `pgvector/pgvector:pg17`. All 21 migrations from the pinned `database/prisma/schema.prisma` were deployed to a newly created `commerce_arch023_test` database bound only to `127.0.0.1` on a dynamically assigned port; the production retrieval call returned the two expected nearest eligible facts and excluded all three closer ineligible fixtures. The disposable container was removed after the test. `COMMERCE_TEST_DATABASE_URL` rejects non-loopback/non-test targets, URL overrides, and the configured `DATABASE_URL`; no remote database was used.
 - `npm run typecheck`: passed.
@@ -745,18 +752,27 @@ Attempt 2 review correction and required PostgreSQL/pgvector proof complete; sub
 - Changed-file diagnostics: no errors. `git diff --check`: passed.
 - Startup evidence from the deterministic prepare packet: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-001` on `task/ARCH-023-COMMERCE-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-001` on the same task branch. Both worktrees were newly created, no other task worktree or shared checkout was reused or switched. Parent and implementation task branches required no remote fast-forward; `origin/main` was already current in both.
 - Recursive implementation submodule sync/init passed. The `database` submodule was initialized at `2eb17ee910491e8f9df82736fc0a843844415947`.
+
 ### Deviations
+
 None. The live proof used an ephemeral local pgvector container rather than the configured remote database.
+
 ### Assumptions
+
 - The launcher-prepared database gitlink at `2eb17ee910491e8f9df82736fc0a843844415947` is the accepted ARCH-023-DATABASE-001 revision, as established by the deterministic dependency gate and initialized submodule packet.
+
 ### Unresolved Issues
+
 None.
+
 ### Architectural Concerns
+
 - None identified. `## Architect Review` below remains unchanged.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes
@@ -863,6 +879,7 @@ reconciliation does not claim or start COMMERCE-002.
 #### Historical Attempt 1 — Changes Requested — 2026-09-30
 
 ##### Review Status
+
 Changes Requested — Attempt 1
 
 ##### Review Notes

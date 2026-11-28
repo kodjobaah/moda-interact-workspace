@@ -496,33 +496,33 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-028-DATABASE-001 | moda_database | Complete | ARCH-027-DATABASE-001 (Complete) |
-| ARCH-028-DATABASE-002 | moda_database | Superseded | - (scope consolidated into DATABASE-001) |
-| ARCH-028-DATABASE-003 | moda_database | Complete | ARCH-028-DATABASE-001 |
-| ARCH-028-SHARED-001 | moda_shared | Complete | - |
-| ARCH-028-SHARED-002 | moda_shared | Complete | ARCH-028-SHARED-001 |
-| ARCH-028-SHARED-003 | moda_shared | Complete | ARCH-028-SHARED-002 |
-| ARCH-028-SHARED-004 | moda_shared | Complete | ARCH-028-SHARED-003 |
-| ARCH-028-ADMIN-001 | moda_admin | Complete | ARCH-028-DATABASE-001 |
-| ARCH-028-ADMIN-002 | moda_admin | Ready | ARCH-010-DATABASE-002/007/009/014; ARCH-028-DATABASE-001 (all Complete) |
-| ARCH-028-BACKGROUND-001 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
-| ARCH-028-MESSAGING-001 | moda_messaging | Complete | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
-| ARCH-028-BACKGROUND-002 | moda_background | Complete | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
-| ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
-| ARCH-028-BACKGROUND-004 | moda_background | Complete | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
-| ARCH-028-BACKGROUND-007 | moda_background | Complete | - |
-| ARCH-028-BACKGROUND-005 | moda_background | Complete | ARCH-028-DATABASE-003, ARCH-028-BACKGROUND-007 |
-| ARCH-028-BACKGROUND-010 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005 |
-| ARCH-028-BACKGROUND-011 | moda_background | Complete | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010 |
-| ARCH-028-BACKGROUND-006 | moda_background | Complete | ARCH-028-BACKGROUND-011 |
-| ARCH-028-BACKGROUND-008 | moda_background | Complete | ARCH-028-BACKGROUND-006 |
-| ARCH-028-BACKGROUND-009 | moda_background | Ready | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008, ARCH-027-BACKGROUND-005 |
-| ARCH-028-BACKGROUND-012 | moda_background | Complete | ARCH-028-BACKGROUND-007, ARCH-028-SHARED-004 |
-| ARCH-028-BACKGROUND-013 | moda_background | Blocked (admission billing policy; Attempt 0) | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-009, ARCH-040-BACKGROUND-008 |
-| ARCH-028-SHOPIFY-001 | moda_app | Ready | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
-| ARCH-028-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-028-ADMIN-001, ARCH-028-BACKGROUND-007, ARCH-028-BACKGROUND-009, ARCH-028-SHOPIFY-001 |
+| Task                     | Owner            | Status                                        | Depends On                                                                                 |
+| ------------------------ | ---------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| ARCH-028-DATABASE-001    | moda_database    | Complete                                      | ARCH-027-DATABASE-001 (Complete)                                                           |
+| ARCH-028-DATABASE-002    | moda_database    | Superseded                                    | - (scope consolidated into DATABASE-001)                                                   |
+| ARCH-028-DATABASE-003    | moda_database    | Complete                                      | ARCH-028-DATABASE-001                                                                      |
+| ARCH-028-SHARED-001      | moda_shared      | Complete                                      | -                                                                                          |
+| ARCH-028-SHARED-002      | moda_shared      | Complete                                      | ARCH-028-SHARED-001                                                                        |
+| ARCH-028-SHARED-003      | moda_shared      | Complete                                      | ARCH-028-SHARED-002                                                                        |
+| ARCH-028-SHARED-004      | moda_shared      | Complete                                      | ARCH-028-SHARED-003                                                                        |
+| ARCH-028-ADMIN-001       | moda_admin       | Complete                                      | ARCH-028-DATABASE-001                                                                      |
+| ARCH-028-ADMIN-002       | moda_admin       | Ready                                         | ARCH-010-DATABASE-002/007/009/014; ARCH-028-DATABASE-001 (all Complete)                    |
+| ARCH-028-BACKGROUND-001  | moda_background  | Complete                                      | ARCH-028-DATABASE-001, ARCH-028-SHARED-002                                                 |
+| ARCH-028-MESSAGING-001   | moda_messaging   | Complete                                      | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001                                               |
+| ARCH-028-BACKGROUND-002  | moda_background  | Complete                                      | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001                                            |
+| ARCH-028-BACKGROUND-003  | moda_background  | Superseded                                    | -                                                                                          |
+| ARCH-028-BACKGROUND-004  | moda_background  | Complete                                      | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001                    |
+| ARCH-028-BACKGROUND-007  | moda_background  | Complete                                      | -                                                                                          |
+| ARCH-028-BACKGROUND-005  | moda_background  | Complete                                      | ARCH-028-DATABASE-003, ARCH-028-BACKGROUND-007                                             |
+| ARCH-028-BACKGROUND-010  | moda_background  | Complete                                      | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005                                             |
+| ARCH-028-BACKGROUND-011  | moda_background  | Complete                                      | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010                                           |
+| ARCH-028-BACKGROUND-006  | moda_background  | Complete                                      | ARCH-028-BACKGROUND-011                                                                    |
+| ARCH-028-BACKGROUND-008  | moda_background  | Complete                                      | ARCH-028-BACKGROUND-006                                                                    |
+| ARCH-028-BACKGROUND-009  | moda_background  | Ready                                         | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008, ARCH-027-BACKGROUND-005                  |
+| ARCH-028-BACKGROUND-012  | moda_background  | Complete                                      | ARCH-028-BACKGROUND-007, ARCH-028-SHARED-004                                               |
+| ARCH-028-BACKGROUND-013  | moda_background  | Blocked (admission billing policy; Attempt 0) | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-009, ARCH-040-BACKGROUND-008                  |
+| ARCH-028-SHOPIFY-001     | moda_app         | Ready                                         | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012                                               |
+| ARCH-028-SYSTEM-TEST-001 | moda_system_test | Pending                                       | ARCH-028-ADMIN-001, ARCH-028-BACKGROUND-007, ARCH-028-BACKGROUND-009, ARCH-028-SHOPIFY-001 |
 
 DATABASE-001, DATABASE-003, BACKGROUND-007 and BACKGROUND-005 are architect-accepted Complete; DATABASE-001 has a satisfied cross-architecture dependency on accepted ARCH-027-DATABASE-001. BACKGROUND-005 adopted DATABASE-003 and its required recipient field together with the compatible Background attempt writers; the mandatory-column migration must not be deployed ahead of those writers. BACKGROUND-010 is now Ready because DATABASE-001 and BACKGROUND-005 are Complete. SHARED-001 and its publication gate SHARED-002 are architect-accepted Complete; the exact published status-contract package is `@modainteract/moda-interact-shared@1.3.1`, promoting SHARED-003 to Ready. BACKGROUND-001 is architect-accepted Complete; MESSAGING-001 is now Ready because its SHARED-002 and BACKGROUND-001 prerequisites are Complete. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
 
@@ -538,9 +538,9 @@ Suppression reads (BACKGROUND-010) can be validated independently using seeded r
 
 - **BACKGROUND-004 remains Ready under `FAILED/131026`.** Its generic source-owner corrections must be reusable for recovery-linked initial/sequence-2 templates, including a HUMAN follow-up only with exact durable recovery/attempt/source lineage. A non-recovery HUMAN_TEXT or unknown provider ID has no recovery-credit correction authority.
 - **BACKGROUND-011, 006, 008 and 009 retain their original dependency chain.** `131026` exclusively owns recipient reachability suppression. Synchronous definitive rejection and pre-provider failure are distinct from uncertain admitted dispatch. Merchant SYSTEM notification follows successful financial correction and applicable reachability (required only for `131026`); source-specific purchased refund holds remain with BACKGROUND-009.
-- **BACKGROUND-013 is Blocked and narrowed** to admitted-uncertain credit settlement and restart/crash repair across automated and merchant recovery-template sends, using existing source owners and ARCH-040-BACKGROUND-008's final dispatch boundary. It must not introduce a second generic or purchased compensation engine. Durably admitted sends are *not proven Meta HTTP attempts* because the admission row commits before provider I/O.
+- **BACKGROUND-013 is Blocked and narrowed** to admitted-uncertain credit settlement and restart/crash repair across automated and merchant recovery-template sends, using existing source owners and ARCH-040-BACKGROUND-008's final dispatch boundary. It must not introduce a second generic or purchased compensation engine. Durably admitted sends are _not proven Meta HTTP attempts_ because the admission row commits before provider I/O.
 - **No non-`131026` compensation expansion is approved by this task-definition change.** If the merchant confirms the broader correlated-authoritative-FAILED policy, amend the parent architecture and DATABASE-owned compensation reason/provenance first, then broaden BACKGROUND-004/009 classification and tests. Do not record a generic failure as `WHATSAPP_RECIPIENT_UNDELIVERABLE`. A Database task should be materialised only after the required schema contract is decided.
-- **SYSTEM-TEST-001 stays terminal validation for original `131026` convergence.** A separately defined final settlement system test will be required *after* the BACKGROUND-013 billing boundary and any database amendments are approved/accepted. Do not rewrite historical black-box PASS outcomes to assert settlement success.
+- **SYSTEM-TEST-001 stays terminal validation for original `131026` convergence.** A separately defined final settlement system test will be required _after_ the BACKGROUND-013 billing boundary and any database amendments are approved/accepted. Do not rewrite historical black-box PASS outcomes to assert settlement success.
 
 These definition/status changes are portable; they do not prove implementation completion or remote task-branch synchronisation. No `docs/decisions/**/_index.md` file is changed during this architectural session.
 
@@ -553,7 +553,7 @@ These definition/status changes are portable; they do not prove implementation c
 requests and crashes, and compensation of correlated authoritative `FAILED`
 statuses beyond the existing `131026` terminal-recipient rule. The current
 architecture has not approved that expansion. In particular, a durable
-`providerDispatchAdmittedAt` marker is written *before* Meta HTTP; it proves
+`providerDispatchAdmittedAt` marker is written _before_ Meta HTTP; it proves
 admission, not actual network attempt, so the proposed guarantee of billing
 only after actual HTTP attempt is incompatible with automatic settlement of
 all crashes lacking external evidence. Decide the billing linearisation point
@@ -566,11 +566,11 @@ interpret prior containment PASSes as successful credit settlement.
 
 Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient policy until separately reviewed.
 
-**Lookup-context coverage remains an integration-verification condition:** checkoutToken and Shop are sufficient for Moda candidate identity, but the current Shopify abandoned-checkout GraphQL retrieval requires URL and creation-time hints. Some checkout.updated payloads may lack these fields. SHARED-003/004 and SHOPIFY-001 carry them when present; BACKGROUND-012 must safely defer materialisation when missing rather than inventing them. System tests must demonstrate a usable context-bearing re-entry and safe token-only behaviour. A token-only *provider retrieval* guarantee is not asserted without a supported API.
+**Lookup-context coverage remains an integration-verification condition:** checkoutToken and Shop are sufficient for Moda candidate identity, but the current Shopify abandoned-checkout GraphQL retrieval requires URL and creation-time hints. Some checkout.updated payloads may lack these fields. SHARED-003/004 and SHOPIFY-001 carry them when present; BACKGROUND-012 must safely defer materialisation when missing rather than inventing them. System tests must demonstrate a usable context-bearing re-entry and safe token-only behaviour. A token-only _provider retrieval_ guarantee is not asserted without a supported API.
 
 ## 2026-10-22 — Read-only recovery-credit audit visibility
 
-`ARCH-028-ADMIN-002` is a separate, Ready Admin task to present the *existing durable funding attribution* for recovery usage in Billing > Events: paid-period allowance, lifetime free, individual purchased-credit lot, promotional grant, and any compensation state. It uses the linked committed/compensated `UsageReservation` and existing purchase/period/grant IDs, not current balances or new accounting writes. A purchased reservation legitimately has both a Shop aggregate counter and an exact purchase-lot FK; its Admin read model must recognise the paired shape. Only proven same-Shop outreach/source-key lineage may be presented as a recovery/conversation correlation. This operational **read-only** task does not gate the original terminal-recipient SYSTEM-TEST-001 or change `131026` compensation policy. Dedicated Background logging is a separately owned observability concern, not part of this Admin task. `_index.md` files are left unchanged during this session.
+`ARCH-028-ADMIN-002` is a separate, Ready Admin task to present the _existing durable funding attribution_ for recovery usage in Billing > Events: paid-period allowance, lifetime free, individual purchased-credit lot, promotional grant, and any compensation state. It uses the linked committed/compensated `UsageReservation` and existing purchase/period/grant IDs, not current balances or new accounting writes. A purchased reservation legitimately has both a Shop aggregate counter and an exact purchase-lot FK; its Admin read model must recognise the paired shape. Only proven same-Shop outreach/source-key lineage may be presented as a recovery/conversation correlation. This operational **read-only** task does not gate the original terminal-recipient SYSTEM-TEST-001 or change `131026` compensation policy. Dedicated Background logging is a separately owned observability concern, not part of this Admin task. `_index.md` files are left unchanged during this session.
 
 ## Change History
 
@@ -608,7 +608,6 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 - 2026-10-08: Architect accepted `ARCH-028-SHARED-001` Attempt 1. The exact v2 status schema remains strict, while the dual-version canonical Shared parser accepts bounded v3 `FAILED.failure.providerCode` evidence without coercion or policy classification. `ARCH-028-SHARED-002` is now Ready as a publication-only gate; Background, Messaging and downstream system tests remain dependent on the approved consumer-first sequence.
 
 - 2026-10-08: Architect accepted `ARCH-028-SHARED-002` Attempt 3: published `@modainteract/moda-interact-shared@1.3.1` (release metadata only), with exact registry integrity/tarball and clean installed v2/v3 billing parser evidence. `SHARED-003` is Ready; Background and Messaging remain dependency-gated pending Database and consumer-first adoption. Developer owns integration of the accepted Shared publication task branch and parent gitlink before subsequent implementation.
-
 
 ### Preserved local source-specific coverage — 2026-11-13
 

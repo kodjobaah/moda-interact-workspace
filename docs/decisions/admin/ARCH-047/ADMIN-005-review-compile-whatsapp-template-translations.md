@@ -39,7 +39,6 @@ The adopted ARCH-047 design is **Moda Admin-only authoring**. A saved English so
 
 The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**. They own separate route/action/service/component modules, use stable documented persistence payloads, and must prove their capability with fixtures or injected dependencies when a sibling Admin/Background implementation is not yet complete. The end-to-end system test, not an artificial task chain, verifies their integration.
 
-
 ## Scope
 
 - Own the `compilation/` module and `/system-controls/whatsapp-templates/[definitionId]/review/` interface. Read saved English locale structure and `TranslationItem.translatedAst` keyed segment results, not an AST returned by Background.
@@ -50,7 +49,6 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - For wrapper family, compile a **prepared runtime projection** (literal header/footer segments, required response slot, optional checkout-URL conditional and typed runtime bindings) that Background can render without parsing Admin's authoring AST. The saved English locale already contains its prepared projection from ADMIN-003; do not rewrite it. Insert a prepared projection once for each newly reconstructed language.
 - Persist completed locale `localeAst`/`contentHash` exactly once with review evidence (`reviewedByAdminId`, `reviewedAt`, `status`); **do not alter an existing finalised locale's content** or source English AST. Store the prepared projection in the same locale JSONB envelope, e.g. `{schemaVersion, authoring, prepared}`: English is generated at its original save; translated locales are generated on first insertion. No subsequent in-place content or projection update is allowed. For Meta, later ADMIN-006 copies the approved compiled objects verbatim into frozen `MetaRegistration` snapshots after explicit confirmation.
 - Persist only bounded review metadata/audit. Read existing model/runtime capabilities before enabling component types, and ensure full-language completeness checks remain application-owned.
-
 
 ### Required React component decomposition
 
@@ -70,7 +68,6 @@ Use a dedicated `useTemplateTranslationReview` controller for client selection/a
 - No translation provider calls or Batch polling, Meta submission/status mutation, merchant assignment, wrapper activation, new Shared AST package or database migration.
 - No automatic Meta template editing or partial publication; no human-authored customer response replaces a wrapper slot.
 
-
 ## Requirements
 
 - [x] Reconstruct only when persisted source hash matches its translation run; late provider results and stale clones cannot overwrite accepted content.
@@ -79,9 +76,7 @@ Use a dedicated `useTemplateTranslationReview` controller for client selection/a
 - [x] English and all 19 translations are previewable; if rejected/malformed, locale stays unapproved with actionable diagnostics and does not silently become publishable.
 - [x] Review writes are idempotent, guarded and audited. Template text changes always require a new definition; metadata/progress may update independently.
 
-
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
-
 
 ## Work Items
 
@@ -89,14 +84,11 @@ All server reads/mutations of template management require the existing authentic
 - [x] Implement review screen with English/current-language side-by-side previews, variable/button comparison and approve/reject actions.
 - [x] Add transactional locale finalisation and audit with stale/duplicate/concurrent review tests.
 
-
 ## Interfaces / Contracts
 
-**Inputs:** `TranslationRun.sourceSnapshot` with keyed protected source segments; `TranslationItem.translatedAst` with keyed translated segments; English `TemplateLocale.localeAst`. **Writes:** 19 finished `WhatsAppTemplateLocale` rows, each `localeAst` containing its complete authoring structure **plus prepared runtime/provider projection**; `contentHash`, review metadata and bounded audit. **Prepared Meta envelope example (illustrative; emit the canonical ADMIN-003 compiler shape):** `{schemaVersion:1, category:'MARKETING', components:[...], parameterBindings:{header:[{position:1,variable:'shopBrand.brandName'}],body:[{position:1,variable:'customer.firstName'}],buttons:[...]}, contentHash:'...'}`. Header bindings are present only for a variable-bearing header; brand values themselves are never frozen.  For conversation wrappers use `{schemaVersion:1, header:[...], responseSlot:'response.body', footer:[...], conditionals:[...], variableBindings:[...]}`. These JSON payload formats are Admin-owned persistence contracts, not a separate Shared implementation. This task **does not create MetaRegistration**; ADMIN-006 freezes copies only on confirmed submission.
-
+**Inputs:** `TranslationRun.sourceSnapshot` with keyed protected source segments; `TranslationItem.translatedAst` with keyed translated segments; English `TemplateLocale.localeAst`. **Writes:** 19 finished `WhatsAppTemplateLocale` rows, each `localeAst` containing its complete authoring structure **plus prepared runtime/provider projection**; `contentHash`, review metadata and bounded audit. **Prepared Meta envelope example (illustrative; emit the canonical ADMIN-003 compiler shape):** `{schemaVersion:1, category:'MARKETING', components:[...], parameterBindings:{header:[{position:1,variable:'shopBrand.brandName'}],body:[{position:1,variable:'customer.firstName'}],buttons:[...]}, contentHash:'...'}`. Header bindings are present only for a variable-bearing header; brand values themselves are never frozen. For conversation wrappers use `{schemaVersion:1, header:[...], responseSlot:'response.body', footer:[...], conditionals:[...], variableBindings:[...]}`. These JSON payload formats are Admin-owned persistence contracts, not a separate Shared implementation. This task **does not create MetaRegistration**; ADMIN-006 freezes copies only on confirmed submission.
 
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/compilation/`, components under `src/components/admin/whatsapp-templates/compilation/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-compilation.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
-
 
 ## Dependencies
 
@@ -116,12 +108,10 @@ None at task-definition time. Completion of this task does not grant permission 
 - [x] Approved locales contain Meta-ready or wrapper-ready projection with no dependency on a Background AST compiler. No content mutation of saved/approved templates occurs.
 - [x] Rejection leaves prior live template assignments/active wrapper pointers unchanged; only newly authored content may replace them later.
 
-
 ## Validation
 
 - [x] Token protection/reordering and variable-binding compiler unit tests for English/French/German and scripts with changed placeholder order; include Meta text-header `shopBrand.brandName`, body references, repeated brand variables, wrapper footer brand values, forbidden Meta footer tokens, button/URL protections and malformed translator responses.
 - [x] Admin UI full-preview/a11y tests; PostgreSQL idempotent locale finalisation/auth/audit tests using fixture translation items; lint/typecheck/`git diff --check`.
-
 
 ## Stop Condition
 
@@ -130,7 +120,6 @@ After task-scoped work, acceptance criteria, validation and Completion Report ar
 ## Implementation Notes
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md`, `docs/developer-task-workflow.md`, the revised parent ARCH-047 architecture and current Admin repository instructions. Use launcher-prepared dedicated parent/implementation task worktrees and mirrored `task/<TASK_ID>` branches. In the Completion Report record prepared physical worktree isolation, start sync, recursive submodule materialisation, exact test commands/outcomes, changed paths and commits. The implementing agent must not modify `docs/decisions/**/_index.md`, another task, the parent architecture, another repository, or follow-on work. Reuse existing Admin Store Category AST authoring and Merchant Pricing translation UX patterns without copying their domain services or creating a competing generic runtime. Inspect the actual worktree state before implementation; the attached snapshot is not a live Git-branch guarantee.
-
 
 ## Completion Report
 
@@ -187,15 +176,15 @@ No database schema, Background, Messaging, Shared implementation, or `docs/decis
 
 Evidence: developer terminal transcripts `typescript(20261025-163303)` and `typescript(20261025-164645)`, supplied with the task snapshot.
 
-| Command | Observed result |
-| --- | --- |
-| `npm run test:arch047-admin-compilation:unit` | **PASS — 13/13 tests**: token protection, key/source validation, language codes, positional bindings, template limits, idempotent/rejected reviews and `SUPER_ADMIN` checks. |
-| `npm run test:arch047-admin-compilation:components` | **PASS — 3/3 tests**: 20-language selector, full Meta/wrapper views, immutable-content review controls. |
-| `npm run test:arch047-admin-compilation:postgres` | **PASS — 3/3 disposable PostgreSQL tests**: unique/frozen concurrent finalisation, rejected review without content or live-pointer changes, and audit-failure transaction rollback. |
-| `npm run build` | **PASS during this review**: Prisma Client generated, Next.js compilation, TypeScript checking and completed production build. Build emitted BullMQ optional `@valkey/valkey-glide`/dynamic-import warnings in queue-monitor and merchant-support imports; no build failure. |
-| `npm run lint` | **PASS during this review (0 errors, 1 warning)**. Warning: `database/eslint.config.mjs` (`import/no-anonymous-default-export`), outside the changed implementation files. |
-| `git diff --check` | **PASS during this review** on both implementation diff and parent review-record diff. |
-| Implementation Git commit and push | **PASS**: `8e2ddcc` on `task/ARCH-047-ADMIN-005`, pushed to `origin/task/ARCH-047-ADMIN-005`. |
+| Command                                             | Observed result                                                                                                                                                                                                                                                              |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:arch047-admin-compilation:unit`       | **PASS — 13/13 tests**: token protection, key/source validation, language codes, positional bindings, template limits, idempotent/rejected reviews and `SUPER_ADMIN` checks.                                                                                                 |
+| `npm run test:arch047-admin-compilation:components` | **PASS — 3/3 tests**: 20-language selector, full Meta/wrapper views, immutable-content review controls.                                                                                                                                                                      |
+| `npm run test:arch047-admin-compilation:postgres`   | **PASS — 3/3 disposable PostgreSQL tests**: unique/frozen concurrent finalisation, rejected review without content or live-pointer changes, and audit-failure transaction rollback.                                                                                          |
+| `npm run build`                                     | **PASS during this review**: Prisma Client generated, Next.js compilation, TypeScript checking and completed production build. Build emitted BullMQ optional `@valkey/valkey-glide`/dynamic-import warnings in queue-monitor and merchant-support imports; no build failure. |
+| `npm run lint`                                      | **PASS during this review (0 errors, 1 warning)**. Warning: `database/eslint.config.mjs` (`import/no-anonymous-default-export`), outside the changed implementation files.                                                                                                   |
+| `git diff --check`                                  | **PASS during this review** on both implementation diff and parent review-record diff.                                                                                                                                                                                       |
+| Implementation Git commit and push                  | **PASS**: `8e2ddcc` on `task/ARCH-047-ADMIN-005`, pushed to `origin/task/ARCH-047-ADMIN-005`.                                                                                                                                                                                |
 
 The implementer did not provide a separate focused accessibility automation report beyond the three React component checks. Those tests include accessibility-oriented selector attributes (`aria-pressed`/labels), but no independent end-to-end a11y scan is evidenced.
 
@@ -221,7 +210,6 @@ The implementer did not provide a separate focused accessibility automation repo
 ### Architectural Concerns
 
 No new cross-repository schema/contract changes were introduced. The requirement to consume only keyed translation items and preserve Admin-only immutable authoring/compilation is covered by the implementation and fixture tests; final system-level interaction with the Background translator and publication tasks remains outside this task's scope.
-
 
 ## Architect Review
 

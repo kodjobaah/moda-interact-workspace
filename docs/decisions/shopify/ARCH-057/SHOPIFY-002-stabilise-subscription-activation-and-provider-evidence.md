@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-001
 enables:
-- ARCH-057-SHOPIFY-003
-- ARCH-057-SHOPIFY-004
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-003
+  - ARCH-057-SHOPIFY-004
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -52,43 +52,43 @@ All implementation paths below are relative to `moda-interact`. Modify only the 
 
 ### Existing files to modify
 
-| Path | Exact responsibility |
-|---|---|
-| `app/services/billing/subscription-locks.ts` | Replace the split lock sequence with the single ordered lifecycle-lock function specified below; remove the obsolete late paid-Shop lock |
-| `app/services/billing/subscription-activation.service.ts` | Use the ordered lock function, preserve selection fencing and atomic period/counter finalization, and accept truthful retry-failure classification |
-| `app/services/billing/subscription-sync.service.ts` | Use the same lock order before current-row rereads, preserve projection on provider parsing failure, and report owned internal/database failures |
-| `app/services/billing/hosted-plan-change.service.ts` | Use the ordered locks and supplied failure classification; retain the complete verification fence |
-| `app/services/billing/providers/shopify-billing.provider.ts` | Validate the response envelope, share one active-subscription parser between both existing provider operations, and emit safe original provider diagnostics |
-| `app/services/billing/billing.types.ts` | Add the narrow retry-failure type below; preserve all existing provider and merchant DTO fields |
-| `app/services/billing/billing.service.ts` | Thread the narrow failure argument through its existing facade methods; no constructor I/O |
-| `app/services/billing/billing-period-projection.ts` | Skip the already-correct BillingPeriod update, retaining conflict detection and missing-counter repair |
-| `app/services/billing/shopify-billing-operation.service.ts` | Remove only the second confirmation of an operation already confirmed by `ensureOperation` |
-| `app/services/billing/subscription-ended-notification.service.ts` | Log original persistence/translation failures before existing best-effort continuation; preserve current durable and error-propagation semantics |
-| `app/services/billing/billing-reconciliation.service.ts` | Preserve original error/cause on its existing enqueue-failure diagnostic; no queue identity/configuration/deadline changes |
-| `app/routes/app/billing/callback/route.tsx` | Consume authenticated request context, use the shared milestone function, classify/log each failure at its actual stage, retain redirects and fenced retry scheduling |
-| `app/routes/app/onboarding/resume/route.ts` | Consume authenticated request context, use the same milestone function, log reconciliation/activation failures while retaining existing response and activation gates |
-| `tests/unit/services/shopify-billing.provider.test.ts` | Strict envelope/parser fixtures for both provider operations |
-| `tests/unit/services/billing/subscription-activation.service.test.ts` | Ordered locks, fresh Shop eligibility, stale-token and activation invariants |
-| `tests/unit/services/billing/subscription-sync.service.test.ts` | Malformed-response preservation, explicit-null behavior and failure classification |
-| `tests/unit/services/billing/hosted-plan-change.service.test.ts` | Fence and classified failure regression |
-| `tests/unit/services/billing/billing-period-projection.test.ts` | Exact replay without update; real snapshot/counter repair still writes |
-| `tests/unit/services/billing/shopify-billing-operation.service.test.ts` | One guarded confirmation and unchanged conflict/identity behavior |
-| `tests/unit/services/billing/subscription-ended-notification.service.test.ts` | Real Shared output for caught best-effort errors, preserving current missing-identity behavior |
-| `tests/unit/services/billing-reconciliation.service.test.ts` | Original enqueue exception/cause and logging isolation |
-| `tests/unit/services/billing.service.test.ts` | Facade argument changes and removal of the wrong SQL expectation |
-| `tests/unit/routes/billing-callback.test.ts` | Full callback branch/failure ownership and milestone ordering |
-| `tests/unit/routes/onboarding-resume.test.ts` | Existing response/generation gates and original failure evidence |
+| Path                                                                          | Exact responsibility                                                                                                                                                  |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/billing/subscription-locks.ts`                                  | Replace the split lock sequence with the single ordered lifecycle-lock function specified below; remove the obsolete late paid-Shop lock                              |
+| `app/services/billing/subscription-activation.service.ts`                     | Use the ordered lock function, preserve selection fencing and atomic period/counter finalization, and accept truthful retry-failure classification                    |
+| `app/services/billing/subscription-sync.service.ts`                           | Use the same lock order before current-row rereads, preserve projection on provider parsing failure, and report owned internal/database failures                      |
+| `app/services/billing/hosted-plan-change.service.ts`                          | Use the ordered locks and supplied failure classification; retain the complete verification fence                                                                     |
+| `app/services/billing/providers/shopify-billing.provider.ts`                  | Validate the response envelope, share one active-subscription parser between both existing provider operations, and emit safe original provider diagnostics           |
+| `app/services/billing/billing.types.ts`                                       | Add the narrow retry-failure type below; preserve all existing provider and merchant DTO fields                                                                       |
+| `app/services/billing/billing.service.ts`                                     | Thread the narrow failure argument through its existing facade methods; no constructor I/O                                                                            |
+| `app/services/billing/billing-period-projection.ts`                           | Skip the already-correct BillingPeriod update, retaining conflict detection and missing-counter repair                                                                |
+| `app/services/billing/shopify-billing-operation.service.ts`                   | Remove only the second confirmation of an operation already confirmed by `ensureOperation`                                                                            |
+| `app/services/billing/subscription-ended-notification.service.ts`             | Log original persistence/translation failures before existing best-effort continuation; preserve current durable and error-propagation semantics                      |
+| `app/services/billing/billing-reconciliation.service.ts`                      | Preserve original error/cause on its existing enqueue-failure diagnostic; no queue identity/configuration/deadline changes                                            |
+| `app/routes/app/billing/callback/route.tsx`                                   | Consume authenticated request context, use the shared milestone function, classify/log each failure at its actual stage, retain redirects and fenced retry scheduling |
+| `app/routes/app/onboarding/resume/route.ts`                                   | Consume authenticated request context, use the same milestone function, log reconciliation/activation failures while retaining existing response and activation gates |
+| `tests/unit/services/shopify-billing.provider.test.ts`                        | Strict envelope/parser fixtures for both provider operations                                                                                                          |
+| `tests/unit/services/billing/subscription-activation.service.test.ts`         | Ordered locks, fresh Shop eligibility, stale-token and activation invariants                                                                                          |
+| `tests/unit/services/billing/subscription-sync.service.test.ts`               | Malformed-response preservation, explicit-null behavior and failure classification                                                                                    |
+| `tests/unit/services/billing/hosted-plan-change.service.test.ts`              | Fence and classified failure regression                                                                                                                               |
+| `tests/unit/services/billing/billing-period-projection.test.ts`               | Exact replay without update; real snapshot/counter repair still writes                                                                                                |
+| `tests/unit/services/billing/shopify-billing-operation.service.test.ts`       | One guarded confirmation and unchanged conflict/identity behavior                                                                                                     |
+| `tests/unit/services/billing/subscription-ended-notification.service.test.ts` | Real Shared output for caught best-effort errors, preserving current missing-identity behavior                                                                        |
+| `tests/unit/services/billing-reconciliation.service.test.ts`                  | Original enqueue exception/cause and logging isolation                                                                                                                |
+| `tests/unit/services/billing.service.test.ts`                                 | Facade argument changes and removal of the wrong SQL expectation                                                                                                      |
+| `tests/unit/routes/billing-callback.test.ts`                                  | Full callback branch/failure ownership and milestone ordering                                                                                                         |
+| `tests/unit/routes/onboarding-resume.test.ts`                                 | Existing response/generation gates and original failure evidence                                                                                                      |
 
 ### New files
 
-| Path | Purpose |
-|---|---|
+| Path                                                                   | Purpose                                                                                                                          |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `app/services/billing/providers/shopify-billing-diagnostics.server.ts` | Shopify billing-specific failure type, safe provider-error extraction and Shared semantic emission; no generic logger/serializer |
-| `app/services/billing/onboarding-milestone.server.ts` | One existing two-row atomic milestone command used by callback and resume, with an injectable Prisma transaction owner |
-| `tests/unit/services/billing/provider-diagnostics.test.ts` | Actual Shared JSON output, safe cause/source fields, redaction/truncation and sink-failure assertions |
-| `tests/integration/billing-activation.postgres.integration.test.ts` | Migrated PG17 initial activation, replay, rollback and controlled concurrent locking cases |
-| `tests/helpers/billing-postgres.ts` | Test-only disposable `pgvector/pgvector:pg17` lifecycle, canonical forward migration deployment, separate clients and cleanup |
-| `tests/fixtures/billing-activation.ts` | Minimal valid Free/Paid, settings, policy, period and counter fixtures; no production seed changes |
+| `app/services/billing/onboarding-milestone.server.ts`                  | One existing two-row atomic milestone command used by callback and resume, with an injectable Prisma transaction owner           |
+| `tests/unit/services/billing/provider-diagnostics.test.ts`             | Actual Shared JSON output, safe cause/source fields, redaction/truncation and sink-failure assertions                            |
+| `tests/integration/billing-activation.postgres.integration.test.ts`    | Migrated PG17 initial activation, replay, rollback and controlled concurrent locking cases                                       |
+| `tests/helpers/billing-postgres.ts`                                    | Test-only disposable `pgvector/pgvector:pg17` lifecycle, canonical forward migration deployment, separate clients and cleanup    |
+| `tests/fixtures/billing-activation.ts`                                 | Minimal valid Free/Paid, settings, policy, period and counter fixtures; no production seed changes                               |
 
 New test/helper files must each stay below 300 lines. Existing large test files need only the bounded changes above. Do not add a package script or dependency: the exact existing `npm test -- <files>` commands below discover these suites.
 
@@ -144,19 +144,19 @@ In `ensureMappedCurrentBillingPeriodProjection`, update the existing period only
 
 ### Required failure matrix
 
-| Injection / owner | Required diagnostic | Required behavior |
-|---|---|---|
-| Provider HTTP/GraphQL failure, provider adapter | Original safe upstream marker/code, status/request ID, explicit source origin and redaction/truncation | One source log; propagate typed failure; no no-contract mutation |
-| Transport/JSON exception, provider adapter | Actual exception name/message/cause; no invented provider error fields | Preserve cause; no projection clearing |
-| Missing/wrong success fields, provider adapter | Internal malformed-response reason and safe field path, without response payload | Throw; valid explicit null still follows existing NO_CONTRACT rules |
-| Credential/configuration read failure | Original exception/cause and actual database code when present, truthful origin | No Partner-outage misclassification; no request with missing credentials |
-| Activation/fence/period persistence fails, owning service or route fallback | Original Prisma message/code/cause, Shop and operation/stage | Roll back transaction; preserve prior projection; existing retry policy remains bounded |
-| Synchronization returns local configuration SYNC_ERROR | Actual local reason/identities, without fabricated upstream exception | Retain current state/result semantics |
-| Retry scheduling or milestone persistence fails, route boundary | Original scheduling/milestone failure, distinct from the prior failure | Do not report successful persistence or swallow a failed invariant |
-| Category activation fails after commit, callback/resume boundary | Original error/cause and activation stage | Billing commit remains durable; current callback failure/resume gate remains |
-| Ended-notice persistence/translation dispatch fails, notification service | Actual source exception/cause and lifecycle identity | Preserve existing best-effort continuation and special missing-identity propagation; no durability claim |
-| Reconciliation enqueue fails, existing queue adapter | Actual Redis/queue exception/cause, safe subscription/schedule IDs | Preserve queue-after-commit and existing best-effort outcome |
-| Shared sink throws, each owned failure path | Real Shared isolation test | No changed redirect, rollback, retry, projection or notification policy |
+| Injection / owner                                                           | Required diagnostic                                                                                    | Required behavior                                                                                        |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Provider HTTP/GraphQL failure, provider adapter                             | Original safe upstream marker/code, status/request ID, explicit source origin and redaction/truncation | One source log; propagate typed failure; no no-contract mutation                                         |
+| Transport/JSON exception, provider adapter                                  | Actual exception name/message/cause; no invented provider error fields                                 | Preserve cause; no projection clearing                                                                   |
+| Missing/wrong success fields, provider adapter                              | Internal malformed-response reason and safe field path, without response payload                       | Throw; valid explicit null still follows existing NO_CONTRACT rules                                      |
+| Credential/configuration read failure                                       | Original exception/cause and actual database code when present, truthful origin                        | No Partner-outage misclassification; no request with missing credentials                                 |
+| Activation/fence/period persistence fails, owning service or route fallback | Original Prisma message/code/cause, Shop and operation/stage                                           | Roll back transaction; preserve prior projection; existing retry policy remains bounded                  |
+| Synchronization returns local configuration SYNC_ERROR                      | Actual local reason/identities, without fabricated upstream exception                                  | Retain current state/result semantics                                                                    |
+| Retry scheduling or milestone persistence fails, route boundary             | Original scheduling/milestone failure, distinct from the prior failure                                 | Do not report successful persistence or swallow a failed invariant                                       |
+| Category activation fails after commit, callback/resume boundary            | Original error/cause and activation stage                                                              | Billing commit remains durable; current callback failure/resume gate remains                             |
+| Ended-notice persistence/translation dispatch fails, notification service   | Actual source exception/cause and lifecycle identity                                                   | Preserve existing best-effort continuation and special missing-identity propagation; no durability claim |
+| Reconciliation enqueue fails, existing queue adapter                        | Actual Redis/queue exception/cause, safe subscription/schedule IDs                                     | Preserve queue-after-commit and existing best-effort outcome                                             |
+| Shared sink throws, each owned failure path                                 | Real Shared isolation test                                                                             | No changed redirect, rollback, retry, projection or notification policy                                  |
 
 ## Work Items
 
@@ -267,26 +267,26 @@ No schema, dependency, package, public DTO, locale, queue identity or billing ha
 
 Failure-matrix evidence, using actual Shared output captured from the installed logger:
 
-| Failure-matrix row | Owning output assertion and behavior evidence |
-|---|---|
-| Provider HTTP/GraphQL | `tests/unit/services/shopify-billing.provider.test.ts`: HTTP status/request ID/code and GraphQL code/request ID/original message; injected token/email/customer detail absent; one source record. |
-| Transport, body-read, JSON and malformed success | `tests/unit/services/shopify-billing.provider.test.ts`: exception/cause or safe malformed reason/path; short and long JSON sentinel bodies are exercised through the real parser and Shared output; the original thrown SyntaxError is preserved while emitted cause text contains no response excerpt; no fabricated provider fields or raw invalid body; malformed success does not enter no-contract persistence. |
-| Credential/configuration | `tests/unit/services/shopify-billing.provider.test.ts`: original P2025/cause, truthful database origin, no provider fields or fetch; sink failure preserves typed rejection. |
-| Activation, fence, hosted return and period persistence | `tests/unit/routes/billing-callback.test.ts` asserts fence read, hosted-return persistence, activation prepare/finalize, hosted and initial retry persistence, and milestone owner records; `tests/unit/services/billing/subscription-sync.service.test.ts` asserts P2034/cause and transaction rollback for period persistence. Sink failures retain throws and do not advance activation/retry. |
-| Local synchronization fallback | `tests/unit/services/billing/subscription-sync.service.test.ts`: local reason and plan correlation without fabricated provider errors; result semantics remain `SYNC_ERROR` under sink failure. |
-| Retry scheduling and milestone | `tests/unit/routes/billing-callback.test.ts` covers both retry-persistence boundaries and ensures a prior provider error is not copied into the persistence record; callback and `tests/unit/routes/onboarding-resume.test.ts` assert milestone P2025/cause and no false success. |
-| Post-commit category activation | Callback and resume tests assert original error/cause, stage, Shop/generation context, and failure after the subscription activation call; sink failure preserves the route throw/gates. |
-| Ended-notice persistence and dispatch | `tests/unit/services/billing/subscription-ended-notification.service.test.ts` asserts separate stage/origin records, lifecycle identity, actual cause/code, redaction, best-effort completion and Shared sink isolation; existing missing-identity propagation remains covered. |
-| Reconciliation queue acquisition and add | `tests/unit/services/billing-reconciliation.service.test.ts` asserts distinct stages, original queue error/cause, Shop/subscription/schedule correlation, timestamp retention, redaction and best-effort resolution; sink failure on add does not change queue outcome. |
-| Shared sink failure | Actual installed Shared logger console sink throws in provider, sync, callback, resume, ended-notice and reconciliation owner tests; each existing throw, response, rollback, retry or best-effort policy remains intact. |
+| Failure-matrix row                                      | Owning output assertion and behavior evidence                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider HTTP/GraphQL                                   | `tests/unit/services/shopify-billing.provider.test.ts`: HTTP status/request ID/code and GraphQL code/request ID/original message; injected token/email/customer detail absent; one source record.                                                                                                                                                                                                                    |
+| Transport, body-read, JSON and malformed success        | `tests/unit/services/shopify-billing.provider.test.ts`: exception/cause or safe malformed reason/path; short and long JSON sentinel bodies are exercised through the real parser and Shared output; the original thrown SyntaxError is preserved while emitted cause text contains no response excerpt; no fabricated provider fields or raw invalid body; malformed success does not enter no-contract persistence. |
+| Credential/configuration                                | `tests/unit/services/shopify-billing.provider.test.ts`: original P2025/cause, truthful database origin, no provider fields or fetch; sink failure preserves typed rejection.                                                                                                                                                                                                                                         |
+| Activation, fence, hosted return and period persistence | `tests/unit/routes/billing-callback.test.ts` asserts fence read, hosted-return persistence, activation prepare/finalize, hosted and initial retry persistence, and milestone owner records; `tests/unit/services/billing/subscription-sync.service.test.ts` asserts P2034/cause and transaction rollback for period persistence. Sink failures retain throws and do not advance activation/retry.                    |
+| Local synchronization fallback                          | `tests/unit/services/billing/subscription-sync.service.test.ts`: local reason and plan correlation without fabricated provider errors; result semantics remain `SYNC_ERROR` under sink failure.                                                                                                                                                                                                                      |
+| Retry scheduling and milestone                          | `tests/unit/routes/billing-callback.test.ts` covers both retry-persistence boundaries and ensures a prior provider error is not copied into the persistence record; callback and `tests/unit/routes/onboarding-resume.test.ts` assert milestone P2025/cause and no false success.                                                                                                                                    |
+| Post-commit category activation                         | Callback and resume tests assert original error/cause, stage, Shop/generation context, and failure after the subscription activation call; sink failure preserves the route throw/gates.                                                                                                                                                                                                                             |
+| Ended-notice persistence and dispatch                   | `tests/unit/services/billing/subscription-ended-notification.service.test.ts` asserts separate stage/origin records, lifecycle identity, actual cause/code, redaction, best-effort completion and Shared sink isolation; existing missing-identity propagation remains covered.                                                                                                                                      |
+| Reconciliation queue acquisition and add                | `tests/unit/services/billing-reconciliation.service.test.ts` asserts distinct stages, original queue error/cause, Shop/subscription/schedule correlation, timestamp retention, redaction and best-effort resolution; sink failure on add does not change queue outcome.                                                                                                                                              |
+| Shared sink failure                                     | Actual installed Shared logger console sink throws in provider, sync, callback, resume, ended-notice and reconciliation owner tests; each existing throw, response, rollback, retry or best-effort policy remains intact.                                                                                                                                                                                            |
 
 Attempt 3 correction-to-test map:
 
-| Review correction | Durable regression evidence |
-|---|---|
-| Phone redaction adjacent to timestamp | `tests/unit/services/billing/provider-diagnostics.test.ts`: real Shared JSON output retains `2026-11-04T06:00:00.000Z`, redacts the adjacent phone, and marks redaction; callback scheduling timestamp assertions remain in `tests/unit/routes/billing-callback.test.ts`. |
-| JSON parser excerpt privacy | `tests/unit/services/shopify-billing.provider.test.ts`: actual `getActiveSubscription` parser with short and long sentinels; actual Shared output has a sanitized SyntaxError cause chain and no complete/truncated sentinel; propagated error retains the original SyntaxError cause. |
-| Same-token concurrency barrier | `tests/integration/billing-activation.postgres.integration.test.ts`: separate real Prisma clients/services, two barrier arrivals asserted before release, PostgreSQL period/counter/stale-token outcomes verified; separate milestone lock-wait and rollback case retained. |
+| Review correction                     | Durable regression evidence                                                                                                                                                                                                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phone redaction adjacent to timestamp | `tests/unit/services/billing/provider-diagnostics.test.ts`: real Shared JSON output retains `2026-11-04T06:00:00.000Z`, redacts the adjacent phone, and marks redaction; callback scheduling timestamp assertions remain in `tests/unit/routes/billing-callback.test.ts`.              |
+| JSON parser excerpt privacy           | `tests/unit/services/shopify-billing.provider.test.ts`: actual `getActiveSubscription` parser with short and long sentinels; actual Shared output has a sanitized SyntaxError cause chain and no complete/truncated sentinel; propagated error retains the original SyntaxError cause. |
+| Same-token concurrency barrier        | `tests/integration/billing-activation.postgres.integration.test.ts`: separate real Prisma clients/services, two barrier arrivals asserted before release, PostgreSQL period/counter/stale-token outcomes verified; separate milestone lock-wait and rollback case retained.            |
 
 ### Validation Results
 

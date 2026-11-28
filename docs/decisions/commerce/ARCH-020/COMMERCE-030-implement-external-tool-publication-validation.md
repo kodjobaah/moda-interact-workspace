@@ -141,16 +141,16 @@ Review; Attempt 3 implementation committed and pushed for moda_architect review.
 
 ### Validation Results
 
-| Criterion | Test / command | Observable result |
-|---|---|---|
-| PV01/PV02/PV03 | `tests/external-publication.test.ts` / 11 focused scenarios; `npm run test:arch020-external-publication` | Passed: visual/code admission, role and tester liveness, cross-author receipt, MIME/list rendering, strict receipt/expiry/write outage and runtime revalidation. |
-| A2-R1 canonical hash | `tests/external-publication.test.ts` / `uses the canonical lifecycle hash and rejects the raw definition hash`; same command | Passed; canonical `toolHashInput` hash admits the sample/publication and raw definition hashing is rejected. |
-| A2-R2 connection shape | `tests/external-publication.test.ts` / `validates persisted connection auth shape without requiring credentials`; same command | Passed; PLATFORM/PER_SHOP valid auth shapes pass without credential lookup, invalid scope/auth combinations reject. |
-| Focused lint | `npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts` | Passed with no warnings/errors. |
-| Task-local diagnostics | VS Code diagnostics for all changed implementation/test files | No errors. |
-| Repository lint | `npm run lint` | Blocked by pre-existing `src/studio/connections/connections-ui.tsx:235` hook error; no publication lint errors. |
-| Repository typecheck/build | `npm run typecheck`; `npm run build` | Blocked by pre-existing Prisma/integration/CodeMirror/processor-test diagnostics; no publication diagnostics remain and the production bundle compiled before typecheck. |
-| Diff check | `git diff --check` | Passed. |
+| Criterion                  | Test / command                                                                                                                 | Observable result                                                                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PV01/PV02/PV03             | `tests/external-publication.test.ts` / 11 focused scenarios; `npm run test:arch020-external-publication`                       | Passed: visual/code admission, role and tester liveness, cross-author receipt, MIME/list rendering, strict receipt/expiry/write outage and runtime revalidation.         |
+| A2-R1 canonical hash       | `tests/external-publication.test.ts` / `uses the canonical lifecycle hash and rejects the raw definition hash`; same command   | Passed; canonical `toolHashInput` hash admits the sample/publication and raw definition hashing is rejected.                                                             |
+| A2-R2 connection shape     | `tests/external-publication.test.ts` / `validates persisted connection auth shape without requiring credentials`; same command | Passed; PLATFORM/PER_SHOP valid auth shapes pass without credential lookup, invalid scope/auth combinations reject.                                                      |
+| Focused lint               | `npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts`                                         | Passed with no warnings/errors.                                                                                                                                          |
+| Task-local diagnostics     | VS Code diagnostics for all changed implementation/test files                                                                  | No errors.                                                                                                                                                               |
+| Repository lint            | `npm run lint`                                                                                                                 | Blocked by pre-existing `src/studio/connections/connections-ui.tsx:235` hook error; no publication lint errors.                                                          |
+| Repository typecheck/build | `npm run typecheck`; `npm run build`                                                                                           | Blocked by pre-existing Prisma/integration/CodeMirror/processor-test diagnostics; no publication diagnostics remain and the production bundle compiled before typecheck. |
+| Diff check                 | `git diff --check`                                                                                                             | Passed.                                                                                                                                                                  |
 
 Developer-owned PostgreSQL/container checks were not run; this task owns Redis receipt/admission ports and has no migration scope.
 
@@ -404,10 +404,7 @@ never compares the sample MIME to `execution.responseFormat.mediaTypes`.
 Normalize exactly:
 
 ```ts
-const mime = sample.contentType
-  .split(';', 1)[0]
-  .trim()
-  .toLowerCase();
+const mime = sample.contentType.split(";", 1)[0].trim().toLowerCase();
 ```
 
 and require `execution.responseFormat.mediaTypes.includes(mime)`. A mismatch is an
@@ -516,7 +513,7 @@ later task.
 
 Add committed regressions for:
 
-```text
+````text
 MISSING / STALE
 - missing receipt -> "Run a sample test before publishing"
 - changed current definition hash -> old receipt rejected
@@ -555,7 +552,7 @@ npm run lint
 npm run typecheck
 npm run build
 git diff --check
-```
+````
 
 If repository-wide lint/typecheck/build remain blocked solely by unchanged documented
 baseline diagnostics outside:
@@ -697,20 +694,20 @@ Files:
 The current saved-identity comparison still recomputes:
 
 ```ts
-digest(canonicalJson(input.definition))
+digest(canonicalJson(input.definition));
 ```
 
 but the accepted ARCH-020 tool revision `contentHash` is produced by the existing
 Commerce lifecycle/publication path as:
 
 ```ts
-digest(canonicalJson(toolHashInput(definition)))
+digest(canonicalJson(toolHashInput(definition)));
 ```
 
 See the already accepted repository helper:
 
 ```ts
-src/commerce/publication/validation.ts
+src / commerce / publication / validation.ts;
 
 export function toolContentHash(definition) {
   return digest(canonicalJson(toolHashInput(definition)));
@@ -729,8 +726,9 @@ Correction:
 2. in the current-definition check compute exactly:
 
 ```ts
-const expectedDefinitionHash =
-  digest(canonicalJson(toolHashInput(input.definition)));
+const expectedDefinitionHash = digest(
+  canonicalJson(toolHashInput(input.definition)),
+);
 ```
 
 3. compare the saved `definitionHash` to that value;
@@ -800,8 +798,8 @@ shape:
 type ConnectionMetadata = {
   enabled: boolean;
   revisionPresent: boolean;
-  scope: 'PLATFORM' | 'PER_SHOP';
-  authMode: 'NONE' | 'BEARER' | 'API_KEY';
+  scope: "PLATFORM" | "PER_SHOP";
+  authMode: "NONE" | "BEARER" | "API_KEY";
   authHeader: string | null;
 };
 ```
@@ -896,6 +894,7 @@ unchanged baseline outside the task-owned files, record the exact diagnostics an
 demonstrate no `external-publication` diagnostic was introduced.
 
 Before handoff:
+
 1. update Work Items / Acceptance Criteria / Completion Report truthfully;
 2. record exact focused test names/results for A2-R1 and A2-R2;
 3. set `status: review`;
@@ -946,6 +945,7 @@ observable in the production source and focused harness.
 
 Repository ownership remains correct and the publication validator is now close to
 C21 conformance. Acceptance is blocked only by:
+
 1. incompatibility with the accepted canonical tool revision content hash; and
 2. incorrect coupling of synthetic sample/publication admission to credential
    existence.

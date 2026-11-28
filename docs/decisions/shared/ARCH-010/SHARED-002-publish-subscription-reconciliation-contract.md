@@ -56,13 +56,16 @@ Use publication mechanics only, following the repository's established Shared re
 ## Completion Report
 
 ### Status
+
 Complete — architect accepted.
 
 ### Files Changed
+
 Publication/version metadata and task report only, as required by this publication task.
 The architect-accepted SHARED-001 implementation source was not redesigned by this task.
 
 ### Work Completed
+
 Published the architect-authorized package release:
 
 `@modainteract/moda-interact-shared@0.10.0`
@@ -75,6 +78,7 @@ subscription-reconciliation public contract is therefore physically published in
 The pre-existing `0.9.0` release was treated as immutable and was not overwritten.
 
 ### Validation Results
+
 Publication handoff evidence records:
 
 - package tests: `110 passed, 1 skipped`;
@@ -92,6 +96,7 @@ Publication handoff evidence records:
 The single skipped Redis integration test is unrelated to this publication contract.
 
 ### Git / VCS
+
 Reviewed publication handoff:
 
 - implementation commit: `583a7d6`;
@@ -105,6 +110,7 @@ be self-embedded into the commit that contains this task file.
 ### Architect Review
 
 #### Review Status
+
 Accepted
 
 #### Attempt 1 — Accepted
@@ -134,7 +140,6 @@ Because `completion_mode: automatic`, the task is complete. `executor` and
 This overlay intentionally does **not** modify any enabled Background or Shopify
 task. Dependency/readiness reconciliation remains the responsibility of
 `moda_architect` against the current canonical task graph.
-
 
 ## Non-goals
 

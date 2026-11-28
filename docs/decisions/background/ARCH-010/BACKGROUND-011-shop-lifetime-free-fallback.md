@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-BACKGROUND-011
 architecture_id: ARCH-010
-title: Make the lifetime Free recovery entitlement plan-independent and consume it
+title:
+  Make the lifetime Free recovery entitlement plan-independent and consume it
   after purchased credits
 task_kind: implementation
 domain: background
@@ -16,18 +17,18 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-BACKGROUND-001
-- ARCH-007-BACKGROUND-003
-- ARCH-007-BACKGROUND-009
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-BACKGROUND-001
+  - ARCH-007-BACKGROUND-003
+  - ARCH-007-BACKGROUND-009
 enables:
-- ARCH-010-BACKGROUND-002
-- ARCH-010-BACKGROUND-009
-- ARCH-010-BACKGROUND-014
-- ARCH-010-BACKGROUND-019
+  - ARCH-010-BACKGROUND-002
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-BACKGROUND-014
+  - ARCH-010-BACKGROUND-019
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-BACKGROUND-011: Make the lifetime Free recovery entitlement plan-independent and consume it after purchased credits
@@ -230,9 +231,11 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Complete — architect accepted Attempt 4
 
 ### Files Changed
+
 - `package.json`
 - `package-lock.json`
 - `src/services/billing-subscription-reconciliation.service.ts`
@@ -249,6 +252,7 @@ Complete — architect accepted Attempt 4
 - `tests/unit/services/recovery-billing.service.test.ts`
 
 ### Work Completed
+
 Implemented the DATABASE-013-backed, plan-independent lifetime Free fallback.
 The effective policy reads only the durable `LIFETIME_FREE_RECOVERY_CREDITS`
 counter, validates its lifetime invariants, and fails closed for missing or
@@ -267,6 +271,7 @@ composition. Shared `0.11.0` is consumed and the removed Shared-007 symbols are
 absent from Background source/tests.
 
 ### Validation Results
+
 Focused tests:
 `npm test -- --run tests/unit/services/effective-billing-policy.service.test.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 passed: 5 files, 97 tests.
@@ -293,53 +298,58 @@ symbol scan was clean; `git diff --check` passed. The database submodule remains
 an unstaged gitlink at `014408e0402221f08a3961880b34e828a8bdc736`.
 
 ### Deviations
+
 Repository-wide build and unit validation retain only the documented,
 unchanged DATABASE-013 schema-consumer baseline described above. Focused task
 validation, guarded concurrency validation, package verification, and diff
 checks are green.
 
 ### Assumptions
+
 The hydrated DATABASE-013 database submodule at
 `014408e0402221f08a3961880b34e828a8bdc736` and generated Prisma client are the
 accepted prerequisite baseline supplied for this attempt.
 
 ### Unresolved Issues
+
 Repository-wide recovery-credit purchase/refund consumers still require the
 DATABASE-013 follow-up work owned outside this task. Those errors do not affect
 the changed lifetime Free path.
 
 ### Architectural Concerns
+
 None. No cross-repository contract, schema, transaction, or idempotency
 boundary was changed.
 
 ### Git / VCS
+
 Task branch: `task/ARCH-010-BACKGROUND-011`
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-011
-  parent branch: task/ARCH-010-BACKGROUND-011
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-011
-  implementation branch: task/ARCH-010-BACKGROUND-011
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
-  start-of-attempt synchronization: implementation and parent task branches were
-    already aligned with their origin/task/ARCH-010-BACKGROUND-011 refs; origin/main
-    was an ancestor of the implementation branch and no merge was required
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-011
+parent branch: task/ARCH-010-BACKGROUND-011
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-011
+implementation branch: task/ARCH-010-BACKGROUND-011
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+start-of-attempt synchronization: implementation and parent task branches were
+already aligned with their origin/task/ARCH-010-BACKGROUND-011 refs; origin/main
+was an ancestor of the implementation branch and no merge was required
 
 Implementation repository:
-  repository: moda-interact-background
-  implementation commit: e5d6f0b (fix: complete BACKGROUND-011 attempt 4 corrections)
-  remote branch: origin/task/ARCH-010-BACKGROUND-011
-  pushed: yes
+repository: moda-interact-background
+implementation commit: e5d6f0b (fix: complete BACKGROUND-011 attempt 4 corrections)
+remote branch: origin/task/ARCH-010-BACKGROUND-011
+pushed: yes
 
 Parent workspace:
-  task file: docs/decisions/background/ARCH-010/BACKGROUND-011-shop-lifetime-free-fallback.md
-  claim commit: 7e42c4f (chore: claim BACKGROUND-011 attempt 4)
-  report commit: 150a557 (docs: return BACKGROUND-011 attempt 4 for review)
-  remote branch: origin/task/ARCH-010-BACKGROUND-011
-  submodule gitlink staged: no
+task file: docs/decisions/background/ARCH-010/BACKGROUND-011-shop-lifetime-free-fallback.md
+claim commit: 7e42c4f (chore: claim BACKGROUND-011 attempt 4)
+report commit: 150a557 (docs: return BACKGROUND-011 attempt 4 for review)
+remote branch: origin/task/ARCH-010-BACKGROUND-011
+submodule gitlink staged: no
 
 Database gitlink staged: no
 Merged to implementation main: no
@@ -815,8 +825,10 @@ The current `RecoveryBillingService` treats any replay outcome with known counte
 ownership as admitted:
 
 ```ts
-reservation.kind === "reserved" || isOwnedBy(reservation, "PURCHASED_RECOVERY_CREDITS")
-reservation.kind === "reserved" || isOwnedBy(reservation, "LIFETIME_FREE_RECOVERY_CREDITS")
+reservation.kind === "reserved" ||
+  isOwnedBy(reservation, "PURCHASED_RECOVERY_CREDITS");
+reservation.kind === "reserved" ||
+  isOwnedBy(reservation, "LIFETIME_FREE_RECOVERY_CREDITS");
 ```
 
 `isOwnedBy(...)` is true for all of:
@@ -977,7 +989,7 @@ calculation or validation.
 
 Do not delete/recreate the UsageReservation row and do not change `counterId`.
 
-If a reservation service encounters a RELEASED row owned by the *other* recovery
+If a reservation service encounters a RELEASED row owned by the _other_ recovery
 counter, return the owner explicitly and let `RecoveryBillingService` invoke the
 correct owning service once to perform reactivation.
 
@@ -1419,4 +1431,3 @@ BACKGROUND-002 and BACKGROUND-014.
 ##### Architect Decision
 
 **Accepted — Attempt 4. ARCH-010-BACKGROUND-011 is Complete.**
-

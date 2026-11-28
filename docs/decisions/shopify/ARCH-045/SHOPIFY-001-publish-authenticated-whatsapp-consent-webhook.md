@@ -22,6 +22,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-23
 ---
+
 # Enqueue authenticated Shopify WhatsApp consent-state sync
 
 ## Architecture

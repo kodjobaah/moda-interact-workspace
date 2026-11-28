@@ -198,29 +198,29 @@ The **starting model** is Luna for every active bounded implementation task.
 The escalation column identifies the most likely next model only if the task
 reveals the stated difficulty.
 
-| Task | Current state | Starting model | Escalate only if... |
-| --- | --- | --- | --- |
-| `ARCH-001-GATEWAY-001` – Configure ARCH-001 deployment topology | Ready | **GPT-5.6 Luna** | Infrastructure behaviour becomes non-obvious -> Terra; difficult topology/networking issue -> Sol |
-| `ARCH-002-ADMIN-001` – Add admin health/readiness | Ready | **GPT-5.6 Luna** | No expected escalation for normal implementation |
-| `ARCH-002-ADMIN-003` – Google platform-admin authentication/session foundation | Pending | **GPT-5.6 Luna** | Session/security correctness becomes ambiguous -> Terra; unresolved high-risk security issue -> Sol |
-| `ARCH-002-ADMIN-004` – Secure private Grafana Cloud observability access | Pending | **GPT-5.6 Luna** | Access/security/infrastructure behaviour is unclear -> Terra; unresolved external/security boundary -> Sol |
-| `ARCH-002-ADMIN-005` – Protect admin pages/server reads | Pending | **GPT-5.6 Luna** | Authorization behaviour cannot be established from existing contracts/tests -> Terra |
-| `ARCH-002-ADMIN-006` – Protect mutations/route handlers | Pending | **GPT-5.6 Luna** | Security semantics become non-local or ambiguous -> Terra/Sol |
-| `ARCH-002-ADMIN-007` – Add admin security audit logging | Pending | **GPT-5.6 Luna** | Logging/security behaviour crosses unexpected boundaries -> Terra |
-| `ARCH-002-ADMIN-008` – Validate admin security boundary | Pending | **GPT-5.6 Luna** | Validation exposes ambiguous or cross-cutting security failures -> Terra/Sol |
-| `ARCH-002-ADMIN-009` – Shared observability runtime | In progress | **GPT-5.6 Luna** | Framework/provider integration becomes non-trivial -> Terra |
-| `ARCH-002-ADMIN-010` – Bounded admin request metrics | Superseded | — | No implementation required |
-| `ARCH-002-DATABASE-001` – Platform-admin identity registry | Ready | **GPT-5.6 Luna** | Schema/integrity implications are unclear or migration behaviour becomes non-trivial -> Terra |
-| `ARCH-002-GATEWAY-003` – Render test/production deployment topology | Pending | **GPT-5.6 Luna** | Configuration work exposes difficult Render/network/topology reasoning -> Terra/Sol; consider task decomposition if scope becomes incoherent |
-| `ARCH-002-GATEWAY-004` – Validate gateway/Render infrastructure | Pending | **GPT-5.6 Luna** | Validation reveals unexplained infrastructure behaviour -> Terra/Sol |
-| `ARCH-002-GATEWAY-005` – Validate npm shared-package production builds | Pending | **GPT-5.6 Luna** | Work becomes a broad iterative build/fix loop -> **GPT-5.3-Codex** |
-| `ARCH-002-GATEWAY-006` – Configure OpenTelemetry infrastructure | Ready | **GPT-5.6 Luna** | Telemetry/configuration integration becomes non-obvious -> Terra |
-| `ARCH-002-GATEWAY-007` – Host-based admin routing | Pending | **GPT-5.6 Luna** | Routing/security behaviour becomes ambiguous -> Terra |
-| `ARCH-002-MESSAGING-001` – Messaging health/readiness | Ready | **GPT-5.6 Luna** | No expected escalation for normal implementation |
-| `ARCH-002-SHOPIFY-004` – Use published shared package | Ready | **GPT-5.6 Luna** | Migration expands into many mechanical code/build fixes -> **GPT-5.3-Codex** |
-| `ARCH-002-SHOPIFY-005` – Eliminate TypeScript baseline debt | Ready | **GPT-5.6 Luna** | Repository-wide iterative type/build cleanup dominates the task -> **GPT-5.3-Codex** |
-| `ARCH-002-SYSTEM-TEST-001` – Validate integrated test/production topology | Pending | **GPT-5.6 Luna** | Cross-service diagnosis becomes difficult -> Terra; unresolved multi-service/system failure -> Sol |
-| `ARCH-002-SYSTEM-TEST-002` – Validate observability + WhatsApp performance | Pending | **GPT-5.6 Luna** | Performance/telemetry diagnosis crosses several boundaries -> Terra/Sol |
+| Task                                                                           | Current state | Starting model   | Escalate only if...                                                                                                                          |
+| ------------------------------------------------------------------------------ | ------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ARCH-001-GATEWAY-001` – Configure ARCH-001 deployment topology                | Ready         | **GPT-5.6 Luna** | Infrastructure behaviour becomes non-obvious -> Terra; difficult topology/networking issue -> Sol                                            |
+| `ARCH-002-ADMIN-001` – Add admin health/readiness                              | Ready         | **GPT-5.6 Luna** | No expected escalation for normal implementation                                                                                             |
+| `ARCH-002-ADMIN-003` – Google platform-admin authentication/session foundation | Pending       | **GPT-5.6 Luna** | Session/security correctness becomes ambiguous -> Terra; unresolved high-risk security issue -> Sol                                          |
+| `ARCH-002-ADMIN-004` – Secure private Grafana Cloud observability access       | Pending       | **GPT-5.6 Luna** | Access/security/infrastructure behaviour is unclear -> Terra; unresolved external/security boundary -> Sol                                   |
+| `ARCH-002-ADMIN-005` – Protect admin pages/server reads                        | Pending       | **GPT-5.6 Luna** | Authorization behaviour cannot be established from existing contracts/tests -> Terra                                                         |
+| `ARCH-002-ADMIN-006` – Protect mutations/route handlers                        | Pending       | **GPT-5.6 Luna** | Security semantics become non-local or ambiguous -> Terra/Sol                                                                                |
+| `ARCH-002-ADMIN-007` – Add admin security audit logging                        | Pending       | **GPT-5.6 Luna** | Logging/security behaviour crosses unexpected boundaries -> Terra                                                                            |
+| `ARCH-002-ADMIN-008` – Validate admin security boundary                        | Pending       | **GPT-5.6 Luna** | Validation exposes ambiguous or cross-cutting security failures -> Terra/Sol                                                                 |
+| `ARCH-002-ADMIN-009` – Shared observability runtime                            | In progress   | **GPT-5.6 Luna** | Framework/provider integration becomes non-trivial -> Terra                                                                                  |
+| `ARCH-002-ADMIN-010` – Bounded admin request metrics                           | Superseded    | —                | No implementation required                                                                                                                   |
+| `ARCH-002-DATABASE-001` – Platform-admin identity registry                     | Ready         | **GPT-5.6 Luna** | Schema/integrity implications are unclear or migration behaviour becomes non-trivial -> Terra                                                |
+| `ARCH-002-GATEWAY-003` – Render test/production deployment topology            | Pending       | **GPT-5.6 Luna** | Configuration work exposes difficult Render/network/topology reasoning -> Terra/Sol; consider task decomposition if scope becomes incoherent |
+| `ARCH-002-GATEWAY-004` – Validate gateway/Render infrastructure                | Pending       | **GPT-5.6 Luna** | Validation reveals unexplained infrastructure behaviour -> Terra/Sol                                                                         |
+| `ARCH-002-GATEWAY-005` – Validate npm shared-package production builds         | Pending       | **GPT-5.6 Luna** | Work becomes a broad iterative build/fix loop -> **GPT-5.3-Codex**                                                                           |
+| `ARCH-002-GATEWAY-006` – Configure OpenTelemetry infrastructure                | Ready         | **GPT-5.6 Luna** | Telemetry/configuration integration becomes non-obvious -> Terra                                                                             |
+| `ARCH-002-GATEWAY-007` – Host-based admin routing                              | Pending       | **GPT-5.6 Luna** | Routing/security behaviour becomes ambiguous -> Terra                                                                                        |
+| `ARCH-002-MESSAGING-001` – Messaging health/readiness                          | Ready         | **GPT-5.6 Luna** | No expected escalation for normal implementation                                                                                             |
+| `ARCH-002-SHOPIFY-004` – Use published shared package                          | Ready         | **GPT-5.6 Luna** | Migration expands into many mechanical code/build fixes -> **GPT-5.3-Codex**                                                                 |
+| `ARCH-002-SHOPIFY-005` – Eliminate TypeScript baseline debt                    | Ready         | **GPT-5.6 Luna** | Repository-wide iterative type/build cleanup dominates the task -> **GPT-5.3-Codex**                                                         |
+| `ARCH-002-SYSTEM-TEST-001` – Validate integrated test/production topology      | Pending       | **GPT-5.6 Luna** | Cross-service diagnosis becomes difficult -> Terra; unresolved multi-service/system failure -> Sol                                           |
+| `ARCH-002-SYSTEM-TEST-002` – Validate observability + WhatsApp performance     | Pending       | **GPT-5.6 Luna** | Performance/telemetry diagnosis crosses several boundaries -> Terra/Sol                                                                      |
 
 Tasks already in architect review and therefore intentionally excluded from the
 Copilot implementation schedule:
@@ -241,13 +241,13 @@ architect's feedback specifically identifies a reason to escalate.
 For the task snapshot represented in this document, every active bounded
 repository implementation task starts on Luna.
 
-| Starting model | Active tasks | Role |
-| --- | ---: | --- |
-| **GPT-5.6 Luna** | **20** | Default first-pass implementation |
-| **GPT-5.6 Terra** | 0 initially | Escalation for non-trivial reasoning/debugging |
-| **GPT-5.3-Codex** | 0 initially | Escalation for broad mechanical code/build loops |
-| **GPT-5.6 Sol** | 0 initially | Escalation for genuinely difficult/high-risk problems |
-| **Superseded / no implementation** | 1 | No model required |
+| Starting model                     | Active tasks | Role                                                  |
+| ---------------------------------- | -----------: | ----------------------------------------------------- |
+| **GPT-5.6 Luna**                   |       **20** | Default first-pass implementation                     |
+| **GPT-5.6 Terra**                  |  0 initially | Escalation for non-trivial reasoning/debugging        |
+| **GPT-5.3-Codex**                  |  0 initially | Escalation for broad mechanical code/build loops      |
+| **GPT-5.6 Sol**                    |  0 initially | Escalation for genuinely difficult/high-risk problems |
+| **Superseded / no implementation** |            1 | No model required                                     |
 
 The important metric is not how many tasks are pre-assigned to a stronger
 model. It is how many tasks Luna can complete coherently before an explicit

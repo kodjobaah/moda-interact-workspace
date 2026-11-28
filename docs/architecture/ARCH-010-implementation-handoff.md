@@ -248,9 +248,6 @@ For every Ready task, the repository agent must:
 
 If a clean-baseline symbol is missing, do not recreate a legacy alias locally. Return the contract gap to the architect.
 
-
-
-
 `ARCH-010-SHOPIFY-018` is architect-accepted Complete at Attempt 3. Accepted task branch HEAD: `9ce3dfa`; production lifecycle implementation introduced at `1605a3c`; final parent report HEAD reconciled from the developer handoff: `e13673a`. No enabled downstream Shopify task becomes Ready yet because each still has other incomplete dependencies.
 `ARCH-010-BACKGROUND-019` is architect-accepted Complete at Attempt 6. Accepted implementation branch HEAD: `08c288f`; final parent publication evidence reconciled from the developer handoff: `7fd5e1e`. The accepted DATABASE-013 checkout remains validation-only and the Background database gitlink is unchanged. `ARCH-010-BACKGROUND-008` is now architect-accepted Complete at Attempt 3 (`b4ef7c8`; parent report `a8852ad`). `ARCH-010-BACKGROUND-009` remains the remaining Background frontier dependency for `ARCH-010-BACKGROUND-007`, so BG7 stays Pending; ARCH-010 system tests remain terminal/manual-gated.
 

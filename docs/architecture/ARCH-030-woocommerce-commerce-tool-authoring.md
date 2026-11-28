@@ -58,10 +58,10 @@ Selected, authorised WooCommerce store + Woo tool draft
 
 ## Repository Responsibilities
 
-| Task | Owner | Outcome |
-|---|---|---|
+| Task                  | Owner         | Outcome                                                                             |
+| --------------------- | ------------- | ----------------------------------------------------------------------------------- |
 | ARCH-030-COMMERCE-001 | moda_commerce | WooCommerce Test, store-specific execution/preview and current-test navigation gate |
-| ARCH-030-COMMERCE-002 | moda_commerce | WooCommerce Review summary and Save draft in Commerce |
+| ARCH-030-COMMERCE-002 | moda_commerce | WooCommerce Review summary and Save draft in Commerce                               |
 
 No other tasks are part of this agreed scope.
 
@@ -86,10 +86,10 @@ Classification: pre-production for WooCommerce Studio tool authoring. Existing m
 
 ## Decisions / Tasks
 
-| Task | Status (definition only) | Depends on |
-|---|---|---|
-| ARCH-030-COMMERCE-001 | ready | None |
-| ARCH-030-COMMERCE-002 | pending | ARCH-030-COMMERCE-001 |
+| Task                  | Status (definition only) | Depends on            |
+| --------------------- | ------------------------ | --------------------- |
+| ARCH-030-COMMERCE-001 | ready                    | None                  |
+| ARCH-030-COMMERCE-002 | pending                  | ARCH-030-COMMERCE-001 |
 
 ## Open Questions
 

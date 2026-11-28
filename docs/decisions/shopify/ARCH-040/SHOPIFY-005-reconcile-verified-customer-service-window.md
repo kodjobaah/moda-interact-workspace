@@ -66,17 +66,17 @@ Correct the existing Shopify Recovery Detail command admission and read-side gui
 
 `S` = persisted sequence-1 `sentAt`; `D` = persisted effective `followUpDueAt` (`null` when unavailable/disabled); `V` = latest verified customer inbound in `[S, now]`; `W` = 24 hours. All cases also require Human mode and current revision, eligible shop/recovery/recipient, an approved template and an unused sequence 2.
 
-| Case | HUMAN_TEXT | HUMAN follow-up template |
-|---|---|---|
-| No `S` | Deny | Deny |
-| Verified `V`, `now < V + W` | Allow | Deny (window open) |
-| Verified `V`, `now = V + W`, `D <= now` | Deny | Allow |
-| Verified `V`, window closed, `D > now` or `D = null` | Deny | Deny (not configured/due) |
-| No `V`, `D <= now` | Deny | Allow; **no invented 24h wait from S** |
-| No `V`, `D > now` or `D = null` | Deny | Deny |
-| Only unverified, future or pre-`S` inbound | Treat as no `V` | Apply configured due and other safeguards |
-| Sequence 2 already claimed, sent or provider-uncertain | Applicable text window only | Deny regardless of settings |
-| Exact idempotency replay of an accepted command | Return same command | Return same command without another claim |
+| Case                                                   | HUMAN_TEXT                  | HUMAN follow-up template                  |
+| ------------------------------------------------------ | --------------------------- | ----------------------------------------- |
+| No `S`                                                 | Deny                        | Deny                                      |
+| Verified `V`, `now < V + W`                            | Allow                       | Deny (window open)                        |
+| Verified `V`, `now = V + W`, `D <= now`                | Deny                        | Allow                                     |
+| Verified `V`, window closed, `D > now` or `D = null`   | Deny                        | Deny (not configured/due)                 |
+| No `V`, `D <= now`                                     | Deny                        | Allow; **no invented 24h wait from S**    |
+| No `V`, `D > now` or `D = null`                        | Deny                        | Deny                                      |
+| Only unverified, future or pre-`S` inbound             | Treat as no `V`             | Apply configured due and other safeguards |
+| Sequence 2 already claimed, sent or provider-uncertain | Applicable text window only | Deny regardless of settings               |
+| Exact idempotency replay of an accepted command        | Return same command         | Return same command without another claim |
 
 **Example:** follow-up enabled with effective delay 60 minutes and persisted `D=S+60min`, with no verified customer reply: the single approved template may become eligible at `D`, rather than `S+24h`. A delay of 48 hours remains 48 hours. If the customer has replied, Human free text follows their rolling 24-hour window; the configured follow-up is never automatically sent solely because that window expires.
 
@@ -129,19 +129,23 @@ Use the existing authenticated Shopify server transactions. Do not re-resolve an
 ## Completion Report
 
 ### Status
+
 Developer Attempt 1 is **Complete / Accepted**. The supplied Architect Review Accepted decision and explicit developer completion decision are recorded below; attempt remains 1. Recovery implementation `3b6e7739165cb752ce01930570e0f85ca223e79f`, approved sealing correction `b5d5080ebab219f2eecc3e0c233f53930369085b`, and gitlink-only scope correction `ad61f2e627e5e75bc60707620a068812b199a01c` are published on `task/ARCH-040-SHOPIFY-005`. The implementation worktree is clean at `ad61f2e`; local and remote heads match, and the `database` gitlink is restored to `caee3df61dbb38c8319ebcd3cfaf68522743245e`. No database source changes were made. `ARCH-040-SYSTEM-TEST-002` remains pending because `ARCH-040-BACKGROUND-008` and `ARCH-040-SHOPIFY-004` are still incomplete; no downstream promotion is warranted.
 
 ### Files Changed
+
 - Published recovery implementation `3b6e773`: `app/services/recoveries/recovery-detail.server.ts`, `recovery-human-commands.server.ts`, `recovery-service-window.ts`, and focused `tests/unit/arch040-shopify-command.test.ts`, `arch040-shopify-service-window.test.ts`, `recovery-detail-readers.test.ts`.
 - Published one-file baseline fix `b5d5080`: `app/services/platform-configuration/seal.server.ts` (normalised `UNSEAL_FAILED` without underlying exception text).
 - Gitlink-only scope correction `ad61f2e` restores the nested `database` pointer from `807af3393f992c8a19bc9ef278d7e7e05f41799d` to baseline `caee3df61dbb38c8319ebcd3cfaf68522743245e`; no nested database files changed.
 
 ### Work Completed
+
 - Implemented the ARCH-040 Shopify verified-inbound and configured-follow-up admission/read-policy changes and deterministic service-window fixtures in the published task branch (final task-wide architecture review pending).
 - Corrected the existing Shopify sealed-configuration error path to call `configurationFailure(input.key, "UNSEAL_FAILED")` without concatenating provider exception text, under the narrowly approved scope exception.
 - Published `ad61f2e627e5e75bc60707620a068812b199a01c`, a forward, gitlink-only correction restoring the original database baseline; implementation head and remote match, and the worktree is clean.
 
 ### Validation Results
+
 - `npm test -- tests/unit/arch040-shopify-command.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/arch040-shopify-service-window.test.ts` — **PASS, 86/86** across three files after the due-time fixture correction (earlier supplied terminal evidence).
 - `npm test -- tests/unit/platform-configuration/service.test.ts` — **PASS, 7/7** on 2026-10-21 following the sealed-configuration baseline correction.
 - At corrected head `ad61f2e`, `npm test -- tests/unit/arch040-shopify-command.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/arch040-shopify-service-window.test.ts tests/unit/platform-configuration/service.test.ts` — **PASS, 93/93** across four files.
@@ -152,40 +156,51 @@ Developer Attempt 1 is **Complete / Accepted**. The supplied Architect Review Ac
 - Final implementation worktree is clean; `HEAD` equals `origin/task/ARCH-040-SHOPIFY-005` at `ad61f2e627e5e75bc60707620a068812b199a01c`; nested `database` checkout and gitlink both resolve to `caee3df61dbb38c8319ebcd3cfaf68522743245e`.
 
 ### Deviations
+
 - **Explicitly approved 2026-10-21:** the pre-existing, same-repository `seal.server.ts` concatenated an exception message onto the closed `ShopifyConfigurationErrorCode`, failing TypeScript and risking disclosure of underlying decryption diagnostics. The one-file replacement emits only `UNSEAL_FAILED`; no additional platform-configuration behaviour is authorised.
 - **Corrected scope deviation:** the nested database pointer was restored to the approved `caee3df` baseline in forward commit `ad61f2e`; the earlier `3b6e773` history remains unchanged, and no database source or migration was modified.
 
 ### Assumptions
+
 `followUpDueAt` is the recovery's existing resolved scheduled due time; verify its actual producer in the current implementation before coding.
 
 ### Unresolved Issues
+
 No outstanding 24-hour post-initial policy decision: setting-based follow-up timing is approved.
 No implementation or validation issue remains open for this attempt. The approved bounded `seal.server.ts` correction, database gitlink restoration and corrected-head validation are recorded. Downstream system testing remains gated on its other declared prerequisites and explicit developer invocation.
 
 ### Architectural Concerns
+
 Any unavailable policy snapshot/producer is returned to moda_architect rather than worked around by inventing a new delay.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — 2026-10-21, per the explicit completion instruction supplied with `/moda_developer_update ARCH-040-SHOPIFY-005 complete`.
 
 ### Review Notes
+
 The supplied Architect Review Accepted decision accepts Attempt 1. The previously required database pin restoration was completed as forward commit `ad61f2e`, without rewriting the recovery or sealing commits; the restored baseline and corrected-head validation are recorded above. The one-file `seal.server.ts` correction remains within its expressly approved scope. Acceptance does not waive other tasks' dependencies or the system-test manual gate.
 
 ### Reviewed Files
+
 Existing Shopify admission/read, ARCH-040 architecture, Woo API eligibility and Background policy files.
 
 ### Validation Reviewed
+
 Reviewed task scope, completed Work Items and Acceptance Criteria, published implementation history, clean mirrored task worktrees, restored `caee3df` database pin, and corrected-head validation: focused tests 93/93, typecheck, lint, build, and both whitespace checks passed. Production build emitted dependency/bundle warnings without errors. No merge to `main` was performed.
 
 ### Architecture Conformance
+
 Accepted for Attempt 1. Required scope and validation are complete; the published implementation head matches its remote. No cross-repository changes were included. `ARCH-040-SYSTEM-TEST-002` remains `pending` because its other explicit dependencies, including `ARCH-040-BACKGROUND-008` and `ARCH-040-SHOPIFY-004`, are not complete; system-test execution remains manually gated.
 
 ### Follow-up
+
 Resolved: database gitlink restored in `ad61f2e`; Prisma Client regenerated; corrected-head focused tests, typecheck, lint, build, and whitespace checks passed; completion recorded at Attempt 1. The dependent `ARCH-040-SYSTEM-TEST-002` remains pending until all its declared prerequisites are complete and it is explicitly invoked.
 
 ### Developer Response — 2026-10-21
+
 All three review follow-ups were completed at implementation head `ad61f2e627e5e75bc60707620a068812b199a01c`: the gitlink points to `caee3df`, Prisma Client was regenerated, the four focused test files passed 93/93, typecheck/lint/build passed, and both whitespace checks passed. The implementation worktree is clean and matches the remote task branch.
 
 ## Developer Completion Decision — Attempt 1
@@ -193,6 +208,7 @@ All three review follow-ups were completed at implementation head `ad61f2e627e5e
 **Complete — 2026-10-21.** The developer explicitly invoked `/moda_developer_update ARCH-040-SHOPIFY-005 complete` with the decision “Architect Review Accepted.” The accepted review and required implementation evidence are durable in this task record; all listed Work Items, Acceptance Criteria and validation requirements are complete. The implementation branch is committed, pushed and clean at `ad61f2e627e5e75bc60707620a068812b199a01c`; parent report changes are committed and pushed on `task/ARCH-040-SHOPIFY-005`. The lifecycle is set to `complete`, `executor: null`, `claimed_at: null`, with Attempt 1 unchanged. No task branch was merged to `main`.
 
 ### Dependency Frontier
+
 `ARCH-040-SYSTEM-TEST-002` remains `pending`: its explicit prerequisites `ARCH-040-BACKGROUND-008` and `ARCH-040-SHOPIFY-004` remain incomplete. Other prerequisites are not a substitute for these requirements. System-test tasks remain manually gated even when dependency-ready, so this completion does not authorize execution or promote the system-test task.
 
 ## Developer Execution Ownership Amendment

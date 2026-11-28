@@ -275,6 +275,7 @@ None
 Task branch: `task/ARCH-021-COMMERCE-091`
 
 Physical worktree isolation:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-091`
 - parent branch: `task/ARCH-021-COMMERCE-091`
@@ -285,17 +286,20 @@ Physical worktree isolation:
 - another task worktree reused: no
 
 Attempt 1 start-of-attempt synchronization (historical; preserved):
+
 - parent remote task branch fast-forwarded: not needed; parent task branch was already at `origin/task/ARCH-021-COMMERCE-091`
 - parent `origin/main` incorporated: no; the existing parent task branch does not contain current `origin/main`
 - implementation remote task branch fast-forwarded: not needed; no remote implementation task branch existed
 - implementation `origin/main` incorporated: already current at implementation branch creation
 
 Attempt 1 review submission (historical; preserved):
+
 - implementation commit: `bdf7fd3` (`task(ARCH-021-COMMERCE-091): add local-first capability flow`)
 - implementation commit pushed to `origin/task/ARCH-021-COMMERCE-091`: yes
 - parent report commit: `4823d720`; pushed to `origin/task/ARCH-021-COMMERCE-091`.
 
 Attempt 2 launcher synchronization evidence:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-091`
 - parent branch: `task/ARCH-021-COMMERCE-091`
@@ -310,6 +314,7 @@ Attempt 2 launcher synchronization evidence:
 - recursive submodule preparation: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; status `ready`; `database` initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
 
 Attempt 2 review submission:
+
 - implementation commit: `4c49548` (`task(ARCH-021-COMMERCE-091): preserve unlocked authoring phases`), pushed to `origin/task/ARCH-021-COMMERCE-091`.
 - parent report submission commit: `906ddc03` (`task(ARCH-021-COMMERCE-091): resubmit attempt 2 for review`), pushed to `origin/task/ARCH-021-COMMERCE-091`; this VCS-evidence line is its follow-up report amendment.
 

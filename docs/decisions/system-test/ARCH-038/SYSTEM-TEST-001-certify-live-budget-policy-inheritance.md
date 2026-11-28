@@ -24,6 +24,7 @@ enables: []
 created: 2026-10-13
 updated: 2026-11-02
 ---
+
 # Certify LIVE execution budget precedence and runtime
 
 ## Architecture

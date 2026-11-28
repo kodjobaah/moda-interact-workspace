@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SYSTEM-TEST-001
-- ARCH-010-SYSTEM-TEST-002
-- ARCH-010-SYSTEM-TEST-003
-- ARCH-010-SYSTEM-TEST-005
+  - ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-SYSTEM-TEST-002
+  - ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SYSTEM-TEST-005
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-SYSTEM-TEST-004: Final ARCH-010 merchant lifecycle acceptance matrix
@@ -123,19 +123,25 @@ STOP if prerequisite system tests are not architect/developer accepted, if the i
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Evidence Reused
+
 Populate during execution.
 
 ### Cross-Scenario Journeys
+
 Populate during execution.
 
 ### Final State Matrix
+
 Populate during execution.
 
 ### Outcome
+
 Pending.
 
 ### Architect Review
+
 Manual terminal gate; pending final acceptance.

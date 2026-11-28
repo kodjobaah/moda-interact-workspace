@@ -82,7 +82,6 @@ Catalogue, Shopify pricing, usage events, content, economics or translation/revi
   - `tests/unit/merchant-pricing-translations.test.ts` — SHA-256 `90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92`
   - `tests/unit/merchant-pricing-translation-workbook.test.ts` — SHA-256 `385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8`
 
-
 ### R1 — complete Plan step boundary
 
 Move both existing step-0 JSX regions into `plan-step.tsx`: Shopify plan handle/display name; Commerce-model selector/repair alert/guidance; plan kind; included recovery credits; Active/Featured; supported feature controls; Merchant Knowledge limits/source-type controls and validation alert.
@@ -368,7 +367,7 @@ required, rerun the complete ADMIN-002 validation contract, using
 - `node --test tests/security/admin-merchant-pricing-plan.test.mjs` independently
   rerun: 13/13 passed.
 - `node --experimental-strip-types --test
-  tests/unit/merchant-pricing-plan-builder-draft.test.ts` independently rerun:
+tests/unit/merchant-pricing-plan-builder-draft.test.ts` independently rerun:
   14/14 passed.
 - Submitted `npm run test:unit`: 242 passed / 2 inherited failures covered by
   `ARCH025-ADMIN-BUILDER-TEST-001`.

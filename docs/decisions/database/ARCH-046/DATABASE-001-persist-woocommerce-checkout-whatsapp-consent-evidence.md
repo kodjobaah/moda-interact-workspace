@@ -22,7 +22,6 @@ updated: 2026-10-21
 
 > **SUPERSEDED — DO NOT EXECUTE.** Replaced by `ARCH-045-DATABASE-002` on 2026-10-21. WooInstallation source/epoch, one immutable Woo consent evidence model and verified account/guest checkout linkage are all implemented and validated by the single Database task. The remaining requirements below are retained as **historical design provenance only**. No worktree/branch, implementation or review has been claimed or completed under this task.
 
-
 # Add Woo consent source and immutable customer-phone evidence
 
 ## Architecture
@@ -98,7 +97,7 @@ None — all consumers now depend on `ARCH-045-DATABASE-002` (or published `ARCH
 - [ ] Disposable PostgreSQL migration/idempotency/identity tests pass, no default grants or recovery creation.
 
 - [ ] Future Woo normal checkout reconciliation can resolve precisely the same verified Customer identity used for consent writes without phone matching; ambiguous/expired guest mapping fails closed.
-- [ ] Exactly one Woo *consent evidence* table; any identity bridge is independently justified and does not become a recovery worklist or extra current-consent projection.
+- [ ] Exactly one Woo _consent evidence_ table; any identity bridge is independently justified and does not become a recovery worklist or extra current-consent projection.
 
 ## Validation
 

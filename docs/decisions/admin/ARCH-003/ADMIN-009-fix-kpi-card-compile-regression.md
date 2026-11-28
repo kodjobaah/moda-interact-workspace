@@ -194,8 +194,8 @@ A valid shape is conceptually:
 <h3
   className={
     status
-      ? '...compact status classes...'
-      : `...numeric classes ${accent ? '...' : '...'}`
+      ? "...compact status classes..."
+      : `...numeric classes ${accent ? "..." : "..."}`
   }
 >
   {value}

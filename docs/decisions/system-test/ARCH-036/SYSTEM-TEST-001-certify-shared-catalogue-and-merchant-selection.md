@@ -14,7 +14,13 @@ priority: 90
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-BACKGROUND-001", "ARCH-036-API-002", "ARCH-036-WOOCOMMERCE-003", "ARCH-036-ADMIN-001"]
+depends_on:
+  [
+    "ARCH-036-BACKGROUND-001",
+    "ARCH-036-API-002",
+    "ARCH-036-WOOCOMMERCE-003",
+    "ARCH-036-ADMIN-001",
+  ]
 enables: []
 created: 2026-10-12
 updated: 2026-11-02
@@ -50,7 +56,6 @@ Black-box Background + authenticated API-owned provider connection + database + 
 
 ## Requirements
 
-
 - Exercise full multi-page background-provider coupon fetching with verified Woo REST read grant, direct outbound canonical URL/TLS/SSRF constraints, expired/removed/restricted coupon handling and incomplete generation fail-closed.
 - Assert real Woo rows use `woo:coupon:<id>`, `providerSnapshot` JSONB, provider lifecycle status separate from `isAvailable` merchant flags. New rows unchecked, active resync preserves checkboxes; transient provider error cannot clear selections.
 - Test two Woo merchants plus Shopify: shop isolation, current ACTIVE/fixedSelectable checked and unchecked UI rows, paging/search, two-stage WordPress navigation and 20 locales. Assert Shopify `isAvailable` remains merchant selection under accepted ARCH-052-BACKGROUND-009, with provider status/liveness checked separately; preserve the existing fixed-override FK.
@@ -67,11 +72,9 @@ Black-box Background + authenticated API-owned provider connection + database + 
 
 ## Interfaces / Contracts
 
-
 Real or simulatable reachable WooCommerce `wc/v3/coupons` over authorised, Background-held read-only grant; existing Prisma discount/policy models; API-002 merchant selection read/write through the WordPress facade. No new Shared contract or API coupon proxy.
 
 ## Dependencies
-
 
 - `ARCH-036-BACKGROUND-001`
 - `ARCH-036-API-002`
@@ -168,7 +171,6 @@ Await canonical materialisation, execution and review.
 ## Definition reconciliation — 2026-11-02
 
 Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-036-ADMIN-001: ready. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
-
 
 ## Dependency-frontier reconciliation — 2026-11-02
 

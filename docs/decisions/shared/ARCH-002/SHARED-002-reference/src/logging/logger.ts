@@ -63,7 +63,11 @@ export function createLogger(options: LoggerOptions): StructuredLogger {
   const initialBaseFields = { ...(options.baseFields ?? {}) };
 
   function buildLogger(baseFields: Record<string, unknown>): StructuredLogger {
-    function emit(level: LogLevel, event: string, fields: LogFields = {}): void {
+    function emit(
+      level: LogLevel,
+      event: string,
+      fields: LogFields = {},
+    ): void {
       try {
         const eventName = event.trim() || "unknown";
         const sanitizedData = sanitizeLogFields({ ...baseFields, ...fields });
@@ -75,7 +79,9 @@ export function createLogger(options: LoggerOptions): StructuredLogger {
           "service.namespace": serviceNamespace,
           "service.name": serviceName,
           "deployment.environment.name": environment,
-          ...(Object.keys(sanitizedData).length > 0 ? { data: sanitizedData } : {}),
+          ...(Object.keys(sanitizedData).length > 0
+            ? { data: sanitizedData }
+            : {}),
         });
 
         sink(record);
@@ -85,10 +91,12 @@ export function createLogger(options: LoggerOptions): StructuredLogger {
     }
 
     return Object.freeze({
-      debug: (event: string, fields?: LogFields) => emit("debug", event, fields),
+      debug: (event: string, fields?: LogFields) =>
+        emit("debug", event, fields),
       info: (event: string, fields?: LogFields) => emit("info", event, fields),
       warn: (event: string, fields?: LogFields) => emit("warn", event, fields),
-      error: (event: string, fields?: LogFields) => emit("error", event, fields),
+      error: (event: string, fields?: LogFields) =>
+        emit("error", event, fields),
       child: (fields: LogFields) => buildLogger({ ...baseFields, ...fields }),
     });
   }

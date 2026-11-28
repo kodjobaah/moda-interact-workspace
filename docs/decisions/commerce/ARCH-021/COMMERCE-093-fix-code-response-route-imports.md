@@ -170,6 +170,7 @@ Do not use a brittle test that merely duplicates the exact relative string witho
 ### R4 — production build ownership
 
 Production build validation and unrelated TypeScript diagnostics are owned by ARCH-021-COMMERCE-094. C093 must record its observed build result as evidence that the corrected route imports are no longer the blocker, but C093 acceptance does not require the repository build to pass.
+
 - [ ] Record the production-build result and confirm the corrected route imports are no longer unresolved; do not fix unrelated TypeScript diagnostics in C093.
 
 ### R5 — no C086 source changes

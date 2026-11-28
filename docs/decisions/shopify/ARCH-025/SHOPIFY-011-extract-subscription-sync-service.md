@@ -155,7 +155,6 @@ SHOPIFY-010 finalisation is invoked from inside the same active-contract sync tr
 
 Do not change existing routes/services to import collaborators directly. `BillingService` remains the supported application façade for this architecture.
 
-
 ## Work Items
 
 - [x] Create `SubscriptionSyncService` with provider, Prisma and prior collaborator dependencies.
@@ -208,7 +207,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Do not pursue a line-count target mechanically. Completion is defined by responsibility ownership and delegation, not a specific final number of lines. Do not migrate callers to collaborators; that would be a separate architecture decision. Do not modify an earlier accepted collaborator from this task: an insufficient interface is an architect/reopen event, not licence to broaden SHOPIFY-011.
 
-
 ## Completion Report
 
 ### Status
@@ -244,6 +242,7 @@ Ready for Review
 - `get_errors` for all three changed files: no errors.
 
 Physical worktree isolation:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-011`
 - parent branch: `task/ARCH-025-SHOPIFY-011`
@@ -254,12 +253,14 @@ Physical worktree isolation:
 - another task worktree reused: no
 
 Start-of-attempt synchronization:
+
 - parent remote task branch fast-forwarded: not-needed
 - parent `origin/main` incorporated: already-current
 - implementation remote task branch fast-forwarded: not-needed
 - implementation `origin/main` incorporated: already-current
 
 Recursive implementation submodules:
+
 - `git submodule sync --recursive`: passed
 - `git submodule update --init --recursive`: passed
 - recorded submodule commit: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`

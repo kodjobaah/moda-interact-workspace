@@ -110,7 +110,7 @@ Maximum 32 issues. Each `path`, `code` and `message` is bounded to 512 UTF-8 byt
 Every new Phase 3 platform Tool authoring Server Action MUST use the already-accepted helper:
 
 ```ts
-requireStudioPlatformRole('ADMIN')
+requireStudioPlatformRole("ADMIN");
 ```
 
 from `lib/auth/merchant-access.ts`.
@@ -135,16 +135,16 @@ For non-mutating Phase 3 validation/metadata/request-preview Server Actions, exp
 
 ```ts
 type ToolAuthoringActionCode =
-  | 'FORBIDDEN'
-  | 'INVALID_INPUT'
-  | 'NOT_FOUND'
-  | 'DATABASE_UNAVAILABLE'
-  | 'INTERNAL_ERROR';
+  | "FORBIDDEN"
+  | "INVALID_INPUT"
+  | "NOT_FOUND"
+  | "DATABASE_UNAVAILABLE"
+  | "INTERNAL_ERROR";
 
 type ToolAuthoringActionResult<T> =
-  | { kind: 'ok'; value: T }
+  | { kind: "ok"; value: T }
   | {
-      kind: 'error';
+      kind: "error";
       code: ToolAuthoringActionCode;
       message: string;
       retryable: boolean;
@@ -266,9 +266,11 @@ The simplification `ARCH-021-SYSTEM-TEST-001` remains a terminal Ready task and 
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Attempt 2 Launcher and Worktree Evidence
+
 - Task: `ARCH-021-COMMERCE-019`, attempt `2`, logical agent `moda_commerce`, execution mode `agent`, completion mode `automatic`.
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-019`.
@@ -281,6 +283,7 @@ Ready for Review
 - Database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Files Changed
+
 - `package.json`
 - `src/commerce/external-publication/index.ts`
 - `src/commerce/tool-authoring/contracts.ts`
@@ -293,6 +296,7 @@ Ready for Review
 - `tests/tool-authoring-validation.test.ts`
 
 ### Correction-to-File/Test Mapping
+
 - A1-R1: removed the historical DIRECT prohibition so canonical DIRECT, OBJECT/LIST and JAVASCRIPT EXTERNAL_HTTP modes reach exact `LIVE_TEST_REQUIRED`; covered in `tests/external-publication.test.ts` and `tests/commerce-lifecycle.test.ts`.
 - A1-R2: replaced byte-slice decoding with code-point-safe UTF-8 truncation retaining the 32-issue cap; covered in `tests/tool-authoring-validation.test.ts` with multibyte boundary and replacement-character assertions.
 - A1-R3: classified only the known `mapToolArguments()` validation TypeErrors as `INVALID_INPUT`; covered by real Server Action calls in `tests/tool-authoring-server-actions.test.ts` for invalid definition, invalid input value, missing mapping and invalid external scalar.
@@ -303,11 +307,13 @@ Ready for Review
 - A1-R8: this report records the exact Attempt 2 launcher packet, implementation/report commit hashes, push parity and clean-worktree evidence.
 
 ### Work Completed
+
 - Preserved the accepted bounded validation/action contracts and platform-role authorization boundary.
 - Enforced exact Phase 3 fail-closed publication behavior for both canonical kinds and all EXTERNAL_HTTP response modes.
 - Kept synthetic receipts from satisfying publication and did not alter already-published history or add provider/publication wiring beyond scope.
 
 ### Validation Results
+
 - `npm run test:arch021-tool-authoring-common`: passed, 75 tests across 6 files, zero skipped.
 - `npm run test:arch021-tool-authoring-validation`: passed, 6 tests.
 - `npm run test:arch020-external-publication`: passed, 13 tests.
@@ -318,29 +324,36 @@ Ready for Review
 - Source audit: no provider transport/compiler invocation in the common authoring layer or Server Actions.
 
 ### Implementation and VCS Evidence
+
 - Implementation commit: `47fa255`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
 - Implementation worktree was clean after the implementation commit.
 - Parent report commit: `93b3bdef`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
 - Push parity: implementation push and parent report push both passed.
 
 ### Deviations
+
 - None from the Attempt 2 correction contract. Full typecheck remains limited by the unrelated baseline diagnostics listed above.
 
 ### Assumptions
+
 - The injected external publication validator remains the accepted Phase 3 boundary; this task does not implement COMMERCE-023/024 validators or Phase 4 live-test receipts.
 
 ### Unresolved Issues
+
 - None task-owned.
 
 ### Architectural Concerns
+
 - None.
 
 ### Attempt 3 Completion Report
 
 #### Status
+
 Ready for Review
 
 #### Launcher and Worktree Evidence
+
 - Task: `ARCH-021-COMMERCE-019`, attempt `3`, logical agent `moda_commerce`, execution mode `agent`, completion mode `automatic`.
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-019`.
@@ -354,15 +367,18 @@ Ready for Review
 - Database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 #### Correction-to-File/Test Mapping
+
 - A2-R1: added `tests/tool-authoring-no-provider-io.test.ts`; it executes the real `validateToolDefinitionAction()` and `validateToolArgumentsAction()` with the existing role mock, asserts successful results, and proves a throwing `globalThis.fetch` spy is untouched. The same test audits `contracts.ts` and `server-actions.ts` for request-JS, Admin compiler, provider transport, integration backend, session and `/admin/api/` references.
 - A2-R2: updated `package.json` so `test:arch021-tool-authoring-common` runs all prior six focused files plus the new provider-boundary file; all 77 tests execute with zero skips and all prior authorization, publication, lifecycle, Studio, UTF-8 and `INVALID_INPUT` proofs remain green.
 - A2-R3: this report records the fresh Attempt 3 packet, implementation commit `fe3bcf40ed928c1ee5b668a02d83b4a177d01067`, final parent report commit after publication, push parity, and clean worktrees.
 
 #### Work Completed
+
 - Added only the review-required executable proof and focused script registration. No runtime/publication behavior or out-of-scope domain validator was changed.
 - Preserved exact `LIVE_TEST_REQUIRED` behavior, synthetic-receipt rejection, bounded UTF-8 issues, explicit action errors, hierarchy authorization, client-safe DTOs, and zero provider I/O in the common layer.
 
 #### Validation Results
+
 - `npm run test:arch021-tool-authoring-common`: passed, 7 files and 77 tests, zero skipped.
 - `npm run test:arch021-tool-authoring-validation`: passed, 6 tests.
 - `npm run test:arch020-external-publication`: passed, 13 tests.
@@ -372,6 +388,7 @@ Ready for Review
 - `git diff --check`: passed.
 
 #### Implementation and VCS Evidence
+
 - Implementation commit: `fe3bcf40ed928c1ee5b668a02d83b4a177d01067`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
 - Implementation worktree: clean after the implementation commit.
 - Final parent report commit: `465745d10ff100bc02354e14628c73828bd1b11d` (the report publication commit before this self-reference reconciliation), pushed to `origin/task/ARCH-021-COMMERCE-019`.
@@ -379,20 +396,25 @@ Ready for Review
 - Push parity: implementation and parent report pushes passed.
 
 #### Deviations
+
 - None from the Attempt 3 correction contract.
 
 #### Assumptions
+
 - The existing mocked `requireStudioPlatformRole('ADMIN')` seam is the accepted test boundary; this proof does not introduce a second authorization path or fake compiler module.
 
 #### Unresolved Issues
+
 - None task-owned.
 
 #### Architectural Concerns
+
 - None.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 3
 
 ### Review Notes
@@ -727,9 +749,12 @@ message: Run a successful live tool test for the current saved revision before p
 The current `validateForPublication()` still contains:
 
 ```ts
-if (processing.kind === 'DIRECT')
+if (processing.kind === "DIRECT")
   return invalid([
-    issue('/execution/responseProcessing', 'DIRECT processing is not publishable yet')
+    issue(
+      "/execution/responseProcessing",
+      "DIRECT processing is not publishable yet",
+    ),
   ]);
 ```
 
@@ -765,7 +790,7 @@ tests/tool-authoring-validation.test.ts
 The current implementation performs:
 
 ```ts
-new TextDecoder().decode(bytes.slice(0, 512))
+new TextDecoder().decode(bytes.slice(0, 512));
 ```
 
 When byte 512 cuts a multibyte code point, `TextDecoder` inserts U+FFFD and the
@@ -787,7 +812,7 @@ Add exact regressions for `path`, `code` and `message` containing multibyte inpu
 near the boundary. At minimum prove:
 
 ```ts
-new TextEncoder().encode(resultField).byteLength <= 512
+new TextEncoder().encode(resultField).byteLength <= 512;
 ```
 
 for input equivalent to:

@@ -23,6 +23,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
+
 # ARCH-006-SHOPIFY-001: Implement merchant support server capability
 
 ## Architecture
@@ -58,6 +59,7 @@ Shopify repository server loaders/actions/services for support history/unread/re
 Authenticate with current Shopify mechanism and resolve internal Shop server-side. Load trusted canonical merchant language from accepted ARCH-005 `ShopSettings.defaultLanguageTag`.
 
 Compose:
+
 - validate shared plain-text 1..500 grapheme contract;
 - upsert one shop thread;
 - create immutable MERCHANT message `AVAILABLE`, `sourceLanguageTag=<trusted shop snapshot>`;
@@ -158,7 +160,6 @@ Blocked before claim.
 
 The previously published `0.7.0` release is not a valid runtime dependency for the ARCH-006 deterministic Node job-ID helpers. This task must remain unclaimed until `ARCH-006-SHARED-004` is architect-accepted Complete. No implementation attempt has started.
 
-
 ### Architect Re-entry Decision — 2026-09-06
 
 SHARED-004 is accepted Complete and `@modainteract/moda-interact-shared@0.7.1` passed registry/clean-consumer verification. SHOPIFY-001 is returned from Blocked to Ready for its **first implementation attempt**. Attempt remains `0` until the Shopify agent claims the task. Execute only SHOPIFY-001, return it to `review`, do not promote or claim SHOPIFY-002/003, and STOP.
@@ -191,4 +192,3 @@ Verified implementation boundaries:
 Decision: **Complete**. `ARCH-006-SHOPIFY-002` may become Ready.
 `ARCH-006-SHOPIFY-003` remains Pending because its other dependencies are not yet
 architect-accepted Complete.
-

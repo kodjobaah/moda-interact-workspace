@@ -16,6 +16,7 @@ enables: []
 created: 2026-08-28
 updated: 2026-08-28
 ---
+
 # Publish Recovery Webhook Events Immediately
 
 ## Architecture

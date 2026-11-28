@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Fix Tenant Directory queue overview readiness and unavailable-state containment
 
 ## Architecture

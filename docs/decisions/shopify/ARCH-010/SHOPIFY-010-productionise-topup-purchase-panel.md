@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-SHOPIFY-014
+  - ARCH-010-SHOPIFY-014
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 superseded_by: ARCH-010-SHOPIFY-014
 ---
 
@@ -131,4 +131,5 @@ STOP if the integrated BillingPlan model exposes multiple production pack varian
 ## Completion Report
 
 ### Status
+
 Not started.

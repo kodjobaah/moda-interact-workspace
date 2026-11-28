@@ -5,6 +5,7 @@ To be completed by `moda_gateway`.
 ### Summary
 
 Not Started
+
 ### Artifacts created or modified
 
 TBD
@@ -16,5 +17,3 @@ TBD
 ### Missing capabilities
 
 TBD
-
-

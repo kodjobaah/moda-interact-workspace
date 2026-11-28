@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-035-WOOCOMMERCE-007
-- ARCH-035-API-008
+  - ARCH-035-WOOCOMMERCE-007
+  - ARCH-035-API-008
 enables:
-- ARCH-048-BACKGROUND-003
-- ARCH-048-SYSTEM-TEST-001
-created: '2026-10-23'
-updated: '2026-10-27'
+  - ARCH-048-BACKGROUND-003
+  - ARCH-048-SYSTEM-TEST-001
+created: "2026-10-23"
+updated: "2026-10-27"
 ---
 
 # ARCH-048-WOOCOMMERCE-002 — Publish complete Woo checkout updates including cleared baskets
@@ -280,8 +280,8 @@ Reconcile using `/moda_developer_update ARCH-048-WOOCOMMERCE-002` after confirma
   whitespace checks. These are developer/assistant checks from the submitted
   correction artifacts and do not replace live WordPress tests.
 - **PASS (live WordPress scenarios)** — `set -o pipefail; npm run
-  test:integration:wordpress 2>&1 | tee
-  arch048-woocommerce-002-attempt2-final-validation.log` drove the real local
+test:integration:wordpress 2>&1 | tee
+arch048-woocommerce-002-attempt2-final-validation.log` drove the real local
   WooCommerce/WordPress HTTP routes. The final 2026-10-27 log contains:
   - `ARCH-048 never-active empty Store API/Classic requests PASS`
   - `ARCH-048 guest Classic: clear once, repeat no-op, refill with same key PASS`

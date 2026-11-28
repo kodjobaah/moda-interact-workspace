@@ -655,9 +655,11 @@ The visible label/button flow may distinguish an initial local setup action such
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `src/studio/external-http/editor.tsx`
 - `src/studio/external-http/request-tab.tsx`
 - `src/studio/external-http/response-tab.tsx`
@@ -670,6 +672,7 @@ Ready for Review
 - `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
+
 - Request, Response and Test now own their actual typed JSX; `ExternalHttpEditor` dispatches to these components as the shared state/validation controller.
 - New and persisted External authoring share the five-tab navigation, `AgentContractTab`, and `ReviewTab`; persisted drafts retain their existing save/CAS/validation/publication behavior.
 - Local External Review shows the current request, response and Agent contract values; raw JSON buffers survive tab unmounts, invalid JSON remains visible, and final Create stays disabled until corrected.
@@ -679,6 +682,7 @@ Ready for Review
 - Preserved no-provider preview routing, response-mode discard semantics, DIRECT/VISUAL/JAVASCRIPT processing, CodeEditor behavior, stale-CAS retained edits, and the existing exact initial-create/reconciliation flow.
 
 ### Validation Results
+
 - `npm run test:arch020-external-tools-ui`: 16 passed.
 - `npm run test:arch021-tool-authoring-common`: 7 files, 85 passed.
 - Focused packet (`tool-authoring-screen`, `external-tools-ui`, `studio-workspace`, `studio-integration`): 4 files, 60 passed, zero skips.
@@ -690,20 +694,25 @@ Ready for Review
 - Implementation commit `9ba89bd` is pushed; implementation branch matches origin and its worktree is clean. The parent task-report commit is pushed separately; its final SHA is included in the handoff.
 
 ### Deviations
+
 - No Phase 2 gating, provider live execution, schema/database changes or system-test work was added. Full repository typecheck remains blocked by errors in untouched files outside this task's ownership.
 
 ### Assumptions
+
 - COMMERCE-038 atomic creation and exact-identity reconciliation contracts remain the authoritative server boundary. The launcher-provided Attempt 6 implementation worktree was the only implementation checkout used.
 
 ### Unresolved Issues
+
 Full workspace typecheck remains blocked by unrelated diagnostics in untouched Prisma/integration/test files; the focused task-owned lint, tests, editor diagnostics and source audits pass.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 6
 
 ### Review Notes
@@ -745,7 +754,6 @@ full repository typecheck                      retains unrelated baseline diagno
 The developer clarified the product invariant for External HTTP authoring during review: a new `EXTERNAL_HTTP` Tool cannot enter authoring until the setup screen has selected an authorized connection revision; an existing persisted External DRAFT derives that revision from its durable definition. Therefore an absent/unresolvable External HTTP connection context is not a second supported authoring mode. Any residual fallback/unavailable-state issue discovered during the developer's manual validation is treated as non-blocking follow-up work and should be captured in a new bounded task rather than silently expanding COMMERCE-039.
 
 This acceptance is an implementation checkpoint for developer manual validation. It does not mark ARCH-021 Implemented and does not execute the deferred terminal system-test work.
-
 
 #### Attempt 5 formal architecture review — 2026-09-26
 
@@ -912,7 +920,7 @@ Required corrections:
 2. The ACTUAL:
    - `Advanced response processing JSON`
    - `Response shape JSON`
-   textareas must live in `response-tab.tsx` and each render:
+     textareas must live in `response-tab.tsx` and each render:
 
 ```tsx
 className="tool-editor-json-textarea"
@@ -1347,7 +1355,6 @@ Then return control to `moda_architect` and STOP.
 
 Do not begin system-test work or Phase 2 gating.
 
-
 #### Attempt 4 formal architecture review — 2026-09-26
 
 Reviewed the supplied Attempt 4 implementation snapshot against the complete Attempt 3 correction contract and the current ARCH-021 authoring architecture. The user reports implementation commit `32eb81b` and parent task-report commit `a9ea5f28`. The supplied task file is correctly at `status: review`, `attempt: 4`, with the claim cleared. The Completion Report embedded in the snapshot records the same implementation commit but an earlier parent-report commit; this review uses the user-supplied final report commit for the handoff identity and does not require a self-referential report rewrite.
@@ -1392,11 +1399,7 @@ Use the files as real ownership boundaries, not one-line wrappers around the cur
 
 ```ts
 export type ToolAuthoringTabId =
-  | "request"
-  | "response"
-  | "test"
-  | "agent"
-  | "review";
+  "request" | "response" | "test" | "agent" | "review";
 ```
 
 It must render exactly:

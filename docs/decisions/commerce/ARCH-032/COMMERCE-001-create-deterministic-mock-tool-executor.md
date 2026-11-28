@@ -16,10 +16,10 @@ claimed_at: null
 attempt: 2
 depends_on: []
 enables:
-- ARCH-032-COMMERCE-002
-- ARCH-032-COMMERCE-003
+  - ARCH-032-COMMERCE-002
+  - ARCH-032-COMMERCE-003
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-COMMERCE-001 — Provide deterministic Studio fixture tool execution

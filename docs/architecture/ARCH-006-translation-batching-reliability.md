@@ -465,15 +465,15 @@ An explicit durable Admin reconciliation request is required.
 For every due unit of work PostgreSQL says should exist, reconciliation computes
 the expected shared deterministic job identity and inspects BullMQ:
 
-| Queue state | Reconciliation action |
-|---|---|
-| job missing | add canonical job |
-| waiting | reuse existing job |
-| delayed | reuse existing job |
-| active | reuse existing job |
-| failed | remove queue job, then recreate same logical shared job ID |
-| completed and PostgreSQL says work is complete | do nothing |
-| completed but PostgreSQL still requires work | remove stale queue job, recreate same logical shared job ID |
+| Queue state                                    | Reconciliation action                                       |
+| ---------------------------------------------- | ----------------------------------------------------------- |
+| job missing                                    | add canonical job                                           |
+| waiting                                        | reuse existing job                                          |
+| delayed                                        | reuse existing job                                          |
+| active                                         | reuse existing job                                          |
+| failed                                         | remove queue job, then recreate same logical shared job ID  |
+| completed and PostgreSQL says work is complete | do nothing                                                  |
+| completed but PostgreSQL still requires work   | remove stale queue job, recreate same logical shared job ID |
 
 Removing a failed/stale **BullMQ job** is allowed. Removing failed historical
 PostgreSQL Batch/translation audit state merely to make retry easier is not.
@@ -503,14 +503,14 @@ historical completed translations/Batches.
 
 Conceptually it repairs:
 
-| Durable state | Required recovery |
-|---|---|
-| `PENDING` translation, no current Batch, due | restore translation-dispatch work |
-| `READY` Batch, due | restore Batch-submit work |
-| `SUBMISSION_UNKNOWN` | correlate provider state; never blind resubmit |
-| `SUBMITTED`/provider-processing Batch with overdue `nextPollAt` | restore current poll work |
-| `PROVIDER_COMPLETED` | restore results work |
-| durable manual reconciliation request `PENDING` | process request through canonical recovery |
+| Durable state                                                   | Required recovery                              |
+| --------------------------------------------------------------- | ---------------------------------------------- |
+| `PENDING` translation, no current Batch, due                    | restore translation-dispatch work              |
+| `READY` Batch, due                                              | restore Batch-submit work                      |
+| `SUBMISSION_UNKNOWN`                                            | correlate provider state; never blind resubmit |
+| `SUBMITTED`/provider-processing Batch with overdue `nextPollAt` | restore current poll work                      |
+| `PROVIDER_COMPLETED`                                            | restore results work                           |
+| durable manual reconciliation request `PENDING`                 | process request through canonical recovery     |
 
 ## Redis-loss scenario
 
@@ -589,23 +589,23 @@ eligible translation is reset to the bounded retry path/new logical Batch.
 
 ## Failure matrix
 
-| Failure point | Durable state | Recovery |
-|---|---|---|
-| DB message/translation transaction fails | nothing accepted | request fails; enqueue nothing |
-| DB commit succeeds, initial Redis enqueue fails | translation `PENDING` | startup/periodic reconciliation restores dispatch |
-| assembler crashes before commit | no Batch/current assignment committed | row locks release; another assembler claims later |
-| assembler commits, submit enqueue fails | Batch `READY` | reconciliation restores submit job |
-| duplicate submit jobs/workers | only one `READY -> SUBMITTING` claim succeeds | losers return without provider create |
-| provider preparation/known retryable non-create failure | `READY` + durable nextSubmitAt/attempt count | minute-scale safe retry |
-| provider create response is ambiguous | `SUBMISSION_UNKNOWN` | correlate/adopt existing provider Batch; never blind create |
-| provider create succeeds, delayed poll enqueue fails | `SUBMITTED` + nextPollAt | reconciliation restores poll |
-| provider poll call transiently fails | provider lifecycle remains nonterminal | durable minute-scale next poll |
-| provider completes while workers offline | overdue submitted/provider-processing Batch | startup reconciliation polls and discovers completion |
-| provider completion persisted, results enqueue fails | `PROVIDER_COMPLETED` | reconciliation restores results job |
-| result worker crashes halfway | some translations AVAILABLE, others not applied | replay idempotently per translation |
-| retryable provider-result failure | failed Batch retained; affected translation PENDING/due if retries remain | new logical Batch later |
-| automatic translation retries exhausted | translation `FAILED` | explicit durable Admin reconciliation required |
-| failed BullMQ execution job | DB still says work required | remove failed queue job and recreate same shared deterministic identity |
+| Failure point                                           | Durable state                                                             | Recovery                                                                |
+| ------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| DB message/translation transaction fails                | nothing accepted                                                          | request fails; enqueue nothing                                          |
+| DB commit succeeds, initial Redis enqueue fails         | translation `PENDING`                                                     | startup/periodic reconciliation restores dispatch                       |
+| assembler crashes before commit                         | no Batch/current assignment committed                                     | row locks release; another assembler claims later                       |
+| assembler commits, submit enqueue fails                 | Batch `READY`                                                             | reconciliation restores submit job                                      |
+| duplicate submit jobs/workers                           | only one `READY -> SUBMITTING` claim succeeds                             | losers return without provider create                                   |
+| provider preparation/known retryable non-create failure | `READY` + durable nextSubmitAt/attempt count                              | minute-scale safe retry                                                 |
+| provider create response is ambiguous                   | `SUBMISSION_UNKNOWN`                                                      | correlate/adopt existing provider Batch; never blind create             |
+| provider create succeeds, delayed poll enqueue fails    | `SUBMITTED` + nextPollAt                                                  | reconciliation restores poll                                            |
+| provider poll call transiently fails                    | provider lifecycle remains nonterminal                                    | durable minute-scale next poll                                          |
+| provider completes while workers offline                | overdue submitted/provider-processing Batch                               | startup reconciliation polls and discovers completion                   |
+| provider completion persisted, results enqueue fails    | `PROVIDER_COMPLETED`                                                      | reconciliation restores results job                                     |
+| result worker crashes halfway                           | some translations AVAILABLE, others not applied                           | replay idempotently per translation                                     |
+| retryable provider-result failure                       | failed Batch retained; affected translation PENDING/due if retries remain | new logical Batch later                                                 |
+| automatic translation retries exhausted                 | translation `FAILED`                                                      | explicit durable Admin reconciliation required                          |
+| failed BullMQ execution job                             | DB still says work required                                               | remove failed queue job and recreate same shared deterministic identity |
 
 ## Scaling and contention
 

@@ -3,12 +3,13 @@ import type { LogLevel, LogRecord } from "./types.js";
 
 const OTEL_LOGGER_SCOPE_NAME = "@modainteract/moda-interact-shared/logging";
 
-const SEVERITY_BY_LEVEL: Readonly<Record<LogLevel, SeverityNumber>> = Object.freeze({
-  debug: SeverityNumber.DEBUG,
-  info: SeverityNumber.INFO,
-  warn: SeverityNumber.WARN,
-  error: SeverityNumber.ERROR,
-});
+const SEVERITY_BY_LEVEL: Readonly<Record<LogLevel, SeverityNumber>> =
+  Object.freeze({
+    debug: SeverityNumber.DEBUG,
+    info: SeverityNumber.INFO,
+    warn: SeverityNumber.WARN,
+    error: SeverityNumber.ERROR,
+  });
 
 /**
  * Emits the already-sanitized canonical Moda log record through the global
@@ -39,8 +40,7 @@ export function emitOpenTelemetryLog(record: LogRecord): void {
         "log.level": record.level,
         "service.namespace": record["service.namespace"],
         "service.name": record["service.name"],
-        "deployment.environment.name":
-          record["deployment.environment.name"],
+        "deployment.environment.name": record["deployment.environment.name"],
       },
     });
   } catch {

@@ -81,10 +81,10 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 ## Work Items
 
 - [ ] Own the C18 real producer/consumer integration gate: run EC01–EC12 through
-  actual Background admission/refresh and Commerce MCP dispatch/recommendation
-  services using the canonical seed. Substitute external provider/model transports
-  only; assert provider/refresh/send/reservation counts, current grants and stale
-  language suppression. Component fixtures cannot satisfy this terminal gate.
+      actual Background admission/refresh and Commerce MCP dispatch/recommendation
+      services using the canonical seed. Substitute external provider/model transports
+      only; assert provider/refresh/send/reservation counts, current grants and stale
+      language suppression. Component fixtures cannot satisfy this terminal gate.
 
 - [ ] Verify all C16 R01–R12 cases and N13 traversal, including release-only schema change without worker/Shared deployment, old/new conversation pinning, immutable publication and stable delivery-envelope behaviour.
 
@@ -176,7 +176,6 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 All dependencies must be Complete and architect-accepted before execution.
 
 ## Enables
-
 
 None.
 

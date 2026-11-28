@@ -416,6 +416,7 @@ The implementation worktree had no local `node_modules`; validation used a tempo
 Task branch: `task/ARCH-027-SHOPIFY-002`.
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`.

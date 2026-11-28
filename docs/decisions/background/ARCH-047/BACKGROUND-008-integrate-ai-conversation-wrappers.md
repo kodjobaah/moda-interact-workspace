@@ -82,7 +82,6 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - `ARCH-047-BACKGROUND-005`
 
-
 **Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
 
 ## Enables
@@ -117,8 +116,6 @@ After finishing Work Items, Acceptance Criteria and Validation, fill the Complet
 Make one minimal insertion in the authoritative outbound AI reply path; don't wrap generated prompt/tool messages or conversation history, only the final customer-visible message. Use the existing shared moderation API boundary unchanged.
 
 Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and the deterministic `/moda-task` launcher packet. Use launcher-resolved dedicated parent and implementation worktrees, both on `task/ARCH-047-BACKGROUND-008`; synchronise from canonical roots, not a prior task worktree. Preserve exact source semantics and existing test expectations; use the published `@modainteract/moda-interact-shared/logging` for generic structured logs, not a second logger. Prefer small coordinator/repository/pure-helper files over 300+ line catch-all services.
-
-
 
 ## Completion Report
 

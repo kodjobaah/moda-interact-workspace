@@ -385,9 +385,11 @@ Direct/JavaScript sample-based result-schema generation is intentionally deferre
 ## Completion Report
 
 ### Status
+
 Implementation complete; architect-accepted Complete.
 
 ### Files Changed
+
 `moda-interact-commerce/app/styles.css`
 `moda-interact-commerce/src/studio/external-http/editor.tsx`
 `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
@@ -397,6 +399,7 @@ Implementation complete; architect-accepted Complete.
 `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
+
 - Consolidated Source path behavior for Direct/Visual and removed it from JavaScript mode; replaced duplicate schema/path language with mode-specific controls.
 - Connected stable, resizable CodeMirror response panels to new local Tool authoring and persisted Draft authoring. Kept new Tool persistence behind final Create and preserved independent mode drafts.
 - Made Visual processing controls primary, added projected result types, derived the deterministic result contract, and kept invalid Visual authoring state local until schema derivation succeeds.
@@ -408,6 +411,7 @@ Implementation complete; architect-accepted Complete.
 - A1-R4: Maintain separate browser-local OBJECT and LIST projection/type drafts; only promote the selected valid shape. Added shape-switch restoration and active-shape validation coverage.
 
 ### Validation Results
+
 - `npm run test:arch020-external-tools-ui`: passed, 31 tests, including all four A1 correction regressions and duplicate-name raw-value retention.
 - `npx vitest run tests/tool-authoring-screen.test.tsx`: passed, 12 tests.
 - `npm run test:arch021-external-tool-authoring-validation`: passed, 47 tests. Packaged the repository QuickJS runtime first with `npm run code-runtime:package`.
@@ -420,23 +424,29 @@ Implementation complete; architect-accepted Complete.
 - Attempt 2 launcher evidence: prepared and claimed as `copilot` on `task/ARCH-021-COMMERCE-045` (claim commit `00c6bd13a8f64750a189dd1cf5235bb7e10775d7`); parent worktree synchronized/current at `185bd35a98acd9d74dd5159959e88b12951eab57`; implementation worktree incorporated current `origin/main`, with recursive submodule initialization verified (`database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`).
 
 ### Deviations
+
 No scope deviations. Response validation remains configuration-only; provider execution, schema inference from samples, database changes and Phase 2 gating were not added.
 
 ### Assumptions
+
 The existing `productionCodePanel` feature flag remains the enablement boundary for persisted Draft editor composition. The new Tool flow composes its stable CodeMirror panel directly.
 
 ### Unresolved Issues
+
 The repository-wide TypeScript check has unrelated existing baseline failures; targeted diagnostics and changed-file lint are clean. No A1 correction remains unresolved.
 
 ### Architectural Concerns
+
 None identified. Architect Review remains pending and was not edited.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2 (2026-09-26)
 
 ### Review Notes
+
 Reviewer: `moda_architect`. Reviewed implementation `8f9bb99` and completion-report handoff `1ee7ad21`.
 
 Attempt 2 closes all four bounded corrections from Attempt 1 and is accepted. Source inspection confirms:
@@ -500,9 +510,11 @@ File: `moda-interact-commerce/src/studio/external-http/response-tab.tsx` plus fo
 Manual validation after the Attempt 1 handoff exposed a fourth state defect. The Shape selector currently converts the active Visual draft with:
 
 ```ts
-setVisual(event.target.value === "LIST"
-  ? { kind: "LIST", fields, filters: [], sort: null, limit: 20 }
-  : { kind: "OBJECT", fields })
+setVisual(
+  event.target.value === "LIST"
+    ? { kind: "LIST", fields, filters: [], sort: null, limit: 20 }
+    : { kind: "OBJECT", fields },
+);
 ```
 
 so switching OBJECT -> LIST reuses the OBJECT projection fields as the LIST row projection, and switching back reuses the mutated LIST fields as the OBJECT projection. These are different result shapes and the user has not asked to reinterpret one shape's authoring as the other. The switch is therefore destructive/ambiguous in the same way C045 already avoids for Direct/Visual/JavaScript mode drafts.
@@ -519,6 +531,7 @@ Correction contract:
 Do not expand this attempt into Test-tab execution, sample schema inference, Request-tab corrections, Agent/Review redesign, database work or Phase 2 gating.
 
 ### Reviewed Files
+
 - `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
 - `moda-interact-commerce/src/studio/external-http/editor.tsx`
 - `moda-interact-commerce/src/studio/tools/new-tool-editor.tsx`
@@ -529,6 +542,7 @@ Do not expand this attempt into Test-tab execution, sample schema inference, Req
 - COMMERCE-043/044 accepted contracts and this task's R1-R12 / Acceptance Criteria
 
 ### Validation Reviewed
+
 Accepted Attempt 2 submitted evidence:
 
 ```text
@@ -562,7 +576,9 @@ git diff --check:                    passed
 The supplied review archive does not contain installed dependencies, so dependency-backed commands were not falsely rerun in the architect container. Source inspection plus developer manual validation found the four functional gaps above, which the submitted tests do not currently cover.
 
 ### Architecture Conformance
+
 Conforms. C045 remains a Response-authoring/UI composition task over the accepted COMMERCE-043/044 contracts: raw browser-local state is separated from canonical/durable state, validation is advisory and zero-provider-I/O, inactive mode/shape drafts remain local-only, and no Test-tab execution, database change, Shared change or Phase 2 gating was introduced.
 
 ### Follow-up
+
 `ARCH-021-COMMERCE-048` is promoted to `ready` for the separately scoped bounded recursive/nested Visual result-tree extension.

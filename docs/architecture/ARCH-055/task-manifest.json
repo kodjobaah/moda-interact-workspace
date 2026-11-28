@@ -14,14 +14,7 @@
       "ARCH-055-API-005",
       "ARCH-055-SYSTEM-TEST-001"
     ],
-    "entries": [
-      9,
-      11,
-      12,
-      29,
-      39,
-      40
-    ],
+    "entries": [9, 11, 12, 29, 39, 40],
     "definition_revision": 2
   },
   {
@@ -32,23 +25,13 @@
     "repo": "moda-interact-background",
     "agent": "moda_background",
     "status": "complete",
-    "deps": [
-      "ARCH-055-DATABASE-001"
-    ],
+    "deps": ["ARCH-055-DATABASE-001"],
     "enables": [
       "ARCH-055-SHOPIFY-001",
       "ARCH-055-API-004",
       "ARCH-055-SYSTEM-TEST-001"
     ],
-    "entries": [
-      29,
-      30,
-      31,
-      35,
-      36,
-      37,
-      40
-    ],
+    "entries": [29, 30, 31, 35, 36, 37, 40],
     "definition_revision": 2
   },
   {
@@ -59,15 +42,9 @@
     "repo": "moda-interact",
     "agent": "moda_app",
     "status": "complete",
-    "deps": [
-      "ARCH-055-BACKGROUND-001"
-    ],
-    "enables": [
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      29
-    ],
+    "deps": ["ARCH-055-BACKGROUND-001"],
+    "enables": ["ARCH-055-SYSTEM-TEST-001"],
+    "entries": [29],
     "definition_revision": 2
   },
   {
@@ -78,24 +55,13 @@
     "repo": "moda-interact-api",
     "agent": "moda_api",
     "status": "complete",
-    "deps": [
-      "ARCH-055-DATABASE-001"
-    ],
+    "deps": ["ARCH-055-DATABASE-001"],
     "enables": [
       "ARCH-055-API-007",
       "ARCH-055-API-009",
       "ARCH-055-SYSTEM-TEST-001"
     ],
-    "entries": [
-      1,
-      2,
-      7,
-      9,
-      10,
-      11,
-      12,
-      13
-    ],
+    "entries": [1, 2, 7, 9, 10, 11, 12, 13],
     "definition_revision": 3
   },
   {
@@ -107,17 +73,8 @@
     "agent": "moda_api",
     "status": "complete",
     "deps": [],
-    "enables": [
-      "ARCH-055-API-009",
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      3,
-      4,
-      5,
-      6,
-      8
-    ],
+    "enables": ["ARCH-055-API-009", "ARCH-055-SYSTEM-TEST-001"],
+    "entries": [3, 4, 5, 6, 8],
     "definition_revision": 2
   },
   {
@@ -129,23 +86,8 @@
     "agent": "moda_api",
     "status": "complete",
     "deps": [],
-    "enables": [
-      "ARCH-055-API-009",
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      28
-    ],
+    "enables": ["ARCH-055-API-009", "ARCH-055-SYSTEM-TEST-001"],
+    "entries": [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 28],
     "definition_revision": 3
   },
   {
@@ -156,23 +98,9 @@
     "repo": "moda-interact-api",
     "agent": "moda_api",
     "status": "complete",
-    "deps": [
-      "ARCH-055-BACKGROUND-001"
-    ],
-    "enables": [
-      "ARCH-055-API-009",
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      24,
-      25,
-      26,
-      27,
-      29,
-      30,
-      31,
-      32
-    ],
+    "deps": ["ARCH-055-BACKGROUND-001"],
+    "enables": ["ARCH-055-API-009", "ARCH-055-SYSTEM-TEST-001"],
+    "entries": [24, 25, 26, 27, 29, 30, 31, 32],
     "definition_revision": 2
   },
   {
@@ -183,25 +111,9 @@
     "repo": "moda-interact-api",
     "agent": "moda_api",
     "status": "complete",
-    "deps": [
-      "ARCH-055-DATABASE-001"
-    ],
-    "enables": [
-      "ARCH-055-API-009",
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      33,
-      34,
-      35,
-      36,
-      37,
-      38,
-      39,
-      40,
-      41,
-      42
-    ],
+    "deps": ["ARCH-055-DATABASE-001"],
+    "enables": ["ARCH-055-API-009", "ARCH-055-SYSTEM-TEST-001"],
+    "entries": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42],
     "definition_revision": 2
   },
   {
@@ -213,21 +125,8 @@
     "agent": "moda_api",
     "status": "complete",
     "deps": [],
-    "enables": [
-      "ARCH-055-API-009",
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      43,
-      44,
-      45,
-      46,
-      47,
-      48,
-      52,
-      53,
-      57
-    ],
+    "enables": ["ARCH-055-API-009", "ARCH-055-SYSTEM-TEST-001"],
+    "entries": [43, 44, 45, 46, 47, 48, 52, 53, 57],
     "definition_revision": 2
   },
   {
@@ -238,20 +137,9 @@
     "repo": "moda-interact-api",
     "agent": "moda_api",
     "status": "complete",
-    "deps": [
-      "ARCH-055-API-001"
-    ],
-    "enables": [
-      "ARCH-055-API-009",
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      54,
-      55,
-      56,
-      58,
-      59
-    ],
+    "deps": ["ARCH-055-API-001"],
+    "enables": ["ARCH-055-API-009", "ARCH-055-SYSTEM-TEST-001"],
+    "entries": [54, 55, 56, 58, 59],
     "definition_revision": 3
   },
   {
@@ -263,15 +151,8 @@
     "agent": "moda_api",
     "status": "complete",
     "deps": [],
-    "enables": [
-      "ARCH-055-API-009",
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      49,
-      50,
-      51
-    ],
+    "enables": ["ARCH-055-API-009", "ARCH-055-SYSTEM-TEST-001"],
+    "entries": [49, 50, 51],
     "definition_revision": 2
   },
   {
@@ -292,13 +173,8 @@
       "ARCH-055-API-007",
       "ARCH-055-API-008"
     ],
-    "enables": [
-      "ARCH-055-SYSTEM-TEST-001"
-    ],
-    "entries": [
-      60,
-      61
-    ],
+    "enables": ["ARCH-055-SYSTEM-TEST-001"],
+    "entries": [60, 61],
     "definition_revision": 3
   },
   {
@@ -325,67 +201,10 @@
     ],
     "enables": [],
     "entries": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25,
-      26,
-      27,
-      28,
-      29,
-      30,
-      31,
-      32,
-      33,
-      34,
-      35,
-      36,
-      37,
-      38,
-      39,
-      40,
-      41,
-      42,
-      43,
-      44,
-      45,
-      46,
-      47,
-      48,
-      49,
-      50,
-      51,
-      52,
-      53,
-      54,
-      55,
-      56,
-      57,
-      58,
-      59,
-      60,
-      61
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+      22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+      40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+      58, 59, 60, 61
     ],
     "definition_revision": 2
   }

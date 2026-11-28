@@ -57,7 +57,7 @@ API-008 through API-011 extract the remaining billing and merchant handlers. `sr
 ## Requirements
 
 - No new HTTP framework, reflection-based route discovery, global catch-all auth or generic provider credential handler.
-- Preserve the route security matrix: public health, Woo site proof for connect, installation bearer/principal for merchant/billing and probe, HMAC-signed billing webhook, and one-time REST-read callback capabilities. No global authentication wrapper, no *new* auth implementation or policy: consume the authenticator and principal already relocated by API-014; no Woo PHP/Shopify changes.
+- Preserve the route security matrix: public health, Woo site proof for connect, installation bearer/principal for merchant/billing and probe, HMAC-signed billing webhook, and one-time REST-read callback capabilities. No global authentication wrapper, no _new_ auth implementation or policy: consume the authenticator and principal already relocated by API-014; no Woo PHP/Shopify changes.
 - On routes that share a path but differ by method, respect each handler’s `false` result and never shadow GET with POST.
 - No missing existing API route, including any already implemented under ARCH-026/035/036/040. Preserve canonical bearer principal/credential-version semantics and protect callback/webhook endpoints from installation-router fallthrough; do not add routes solely from pending feature specifications.
 

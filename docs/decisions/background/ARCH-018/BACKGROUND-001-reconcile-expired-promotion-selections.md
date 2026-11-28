@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-010-DATABASE-011
-- ARCH-014-BACKGROUND-002
-- ARCH-014-BACKGROUND-006
+  - ARCH-010-DATABASE-011
+  - ARCH-014-BACKGROUND-002
+  - ARCH-014-BACKGROUND-006
 enables:
-- ARCH-018-SYSTEM-TEST-001
+  - ARCH-018-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-20
 ---
@@ -150,10 +150,7 @@ const candidates = await this.database.merchantPromotionSelection.findMany({
       },
     },
   },
-  orderBy: [
-    { updatedAt: "asc" },
-    { id: "asc" },
-  ],
+  orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
   take: runtimeConfig.billingReconciliationShopBatchSize,
   select: {
     id: true,
@@ -212,13 +209,13 @@ The final predicate is mandatory.
 Do not replace it with:
 
 ```ts
-delete({ where: { id: candidate.id } })
+delete { where: { id: candidate.id } };
 ```
 
 or:
 
 ```ts
-deleteMany({ where: { shopId: candidate.shopId } })
+deleteMany({ where: { shopId: candidate.shopId } });
 ```
 
 Those forms can delete a newer selection after a race.
@@ -282,7 +279,9 @@ src/entrypoints/billing.ts
 Add a dynamic import for:
 
 ```ts
-{ PromotionSelectionExpiryReconciliationService }
+{
+  PromotionSelectionExpiryReconciliationService;
+}
 ```
 
 from:
@@ -317,7 +316,9 @@ Use:
 ```ts
 try {
   const promotionExpiry =
-    await promotionSelectionExpiryReconciliationService.reconcileOnce(runtimeConfig);
+    await promotionSelectionExpiryReconciliationService.reconcileOnce(
+      runtimeConfig,
+    );
 
   logger.info("billing.reconciliation.promotion_selection_expiry_completed", {
     leaseGeneration: leaseHandle.generation,
@@ -333,9 +334,7 @@ try {
     errorName:
       error instanceof Error ? error.name.slice(0, 64) : "UnknownError",
     errorMessage:
-      error instanceof Error
-        ? error.message.slice(0, 256)
-        : "unknown failure",
+      error instanceof Error ? error.message.slice(0, 256) : "unknown failure",
   });
 }
 ```

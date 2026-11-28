@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-055-BACKGROUND-001
+  - ARCH-055-BACKGROUND-001
 enables:
-- ARCH-055-API-009
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-API-009
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-04
 ---
 
@@ -64,14 +64,14 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/merchant/conversations/messages/admission.service.ts` | PREALLOCATE randomUUID() once after replay resolution for each new command; set new template command.id=followUpClaimKey and attempt.initiationKey to that ID in one transaction. HUMAN_TEXT followUpClaimKey=null. Keep public idempotencyKey/hash and exact-one conditional claim. |
-| `src/merchant/conversations/messages/status.service.ts` | MATCH HUMAN_TEXT assessment digest to persisted preparedTextBody; missing preparation remains pending and no original text fallback. Remove unused body fields from selected response data; template digest remains unchanged. |
+| File / symbol touchpoint                                                                                                             | Deterministic edit                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/merchant/conversations/messages/admission.service.ts`                                                                           | PREALLOCATE randomUUID() once after replay resolution for each new command; set new template command.id=followUpClaimKey and attempt.initiationKey to that ID in one transaction. HUMAN_TEXT followUpClaimKey=null. Keep public idempotencyKey/hash and exact-one conditional claim.              |
+| `src/merchant/conversations/messages/status.service.ts`                                                                              | MATCH HUMAN_TEXT assessment digest to persisted preparedTextBody; missing preparation remains pending and no original text fallback. Remove unused body fields from selected response data; template digest remains unchanged.                                                                    |
 | `src/platform-configuration/composition.ts; src/merchant/conversations/messages/follow-up-catalogue.ts; src/composition/merchant.ts` | ADD the transaction-bound sender factory below using the existing configuration reader, Shared crypto, environment and logger. Catalogue accepts tx plus factory and resolves sender via that tx. Remove catch-to-empty for unexpected DB/unseal failures. Text/replay must not call the factory. |
-| `src/merchant/recoveries/detail/pages.ts` | REPLACE navigation counts with lookahead for fetched direction and one bounded opposite-direction existence query only for next/previous navigation. First/latest message and first related pages need no extra navigation query. Keep all current cursor and ordering rules. |
-| `src/merchant/recoveries/detail/read.service.ts; src/merchant/recoveries/list.service.ts` | NARROW messages/related ownership projection but retain every customer/conversation relationship check. Skip recovery-list page fetch after same-snapshot total=0; exact count and summary verified inbound reads remain. |
-| `src/merchant/conversations/control/service.ts` | KEEP audited transitions/locks/revision semantics; retain original handled causes without changing successful SQL sequence. |
+| `src/merchant/recoveries/detail/pages.ts`                                                                                            | REPLACE navigation counts with lookahead for fetched direction and one bounded opposite-direction existence query only for next/previous navigation. First/latest message and first related pages need no extra navigation query. Keep all current cursor and ordering rules.                     |
+| `src/merchant/recoveries/detail/read.service.ts; src/merchant/recoveries/list.service.ts`                                            | NARROW messages/related ownership projection but retain every customer/conversation relationship check. Skip recovery-list page fetch after same-snapshot total=0; exact count and summary verified inbound reads remain.                                                                         |
+| `src/merchant/conversations/control/service.ts`                                                                                      | KEEP audited transitions/locks/revision semantics; retain original handled causes without changing successful SQL sequence.                                                                                                                                                                       |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
 
@@ -135,12 +135,17 @@ Consumes ARCH-055-DATABASE-001/BACKGROUND-001 claim identity. Configuration fact
 The public API remains unchanged except documentation corrections explicitly authorised here. Database changes are consumed only after ARCH-055-DATABASE-001 acceptance/integration. Existing published Shared package exports remain authoritative; do not import sibling source.
 
 In `src/platform-configuration/composition.ts` export a factory with this local contract:
+
 ```ts
-export type TransactionConfigurationDatabase = Pick<Prisma.TransactionClient, "platformConfiguration">;
+export type TransactionConfigurationDatabase = Pick<
+  Prisma.TransactionClient,
+  "platformConfiguration"
+>;
 export type TransactionMessagingSenderFactory = (
   tx: TransactionConfigurationDatabase,
 ) => Pick<ApiPlatformConfigurationReader, "readMessagingSenderWabaId">;
 ```
+
 Construct this factory in composition with the existing environment/unsealEnvironment/logger. For each call, instantiate the existing reader with `prisma: tx`; do not capture a root Prisma client in this returned closure. `createApiPlatformConfigurationReader` may accept that structural delegate type (root remains compatible outside transactions). No Shared/public reader contract change or secret cache.
 
 ## Dependencies
@@ -167,13 +172,13 @@ Construct this factory in composition with the existing environment/unsealEnviro
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| D01 | Two Shops and mixed platforms use public send-1; one retries | Distinct persisted internal claims; same-Shop replay returns original command/key and no second claim. |
-| D02 | Original body Hello; prepared body Store: Hello; wrong/missing/allowed/blocked assessments | Only exact prepared digest matches; template unchanged; missing prepared body pending. |
-| D03 | Real sender configuration reader under a one-connection transaction test; DB/unseal fails | No root-client query waits for a second connection; failure remains failure, never ordinary empty choices. |
-| D04 | 51/105 messages and >5 related rows; tied timestamps/deleted boundaries/foreign IDs | Same items/cursors as baseline; no full navigation COUNT; moderation and tenant checks retained. |
-| D05 | Claim denied or command insert fails after attempt claim | Entire claim rolls back; no dangling follow-up ownership or credit changes. |
+| Case | Fixture / operation                                                                        | Required result                                                                                            |
+| ---- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| D01  | Two Shops and mixed platforms use public send-1; one retries                               | Distinct persisted internal claims; same-Shop replay returns original command/key and no second claim.     |
+| D02  | Original body Hello; prepared body Store: Hello; wrong/missing/allowed/blocked assessments | Only exact prepared digest matches; template unchanged; missing prepared body pending.                     |
+| D03  | Real sender configuration reader under a one-connection transaction test; DB/unseal fails  | No root-client query waits for a second connection; failure remains failure, never ordinary empty choices. |
+| D04  | 51/105 messages and >5 related rows; tied timestamps/deleted boundaries/foreign IDs        | Same items/cursors as baseline; no full navigation COUNT; moderation and tenant checks retained.           |
+| D05  | Claim denied or command insert fails after attempt claim                                   | Entire claim rolls back; no dangling follow-up ownership or credit changes.                                |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -221,16 +226,16 @@ Recovery message and related pages now use lookahead plus one bounded opposite-d
 
 Task-start source was checked out at `fb39e983c561a7219945e8cdb216c3f201e8aab4` in a temporary detached worktree. Its empty `database` submodule was exposed as a symlink to the accepted API-004 Database checkout at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; dependencies were the locked API worktree install. Both versions ran against disposable PostgreSQL 17 + pgvector with the same canonical migrations and fixed test IDs: 105 messages tied every three rows, 12 same-customer recoveries including current, page sizes 50/5, and a zero-match list. Each operation had two warm-ups and five timed samples; each sample was one service call, zero affected rows and zero external calls. Returned rows were identical: 50/50/50/50, 5/5/5, and 0.
 
-| Profile | Rows | Baseline SQL calls | Candidate SQL calls | Baseline elapsed ms (five samples) | Candidate elapsed ms (five samples) |
-|---|---:|---:|---:|---|---|
-| messages.first | 50 | 13 | 10 | 24.77, 25.46, 24.04, 26.39, 24.57 | 16.40, 17.21, 17.20, 16.82, 17.35 |
-| messages.latest | 50 | 13 | 10 | 20.68, 21.92, 22.60, 23.81, 25.95 | 17.82, 17.60, 16.88, 16.85, 17.01 |
-| messages.next | 50 | 13 | 11 | 21.02, 23.07, 22.13, 22.25, 23.29 | 20.40, 18.91, 17.98, 19.06, 18.61 |
-| messages.previous | 50 | 13 | 11 | 22.77, 24.70, 23.01, 21.95, 22.76 | 22.86, 26.82, 24.65, 19.67, 18.47 |
-| related.first | 5 | 12 | 9 | 19.26, 20.13, 19.24, 19.88, 18.37 | 13.20, 13.96, 14.53, 13.54, 13.89 |
-| related.next | 5 | 12 | 10 | 19.06, 21.22, 20.79, 19.32, 19.76 | 17.07, 17.25, 17.06, 16.19, 16.67 |
-| related.previous | 5 | 12 | 10 | 19.31, 19.82, 19.91, 18.94, 20.14 | 16.16, 17.00, 16.46, 17.81, 17.21 |
-| list.zero | 0 | 7 | 6 | 14.28, 13.37, 12.86, 14.33, 12.04 | 9.79, 9.74, 9.82, 9.16, 11.11 |
+| Profile           | Rows | Baseline SQL calls | Candidate SQL calls | Baseline elapsed ms (five samples) | Candidate elapsed ms (five samples) |
+| ----------------- | ---: | -----------------: | ------------------: | ---------------------------------- | ----------------------------------- |
+| messages.first    |   50 |                 13 |                  10 | 24.77, 25.46, 24.04, 26.39, 24.57  | 16.40, 17.21, 17.20, 16.82, 17.35   |
+| messages.latest   |   50 |                 13 |                  10 | 20.68, 21.92, 22.60, 23.81, 25.95  | 17.82, 17.60, 16.88, 16.85, 17.01   |
+| messages.next     |   50 |                 13 |                  11 | 21.02, 23.07, 22.13, 22.25, 23.29  | 20.40, 18.91, 17.98, 19.06, 18.61   |
+| messages.previous |   50 |                 13 |                  11 | 22.77, 24.70, 23.01, 21.95, 22.76  | 22.86, 26.82, 24.65, 19.67, 18.47   |
+| related.first     |    5 |                 12 |                   9 | 19.26, 20.13, 19.24, 19.88, 18.37  | 13.20, 13.96, 14.53, 13.54, 13.89   |
+| related.next      |    5 |                 12 |                  10 | 19.06, 21.22, 20.79, 19.32, 19.76  | 17.07, 17.25, 17.06, 16.19, 16.67   |
+| related.previous  |    5 |                 12 |                  10 | 19.31, 19.82, 19.91, 18.94, 20.14  | 16.16, 17.00, 16.46, 17.81, 17.21   |
+| list.zero         |    0 |                  7 |                   6 | 14.28, 13.37, 12.86, 14.33, 12.04  | 9.79, 9.74, 9.82, 9.16, 11.11       |
 
 Baseline message shapes included the recovery-attempt expansion and two `ConversationMessage` counts; candidate page shapes omit that expansion and those counts, with one `ConversationMessage` existence query only for cursor navigation. Baseline related shapes included recovery-attempt expansion and two `CheckoutRecovery` counts; candidate first has neither count, while cursor navigation has one bounded `CheckoutRecovery` existence query. Zero-list changed from `CheckoutRecovery:count + select` to count only. Prisma query-event durations were captured per statement at integer-millisecond resolution (observed 0–2 ms); that resolution and separate disposable runs make the operation timings indicative workload evidence, not a latency guarantee or threshold.
 
@@ -272,7 +277,6 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
 
-
 ## Completion Report — Attempt 3
 
 **Ready for architect review.** Implementation `1f8d0cca8386705e496b65210cd08de8fbcb1b4d` is published on `task/ARCH-055-API-004`.
@@ -286,20 +290,20 @@ Report ownership, schema, contract, external dependency, new index/infrastructur
 
 Local timings are descriptive only. Due-template baseline samples failed with `template_not_allowed` under the one-connection pool. Their durations are failure observations. Candidate admission succeeded with one transaction-bound configuration read and persisted the command and its claim. Text and replay used no configuration reads.
 
-| Profile | SQL baseline → candidate | Logical calls baseline → candidate | Median ms baseline → candidate | Outcome baseline → candidate |
-|---|---:|---:|---:|---|
-| messages.first | 13 → 10 | 7 → 5 | 62.60 → 32.73 | same page → same page |
-| messages.latest | 13 → 10 | 7 → 5 | 56.98 → 36.09 | same page → same page |
-| messages.next | 13 → 11 | 7 → 6 | 53.36 → 37.23 | same page → same page |
-| messages.previous | 13 → 11 | 7 → 6 | 69.94 → 40.23 | same page → same page |
-| related.first | 12 → 9 | 6 → 4 | 44.67 → 33.30 | same page → same page |
-| related.next | 12 → 10 | 6 → 5 | 48.80 → 41.01 | same page → same page |
-| related.previous | 12 → 10 | 6 → 5 | 66.73 → 46.84 | same page → same page |
-| list.zero | 7 → 6 | 4 → 3 | 28.23 → 40.05 | same page → same page |
-| human_text.admission | 15 → 15 | 10 → 10 | 46.99 → 72.16 | accepted:202 → accepted:202 |
-| due_template.admission | 14 → 20 | 9 → 15 | 2059.90 → 126.97 | error:template_not_allowed → accepted:202 |
-| matching_replay | 7 → 7 | 4 → 4 | 31.00 → 26.86 | replay:200 → replay:200 |
-| prepared_status | 8 → 8 | 5 → 5 | 35.01 → 34.28 | status:moderation_pending → status:moderation_allowed |
+| Profile                | SQL baseline → candidate | Logical calls baseline → candidate | Median ms baseline → candidate | Outcome baseline → candidate                          |
+| ---------------------- | -----------------------: | ---------------------------------: | -----------------------------: | ----------------------------------------------------- |
+| messages.first         |                  13 → 10 |                              7 → 5 |                  62.60 → 32.73 | same page → same page                                 |
+| messages.latest        |                  13 → 10 |                              7 → 5 |                  56.98 → 36.09 | same page → same page                                 |
+| messages.next          |                  13 → 11 |                              7 → 6 |                  53.36 → 37.23 | same page → same page                                 |
+| messages.previous      |                  13 → 11 |                              7 → 6 |                  69.94 → 40.23 | same page → same page                                 |
+| related.first          |                   12 → 9 |                              6 → 4 |                  44.67 → 33.30 | same page → same page                                 |
+| related.next           |                  12 → 10 |                              6 → 5 |                  48.80 → 41.01 | same page → same page                                 |
+| related.previous       |                  12 → 10 |                              6 → 5 |                  66.73 → 46.84 | same page → same page                                 |
+| list.zero              |                    7 → 6 |                              4 → 3 |                  28.23 → 40.05 | same page → same page                                 |
+| human_text.admission   |                  15 → 15 |                            10 → 10 |                  46.99 → 72.16 | accepted:202 → accepted:202                           |
+| due_template.admission |                  14 → 20 |                             9 → 15 |               2059.90 → 126.97 | error:template_not_allowed → accepted:202             |
+| matching_replay        |                    7 → 7 |                              4 → 4 |                  31.00 → 26.86 | replay:200 → replay:200                               |
+| prepared_status        |                    8 → 8 |                              5 → 5 |                  35.01 → 34.28 | status:moderation_pending → status:moderation_allowed |
 
 <details>
 <summary>Retained per-sample M06/M07 evidence</summary>
@@ -424,7 +428,6 @@ Attempt 2 typecheck, 64/64 focused unit tests, focused ESLint, and `git diff --c
 ### Follow-up
 
 After Docker/containerd can read the canonical image, the developer/architect should return the task to `ready`; then a fresh launcher claim can rerun the required PostgreSQL suite, D02/D03 assertions, and paired M06/M07 baseline/candidate measurements. Reconcile the checkboxes with observed results before resubmission. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain pending.
-
 
 ## Architect Readiness Reconciliation — 2026-11-03
 

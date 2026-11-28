@@ -162,9 +162,7 @@
         "ARCH-058-COMMERCE-001",
         "ARCH-058-SHARED-006"
       ],
-      "enables": [
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "enables": ["ARCH-058-SYSTEM-TEST-001"],
       "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
       "baselineSha256": "fc458f9aa5e28a60544dd043f1b597458f89c1f21ed6a3f9732f810c5a972006",
       "definitionSha256": "5924a392f268a5d34fea5914af3ba5c8ddb263aed19287e9585604dfd2a50742",
@@ -183,10 +181,7 @@
         "ARCH-058-MCP-003",
         "ARCH-058-SHARED-006"
       ],
-      "enables": [
-        "ARCH-058-BACKGROUND-001",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "enables": ["ARCH-058-BACKGROUND-001", "ARCH-058-SYSTEM-TEST-001"],
       "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
       "baselineSha256": "2391cabf0dc99aebdb3a28819295f82ac86124d9325b57bb273470ac66d97adf",
       "definitionSha256": "076ff5bf154495e09b105c3d6c5c04ce70bc3df515c0ccd567b6efc007e838cd",
@@ -219,14 +214,8 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-DATABASE-001",
-        "ARCH-058-SHARED-005"
-      ],
-      "enables": [
-        "ARCH-058-MCP-002",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "dependsOn": ["ARCH-058-DATABASE-001", "ARCH-058-SHARED-005"],
+      "enables": ["ARCH-058-MCP-002", "ARCH-058-SYSTEM-TEST-001"],
       "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
       "baselineSha256": null,
       "definitionSha256": "4d5b5ac811880d70b29219dce67d6c578628e6634d927e21cb35130856250b93",
@@ -240,14 +229,8 @@
       "attempt": 3,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-DATABASE-001",
-        "ARCH-058-SHARED-002"
-      ],
-      "enables": [
-        "ARCH-058-MCP-002",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "dependsOn": ["ARCH-058-DATABASE-001", "ARCH-058-SHARED-002"],
+      "enables": ["ARCH-058-MCP-002", "ARCH-058-SYSTEM-TEST-001"],
       "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
       "baselineSha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
       "definitionSha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
@@ -285,10 +268,7 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-MCP-002",
-        "ARCH-058-SHOPIFY-001"
-      ],
+      "dependsOn": ["ARCH-058-MCP-002", "ARCH-058-SHOPIFY-001"],
       "enables": [
         "ARCH-058-COMMERCE-001",
         "ARCH-058-BACKGROUND-001",
@@ -308,10 +288,7 @@
       "executor": null,
       "claimedAt": null,
       "dependsOn": [],
-      "enables": [
-        "ARCH-058-SHARED-002",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "enables": ["ARCH-058-SHARED-002", "ARCH-058-SYSTEM-TEST-001"],
       "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
       "baselineSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
       "definitionSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
@@ -325,9 +302,7 @@
       "attempt": 1,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-SHARED-001"
-      ],
+      "dependsOn": ["ARCH-058-SHARED-001"],
       "enables": [
         "ARCH-058-SHARED-003",
         "ARCH-058-MCP-001",
@@ -346,9 +321,7 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-SHARED-002"
-      ],
+      "dependsOn": ["ARCH-058-SHARED-002"],
       "enables": [
         "ARCH-058-SHARED-004",
         "ARCH-058-SHARED-006",
@@ -367,9 +340,7 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-SHARED-003"
-      ],
+      "dependsOn": ["ARCH-058-SHARED-003"],
       "enables": [
         "ARCH-058-SHARED-005",
         "ARCH-058-SHARED-006",
@@ -388,9 +359,7 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-SHARED-004"
-      ],
+      "dependsOn": ["ARCH-058-SHARED-004"],
       "enables": [
         "ARCH-058-SHARED-006",
         "ARCH-058-DATABASE-002",
@@ -434,10 +403,7 @@
       "executor": null,
       "claimedAt": null,
       "dependsOn": [],
-      "enables": [
-        "ARCH-058-MCP-003",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "enables": ["ARCH-058-MCP-003", "ARCH-058-SYSTEM-TEST-001"],
       "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
       "baselineSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
       "definitionSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
@@ -2200,10 +2166,7 @@
       "FIXED with nonempty authorized IDs",
       "AI_BEST_APPLICABLE"
     ],
-    "inspectionExemptModes": [
-      "NONE",
-      "FIXED with empty authorized IDs"
-    ],
+    "inspectionExemptModes": ["NONE", "FIXED with empty authorized IDs"],
     "candidateSet": "Union of permitted IDs across retained latest-per-arguments normal options outcomes; FIXED intersects local authorized IDs.",
     "nonemptyCandidatesRequirement": "At least one accepted current-turn matching details outcome, including explicit null or canonical optional UNAVAILABLE.",
     "missingInspectionBehavior": "Discard product proposals; existing controlled composition without products; retain independent authorized shipping presentation; no further discovery/model call.",
@@ -2221,10 +2184,7 @@
     "modelProviderContext": {
       "field": "commerceProvider",
       "source": "already-read validated Shop.platform",
-      "values": [
-        "SHOPIFY",
-        "WOOCOMMERCE"
-      ],
+      "values": ["SHOPIFY", "WOOCOMMERCE"],
       "additionalDatabaseReads": 0,
       "mcpHeaderChanged": false,
       "invalidHostPlatform": "hard context validation failure before model invocation",
@@ -2247,10 +2207,7 @@
   "deepReviewCorrections": [
     {
       "id": "PUBLIC_PRODUCT_QUALIFICATION",
-      "owners": [
-        "ARCH-058-MCP-002",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-MCP-002", "ARCH-058-SYSTEM-TEST-001"],
       "choice": "Private publication/visibility qualification on all search modes and exact product refresh; selected Woo purchasable/stock truth table; no public schema/version change."
     },
     {
@@ -2264,70 +2221,47 @@
     },
     {
       "id": "PROJECTOR_BOUNDARIES",
-      "owners": [
-        "ARCH-058-COMMERCE-001"
-      ],
+      "owners": ["ARCH-058-COMMERCE-001"],
       "choice": "Preserve accepted policy output union metadata; bounded input/details schemas retain their actual subset validation."
     },
     {
       "id": "RECEIPT_INITIALIZATION",
-      "owners": [
-        "ARCH-058-COMMERCE-001",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-COMMERCE-001", "ARCH-058-SYSTEM-TEST-001"],
       "choice": "No receipt before valid invocation/runtime context; exactly one owner afterward; parent rejects missing/multiple/malformed/exit-inconsistent child output."
     },
     {
       "id": "BODY_WRAPPER_LOCALE",
-      "owners": [
-        "ARCH-058-BACKGROUND-001",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-BACKGROUND-001", "ARCH-058-SYSTEM-TEST-001"],
       "choice": "Exact committed tag then supported body locale then existing choices, stable-deduplicated and restricted to body primary language/resolved supported locale, preserving first-selected validation."
     },
     {
       "id": "OUTREACH_FALLBACK_COMPATIBILITY",
-      "owners": [
-        "ARCH-058-BACKGROUND-001",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-BACKGROUND-001", "ARCH-058-SYSTEM-TEST-001"],
       "choice": "Revalidator uses retryable FAILURE/OFFER_DISCOVERY_INCOMPLETE; graph keeps MCP_UNAVAILABLE; existing ARCH056 orchestration alone owns no-offer fallback."
     },
     {
       "id": "RETAIN_ORIGINAL_HOST_FAILURE",
-      "owners": [
-        "ARCH-058-BACKGROUND-001",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-BACKGROUND-001", "ARCH-058-SYSTEM-TEST-001"],
       "choice": "Existing explicit deadline first, then retained original host code/retryability/cause/sourceFailure plus runner diagnostic, otherwise generic runner result."
     },
     {
       "id": "FRESH_PRICE_AND_INDEPENDENT_SHIPPING",
-      "owners": [
-        "ARCH-058-BACKGROUND-001",
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-BACKGROUND-001", "ARCH-058-SYSTEM-TEST-001"],
       "choice": "Recompute from fresh supported current price/currency for the same qualifying identity; no stale assessment or invented basket; removing products preserves independent shipping."
     },
     {
       "id": "TERMINAL_OBSERVER",
-      "owners": [
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-SYSTEM-TEST-001"],
       "choice": "Scoped reply/no-send observers use actual original job/lease/reservation/row/emulator evidence, without timeout-based PASS, unrelated-turn attribution or diagnostic RPCs."
     },
     {
       "id": "BINARY_RESTORE_TRANSPORT",
-      "owners": [
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-SYSTEM-TEST-001"],
       "choice": "Use owned container files and recorded docker cp/exec for pg_dump/pg_restore; CommandRecorder has ignored stdin and text stdout, so no binary streaming or invented port."
     },
     {
       "id": "REAL_QUALITY_INPUTS",
-      "owners": [
-        "ARCH-058-SYSTEM-TEST-001"
-      ],
+      "owners": ["ARCH-058-SYSTEM-TEST-001"],
       "choice": "Explicit optional quality configuration/credentials, checksum-pinned real-vector restore, real-provider route, run-global enforced request/time limits and honest spending evidence; no automatic paid corpus import."
     }
   ],
@@ -2441,10 +2375,7 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-MCP-002",
-        "ARCH-058-MCP-003"
-      ],
+      "dependsOn": ["ARCH-058-MCP-002", "ARCH-058-MCP-003"],
       "sha256": "832c37c5fab7402b519e0e84d05c8ef58f79eb43db7e30a6aa5dd432a386d947",
       "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
       "mergedSourceSha256": "6237feb2f54e52b9b5a074d24e9a4364324237e1db95d3d854257b6b68f170c0",
@@ -2472,10 +2403,7 @@
       "attempt": 2,
       "executor": "codex",
       "claimedAt": "2026-11-04T11:13:25+00:00",
-      "dependsOn": [
-        "ARCH-058-DATABASE-001",
-        "ARCH-058-SHARED-002"
-      ],
+      "dependsOn": ["ARCH-058-DATABASE-001", "ARCH-058-SHARED-002"],
       "sha256": "21550835e554823f563ba92d5245fff7dfe5d9634a42c94f2740e3e3708da6f0",
       "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
       "mergedSourceSha256": "21550835e554823f563ba92d5245fff7dfe5d9634a42c94f2740e3e3708da6f0",
@@ -2489,9 +2417,7 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-MCP-001"
-      ],
+      "dependsOn": ["ARCH-058-MCP-001"],
       "sha256": "afc28d4f7b2b88c3697165624c518bfc09192c6fc0d2002f8d29944599f4f717",
       "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
       "mergedSourceSha256": "afc28d4f7b2b88c3697165624c518bfc09192c6fc0d2002f8d29944599f4f717",
@@ -2505,10 +2431,7 @@
       "attempt": 0,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-MCP-002",
-        "ARCH-058-SHOPIFY-001"
-      ],
+      "dependsOn": ["ARCH-058-MCP-002", "ARCH-058-SHOPIFY-001"],
       "sha256": "4dcadb71127e6a0a5ccc99d90260fbcd25cd8e5f69818e3c2a97126c2f69463b",
       "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
       "mergedSourceSha256": "4dcadb71127e6a0a5ccc99d90260fbcd25cd8e5f69818e3c2a97126c2f69463b",
@@ -2536,9 +2459,7 @@
       "attempt": 1,
       "executor": null,
       "claimedAt": null,
-      "dependsOn": [
-        "ARCH-058-SHARED-001"
-      ],
+      "dependsOn": ["ARCH-058-SHARED-001"],
       "sha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd",
       "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
       "mergedSourceSha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd",
@@ -2610,10 +2531,7 @@
     "databaseTask": "ARCH-058-DATABASE-002",
     "publicationTask": "ARCH-058-SHARED-006",
     "approvedPublicationTarget": "5.0.0_IF_UNOCCUPIED_AT_PUBLICATION_TIME",
-    "builtInIdentity": [
-      "toolName",
-      "definitionVersion"
-    ],
+    "builtInIdentity": ["toolName", "definitionVersion"],
     "contractHashRemoved": true,
     "replacementFingerprintIntroduced": false,
     "conversationToolContextRemoved": true,

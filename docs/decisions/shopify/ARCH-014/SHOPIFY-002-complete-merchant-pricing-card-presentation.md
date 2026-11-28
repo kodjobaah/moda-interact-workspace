@@ -13,10 +13,10 @@ status: complete
 priority: 50
 attempt: 2
 depends_on:
-- ARCH-014-DATABASE-002
-- ARCH-014-SHOPIFY-001
+  - ARCH-014-DATABASE-002
+  - ARCH-014-SHOPIFY-001
 enables:
-- ARCH-014-SYSTEM-TEST-001
+  - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
 executor: null
@@ -117,9 +117,9 @@ highlights: [
     contentKey,
     position,
     title,
-    description
-  }
-]
+    description,
+  },
+];
 ```
 
 Do not expose:
@@ -141,9 +141,9 @@ Highlights are ordered only by their database `position`.
 Props:
 
 ```js
-merchantUi
-pricingCatalogue
-showChoosePlanAction   // boolean
+merchantUi;
+pricingCatalogue;
+showChoosePlanAction; // boolean
 ```
 
 The component uses the existing `createMerchantI18n(merchantUi)` for generic labels and money formatting.

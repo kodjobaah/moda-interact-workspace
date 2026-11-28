@@ -19,6 +19,7 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T17:06:00Z
 ---
+
 # ARCH-006-SHARED-006: Publish reusable integration-test infrastructure release
 
 ## Architecture
@@ -101,8 +102,8 @@ Ready for Review.
 
 ### Files Changed
 
- - [moda-interact-shared/package.json](../../../../moda-interact-shared/package.json)
- - [moda-interact-shared/package-lock.json](../../../../moda-interact-shared/package-lock.json)
+- [moda-interact-shared/package.json](../../../../moda-interact-shared/package.json)
+- [moda-interact-shared/package-lock.json](../../../../moda-interact-shared/package-lock.json)
 
 ### Work Completed
 
@@ -110,15 +111,15 @@ Published `@modainteract/moda-interact-shared@0.7.2` with the existing architect
 
 ### Validation Results
 
- - `npm run typecheck`: passed.
- - `npm test`: 98 passed, 1 Redis-dependent test skipped because `TEST_REDIS_URL` is not configured.
- - `npm run build`: passed.
- - `npm run validate:testing-node`: passed, including packed-artifact validation.
- - `npm pack --dry-run --json --ignore-scripts`: passed for `0.7.2`; shasum `cf85f11f98f7aae92884281e9f0fdc52f23c4d61`.
- - `npm publish --access public`: published `0.7.2` successfully.
- - Registry evidence: tarball `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.7.2.tgz`; integrity `sha512-RRK1UJCfyFPS+bSBHP4QcraRI9OkmaUsSOUsK7v4b0Bed1jwb9GRYJw2vJgJompctcDGWMyWeBJg/9kaH+oJhQ==`.
- - Clean consumer installed exact `0.7.2`, imported `@modainteract/moda-interact-shared/testing/node`, and executed the command-runner helper successfully.
- - `git diff --check`: passed.
+- `npm run typecheck`: passed.
+- `npm test`: 98 passed, 1 Redis-dependent test skipped because `TEST_REDIS_URL` is not configured.
+- `npm run build`: passed.
+- `npm run validate:testing-node`: passed, including packed-artifact validation.
+- `npm pack --dry-run --json --ignore-scripts`: passed for `0.7.2`; shasum `cf85f11f98f7aae92884281e9f0fdc52f23c4d61`.
+- `npm publish --access public`: published `0.7.2` successfully.
+- Registry evidence: tarball `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.7.2.tgz`; integrity `sha512-RRK1UJCfyFPS+bSBHP4QcraRI9OkmaUsSOUsK7v4b0Bed1jwb9GRYJw2vJgJompctcDGWMyWeBJg/9kaH+oJhQ==`.
+- Clean consumer installed exact `0.7.2`, imported `@modainteract/moda-interact-shared/testing/node`, and executed the command-runner helper successfully.
+- `git diff --check`: passed.
 
 ### Deviations
 

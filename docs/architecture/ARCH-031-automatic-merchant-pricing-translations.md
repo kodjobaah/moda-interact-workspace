@@ -544,16 +544,16 @@ complete valid plan
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-031-DATABASE-001 | moda_database | Complete | - |
-| ARCH-031-ADMIN-001 | moda_admin | Complete | ARCH-031-DATABASE-001 |
-| ARCH-031-ADMIN-002 | moda_admin | Complete | ARCH-031-DATABASE-001 |
-| ARCH-031-BACKGROUND-001 | moda_background | Complete | ARCH-031-DATABASE-001 |
-| ARCH-031-DATABASE-002 | moda_database | Complete | ARCH-031-DATABASE-001, ARCH-031-BACKGROUND-001 |
-| ARCH-031-ADMIN-003 | moda_admin | Complete | ARCH-031-ADMIN-001, ARCH-031-ADMIN-002, ARCH-031-DATABASE-002 |
-| ARCH-031-BACKGROUND-002 | moda_background | Complete | ARCH-031-BACKGROUND-001, ARCH-031-DATABASE-002, ARCH-031-ADMIN-003 |
-| ARCH-031-SYSTEM-TEST-001 | moda_system_test | Superseded | all seven ARCH-031 implementation tasks |
+| Task                     | Owner            | Status     | Depends On                                                         |
+| ------------------------ | ---------------- | ---------- | ------------------------------------------------------------------ |
+| ARCH-031-DATABASE-001    | moda_database    | Complete   | -                                                                  |
+| ARCH-031-ADMIN-001       | moda_admin       | Complete   | ARCH-031-DATABASE-001                                              |
+| ARCH-031-ADMIN-002       | moda_admin       | Complete   | ARCH-031-DATABASE-001                                              |
+| ARCH-031-BACKGROUND-001  | moda_background  | Complete   | ARCH-031-DATABASE-001                                              |
+| ARCH-031-DATABASE-002    | moda_database    | Complete   | ARCH-031-DATABASE-001, ARCH-031-BACKGROUND-001                     |
+| ARCH-031-ADMIN-003       | moda_admin       | Complete   | ARCH-031-ADMIN-001, ARCH-031-ADMIN-002, ARCH-031-DATABASE-002      |
+| ARCH-031-BACKGROUND-002  | moda_background  | Complete   | ARCH-031-BACKGROUND-001, ARCH-031-DATABASE-002, ARCH-031-ADMIN-003 |
+| ARCH-031-SYSTEM-TEST-001 | moda_system_test | Superseded | all seven ARCH-031 implementation tasks                            |
 
 Execution graph:
 

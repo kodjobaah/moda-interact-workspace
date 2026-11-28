@@ -18,6 +18,7 @@ enables:
 created: 2026-08-30
 updated: 2026-08-31
 ---
+
 # Add Direct Grafana Loki Transport to Shared Logger
 
 ## Objective
@@ -146,7 +147,7 @@ required by the repository toolchain. Record every deviation.
 Therefore a module-local:
 
 ```ts
-let emitter
+let emitter;
 ```
 
 would be duplicated and would **not** connect the application logger bundle to
@@ -613,4 +614,3 @@ If the current package remains `0.2.0`, the architect-approved target remains:
 ```
 
 Do not resume SHOPIFY-003 until SHARED-005 is architect-accepted Complete.
-

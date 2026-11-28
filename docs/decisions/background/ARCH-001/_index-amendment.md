@@ -18,9 +18,9 @@ Coordinator:
 
 ## Corrected Task State
 
-| Task | Description | Status | Dependencies |
-|------|-------------|--------|--------------|
-| BACKGROUND-003 | Implement bounded Shopify abandoned checkout lookup | Ready | ARCH-001-BACKGROUND-001 |
+| Task           | Description                                         | Status | Dependencies            |
+| -------------- | --------------------------------------------------- | ------ | ----------------------- |
+| BACKGROUND-003 | Implement bounded Shopify abandoned checkout lookup | Ready  | ARCH-001-BACKGROUND-001 |
 
 `BACKGROUND-003` was previously Blocked. The architect has resolved the block by amending the lookup strategy.
 

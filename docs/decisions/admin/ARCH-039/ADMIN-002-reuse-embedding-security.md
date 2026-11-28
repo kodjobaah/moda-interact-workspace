@@ -23,7 +23,6 @@ created: 2026-10-14
 updated: 2026-10-14
 ---
 
-
 # Migrate Admin embedding credential writer and reader to Shared
 
 ## Architecture

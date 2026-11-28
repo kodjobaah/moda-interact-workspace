@@ -19,255 +19,255 @@
 
 Current counts: `complete` 9, `ready` 1
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-001-SHARED-001 | shared | Complete | 1 | — |
-| ARCH-001-SHOPIFY-001 | shopify | Complete | 2 | ARCH-001-SHARED-001 |
-| ARCH-001-SHOPIFY-002 | shopify | Complete | 1 | ARCH-001-SHOPIFY-001 |
-| ARCH-001-BACKGROUND-001 | background | Complete | 2 | ARCH-001-SHARED-001 |
-| ARCH-001-BACKGROUND-002 | background | Complete | 1 | ARCH-001-BACKGROUND-001 |
-| ARCH-001-BACKGROUND-003 | background | Complete | 2 | ARCH-001-BACKGROUND-001 |
-| ARCH-001-BACKGROUND-004 | background | Complete | 1 | ARCH-001-BACKGROUND-002, ARCH-001-BACKGROUND-003 |
-| ARCH-001-BACKGROUND-005 | background | Complete | 1 | ARCH-001-BACKGROUND-004 |
-| ARCH-001-BACKGROUND-006 | background | Complete | 1 | ARCH-001-BACKGROUND-003 |
-| ARCH-001-GATEWAY-001 | gateway | **Ready** | 0 | ARCH-001-SHARED-001, ARCH-001-SHOPIFY-001, ARCH-001-BACKGROUND-001 |
+| Task                    | Domain     | Status    | Attempt | Dependencies                                                       |
+| ----------------------- | ---------- | --------- | ------: | ------------------------------------------------------------------ |
+| ARCH-001-SHARED-001     | shared     | Complete  |       1 | —                                                                  |
+| ARCH-001-SHOPIFY-001    | shopify    | Complete  |       2 | ARCH-001-SHARED-001                                                |
+| ARCH-001-SHOPIFY-002    | shopify    | Complete  |       1 | ARCH-001-SHOPIFY-001                                               |
+| ARCH-001-BACKGROUND-001 | background | Complete  |       2 | ARCH-001-SHARED-001                                                |
+| ARCH-001-BACKGROUND-002 | background | Complete  |       1 | ARCH-001-BACKGROUND-001                                            |
+| ARCH-001-BACKGROUND-003 | background | Complete  |       2 | ARCH-001-BACKGROUND-001                                            |
+| ARCH-001-BACKGROUND-004 | background | Complete  |       1 | ARCH-001-BACKGROUND-002, ARCH-001-BACKGROUND-003                   |
+| ARCH-001-BACKGROUND-005 | background | Complete  |       1 | ARCH-001-BACKGROUND-004                                            |
+| ARCH-001-BACKGROUND-006 | background | Complete  |       1 | ARCH-001-BACKGROUND-003                                            |
+| ARCH-001-GATEWAY-001    | gateway    | **Ready** |       0 | ARCH-001-SHARED-001, ARCH-001-SHOPIFY-001, ARCH-001-BACKGROUND-001 |
 
 ## ARCH-002
 
 Current counts: `complete` 61, `pending` 3, `ready` 2, `superseded` 5
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-002-DATABASE-001 | database | Complete | 1 | — |
-| ARCH-002-SHARED-002 | shared | Complete | 1 | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHARED-003 | shared | Complete | 1 | ARCH-002-SHARED-002 |
-| ARCH-002-SHARED-004 | shared | Complete | 1 | ARCH-002-SHARED-003 |
-| ARCH-002-SHARED-005 | shared | Complete | 1 | ARCH-002-SHARED-004, ARCH-002-SHARED-006 |
-| ARCH-002-SHARED-006 | shared | Complete | 1 | ARCH-002-SHARED-004 |
-| ARCH-002-SHARED-007 | shared | Complete | 1 | ARCH-002-SHARED-005 |
-| ARCH-002-SHARED-008 | shared | Complete | 1 | ARCH-002-SHARED-007 |
-| ARCH-002-SHARED-009 | shared | Complete | 1 | ARCH-002-SHARED-007 |
-| ARCH-002-SHARED-010 | shared | Complete | 1 | ARCH-002-SHARED-007, ARCH-002-SHARED-008, ARCH-002-SHARED-009, ARCH-002-SHARED-011 |
-| ARCH-002-SHARED-011 | shared | Complete | 1 | ARCH-002-SHARED-009 |
-| ARCH-002-SHARED-012 | shared | Complete | 1 | ARCH-002-SHARED-010 |
-| ARCH-002-SHARED-013 | shared | Complete | 1 | ARCH-002-SHARED-012 |
-| ARCH-002-SHOPIFY-001 | shopify | Complete | 0 | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-002 | shopify | Complete | 1 | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-003 | shopify | Superseded | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-SHOPIFY-004 | shopify | Complete | 1 | ARCH-002-GATEWAY-001 |
-| ARCH-002-SHOPIFY-005 | shopify | **Ready** | 0 | ARCH-002-SHOPIFY-002 |
-| ARCH-002-SHOPIFY-006 | shopify | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-SHOPIFY-007 | shopify | Complete | 1 | ARCH-002-SHOPIFY-006 |
-| ARCH-002-SHOPIFY-008 | shopify | Complete | 1 | ARCH-002-SHOPIFY-002 |
-| ARCH-002-MESSAGING-001 | messaging | Complete | 1 | ARCH-002-GATEWAY-001 |
-| ARCH-002-MESSAGING-002 | messaging | Superseded | 0 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-MESSAGING-003 | messaging | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-MESSAGING-004 | messaging | Complete | 1 | ARCH-002-MESSAGING-003 |
-| ARCH-002-MESSAGING-005 | messaging | Complete | 1 | ARCH-002-MESSAGING-003 |
-| ARCH-002-BACKGROUND-001 | background | Complete | 1 | ARCH-002-GATEWAY-001 |
-| ARCH-002-BACKGROUND-002 | background | Complete | 1 | ARCH-002-BACKGROUND-001 |
-| ARCH-002-BACKGROUND-003 | background | Superseded | 0 | ARCH-002-BACKGROUND-001, ARCH-002-SHARED-010 |
-| ARCH-002-BACKGROUND-004 | background | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-BACKGROUND-005 | background | Complete | 1 | ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002, ARCH-002-BACKGROUND-004, ARCH-002-SHARED-010 |
-| ARCH-002-BACKGROUND-006 | background | Complete | 1 | ARCH-002-BACKGROUND-005 |
-| ARCH-002-BACKGROUND-007 | background | Complete | 1 | ARCH-002-BACKGROUND-006 |
-| ARCH-002-BACKGROUND-008 | background | Complete | 2 | ARCH-002-BACKGROUND-006, ARCH-002-SHARED-013 |
-| ARCH-002-BACKGROUND-009 | background | Complete | 1 | ARCH-002-BACKGROUND-008 |
-| ARCH-002-BACKGROUND-010 | background | Complete | 1 | — |
-| ARCH-002-ADMIN-001 | admin | Complete | 1 | ARCH-002-GATEWAY-001 |
-| ARCH-002-ADMIN-002 | admin | Superseded | 0 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-ADMIN-003 | admin | Complete | 2 | ARCH-002-DATABASE-001 |
-| ARCH-002-ADMIN-004 | admin | Complete | 1 | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006 |
-| ARCH-002-ADMIN-005 | admin | Complete | 1 | ARCH-002-ADMIN-003 |
-| ARCH-002-ADMIN-006 | admin | Complete | 1 | ARCH-002-ADMIN-003 |
-| ARCH-002-ADMIN-007 | admin | Complete | 1 | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005 |
-| ARCH-002-ADMIN-008 | admin | Complete | 4 | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007 |
-| ARCH-002-ADMIN-009 | admin | Complete | 2 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010 |
-| ARCH-002-ADMIN-010 | admin | Superseded | 1 | ARCH-002-ADMIN-009 |
-| ARCH-002-ADMIN-011 | admin | Complete | 2 | ARCH-002-ADMIN-005 |
-| ARCH-002-GATEWAY-001 | gateway | Complete | 1 | — |
-| ARCH-002-GATEWAY-002 | gateway | Complete | 1 | ARCH-002-GATEWAY-001 |
-| ARCH-002-GATEWAY-003 | gateway | Complete | 1 | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002 |
-| ARCH-002-GATEWAY-004 | gateway | Complete | 1 | ARCH-002-GATEWAY-003 |
-| ARCH-002-GATEWAY-005 | gateway | Complete | 1 | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004 |
-| ARCH-002-GATEWAY-006 | gateway | Complete | 1 | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005 |
-| ARCH-002-GATEWAY-007 | gateway | Complete | 1 | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008 |
-| ARCH-002-GATEWAY-008 | gateway | Complete | 1 | ARCH-002-GATEWAY-003, ARCH-002-ADMIN-004, ARCH-002-ADMIN-009 |
-| ARCH-002-GATEWAY-009 | gateway | Complete | 1 | ARCH-002-GATEWAY-003, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-011 |
-| ARCH-002-GATEWAY-010 | gateway | Complete | 1 | ARCH-002-GATEWAY-008 |
-| ARCH-002-GATEWAY-011 | gateway | Complete | 2 | ARCH-002-GATEWAY-010 |
-| ARCH-002-GATEWAY-012 | gateway | Complete | 2 | ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-011 |
-| ARCH-002-GATEWAY-013 | gateway | Pending | 0 | ARCH-002-GATEWAY-012 |
-| ARCH-002-GATEWAY-014 | gateway | Complete | 8 | ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-012 |
-| ARCH-002-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-008 |
-| ARCH-002-SYSTEM-TEST-002 | system-test | Complete | 3 | ARCH-002-SHOPIFY-007, ARCH-002-BACKGROUND-007, ARCH-002-BACKGROUND-009, ARCH-002-MESSAGING-004, ARCH-002-MESSAGING-005, ARCH-002-ADMIN-009, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-004, ARCH-002-SYSTEM-TEST-003, ARCH-002-SYSTEM-TEST-004, ARCH-002-SYSTEM-TEST-005 |
-| ARCH-002-SYSTEM-TEST-003 | system-test | Complete | 1 | — |
-| ARCH-002-SYSTEM-TEST-004 | system-test | Complete | 2 | ARCH-002-BACKGROUND-010 |
-| ARCH-002-SYSTEM-TEST-005 | system-test | Complete | 2 | — |
-| ARCH-002-SYSTEM-TEST-006 | system-test | Complete | 11 | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004, ARCH-002-SHOPIFY-008, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-012, ARCH-002-GATEWAY-014 |
-| ARCH-002-SYSTEM-TEST-007 | system-test | Complete | 3 | ARCH-002-GATEWAY-004 |
-| ARCH-002-SYSTEM-TEST-008 | system-test | Pending / manual-gated | 0 | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-009 |
-| ARCH-002-SYSTEM-TEST-009 | system-test | Complete | 3 | ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-011, ARCH-002-GATEWAY-012, ARCH-002-SYSTEM-TEST-007 |
-| ARCH-002-SYSTEM-TEST-010 | system-test | **Ready** | 0 | ARCH-002-GATEWAY-014 |
+| Task                     | Domain      | Status                 | Attempt | Dependencies                                                                                                                                                                                                                                                         |
+| ------------------------ | ----------- | ---------------------- | ------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-002-DATABASE-001    | database    | Complete               |       1 | —                                                                                                                                                                                                                                                                    |
+| ARCH-002-SHARED-002      | shared      | Complete               |       1 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHARED-003      | shared      | Complete               |       1 | ARCH-002-SHARED-002                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-004      | shared      | Complete               |       1 | ARCH-002-SHARED-003                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-005      | shared      | Complete               |       1 | ARCH-002-SHARED-004, ARCH-002-SHARED-006                                                                                                                                                                                                                             |
+| ARCH-002-SHARED-006      | shared      | Complete               |       1 | ARCH-002-SHARED-004                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-007      | shared      | Complete               |       1 | ARCH-002-SHARED-005                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-008      | shared      | Complete               |       1 | ARCH-002-SHARED-007                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-009      | shared      | Complete               |       1 | ARCH-002-SHARED-007                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-010      | shared      | Complete               |       1 | ARCH-002-SHARED-007, ARCH-002-SHARED-008, ARCH-002-SHARED-009, ARCH-002-SHARED-011                                                                                                                                                                                   |
+| ARCH-002-SHARED-011      | shared      | Complete               |       1 | ARCH-002-SHARED-009                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-012      | shared      | Complete               |       1 | ARCH-002-SHARED-010                                                                                                                                                                                                                                                  |
+| ARCH-002-SHARED-013      | shared      | Complete               |       1 | ARCH-002-SHARED-012                                                                                                                                                                                                                                                  |
+| ARCH-002-SHOPIFY-001     | shopify     | Complete               |       0 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-002     | shopify     | Complete               |       1 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-003     | shopify     | Superseded             |       1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-SHOPIFY-004     | shopify     | Complete               |       1 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-005     | shopify     | **Ready**              |       0 | ARCH-002-SHOPIFY-002                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-006     | shopify     | Complete               |       1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-SHOPIFY-007     | shopify     | Complete               |       1 | ARCH-002-SHOPIFY-006                                                                                                                                                                                                                                                 |
+| ARCH-002-SHOPIFY-008     | shopify     | Complete               |       1 | ARCH-002-SHOPIFY-002                                                                                                                                                                                                                                                 |
+| ARCH-002-MESSAGING-001   | messaging   | Complete               |       1 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-MESSAGING-002   | messaging   | Superseded             |       0 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-MESSAGING-003   | messaging   | Complete               |       1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-MESSAGING-004   | messaging   | Complete               |       1 | ARCH-002-MESSAGING-003                                                                                                                                                                                                                                               |
+| ARCH-002-MESSAGING-005   | messaging   | Complete               |       1 | ARCH-002-MESSAGING-003                                                                                                                                                                                                                                               |
+| ARCH-002-BACKGROUND-001  | background  | Complete               |       1 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-BACKGROUND-002  | background  | Complete               |       1 | ARCH-002-BACKGROUND-001                                                                                                                                                                                                                                              |
+| ARCH-002-BACKGROUND-003  | background  | Superseded             |       0 | ARCH-002-BACKGROUND-001, ARCH-002-SHARED-010                                                                                                                                                                                                                         |
+| ARCH-002-BACKGROUND-004  | background  | Complete               |       1 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-BACKGROUND-005  | background  | Complete               |       1 | ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002, ARCH-002-BACKGROUND-004, ARCH-002-SHARED-010                                                                                                                                                                       |
+| ARCH-002-BACKGROUND-006  | background  | Complete               |       1 | ARCH-002-BACKGROUND-005                                                                                                                                                                                                                                              |
+| ARCH-002-BACKGROUND-007  | background  | Complete               |       1 | ARCH-002-BACKGROUND-006                                                                                                                                                                                                                                              |
+| ARCH-002-BACKGROUND-008  | background  | Complete               |       2 | ARCH-002-BACKGROUND-006, ARCH-002-SHARED-013                                                                                                                                                                                                                         |
+| ARCH-002-BACKGROUND-009  | background  | Complete               |       1 | ARCH-002-BACKGROUND-008                                                                                                                                                                                                                                              |
+| ARCH-002-BACKGROUND-010  | background  | Complete               |       1 | —                                                                                                                                                                                                                                                                    |
+| ARCH-002-ADMIN-001       | admin       | Complete               |       1 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-ADMIN-002       | admin       | Superseded             |       0 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-ADMIN-003       | admin       | Complete               |       2 | ARCH-002-DATABASE-001                                                                                                                                                                                                                                                |
+| ARCH-002-ADMIN-004       | admin       | Complete               |       1 | ARCH-002-ADMIN-008, ARCH-002-GATEWAY-006                                                                                                                                                                                                                             |
+| ARCH-002-ADMIN-005       | admin       | Complete               |       1 | ARCH-002-ADMIN-003                                                                                                                                                                                                                                                   |
+| ARCH-002-ADMIN-006       | admin       | Complete               |       1 | ARCH-002-ADMIN-003                                                                                                                                                                                                                                                   |
+| ARCH-002-ADMIN-007       | admin       | Complete               |       1 | ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-SHARED-005                                                                                                                                                                                                          |
+| ARCH-002-ADMIN-008       | admin       | Complete               |       4 | ARCH-002-ADMIN-003, ARCH-002-ADMIN-005, ARCH-002-ADMIN-006, ARCH-002-ADMIN-007                                                                                                                                                                                       |
+| ARCH-002-ADMIN-009       | admin       | Complete               |       2 | ARCH-002-GATEWAY-001, ARCH-002-SHARED-010                                                                                                                                                                                                                            |
+| ARCH-002-ADMIN-010       | admin       | Superseded             |       1 | ARCH-002-ADMIN-009                                                                                                                                                                                                                                                   |
+| ARCH-002-ADMIN-011       | admin       | Complete               |       2 | ARCH-002-ADMIN-005                                                                                                                                                                                                                                                   |
+| ARCH-002-GATEWAY-001     | gateway     | Complete               |       1 | —                                                                                                                                                                                                                                                                    |
+| ARCH-002-GATEWAY-002     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                 |
+| ARCH-002-GATEWAY-003     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-002, ARCH-002-GATEWAY-005, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-007, ARCH-002-SHOPIFY-001, ARCH-002-SHOPIFY-002, ARCH-002-MESSAGING-001, ARCH-002-ADMIN-001, ARCH-002-ADMIN-008, ARCH-002-BACKGROUND-001, ARCH-002-BACKGROUND-002                 |
+| ARCH-002-GATEWAY-004     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-003                                                                                                                                                                                                                                                 |
+| ARCH-002-GATEWAY-005     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-001, ARCH-002-SHOPIFY-004, ARCH-002-BACKGROUND-004                                                                                                                                                                                                  |
+| ARCH-002-GATEWAY-006     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-002, ARCH-002-SHOPIFY-006, ARCH-002-MESSAGING-003, ARCH-002-ADMIN-009, ARCH-002-BACKGROUND-005                                                                                                                                                      |
+| ARCH-002-GATEWAY-007     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-002, ARCH-002-ADMIN-008                                                                                                                                                                                                                             |
+| ARCH-002-GATEWAY-008     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-003, ARCH-002-ADMIN-004, ARCH-002-ADMIN-009                                                                                                                                                                                                         |
+| ARCH-002-GATEWAY-009     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-003, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-011                                                                                                                                                                               |
+| ARCH-002-GATEWAY-010     | gateway     | Complete               |       1 | ARCH-002-GATEWAY-008                                                                                                                                                                                                                                                 |
+| ARCH-002-GATEWAY-011     | gateway     | Complete               |       2 | ARCH-002-GATEWAY-010                                                                                                                                                                                                                                                 |
+| ARCH-002-GATEWAY-012     | gateway     | Complete               |       2 | ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-011                                                                                                                                                                                                                           |
+| ARCH-002-GATEWAY-013     | gateway     | Pending                |       0 | ARCH-002-GATEWAY-012                                                                                                                                                                                                                                                 |
+| ARCH-002-GATEWAY-014     | gateway     | Complete               |       8 | ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-012                                                                                                                                                                                                                           |
+| ARCH-002-SYSTEM-TEST-001 | system-test | Pending / manual-gated |       0 | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-008                                                                                                                                                               |
+| ARCH-002-SYSTEM-TEST-002 | system-test | Complete               |       3 | ARCH-002-SHOPIFY-007, ARCH-002-BACKGROUND-007, ARCH-002-BACKGROUND-009, ARCH-002-MESSAGING-004, ARCH-002-MESSAGING-005, ARCH-002-ADMIN-009, ARCH-002-GATEWAY-006, ARCH-002-GATEWAY-004, ARCH-002-SYSTEM-TEST-003, ARCH-002-SYSTEM-TEST-004, ARCH-002-SYSTEM-TEST-005 |
+| ARCH-002-SYSTEM-TEST-003 | system-test | Complete               |       1 | —                                                                                                                                                                                                                                                                    |
+| ARCH-002-SYSTEM-TEST-004 | system-test | Complete               |       2 | ARCH-002-BACKGROUND-010                                                                                                                                                                                                                                              |
+| ARCH-002-SYSTEM-TEST-005 | system-test | Complete               |       2 | —                                                                                                                                                                                                                                                                    |
+| ARCH-002-SYSTEM-TEST-006 | system-test | Complete               |      11 | ARCH-002-GATEWAY-004, ARCH-002-ADMIN-004, ARCH-002-SHOPIFY-008, ARCH-002-GATEWAY-008, ARCH-002-GATEWAY-009, ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-012, ARCH-002-GATEWAY-014                                                                                         |
+| ARCH-002-SYSTEM-TEST-007 | system-test | Complete               |       3 | ARCH-002-GATEWAY-004                                                                                                                                                                                                                                                 |
+| ARCH-002-SYSTEM-TEST-008 | system-test | Pending / manual-gated |       0 | ARCH-002-SYSTEM-TEST-002, ARCH-002-SYSTEM-TEST-006, ARCH-002-SYSTEM-TEST-007, ARCH-002-SYSTEM-TEST-009                                                                                                                                                               |
+| ARCH-002-SYSTEM-TEST-009 | system-test | Complete               |       3 | ARCH-002-GATEWAY-010, ARCH-002-GATEWAY-011, ARCH-002-GATEWAY-012, ARCH-002-SYSTEM-TEST-007                                                                                                                                                                           |
+| ARCH-002-SYSTEM-TEST-010 | system-test | **Ready**              |       0 | ARCH-002-GATEWAY-014                                                                                                                                                                                                                                                 |
 
 ## ARCH-003
 
 Current counts: `blocked` 1, `complete` 23, `pending` 1, `review` 1, `superseded` 1
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-003-SHOPIFY-001 | shopify | Complete | 1 | — |
-| ARCH-003-SHOPIFY-002 | shopify | Complete | 3 | ARCH-003-SHOPIFY-001, ARCH-003-BACKGROUND-002 |
-| ARCH-003-SHOPIFY-003 | shopify | Complete | 1 | ARCH-003-SHOPIFY-002 |
-| ARCH-003-BACKGROUND-001 | background | Complete | 1 | ARCH-003-ADMIN-013 |
-| ARCH-003-BACKGROUND-002 | background | Complete | 1 | ARCH-003-BACKGROUND-001 |
-| ARCH-003-BACKGROUND-003 | background | Complete | 3 | ARCH-003-BACKGROUND-002 |
-| ARCH-003-ADMIN-001 | admin | Complete | 3 | ARCH-002-ADMIN-011 |
-| ARCH-003-ADMIN-002 | admin | Complete | 1 | ARCH-003-ADMIN-001 |
-| ARCH-003-ADMIN-003 | admin | Complete | 1 | ARCH-003-ADMIN-008 |
-| ARCH-003-ADMIN-004 | admin | Complete | 1 | ARCH-003-ADMIN-003 |
-| ARCH-003-ADMIN-005 | admin | Complete | 1 | ARCH-003-ADMIN-004 |
-| ARCH-003-ADMIN-006 | admin | Complete | 2 | ARCH-003-ADMIN-005 |
-| ARCH-003-ADMIN-007 | admin | Complete | 1 | ARCH-003-ADMIN-006 |
-| ARCH-003-ADMIN-008 | admin | Complete | 2 | ARCH-003-ADMIN-002 |
-| ARCH-003-ADMIN-009 | admin | Superseded | 0 | ARCH-003-ADMIN-008 |
-| ARCH-003-ADMIN-010 | admin | Complete | 1 | ARCH-003-ADMIN-007 |
-| ARCH-003-ADMIN-011 | admin | Complete | 4 | ARCH-003-ADMIN-010, ARCH-003-ADMIN-014 |
-| ARCH-003-ADMIN-012 | admin | Complete | 1 | ARCH-003-ADMIN-016 |
-| ARCH-003-ADMIN-013 | admin | Complete | 1 | ARCH-003-ADMIN-012 |
-| ARCH-003-ADMIN-014 | admin | Complete | 2 | ARCH-003-ADMIN-010 |
-| ARCH-003-ADMIN-015 | admin | Complete | 1 | ARCH-003-ADMIN-011 |
-| ARCH-003-ADMIN-016 | admin | Complete | 1 | ARCH-003-ADMIN-015 |
-| ARCH-003-ADMIN-017 | admin | Complete | 1 | ARCH-003-BACKGROUND-001 |
-| ARCH-003-ADMIN-018 | admin | Complete | 1 | ARCH-003-ADMIN-017 |
-| ARCH-003-ADMIN-019 | admin | **Review — Attempt 1** | 1 | ARCH-003-ADMIN-018 |
-| ARCH-003-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-003-BACKGROUND-001, ARCH-003-ADMIN-019 |
-| ARCH-003-SYSTEM-TEST-002 | system-test | **Blocked** | 2 | ARCH-003-SHOPIFY-002 |
+| Task                     | Domain      | Status                 | Attempt | Dependencies                                  |
+| ------------------------ | ----------- | ---------------------- | ------: | --------------------------------------------- |
+| ARCH-003-SHOPIFY-001     | shopify     | Complete               |       1 | —                                             |
+| ARCH-003-SHOPIFY-002     | shopify     | Complete               |       3 | ARCH-003-SHOPIFY-001, ARCH-003-BACKGROUND-002 |
+| ARCH-003-SHOPIFY-003     | shopify     | Complete               |       1 | ARCH-003-SHOPIFY-002                          |
+| ARCH-003-BACKGROUND-001  | background  | Complete               |       1 | ARCH-003-ADMIN-013                            |
+| ARCH-003-BACKGROUND-002  | background  | Complete               |       1 | ARCH-003-BACKGROUND-001                       |
+| ARCH-003-BACKGROUND-003  | background  | Complete               |       3 | ARCH-003-BACKGROUND-002                       |
+| ARCH-003-ADMIN-001       | admin       | Complete               |       3 | ARCH-002-ADMIN-011                            |
+| ARCH-003-ADMIN-002       | admin       | Complete               |       1 | ARCH-003-ADMIN-001                            |
+| ARCH-003-ADMIN-003       | admin       | Complete               |       1 | ARCH-003-ADMIN-008                            |
+| ARCH-003-ADMIN-004       | admin       | Complete               |       1 | ARCH-003-ADMIN-003                            |
+| ARCH-003-ADMIN-005       | admin       | Complete               |       1 | ARCH-003-ADMIN-004                            |
+| ARCH-003-ADMIN-006       | admin       | Complete               |       2 | ARCH-003-ADMIN-005                            |
+| ARCH-003-ADMIN-007       | admin       | Complete               |       1 | ARCH-003-ADMIN-006                            |
+| ARCH-003-ADMIN-008       | admin       | Complete               |       2 | ARCH-003-ADMIN-002                            |
+| ARCH-003-ADMIN-009       | admin       | Superseded             |       0 | ARCH-003-ADMIN-008                            |
+| ARCH-003-ADMIN-010       | admin       | Complete               |       1 | ARCH-003-ADMIN-007                            |
+| ARCH-003-ADMIN-011       | admin       | Complete               |       4 | ARCH-003-ADMIN-010, ARCH-003-ADMIN-014        |
+| ARCH-003-ADMIN-012       | admin       | Complete               |       1 | ARCH-003-ADMIN-016                            |
+| ARCH-003-ADMIN-013       | admin       | Complete               |       1 | ARCH-003-ADMIN-012                            |
+| ARCH-003-ADMIN-014       | admin       | Complete               |       2 | ARCH-003-ADMIN-010                            |
+| ARCH-003-ADMIN-015       | admin       | Complete               |       1 | ARCH-003-ADMIN-011                            |
+| ARCH-003-ADMIN-016       | admin       | Complete               |       1 | ARCH-003-ADMIN-015                            |
+| ARCH-003-ADMIN-017       | admin       | Complete               |       1 | ARCH-003-BACKGROUND-001                       |
+| ARCH-003-ADMIN-018       | admin       | Complete               |       1 | ARCH-003-ADMIN-017                            |
+| ARCH-003-ADMIN-019       | admin       | **Review — Attempt 1** |       1 | ARCH-003-ADMIN-018                            |
+| ARCH-003-SYSTEM-TEST-001 | system-test | Pending / manual-gated |       0 | ARCH-003-BACKGROUND-001, ARCH-003-ADMIN-019   |
+| ARCH-003-SYSTEM-TEST-002 | system-test | **Blocked**            |       2 | ARCH-003-SHOPIFY-002                          |
 
 ## ARCH-004
 
 Current counts: `complete` 6, `ready` 1
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-004-SHARED-001 | shared | Complete | 1 | — |
-| ARCH-004-SHARED-002 | shared | Complete | 1 | ARCH-004-SHARED-001 |
-| ARCH-004-SHOPIFY-001 | shopify | Complete | 1 | ARCH-004-SHARED-002 |
-| ARCH-004-SHOPIFY-002 | shopify | Complete | 1 | ARCH-004-BACKGROUND-002 |
-| ARCH-004-BACKGROUND-001 | background | Complete | 2 | ARCH-004-SHARED-002 |
-| ARCH-004-BACKGROUND-002 | background | Complete | 1 | ARCH-004-BACKGROUND-001 |
-| ARCH-004-SYSTEM-TEST-001 | system-test | **Ready** | 0 | ARCH-004-SHARED-002, ARCH-004-SHOPIFY-001, ARCH-004-BACKGROUND-002, ARCH-004-SHOPIFY-002 |
+| Task                     | Domain      | Status    | Attempt | Dependencies                                                                             |
+| ------------------------ | ----------- | --------- | ------: | ---------------------------------------------------------------------------------------- |
+| ARCH-004-SHARED-001      | shared      | Complete  |       1 | —                                                                                        |
+| ARCH-004-SHARED-002      | shared      | Complete  |       1 | ARCH-004-SHARED-001                                                                      |
+| ARCH-004-SHOPIFY-001     | shopify     | Complete  |       1 | ARCH-004-SHARED-002                                                                      |
+| ARCH-004-SHOPIFY-002     | shopify     | Complete  |       1 | ARCH-004-BACKGROUND-002                                                                  |
+| ARCH-004-BACKGROUND-001  | background  | Complete  |       2 | ARCH-004-SHARED-002                                                                      |
+| ARCH-004-BACKGROUND-002  | background  | Complete  |       1 | ARCH-004-BACKGROUND-001                                                                  |
+| ARCH-004-SYSTEM-TEST-001 | system-test | **Ready** |       0 | ARCH-004-SHARED-002, ARCH-004-SHOPIFY-001, ARCH-004-BACKGROUND-002, ARCH-004-SHOPIFY-002 |
 
 ## ARCH-005
 
 Current counts: `complete` 18, `pending` 1, `ready` 1, `superseded` 2
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-005-DATABASE-001 | database | Complete | 2 | ARCH-005-SHARED-001 |
-| ARCH-005-DATABASE-002 | database | Complete | 2 | ARCH-005-DATABASE-001 |
-| ARCH-005-SHARED-001 | shared | Complete | 4 | — |
-| ARCH-005-SHARED-002 | shared | Complete | 1 | ARCH-005-SHARED-001 |
-| ARCH-005-SHARED-003 | shared | Complete | 1 | ARCH-005-SHARED-002 |
-| ARCH-005-SHARED-004 | shared | Complete | 1 | ARCH-005-SHARED-003 |
-| ARCH-005-SHARED-005 | shared | Complete | 2 | ARCH-005-SHARED-004 |
-| ARCH-005-SHARED-006 | shared | Complete | 1 | ARCH-005-SHARED-005 |
-| ARCH-005-SHOPIFY-001 | shopify | Complete | 3 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001 |
-| ARCH-005-SHOPIFY-002 | shopify | Complete | 6 | ARCH-005-SHARED-006, ARCH-005-DATABASE-001 |
-| ARCH-005-SHOPIFY-003 | shopify | Complete | 1 | ARCH-005-SHARED-004, ARCH-005-BACKGROUND-001 |
-| ARCH-005-SHOPIFY-004 | shopify | Complete | 2 | ARCH-005-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-007-SHOPIFY-002 |
-| ARCH-005-MESSAGING-001 | messaging | Superseded | 1 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001, ARCH-005-DATABASE-002, ARCH-005-BACKGROUND-001 |
-| ARCH-005-MESSAGING-002 | messaging | Superseded | 0 | ARCH-005-MESSAGING-001 |
-| ARCH-005-MESSAGING-003 | messaging | Complete | 1 | ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003 |
-| ARCH-005-BACKGROUND-001 | background | Complete | 4 | ARCH-005-SHARED-004, ARCH-005-DATABASE-001 |
-| ARCH-005-BACKGROUND-002 | background | Complete | 1 | ARCH-005-BACKGROUND-001, ARCH-005-DATABASE-002 |
-| ARCH-005-BACKGROUND-003 | background | Complete | 2 | ARCH-005-BACKGROUND-002 |
-| ARCH-005-BACKGROUND-004 | background | Complete | 4 | ARCH-005-BACKGROUND-001 |
-| ARCH-005-ADMIN-001 | admin | Complete | 4 | ARCH-005-SHARED-006 |
-| ARCH-005-SYSTEM-TEST-001 | system-test | **Ready** / manual-gated | 0 | ARCH-005-SHOPIFY-001, ARCH-005-SHOPIFY-003, ARCH-005-BACKGROUND-001, ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003, ARCH-005-SHOPIFY-002, ARCH-005-SHOPIFY-004, ARCH-005-MESSAGING-003 |
-| ARCH-005-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-005-SYSTEM-TEST-001, ARCH-005-BACKGROUND-004 |
+| Task                     | Domain      | Status                   | Attempt | Dependencies                                                                                                                                                                              |
+| ------------------------ | ----------- | ------------------------ | ------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-005-DATABASE-001    | database    | Complete                 |       2 | ARCH-005-SHARED-001                                                                                                                                                                       |
+| ARCH-005-DATABASE-002    | database    | Complete                 |       2 | ARCH-005-DATABASE-001                                                                                                                                                                     |
+| ARCH-005-SHARED-001      | shared      | Complete                 |       4 | —                                                                                                                                                                                         |
+| ARCH-005-SHARED-002      | shared      | Complete                 |       1 | ARCH-005-SHARED-001                                                                                                                                                                       |
+| ARCH-005-SHARED-003      | shared      | Complete                 |       1 | ARCH-005-SHARED-002                                                                                                                                                                       |
+| ARCH-005-SHARED-004      | shared      | Complete                 |       1 | ARCH-005-SHARED-003                                                                                                                                                                       |
+| ARCH-005-SHARED-005      | shared      | Complete                 |       2 | ARCH-005-SHARED-004                                                                                                                                                                       |
+| ARCH-005-SHARED-006      | shared      | Complete                 |       1 | ARCH-005-SHARED-005                                                                                                                                                                       |
+| ARCH-005-SHOPIFY-001     | shopify     | Complete                 |       3 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001                                                                                                                                                |
+| ARCH-005-SHOPIFY-002     | shopify     | Complete                 |       6 | ARCH-005-SHARED-006, ARCH-005-DATABASE-001                                                                                                                                                |
+| ARCH-005-SHOPIFY-003     | shopify     | Complete                 |       1 | ARCH-005-SHARED-004, ARCH-005-BACKGROUND-001                                                                                                                                              |
+| ARCH-005-SHOPIFY-004     | shopify     | Complete                 |       2 | ARCH-005-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-007-SHOPIFY-002                                                                                                                          |
+| ARCH-005-MESSAGING-001   | messaging   | Superseded               |       1 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001, ARCH-005-DATABASE-002, ARCH-005-BACKGROUND-001                                                                                                |
+| ARCH-005-MESSAGING-002   | messaging   | Superseded               |       0 | ARCH-005-MESSAGING-001                                                                                                                                                                    |
+| ARCH-005-MESSAGING-003   | messaging   | Complete                 |       1 | ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003                                                                                                                                          |
+| ARCH-005-BACKGROUND-001  | background  | Complete                 |       4 | ARCH-005-SHARED-004, ARCH-005-DATABASE-001                                                                                                                                                |
+| ARCH-005-BACKGROUND-002  | background  | Complete                 |       1 | ARCH-005-BACKGROUND-001, ARCH-005-DATABASE-002                                                                                                                                            |
+| ARCH-005-BACKGROUND-003  | background  | Complete                 |       2 | ARCH-005-BACKGROUND-002                                                                                                                                                                   |
+| ARCH-005-BACKGROUND-004  | background  | Complete                 |       4 | ARCH-005-BACKGROUND-001                                                                                                                                                                   |
+| ARCH-005-ADMIN-001       | admin       | Complete                 |       4 | ARCH-005-SHARED-006                                                                                                                                                                       |
+| ARCH-005-SYSTEM-TEST-001 | system-test | **Ready** / manual-gated |       0 | ARCH-005-SHOPIFY-001, ARCH-005-SHOPIFY-003, ARCH-005-BACKGROUND-001, ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003, ARCH-005-SHOPIFY-002, ARCH-005-SHOPIFY-004, ARCH-005-MESSAGING-003 |
+| ARCH-005-SYSTEM-TEST-002 | system-test | Pending / manual-gated   |       0 | ARCH-005-SYSTEM-TEST-001, ARCH-005-BACKGROUND-004                                                                                                                                         |
 
 ## ARCH-006
 
 Current counts: `complete` 21, `pending` 3, `review` 3, `superseded` 2
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-006-DATABASE-001 | database | Complete | 1 | — |
-| ARCH-006-DATABASE-002 | database | Complete | 1 | ARCH-006-DATABASE-001 |
-| ARCH-006-SHARED-001 | shared | Complete | 1 | ARCH-005-SHARED-001, ARCH-006-DATABASE-002 |
-| ARCH-006-SHARED-002 | shared | Complete | 1 | ARCH-006-SHARED-001 |
-| ARCH-006-SHARED-003 | shared | Complete | 1 | ARCH-006-SHARED-002 |
-| ARCH-006-SHARED-004 | shared | Complete | 1 | ARCH-006-SHARED-003 |
-| ARCH-006-SHARED-005 | shared | Complete | 1 | ARCH-006-SHARED-004 |
-| ARCH-006-SHARED-006 | shared | Complete | 1 | ARCH-006-SHARED-005 |
-| ARCH-006-SHOPIFY-001 | shopify | Complete | 1 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002, ARCH-006-SHARED-004, ARCH-005-DATABASE-001 |
-| ARCH-006-SHOPIFY-002 | shopify | Complete | 5 | ARCH-006-SHOPIFY-001 |
-| ARCH-006-SHOPIFY-003 | shopify | Complete | 4 | ARCH-006-SHOPIFY-001, ARCH-006-BACKGROUND-007, ARCH-005-SHOPIFY-002 |
-| ARCH-006-BACKGROUND-001 | background | Complete | 1 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002 |
-| ARCH-006-BACKGROUND-002 | background | Superseded | 0 | — |
-| ARCH-006-BACKGROUND-003 | background | Superseded | 0 | — |
-| ARCH-006-BACKGROUND-004 | background | Complete | 2 | ARCH-006-BACKGROUND-001, ARCH-006-SHARED-004 |
-| ARCH-006-BACKGROUND-005 | background | Complete | 2 | ARCH-006-BACKGROUND-004 |
-| ARCH-006-BACKGROUND-006 | background | Complete | 3 | ARCH-006-BACKGROUND-005 |
-| ARCH-006-BACKGROUND-007 | background | Complete | 3 | ARCH-006-BACKGROUND-006 |
-| ARCH-006-BACKGROUND-008 | background | Complete | 1 | ARCH-006-BACKGROUND-004, ARCH-006-SHARED-006 |
-| ARCH-006-BACKGROUND-009 | background | **Review — Attempt 1** | 1 | ARCH-006-BACKGROUND-005, ARCH-006-BACKGROUND-006, ARCH-006-BACKGROUND-007, ARCH-006-BACKGROUND-008 |
-| ARCH-006-ADMIN-001 | admin | Complete | 3 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002, ARCH-006-SHARED-004, ARCH-005-ADMIN-001 |
-| ARCH-006-ADMIN-002 | admin | Complete | 1 | ARCH-006-BACKGROUND-007 |
-| ARCH-006-ADMIN-003 | admin | Complete | 1 | ARCH-006-ADMIN-001 |
-| ARCH-006-ADMIN-004 | admin | Complete | 6 | ARCH-006-ADMIN-003, ARCH-006-BACKGROUND-007 |
-| ARCH-006-ADMIN-005 | admin | **Review — Attempt 2** | 2 | ARCH-006-ADMIN-004 |
-| ARCH-006-GATEWAY-001 | gateway | **Review — Attempt 2** | 2 | ARCH-006-BACKGROUND-007 |
-| ARCH-006-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-006-ADMIN-004, ARCH-006-SHOPIFY-003, ARCH-006-GATEWAY-001 |
-| ARCH-006-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-006-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-006-GATEWAY-001 |
-| ARCH-006-SYSTEM-TEST-003 | system-test | Pending / manual-gated | 0 | ARCH-006-BACKGROUND-007, ARCH-006-GATEWAY-001, ARCH-006-ADMIN-001, ARCH-006-SHOPIFY-001 |
+| Task                     | Domain      | Status                 | Attempt | Dependencies                                                                                       |
+| ------------------------ | ----------- | ---------------------- | ------: | -------------------------------------------------------------------------------------------------- |
+| ARCH-006-DATABASE-001    | database    | Complete               |       1 | —                                                                                                  |
+| ARCH-006-DATABASE-002    | database    | Complete               |       1 | ARCH-006-DATABASE-001                                                                              |
+| ARCH-006-SHARED-001      | shared      | Complete               |       1 | ARCH-005-SHARED-001, ARCH-006-DATABASE-002                                                         |
+| ARCH-006-SHARED-002      | shared      | Complete               |       1 | ARCH-006-SHARED-001                                                                                |
+| ARCH-006-SHARED-003      | shared      | Complete               |       1 | ARCH-006-SHARED-002                                                                                |
+| ARCH-006-SHARED-004      | shared      | Complete               |       1 | ARCH-006-SHARED-003                                                                                |
+| ARCH-006-SHARED-005      | shared      | Complete               |       1 | ARCH-006-SHARED-004                                                                                |
+| ARCH-006-SHARED-006      | shared      | Complete               |       1 | ARCH-006-SHARED-005                                                                                |
+| ARCH-006-SHOPIFY-001     | shopify     | Complete               |       1 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002, ARCH-006-SHARED-004, ARCH-005-DATABASE-001             |
+| ARCH-006-SHOPIFY-002     | shopify     | Complete               |       5 | ARCH-006-SHOPIFY-001                                                                               |
+| ARCH-006-SHOPIFY-003     | shopify     | Complete               |       4 | ARCH-006-SHOPIFY-001, ARCH-006-BACKGROUND-007, ARCH-005-SHOPIFY-002                                |
+| ARCH-006-BACKGROUND-001  | background  | Complete               |       1 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002                                                         |
+| ARCH-006-BACKGROUND-002  | background  | Superseded             |       0 | —                                                                                                  |
+| ARCH-006-BACKGROUND-003  | background  | Superseded             |       0 | —                                                                                                  |
+| ARCH-006-BACKGROUND-004  | background  | Complete               |       2 | ARCH-006-BACKGROUND-001, ARCH-006-SHARED-004                                                       |
+| ARCH-006-BACKGROUND-005  | background  | Complete               |       2 | ARCH-006-BACKGROUND-004                                                                            |
+| ARCH-006-BACKGROUND-006  | background  | Complete               |       3 | ARCH-006-BACKGROUND-005                                                                            |
+| ARCH-006-BACKGROUND-007  | background  | Complete               |       3 | ARCH-006-BACKGROUND-006                                                                            |
+| ARCH-006-BACKGROUND-008  | background  | Complete               |       1 | ARCH-006-BACKGROUND-004, ARCH-006-SHARED-006                                                       |
+| ARCH-006-BACKGROUND-009  | background  | **Review — Attempt 1** |       1 | ARCH-006-BACKGROUND-005, ARCH-006-BACKGROUND-006, ARCH-006-BACKGROUND-007, ARCH-006-BACKGROUND-008 |
+| ARCH-006-ADMIN-001       | admin       | Complete               |       3 | ARCH-006-DATABASE-002, ARCH-006-SHARED-002, ARCH-006-SHARED-004, ARCH-005-ADMIN-001                |
+| ARCH-006-ADMIN-002       | admin       | Complete               |       1 | ARCH-006-BACKGROUND-007                                                                            |
+| ARCH-006-ADMIN-003       | admin       | Complete               |       1 | ARCH-006-ADMIN-001                                                                                 |
+| ARCH-006-ADMIN-004       | admin       | Complete               |       6 | ARCH-006-ADMIN-003, ARCH-006-BACKGROUND-007                                                        |
+| ARCH-006-ADMIN-005       | admin       | **Review — Attempt 2** |       2 | ARCH-006-ADMIN-004                                                                                 |
+| ARCH-006-GATEWAY-001     | gateway     | **Review — Attempt 2** |       2 | ARCH-006-BACKGROUND-007                                                                            |
+| ARCH-006-SYSTEM-TEST-001 | system-test | Pending / manual-gated |       0 | ARCH-006-ADMIN-004, ARCH-006-SHOPIFY-003, ARCH-006-GATEWAY-001                                     |
+| ARCH-006-SYSTEM-TEST-002 | system-test | Pending / manual-gated |       0 | ARCH-006-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-006-GATEWAY-001                                   |
+| ARCH-006-SYSTEM-TEST-003 | system-test | Pending / manual-gated |       0 | ARCH-006-BACKGROUND-007, ARCH-006-GATEWAY-001, ARCH-006-ADMIN-001, ARCH-006-SHOPIFY-001            |
 
 ## ARCH-007
 
 Current counts: `complete` 21, `pending` 13, `ready` 5
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-007-DATABASE-001 | database | Complete | 2 | — |
-| ARCH-007-DATABASE-002 | database | Complete | 2 | ARCH-007-DATABASE-001 |
-| ARCH-007-DATABASE-003 | database | Complete | 1 | ARCH-007-DATABASE-002 |
-| ARCH-007-DATABASE-004 | database | Complete | 1 | ARCH-007-DATABASE-003 |
-| ARCH-007-DATABASE-005 | database | Complete | 2 | ARCH-007-DATABASE-004 |
-| ARCH-007-DATABASE-006 | database | Complete | 1 | ARCH-007-DATABASE-005 |
-| ARCH-007-SHARED-001 | shared | Complete | 6 | ARCH-007-DATABASE-003 |
-| ARCH-007-SHARED-002 | shared | Complete | 1 | ARCH-007-SHARED-001 |
-| ARCH-007-SHARED-003 | shared | Complete | 1 | ARCH-007-SHARED-002 |
-| ARCH-007-SHARED-004 | shared | Complete | 1 | ARCH-007-SHARED-003 |
-| ARCH-007-SHARED-005 | shared | Complete | 1 | ARCH-007-DATABASE-005 |
-| ARCH-007-SHARED-006 | shared | Complete | 1 | ARCH-007-SHARED-005 |
-| ARCH-007-SHOPIFY-001 | shopify | Complete | 3 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003 |
-| ARCH-007-SHOPIFY-002 | shopify | Complete | 3 | ARCH-007-SHOPIFY-001 |
-| ARCH-007-SHOPIFY-003 | shopify | **Ready** | 1 | ARCH-007-SHOPIFY-001 |
-| ARCH-007-SHOPIFY-004 | shopify | Pending | 0 | ARCH-007-SHOPIFY-002, ARCH-007-DATABASE-005, ARCH-007-SHARED-006, ARCH-007-ADMIN-005 |
-| ARCH-007-MESSAGING-001 | messaging | Complete | 3 | ARCH-007-SHARED-002, ARCH-007-SHARED-004 |
-| ARCH-007-BACKGROUND-001 | background | Complete | 2 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003 |
-| ARCH-007-BACKGROUND-002 | background | Complete | 2 | ARCH-007-BACKGROUND-001 |
-| ARCH-007-BACKGROUND-003 | background | Complete | 2 | ARCH-007-BACKGROUND-002, ARCH-007-SHOPIFY-001 |
-| ARCH-007-BACKGROUND-004 | background | Complete | 4 | ARCH-007-BACKGROUND-003, ARCH-007-DATABASE-004 |
-| ARCH-007-BACKGROUND-005 | background | **Ready** | 0 | ARCH-007-BACKGROUND-004, ARCH-007-MESSAGING-001, ARCH-007-SHARED-004 |
-| ARCH-007-BACKGROUND-006 | background | Complete | 2 | ARCH-007-SHARED-002, ARCH-007-DATABASE-002 |
-| ARCH-007-BACKGROUND-007 | background | Complete | 3 | ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-006 |
-| ARCH-007-BACKGROUND-008 | background | Pending | 0 | ARCH-007-BACKGROUND-005, ARCH-007-BACKGROUND-007, ARCH-007-BACKGROUND-009, ARCH-007-SHOPIFY-001 |
-| ARCH-007-BACKGROUND-009 | background | **Ready** | 0 | ARCH-007-DATABASE-005, ARCH-007-SHARED-006, ARCH-007-BACKGROUND-007 |
-| ARCH-007-BACKGROUND-010 | background | **Ready** | 0 | ARCH-007-DATABASE-006, ARCH-007-BACKGROUND-004 |
-| ARCH-007-BACKGROUND-011 | background | Pending | 0 | ARCH-007-BACKGROUND-010 |
-| ARCH-007-ADMIN-001 | admin | **Ready** | 0 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003 |
-| ARCH-007-ADMIN-002 | admin | Pending | 0 | ARCH-007-ADMIN-001 |
-| ARCH-007-ADMIN-003 | admin | Pending | 0 | ARCH-007-ADMIN-002, ARCH-007-BACKGROUND-007, ARCH-007-SHOPIFY-001 |
-| ARCH-007-ADMIN-004 | admin | Pending | 0 | ARCH-007-ADMIN-003, ARCH-007-BACKGROUND-008 |
-| ARCH-007-ADMIN-005 | admin | Pending | 0 | ARCH-007-ADMIN-001, ARCH-007-DATABASE-005, ARCH-007-SHARED-006 |
-| ARCH-007-GATEWAY-001 | gateway | Pending | 0 | ARCH-007-BACKGROUND-008 |
-| ARCH-007-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-002, ARCH-007-BACKGROUND-003, ARCH-007-ADMIN-002 |
-| ARCH-007-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-002, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-004, ARCH-007-GATEWAY-001 |
-| ARCH-007-SYSTEM-TEST-003 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-003, ARCH-007-MESSAGING-001, ARCH-007-BACKGROUND-005, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-004, ARCH-007-GATEWAY-001 |
-| ARCH-007-SYSTEM-TEST-004 | system-test | Pending / manual-gated | 0 | ARCH-007-SHOPIFY-004, ARCH-007-BACKGROUND-009, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-005 |
-| ARCH-007-SYSTEM-TEST-005 | system-test | Pending / manual-gated | 0 | ARCH-007-BACKGROUND-010, ARCH-007-BACKGROUND-004, ARCH-007-BACKGROUND-011 |
+| Task                     | Domain      | Status                 | Attempt | Dependencies                                                                                                                             |
+| ------------------------ | ----------- | ---------------------- | ------: | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-007-DATABASE-001    | database    | Complete               |       2 | —                                                                                                                                        |
+| ARCH-007-DATABASE-002    | database    | Complete               |       2 | ARCH-007-DATABASE-001                                                                                                                    |
+| ARCH-007-DATABASE-003    | database    | Complete               |       1 | ARCH-007-DATABASE-002                                                                                                                    |
+| ARCH-007-DATABASE-004    | database    | Complete               |       1 | ARCH-007-DATABASE-003                                                                                                                    |
+| ARCH-007-DATABASE-005    | database    | Complete               |       2 | ARCH-007-DATABASE-004                                                                                                                    |
+| ARCH-007-DATABASE-006    | database    | Complete               |       1 | ARCH-007-DATABASE-005                                                                                                                    |
+| ARCH-007-SHARED-001      | shared      | Complete               |       6 | ARCH-007-DATABASE-003                                                                                                                    |
+| ARCH-007-SHARED-002      | shared      | Complete               |       1 | ARCH-007-SHARED-001                                                                                                                      |
+| ARCH-007-SHARED-003      | shared      | Complete               |       1 | ARCH-007-SHARED-002                                                                                                                      |
+| ARCH-007-SHARED-004      | shared      | Complete               |       1 | ARCH-007-SHARED-003                                                                                                                      |
+| ARCH-007-SHARED-005      | shared      | Complete               |       1 | ARCH-007-DATABASE-005                                                                                                                    |
+| ARCH-007-SHARED-006      | shared      | Complete               |       1 | ARCH-007-SHARED-005                                                                                                                      |
+| ARCH-007-SHOPIFY-001     | shopify     | Complete               |       3 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003                                                                                               |
+| ARCH-007-SHOPIFY-002     | shopify     | Complete               |       3 | ARCH-007-SHOPIFY-001                                                                                                                     |
+| ARCH-007-SHOPIFY-003     | shopify     | **Ready**              |       1 | ARCH-007-SHOPIFY-001                                                                                                                     |
+| ARCH-007-SHOPIFY-004     | shopify     | Pending                |       0 | ARCH-007-SHOPIFY-002, ARCH-007-DATABASE-005, ARCH-007-SHARED-006, ARCH-007-ADMIN-005                                                     |
+| ARCH-007-MESSAGING-001   | messaging   | Complete               |       3 | ARCH-007-SHARED-002, ARCH-007-SHARED-004                                                                                                 |
+| ARCH-007-BACKGROUND-001  | background  | Complete               |       2 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003                                                                                               |
+| ARCH-007-BACKGROUND-002  | background  | Complete               |       2 | ARCH-007-BACKGROUND-001                                                                                                                  |
+| ARCH-007-BACKGROUND-003  | background  | Complete               |       2 | ARCH-007-BACKGROUND-002, ARCH-007-SHOPIFY-001                                                                                            |
+| ARCH-007-BACKGROUND-004  | background  | Complete               |       4 | ARCH-007-BACKGROUND-003, ARCH-007-DATABASE-004                                                                                           |
+| ARCH-007-BACKGROUND-005  | background  | **Ready**              |       0 | ARCH-007-BACKGROUND-004, ARCH-007-MESSAGING-001, ARCH-007-SHARED-004                                                                     |
+| ARCH-007-BACKGROUND-006  | background  | Complete               |       2 | ARCH-007-SHARED-002, ARCH-007-DATABASE-002                                                                                               |
+| ARCH-007-BACKGROUND-007  | background  | Complete               |       3 | ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-006                                                                                         |
+| ARCH-007-BACKGROUND-008  | background  | Pending                |       0 | ARCH-007-BACKGROUND-005, ARCH-007-BACKGROUND-007, ARCH-007-BACKGROUND-009, ARCH-007-SHOPIFY-001                                          |
+| ARCH-007-BACKGROUND-009  | background  | **Ready**              |       0 | ARCH-007-DATABASE-005, ARCH-007-SHARED-006, ARCH-007-BACKGROUND-007                                                                      |
+| ARCH-007-BACKGROUND-010  | background  | **Ready**              |       0 | ARCH-007-DATABASE-006, ARCH-007-BACKGROUND-004                                                                                           |
+| ARCH-007-BACKGROUND-011  | background  | Pending                |       0 | ARCH-007-BACKGROUND-010                                                                                                                  |
+| ARCH-007-ADMIN-001       | admin       | **Ready**              |       0 | ARCH-007-SHARED-002, ARCH-007-DATABASE-003                                                                                               |
+| ARCH-007-ADMIN-002       | admin       | Pending                |       0 | ARCH-007-ADMIN-001                                                                                                                       |
+| ARCH-007-ADMIN-003       | admin       | Pending                |       0 | ARCH-007-ADMIN-002, ARCH-007-BACKGROUND-007, ARCH-007-SHOPIFY-001                                                                        |
+| ARCH-007-ADMIN-004       | admin       | Pending                |       0 | ARCH-007-ADMIN-003, ARCH-007-BACKGROUND-008                                                                                              |
+| ARCH-007-ADMIN-005       | admin       | Pending                |       0 | ARCH-007-ADMIN-001, ARCH-007-DATABASE-005, ARCH-007-SHARED-006                                                                           |
+| ARCH-007-GATEWAY-001     | gateway     | Pending                |       0 | ARCH-007-BACKGROUND-008                                                                                                                  |
+| ARCH-007-SYSTEM-TEST-001 | system-test | Pending / manual-gated |       0 | ARCH-007-SHOPIFY-002, ARCH-007-BACKGROUND-003, ARCH-007-ADMIN-002                                                                        |
+| ARCH-007-SYSTEM-TEST-002 | system-test | Pending / manual-gated |       0 | ARCH-007-SHOPIFY-002, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-004, ARCH-007-GATEWAY-001                                                  |
+| ARCH-007-SYSTEM-TEST-003 | system-test | Pending / manual-gated |       0 | ARCH-007-SHOPIFY-003, ARCH-007-MESSAGING-001, ARCH-007-BACKGROUND-005, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-004, ARCH-007-GATEWAY-001 |
+| ARCH-007-SYSTEM-TEST-004 | system-test | Pending / manual-gated |       0 | ARCH-007-SHOPIFY-004, ARCH-007-BACKGROUND-009, ARCH-007-BACKGROUND-008, ARCH-007-ADMIN-005                                               |
+| ARCH-007-SYSTEM-TEST-005 | system-test | Pending / manual-gated |       0 | ARCH-007-BACKGROUND-010, ARCH-007-BACKGROUND-004, ARCH-007-BACKGROUND-011                                                                |
 
 ## ARCH-010
 
@@ -275,95 +275,95 @@ Current counts: `complete` 21, `pending` 13, `ready` 5
 
 Current counts: `complete` 41, `ready` 3, `pending` 34, `superseded` 8
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-010-ADMIN-001 | admin | Complete | 2 | ARCH-010-DATABASE-006 |
-| ARCH-010-ADMIN-002 | admin | Pending | 0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-025, ARCH-010-SHARED-008, ARCH-010-ADMIN-010 |
-| ARCH-010-ADMIN-003 | admin | Pending | 0 | ARCH-010-ADMIN-002, ARCH-010-BACKGROUND-022, ARCH-010-SHARED-008, ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021 |
-| ARCH-010-ADMIN-004 | admin | **Ready** | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-010 |
-| ARCH-010-ADMIN-005 | admin | Pending | 0 | ARCH-010-ADMIN-004 |
-| ARCH-010-ADMIN-006 | admin | Pending | 0 | ARCH-010-ADMIN-005, ARCH-010-DATABASE-013 |
-| ARCH-010-ADMIN-007 | admin | Complete | 2 | — |
-| ARCH-010-ADMIN-008 | admin | **Ready** | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-001, ARCH-010-ADMIN-010 |
-| ARCH-010-ADMIN-009 | admin | Pending | 0 | ARCH-010-ADMIN-007, ARCH-010-ADMIN-008 |
-| ARCH-010-ADMIN-010 | admin | Complete | 2 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-ADMIN-001 |
-| ARCH-010-BACKGROUND-001 | background | Complete | 6 | ARCH-010-DATABASE-006, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-BACKGROUND-008 |
-| ARCH-010-BACKGROUND-002 | background | Complete | 3 | ARCH-010-BACKGROUND-011, ARCH-010-DATABASE-013, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009 |
-| ARCH-010-BACKGROUND-003 | background | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-001, ARCH-010-BACKGROUND-007, ARCH-010-SHARED-008, ARCH-007-BACKGROUND-008 |
-| ARCH-010-BACKGROUND-004 | background | Complete | 3 | — |
-| ARCH-010-BACKGROUND-005 | background | Complete | 3 | — |
-| ARCH-010-BACKGROUND-006 | background | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-001, ARCH-010-BACKGROUND-003, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005 |
-| ARCH-010-BACKGROUND-007 | background | Pending | 0 | ARCH-010-BACKGROUND-001, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-008, ARCH-010-BACKGROUND-009, ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-008-BACKGROUND-001 |
-| ARCH-010-BACKGROUND-008 | background | Complete | 3 | ARCH-010-BACKGROUND-002, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-019 |
-| ARCH-010-BACKGROUND-009 | background | **Ready** | 0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009, ARCH-010-BACKGROUND-019 |
-| ARCH-010-BACKGROUND-010 | background | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-003, ARCH-010-BACKGROUND-007, ARCH-010-SHARED-008 |
-| ARCH-010-BACKGROUND-011 | background | Complete | 4 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-001, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009 |
-| ARCH-010-BACKGROUND-012 | background | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-009, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-015 |
-| ARCH-010-BACKGROUND-013 | background | Pending | 0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005, ARCH-010-BACKGROUND-012 |
-| ARCH-010-BACKGROUND-014 | background | Complete | 2 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-011 |
-| ARCH-010-BACKGROUND-015 | background | Complete | 4 | — |
-| ARCH-010-BACKGROUND-016 | background | Superseded | 0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-015, ARCH-010-SHARED-008 |
-| ARCH-010-BACKGROUND-017 | background | Superseded | 0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005, ARCH-010-BACKGROUND-013, ARCH-010-BACKGROUND-016 |
-| ARCH-010-BACKGROUND-018 | background | Pending | 0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-012 |
-| ARCH-010-BACKGROUND-019 | background | Complete | 6 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-010-BACKGROUND-014 |
-| ARCH-010-BACKGROUND-020 | background | Complete | 1 | ARCH-010-SHARED-006 |
-| ARCH-010-BACKGROUND-021 | background | Pending | 0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-015, ARCH-010-SHOPIFY-014 |
-| ARCH-010-BACKGROUND-022 | background | Pending | 0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-014, ARCH-010-BACKGROUND-019, ARCH-010-BACKGROUND-021 |
-| ARCH-010-DATABASE-001 | database | Complete | 2 | ARCH-007-DATABASE-006, ARCH-009-DATABASE-001 |
-| ARCH-010-DATABASE-002 | database | Complete | 1 | ARCH-010-DATABASE-001, ARCH-007-DATABASE-005 |
-| ARCH-010-DATABASE-003 | database | Complete | 1 | ARCH-010-DATABASE-001 |
-| ARCH-010-DATABASE-004 | database | Complete | 2 | ARCH-010-DATABASE-002 |
-| ARCH-010-DATABASE-005 | database | Complete | 2 | — |
-| ARCH-010-DATABASE-006 | database | Complete | 3 | ARCH-007-DATABASE-002, ARCH-007-DATABASE-003 |
-| ARCH-010-DATABASE-007 | database | Complete | 4 | — |
-| ARCH-010-DATABASE-008 | database | Complete | 3 | — |
-| ARCH-010-DATABASE-009 | database | Complete | 3 | ARCH-007-DATABASE-002 |
-| ARCH-010-DATABASE-010 | database | Complete | 1 | ARCH-010-DATABASE-009 |
-| ARCH-010-DATABASE-011 | database | Complete | 3 | ARCH-010-DATABASE-009, ARCH-010-DATABASE-010 |
-| ARCH-010-DATABASE-012 | database | Superseded | 0 | ARCH-010-DATABASE-006 |
-| ARCH-010-DATABASE-013 | database | Complete | 2 | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011 |
-| ARCH-010-DATABASE-014 | database | Complete | 2 | ARCH-010-DATABASE-013 |
-| ARCH-010-GATEWAY-001 | gateway | Complete | 2 | ARCH-002-GATEWAY-001 |
-| ARCH-010-SHARED-001 | shared | Complete | 2 | ARCH-007-SHARED-006 |
-| ARCH-010-SHARED-002 | shared | Complete | 1 | ARCH-010-SHARED-001 |
-| ARCH-010-SHARED-003 | shared | Complete | 1 | ARCH-010-SHARED-001 |
-| ARCH-010-SHARED-004 | shared | Complete | 0 | ARCH-010-SHARED-003 |
-| ARCH-010-SHARED-005 | shared | Complete | 1 | — |
-| ARCH-010-SHARED-006 | shared | Complete | 0 | ARCH-010-SHARED-005 |
-| ARCH-010-SHARED-007 | shared | Complete | 2 | ARCH-010-SHARED-006, ARCH-010-BACKGROUND-020, ARCH-010-SHOPIFY-024 |
-| ARCH-010-SHARED-008 | shared | Complete | 1 | ARCH-010-SHARED-007 |
-| ARCH-010-SHOPIFY-001 | shopify | Complete | 3 | ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
-| ARCH-010-SHOPIFY-002 | shopify | Complete | 8 | ARCH-010-DATABASE-006, ARCH-010-SHOPIFY-001, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002 |
-| ARCH-010-SHOPIFY-003 | shopify | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-002, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-003, ARCH-008-SHOPIFY-001, ARCH-010-SHOPIFY-023 |
-| ARCH-010-SHOPIFY-004 | shopify | Pending | 0 | ARCH-010-SHOPIFY-003, ARCH-010-DATABASE-013 |
-| ARCH-010-SHOPIFY-005 | shopify | Superseded | 0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005 |
-| ARCH-010-SHOPIFY-006 | shopify | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-006 |
-| ARCH-010-SHOPIFY-007 | shopify | Pending | 0 | ARCH-010-BACKGROUND-007, ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-003, ARCH-010-SHOPIFY-004 |
-| ARCH-010-SHOPIFY-008 | shopify | Pending | 0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-BACKGROUND-009, ARCH-010-SHARED-008 |
-| ARCH-010-SHOPIFY-009 | shopify | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-004, ARCH-010-SHOPIFY-023 |
-| ARCH-010-SHOPIFY-010 | shopify | Superseded | 0 | ARCH-010-SHOPIFY-014 |
-| ARCH-010-SHOPIFY-011 | shopify | Superseded | 0 | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-015 |
-| ARCH-010-SHOPIFY-012 | shopify | Pending | 0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-SHOPIFY-014, ARCH-010-SHOPIFY-015, ARCH-010-SHOPIFY-007, ARCH-008-SHOPIFY-001 |
-| ARCH-010-SHOPIFY-013 | shopify | Complete | 1 | ARCH-008-SHOPIFY-001 |
-| ARCH-010-SHOPIFY-014 | shopify | Pending | 0 | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-007, ARCH-007-SHOPIFY-004, ARCH-010-SHOPIFY-018, ARCH-010-DATABASE-014 |
-| ARCH-010-SHOPIFY-015 | shopify | Pending | 0 | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018 |
-| ARCH-010-SHOPIFY-016 | shopify | Pending | 0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013 |
-| ARCH-010-SHOPIFY-017 | shopify | Superseded | 0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-012 |
-| ARCH-010-SHOPIFY-018 | shopify | Complete | 3 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023 |
-| ARCH-010-SHOPIFY-019 | shopify | Superseded | 0 | ARCH-010-BACKGROUND-017, ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-018 |
-| ARCH-010-SHOPIFY-020 | shopify | Pending | 0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-021 |
-| ARCH-010-SHOPIFY-021 | shopify | Pending | 0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-018, ARCH-010-ADMIN-004 |
-| ARCH-010-SHOPIFY-022 | shopify | Pending | 0 | ARCH-010-SHOPIFY-021, ARCH-010-DATABASE-013 |
-| ARCH-010-SHOPIFY-023 | shopify | Complete | 1 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-002 |
-| ARCH-010-SHOPIFY-024 | shopify | Complete | 1 | ARCH-010-SHARED-006, ARCH-010-SHOPIFY-002 |
-| ARCH-010-SHOPIFY-025 | shopify | Pending | 0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-014, ARCH-010-SHARED-008 |
-| ARCH-010-SHOPIFY-026 | shopify | Pending | 0 | ARCH-010-SHOPIFY-025, ARCH-010-SHOPIFY-012 |
-| ARCH-010-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-010-GATEWAY-001, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-009, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-019, ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-020 |
-| ARCH-010-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-010-BACKGROUND-006, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013, ARCH-010-BACKGROUND-018, ARCH-010-SHOPIFY-006, ARCH-010-SHOPIFY-016 |
-| ARCH-010-SYSTEM-TEST-003 | system-test | Pending / manual-gated | 0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-BACKGROUND-019, ARCH-010-SHOPIFY-025, ARCH-010-SHOPIFY-026, ARCH-010-ADMIN-003, ARCH-010-ADMIN-005, ARCH-010-ADMIN-006, ARCH-010-SHOPIFY-020, ARCH-010-SHOPIFY-021, ARCH-010-SHOPIFY-022 |
-| ARCH-010-SYSTEM-TEST-004 | system-test | Pending / manual-gated | 0 | ARCH-010-SYSTEM-TEST-001, ARCH-010-SYSTEM-TEST-002, ARCH-010-SYSTEM-TEST-003, ARCH-010-SYSTEM-TEST-005 |
-| ARCH-010-SYSTEM-TEST-005 | system-test | Pending / manual-gated | 0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-009 |
-Current Ready frontier: `ARCH-010-BACKGROUND-009`, `ARCH-010-ADMIN-004`, `ARCH-010-ADMIN-008`.
+| Task                                                                                           | Domain      | Status                 | Attempt | Dependencies                                                                                                                                                                                                                                                               |
+| ---------------------------------------------------------------------------------------------- | ----------- | ---------------------- | ------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-010-ADMIN-001                                                                             | admin       | Complete               |       2 | ARCH-010-DATABASE-006                                                                                                                                                                                                                                                      |
+| ARCH-010-ADMIN-002                                                                             | admin       | Pending                |       0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-025, ARCH-010-SHARED-008, ARCH-010-ADMIN-010                                                                                                                                                              |
+| ARCH-010-ADMIN-003                                                                             | admin       | Pending                |       0 | ARCH-010-ADMIN-002, ARCH-010-BACKGROUND-022, ARCH-010-SHARED-008, ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021                                                                                                                                                           |
+| ARCH-010-ADMIN-004                                                                             | admin       | **Ready**              |       0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-010                                                                                                                                                                                                                                  |
+| ARCH-010-ADMIN-005                                                                             | admin       | Pending                |       0 | ARCH-010-ADMIN-004                                                                                                                                                                                                                                                         |
+| ARCH-010-ADMIN-006                                                                             | admin       | Pending                |       0 | ARCH-010-ADMIN-005, ARCH-010-DATABASE-013                                                                                                                                                                                                                                  |
+| ARCH-010-ADMIN-007                                                                             | admin       | Complete               |       2 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-ADMIN-008                                                                             | admin       | **Ready**              |       0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-001, ARCH-010-ADMIN-010                                                                                                                                                                                                              |
+| ARCH-010-ADMIN-009                                                                             | admin       | Pending                |       0 | ARCH-010-ADMIN-007, ARCH-010-ADMIN-008                                                                                                                                                                                                                                     |
+| ARCH-010-ADMIN-010                                                                             | admin       | Complete               |       2 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-ADMIN-001                                                                                                                                                                                                             |
+| ARCH-010-BACKGROUND-001                                                                        | background  | Complete               |       6 | ARCH-010-DATABASE-006, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-BACKGROUND-008                                                                                                                                                          |
+| ARCH-010-BACKGROUND-002                                                                        | background  | Complete               |       3 | ARCH-010-BACKGROUND-011, ARCH-010-DATABASE-013, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009                                                                                                                                                                           |
+| ARCH-010-BACKGROUND-003                                                                        | background  | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-001, ARCH-010-BACKGROUND-007, ARCH-010-SHARED-008, ARCH-007-BACKGROUND-008                                                                                                                                                      |
+| ARCH-010-BACKGROUND-004                                                                        | background  | Complete               |       3 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-BACKGROUND-005                                                                        | background  | Complete               |       3 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-BACKGROUND-006                                                                        | background  | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-001, ARCH-010-BACKGROUND-003, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005                                                                                                    |
+| ARCH-010-BACKGROUND-007                                                                        | background  | Pending                |       0 | ARCH-010-BACKGROUND-001, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-008, ARCH-010-BACKGROUND-009, ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-008-BACKGROUND-001                                                                                                    |
+| ARCH-010-BACKGROUND-008                                                                        | background  | Complete               |       3 | ARCH-010-BACKGROUND-002, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-019                                                                                                                                                                                                      |
+| ARCH-010-BACKGROUND-009                                                                        | background  | **Ready**              |       0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009, ARCH-010-BACKGROUND-019                                                                                                    |
+| ARCH-010-BACKGROUND-010                                                                        | background  | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-003, ARCH-010-BACKGROUND-007, ARCH-010-SHARED-008                                                                                                                                                                               |
+| ARCH-010-BACKGROUND-011                                                                        | background  | Complete               |       4 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-001, ARCH-007-BACKGROUND-003, ARCH-007-BACKGROUND-009                                                                                                                                                      |
+| ARCH-010-BACKGROUND-012                                                                        | background  | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-009, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-015                                                                                                                             |
+| ARCH-010-BACKGROUND-013                                                                        | background  | Pending                |       0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005, ARCH-010-BACKGROUND-012                                                                                                                                                                                                  |
+| ARCH-010-BACKGROUND-014                                                                        | background  | Complete               |       2 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-011                                                                                                                                                                                                                             |
+| ARCH-010-BACKGROUND-015                                                                        | background  | Complete               |       4 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-BACKGROUND-016                                                                        | background  | Superseded             |       0 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-015, ARCH-010-SHARED-008                                                                                                                                                      |
+| ARCH-010-BACKGROUND-017                                                                        | background  | Superseded             |       0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005, ARCH-010-BACKGROUND-013, ARCH-010-BACKGROUND-016                                                                                                                                                                         |
+| ARCH-010-BACKGROUND-018                                                                        | background  | Pending                |       0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-012                                                                                                                                                                                                                           |
+| ARCH-010-BACKGROUND-019                                                                        | background  | Complete               |       6 | ARCH-010-DATABASE-013, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-011, ARCH-010-BACKGROUND-014                                                                                                                                                                           |
+| ARCH-010-BACKGROUND-020                                                                        | background  | Complete               |       1 | ARCH-010-SHARED-006                                                                                                                                                                                                                                                        |
+| ARCH-010-BACKGROUND-021                                                                        | background  | Pending                |       0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-015, ARCH-010-SHOPIFY-014                                                                                                                                                                                                       |
+| ARCH-010-BACKGROUND-022                                                                        | background  | Pending                |       0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-014, ARCH-010-BACKGROUND-019, ARCH-010-BACKGROUND-021                                                                                                                                                                           |
+| ARCH-010-DATABASE-001                                                                          | database    | Complete               |       2 | ARCH-007-DATABASE-006, ARCH-009-DATABASE-001                                                                                                                                                                                                                               |
+| ARCH-010-DATABASE-002                                                                          | database    | Complete               |       1 | ARCH-010-DATABASE-001, ARCH-007-DATABASE-005                                                                                                                                                                                                                               |
+| ARCH-010-DATABASE-003                                                                          | database    | Complete               |       1 | ARCH-010-DATABASE-001                                                                                                                                                                                                                                                      |
+| ARCH-010-DATABASE-004                                                                          | database    | Complete               |       2 | ARCH-010-DATABASE-002                                                                                                                                                                                                                                                      |
+| ARCH-010-DATABASE-005                                                                          | database    | Complete               |       2 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-DATABASE-006                                                                          | database    | Complete               |       3 | ARCH-007-DATABASE-002, ARCH-007-DATABASE-003                                                                                                                                                                                                                               |
+| ARCH-010-DATABASE-007                                                                          | database    | Complete               |       4 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-DATABASE-008                                                                          | database    | Complete               |       3 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-DATABASE-009                                                                          | database    | Complete               |       3 | ARCH-007-DATABASE-002                                                                                                                                                                                                                                                      |
+| ARCH-010-DATABASE-010                                                                          | database    | Complete               |       1 | ARCH-010-DATABASE-009                                                                                                                                                                                                                                                      |
+| ARCH-010-DATABASE-011                                                                          | database    | Complete               |       3 | ARCH-010-DATABASE-009, ARCH-010-DATABASE-010                                                                                                                                                                                                                               |
+| ARCH-010-DATABASE-012                                                                          | database    | Superseded             |       0 | ARCH-010-DATABASE-006                                                                                                                                                                                                                                                      |
+| ARCH-010-DATABASE-013                                                                          | database    | Complete               |       2 | ARCH-010-DATABASE-001, ARCH-010-DATABASE-002, ARCH-010-DATABASE-003, ARCH-010-DATABASE-004, ARCH-010-DATABASE-005, ARCH-010-DATABASE-006, ARCH-010-DATABASE-007, ARCH-010-DATABASE-008, ARCH-010-DATABASE-009, ARCH-010-DATABASE-010, ARCH-010-DATABASE-011                |
+| ARCH-010-DATABASE-014                                                                          | database    | Complete               |       2 | ARCH-010-DATABASE-013                                                                                                                                                                                                                                                      |
+| ARCH-010-GATEWAY-001                                                                           | gateway     | Complete               |       2 | ARCH-002-GATEWAY-001                                                                                                                                                                                                                                                       |
+| ARCH-010-SHARED-001                                                                            | shared      | Complete               |       2 | ARCH-007-SHARED-006                                                                                                                                                                                                                                                        |
+| ARCH-010-SHARED-002                                                                            | shared      | Complete               |       1 | ARCH-010-SHARED-001                                                                                                                                                                                                                                                        |
+| ARCH-010-SHARED-003                                                                            | shared      | Complete               |       1 | ARCH-010-SHARED-001                                                                                                                                                                                                                                                        |
+| ARCH-010-SHARED-004                                                                            | shared      | Complete               |       0 | ARCH-010-SHARED-003                                                                                                                                                                                                                                                        |
+| ARCH-010-SHARED-005                                                                            | shared      | Complete               |       1 | —                                                                                                                                                                                                                                                                          |
+| ARCH-010-SHARED-006                                                                            | shared      | Complete               |       0 | ARCH-010-SHARED-005                                                                                                                                                                                                                                                        |
+| ARCH-010-SHARED-007                                                                            | shared      | Complete               |       2 | ARCH-010-SHARED-006, ARCH-010-BACKGROUND-020, ARCH-010-SHOPIFY-024                                                                                                                                                                                                         |
+| ARCH-010-SHARED-008                                                                            | shared      | Complete               |       1 | ARCH-010-SHARED-007                                                                                                                                                                                                                                                        |
+| ARCH-010-SHOPIFY-001                                                                           | shopify     | Complete               |       3 | ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002                                                                                                                                                                                                                                 |
+| ARCH-010-SHOPIFY-002                                                                           | shopify     | Complete               |       8 | ARCH-010-DATABASE-006, ARCH-010-SHOPIFY-001, ARCH-010-DATABASE-001, ARCH-010-DATABASE-004, ARCH-010-SHARED-002, ARCH-007-SHOPIFY-001, ARCH-007-SHOPIFY-002                                                                                                                 |
+| ARCH-010-SHOPIFY-003                                                                           | shopify     | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-002, ARCH-010-BACKGROUND-002, ARCH-010-BACKGROUND-003, ARCH-008-SHOPIFY-001, ARCH-010-SHOPIFY-023                                                                                                                                  |
+| ARCH-010-SHOPIFY-004                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-003, ARCH-010-DATABASE-013                                                                                                                                                                                                                                |
+| ARCH-010-SHOPIFY-005                                                                           | shopify     | Superseded             |       0 | ARCH-010-BACKGROUND-004, ARCH-010-BACKGROUND-005                                                                                                                                                                                                                           |
+| ARCH-010-SHOPIFY-006                                                                           | shopify     | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-006                                                                                                                                                                                                        |
+| ARCH-010-SHOPIFY-007                                                                           | shopify     | Pending                |       0 | ARCH-010-BACKGROUND-007, ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-003, ARCH-010-SHOPIFY-004                                                                                                                                                            |
+| ARCH-010-SHOPIFY-008                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-BACKGROUND-009, ARCH-010-SHARED-008                                                                                                                                                                                   |
+| ARCH-010-SHOPIFY-009                                                                           | shopify     | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-004, ARCH-010-SHOPIFY-023                                                                                                                                                                                                          |
+| ARCH-010-SHOPIFY-010                                                                           | shopify     | Superseded             |       0 | ARCH-010-SHOPIFY-014                                                                                                                                                                                                                                                       |
+| ARCH-010-SHOPIFY-011                                                                           | shopify     | Superseded             |       0 | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-015                                                                                                                                                                                                                                 |
+| ARCH-010-SHOPIFY-012                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-SHOPIFY-014, ARCH-010-SHOPIFY-015, ARCH-010-SHOPIFY-007, ARCH-008-SHOPIFY-001                                                                                                                   |
+| ARCH-010-SHOPIFY-013                                                                           | shopify     | Complete               |       1 | ARCH-008-SHOPIFY-001                                                                                                                                                                                                                                                       |
+| ARCH-010-SHOPIFY-014                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-007, ARCH-007-SHOPIFY-004, ARCH-010-SHOPIFY-018, ARCH-010-DATABASE-014                                                                                                                                                              |
+| ARCH-010-SHOPIFY-015                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-013, ARCH-010-SHARED-008, ARCH-010-BACKGROUND-010, ARCH-010-SHOPIFY-018                                                                                                                                                                                   |
+| ARCH-010-SHOPIFY-016                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-018, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013                                                                                                                                   |
+| ARCH-010-SHOPIFY-017                                                                           | shopify     | Superseded             |       0 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-012                                                                                                                                                                                                           |
+| ARCH-010-SHOPIFY-018                                                                           | shopify     | Complete               |       3 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-013, ARCH-010-SHOPIFY-023                                                                                                                                                                                                          |
+| ARCH-010-SHOPIFY-019                                                                           | shopify     | Superseded             |       0 | ARCH-010-BACKGROUND-017, ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-018                                                                                                                                                                                  |
+| ARCH-010-SHOPIFY-020                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-009, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-021                                                                                                                                                                                                           |
+| ARCH-010-SHOPIFY-021                                                                           | shopify     | Pending                |       0 | ARCH-010-DATABASE-013, ARCH-010-SHOPIFY-018, ARCH-010-ADMIN-004                                                                                                                                                                                                            |
+| ARCH-010-SHOPIFY-022                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-021, ARCH-010-DATABASE-013                                                                                                                                                                                                                                |
+| ARCH-010-SHOPIFY-023                                                                           | shopify     | Complete               |       1 | ARCH-010-DATABASE-013, ARCH-010-SHARED-008, ARCH-010-SHOPIFY-002                                                                                                                                                                                                           |
+| ARCH-010-SHOPIFY-024                                                                           | shopify     | Complete               |       1 | ARCH-010-SHARED-006, ARCH-010-SHOPIFY-002                                                                                                                                                                                                                                  |
+| ARCH-010-SHOPIFY-025                                                                           | shopify     | Pending                |       0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-014, ARCH-010-SHARED-008                                                                                                                                                         |
+| ARCH-010-SHOPIFY-026                                                                           | shopify     | Pending                |       0 | ARCH-010-SHOPIFY-025, ARCH-010-SHOPIFY-012                                                                                                                                                                                                                                 |
+| ARCH-010-SYSTEM-TEST-001                                                                       | system-test | Pending / manual-gated |       0 | ARCH-010-GATEWAY-001, ARCH-010-BACKGROUND-007, ARCH-010-BACKGROUND-009, ARCH-010-BACKGROUND-010, ARCH-010-BACKGROUND-019, ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-SHOPIFY-012, ARCH-010-SHOPIFY-020                              |
+| ARCH-010-SYSTEM-TEST-002                                                                       | system-test | Pending / manual-gated |       0 | ARCH-010-BACKGROUND-006, ARCH-010-BACKGROUND-012, ARCH-010-BACKGROUND-013, ARCH-010-BACKGROUND-018, ARCH-010-SHOPIFY-006, ARCH-010-SHOPIFY-016                                                                                                                             |
+| ARCH-010-SYSTEM-TEST-003                                                                       | system-test | Pending / manual-gated |       0 | ARCH-010-DATABASE-014, ARCH-010-BACKGROUND-021, ARCH-010-BACKGROUND-022, ARCH-010-BACKGROUND-019, ARCH-010-SHOPIFY-025, ARCH-010-SHOPIFY-026, ARCH-010-ADMIN-003, ARCH-010-ADMIN-005, ARCH-010-ADMIN-006, ARCH-010-SHOPIFY-020, ARCH-010-SHOPIFY-021, ARCH-010-SHOPIFY-022 |
+| ARCH-010-SYSTEM-TEST-004                                                                       | system-test | Pending / manual-gated |       0 | ARCH-010-SYSTEM-TEST-001, ARCH-010-SYSTEM-TEST-002, ARCH-010-SYSTEM-TEST-003, ARCH-010-SYSTEM-TEST-005                                                                                                                                                                     |
+| ARCH-010-SYSTEM-TEST-005                                                                       | system-test | Pending / manual-gated |       0 | ARCH-010-DATABASE-013, ARCH-010-ADMIN-009                                                                                                                                                                                                                                  |
+| Current Ready frontier: `ARCH-010-BACKGROUND-009`, `ARCH-010-ADMIN-004`, `ARCH-010-ADMIN-008`. |
 
 `ARCH-010-SHOPIFY-002` is architect-accepted Complete at Attempt 8. `ARCH-010-BACKGROUND-001` is architect-accepted Complete at Attempt 6. Their accepted task histories are immutable; clean first-production conformance is owned by later Pending/Ready tasks.
 
@@ -394,29 +394,29 @@ Scoped addition only; earlier architecture rollups are unchanged. Source:
 [handoff](ARCH-020-implementation-handoff.md). Individual task YAML is authoritative.
 COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descendant-process cleanup correction passed focused functional validation; prior real Docker PostgreSQL/Redis readiness evidence is retained. COMMERCE-002 is architect-accepted Complete at Attempt 2 (`fb3362e`): development HTTP mutations and revoked-session recovery are corrected. Live Google OAuth remains developer-owned deployment validation. Downstream source consumption awaits developer integration or explicit accepted-commit approval; no task is promoted or launched. COMMERCE-001 remains accepted and integrated. Other task rows retain this branch snapshot; canonical task worktrees remain authoritative.
 
-| Task | Domain | Status | Attempt | Dependencies |
-|---|---|---|---:|---|
-| ARCH-020-DATABASE-001 | database | complete | 2 | ARCH-016-DATABASE-001 |
-| ARCH-020-SHARED-001 | shared | complete | 2 | ARCH-016-SHARED-001 |
-| ARCH-020-COMMERCE-001 | commerce | complete | 3 | — |
-| ARCH-020-COMMERCE-002 | commerce | complete | 2 | ARCH-020-COMMERCE-001 |
-| ARCH-020-COMMERCE-003 | commerce | complete | 4 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
-| ARCH-020-COMMERCE-004 | commerce | ready | 0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001 |
-| ARCH-020-COMMERCE-005 | commerce | pending | 0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011 |
-| ARCH-020-COMMERCE-006 | commerce | pending | 0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001 |
-| ARCH-020-COMMERCE-007 | commerce | pending | 0 | ARCH-020-COMMERCE-006 |
-| ARCH-020-COMMERCE-008 | commerce | ready | 5 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
-| ARCH-020-COMMERCE-009 | commerce | pending | 0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001 |
-| ARCH-020-COMMERCE-010 | commerce | ready | 3 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009 |
-| ARCH-020-COMMERCE-011 | commerce | complete | 9 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
-| ARCH-020-BACKGROUND-002 | background | complete | 4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
-| ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
-| ARCH-020-GATEWAY-001 | gateway | Complete / Accepted | 4 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
-| ARCH-020-GATEWAY-002 | gateway | Superseded | 2 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| ARCH-020-GATEWAY-003 | gateway | Complete / Accepted | 3 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
-| ARCH-020-COMMERCE-012 | commerce | ready | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
-| ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012  |
+| Task                     | Domain      | Status              | Attempt | Dependencies                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------ | ----------- | ------------------- | ------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-020-DATABASE-001    | database    | complete            |       2 | ARCH-016-DATABASE-001                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ARCH-020-SHARED-001      | shared      | complete            |       2 | ARCH-016-SHARED-001                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ARCH-020-COMMERCE-001    | commerce    | complete            |       3 | —                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ARCH-020-COMMERCE-002    | commerce    | complete            |       2 | ARCH-020-COMMERCE-001                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ARCH-020-COMMERCE-003    | commerce    | complete            |       4 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                             |
+| ARCH-020-COMMERCE-004    | commerce    | ready               |       0 | ARCH-020-COMMERCE-003, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                                                    |
+| ARCH-020-COMMERCE-005    | commerce    | pending             |       0 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-011                                                                                                                                                                                                                                                                                                                                                                                  |
+| ARCH-020-COMMERCE-006    | commerce    | pending             |       0 | ARCH-020-COMMERCE-005, ARCH-016-BACKGROUND-001, ARCH-016-DATABASE-001                                                                                                                                                                                                                                                                                                                                                         |
+| ARCH-020-COMMERCE-007    | commerce    | pending             |       0 | ARCH-020-COMMERCE-006                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ARCH-020-COMMERCE-008    | commerce    | ready               |       5 | ARCH-020-COMMERCE-002, ARCH-020-DATABASE-001, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                             |
+| ARCH-020-COMMERCE-009    | commerce    | pending             |       0 | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-007, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                             |
+| ARCH-020-COMMERCE-010    | commerce    | ready               |       3 | ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-009                                                                                                                                                                                                                                                                                                                                                           |
+| ARCH-020-COMMERCE-011    | commerce    | complete            |       9 | ARCH-020-COMMERCE-002, ARCH-020-SHARED-001                                                                                                                                                                                                                                                                                                                                                                                    |
+| ARCH-020-BACKGROUND-001  | background  | complete            |       3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001                                                                                                                                                                                                                                                                                                                                    |
+| ARCH-020-BACKGROUND-002  | background  | complete            |       4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007                                                                                                                                                                                                                                                                                                                                                                                |
+| ARCH-020-SHOPIFY-001     | shopify     | complete            |       1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002                                                                                                                                                                                                                                                                                                                                                                                     |
+| ARCH-020-GATEWAY-001     | gateway     | Complete / Accepted |       4 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019                                                                                                                                                                                                                                      |
+| ARCH-020-GATEWAY-002     | gateway     | Superseded          |       2 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002                                                                                                                                                                                                                                                                                                                                                          |
+| ARCH-020-GATEWAY-003     | gateway     | Complete / Accepted |       3 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029                                                                                                                                                                                                                                                                                       |
+| ARCH-020-COMMERCE-012    | commerce    | ready               |       0 | All other ARCH-020 implementation tasks; readiness checkpoint in task                                                                                                                                                                                                                                                                                                                                                         |
+| ARCH-020-SYSTEM-TEST-001 | system-test | pending             |       0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012 |
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
 
@@ -471,7 +471,6 @@ Current branch frontier: 19 tasks, 2 Complete, 1 Ready, 16 Pending, 0 Blocked.
 SHARED-001 remains Ready at Attempt 1 with no active claim. No next attempt is
 claimed by conflict resolution. Architecture completion/system-test gates remain.
 
-
 ## Shared Attempt 2 acceptance — 2026-09-20
 
 ARCH-020-SHARED-001 is **Accepted / Complete, Attempt 2** against implementation
@@ -488,7 +487,6 @@ must synchronize dedicated worktrees and verify dependency source availability.
 Other pending tasks retain their existing gates. Current branch frontier:
 **19 tasks, 3 Complete, 2 Ready, 14 Pending, 0 Blocked**. System testing remains
 terminal/manual; ARCH-020 is not Implemented. No main merge or gitlink change.
-
 
 ## BACKGROUND-001 review scope amendments — 2026-09-20
 
@@ -528,7 +526,6 @@ edges. BACKGROUND-001 is Ready, Attempt 1 retained, no active claim; A2 transcri
 scope remains. All four retained prerequisites are accepted Complete. Active task
 scope returns to 20; no automatic execution or expanded-scope acceptance occurred.
 
-
 ## BACKGROUND-001 Attempt 2 architect review — Changes Requested
 
 Reviewed implementation 399cc2f and report 0ed91909. **Ready, Attempt 2 preserved,
@@ -567,7 +564,6 @@ GATEWAY-001, COMMERCE-012 and SYSTEM-TEST-001 retain remaining dependency gates;
 no dependent task is promoted or launched. Developer integration remains separate,
 and ARCH-020 is not complete. See the task's latest Architect Review for limits.
 
-
 ## COMMERCE-003 Attempt 1 review — 2026-09-21
 
 Current decision: Ready for Changes Requested, Attempt 1, claim cleared; not
@@ -578,7 +574,6 @@ fixture tests passed and four architect regressions failed. Exact correction
 instructions/tests are in the task. C17 fixture acceptance remains permitted;
 013 production composition and developer PostgreSQL rehearsal remain separate.
 No new claim, downstream promotion, main integration or gitlink update.
-
 
 ## COMMERCE-003 Attempt 2 review — 2026-09-21
 
@@ -593,7 +588,6 @@ See the task for file-level algorithms/tests. This supersedes previous current-s
 wording. C17 component acceptance remains permitted;013 composition and developer
 PostgreSQL execution remain separate. No promotion, claim, main merge or gitlink edit.
 
-
 ## COMMERCE-003 Attempt 3 review — 2026-09-21
 
 Current decision: Ready, Attempt3 retained, claim cleared; Changes Requested for
@@ -604,6 +598,7 @@ cleanup failure, arbitrary SQL-error masking, replay assertion and worker-teardo
 corrections. Preserve passing component code. PostgreSQL execution remains
 explicitly developer-owned/unrun;013 composition remains separate. This is the
 latest decision. No downstream promotion, new claim, main merge or gitlink edit.
+
 ## BACKGROUND-002 Attempt 1 — Changes Requested — 2026-09-21
 
 Current state: Ready, Attempt 1, claim cleared; not accepted. Reviewed a7ccac5 /
@@ -612,7 +607,6 @@ R3 referral versus stale/cancel suppression. Six submitted evidence tests pass,
 three architect regressions fail. Full deterministic EC01–EC12 consumer outcomes
 are required; live producer pairing stays terminal-system-test-owned. See the
 canonical task's explicit correction steps. No new claim or downstream promotion.
-
 
 ## BACKGROUND-002 Attempt 2 — Changes Requested — 2026-09-21
 
@@ -625,7 +619,6 @@ a deliverable referral); A2-R3: complete the canonical EC01–EC12 tests and cor
 overstated report mappings/results. See the task's exact code/location instructions.
 This is the latest decision; prior review entries are historical. No downstream
 promotion or claim; live pairing remains terminal-system-test-owned.
-
 
 ## BACKGROUND-002 Attempt 3 review — 2026-09-21
 
@@ -728,7 +721,6 @@ See the canonical COMMERCE-006 task for precise code locations and expected effe
 No live validation gate, dependent promotion, new claim, implementation change,
 main integration or gitlink update. Parent overlay published before preparation.
 
-
 ## COMMERCE-006 Attempt 4 accepted — 2026-09-21
 
 Current decision: Complete, architect accepted; Attempt4 retained, claim clear.
@@ -740,7 +732,6 @@ unknown facts must stay unknown.006 prerequisite is satisfied, but016 still awai
 015;012/013/system-test retain other unfinished dependencies. No downstream
 promotion, implementation changes, main integration or gitlink update. See the
 canonical task's latest Accepted review for validation limits and integration order.
-
 
 ## COMMERCE-004 Attempt 2 architect review — 2026-09-21
 
@@ -769,6 +760,7 @@ Attempt0 with no claim, because004/SHARED-001 are Complete. Other dependants ret
 their unresolved gates;012 is still the final implementation checkpoint.
 No implementation changes, main integration or gitlink update. Architecture is not
 yet Implemented. This supersedes older004 state wording and retains review history.
+
 ## COMMERCE-009 Attempt 4 accepted — 2026-09-21
 
 Complete, architect accepted; Attempt4 retained, claim clear. Reviewed5d4dcd3 /
@@ -779,6 +771,7 @@ Prior accepted prompt/history/language/replay/bounded-state corrections retained
 009 is satisfied;012/013/system-test retain other unfinished prerequisites, and
 017 has no009 dependency. No promotion or automatic execution. Live deployment
 and013 assembly remain separate. No main integration or gitlink update.
+
 ## COMMERCE-008 Attempt 5 review — 2026-09-21
 
 COMMERCE-008 is **Ready, Attempt 5 retained**, claim cleared, not accepted.
@@ -808,7 +801,6 @@ still the final implementation checkpoint. No implementation changes, main merge
 main push or gitlink update. Architecture is not yet Implemented. This supersedes
 older008 state wording while retaining historical reviews.
 
-
 ## COMMERCE-016 readiness reconciliation — 2026-09-21
 
 ARCH-020-COMMERCE-016 is Ready, attempt0, unclaimed. Accepted006/015/SHARED-001
@@ -827,6 +819,7 @@ integrated policy/query execution; live infrastructure/evidence validation remai
 separate. No dependent promotion, new claim, implementation edit, main integration
 or gitlink update.012 remains the final implementation checkpoint; architecture is
 not yet Implemented. Older014 readiness wording is historical.
+
 ## COMMERCE-016 Attempt 1 architect review — 2026-09-21
 
 Changes Requested; Ready, Attempt 1 retained, claim cleared; not accepted.
@@ -840,7 +833,6 @@ budget boundaries are retained. No implementation edits, next claim, main merge,
 gitlink update or dependent promotion.007 remains gated by016;013 and012 retain
 their remaining gates. Live provider composition remains separate integration work.
 Older readiness wording is historical; architecture is not yet Implemented.
-
 
 ## COMMERCE-016 Attempt 2 accepted — 2026-09-21
 
@@ -876,7 +868,6 @@ submitted evidence; baseline failures do not block this component acceptance.
 pending. No dependent promotion, new claim, main integration or gitlink update.
 012 remains the final implementation checkpoint; architecture is not yet Implemented.
 This supersedes older005 current-state wording while preserving review history.
-
 
 ### Integration ownership — 2026-09-21
 
@@ -915,7 +906,6 @@ validation remain pending separately. No dependent promotion, new claim,
 implementation change, main integration or gitlink update. This supersedes older
 COMMERCE-017 current-state wording only; other task decisions remain unchanged.
 Architecture is not yet Implemented; COMMERCE-012 remains the final checkpoint.
-
 
 ## COMMERCE-017 Attempt 6 architect review — 2026-09-21
 
@@ -994,7 +984,6 @@ main integration or gitlink update. This supersedes older COMMERCE-007 current-s
 other task decisions remain unchanged. Architecture is not yet Implemented and
 COMMERCE-012 remains the final implementation checkpoint.
 
-
 ### COMMERCE-010 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1; executor/claim null.** Reviewed implementation
@@ -1006,7 +995,6 @@ two independent functional reproductions failed (duplicate execution and prematu
 discovery success). Baseline repository-wide failures do not drive this decision.
 COMMERCE-010 is not accepted; no dependent is promoted. Hosted validation remains
 developer-owned; the final manual system-test gate is unchanged.
-
 
 ### COMMERCE-010 Attempt 2 architect review — 2026-09-21
 
@@ -1021,7 +1009,6 @@ must be handed off honestly, not replaced by an evaluator metric. No acceptance
 or downstream promotion. Redis baseline and hosted arrival are not review blockers;
 the developer-owned final manual system-test gate remains unchanged.
 
-
 ### COMMERCE-010 Attempt 3 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 3; executor/claim null.** Reviewed `a51eb69`
@@ -1031,7 +1018,6 @@ passed 71 tests; prior architect reproductions passed 3/3, while the new denial
 precedence check failed. Other A2 corrections are resolved. No acceptance or
 downstream promotion. External C18 refresh signal/hosted arrival remain explicit
 integration/developer handoffs; baseline failures are not review blockers.
-
 
 ## COMMERCE-010 Attempt 4 architect acceptance — 2026-09-21
 
@@ -1097,6 +1083,7 @@ Other deployment/cache/system gates retain their dependencies and manual validat
 ## ARCH-020 SHARED-002 Attempt 4 review — 2026-09-21
 
 ARCH-020-SHARED-002 is **Changes Requested / Ready, Attempt 4 retained**, claims cleared; not accepted. Reviewed implementation `b23a7c1` and report `52b14319`. Prior C21 contract fixes and submitted exact `0.14.1` clean-consumer evidence remain valid, but LIST publication compatibility still permits impossible result-wrapper/cardinality combinations. The package root README/export inventory and stale Completion Report state also require reconciliation. No dependency promotion, automatic launch, main integration or gitlink update.
+
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1128,6 +1115,7 @@ predecessor fixture. Existing Shop/Admin/tool/tool-revision/grant rows are
 preserved and the C21 database constraints, immutable rows and rollback behaviour
 are proven. DATABASE-003 is Complete. COMMERCE-020/028/012 remain gated by other
 explicit prerequisites, so no dependent is newly launched.
+
 ## COMMERCE-029 Attempt 4 accepted — 2026-09-21
 
 Current state: `ARCH-020-COMMERCE-029` **Complete, Attempt 4**, claims null; reviewed
@@ -1136,6 +1124,7 @@ and real supervisor `DEADLINE` termination/recovery close the Attempt 3 function
 gaps; prior runtime isolation, packaging and fixed-memory proof remains accepted.
 COMMERCE-026 stays Pending because SHARED-002 is Ready, not Complete. No dependent
 promotion or automatic launch; ARCH-020 remains In Progress.
+
 ### COMMERCE-018 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1163,7 +1152,6 @@ real-application-service integration path, and the C20 producer-SHA/source/expor
 mapping table is still absent. Exact A2-R1..R4 corrections are recorded in the task's
 Architect Review. Submitted 8 focused tests plus typecheck/lint/build/diff hygiene are
 retained as passing evidence. No dependent task is promoted or launched.
-
 
 ### COMMERCE-018 Attempt 3 / COMMERCE-033 fixture correction — 2026-09-21
 
@@ -1206,6 +1194,7 @@ a successful launcher claim, so no Attempt 1 is invented retroactively. The next
 successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
 already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
 Architect Review. No downstream promotion or automatic launch.
+
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1219,6 +1208,7 @@ request validation/default-port normalization is not strict (`:443` is retained 
 invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
 A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
 downstream promotion or automatic launch.
+
 ## COMMERCE-033 Attempt 1 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
@@ -1258,7 +1248,6 @@ boundary; no Shared task/publication is opened. `COMMERCE-030`, `COMMERCE-024`,
 `GATEWAY-003`, `COMMERCE-012` and system-test work receive no promotion from this
 review.
 
-
 ## ARCH-020 COMMERCE-021 Attempt 2 review — 2026-09-22
 
 Current authoritative task state: `ARCH-020-COMMERCE-021` **Ready, Attempt 2,
@@ -1276,6 +1265,7 @@ non-empty behaviour/draft source before Conversation preview can start; no synth
 tool-to-capability fallback is permitted. COMMERCE-019 now records COMMERCE-034 as
 an accepted prerequisite and remains **Ready**. No downstream task was launched by
 this state reconciliation.
+
 ## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
 
 ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
@@ -1327,6 +1317,7 @@ gated. No downstream task is launched automatically.
 ## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
 `ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
+
 ## COMMERCE-025 Attempt 2 architect acceptance — 2026-09-22
 
 ARCH-020-COMMERCE-025 is **Accepted / Complete, Attempt 2** (`8b281cf`; report
@@ -1373,6 +1364,7 @@ The C20 producer gate is therefore satisfied. This acceptance does not automatic
 launch a consumer and does not rewrite newer COMMERCE-018/019 task branches from the
 older COMMERCE-035 parent snapshot. Reconcile each current consumer branch after this
 acceptance is integrated.
+
 ## COMMERCE-027 Attempt 2 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 2**, claim clear.
@@ -1396,6 +1388,7 @@ failure and save/run/reconciliation corrections. Submitted 14/14 focused tests, 
 ESLint and diff checks pass; repository-wide failures remain the unchanged documented
 baseline outside this task. COMMERCE-024 and COMMERCE-012 retain additional
 dependencies and receive no automatic promotion from this acceptance.
+
 ## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
@@ -1420,6 +1413,7 @@ authorised to create and destroy its own isolated local PostgreSQL/Redis contain
 run the real C20 Studio-adapter proof and return to review without asking the
 developer for target URLs. Existing unrelated lint/typecheck/build diagnostics remain
 baseline unless the Attempt 7 changes worsen them.
+
 ## COMMERCE-028 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-028 is **Changes Requested / Ready, Attempt 1**, claim clear.
@@ -1447,6 +1441,7 @@ the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
 credential resolution derives `Authorization`. The bounded producer correction is
 materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
 on it before final production composition. No task is started automatically.
+
 ## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
 
 ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
@@ -1490,6 +1485,7 @@ retain invalid IN text; and complete the exact XN02 proof/current Completion Rep
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
 automatically.
+
 ## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 3** (`d15d3f5`).
@@ -1505,6 +1501,7 @@ production renderer reuse and later real-provider runtime validation remain inta
 and executor/claimed_at null. Architect review is required before downstream
 promotion. COMMERCE-024 and COMMERCE-012 remain Pending behind their other
 authoritative prerequisites.
+
 ## COMMERCE-018 Attempt 7 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 7 retained.**
@@ -1521,6 +1518,7 @@ activate, rollback) rather than only operating on COMMERCE-035's pre-seeded
 published graph. Attempt 8 is limited to that deterministic proof plus explicit
 saved-draft preservation during the intentional discovery outage unless the real
 flow exposes a bounded 018-owned defect. No downstream task is promoted.
+
 ## COMMERCE-032 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
@@ -1534,6 +1532,7 @@ C21 now makes the intended boundary explicit and
 read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
 accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
 COMMERCE-012 remain gated. No task is started automatically.
+
 ## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
@@ -1546,6 +1545,7 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
 ## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
 
 COMMERCE-018 is **Complete / Accepted, Attempt 8**, claim clear. The missing real S01
@@ -1556,6 +1556,7 @@ lint/typecheck/build remain non-zero only on the recorded unrelated baseline.
 All declared prerequisites of ARCH-020-GATEWAY-001 are now Complete, so GATEWAY-001 is
 **Ready / Attempt 0 / claim clear**. It is not launched automatically. COMMERCE-024,
 COMMERCE-012 and system-test tasks retain other gates.
+
 ## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
 
 COMMERCE-022 is **Complete / Accepted, Attempt 4**, claim clear. Focused 20/20
@@ -1563,6 +1564,7 @@ Connections tests, lint, diff check and task-owned diagnostics pass; typecheck/b
 remain non-zero only on the documented unrelated 15-error repository baseline.
 COMMERCE-024 and COMMERCE-012 retain additional incomplete prerequisites and receive
 no automatic promotion from this acceptance.
+
 ## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
@@ -1660,6 +1662,7 @@ Complete. It is not automatically launched. COMMERCE-012 and system-test work re
 their remaining integration/gateway gates.
 
 <!-- Preserved task-branch record. -->
+
 ## COMMERCE-024 Attempt 1 blocked / COMMERCE-038 created — 2026-09-22
 
 COMMERCE-024 is **Blocked, Attempt 1 retained**.
@@ -1706,6 +1709,7 @@ A local untracked `typescript` artifact was present in the developer main worktr
 it is not part of the accepted source and should be moved/removed before launch rather
 than committed.
 <!-- Preserved mainline record. -->
+
 ## GATEWAY-001 Attempt 4 architect acceptance — 2026-09-22
 
 ARCH-020-GATEWAY-001 is **Complete / Accepted, Attempt 4** (`478923a`; parent
@@ -1713,8 +1717,7 @@ report `cb41f7c`). The Render/private-MCP/public-Studio topology and final hoste
 smoke contract are accepted. Real deployment/DNS/TLS/OAuth/assertion smoke remains
 a developer validation checkpoint, not an unfinished implementation dependency.
 
-Because their remaining prerequisites are already Complete, GATEWAY-003 (priority
-175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
+Because their remaining prerequisites are already Complete, GATEWAY-003 (priority 175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
 Neither is started automatically. COMMERCE-012 and system-test work retain their
 additional dependency gates.
 
@@ -1733,7 +1736,6 @@ this task. Once that source is developer-integrated, a fresh synchronized 024 sn
 can be returned to `moda_architect` for Blocked -> Ready reconciliation.
 
 No downstream task is launched automatically.
-
 
 ## GATEWAY-002 superseded — 2026-09-22
 
@@ -1876,28 +1878,23 @@ developer invocation before execution; this frontier update does not launch it.
 
 `ARCH-052-SYSTEM-TEST-001` and `ARCH-052-SYSTEM-TEST-002` remain Pending; `ARCH-052-BACKGROUND-017` is still in review, so neither system-test dependant is Ready.
 
-
 ## Current reconciliation — 2 November 2026
 
 ARCH-036 through ARCH-054 were reconciled against current implementation and task-branch evidence. This dated reconciliation supersedes older status snapshots for those tasks; it does not certify unrun scenarios or override developer-controlled completion.
 
 See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.
 
-
 ### ARCH-036 implementation readiness — 2 November 2026
 
 The developer authorized lifting COMMERCE-001’s prior session deferral for its corrected cached evaluator/local-preview scope. ADMIN-001 and COMMERCE-001 are Ready, unclaimed at Attempt 0, with developer-controlled completion. Their Background prerequisite is Complete. No downstream task is started or completed by this amendment.
-
 
 ### ARCH-054-BACKGROUND-002 review — 2 November 2026
 
 Attempt 1 Changes Requested; Ready with executor/claimed_at cleared. Original inbound version is not yet enforced in the locked final send permit, and the reported four integration cases do not cover recovery delay/control execution. 100 selected unit tests passed; one adversarial race regression failed. BACKGROUND-003 remains Pending. See the canonical task Architect Review for correction scope and evidence.
 
-
 ### ARCH-054-BACKGROUND-002 accepted — 2 November 2026
 
 Attempt 2 accepted on implementation `64d1be0`; task Complete with claim cleared. Independent review passed 129 unit tests and 11 disposable PostgreSQL/Redis integration tests. Both Attempt 1 findings are resolved. BACKGROUND-003 promoted to Ready, Attempt 0 and unclaimed. ARCH-054 system tasks remain Pending; no downstream work was executed. This supersedes the earlier Changes Requested snapshot.
-
 
 ## ARCH-055 dependency-frontier update — 4 November 2026
 
@@ -1905,16 +1902,13 @@ Attempt 2 accepted on implementation `64d1be0`; task Complete with claim cleared
 
 `ARCH-055-SYSTEM-TEST-001` is promoted from Pending to Ready at Attempt 0 with no claim. It remains unstarted and requires its own normal task launch. This is the only newly eligible task in the ARCH-055 frontier.
 
-
 ## ARCH-061 Background explicit completion — 2026-11-06
 
 ARCH-061-BACKGROUND-001 is Complete at Attempt 1 following review `6f522798a` and explicit developer decision, source `3fed264`. Shared, Shopify, Commerce and MCP prerequisites are also Complete in their published task records. ARCH-061-SYSTEM-TEST-001 is Ready/unclaimed with its manual execution gate retained. ARCH-062-BACKGROUND-001 is Ready/unclaimed at Attempt 0. No downstream execution, rollout or main merge occurred.
 
-
 ## ARCH-062 Commerce completion reconciliation — 2026-11-06
 
 ARCH-062-COMMERCE-001 remains Complete at Attempt 1, accepted implementation `f7f9385`, durable completion parent `8ff2bb191`. Repeated explicit completion is idempotent. Background is also Complete; Shopify is Review and MCP In Progress on their published task branches. ARCH-062-SYSTEM-TEST-001 remains Pending/unclaimed with its manual gate retained. No main merge or rollout occurred.
-
 
 ## ARCH-062 Shopify explicit completion — 2026-11-06
 
@@ -1937,74 +1931,76 @@ ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and ex
 2026-11-08: BACKGROUND001 Attempt1 partial source4664ea89 validated/published, Blocked (not Accepted) on Shared5.7 required recovery identity + private MCP admission/Background loader budget gap. SHARED007 Ready; SHARED008/MCP002 Pending, definitions only. Background depends on correction publication/private verification, no fake recovery. Full lint residual untouched consent-provider.ts:151 no-control-regex; scoped lint/build/tests passed. Terminal System Tests remain Pending/manual-gated; no live/main/follow-on execution.
 
 ## ARCH-066 — Checkout-led Background review
+
 2026-11-08: BACKGROUND001 Attempt2 Accepted/Review, final implementation44e92f8b, developer completion pending/claim cleared. Shared010 Complete66c53156 verified; exact5.8.0 adopted. Historical standalone blocker withdrawn;007/008/MCP002 Superseded per authorized0ddcbfb disposition, no standalone publication. No downstream promotion before Background Complete; terminal System Tests retain manual gates. Full lint existing untouched consent151 remains; scoped lint/build/required tests passed. Concurrent task states unchanged; no main/live/follow-on execution.
 
 ## Background explicit completion frontier — 2026-11-08
+
 BACKGROUND001 explicitly developer-completed, Accepted Attempt2 preserved, final source44e92f8b/accepted review344b8815 verified clean/published. BACKGROUND002 newly Ready Attempt0/unclaimed with developer execution/completion; no claim or follow-on execution. Canonical COMMERCE001 remains Review, so SystemTest001 Pending, terminal/manual-gated; other concurrent states preserved.007/008/MCP002 remain Superseded/no standalone release. Full-lint consent151 unchanged limitation remains explicit; no main/live migration/release/integrated completion.
 
 ## Initial outreach Shared compatibility blocker — 2026-11-08
+
 BACKGROUND002 Attempt1 is Blocked, not Accepted: exact5.8.0 SemanticKeySchema advertises shopBrand.logoAltText/logoWidth/logoHeight/squareLogoAltText, but public frozen renderer refuses all4positive valid saved-value fixtures. Shared011 Ready defines bounded strict prepared-brand/media compatibility; Shared012 Pending publishes accepted correction. Original Background002 then adopts corrected artifact/revalidates same task, no duplicate local renderer/internal import. Unaffected evaluator/selection/admission38 and supported parity/generation7 pass; compiler passed, broader unresolved regressions remain explicitly recorded in task report. Commerce002/SystemTest002 remain gated; no follow-on/main/live/release or integrated completion. Checkout-led withdrawal controls,007/008/MCP002 remain superseded.
 
 ## Corrected release unblocks original Background rework — 2026-11-08
+
 SHARED012 explicitly Complete, public5.9.0/sourceb65e04f verified. BACKGROUND002 Ready for correction only, historical Attempt1/72failures/source8be7e962 preserved, claim null; no acceptance or increment. Exact release dependency record and explicit same-task correction checklist materialized. Other concurrent states/manual System Test gates unchanged; no source/npm/main/live/follow-on execution.
 
 ## Frozen binding correction review — 2026-11-08
+
 SHARED011 Attempt1 Accepted/Review, explicit developer completion pending/claim cleared. Source6c8bbe194337c7c2afb141047d24aeeeb23c48ca and report134379e6 verified published/clean. Exact strict preparedBrand/preparedBrandMedia, five savedfields and three independent ready BODY media roles, totalURL/fail-closed tenant semantics validated79/79+typecheck/build/installedpublicJS/types. INITIAL mandatory binding fixture contradiction resolved without runtime policy changes. Registry5.8 remains unchanged;012Pending. Background002 remains Blocked on012 and residual72failures; no consumer/system-test promotion or integrated completion. Checkout-led withdrawal/no standalone release/main/live/follow-on retained.
 
 ## Prepared-brand explicit completion frontier — 2026-11-08
+
 SHARED011 explicitly Complete at Accepted Attempt1, claim cleared; published clean source6c8bbe19/review750d5119 verified. SHARED012 newly Ready, Attempt0/unclaimed; publication-only task, not executed. Background002 remains Blocked on012 plus original72unresolvedfailures; no automatic consumer/system-test promotion. Other concurrent task states preserved; checkout-led withdrawal and no standalone release/main/live/follow-on retained.
 
 ## Canonical synchronization disposition — 2026-11-08
+
 Main-to-task documentation conflict resolved preserving both histories and canonical completed011/012records. Current authoritative state: Shared011CompleteAttempt1 (9eb1af515), Shared012CompleteAttempt1 (4b5ff8d7f), public immutable5.9.0 verified; Background001CompleteAttempt2, Background002Ready for same-task correction at priorAttempt1/unclaimed. Existing72failures and latest correction checklist remain mandatory, no acceptance or increment. Checkout-led withdrawal and007/008/MCP002supersession preserved; no source/main/live/release/follow-on work performed by this sync. Earlier contradictory readiness/review narratives are historical and superseded by individual current task metadata.
 
 ## Background initial outreach correction review — 2026-11-08
+
 BACKGROUND002 Attempt2 Accepted at Review, explicit developer completion pending; current source0a6010315fb97ab47c105c9f93bb792f1cd07b49 clean/published. ExactShared5.9.0 strict savedbrand/independent authorized BODY media adapter adopted; former72failures resolved. Final residual13files155passed, recommendations204passed, deliveryconsent/moderation/credit/outbox/replay/send231passed; compiler/finalbuild/scopedlintpass. Full lint sole untouched consent-provider151 no-control-regex remains explicit. Real Shopify/Woo full NONEchain proves2distinct-pair reads/no model/offer/preflight/fallback, historical/current separation, full body/parameters/provenance bytes and final generation admission; IMAGEunavailability cannot bypass invalid mandatory BODY evidence, approvedTEXTfallback retained. Legacy active host pricing/admission/FOLLOW_UP semantics remain separate; public Shared owns migrated initial evaluation/arithmetic/render. Commerce002/SystemTest002 remain dependency/manual-gated until actual Background completion; no consumerexecution or integrated architecture completion claimed. Checkout-led withdrawal/no standalone/main/live/release/follow-on retained.
 
 ## Background outreach explicit completion frontier — 2026-11-08
+
 BACKGROUND002 CompleteAcceptedAttempt2, claim cleared, source0a601031/review806d17ad verified clean/published. Current155/204/231checks/finalbuild/scopedlint retained; sole unchanged consent151 full-lint limitation explicit. Concurrent Commerce001 CompleteAttempt3 remote181bd35f preserved. Commerce002 newly ReadyAttempt0/unclaimed, developer execution/completion, exactShared5.9/Complete012gate; no source/claim. SystemTest001 alreadyReady/manual-gated, SystemTest002 Pending on Commerce002, no autoexecution. Checkout-led withdrawal,007/008/MCP002supersession and architectureInProgress retained; no testsrerun/main/live/npm/follow-on.
 
-
 ## ARCH-066 Commerce002 boundary — 2026-11-09
-COMMERCE002 BlockedAttempt1: independently validated HTTP/UI/evaluator/store foundations, fail-closed production sender-unavailable. Required Shared013 contract/014publication/Admin001 derived projection definitions are local-only pending explicit new-branch publication authorization; no consumer acceptance, no execution of corrections. All full live/template/media/provider and lifecycle acceptance remains required. SYSTEM-TEST002 remains gated; preserve all concurrent Complete/Ready claims and checkout-led supersession decisions.
 
+COMMERCE002 BlockedAttempt1: independently validated HTTP/UI/evaluator/store foundations, fail-closed production sender-unavailable. Required Shared013 contract/014publication/Admin001 derived projection definitions are local-only pending explicit new-branch publication authorization; no consumer acceptance, no execution of corrections. All full live/template/media/provider and lifecycle acceptance remains required. SYSTEM-TEST002 remains gated; preserve all concurrent Complete/Ready claims and checkout-led supersession decisions.
 
 2026-11-09 correction definition publication update: developer explicitly authorized the three prepared branches; SHARED013/014/ADMIN001 definitions are now remotely verified at201f3922e/af5e4bc6a/90e6bb38d respectively. This supersedes prior local-only publication limitation, not Commerce002 Blocked status or any implementation acceptance. SHARED013Ready;014/Admin001Pending. No claim or implementation started.
 
-
 2026-11-09 completionfrontier: COMMERCE003CompleteAcceptedAttempt1 atb7fb1c0fa, source6f01c096cleanpublished. COMMERCE002Ready for SAME-taskrework, priorAttempt1/claimnull, originalHOST/lifecyclechecklistmandatory/noacceptance; all explicitdepsComplete. SystemTest002remainsgated002; withdrawn senderchain/currentconcurrentstatespreserved. No claim/source/tests/live/main/follow-onexecution.
 
-
 ## Commerce initial outreach host rework review — 2026-11-09
-COMMERCE002 Accepted at ReviewAttempt2, explicitdevelopercompletionpending. Source40b59e777db5b85d8f3444da1abe07170e70496f clean/published after normalmain→task resolution87c835 preserving003exact5.10Studio source and prior002history. Realdefaultfactory now wires trusted actor/shop/currentimmutablepurposeprofile/model/instructions/policy/locale/brandREADYmedia, localcredential-backed and isolatedMCP reads, Redis reservations/fences and boundedcancel/deadline/overflow. CurrentWoo pricecurrency derives from authenticated existing currentcurrencyendpoint, never checkoutpresentmentcurrency.19prior003proofs retained; final11files74PASS/no skips, compiler/scopedlintpass, exactunchangedAdminpurgeLua realRedisproof additionalPASS. Tests use actualHTTP/defaultfactory/registeredadapters with externalIOmocked; no liveprovider/customer effects or deployment verified. Shared5.10publicrenderer/purposehelpers retained, production validation and withdrawn senderchain unchanged. SystemTest002 staysgated until explicit002Complete; architecture remainsInProgress and terminalmanualsystemvalidation separate.
 
+COMMERCE002 Accepted at ReviewAttempt2, explicitdevelopercompletionpending. Source40b59e777db5b85d8f3444da1abe07170e70496f clean/published after normalmain→task resolution87c835 preserving003exact5.10Studio source and prior002history. Realdefaultfactory now wires trusted actor/shop/currentimmutablepurposeprofile/model/instructions/policy/locale/brandREADYmedia, localcredential-backed and isolatedMCP reads, Redis reservations/fences and boundedcancel/deadline/overflow. CurrentWoo pricecurrency derives from authenticated existing currentcurrencyendpoint, never checkoutpresentmentcurrency.19prior003proofs retained; final11files74PASS/no skips, compiler/scopedlintpass, exactunchangedAdminpurgeLua realRedisproof additionalPASS. Tests use actualHTTP/defaultfactory/registeredadapters with externalIOmocked; no liveprovider/customer effects or deployment verified. Shared5.10publicrenderer/purposehelpers retained, production validation and withdrawn senderchain unchanged. SystemTest002 staysgated until explicit002Complete; architecture remainsInProgress and terminalmanualsystemvalidation separate.
 
 2026-11-09 explicitCommerce002completionfrontier: COMMERCE002CompleteAcceptedAttempt2/claimnull source40b59e7/reviewbffd7e9verifiedcleanpublished. SystemTest002ReadyAttempt0/unclaimed, execution/completiondeveloper and manualcheckpoint preserved; SystemTest001alreadyReadyunchanged. Latest5.10Studio-only/parityamendment controls, Background5.9productionfencesretain. No tests/main/live/npm/follow-onexecution; architectureInProgress/manualterminalvalidationremaining.
 
-
 ## ARCH-067 Shared stock/reference contract review — 2026-11-09
-SHARED001AcceptedReviewAttempt1, source467cc1a clean/published, explicitdevelopercompletionpending;168tests/typecheck/build/publicruntime+types/browser pass. Exactoptionalstock, canonicaloneOf/constcompiler unchangedbounds, v1orderedpresentation/options andfreshstockfacts/localizedcomposition implemented. SHARED002Pending; allconsumers/systemtasksremain gated. Reader-firstdeployment and defaultfalse referencewritegate mandatory; no release/live/main/follow-onexecution or architectureImplementedclaim.
 
+SHARED001AcceptedReviewAttempt1, source467cc1a clean/published, explicitdevelopercompletionpending;168tests/typecheck/build/publicruntime+types/browser pass. Exactoptionalstock, canonicaloneOf/constcompiler unchangedbounds, v1orderedpresentation/options andfreshstockfacts/localizedcomposition implemented. SHARED002Pending; allconsumers/systemtasksremain gated. Reader-firstdeployment and defaultfalse referencewritegate mandatory; no release/live/main/follow-onexecution or architectureImplementedclaim.
 
 2026-11-09 ARCH067developercompletion: SHARED001CompleteAcceptedAttempt1/claimnull; SHARED002ReadyAttempt0unclaimed publication-only andcanonicalparentdefinitionmaterialized. AllconsumersPendingpublication; reader-firststock and defaultfalse referencewritegateuntilbothreaders mandatory. No tests/release/main/live/follow-onexecution; architectureInProgress.
 
-
 2026-11-09 ARCH067release: SHARED002AcceptedReviewAttempt1, immutable5.11.0 source1ad0d7c4/archive28db9055 verifieddownload/publicruntime+types, exactaccepted140dist reused. Explicitdevelopercompletionpending/claimclear; allconsumersPending. Reader-firststock and defaultfalse referencewritegate remainmandatory; no implementationreruns/releasefollow-on/main/live/deployment.
-
 
 2026-11-09 ARCH067releaseCompleteAcceptedAttempt1/claimnull: exact5.11.0 source1ad0d7c4/reviewa276f197verifiedcleanpublished. Commerce001/MCP001ReadyAttempt0unclaimed, canonicalparent-onlydefinitionspublished; Background001PendingMCP001, SystemTest001Pendingconsumerclosures/manualcheckpoint. Reader-firststockdeployment/referencegatefalseunchanged; no consumerclaim/tests/npm/main/live/follow-onexecution.
 
 ## ARCH-068 completed consumers / initializer readiness — 2026-11-10
+
 ADMIN001 Accepted/Complete at9be7c236; COMMERCE001 Accepted/Complete at69acccb6; BACKGROUND001 Accepted/Complete at7af4b285. All unchanged Attempt1. ADMIN002 Pending→Ready, Attempt0 unclaimed, all explicit dependencies Complete; canonical parent handoff receives exact prerequisite records and Shared5.12.0 pin. SYSTEM-TEST001 remains Pending/manual-gated on ADMIN002; architecture In Progress. No task execution, initializer apply/activation, deployment or main integration.
 
-
 ## ARCH-068 initializer accepted / terminal validation ready — 2026-11-10
-ADMIN002 independently Accepted/Complete unchanged Attempt1, source40fc5b67e6a814020668a6d4ae25eaa7c0d5f17a; independent7-unit/11-disposable-PostgreSQL tests and typecheck pass. All eight implementation/publication tasks are Complete. SYSTEM-TEST001 Ready at Attempt0, executor/claimed_at null, manually launched after developer validation; canonical handoff includes the completed prerequisite records and exact Shared5.12.0 pin. Architecture remains In Progress; no system execution, live initialization/activation, deployment, gitlink change or main merge/push. This current frontier supersedes the preceding initializer-readiness snapshot.
 
+ADMIN002 independently Accepted/Complete unchanged Attempt1, source40fc5b67e6a814020668a6d4ae25eaa7c0d5f17a; independent7-unit/11-disposable-PostgreSQL tests and typecheck pass. All eight implementation/publication tasks are Complete. SYSTEM-TEST001 Ready at Attempt0, executor/claimed_at null, manually launched after developer validation; canonical handoff includes the completed prerequisite records and exact Shared5.12.0 pin. Architecture remains In Progress; no system execution, live initialization/activation, deployment, gitlink change or main merge/push. This current frontier supersedes the preceding initializer-readiness snapshot.
 
 ## ARCH-075 upload-session follow-up — 2026-11-13
 
 BACKGROUND008 newly Ready/Attempt0/unclaimed on accepted BG007. Actual production HTTP200 sample-session response is rejected by local session-ID validation before byte upload/template intent. Owning task is limited to primary-contract/evidenced opaque-ID handling and safe Graph URL construction; no Shared release, schema, blanket repair or common activation. SystemTest002 acceptance/source integration remains a separate current parent task record; existing synthetic proof is not live provider approval. Architecture In Progress with provider approval/coordinated activation/ordered recipient proof pending.
-
 
 ## ARCH-075 upload-session correction accepted — 2026-11-13
 

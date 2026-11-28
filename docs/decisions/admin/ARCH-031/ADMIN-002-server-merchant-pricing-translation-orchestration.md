@@ -236,7 +236,6 @@ Background has no dependency on an Admin-specific TypeScript contract; it consum
 
 - `ARCH-031-DATABASE-001`.
 
-
 ## Enables
 
 - `ARCH-031-ADMIN-003`.

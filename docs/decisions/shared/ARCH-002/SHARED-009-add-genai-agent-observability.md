@@ -19,6 +19,7 @@ enables:
 created: 2026-08-31
 updated: 2026-08-31
 ---
+
 # Add GenAI active-span helpers
 
 ## Architecture

@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-057-SHOPIFY-002
+  - ARCH-057-SHOPIFY-002
 enables:
-- ARCH-057-SHOPIFY-004
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-004
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-04
 ---
@@ -51,29 +51,29 @@ All paths below are relative to `moda-interact`. Consume the accepted request co
 
 ### Existing files to modify
 
-| Path | Exact responsibility |
-|---|---|
-| `app/services/billing/recovery-credit-purchase-management.service.ts` | One history context, bounded refund summaries, provider-before-transaction refund flow, current transaction-client reads, and owned failure/retry diagnostics |
-| `app/services/billing/recovery-credit-purchase-request.service.ts` | Preserve service-owned replay/new-admission sequencing and add original operational diagnostics at handled/propagated failure boundaries; retain two provider observations and two catalogue reads |
-| `app/routes/app/billing/recovery-credit-purchases/route.tsx` | Consume trusted merchant context, retain access/field/batch checks, and log original Admin GraphQL development-store verification failures |
-| `app/routes/app/billing/options/route.tsx` | Action only: consume request context and delegate new-purchase admission/replay to the existing mutation service; remove redundant capacity/live-commercial prevalidation |
-| `tests/unit/services/recovery-credit-purchase-management.service.test.ts` | Preserve existing provider/tenant/accounting outcomes and add the short-transaction, shared-history-context and replay cases |
-| `tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` | Preserve two observations/catalogue reads, receipt replay, unresolved-offer and cycle-change regressions; add diagnostics |
-| `tests/unit/recovery-credit-purchase-manager.test.tsx` | Confirm the unchanged public history/refund/reactivation DTO remains renderable; no visual redesign |
-| `tests/unit/billing-purchase-hub.test.tsx` | Confirm purchase replay/new-request result rendering remains unchanged |
+| Path                                                                           | Exact responsibility                                                                                                                                                                               |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/billing/recovery-credit-purchase-management.service.ts`          | One history context, bounded refund summaries, provider-before-transaction refund flow, current transaction-client reads, and owned failure/retry diagnostics                                      |
+| `app/services/billing/recovery-credit-purchase-request.service.ts`             | Preserve service-owned replay/new-admission sequencing and add original operational diagnostics at handled/propagated failure boundaries; retain two provider observations and two catalogue reads |
+| `app/routes/app/billing/recovery-credit-purchases/route.tsx`                   | Consume trusted merchant context, retain access/field/batch checks, and log original Admin GraphQL development-store verification failures                                                         |
+| `app/routes/app/billing/options/route.tsx`                                     | Action only: consume request context and delegate new-purchase admission/replay to the existing mutation service; remove redundant capacity/live-commercial prevalidation                          |
+| `tests/unit/services/recovery-credit-purchase-management.service.test.ts`      | Preserve existing provider/tenant/accounting outcomes and add the short-transaction, shared-history-context and replay cases                                                                       |
+| `tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` | Preserve two observations/catalogue reads, receipt replay, unresolved-offer and cycle-change regressions; add diagnostics                                                                          |
+| `tests/unit/recovery-credit-purchase-manager.test.tsx`                         | Confirm the unchanged public history/refund/reactivation DTO remains renderable; no visual redesign                                                                                                |
+| `tests/unit/billing-purchase-hub.test.tsx`                                     | Confirm purchase replay/new-request result rendering remains unchanged                                                                                                                             |
 
 ### New files
 
-| Path | Purpose |
-|---|---|
-| `app/services/billing/recovery-credit-provider-context.server.ts` | Typed provider observation and pure local/purchase matching; no cache, transaction owner or generic repository |
-| `tests/unit/recovery-credit-history-budget.test.ts` | Actual service invocation counts and bounded latest/completed refund summary fixtures for 1/5/20 rows |
-| `tests/unit/routes/recovery-credit-purchases.test.ts` | Actual route action/loader authorization, batch limits and original Admin GraphQL error output |
-| `tests/unit/routes/billing-options-action.test.ts` | Actual action delegates receipt replay without provider prevalidation and preserves authorization/new-admission behavior |
-| `tests/integration/recovery-credit-refunds.postgres.integration.test.ts` | Real migrated refund/reactivation/reservation races and rollback with controlled provider observations |
-| `tests/integration/recovery-credit-purchases.postgres.integration.test.ts` | Real migrated same-ID/different-ID purchase races, cycle revalidation and three-entity atomic persistence |
-| `tests/fixtures/recovery-credit-refunds.ts` | Small fixture builders and deterministic barriers for refund tests |
-| `tests/fixtures/recovery-credit-purchases.ts` | Small plan/catalogue/provider/purchase fixtures for purchase tests |
+| Path                                                                       | Purpose                                                                                                                  |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `app/services/billing/recovery-credit-provider-context.server.ts`          | Typed provider observation and pure local/purchase matching; no cache, transaction owner or generic repository           |
+| `tests/unit/recovery-credit-history-budget.test.ts`                        | Actual service invocation counts and bounded latest/completed refund summary fixtures for 1/5/20 rows                    |
+| `tests/unit/routes/recovery-credit-purchases.test.ts`                      | Actual route action/loader authorization, batch limits and original Admin GraphQL error output                           |
+| `tests/unit/routes/billing-options-action.test.ts`                         | Actual action delegates receipt replay without provider prevalidation and preserves authorization/new-admission behavior |
+| `tests/integration/recovery-credit-refunds.postgres.integration.test.ts`   | Real migrated refund/reactivation/reservation races and rollback with controlled provider observations                   |
+| `tests/integration/recovery-credit-purchases.postgres.integration.test.ts` | Real migrated same-ID/different-ID purchase races, cycle revalidation and three-entity atomic persistence                |
+| `tests/fixtures/recovery-credit-refunds.ts`                                | Small fixture builders and deterministic barriers for refund tests                                                       |
+| `tests/fixtures/recovery-credit-purchases.ts`                              | Small plan/catalogue/provider/purchase fixtures for purchase tests                                                       |
 
 Reuse `tests/helpers/billing-postgres.ts` from SHOPIFY-002. Its contract is sufficient; this task does not expand it into a generic runner. New test/helper files each stay below 300 lines. No package script/dependency is needed; Validation uses existing `npm test` with exact paths.
 
@@ -133,17 +133,17 @@ Return all normal business denials in the existing typed outcomes. Unexpected pe
 
 Use direct Shared logging at the owning boundary, consuming SHOPIFY-002's typed provider error/recorded-source classification. Do not emit the same provider body again in route/service catches. Record safe context and local failure evidence at the boundary that actually converts or propagates it. Inject the real Shared sink in tests; checking a mocked `logger.error` call is insufficient.
 
-| Failure / owner | Required emitted evidence | Preserved outcome |
-|---|---|---|
-| Partner read fails during history or mutation preflight, SHOPIFY-002 adapter | Original safe message/code/details/status/request ID/cause and truthful origin | History fails as before; new hold has no writes; no duplicate provider body downstream |
-| Admin GraphQL development-store read fails, purchase-history route adapter | Actual SDK/HTTP/GraphQL error, safe request ID/cause; malformed data is internal evidence | Fail closed; never treat unknown as development-store true |
-| History page/summary/local-context DB read fails, management service | Original Prisma message/code/cause, Shop and read stage | No fabricated history/eligibility result |
-| Purchase transaction fails, request service | Original database/invariant message/code/cause and safe purchase ID | Full rollback or validated existing receipt; no second provider charge |
-| Refund/reactivation P2034 retry, management service | Actual retry error/code/cause and bounded attempt at warn | Rollback and fresh retry; no network inside transaction |
-| Refund/reactivation retry exhausted or aggregate invariant missing | Original final error/code/cause at error; truthful local origin | No partial withdrawal/refund/counter commit |
-| Unique conflict with valid receipt recovery | Preserve ownership/result checks; ordinary replay is not a fabricated provider error | Existing outcome, no duplicate durable effect |
-| Invalid input, cross-Shop/provider ID or normal no-credit/locked outcome | Preserve validation; no fabricated operational/provider exception | Existing safe response/outcome, no information leak |
-| Shared sink throws | Real Shared isolation assertion | Identical HTTP outcome, rollback, retries and committed quantities |
+| Failure / owner                                                              | Required emitted evidence                                                                 | Preserved outcome                                                                      |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Partner read fails during history or mutation preflight, SHOPIFY-002 adapter | Original safe message/code/details/status/request ID/cause and truthful origin            | History fails as before; new hold has no writes; no duplicate provider body downstream |
+| Admin GraphQL development-store read fails, purchase-history route adapter   | Actual SDK/HTTP/GraphQL error, safe request ID/cause; malformed data is internal evidence | Fail closed; never treat unknown as development-store true                             |
+| History page/summary/local-context DB read fails, management service         | Original Prisma message/code/cause, Shop and read stage                                   | No fabricated history/eligibility result                                               |
+| Purchase transaction fails, request service                                  | Original database/invariant message/code/cause and safe purchase ID                       | Full rollback or validated existing receipt; no second provider charge                 |
+| Refund/reactivation P2034 retry, management service                          | Actual retry error/code/cause and bounded attempt at warn                                 | Rollback and fresh retry; no network inside transaction                                |
+| Refund/reactivation retry exhausted or aggregate invariant missing           | Original final error/code/cause at error; truthful local origin                           | No partial withdrawal/refund/counter commit                                            |
+| Unique conflict with valid receipt recovery                                  | Preserve ownership/result checks; ordinary replay is not a fabricated provider error      | Existing outcome, no duplicate durable effect                                          |
+| Invalid input, cross-Shop/provider ID or normal no-credit/locked outcome     | Preserve validation; no fabricated operational/provider exception                         | Existing safe response/outcome, no information leak                                    |
+| Shared sink throws                                                           | Real Shared isolation assertion                                                           | Identical HTTP outcome, rollback, retries and committed quantities                     |
 
 Known cause chains are supplied explicitly as bounded Shared fields under the common contract; preserve the actual thrown cause as well. No raw form, provider payload, online user object, credential or payment detail enters logs or merchant responses.
 
@@ -265,13 +265,13 @@ All original implementation, public DTO, pricing/accounting, replay, two-observa
 
 ### Changes Requested Checklist
 
-| Review correction | Disposition | Evidence |
-|---|---|---|
-| P2: exclude malformed Admin response text from both top-level diagnostic and cause chain | **Implemented** | The route supplies a fixed parse reason and safe `diagnosticCause`; four actual-route/native-parser/real-Shared cases fail before the correction and pass afterward. Body fragments are absent from the serialized records, with one owned diagnostic per failure. |
-| Keep the original SyntaxError object during propagation, safe HTTP correlation and truthful classification | **Implemented** | Tests observe the native `Response.json()` error, check `thrown.cause` by object identity, verify original parser messages contain the full/partial fixture marker, and assert safe status/request ID plus correct failure kind/origin. No mutation or history result is produced. |
-| Retain other SDK/transport failures and log-sink isolation | **Implemented** | Existing SDK/GraphQL/HTTP source-evidence tests pass unchanged; two additional malformed-response tests at HTTP 200/503 show a throwing real Shared sink preserves the original propagated parse cause and fail-closed outcome. |
-| Reconcile the Completion Report with the architect's zero-credit amendment | **Implemented** | The defensive service branch and its unit regression are unchanged. The migrated PG17 test rejects the illegal zero-credit WITHDRAWN state using the exact lifecycle constraint and asserts unchanged purchase/counter balances and versions. Successful database execution of `COMPLETED_NO_CREDITS` is not claimed. The previous blocker report is retained explicitly as historical evidence. |
-| Rerun required affected suites and gates | **Implemented** | Seven focused files: 112 tests passed. Both migrated PostgreSQL files: 14 tests passed. Prisma generation, typecheck, build, declared scoped lint plus changed existing tests, and whitespace checks passed. |
+| Review correction                                                                                          | Disposition     | Evidence                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P2: exclude malformed Admin response text from both top-level diagnostic and cause chain                   | **Implemented** | The route supplies a fixed parse reason and safe `diagnosticCause`; four actual-route/native-parser/real-Shared cases fail before the correction and pass afterward. Body fragments are absent from the serialized records, with one owned diagnostic per failure.                                                                                                                               |
+| Keep the original SyntaxError object during propagation, safe HTTP correlation and truthful classification | **Implemented** | Tests observe the native `Response.json()` error, check `thrown.cause` by object identity, verify original parser messages contain the full/partial fixture marker, and assert safe status/request ID plus correct failure kind/origin. No mutation or history result is produced.                                                                                                               |
+| Retain other SDK/transport failures and log-sink isolation                                                 | **Implemented** | Existing SDK/GraphQL/HTTP source-evidence tests pass unchanged; two additional malformed-response tests at HTTP 200/503 show a throwing real Shared sink preserves the original propagated parse cause and fail-closed outcome.                                                                                                                                                                  |
+| Reconcile the Completion Report with the architect's zero-credit amendment                                 | **Implemented** | The defensive service branch and its unit regression are unchanged. The migrated PG17 test rejects the illegal zero-credit WITHDRAWN state using the exact lifecycle constraint and asserts unchanged purchase/counter balances and versions. Successful database execution of `COMPLETED_NO_CREDITS` is not claimed. The previous blocker report is retained explicitly as historical evidence. |
+| Rerun required affected suites and gates                                                                   | **Implemented** | Seven focused files: 112 tests passed. Both migrated PostgreSQL files: 14 tests passed. Prisma generation, typecheck, build, declared scoped lint plus changed existing tests, and whitespace checks passed.                                                                                                                                                                                     |
 
 ### Validation Results
 
@@ -289,7 +289,30 @@ Executed from the launcher-returned implementation worktree with the existing lo
 Representative actual Shared record fields after serialization:
 
 ```json
-{"event":"shopify.billing.provider_failed","data":{"operation":"verify_refund_development_store","origin":"internal","failureKind":"MALFORMED_RESPONSE","provider":"shopify","error":{"name":"ShopifyBillingProviderError","message":"Shopify Admin development-store response JSON parsing failed."},"causeChain":[{"name":"SyntaxError","message":"Shopify Admin development-store response JSON parsing failed."}],"reasonCode":"INVALID_JSON_RESPONSE","httpStatus":200,"providerRequestId":"safe-parse-request","redactionApplied":false,"truncated":false}}
+{
+  "event": "shopify.billing.provider_failed",
+  "data": {
+    "operation": "verify_refund_development_store",
+    "origin": "internal",
+    "failureKind": "MALFORMED_RESPONSE",
+    "provider": "shopify",
+    "error": {
+      "name": "ShopifyBillingProviderError",
+      "message": "Shopify Admin development-store response JSON parsing failed."
+    },
+    "causeChain": [
+      {
+        "name": "SyntaxError",
+        "message": "Shopify Admin development-store response JSON parsing failed."
+      }
+    ],
+    "reasonCode": "INVALID_JSON_RESPONSE",
+    "httpStatus": 200,
+    "providerRequestId": "safe-parse-request",
+    "redactionApplied": false,
+    "truncated": false
+  }
+}
 ```
 
 HTTP 503 preserves the same safe parse evidence with `origin: provider_response`, `failureKind: HTTP` and status 503. Raw native parser text is never selected for either diagnostic message; flags do not claim pattern redaction or truncation occurred. The actual original SyntaxError remains attached to the propagated error. Tests assert absence of both whole-body and partial-body fragments in the captured Shared records rather than relying on logger-method mocks or external artifact scrubbing.
@@ -352,10 +375,10 @@ Real PostgreSQL cases: identical-ID and different-ID/same-offer purchase races e
 Same-fixture measurements (no latency/capacity claim):
 
 | Eligible rows | Before repository method calls | Before Partner requests | After repository method calls | After Partner requests |
-|---|---:|---:|---:|---:|
-| 1 | 5 | 1 | 6 | 1 |
-| 5 | 17 | 5 | 6 | 1 |
-| 20 | 62 | 20 | 6 | 1 |
+| ------------- | -----------------------------: | ----------------------: | ----------------------------: | ---------------------: |
+| 1             |                              5 |                       1 |                             6 |                      1 |
+| 5             |                             17 |                       5 |                             6 |                      1 |
+| 20            |                             62 |                      20 |                             6 |                      1 |
 
 Measured by running the same new unit fixture against archived start commit `b40775fd2f0b68ed39efc4b937c9ecec2cd607f7` and current source, using real provider parsing, actual sealed-credential/configuration reader and synthetic fetch. Baseline intentionally fails the new assertions; it is comparison evidence, not an acceptance run. After noneligible/empty/clamped branches are respectively **3/0**, **2/0**, **7/1** repository/provider calls.
 

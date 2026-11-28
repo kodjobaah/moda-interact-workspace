@@ -61,7 +61,6 @@ truncation alone is not treated as a cardinality bound.
 
 ## SHARED-010
 
-
 Only after SHARED-007, SHARED-008, SHARED-009 and SHARED-011 are
 architect-accepted should `moda_shared` publish the exact release and record it
 for consumer tasks.

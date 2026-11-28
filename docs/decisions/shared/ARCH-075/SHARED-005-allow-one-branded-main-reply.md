@@ -138,6 +138,7 @@ No new contract or scope dependency. This is additive for new readers, not unive
 Task branch: `task/ARCH-075-SHARED-005` in both repositories.
 
 Physical worktree isolation (launcher evidence):
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-075-SHARED-005`; branch `task/ARCH-075-SHARED-005`, reused.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-075-SHARED-005`; branch `task/ARCH-075-SHARED-005`, created.

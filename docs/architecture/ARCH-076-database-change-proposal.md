@@ -4,15 +4,14 @@ User-authorized implementation contract; this document itself applies no migrati
 
 ## Sender routing — DATABASE-001
 
-
 Five tables in schema `whatsapp` retain explicit customer/sender and shop generations. This restores the original five-entity model while retaining the R15 decision evidence, configured policy and independent allowance stream. Historical executable SQL is not copied blindly: the reviewed field contract below includes new evidence fields and must drive fresh migration authoring after approval.
 
-| Table | Exact proposed columns |
-| --- | --- |
-| WhatsAppPoolSender | providerPhoneNumberId VARCHAR(64) PK; providerAccountId VARCHAR(64) NOT NULL; priority INTEGER NOT NULL DEFAULT 0; allocationEnabled BOOLEAN NOT NULL DEFAULT false; verifiedAt TIMESTAMPTZ(3) NOT NULL; createdAt/updatedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now() |
-| RecoverySenderThread | id TEXT PK (client cuid); canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL |
-| RecoverySenderRoute | id TEXT PK (client cuid); shopId TEXT NOT NULL; threadId TEXT NOT NULL; canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL |
-| RecoverySenderAssignment | conversationId TEXT PK; routeId TEXT NOT NULL; assignedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); releasedAt TIMESTAMPTZ(3) NULL |
+| Table                     | Exact proposed columns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WhatsAppPoolSender        | providerPhoneNumberId VARCHAR(64) PK; providerAccountId VARCHAR(64) NOT NULL; priority INTEGER NOT NULL DEFAULT 0; allocationEnabled BOOLEAN NOT NULL DEFAULT false; verifiedAt TIMESTAMPTZ(3) NOT NULL; createdAt/updatedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| RecoverySenderThread      | id TEXT PK (client cuid); canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| RecoverySenderRoute       | id TEXT PK (client cuid); shopId TEXT NOT NULL; threadId TEXT NOT NULL; canonicalRecipient VARCHAR(15) NOT NULL; providerPhoneNumberId VARCHAR(64) NOT NULL; openedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); closedAt TIMESTAMPTZ(3) NULL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| RecoverySenderAssignment  | conversationId TEXT PK; routeId TEXT NOT NULL; assignedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now(); releasedAt TIMESTAMPTZ(3) NULL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | RecoveryBasketRoutingTurn | inboundProviderMessageId TEXT PK; threadId TEXT NOT NULL; routeId TEXT NULL; promptScopeRouteId TEXT NULL; occurredAt/createdAt TIMESTAMPTZ(3) NOT NULL (createdAt DEFAULT now()); inputJson/candidatesJson/moderationJson JSONB NULL; configurationSnapshot/routingDecision JSONB NULL; parentProviderMessageId TEXT NULL; resolutionInboundProviderMessageId TEXT NULL; state VARCHAR(24) NOT NULL DEFAULT 'RECEIVED'; selectedConversationId TEXT NULL; promptText TEXT NULL; promptAdmittedAt/promptSentAt TIMESTAMPTZ(3) NULL; promptProviderMessageId TEXT NULL; expiresAt TIMESTAMPTZ(3) NOT NULL; resolvedAt TIMESTAMPTZ(3) NULL; workToken TEXT NULL; workLeaseUntil/nextRepairAt TIMESTAMPTZ(3) NULL; repairAttempt INTEGER NOT NULL DEFAULT 0; updatedAt TIMESTAMPTZ(3) NOT NULL DEFAULT now() |
 
 A WhatsApp physical chat thread (RecoverySenderThread) is NOT a new checkout Conversation. Thread is one immutable recipient/sender generation; route is one immutable shop ownership generation on that thread; assignment links each existing recovery Conversation to its route. A routing request always has exact threadId; unknown-shop request has routeId NULL. Once shop is verified, routeId may bind once to a route on that same thread. promptScopeRouteId freezes the prompt's actual scope at admission: NULL for a neutral prompt, even when the original later binds to a shop. Neither field is inferred later from the selected Conversation.
@@ -33,24 +32,22 @@ CHECK digit-normalized sender/WABA/recipient, nonnegative priority/repairAttempt
 
 Add nullable paired ConversationMessage.dispatchProviderAccountId/dispatchProviderPhoneNumberId VARCHAR(64) root permit evidence; preserve current ordered-part sender/status proofs. No sender credit fields, additional Conversation or mass history migration. Upgrade 80 predecessor migrations through `20261113111320_arch075_meta_app_operation_state`, then target `20261113120000_whatsapp_sender_pool`. Final SQL object counts must be regenerated for these new evidence fields, not asserted from the historical migration.
 
-
 ## Independent allowance — DATABASE-002
-
 
 New table `billing.ConversationAllowanceBlock`, deliberately reusing existing financial/provider evidence:
 
-| Fields | PostgreSQL type / nullability |
-| --- | --- |
-| id | TEXT PK, client cuid |
-| shopId, conversationId | TEXT NOT NULL |
-| ordinal | INTEGER NOT NULL, nonnegative |
-| fundingKind | VARCHAR(16) NOT NULL: INITIAL, FOLLOW_UP, CONTINUATION |
-| state | VARCHAR(16) NOT NULL: PENDING, ACTIVE, EXHAUSTED, CLOSED, CANCELLED |
-| predecessorId, creditReservationId | TEXT NULL |
-| hardMessageLimit, terminalReservedSlots | INTEGER NOT NULL; derive normal limit as hard minus reserve |
-| repairAt, repairLeaseUntil, repairDeadlineAt | TIMESTAMPTZ(3) NULL |
-| repairLeaseToken | TEXT NULL |
-| createdAt, updatedAt | TIMESTAMPTZ(3) NOT NULL DEFAULT now() |
+| Fields                                       | PostgreSQL type / nullability                                       |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| id                                           | TEXT PK, client cuid                                                |
+| shopId, conversationId                       | TEXT NOT NULL                                                       |
+| ordinal                                      | INTEGER NOT NULL, nonnegative                                       |
+| fundingKind                                  | VARCHAR(16) NOT NULL: INITIAL, FOLLOW_UP, CONTINUATION              |
+| state                                        | VARCHAR(16) NOT NULL: PENDING, ACTIVE, EXHAUSTED, CLOSED, CANCELLED |
+| predecessorId, creditReservationId           | TEXT NULL                                                           |
+| hardMessageLimit, terminalReservedSlots      | INTEGER NOT NULL; derive normal limit as hard minus reserve         |
+| repairAt, repairLeaseUntil, repairDeadlineAt | TIMESTAMPTZ(3) NULL                                                 |
+| repairLeaseToken                             | TEXT NULL                                                           |
+| createdAt, updatedAt                         | TIMESTAMPTZ(3) NOT NULL DEFAULT now()                               |
 
 Add `ConversationMessage.allowanceBlockId TEXT NULL`. No duplicated financial/dispatch state: reservation status/source key come from exact UsageReservation, admitted/unknown/confirmed provider results from pinned messages and existing delivery parts. No opening-message FK, logical-source column, message counters or extra timestamps duplicating those records. A deterministic continuation admission source derives from immutable block ID; preserve the exact resulting reservation link, including period-qualified source keys.
 
@@ -59,7 +56,6 @@ Unique `(conversationId,ordinal)`, `(id,conversationId)`, creditReservationId (N
 Owner trigger validates RECOVERY → CheckoutRecovery.shopId and lower-ordinal same-owner predecessor, compatible with legacy nullable Conversation.shopId. Message block pin immutable at insert, including rejection of later NULL→block retagging. Funding identity/reservation immutable after binding. CHECK ordinal≥0, hard>0, reserve≥0 and reserve≤hard, lease token/time paired, INITIAL ordinal0 without predecessor, successor with predecessor, and required reservation proof for funded successor. PENDING may exist before reservation acquisition. Application revalidates reservation status/provider evidence across I/O; SQL CHECK cannot prove external financial state. Index message block and partial PENDING repair due `(repairAt,id)`.
 
 Existing NULL messages remain initial block-zero usage; lazy initial adoption only with proven historical original funding, no mass backfill or invented credit. Repair fields are necessary because current pending-turn repair filters AI pending turns and can miss unresolved funding after mode/turn changes. Extend existing repair scheduling to independently discover due PENDING blocks; do not create a competing generic worker. PENDING requires repairDeadlineAt. repairAt may become NULL when bounded repair parks uncertain evidence with a visible incident; the PENDING intent still blocks a new successor. Clear leases when parked and scheduling on terminal states. Token-fence every funding transition. Lease expiry never authorizes resend. Deadline bounds automatic attempts, never permits uncertain resend/refund.
-
 
 ## Separation and review
 

@@ -14,7 +14,8 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
+depends_on:
+  ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
 updated: 2026-10-31

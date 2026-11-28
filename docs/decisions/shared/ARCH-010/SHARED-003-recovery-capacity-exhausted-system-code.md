@@ -51,7 +51,7 @@ Use the existing `BILLING_SYSTEM_MESSAGE_CODES` and `BillingSystemMessageCodeSch
 Add:
 
 ```ts
-RECOVERY_CAPACITY_EXHAUSTED: "BILLING_RECOVERY_CAPACITY_EXHAUSTED"
+RECOVERY_CAPACITY_EXHAUSTED: "BILLING_RECOVERY_CAPACITY_EXHAUSTED";
 ```
 
 to the canonical billing system-message code object/schema/export.
@@ -94,20 +94,24 @@ STOP if ARCH-010-SHARED-001 has not been reconciled into the task worktree or an
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `src/billing.ts`
 - `src/billing.test.ts`
 - `scripts/validate-billing-entrypoint.mjs`
 
 ### Work Completed
+
 - Added `RECOVERY_CAPACITY_EXHAUSTED` to the canonical `BILLING_SYSTEM_MESSAGE_CODES` registry and strict `BillingSystemMessageCodeSchema`.
 - Preserved the historical `BILLING_FREE_ALLOWANCE_EXHAUSTED` code and all existing system-message values.
 - Added focused coverage for the new code, legacy-code compatibility, unknown-code rejection, and unchanged v1 queue payload semantics.
 - Extended the existing public `./billing` entrypoint validation to verify the updated registry and exact new code value.
 
 ### Validation Results
+
 - `npm test -- src/billing.test.ts` passed; Redis integration remains skipped because `TEST_REDIS_URL` is not configured.
 - `npm run typecheck` passed.
 - `npm run build` passed.
@@ -116,6 +120,7 @@ Ready for Review.
 - `npm ci` completed in the isolated implementation worktree; npm reported one low-severity audit finding and pending install-script approvals, with no task-source impact.
 
 ### Git / VCS
+
 - Task branch: `task/ARCH-010-SHARED-003`
 - Physical worktree isolation:
   - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
@@ -187,4 +192,3 @@ to be self-embedded into the commit that contains this file.
 `ready`. Its publication task must still perform its own registry/version
 preflight and derive the next package version from the actual package state
 after SHARED-002; it must not guess or race another Shared publication.
-

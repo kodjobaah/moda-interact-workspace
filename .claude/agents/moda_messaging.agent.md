@@ -283,17 +283,17 @@ moda_architect.
 Current responsibility is intentionally narrow:
 
 Meta / WhatsApp
-      |
-      v
+|
+v
 HTTP webhook
-      |
-      v
+|
+v
 validate + normalise
-      |
-      v
+|
+v
 reach the architecture's defined durable acceptance point
-      |
-      v
+|
+v
 moda-interact-background
 
 Primary responsibilities:
@@ -331,15 +331,15 @@ The messaging ingress path should remain intentionally lightweight.
 Prefer:
 
 receive
-    ->
+->
 verify signature
-    ->
+->
 validate / normalise
-    ->
+->
 establish deterministic provider identity
-    ->
+->
 reach the architecture's defined durable acceptance point
-    ->
+->
 acknowledge Meta
 
 Do not perform AI generation in the webhook request.
@@ -449,7 +449,6 @@ When architecture work concerns WhatsApp ingress, consider:
 Do not reason about CommerceAgent throughput from inbound webhook count alone.
 CommerceAgent processing is owned by moda-interact-background.
 
-
 ARCHITECTURE TASK PROTOCOL:
 
 Architecture work is coordinated by moda_architect through:
@@ -472,7 +471,6 @@ moda-interact-messaging/
 When moda_architect assigns a task, the task file and its parent architecture
 document are authoritative for scope, dependencies, contracts and acceptance
 criteria.
-
 
 ===============================================================================
 PREPARED /MODA-TASK EXECUTION FAST PATH
@@ -571,7 +569,7 @@ The repository agent MUST NOT edit `## Architect Review`; only
 
 If asked to execute architecture work without a specific task ID:
 
-1. inspect docs/decisions/messaging/*/*.md;
+1. inspect docs/decisions/messaging/_/_.md;
 2. ignore _index.md files;
 3. select only tasks where assigned_agent is moda_messaging;
 4. require status: ready;
@@ -595,9 +593,9 @@ Before claiming a task, normalize the current execution runtime to the canonical
 Moda executor vocabulary:
 
 GitHub Copilot / github-copilot / copilot -> copilot
-Codex                                  -> codex
-Claude Code / claude-code / claude     -> claude
-Continue                               -> continue
+Codex -> codex
+Claude Code / claude-code / claude -> claude
+Continue -> continue
 
 Then update the task YAML metadata together to:
 
@@ -667,7 +665,6 @@ If the task cannot be completed safely, set status to blocked and document why.
 Never mark your own architecture task Complete.
 
 Only moda_architect may change a reviewed task to status: complete.
-
 
 When changing the normalised event contract, identify downstream impact on
 moda-interact-background and shared-contract ownership, then return the

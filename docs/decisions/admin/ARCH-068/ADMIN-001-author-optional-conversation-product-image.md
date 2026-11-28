@@ -14,25 +14,30 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ['ARCH-068-SHARED-003']
+depends_on: ["ARCH-068-SHARED-003"]
 enables: ["ARCH-068-ADMIN-002"]
 created: 2026-11-09
 updated: 2026-11-10
 ---
+
 # Author and preview optional AI wrapper media
 
 ## Architecture and objective
+
 Implement the owned portion of [binding ARCH-068](../../../architecture/ARCH-068-optional-conversation-product-image.md). The entire contract is normative, including exact schemas, transport/failure rules, initialization, rollout and acceptance matrix. Read it before execution.
 
 ## Context and scope
+
 ADMIN-001 consumes Shared publication. Touch authoring/{types,validation,compiler,preview}.ts, compilation/{wrapper-compiler,reconstruction,contracts}.ts, wrappers/{eligibility,preview,service}.ts, translation source snapshot/protected binding checks, DTO/server actions/routes that carry draft/prepared/preview, components under authoring (template-content-editor, wrapper-structure-editor, template-read-only-preview, template-editor-steps) and wrappers/wrapper-before-after-preview/compilation/conversation-wrapper-review-preview. Add a wrapper-only toggle default false with explanatory “One verified product image above the response; omitted when unavailable” and an illustrative preview. Uses exact shared schema. Binding preserved in compile/clone/translation/review, included source/prepared hashes; locale eligibility requires binding equality across all locales. Meta AST rejects this key; HUMAN/SHARED wrapper editor rejects it for this phase; supported audience AI only, checked server-side. Existing text URL fields remain text. Do not fetch live merchant images in Admin preview or read R2 secrets there.
 
 The initializer script is owned by ADMIN-002; do not implement or run it in this task.
 
 ## Interfaces and contracts
+
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
+
 - [x] Verify dependencies and current owned source against binding touch points.
 - [x] Implement every requirement in the owned scope and binding contract.
 - [x] Add deterministic success/failure/compatibility tests specified above.
@@ -40,15 +45,19 @@ The named exported schemas/APIs and exact JSON shapes in the binding contract ar
 - [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
+
 ARCH-068-SHARED-003
 
 ## Acceptance criteria
+
 All owned scope above is complete, exact contract tests pass and no TODO/placeholder or unresolved cross-service choice remains. For tasks consuming Shared, prove the dependency using the exact published artifact; no sibling source imports/copied mechanics. Record actual changed paths and checks. Preserve existing grounded text, product identity, moderation/send fences, initial/proactive Meta flows.
 
 ## Out of Scope
+
 No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write, unrelated cleanup, budget increase, production mutation or automatic live initializer.
 
 ## Agent execution and review
+
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
@@ -125,22 +134,29 @@ Both repositories use `task/ARCH-068-ADMIN-001`.
 No unresolved owned-scope decision or task-introduced failure remains. Inherited full-lint and stale media-fixture failures are described above for architect assessment. No subagent assistance was used. ADMIN002 initializer, consumer implementations, activation, deployment, migration and live operations remain outside this task. Existing permissions, atomic save/audit and activation services remain in place; no initializer or actual activation was executed. Downstream readiness is unchanged pending independent architect review. This submission is Review, not architect acceptance or self-completion.
 
 ## Architect Review
+
 ### Review Status
+
 Accepted — Attempt1, 2026-11-10. Automatic completion applied; executor/claimed_at remain null.
 
 ### Review Notes
+
 Independently inspected source `31e24c04d532e364e4c4e4bf6eb959e51ec01c07` and published report `111326fa26fba9d96f6e7410871db0c1b339d839`, current clean mirrored task histories and task acceptance. The server uses the exact public Shared strict binding schema, permits it only for AI wrappers and rejects Meta/HUMAN/SHARED injection. Compilation/source hashes preserve binding while omission preserves legacy shapes. Translation transport contains text only; immutable source verification and all-locale eligibility protect the structural binding, including recomputed locale hashes. Real extractor restoration preserves response slots and existing Meta instructions. UI switching removes non-AI bindings; authoring/review/activation previews use a local SVG above the full response with no merchant fetch or secret.
 
 ### Reviewed Files
+
 Authoring types/validation/compiler/draft operations/preview; translation source snapshot and compilation segments/restoration; wrapper eligibility/preview; editor audience/toggle and all three preview surfaces; task runner and focused fixtures; package/lock and README deployment guidance. Existing save/audit and activation forwarding paths were traced, not replaced.
 
 ### Validation Reviewed
+
 Independent `npm run test:arch068-admin-authoring` rerun:14 passed,0 failed/skipped. Reviewed recorded89 passing regression tests and one inherited media-compiler expectation failure, typecheck and final production build pass, changed-file lint/browser isolation and exact registry SRI checks. Source diff check passes. The inherited media fixture expects two bindings where prepared baseline already emits checkout.itemsSummary as a third; source/test are unchanged. The full-lint hook error/three warnings are outside changed paths; independently hashed the failing hook against prepared baseline with identical SHA256bac1e2245dd4fc8b082ce57c33a1e92196f6562a6b3f5596f12b2ffe050d2f8c. No introduced failure or required owned work is waived; no baseline ID is invented. Initial review rerun sandbox cache restriction was resolved by proper escalation and the complete focused rerun passed.
 
 ### Architecture Conformance
+
 Conforms to ARCH-068 Admin authoring scope, public Shared5.12.0 browser contract and immutable locale/protected-binding rules. Prepared dedicated parent/implementation topology, synchronization, recursive exact database gitlink and claim evidence above verified. No shared checkout reuse, source ownership crossover, initializer implementation, live image/R2 read, activation or main merge occurred.
 
 ### Follow-up
+
 No same-task correction remains. Background001 is Complete at Accepted Attempt1; Commerce001 retains its published review Attempt1 and is not accepted by this review. Admin002 remains Pending until Commerce001 is Complete; SystemTest001 remains terminal/manual-gated. Deployment compatibility must be checked before activation; this acceptance performs no deployment, activation or follow-on execution.
 
 ## Coherence amendment — exact handoff and precedence
@@ -148,21 +164,27 @@ No same-task correction remains. Background001 is Complete at Accepted Attempt1;
 This section resolves terminology in earlier sections; it does not authorize another implementation. The original Background product transformer is the only product preset. Its output is strictly less than 5MiB, uses contain/white padding (not crop), and retains its quality ladder. Host configuration readers and credential loading stay in their host repositories. Only the generic media operations move to Shared.
 
 Shared SHARED-001 also exports these exact strict provenance schemas, reusing the validators already defined above:
+
 ```ts
 export const ConversationProductPairSchema = z.strictObject({
-  productId: NativeProductId, variantId: NativeVariantId,
+  productId: NativeProductId,
+  variantId: NativeVariantId,
 });
 export const ConversationVerifiedProductsSchema = z.strictObject({
   shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
   products: z.array(CommerceProductSchema).max(3),
 });
 export const ConversationProductImageSourceSchema = z.strictObject({
-  kind: z.literal('SOURCE'), shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
-  productId: NativeProductId, variantId: NativeVariantId, sourceUrl: HttpsUrl,
+  kind: z.literal("SOURCE"),
+  shopId: BoundId,
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
+  productId: NativeProductId,
+  variantId: NativeVariantId,
+  sourceUrl: HttpsUrl,
 });
 ```
+
 Selector input is exactly `{shopId, platform, displayedPairs, verifiedProducts}`; displayedPairs is an array of ConversationProductPairSchema with maximum 3 and uniqueness by canonical productId/variantId tuple. Verified product array pairs must also be unique. Schema/provenance mismatch throws an Error with code PRODUCT_IMAGE_IDENTITY_INVALID; missing exact first pair returns PRODUCT_NOT_VERIFIED. No new native-ID format validation is introduced. This result is internal and is never accepted from a browser or model as proof of authorization. Shared task tests must cover WooCommerce simple products (`variantId:null`) and both platforms' native variant IDs.
 
 Plan construction first validates the body and binding. Omitted binding produces TEXT/BINDING_DISABLED. A present invalid binding throws PREPARED_INVALID; it cannot silently become text. With a valid binding, precedence is NO_PRESENTED_PRODUCT, CAPTION_TOO_LONG, IMAGE_UNAVAILABLE, IMAGE_IDENTITY_MISMATCH, then IMAGE success. Host source/preparation omissions are logged with their original reason; buildConversationDeliveryPlan's IMAGE_UNAVAILABLE is the delivery-level summary. IMAGE_IDENTITY_MISMATCH logs at error severity and never dispatches that URL. Source absence or optional preparation failure still allows valid text. Hosts skip media configuration/network work when the first two applicable omission conditions already determine TEXT.
@@ -176,7 +198,9 @@ SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,sce
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
 
 ## Accepted publication handoff — 2026-11-09
+
 SHARED003 is Complete / independently Accepted Attempt1. Install exactly `@modainteract/moda-interact-shared@5.12.0`, registry https://registry.npmjs.org/, SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`, tarball SHA256 `e4416c765079a6c8c8ca04894e87e3822c3af0acf19428a5d3f542effe697393`. Release source `12d0b85aaeefba4dfc46bb12637004f19d462b19` includes both accepted Shared capabilities. Use browser-safe `/commerce/presentation` for contracts and Node-only `/commerce/presentation/node` for media preparation; no sibling source import or copied generic mechanics. Ready at unchanged Attempt0, executor/claimed_at null; no claim or implementation begins here.
 
 ## Architect dependency-frontier reconciliation — 2026-11-10
+
 The already-published Accepted/Complete Attempt1 decision `9be7c236d8d4798be6796b115d4b72011070589f` is preserved. Additional independent moda_architect source review and focused rerun14/14 plus typecheck agree; no implementation change or duplicate acceptance decision is required. Commerce001 subsequently became Complete at durable acceptance `69acccb6011e5f8c71da79f362127b77ac94da63`; Background001 is Complete at `7af4b2852d8e917b3974530988c5ef9c6a499d6c`. All three initializer dependencies are now Complete, so ADMIN002 becomes Ready, Attempt0 unclaimed. SYSTEM-TEST001 remains Pending/manual-gated on ADMIN002. This later frontier supersedes the earlier Commerce-review/Pending-initializer snapshot without altering its historical review. No claim, implementation, initializer execution, deployment, activation or main integration occurs.

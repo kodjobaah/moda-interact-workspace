@@ -634,8 +634,5 @@
   "review_revision": 3,
   "revision_requirement": "PostgreSQL/pgvector conversation taxonomy, repeatable per-environment schema/import/tool publication, standard discovery for all authorized stores, Admin unchanged, recommendation-time discount checking retained.",
   "delivery_baseline": "Original uploaded snapshot; user confirmed no earlier review patch was applied.",
-  "supersedes_unapplied_review_revisions": [
-    1,
-    2
-  ]
+  "supersedes_unapplied_review_revisions": [1, 2]
 }

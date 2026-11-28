@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-016-DATABASE-001
+  - ARCH-016-DATABASE-001
 enables:
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16T17:28:00Z
 ---
@@ -183,7 +183,6 @@ The existing `expectedVersion`, required reason, `BackgroundRuntimeConfigAuditEv
 ## Completion protocol
 
 The implementation and report are complete. The task is returned to `moda_architect` at `status: review`; stop here pending architect acceptance.
-
 
 ## Architect Review — Attempt 1 Accepted
 

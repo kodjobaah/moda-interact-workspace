@@ -13,7 +13,7 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on: []
-enables: 
+enables:
   - ARCH-007-DATABASE-002
 created: 2026-09-07
 updated: 2026-09-07
@@ -122,7 +122,6 @@ Luna deterministic-execution guardrails:
 - Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
 - Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-DATABASE-001` branch and the mirrored parent-workspace `task/ARCH-007-DATABASE-001` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
 - Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
-
 
 ## Completion Report
 

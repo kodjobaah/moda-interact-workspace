@@ -180,21 +180,27 @@ None from the Shopify task's bounded implementation scope. Positive CODE/AUTOMAT
 ## Architect Review
 
 ### Review Status
+
 Accepted — the developer explicitly supplied “Architect Review Accepted” together with the completion instruction on 2026-10-26. This acceptance applies to SHOPIFY-001 Attempt 1 and its recorded implementation and validation evidence.
 
 ### Review Notes
+
 Accepted for Attempt 1. The Shopify merchant path uses a tenant-scoped, persisted Moda-authored follow-up catalogue, validates the selected variant at transactional admission, and exposes only safe No Offer choices pending independent positive-offer verification. The focused tests, lint, typecheck and production build pass. BG007's final dispatch integration remains independently owned and is not represented as verified here.
 
 ### Reviewed Files
+
 The 15 implementation and test files listed under Completion Report. No files outside the task's Shopify ownership boundary were changed.
 
 ### Validation Reviewed
+
 The six focused test files (138/138 tests), `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check origin/main...HEAD` passed in the canonical implementation worktree on 2026-10-26.
 
 ### Architecture Conformance
+
 Accepted within the bounded Shopify task scope. Cross-repository BG007 behavior remains a separate integration gate; no Shopify task result substitutes for its final send fence.
 
 ### Follow-up
+
 Reconcile Shopify selection with BG007 final dispatch during the separately owned Background/system validation. Do not use system testing as an implementation dependency for this completed Shopify task.
 
 ## Developer Ownership Amendment

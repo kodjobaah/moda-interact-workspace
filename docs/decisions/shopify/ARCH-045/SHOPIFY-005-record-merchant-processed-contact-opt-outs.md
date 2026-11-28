@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
 enables: []
-created: '2026-10-21'
-updated: '2026-10-21'
+created: "2026-10-21"
+updated: "2026-10-21"
 ---
+
 # Record Shopify merchant-processed off-channel WhatsApp opt-outs
 
 ## Architecture
@@ -90,45 +91,59 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 ## Completion Report
 
 ### Status
+
 Not Started — definition only.
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run; no implementation branch.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 Use latest developer implementation branch at claim; supplied snapshot is a reference.
 
 ### Unresolved Issues
+
 None recorded.
 
 ### Architectural Concerns
+
 None recorded.
 
 ## Architect Review
 
 ### Review Status
+
 Pending — no implementation reviewed.
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Not assessed.
 
 ### Follow-up
+
 None.

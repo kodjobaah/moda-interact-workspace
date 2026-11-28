@@ -16,11 +16,11 @@ claimed_at: null
 attempt: 2
 depends_on: []
 enables:
-- ARCH-055-BACKGROUND-001
-- ARCH-055-API-001
-- ARCH-055-API-005
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-BACKGROUND-001
+  - ARCH-055-API-001
+  - ARCH-055-API-005
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -110,7 +110,7 @@ Create the three paths above in that order, with the exact executable SQL specif
 
 No existing migration file, checksum/history row, seed or table contents may be reset. Do not use `db push`, `migrate reset`, migration squashing, `migrate resolve` to conceal drift, `IF NOT EXISTS` to hide an unexpected pre-existing change, or an automatic down migration. Apply later corrections through another architect-approved forward migration. An occupied target migration name or changed baseline guard is a stop-and-report condition; do not silently choose a different timestamp or reconstruct another baseline.
 
-**Forward does not mean the old SQL function can never be corrected.** Migration 1 replaces its currently installed definition through a *new* script and replaces exactly one existing CHECK. Those explicit DDL replacements are authorised; dropping columns/tables/data, grant guards or unrelated constraints is not.
+**Forward does not mean the old SQL function can never be corrected.** Migration 1 replaces its currently installed definition through a _new_ script and replaces exactly one existing CHECK. Those explicit DDL replacements are authorised; dropping columns/tables/data, grant guards or unrelated constraints is not.
 
 No application calls, data grants, provider operations or storage deletion occur in a migration.
 
@@ -333,12 +333,12 @@ The static validator checks exactly two Prisma additions, three ordered migratio
 
 ## Interfaces / Contracts
 
-| Prisma/storage field | SQL representation | Writer / consumer contract |
-|---|---|---|
+| Prisma/storage field                                               | SQL representation                                                                                  | Writer / consumer contract                                                                                                                                                  |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MerchantConversationSendCommand.followUpClaimKey: string \| null` | `whatsapp."MerchantConversationSendCommand"."followUpClaimKey" VARCHAR(255) NULL`, no default/index | API-004/SHOPIFY-001 set new template key to preallocated command ID; Background reads the persisted field. Legacy templates preserve their old public key; HUMAN_TEXT null. |
-| `MerchantKnowledgeUploadedAsset.intentPurposeKey: string \| null` | `commerce."MerchantKnowledgeUploadedAsset"."intentPurposeKey" VARCHAR(64) NULL`, no default/index | API-005 writes requested canonical purpose once and rejects changed retry metadata. Unknown legacy pending purpose is not inferred. |
-| Original intake | partial index `MerchantKnowledgeSourceRevision_original_intake_asset_key` | One CREATE/FILE_REPLACE per non-null uploaded asset; later reprocessing remains legal. |
-| Failed REST attempt | existing row/enum/function; no new model or public schema | API-001 authorises cancellation; storage permits safe terminalisation after expiry/rotation without permitting a grant. |
+| `MerchantKnowledgeUploadedAsset.intentPurposeKey: string \| null`  | `commerce."MerchantKnowledgeUploadedAsset"."intentPurposeKey" VARCHAR(64) NULL`, no default/index   | API-005 writes requested canonical purpose once and rejects changed retry metadata. Unknown legacy pending purpose is not inferred.                                         |
+| Original intake                                                    | partial index `MerchantKnowledgeSourceRevision_original_intake_asset_key`                           | One CREATE/FILE_REPLACE per non-null uploaded asset; later reprocessing remains legal.                                                                                      |
+| Failed REST attempt                                                | existing row/enum/function; no new model or public schema                                           | API-001 authorises cancellation; storage permits safe terminalisation after expiry/rotation without permitting a grant.                                                     |
 
 New fields are internal only. No Shared release, public request/response version, provider key or queue payload changes. Existing grants, provider permits, command identity, prepared moderation, receipt/history and all unrelated data remain unchanged. Consumers adopt the accepted Database pin through their own tasks.
 
@@ -355,21 +355,21 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 ## Acceptance Criteria
 
-| ID | Required database proof | Expected outcome |
-|---|---|---|
-| F01 | Inspect `information_schema.columns` for both new columns | Correct schema/table, varchar lengths 255/64, nullable, SQL NULL when omitted, no default. |
-| F02 | Inspect functions, triggers, constraints and indexes | Only named attempt function/CHECK changed; no new business-policy trigger; original-intake index has exactly the supplied predicate. |
-| F03 | Pending attempt -> FAILED after expiry; repeat after installation rotation | Succeeds with current terminal timestamp/nonblank failure code; identity unchanged; cannot mint a grant. |
-| F04 | Expired/stale attempt -> SUCCEEDED; successful consumption without same-transaction grant; terminal retry/identity edit | Existing rejection/rollback retained. A failure timestamp before creation remains rejected. |
-| F05 | One original intake plus multiple reprocessing/entitlement revisions | Legal; second CREATE/FILE_REPLACE using the asset rejected. Null asset web revisions unaffected. |
-| F06 | Existing command prepared-body, permit, same-recovery, state and release guard tests | Preserved; no relaxation to obtain the metadata backfill. |
-| U01 | Seed valid template commands in ACCEPTED, CLAIMED (active lease), DISPATCH_ADMITTED, UNKNOWN, SENT, FAILED and CANCELLED, plus HUMAN_TEXT | Each template backfills its own old idempotencyKey; HUMAN_TEXT stays SQL NULL; all old columns unchanged, including updatedAt. |
-| U02 | Seed historical cancellation/reclaim pairs using the same attempt but different keys | Backfill each command from its own key, never current attempt key. Attempt and provider evidence unchanged. |
-| U03 | Abort the migration transaction after the single trigger disable in a disposable failure fixture | Column/data/trigger enablement rollback; trigger remains enabled; normal migration subsequently succeeds. |
-| U04 | Snapshot legacy pending/completed/deleted assets and original/reprocess revisions | Old columns/history unchanged; intentPurposeKey SQL NULL; no R2 deletion/backfill. |
-| U05 | Separate upgrade DB with duplicate original-intake rows | Migration 3 fails with bounded count; its column/index additions roll back; no history changes. |
-| U06 | Hash all predecessor migrations and snapshot non-target schema objects | No predecessor edits, missing objects, changed grant function or leftover disabled triggers. |
-| U07 | Invalid/missing/extra mode args; forced SQL assertion failure | Non-zero result, no external DB contact, container cleanup even on failure. |
+| ID  | Required database proof                                                                                                                   | Expected outcome                                                                                                                     |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| F01 | Inspect `information_schema.columns` for both new columns                                                                                 | Correct schema/table, varchar lengths 255/64, nullable, SQL NULL when omitted, no default.                                           |
+| F02 | Inspect functions, triggers, constraints and indexes                                                                                      | Only named attempt function/CHECK changed; no new business-policy trigger; original-intake index has exactly the supplied predicate. |
+| F03 | Pending attempt -> FAILED after expiry; repeat after installation rotation                                                                | Succeeds with current terminal timestamp/nonblank failure code; identity unchanged; cannot mint a grant.                             |
+| F04 | Expired/stale attempt -> SUCCEEDED; successful consumption without same-transaction grant; terminal retry/identity edit                   | Existing rejection/rollback retained. A failure timestamp before creation remains rejected.                                          |
+| F05 | One original intake plus multiple reprocessing/entitlement revisions                                                                      | Legal; second CREATE/FILE_REPLACE using the asset rejected. Null asset web revisions unaffected.                                     |
+| F06 | Existing command prepared-body, permit, same-recovery, state and release guard tests                                                      | Preserved; no relaxation to obtain the metadata backfill.                                                                            |
+| U01 | Seed valid template commands in ACCEPTED, CLAIMED (active lease), DISPATCH_ADMITTED, UNKNOWN, SENT, FAILED and CANCELLED, plus HUMAN_TEXT | Each template backfills its own old idempotencyKey; HUMAN_TEXT stays SQL NULL; all old columns unchanged, including updatedAt.       |
+| U02 | Seed historical cancellation/reclaim pairs using the same attempt but different keys                                                      | Backfill each command from its own key, never current attempt key. Attempt and provider evidence unchanged.                          |
+| U03 | Abort the migration transaction after the single trigger disable in a disposable failure fixture                                          | Column/data/trigger enablement rollback; trigger remains enabled; normal migration subsequently succeeds.                            |
+| U04 | Snapshot legacy pending/completed/deleted assets and original/reprocess revisions                                                         | Old columns/history unchanged; intentPurposeKey SQL NULL; no R2 deletion/backfill.                                                   |
+| U05 | Separate upgrade DB with duplicate original-intake rows                                                                                   | Migration 3 fails with bounded count; its column/index additions roll back; no history changes.                                      |
+| U06 | Hash all predecessor migrations and snapshot non-target schema objects                                                                    | No predecessor edits, missing objects, changed grant function or leftover disabled triggers.                                         |
+| U07 | Invalid/missing/extra mode args; forced SQL assertion failure                                                                             | Non-zero result, no external DB contact, container cleanup even on failure.                                                          |
 
 - [x] Every F/U case passed on canonical disposable PostgreSQL, with U07 invalid-argument Docker-sentinel evidence and forced top-level failure cleanup evidence recorded below.
 - [x] Exactly the approved implementation files changed; original application policy moved to owning service tasks, not replaced by new database triggers.
@@ -546,7 +546,6 @@ ARCH-055-BACKGROUND-001, ARCH-055-API-001 and ARCH-055-API-005 each depend solel
 
 ### Historical Attempt 1 review
 
-
 ### Review Status
 
 **Changes Requested — Attempt 1, 2 November 2026.** Remain Ready with null executor/claimed_at and Attempt 1 unchanged. Not accepted; no dependent task promoted.
@@ -568,7 +567,6 @@ Implementation remote ref verified: `4fded01b247d2f5d40d1ba3977f2eedbb55f4669`. 
 ### Follow-up
 
 Claim the next attempt normally on the same task branches, address the harness and matrix findings, run all required commands on the committed revision, and publish the updated evidence. The next launcher claim increments the attempt once. All downstream tasks remain gated on accepted Database completion; no consumer pin is approved yet.
-
 
 ### Independent execution evidence
 

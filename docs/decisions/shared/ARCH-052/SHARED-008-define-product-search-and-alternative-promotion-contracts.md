@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-052-SHARED-003
-created: '2026-10-29'
+  - ARCH-052-SHARED-003
+created: "2026-10-29"
 updated: 2026-10-30
 ---
 
@@ -79,8 +79,9 @@ export const CommerceProductSaleEvidenceSchema = z.strictObject({
   salePrice: MoneySchema.nullable(),
   observedAt: DateSchema,
 });
-export type CommerceProductSaleEvidence =
-  z.infer<typeof CommerceProductSaleEvidenceSchema>;
+export type CommerceProductSaleEvidence = z.infer<
+  typeof CommerceProductSaleEvidenceSchema
+>;
 
 export const CommerceProductSchema = z.strictObject({
   productId: ID,
@@ -112,23 +113,24 @@ export type CommerceProduct = z.infer<typeof CommerceProductSchema>;
 // Equivalent to z.infer<typeof CommerceProductSchema>.
 // Do not duplicate this interface in source; use the exported inferred type.
 type CommerceProductWireShape = {
-  productId: string;             // required ID, provider-normalised
-  variantId: string;             // required ID, never fabricated
-  title: string;                 // required, 1..512 characters
-  url: string | null;            // required, existing HTTPS/no-auth/no-port check
-  available: boolean | null;     // required; null = unknown
-  unitPrice: string | null;      // required; decimal MoneySchema string or null
-  currency: string | null;       // required; canonical CurrencySchema or null
-  productType: string | null;    // required
-  vendor: string | null;         // required
-  categories?: string[];         // new: optional names, may be []
-  imageUrl?: string | null;       // new: optional string, null or absent
-  saleEvidence?: {               // new: optional, nullable
+  productId: string; // required ID, provider-normalised
+  variantId: string; // required ID, never fabricated
+  title: string; // required, 1..512 characters
+  url: string | null; // required, existing HTTPS/no-auth/no-port check
+  available: boolean | null; // required; null = unknown
+  unitPrice: string | null; // required; decimal MoneySchema string or null
+  currency: string | null; // required; canonical CurrencySchema or null
+  productType: string | null; // required
+  vendor: string | null; // required
+  categories?: string[]; // new: optional names, may be []
+  imageUrl?: string | null; // new: optional string, null or absent
+  saleEvidence?: {
+    // new: optional, nullable
     regularPrice: string | null; // required if saleEvidence is an object
-    salePrice: string | null;    // required if saleEvidence is an object
-    observedAt: string;          // required ISO UTC timestamp (DateSchema)
+    salePrice: string | null; // required if saleEvidence is an object
+    observedAt: string; // required ISO UTC timestamp (DateSchema)
   } | null;
-  observedAt: string;            // required ISO UTC timestamp (DateSchema)
+  observedAt: string; // required ISO UTC timestamp (DateSchema)
 };
 ```
 
@@ -244,14 +246,14 @@ For a genuine not-found result, the successful **data** shape is exactly `{ "pro
 
 **Business checks delegated outside Zod:**
 
-| Rule | Owner |
-|---|---|
-| Search/lookup result belongs to the authenticated shop | MCP |
-| Product, image and storefront URLs are authorised and safe to present | MCP provider adapters |
-| Price, sale evidence and stock are current enough to be claimed | MCP adapter and Background presentation |
-| `regularPrice` > `salePrice` supports an actual discount claim | Background, using provider evidence |
-| Pagination and identity resolution of product versus variant | MCP execution |
-| Alternative relevance and merchant instructions | BACKGROUND-010 |
+| Rule                                                                  | Owner                                   |
+| --------------------------------------------------------------------- | --------------------------------------- |
+| Search/lookup result belongs to the authenticated shop                | MCP                                     |
+| Product, image and storefront URLs are authorised and safe to present | MCP provider adapters                   |
+| Price, sale evidence and stock are current enough to be claimed       | MCP adapter and Background presentation |
+| `regularPrice` > `salePrice` supports an actual discount claim        | Background, using provider evidence     |
+| Pagination and identity resolution of product versus variant          | MCP execution                           |
+| Alternative relevance and merchant instructions                       | BACKGROUND-010                          |
 
 No `.refine`, `.superRefine`, `.transform` or `.check` is added for these new business rules. Do not remove or rewrite existing validation of `CommerceProductSchema.url`.
 
@@ -286,29 +288,40 @@ test("ARCH-052-SHARED-008 product search and exact-product shapes", () => {
   ok(CommerceProductSchema, originalProduct); // backwards-compatible
   ok(CommerceProductSchema, enrichedProduct);
   ok(CommerceProductSchema, {
-    ...originalProduct, categories: [], imageUrl: null, saleEvidence: null,
+    ...originalProduct,
+    categories: [],
+    imageUrl: null,
+    saleEvidence: null,
   });
   ok(CommerceToolInputs.commerce_search_products, { query: "running socks" });
   ok(CommerceToolOutputs.commerce_search_products, {
-    products: [enrichedProduct], cursor: null, truncated: false,
+    products: [enrichedProduct],
+    cursor: null,
+    truncated: false,
   });
   ok(CommerceToolOutputs.commerce_find_similar_products, {
-    alternatives: [{
-      product: enrichedProduct,
-      proposal: { operations: [{ kind: "ADD", variantId: "variant_456", quantity: 1 }] },
-      extraSpend: "16.00",
-      resultingTotal: "16.00",
-      currency: "GBP",
-      evidence: null,
-      similarityReasons: ["Related running accessory"],
-    }],
+    alternatives: [
+      {
+        product: enrichedProduct,
+        proposal: {
+          operations: [{ kind: "ADD", variantId: "variant_456", quantity: 1 }],
+        },
+        extraSpend: "16.00",
+        resultingTotal: "16.00",
+        currency: "GBP",
+        evidence: null,
+        similarityReasons: ["Related running accessory"],
+      },
+    ],
     truncated: false,
   });
   ok(CommerceToolInputs.commerce_get_product, {
-    productId: "product_123", variantId: null,
+    productId: "product_123",
+    variantId: null,
   });
   ok(CommerceToolInputs.commerce_get_product, {
-    productId: "product_123", variantId: "variant_456",
+    productId: "product_123",
+    variantId: "variant_456",
   });
   ok(CommerceToolOutputs.commerce_get_product, { product: enrichedProduct });
   ok(CommerceToolOutputs.commerce_get_product, { product: null });
@@ -321,25 +334,34 @@ test("ARCH-052-SHARED-008 product search and exact-product shapes", () => {
   bad(CommerceProductSchema, { ...originalProduct, categories: [123] });
   bad(CommerceProductSchema, { ...originalProduct, imageUrl: 123 });
   bad(CommerceProductSchema, {
-    ...enrichedProduct, saleEvidence: { ...enrichedProduct.saleEvidence, extra: true },
+    ...enrichedProduct,
+    saleEvidence: { ...enrichedProduct.saleEvidence, extra: true },
   });
   bad(CommerceProductSchema, {
-    ...enrichedProduct, saleEvidence: { ...enrichedProduct.saleEvidence, salePrice: 16 },
+    ...enrichedProduct,
+    saleEvidence: { ...enrichedProduct.saleEvidence, salePrice: 16 },
   });
   bad(CommerceToolInputs.commerce_get_product, {
     productId: "product_123",
   }); // variantId required, even if null
   bad(CommerceToolInputs.commerce_get_product, {
-    productId: "", variantId: null,
+    productId: "",
+    variantId: null,
   });
   bad(CommerceToolInputs.commerce_get_product, {
-    productId: "product_123", variantId: null, shopId: "foreign_shop",
+    productId: "product_123",
+    variantId: null,
+    shopId: "foreign_shop",
   });
   bad(CommerceToolOutputs.commerce_get_product, {
-    product: enrichedProduct, unexpected: true,
+    product: enrichedProduct,
+    unexpected: true,
   });
   bad(CommerceToolOutputs.commerce_search_products, {
-    products: [enrichedProduct], cursor: null, truncated: false, extra: true,
+    products: [enrichedProduct],
+    cursor: null,
+    truncated: false,
+    extra: true,
   });
 
   // Structural proof only: this is not a valid saving, but must parse.

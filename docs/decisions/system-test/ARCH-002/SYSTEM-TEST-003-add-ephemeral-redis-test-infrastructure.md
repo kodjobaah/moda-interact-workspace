@@ -78,7 +78,6 @@ Implement reusable Redis test infrastructure in
 
 The fixture/orchestrator must support:
 
-
 The implementation may use Testcontainers or an existing repository-owned
 Docker orchestration abstraction.
 
@@ -96,7 +95,6 @@ redis:latest
 ```
 
 The container must:
-
 
 A suitable readiness probe is logically:
 
@@ -126,7 +124,6 @@ equivalent isolation.
 
 Parallel CI runs must not share:
 
-
 ## BullMQ / Failure-Test Support
 
 The fixture must expose enough lifecycle control for later system tests to
@@ -146,7 +143,6 @@ It owns the infrastructure needed by `SYSTEM-TEST-001` and
 
 ## Out of Scope
 
-
 ## Work Items
 
 - [x] inspect the current system-test orchestration/runtime;
@@ -160,7 +156,6 @@ It owns the infrastructure needed by `SYSTEM-TEST-001` and
 - [x] prove two consecutive runs start with clean state;
 - [x] prove dynamic-port/no-hardcoded-6379 behavior;
 - [x] document CI/Docker prerequisites and lifecycle.
-
 
 ## Validation
 
@@ -209,7 +204,6 @@ where available.
 - [x] no application repository is modified;
 - [x] implementation changes are ready for developer commit/push;
 - [x] repository agent does not commit or push.
-
 
 ## Completion Report
 

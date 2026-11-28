@@ -227,7 +227,6 @@ tasks declare this task as a dependency, so no dependency status changed.
 
 Have a human run and record the outstanding LocalWP FIXED + catalogue ERROR check at desktop and narrow widths, including the inline readiness message, Retry behavior and both WordPress menu stages. Then reconcile the task again; keep this attempt number unless a new implementation claim is actually started.
 
-
 ## Developer Override - Reopened
 
 The task metadata previously marked this task complete at Attempt 1, but its
@@ -242,7 +241,6 @@ preserved. Reopening did not claim a new attempt.
 Dependency frontier audit: no task definition declares ARCH-036-WOOCOMMERCE-004
 in depends_on, and this task has no enables entries. No downstream task status
 required regression.
-
 
 ## Developer Claim — Attempt 2
 

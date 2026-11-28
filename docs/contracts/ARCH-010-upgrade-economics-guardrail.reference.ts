@@ -103,7 +103,11 @@ function normalizeCurrency(value: string | null): string | null {
 export function findCheapestTopUpCombination(
   offers: FixedTopUpOffer[],
   creditsNeeded: number,
-): { costMinor: number; creditsGranted: number; purchases: FixedTopUpOffer[] } | null {
+): {
+  costMinor: number;
+  creditsGranted: number;
+  purchases: FixedTopUpOffer[];
+} | null {
   if (creditsNeeded <= 0) {
     return { costMinor: 0, creditsGranted: 0, purchases: [] };
   }
@@ -134,10 +138,7 @@ export function findCheapestTopUpCombination(
     if (!current) continue;
 
     for (const offer of validOffers) {
-      const nextCredits = Math.min(
-        maxCredits,
-        credits + offer.creditsGranted,
-      );
+      const nextCredits = Math.min(maxCredits, credits + offer.creditsGranted);
       const nextCost = current.costMinor + offer.chargeAmountMinor;
       const existing = dp[nextCredits];
 
@@ -271,11 +272,11 @@ export function evaluateUpgradeEconomicsCost({
     (upgradeCostMinor * (10_000 + minimumUpgradePremiumBps)) / 10_000,
   );
   const premiumBps = Math.round(
-    ((stayAndTopUpCostMinor - upgradeCostMinor) * 10_000) /
-      upgradeCostMinor,
+    ((stayAndTopUpCostMinor - upgradeCostMinor) * 10_000) / upgradeCostMinor,
   );
 
-  const format = (minor: number) => `${nextCurrency} ${(minor / 100).toFixed(2)}`;
+  const format = (minor: number) =>
+    `${nextCurrency} ${(minor / 100).toFixed(2)}`;
 
   const details: GuardrailDetails = {
     additionalCreditsNeeded,
@@ -411,9 +412,11 @@ function validateTierSequence(
     if (
       !isNonNegativeSafeInteger(tier.amountPerUnitMinor) ||
       !isNonNegativeSafeInteger(tier.flatAmountMinor)
-    ) return false;
+    )
+      return false;
     if (tier.upTo === null) return i === tiers.length - 1;
-    if (!isPositiveSafeInteger(tier.upTo) || tier.upTo <= previous) return false;
+    if (!isPositiveSafeInteger(tier.upTo) || tier.upTo <= previous)
+      return false;
     previous = tier.upTo;
   }
   return false; // final tier must be open-ended

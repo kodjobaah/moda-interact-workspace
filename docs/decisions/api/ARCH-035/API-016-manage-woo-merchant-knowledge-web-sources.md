@@ -27,7 +27,6 @@ updated: 2026-10-17
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, approved 16 October functional knowledge extension.
 - Owner: `moda_api`, repository `moda-interact-api`; coordinator: `moda_architect`.
 
-
 ## Objective
 
 Provide authenticated, durable web-page source CRUD, refresh and ordering using the existing Merchant Knowledge lifecycle.

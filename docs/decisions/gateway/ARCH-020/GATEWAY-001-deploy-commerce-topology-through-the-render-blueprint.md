@@ -201,15 +201,15 @@ not generate or sign tokens.
 
 ### Validation Results
 
-| Requirement | Command / fixture | Result |
-|---|---|---|
-| A3-R1 runbook smoke contract | `docs/commerce-deployment.md` review | Valid C5 body reused for missing/valid/wrong-claim assertions; valid discovery bodies and `apiVersion=2026-07`; concrete matching preview IDs/bodies; all required guards present |
-| Render topology and credential wiring | `bash tests/validate-render-blueprints.sh` | Passed |
-| Legacy and Commerce negative mutations | `bash tests/validate-render-blueprints-negative.sh` | Passed; 48 meaningful mutations rejected for expected reasons, including all seven new A2-R1 classes |
-| Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` (Attempt 3 executor evidence; not rerun for Markdown-only Attempt 4) | 150 passed, 0 failed |
-| HAProxy rendering | Docker build plus entrypoint `haproxy -c` (Attempt 3 executor evidence) | Configuration valid |
-| Shell syntax | `bash -n docker/entrypoint.sh tests/run-tests.sh tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh` | Passed |
-| Whitespace | `git diff --check` | Passed |
+| Requirement                                                 | Command / fixture                                                                                                                  | Result                                                                                                                                                                            |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A3-R1 runbook smoke contract                                | `docs/commerce-deployment.md` review                                                                                               | Valid C5 body reused for missing/valid/wrong-claim assertions; valid discovery bodies and `apiVersion=2026-07`; concrete matching preview IDs/bodies; all required guards present |
+| Render topology and credential wiring                       | `bash tests/validate-render-blueprints.sh`                                                                                         | Passed                                                                                                                                                                            |
+| Legacy and Commerce negative mutations                      | `bash tests/validate-render-blueprints-negative.sh`                                                                                | Passed; 48 meaningful mutations rejected for expected reasons, including all seven new A2-R1 classes                                                                              |
+| Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` (Attempt 3 executor evidence; not rerun for Markdown-only Attempt 4)                                     | 150 passed, 0 failed                                                                                                                                                              |
+| HAProxy rendering                                           | Docker build plus entrypoint `haproxy -c` (Attempt 3 executor evidence)                                                            | Configuration valid                                                                                                                                                               |
+| Shell syntax                                                | `bash -n docker/entrypoint.sh tests/run-tests.sh tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh` | Passed                                                                                                                                                                            |
+| Whitespace                                                  | `git diff --check`                                                                                                                 | Passed                                                                                                                                                                            |
 
 The Docker suite covers every C15 page/detail route with GET/HEAD and Server
 Action POST checks, NextAuth GET/POST, all four discovery methods, all seven

@@ -14,23 +14,29 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ['ARCH-068-SHARED-001', 'ARCH-068-SHARED-002']
-enables: ["ARCH-068-ADMIN-001", "ARCH-068-BACKGROUND-001", "ARCH-068-COMMERCE-001"]
+depends_on: ["ARCH-068-SHARED-001", "ARCH-068-SHARED-002"]
+enables:
+  ["ARCH-068-ADMIN-001", "ARCH-068-BACKGROUND-001", "ARCH-068-COMMERCE-001"]
 created: 2026-11-09
 updated: 2026-11-09
 ---
+
 # Publish reviewed conversation image contracts
 
 ## Architecture and objective
+
 Implement the owned portion of [binding ARCH-068](../../../architecture/ARCH-068-optional-conversation-product-image.md). The entire contract is normative, including exact schemas, transport/failure rules, initialization, rollout and acceptance matrix. Read it before execution.
 
 ## Context and scope
+
 Publication only. Require SHARED-001/002 Complete/Accepted and record their exact final source/build provenance. Select an unused semver version according to existing package release policy, recording exact version here and in handoff; do not predeclare an invented version. Version metadata only, pack/publish accepted source; no implementation redesign or broad validation rerun merely for release. Verify downloaded public tarball SHA256/SRI matches reviewed archive and installed JS+declaration imports of binding/schema/plan/Node preparer and all legacy entrypoints. Record browser/Node separation, package engine/runtime dependencies and exact consumer install version/SRI. Consumers stay Pending until completion/public availability. Update owned publication receipt and dependency-ready statuses only through normal architect reconciliation. No consumer edits/main merge/deployment.
 
 ## Interfaces and contracts
+
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
+
 - [x] Verify both implementation prerequisites are Complete/Accepted and identify their exact accepted source/build provenance.
 - [x] Select an unused release version and apply only authorized release metadata.
 - [x] Pack/publish accepted artifacts using approved release mechanics without implementation revalidation.
@@ -38,12 +44,15 @@ The named exported schemas/APIs and exact JSON shapes in the binding contract ar
 - [x] Push release changes and the publication receipt on mirrored task branches; stop for architect review.
 
 ## Dependencies
+
 ARCH-068-SHARED-001 and ARCH-068-SHARED-002 — both Complete / Accepted Attempt1.
 
 ## Acceptance criteria
+
 Both accepted capabilities are included in the released artifact. Exact version, archive SHA256/SRI, registry availability, runtime/declaration imports, browser/Node separation and consumer install coordinates are recorded. Source changes are limited to release metadata. No consumer implementation, deployment or activation occurs.
 
 ## Validation
+
 - [x] Both implementation prerequisites are Complete/Accepted before release.
 - [x] Approved unused version and accepted source/build artifacts identified.
 - [x] Publication succeeds and exact version is available at the intended registry.
@@ -52,9 +61,11 @@ Both accepted capabilities are included in the released artifact. Exact version,
 - [x] No unauthorized implementation source changed; do not rerun unit/integration tests, lint, typecheck or production build merely to revalidate accepted code. A package command's required artifact-packaging lifecycle is release mechanics, not a discretionary implementation rerun.
 
 ## Out of Scope
+
 No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write, unrelated cleanup, budget increase, production mutation or automatic live initializer.
 
 ## Agent execution and review
+
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
@@ -148,9 +159,11 @@ No unresolved release issue remains. No subagent assistance was used in this pub
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1, 2026-11-09.
 
 ### Review Notes
+
 Independent moda_architect review of release source `12d0b85aaeefba4dfc46bb12637004f19d462b19`, parent submission `c38a3c7f797f08e3dad246d38e5a849aeb5a6206`, prerequisite acceptance and the binding architecture. No required correction remains.
 
 The release changes only package.json and package-lock.json root version metadata from5.11.1 to5.12.0. Accepted combined source8f8a298 and pure source0b06467 are ancestors; implementation/build configuration/dependency graph remain unchanged. Both prerequisites were already Complete/Accepted in immutable prepublication claima1f22623. The unused additive minor selection follows README policy. Publication evidence reports one successful public upload; propagation was followed with read-only checks, without repeated publication.
@@ -158,41 +171,51 @@ The release changes only package.json and package-lock.json root version metadat
 Fresh independent registry retrieval/download verifies version5.12.0, SHA256 `e4416c765079a6c8c8ca04894e87e3822c3af0acf19428a5d3f542effe697393`, SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`, and byte equality with the reviewed upload. All153 archive files also match the installed downloaded consumer exactly. All36 public export entries have declared targets present; all35 prior5.11.1 export definitions are unchanged. Package has no declared top-level engine; recorded exact runtime dependency metadata and Node24.19.0 packaging/consumer environment are consistent.
 
 ### Reviewed Files
+
 Actual package.json/package-lock.json release diff; package export inventory/README semver policy; immutable accepted source ancestry; task claim/report and physical worktree registrations; npm publication receipt; fresh public metadata/archive; installed consumer smoke script/results/declaration fixture and browser bundle isolation assertions.
 
 ### Validation Reviewed
+
 Independently recomputed public download SHA256/SHA512 and compared registry integrity/upload/installed bytes; verified published implementation and parent remote refs. Inspected passing isolated upload and downloaded consumer evidence:33 runtime entrypoints,3 JSON fixtures, all public declaration imports and named binding/schema/plan/Node preparation types/functions, no-I/O missing-configuration omission, browser-like execution and exclusion of Node/native/AWS/host dependencies. Packaging lifecycle ESM/declaration output and diff checks passed. No implementation tests, lint, source typecheck or discretionary production build were rerun during this publication review.
 
 ### Architecture Conformance
+
 Conforms to the release-only gate. Canonical dedicated parent and implementation worktrees match the launcher route and mirrored task branches, are clean at submitted identities and match published refs. Start-of-attempt synchronization, recursive submodule readiness/no entries and durable claim evidence are consistent. No source change, consumer execution, implementation commit/push by reviewer, main merge/push, gitlink update, repeat publication, deployment, activation or provider operation.
 
 ### Follow-up
+
 No correction required. ADMIN001 and COMMERCE001 now have their sole prerequisite Complete; BACKGROUND001 has both publication and already-Complete DATABASE001. Promote all three Pending→Ready at Attempt0 with no claim. They must install exact5.12.0 and recorded SRI through public exports. ADMIN002 remains Pending on consumers/editor; SYSTEM-TEST001 remains Pending and manual-gated. Architecture remains In Progress.
 
 ## Completion Decision — 2026-11-09
-The user explicitly authorized moda_architect review and, if passing, completion, pushing review/completion and downstream reconciliation. Passing independent review above permits automatic Complete at unchanged accepted Attempt1, executor/claimed_at null. Mechanical parent-record publication is explicitly delegated. Downstream readiness is eligibility only; no implementation, deployment, migration, activation or system-test launch is authorized by this decision.
 
+The user explicitly authorized moda_architect review and, if passing, completion, pushing review/completion and downstream reconciliation. Passing independent review above permits automatic Complete at unchanged accepted Attempt1, executor/claimed_at null. Mechanical parent-record publication is explicitly delegated. Downstream readiness is eligibility only; no implementation, deployment, migration, activation or system-test launch is authorized by this decision.
 
 ## Coherence amendment — exact handoff and precedence
 
 This section resolves terminology in earlier sections; it does not authorize another implementation. The original Background product transformer is the only product preset. Its output is strictly less than 5MiB, uses contain/white padding (not crop), and retains its quality ladder. Host configuration readers and credential loading stay in their host repositories. Only the generic media operations move to Shared.
 
 Shared SHARED-001 also exports these exact strict provenance schemas, reusing the validators already defined above:
+
 ```ts
 export const ConversationProductPairSchema = z.strictObject({
-  productId: NativeProductId, variantId: NativeVariantId,
+  productId: NativeProductId,
+  variantId: NativeVariantId,
 });
 export const ConversationVerifiedProductsSchema = z.strictObject({
   shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
   products: z.array(CommerceProductSchema).max(3),
 });
 export const ConversationProductImageSourceSchema = z.strictObject({
-  kind: z.literal('SOURCE'), shopId: BoundId,
-  platform: z.enum(['SHOPIFY', 'WOOCOMMERCE']),
-  productId: NativeProductId, variantId: NativeVariantId, sourceUrl: HttpsUrl,
+  kind: z.literal("SOURCE"),
+  shopId: BoundId,
+  platform: z.enum(["SHOPIFY", "WOOCOMMERCE"]),
+  productId: NativeProductId,
+  variantId: NativeVariantId,
+  sourceUrl: HttpsUrl,
 });
 ```
+
 Selector input is exactly `{shopId, platform, displayedPairs, verifiedProducts}`; displayedPairs is an array of ConversationProductPairSchema with maximum 3 and uniqueness by canonical productId/variantId tuple. Verified product array pairs must also be unique. Schema/provenance mismatch throws an Error with code PRODUCT_IMAGE_IDENTITY_INVALID; missing exact first pair returns PRODUCT_NOT_VERIFIED. No new native-ID format validation is introduced. This result is internal and is never accepted from a browser or model as proof of authorization. Shared task tests must cover WooCommerce simple products (`variantId:null`) and both platforms' native variant IDs.
 
 Plan construction first validates the body and binding. Omitted binding produces TEXT/BINDING_DISABLED. A present invalid binding throws PREPARED_INVALID; it cannot silently become text. With a valid binding, precedence is NO_PRESENTED_PRODUCT, CAPTION_TOO_LONG, IMAGE_UNAVAILABLE, IMAGE_IDENTITY_MISMATCH, then IMAGE success. Host source/preparation omissions are logged with their original reason; buildConversationDeliveryPlan's IMAGE_UNAVAILABLE is the delivery-level summary. IMAGE_IDENTITY_MISMATCH logs at error severity and never dispatches that URL. Source absence or optional preparation failure still allows valid text. Hosts skip media configuration/network work when the first two applicable omission conditions already determine TEXT.
@@ -206,4 +229,5 @@ SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,sce
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
 
 ## Architect readiness handoff — 2026-11-09
+
 Ready, Attempt0 unclaimed. Accepted SHARED001 source `0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822` is an ancestor of accepted SHARED002 source `8f8a298de90803671b789ba0ef2fe03058a8023e`. Use this exact accepted source/artifact provenance; task completion does not imply main integration. Both task records carry independent acceptance. No implementation worktree or release claim is created by readiness reconciliation. Consumers stay Pending until this publication is accepted Complete and exact public artifact coordinates are recorded.

@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-BACKGROUND-017
-- ARCH-010-SHOPIFY-009
-- ARCH-010-SHOPIFY-012
-- ARCH-010-SHOPIFY-018
+  - ARCH-010-BACKGROUND-017
+  - ARCH-010-SHOPIFY-009
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-018
 enables: []
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 superseded_by: ARCH-010-SHOPIFY-016
 ---
 
@@ -156,4 +156,5 @@ STOP if the billing-options action handlers cannot consume SHOPIFY-018 without d
 ## Completion Report
 
 ### Status
+
 Not started.

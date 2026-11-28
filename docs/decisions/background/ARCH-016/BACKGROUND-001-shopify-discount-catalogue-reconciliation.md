@@ -13,10 +13,10 @@ status: complete
 priority: 20
 attempt: 3
 depends_on:
-- ARCH-016-DATABASE-001
-- ARCH-016-SHARED-001
+  - ARCH-016-DATABASE-001
+  - ARCH-016-SHARED-001
 enables:
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16T19:55:00Z
 executor: null
@@ -943,7 +943,7 @@ shopifyDiscountCatalogue.upsert({
   where: { shopId },
   create: { shopId },
   update: {},
-})
+});
 ```
 
 before `reconcile(...)` checks whether the referenced Shop row exists.

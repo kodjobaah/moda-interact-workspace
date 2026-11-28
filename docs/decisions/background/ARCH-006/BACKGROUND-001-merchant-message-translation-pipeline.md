@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T14:40:45Z
 ---
+
 # ARCH-006-BACKGROUND-001: Implement the OpenAI Batch translation provider adapter
 
 ## Architecture

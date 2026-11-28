@@ -19,6 +19,7 @@ enables:
 created: 2026-08-30
 updated: 2026-08-31
 ---
+
 # Publish OpenTelemetry and Loki Shared Logger Release
 
 ## Loki Release Addition
@@ -42,9 +43,7 @@ If the package is still `0.2.0`, the approved target remains:
 The external clean-consumer smoke test must additionally verify:
 
 ```ts
-import {
-  initNodeLokiLogging,
-} from "@modainteract/moda-interact-shared/logging/node";
+import { initNodeLokiLogging } from "@modainteract/moda-interact-shared/logging/node";
 ```
 
 and prove the registry-installed package can POST one sanitized test log to a
@@ -123,13 +122,9 @@ npm install @modainteract/moda-interact-shared@0.3.0
 Smoke test both:
 
 ```ts
-import {
-  createLogger
-} from "@modainteract/moda-interact-shared/logging";
+import { createLogger } from "@modainteract/moda-interact-shared/logging";
 
-import {
-  initNodeOpenTelemetryLogging
-} from "@modainteract/moda-interact-shared/logging/node";
+import { initNodeOpenTelemetryLogging } from "@modainteract/moda-interact-shared/logging/node";
 ```
 
 Use a bounded local OTLP HTTP receiver to prove the registry-installed package

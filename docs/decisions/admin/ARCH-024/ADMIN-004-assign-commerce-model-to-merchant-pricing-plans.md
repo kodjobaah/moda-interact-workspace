@@ -99,9 +99,9 @@ ARCH-024 must extend that existing workflow. Do not build a second Price Plan ed
 `ARCH-024-SHARED-002` publishes the canonical model contracts including:
 
 ```ts
-CommerceModelAvailabilitySchema
-CommerceModelCatalogueEntrySchema
-CommercePricingPlanModelAssignmentSchema
+CommerceModelAvailabilitySchema;
+CommerceModelCatalogueEntrySchema;
+CommercePricingPlanModelAssignmentSchema;
 ```
 
 A Price Plan may select only a model from the global enabled Platform Availability. Shop-specific models are not product-tier defaults.

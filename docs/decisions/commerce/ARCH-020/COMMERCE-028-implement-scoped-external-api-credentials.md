@@ -146,11 +146,11 @@ and decrypt/AAD/tag/key failures fail closed.
 
 Agent-executed validation:
 
-| Criterion | Committed test | Command | Observable result |
-| --- | --- | --- | --- |
-| CR01 | `external credentials > CR01 encrypts an exact-shop secret and decrypts only for the internal resolver`; `CR01 isolates two shop credentials and supports a platform credential without exposing it in status` | `npm run test:arch020-external-credentials` | PLATFORM plus two exact PER_SHOP secrets roundtrip through `createCredentialService`; only `resolveConnection` receives header value; status has no secret. |
-| CR02 (non-PostgreSQL portion) | `external credentials > CR02 applies CAS and replay without a second credential effect` | `npm run test:arch020-external-credentials` | Same command replay makes one effect; changed replay returns `CONFLICTING_REPLAY`; concurrent same-version clients produce exactly one success and one `STALE_CAS`. |
-| CR03 | `external credentials > CR03 reports disabled, missing, invalid-key, and removed credentials without revealing a secret` | `npm run test:arch020-external-credentials` | Missing/wrong-shop/disabled/key/AAD-tag/removed paths deny or fail unavailable; retained old key decrypts before rotation and active key encrypts replacement. |
+| Criterion                     | Committed test                                                                                                                                                                                                 | Command                                     | Observable result                                                                                                                                                   |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CR01                          | `external credentials > CR01 encrypts an exact-shop secret and decrypts only for the internal resolver`; `CR01 isolates two shop credentials and supports a platform credential without exposing it in status` | `npm run test:arch020-external-credentials` | PLATFORM plus two exact PER_SHOP secrets roundtrip through `createCredentialService`; only `resolveConnection` receives header value; status has no secret.         |
+| CR02 (non-PostgreSQL portion) | `external credentials > CR02 applies CAS and replay without a second credential effect`                                                                                                                        | `npm run test:arch020-external-credentials` | Same command replay makes one effect; changed replay returns `CONFLICTING_REPLAY`; concurrent same-version clients produce exactly one success and one `STALE_CAS`. |
+| CR03                          | `external credentials > CR03 reports disabled, missing, invalid-key, and removed credentials without revealing a secret`                                                                                       | `npm run test:arch020-external-credentials` | Missing/wrong-shop/disabled/key/AAD-tag/removed paths deny or fail unavailable; retained old key decrypts before rotation and active key encrypts replacement.      |
 
 - `npm run test:arch020-external-credentials`: passed, 1 file and 4 tests.
 - `npm run test:arch020-external-connection-lifecycle`: passed, 1 file and 9 tests.
@@ -197,11 +197,11 @@ above.
 ### Git / VCS
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-028`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-028`
-  mirrored branch: `task/ARCH-020-COMMERCE-028`
-  implementation commit: `715da4d`, pushed to the implementation task branch.
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-028`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-028`
+mirrored branch: `task/ARCH-020-COMMERCE-028`
+implementation commit: `715da4d`, pushed to the implementation task branch.
 
 The launcher claimed Attempt 1 as `3b610c19076630439b454a1c23175e39f62cda10` and
 verified the recursive database submodule at the recorded commit. This parent
@@ -230,11 +230,11 @@ fixture and is not presented as two-client PostgreSQL evidence.
 
 ### Validation Results
 
-| Criterion | Committed test | Command | Observable result |
-| --- | --- | --- | --- |
-| CR01 | `external credentials > CR01 ...`; `external-credentials-postgres.test.ts > CR02-PG-01 ...` | `npm run test:arch020-external-credentials`; `npm run test:arch020-external-credentials:postgres` | Focused suite passed 5/5; real PostgreSQL rehearsal passed 5/5 and verified encrypted storage plus NULL-platform uniqueness. |
-| CR02 | `CR02-PG-01` through `CR02-PG-05` in `tests/external-credentials-postgres.test.ts` | `npm run test:arch020-external-credentials:postgres` | Passed 5/5: duplicate platform insert rejected, exact replay/conflicting replay produced one audit effect, two real clients produced one stale-CAS loser, injected audit failure rolled back credential and audit, and plaintext was absent from persisted ciphertext/audit JSON. |
-| CR03 | `external credentials > CR03 ...` | `npm run test:arch020-external-credentials` | Passed; wrong scope, disabled/missing/removed credentials, invalid key/AAD/tag, and rotation behavior remained bounded and fail-closed. |
+| Criterion | Committed test                                                                              | Command                                                                                           | Observable result                                                                                                                                                                                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CR01      | `external credentials > CR01 ...`; `external-credentials-postgres.test.ts > CR02-PG-01 ...` | `npm run test:arch020-external-credentials`; `npm run test:arch020-external-credentials:postgres` | Focused suite passed 5/5; real PostgreSQL rehearsal passed 5/5 and verified encrypted storage plus NULL-platform uniqueness.                                                                                                                                                      |
+| CR02      | `CR02-PG-01` through `CR02-PG-05` in `tests/external-credentials-postgres.test.ts`          | `npm run test:arch020-external-credentials:postgres`                                              | Passed 5/5: duplicate platform insert rejected, exact replay/conflicting replay produced one audit effect, two real clients produced one stale-CAS loser, injected audit failure rolled back credential and audit, and plaintext was absent from persisted ciphertext/audit JSON. |
+| CR03      | `external credentials > CR03 ...`                                                           | `npm run test:arch020-external-credentials`                                                       | Passed; wrong scope, disabled/missing/removed credentials, invalid key/AAD/tag, and rotation behavior remained bounded and fail-closed.                                                                                                                                           |
 
 Additional focused validation:
 
@@ -335,10 +335,10 @@ COMMERCE-028 gets its own bounded database proof.
 The new test uses the supplied `DATABASE_URL` disposable PostgreSQL target and:
 
 ```ts
-PrismaClient
-createConnectionLifecycle
-createConnectionCommandKernel
-createCredentialService
+PrismaClient;
+createConnectionLifecycle;
+createConnectionCommandKernel;
+createCredentialService;
 ```
 
 from the actual accepted implementation. Do not fake the command kernel in this file.

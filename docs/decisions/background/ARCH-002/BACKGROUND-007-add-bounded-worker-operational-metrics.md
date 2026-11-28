@@ -13,13 +13,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-BACKGROUND-006
+  - ARCH-002-BACKGROUND-006
 enables:
-- ARCH-002-GATEWAY-006
-- ARCH-002-SYSTEM-TEST-002
+  - ARCH-002-GATEWAY-006
+  - ARCH-002-SYSTEM-TEST-002
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Add bounded background worker operational metrics
 
 ## Objective
@@ -101,41 +102,41 @@ Ready for Review
 ### Work Completed
 
 - Added module-scope OpenTelemetry counter and histograms for job processing
-	operations, processor duration and creation-to-processing age.
+  operations, processor duration and creation-to-processing age.
 - Wrapped all four existing Worker processors without changing their queue/job
-	names, payloads, concurrency, retry behavior, return values or thrown errors.
+  names, payloads, concurrency, retry behavior, return values or thrown errors.
 - Added fixed worker, queue, job-kind, outcome and initial/retry dimensions;
-	unknown job names collapse to the bounded `unknown` value.
+  unknown job names collapse to the bounded `unknown` value.
 - Disabled BullMQ's generic Worker metrics because BullMQ labels those metrics
-	with raw job names and creates instruments during state transitions; native
-	BullMQ tracing remains enabled on every Worker and Queue boundary.
+  with raw job names and creates instruments during state transitions; native
+  BullMQ tracing remains enabled on every Worker and Queue boundary.
 - Added a direct production dependency on `@opentelemetry/api`; provider,
-	exporter and lifecycle ownership remains in the shared runtime.
+  exporter and lifecycle ownership remains in the shared runtime.
 - Added focused singleton, outcome, retry, age, cardinality, sensitive-data and
-	metric-failure-isolation coverage.
+  metric-failure-isolation coverage.
 
 ### Validation Results
 
 - `npm test -- --run tests/unit/observability/worker-metrics.test.ts tests/unit/runtime/bullmq-telemetry.test.ts tests/unit/runtime/worker-process.test.ts`:
-	passed, 3 files and 15 tests.
+  passed, 3 files and 15 tests.
 - Cardinality/sensitive-data fuzz coverage passed for 50 arbitrary customer-like
-	job names and payload/identifier values; every unknown name emitted only
-	`bullmq.job.name=unknown`, and no supplied value reached metric attributes.
+  job names and payload/identifier values; every unknown name emitted only
+  `bullmq.job.name=unknown`, and no supplied value reached metric attributes.
 - Failure-isolation coverage passed with counter and both histogram recorders
-	throwing; successful return identity and original business-error identity
-	were preserved.
+  throwing; successful return identity and original business-error identity
+  were preserved.
 - `scripts/workspace-doctor.sh --quick`: 7 checks passed; one known warning for
-	`moda-interact/.npmrc` `shamefully-hoist` configuration outside this task.
+  `moda-interact/.npmrc` `shamefully-hoist` configuration outside this task.
 - `./node_modules/.bin/tsc --noEmit`: passed.
 - `npm run build`: passed, including Prisma Client generation and TypeScript
-	compilation.
+  compilation.
 - `npm test`: 14 files passed, 1 failed, 2 skipped; 85 tests passed, 1 failed,
-	4 skipped. The sole failure remains the architect-accepted unrelated
-	`recovery-routing.service.test.ts` mock omission for
-	`prisma.customerPhone.findMany`; no operational metric test failed.
+  4 skipped. The sole failure remains the architect-accepted unrelated
+  `recovery-routing.service.test.ts` mock omission for
+  `prisma.customerPhone.findMany`; no operational metric test failed.
 - Source review found exactly one meter, one counter, two histograms and five
-	bounded attribute keys. No job/customer/shop/checkout/message identifiers,
-	payload fields, error details, trace values or GenAI metrics are recorded.
+  bounded attribute keys. No job/customer/shop/checkout/message identifiers,
+  payload fields, error details, trace values or GenAI metrics are recorded.
 - VS Code diagnostics were clean for all changed production and test files.
 
 ### Deviations
@@ -145,16 +146,16 @@ None.
 ### Assumptions
 
 - Processing age is defined as BullMQ job `timestamp` to the current
-	`processedOn` value. It intentionally includes scheduled delay, retry backoff
-	and prior waiting time and is not described as pure ready-queue latency.
+  `processedOn` value. It intentionally includes scheduled delay, retry backoff
+  and prior waiting time and is not described as pure ready-queue latency.
 - `attemptsStarted > 1` or `attemptsMade > 0` identifies a retry attempt without
-	predicting whether BullMQ will schedule another attempt after a failure.
+  predicting whether BullMQ will schedule another attempt after a failure.
 
 ### Unresolved Issues
 
 - The existing recovery-routing unit-test mock still lacks
-	`prisma.customerPhone.findMany`, leaving the unrelated full suite one test
-	short of green. This is unchanged from accepted BACKGROUND-006 evidence.
+  `prisma.customerPhone.findMany`, leaving the unrelated full suite one test
+  short of green. This is unchanged from accepted BACKGROUND-006 evidence.
 
 ### Architectural Concerns
 

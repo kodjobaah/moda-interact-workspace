@@ -98,14 +98,14 @@ Retain `commerce.turn.failed` as the terminal event. Extend its data rather than
 
 ## Runtime/Contract Boundaries
 
-| Boundary | Owner | Behaviour |
-|---|---|---|
-| `RunCommerceTurnResult.error` / diagnostic | `moda_shared` | Bounded typed internal failure contract; public code and retryable unchanged |
-| OpenRouter diagnostic and runner failure provenance | `moda_shared` | Safe origin metadata and terminal shared logger event |
-| Background credential/model diagnostics | `moda_background` | Register existing adapter diagnostic callback; preserve provider/credential stages |
-| Background MCP/host diagnostics | `moda_background` | Correlate transport/host stages and preserve service classification |
-| Test Conversation consumer | `moda_commerce` | Upgrade published dependency and validate staff-only internal diagnostics |
-| End-to-end verification | `moda_system_test` | Verify diagnostic origin and non-disclosure under real host boundaries |
+| Boundary                                            | Owner              | Behaviour                                                                          |
+| --------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------------- |
+| `RunCommerceTurnResult.error` / diagnostic          | `moda_shared`      | Bounded typed internal failure contract; public code and retryable unchanged       |
+| OpenRouter diagnostic and runner failure provenance | `moda_shared`      | Safe origin metadata and terminal shared logger event                              |
+| Background credential/model diagnostics             | `moda_background`  | Register existing adapter diagnostic callback; preserve provider/credential stages |
+| Background MCP/host diagnostics                     | `moda_background`  | Correlate transport/host stages and preserve service classification                |
+| Test Conversation consumer                          | `moda_commerce`    | Upgrade published dependency and validate staff-only internal diagnostics          |
+| End-to-end verification                             | `moda_system_test` | Verify diagnostic origin and non-disclosure under real host boundaries             |
 
 ## Security
 
@@ -121,14 +121,14 @@ The project snapshot is a development snapshot; verify deployment state before p
 
 ## Decisions / Tasks
 
-| Task | Owner | Recorded status | Depends on |
-|---|---|---|---|
-| ARCH-029-SHARED-001 | moda_shared | Complete (manual-patch closeout) | — |
-| ARCH-029-SHARED-002 | moda_shared | Complete (npm 1.4.0 registry verified) | SHARED-001 |
-| ARCH-029-BACKGROUND-001 | moda_background | Complete (developer full unit tests passed) | SHARED-002 |
-| ARCH-029-BACKGROUND-002 | moda_background | Complete (developer reports all checks green) | SHARED-002 |
-| ARCH-029-COMMERCE-001 | moda_commerce | Complete (developer-directed closure; local tests unverified) | SHARED-002 |
-| ARCH-029-SYSTEM-TEST-001 | moda_system_test | Ready — **not run or completed here** | BACKGROUND-001, BACKGROUND-002, COMMERCE-001 |
+| Task                     | Owner            | Recorded status                                               | Depends on                                   |
+| ------------------------ | ---------------- | ------------------------------------------------------------- | -------------------------------------------- |
+| ARCH-029-SHARED-001      | moda_shared      | Complete (manual-patch closeout)                              | —                                            |
+| ARCH-029-SHARED-002      | moda_shared      | Complete (npm 1.4.0 registry verified)                        | SHARED-001                                   |
+| ARCH-029-BACKGROUND-001  | moda_background  | Complete (developer full unit tests passed)                   | SHARED-002                                   |
+| ARCH-029-BACKGROUND-002  | moda_background  | Complete (developer reports all checks green)                 | SHARED-002                                   |
+| ARCH-029-COMMERCE-001    | moda_commerce    | Complete (developer-directed closure; local tests unverified) | SHARED-002                                   |
+| ARCH-029-SYSTEM-TEST-001 | moda_system_test | Ready — **not run or completed here**                         | BACKGROUND-001, BACKGROUND-002, COMMERCE-001 |
 
 System testing is terminal: no implementation or publication task depends on a system-test task. The developer is already working in the system-test repository and explicitly excluded its completion from this closeout. The `SYSTEM-TEST-001` record is Ready only, not completed.
 

@@ -15,21 +15,21 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-055-DATABASE-001
-- ARCH-055-BACKGROUND-001
-- ARCH-055-SHOPIFY-001
-- ARCH-055-API-001
-- ARCH-055-API-002
-- ARCH-055-API-003
-- ARCH-055-API-004
-- ARCH-055-API-005
-- ARCH-055-API-006
-- ARCH-055-API-007
-- ARCH-055-API-008
-- ARCH-055-API-009
+  - ARCH-055-DATABASE-001
+  - ARCH-055-BACKGROUND-001
+  - ARCH-055-SHOPIFY-001
+  - ARCH-055-API-001
+  - ARCH-055-API-002
+  - ARCH-055-API-003
+  - ARCH-055-API-004
+  - ARCH-055-API-005
+  - ARCH-055-API-006
+  - ARCH-055-API-007
+  - ARCH-055-API-008
+  - ARCH-055-API-009
 enables: []
-created: '2026-11-02'
-updated: '2026-11-04'
+created: "2026-11-02"
+updated: "2026-11-04"
 ---
 
 # ARCH-055-SYSTEM-TEST-001: Validate the accepted database corrections end to end
@@ -72,11 +72,11 @@ Required new paths (only these are allowed to be absent at startup):
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `catalogue/scenarios.json; src/harness/runner.js; src/harness/selection.js` | REGISTER arch055 suite and the twelve exact scenarios below; preserve runner/executor/evidence conventions. Scenario IDs ARCH055-IDENTITY-001, ARCH055-CONSENT-001, ARCH055-SETTINGS-001, ARCH055-INBOX-001, ARCH055-KNOWLEDGE-001, ARCH055-COMMERCIAL-001, ARCH055-BILLING-001, ARCH055-SUPPORT-001, ARCH055-READINESS-001, ARCH055-MIGRATION-001, ARCH055-CLAIM-001, ARCH055-COVERAGE-001. |
-| `src/harness/arch055/executors.js; src/harness/arch055/fixtures.js; src/harness/arch055/assertions.js; src/harness/arch055/contracts.js` | CREATE modular router/fixtures/assertions/contracts. Add separate identity.js, consent.js, settings.js, inbox.js, knowledge.js, commercial.js, billing.js, support.js, readiness.js, migration.js, claim.js, coverage.js executor modules under same directory; do not build one monolith. Use actual services/HTTP; providers sandbox/emulated, never live payments. |
-| `test/harness/arch055-contracts.test.js; package.json` | CREATE harness registration/strict failure tests. Add system:arch055:plan and system:arch055 keys already specified; no alternate runner. |
+| File / symbol touchpoint                                                                                                                 | Deterministic edit                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalogue/scenarios.json; src/harness/runner.js; src/harness/selection.js`                                                              | REGISTER arch055 suite and the twelve exact scenarios below; preserve runner/executor/evidence conventions. Scenario IDs ARCH055-IDENTITY-001, ARCH055-CONSENT-001, ARCH055-SETTINGS-001, ARCH055-INBOX-001, ARCH055-KNOWLEDGE-001, ARCH055-COMMERCIAL-001, ARCH055-BILLING-001, ARCH055-SUPPORT-001, ARCH055-READINESS-001, ARCH055-MIGRATION-001, ARCH055-CLAIM-001, ARCH055-COVERAGE-001. |
+| `src/harness/arch055/executors.js; src/harness/arch055/fixtures.js; src/harness/arch055/assertions.js; src/harness/arch055/contracts.js` | CREATE modular router/fixtures/assertions/contracts. Add separate identity.js, consent.js, settings.js, inbox.js, knowledge.js, commercial.js, billing.js, support.js, readiness.js, migration.js, claim.js, coverage.js executor modules under same directory; do not build one monolith. Use actual services/HTTP; providers sandbox/emulated, never live payments.                        |
+| `test/harness/arch055-contracts.test.js; package.json`                                                                                   | CREATE harness registration/strict failure tests. Add system:arch055:plan and system:arch055 keys already specified; no alternate runner.                                                                                                                                                                                                                                                    |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
 
@@ -188,11 +188,11 @@ No implementation task. Final architectural verification follows system validati
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| L01 | All implementation dependencies accepted and developer elects to execute | Record accepted pins/migrations, real auth/races and cleanup; no production-performance certification. |
-| L02 | Each scoped race with real competitors and barriers | Before-state reproduction where feasible, after-state expected outcomes; failures block, never silently skip. |
-| L03 | All61 endpoint register entries including retained routes | Unique route coverage rows with method/path, owner, test ID, pass/fail/not-run, SQL/row evidence; no aggregate speedup claim. |
+| Case | Fixture / operation                                                      | Required result                                                                                                               |
+| ---- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| L01  | All implementation dependencies accepted and developer elects to execute | Record accepted pins/migrations, real auth/races and cleanup; no production-performance certification.                        |
+| L02  | Each scoped race with real competitors and barriers                      | Before-state reproduction where feasible, after-state expected outcomes; failures block, never silently skip.                 |
+| L03  | All61 endpoint register entries including retained routes                | Unique route coverage rows with method/path, owner, test ID, pass/fail/not-run, SQL/row evidence; no aggregate speedup claim. |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -283,11 +283,9 @@ To be assessed against ARCH-055 and this task's frozen contract.
 
 Only the authorised review may accept this task and promote dependants.
 
-
 ## Dependency reconciliation — 3 November 2026
 
 DATABASE-001 is Accepted and Complete at Attempt 2. Other required implementation tasks are not all Complete, so this task remains Pending and manually gated. No end-to-end certification is claimed.
-
 
 ## Dependency promotion — 4 November 2026
 

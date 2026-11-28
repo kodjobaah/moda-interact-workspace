@@ -56,20 +56,20 @@ Background-008 sends approved merchant-identified initial templates with durable
 
 ### Deterministic fixture and routing matrix
 
-| Case | Input | Expected durable and outbound result |
-|---|---|---|
-| A1 text quote | `contextMessageId=wamid.A1`, inbound `type=text` | A1 recovery Conversation only; B untouched; one AI turn when active |
-| B1 audio quote | `contextMessageId=wamid.B1`, inbound `type=audio` | B1 recovery Conversation only, media retrieved/transcribed only after successful routing; A untouched |
-| A2 voice quote | `contextMessageId=wamid.A2`, valid 120-second-or-shorter audio | A2 exact recovery, not A1 or B1; no duplicate conversation |
-| Same phone, no quote | Context null with multiple candidates, text | One neutral guidance, no AI, no credit, no shop disclosure |
-| Same phone, no quote | Context null with multiple candidates, audio | One neutral guidance, no media fetch or transcription, no AI or credit |
-| Invalid quote | Unknown/unsent/cross-recipient provider ID | INVALID_REFERENCE guidance only; **no** fallback to latest merchant |
-| Wrong sender | Wrong WABA/phone number ID | Ignored, no shop lookup or guidance |
-| Historical quote | Valid B1 but Woo newer recovery generation exists | Persist historical inbound in B1 only; no active AI, new session or revive |
-| Replay | Same inbound `providerMessageId` with a different quote ID | Durable original owner retained; no second inbound turn/send/credit |
-| STOP reply to A1 | Exact verified quote | Only merchant A suppressed, none of B changed |
-| Standalone STOP | No quoted context | All registered merchants for sender suppressed, no ordinary guidance |
-| Unknown order quote | Message ID not linked to a verified recovery | No guessed recovery/merchant; neutral guidance or ignore |
+| Case                 | Input                                                          | Expected durable and outbound result                                                                  |
+| -------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| A1 text quote        | `contextMessageId=wamid.A1`, inbound `type=text`               | A1 recovery Conversation only; B untouched; one AI turn when active                                   |
+| B1 audio quote       | `contextMessageId=wamid.B1`, inbound `type=audio`              | B1 recovery Conversation only, media retrieved/transcribed only after successful routing; A untouched |
+| A2 voice quote       | `contextMessageId=wamid.A2`, valid 120-second-or-shorter audio | A2 exact recovery, not A1 or B1; no duplicate conversation                                            |
+| Same phone, no quote | Context null with multiple candidates, text                    | One neutral guidance, no AI, no credit, no shop disclosure                                            |
+| Same phone, no quote | Context null with multiple candidates, audio                   | One neutral guidance, no media fetch or transcription, no AI or credit                                |
+| Invalid quote        | Unknown/unsent/cross-recipient provider ID                     | INVALID_REFERENCE guidance only; **no** fallback to latest merchant                                   |
+| Wrong sender         | Wrong WABA/phone number ID                                     | Ignored, no shop lookup or guidance                                                                   |
+| Historical quote     | Valid B1 but Woo newer recovery generation exists              | Persist historical inbound in B1 only; no active AI, new session or revive                            |
+| Replay               | Same inbound `providerMessageId` with a different quote ID     | Durable original owner retained; no second inbound turn/send/credit                                   |
+| STOP reply to A1     | Exact verified quote                                           | Only merchant A suppressed, none of B changed                                                         |
+| Standalone STOP      | No quoted context                                              | All registered merchants for sender suppressed, no ordinary guidance                                  |
+| Unknown order quote  | Message ID not linked to a verified recovery                   | No guessed recovery/merchant; neutral guidance or ignore                                              |
 
 - All 20 supported locales retain merchant identity and direct WhatsApp Reply/text/voice semantics in approved template revisions, with frozen parameter indices and Meta approval; the system test can inspect locale fixture/canonical registration snapshots without emitting 20 live sends.
 - Verify a missing/compliant-unapproved template produces typed no-send; zero provider send, zero accepted initial attempt or newly charged credit. A live confirmed send must have provider ID/sent timestamp and exact outbound-message/attempt link.
@@ -100,7 +100,7 @@ None. System tests are terminal; no implementation or publication task may depen
 
 ## Acceptance Criteria
 
-- [ ] Every valid quoted inbound text/audio is assigned to the *exact* original recovery/merchant, with no duplicate conversation/charge or cross-tenant data exposure; wrong/unknown quotes and sender identity fail closed.
+- [ ] Every valid quoted inbound text/audio is assigned to the _exact_ original recovery/merchant, with no duplicate conversation/charge or cross-tenant data exposure; wrong/unknown quotes and sender identity fail closed.
 - [ ] Shared sender and customer with two+ merchants never resolves ambiguous context-free messages to the newest merchant; guidance asks for Reply to the specific message and supports text/voice, no unnecessary media download.
 - [ ] SHOPIFY and WOOCOMMERCE approved templates each display the authenticated merchant identity and 20-locale-safe instruction; unapproved revisions do not send a misleading instruction.
 - [ ] STOP merchant-specific quoted and all-merchant standalone suppression, historical recovery handling, voice duration limit, no-contact admission, moderation, credit and conversation invariants hold.

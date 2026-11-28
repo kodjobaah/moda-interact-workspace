@@ -274,13 +274,16 @@ Do not add a `CREATE_TOOL_WITH_INITIAL_DRAFT` Prisma enum value. The business/au
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `src/commerce/publication/lifecycle.ts`
 - `tests/commerce-lifecycle.test.ts`
 
 ### Work Completed
+
 - Added `createToolWithInitialDraft`, using one `CREATE_TOOL` lifecycle command and transaction for Tool plus revision-one `DRAFT` creation.
 - Applied canonical `CommerceToolDraftDefinitionSchema` validation and required the definition name to match the Tool name.
 - Returned `toolId`, `toolRevisionId`, `editVersion: 1`, and the Tool `updatedAt` from the single operation.
@@ -288,6 +291,7 @@ Ready for Review
 - Added atomic rollback, replay, conflict, mismatch, revision-shape, and legacy compatibility coverage.
 
 ### Validation Results
+
 - `npm run test:arch021-tool-authoring-common`: 7 files passed, 81 tests passed.
 - Focused `tests/commerce-lifecycle.test.ts`: 34 tests passed.
 - Targeted ESLint for changed files: passed with zero warnings.
@@ -296,9 +300,11 @@ Ready for Review
 - No database migration, Prisma persistence-path change, Studio Server Action, or browser authoring refactor was introduced.
 
 ### Deviations
+
 - The fresh implementation worktree required `npm ci` before validation because dependencies were not materialized; package installation completed successfully with existing peer/engine/audit warnings.
 
 ### Assumptions
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, claim commit `81239640d90371611fd0fafab1750e8339a8154c`, synchronized with its remote branch.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, implementation commit `4fb736076901639b17b3d2f93061fc4b8c225173`, synchronized with `origin/task/ARCH-021-COMMERCE-036`.
@@ -307,14 +313,17 @@ Ready for Review
 - Parent report branch is clean and local/remote parity was verified after the report-only correction was pushed.
 
 ### Unresolved Issues
+
 Repository-wide typecheck remains baseline-bearing outside the task-owned files and was not altered.
 
 ### Architectural Concerns
+
 None
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes

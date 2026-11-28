@@ -19,6 +19,7 @@ enables: []
 created: 2026-10-12
 updated: 2026-10-12
 ---
+
 # ARCH-036-WOOCOMMERCE-001 — Superseded — Woo coupon snapshot uploader not required
 
 ## Architecture
@@ -33,7 +34,6 @@ Archive the previously defined WooCommerce plugin-driven coupon synchronisation 
 
 ## Context
 
-
 ARCH-036 now uses direct Background reads of WooCommerce REST coupons with its authorised, encrypted Woo read grant. No coupon upload flow, Action Scheduler sync job, WordPress coupon hook producer or API proxy is required.
 
 ## Scope
@@ -46,7 +46,6 @@ No plugin snapshot push, Action Scheduler sync, coupon lifecycle hook, inbound b
 
 ## Requirements
 
-
 Do not claim or implement. `ARCH-036-BACKGROUND-001` owns periodic bounded coupon fetching and catalogue reconciliation. `ARCH-036-BACKGROUND-003` owns live read/eligibility at send time. The Woo plugin retains the normal merchant-facing UI and its existing read access / connection flows.
 
 ## Work Items
@@ -55,7 +54,6 @@ Do not claim or implement. `ARCH-036-BACKGROUND-001` owns periodic bounded coupo
 - [x] Remove all downstream task dependencies on this superseded task.
 
 ## Interfaces / Contracts
-
 
 None — superseded. No plugin push event or payload contract.
 

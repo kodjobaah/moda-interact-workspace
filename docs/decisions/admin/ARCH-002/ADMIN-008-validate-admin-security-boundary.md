@@ -23,6 +23,7 @@ enables:
 created: 2026-08-31
 updated: 2026-09-02
 ---
+
 # Validate Platform-Admin Security and Deployment Contract
 
 ## Objective
@@ -258,6 +259,7 @@ A bounded dependency-injection/module-mock seam is acceptable. A textual
 gate.
 
 ### 3. Google unbound/bound identity tests must exercise the real sign-in
+
 authorization path
 
 The current test executes `canBindPlatformAdmin(...)`, but `auth.ts` does not
@@ -675,4 +677,3 @@ It does **not** automatically change those tasks to Ready or start them.
 
 `moda_architect` must re-evaluate each task's complete set of direct
 dependencies after the accepted Admin changes are committed/pushed.
-

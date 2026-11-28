@@ -212,7 +212,7 @@ Make the repository's default test path safe: no PostgreSQL integration should e
 
 **A1-R2 — Completion Report lacks required launcher-resolved worktree evidence (report/evidence correction required).**
 
-The report provides pushed commits and says task worktrees are clean, but omits the canonical primary workspace root, launcher-resolved *both* physical task-worktree paths, parent/implementation task branches, preparation/synchronization with remote task branches and `origin/main`, recursive submodule synchronization status and attempt claim evidence. Restore those facts from the actual prepared launcher packet and record them in the Completion Report. A clean checkout or pushed commit is not sufficient proof of physical isolation. If execution used the shared checkout or another task's worktree, restore the canonical task worktrees, check out the already-pushed task branch there, rerun required validation and correct the report; do not create code churn only to manufacture a new commit.
+The report provides pushed commits and says task worktrees are clean, but omits the canonical primary workspace root, launcher-resolved _both_ physical task-worktree paths, parent/implementation task branches, preparation/synchronization with remote task branches and `origin/main`, recursive submodule synchronization status and attempt claim evidence. Restore those facts from the actual prepared launcher packet and record them in the Completion Report. A clean checkout or pushed commit is not sufficient proof of physical isolation. If execution used the shared checkout or another task's worktree, restore the canonical task worktrees, check out the already-pushed task branch there, rerun required validation and correct the report; do not create code churn only to manufacture a new commit.
 
 **A1-R3 — Disposition of unrelated full-suite failures (verification/report correction, not feature refactor).**
 
@@ -244,7 +244,6 @@ Recipient flow is conforming within BACKGROUND-007's bounded business scope. The
 ### Follow-up
 
 Return the **same** `ARCH-028-BACKGROUND-007` task to `ready`, clear its execution claim, retain `attempt: 1` and have `moda_background` perform the bounded test-routing/evidence correction on Attempt 2. Run focused recipient tests, both normal and disposable integration validation as applicable, build, Prisma validation and diff check; publish the mirrored task branches and resubmit. Do not start BACKGROUND-005 or BACKGROUND-012, modify other service business code, or create/update any `docs/decisions/**/_index.md` file before user-requested final reconciliation.
-
 
 ### Attempt 2 — Acceptance Review (2026-10-09)
 

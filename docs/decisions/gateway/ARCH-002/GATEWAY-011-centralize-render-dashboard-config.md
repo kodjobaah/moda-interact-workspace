@@ -20,6 +20,7 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
+
 # Move Externally Supplied Render Configuration into Reusable Environment Groups
 
 ## Architecture
@@ -564,7 +565,6 @@ Do not modify `moda-interact-system-test` from this gateway task.
 - production capacity proof;
 - provider secret rotation;
 - custom-domain implementation (`GATEWAY-009`).
-
 
 ## Architect Correction — Attempt 2
 

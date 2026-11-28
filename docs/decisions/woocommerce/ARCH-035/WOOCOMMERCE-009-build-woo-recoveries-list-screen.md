@@ -41,6 +41,7 @@ Replace the native Woo Recoveries placeholder with the Shopify-parity filterable
 Shopify RecoveryList.tsx renders date presets, from/to range, search, status filter, tenant time zone, paginated recovery rows and explicit never-used/empty/error states. Woo has no real Recoveries screen.
 
 Source references:
+
 - Shopify: app/routes/app/recoveries/RecoveryList.tsx; app/routes/app/recoveries/recovery-list-state.ts.
 - Woo: includes/Admin/NativeNavigation.php.
 

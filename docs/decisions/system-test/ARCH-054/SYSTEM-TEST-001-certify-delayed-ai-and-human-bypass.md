@@ -31,9 +31,7 @@ created: 2026-10-31
 updated: 2026-11-02
 ---
 
-
 # ARCH-054-SYSTEM-TEST-001: Certify delayed AI replies and immediate human response end to end
-
 
 ## Architecture
 
@@ -43,26 +41,21 @@ Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md
 
 Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
 
-
 ## Objective
 
 Black-box certify the merchant delay control, AI scheduling, tenancy, text/voice, human control and final Meta admission across Shopify and WooCommerce.
-
 
 ## Context
 
 ARCH-054 adds a **merchant-selectable integer 0–30 minute AI reply delay** to the existing ARCH-040 recovery-conversation processor and handover controls, leaving merchant-authored HUMAN replies without configured delay. See the parent architecture and current snapshot for specific boundaries.
 
-
 ## Scope
 
 Add `ARCH054-AI-DELAY-001` and `ARCH054-HUMAN-BYPASS-001` to `catalogue/scenarios.json` using existing scenario schema; implement modular fixture/executor/assertion helpers under `test/harness/arch054/` rather than one 300-line script; add harness tests and evidence output through existing `scripts/run-system-tests.js`. Test disposable PostgreSQL/Redis and Meta emulator, not production credentials.
 
-
 ## Out of Scope
 
 No unrelated architecture changes, new standalone chat service, per-user timer jobs, invented provider error explanations, or updates to `docs/decisions/**/_index.md`. No implementation outside the assigned repository.
-
 
 ## Requirements
 
@@ -72,17 +65,14 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 - Shared sender, same phone across two shops: quoted inbound context resolves independently, two deadlines are independent; no cross-shop message/credit leakage. STOP remains immediate regardless of delay. No false "exactly once provider delivery" assertions.
 - Test 0 preserves quiet/settle behaviour and initial recovery outreach/follow-up schedule unchanged. Verify original provider error logging, redaction, correlation and no swallowed exceptions.
 
-
 ## Work Items
 
 - [ ] Implement two catalogue scenarios and modular fixtures/executors/assertions; ensure preflight readiness before running.
 - [ ] Record commands, test environment, container cleanup and pass/fail evidence for both platforms.
 
-
 ## Interfaces / Contracts
 
 Existing WhatsApp ingress, recovery and human send contracts; published v1 merchant delay contract. This terminal system-test task creates no app API or database schema.
-
 
 ## Dependencies
 
@@ -98,32 +88,26 @@ Existing WhatsApp ingress, recovery and human send contracts; published v1 merch
 - ARCH-054-BACKGROUND-002
 - ARCH-054-BACKGROUND-003
 
-
 ## Enables
 
 None
-
 
 ## Acceptance Criteria
 
 - [ ] Every required scenario passes or is explicitly blocked with reproducible evidence; customer never sees early AI or stale human-owned AI response.
 - [ ] Merchant-authored HUMAN command is not artificially delayed; multi-merchant tenant isolation maintained.
 
-
 ## Validation
 
 - [ ] `npm run validate:catalogue`; `npm run system:messaging:plan`, then `node scripts/run-system-tests.js --scenario ARCH054-AI-DELAY-001,ARCH054-HUMAN-BYPASS-001 --execute`; `git diff --check`.
-
 
 ## Stop Condition
 
 After all required Work Items, Acceptance Criteria and Validation are complete, update Completion Report, set status to `review`, return control to `moda_architect` and **STOP**. Do not implement dependent tasks. Publication tasks do not rerun accepted implementation validation.
 
-
 ## Implementation Notes
 
 Implement only the identified repository-owned changes; preserve original provider/SDK errors in shared structured logs and rethrow failures to the owning retry/admission boundary.
-
 
 ## Completion Report
 
@@ -150,7 +134,6 @@ None
 ### Worktree and Git Evidence
 
 Not materialised; implementing agent must record launcher-prepared dedicated parent/implementation worktree paths, start-of-attempt sync, branch SHAs, submodule pins and cleanup.
-
 
 ## Architect Review
 
@@ -182,11 +165,9 @@ None
 
 Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-054-BACKGROUND-003: ready. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
 
-
 ## Dependency reconciliation — 2 November 2026
 
 BACKGROUND-002 is Complete after Attempt 2 architect acceptance. BACKGROUND-003 is Ready but unfinished; this system task remains Pending. No execution or certification is implied.
-
 
 ## Dependency readiness — 2 November 2026
 

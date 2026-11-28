@@ -12,11 +12,11 @@ priority: 100
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: 
+depends_on:
   - ARCH-007-BACKGROUND-004
   - ARCH-007-MESSAGING-001
   - ARCH-007-SHARED-004
-enables: 
+enables:
   - ARCH-007-BACKGROUND-008
   - ARCH-007-SYSTEM-TEST-003
 created: 2026-09-07
@@ -98,7 +98,6 @@ Inspect the repository `package.json` first. Run the focused tests required by t
 
 Exact provider-status Shared dependency for this task: `@modainteract/moda-interact-shared@0.7.4`.
 
-
 Luna deterministic-execution guardrails:
 
 - Treat this task file as the complete implementation contract. Do not infer additional product policy from old billing code.
@@ -109,7 +108,6 @@ Luna deterministic-execution guardrails:
 - Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
 - Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-BACKGROUND-005` branch and the mirrored parent-workspace `task/ARCH-007-BACKGROUND-005` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
 - Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
-
 
 ## Completion Report
 
@@ -155,17 +153,17 @@ The two unrelated `pending-recovery-candidate` baseline failures remain for arch
 Task branch: task/ARCH-007-BACKGROUND-005
 
 Implementation repository:
-  repository: moda-interact-background
-  commit: de619dc
-  remote branch: origin/task/ARCH-007-BACKGROUND-005
-  pushed: yes
+repository: moda-interact-background
+commit: de619dc
+remote branch: origin/task/ARCH-007-BACKGROUND-005
+pushed: yes
 
 Parent workspace:
-  task file: docs/decisions/background/ARCH-007/BACKGROUND-005-apply-provider-status-accounting.md
-  commit: 77ece72
-  remote branch: origin/task/ARCH-007-BACKGROUND-005
-  pushed: yes
-  submodule gitlink staged: no
+task file: docs/decisions/background/ARCH-007/BACKGROUND-005-apply-provider-status-accounting.md
+commit: 77ece72
+remote branch: origin/task/ARCH-007-BACKGROUND-005
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-017-DATABASE-001
+  - ARCH-017-DATABASE-001
 enables: []
 created: 2026-09-18
 updated: 2026-09-18
@@ -636,7 +636,6 @@ Set task to `review`. Completion Report must include exact implementation/parent
 - start-of-attempt synchronization was already completed by the prepared launcher packet; no shared checkout or another task worktree was used; no main branch modified.
 
 Task status is `review`; executor and claimed_at are cleared for architect review. Return control to `moda_architect`.
-
 
 ## Architect Review — Attempt 1 — Changes Requested
 

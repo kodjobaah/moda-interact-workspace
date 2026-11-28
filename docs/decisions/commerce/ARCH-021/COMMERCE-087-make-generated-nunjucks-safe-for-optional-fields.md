@@ -274,7 +274,6 @@ The runtime result has already passed the canonical Result contract before rende
 
 ### Attempt 1
 
-
 ### Status
 
 Ready for Rework
@@ -285,7 +284,6 @@ The repository agent executed Attempt 1 against a non-canonical duplicate C087 t
 `docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-optional-safe.md`.
 
 That duplicate used the same task ID but a different contract and is removed by this architect reconciliation. The implementation/report evidence below is preserved verbatim in substance so the next attempt does not lose its execution history.
-
 
 ### Status
 
@@ -341,6 +339,7 @@ None. Strict undefined rendering, the persisted `nunjucks.v1` shape, canonical s
 Task branch: `task/ARCH-021-COMMERCE-087`
 
 Physical worktree isolation:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-087`
 - parent branch: `task/ARCH-021-COMMERCE-087`
@@ -351,18 +350,21 @@ Physical worktree isolation:
 - another task worktree reused: no
 
 Start-of-attempt synchronization:
+
 - parent remote task branch fast-forwarded: yes (launcher-prepared; verified current before report update)
 - parent `origin/main` incorporated: yes
 - implementation remote task branch fast-forwarded: not-needed (no remote task ref existed before publication)
 - implementation `origin/main` incorporated: yes
 
 Implementation repository:
+
 - repository: `moda-interact-commerce`
 - implementation commit: `8905d9b` (C087 implementation `dfefb3f`; mainline merge `8905d9b`)
 - remote branch: `origin/task/ARCH-021-COMMERCE-087`
 - pushed: yes
 
 Parent workspace:
+
 - task file: `docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-optional-safe.md`
 - commit: `072447753bd85d7fd7fa91c7c93d5e69c036444c` (completion report)
 - remote branch: `origin/task/ARCH-021-COMMERCE-087`
@@ -373,7 +375,6 @@ Merged to implementation main: no
 Merged to workspace main: no
 
 ### Attempt 2
-
 
 ### Status
 
@@ -416,11 +417,13 @@ None known. The accepted C084 grammar, persisted `nunjucks.v1` shape, strict ren
 Task branch: `task/ARCH-021-COMMERCE-087`
 
 Implementation repository: `moda-interact-commerce`
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-087`
 - Implementation commit: `80861a0` (`fix(commerce): normalize optional template values`)
 - Remote branch: `origin/task/ARCH-021-COMMERCE-087` (pushed: yes)
 
 Parent workspace:
+
 - Canonical task file: `docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md`
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-087`
 - Parent branch: `task/ARCH-021-COMMERCE-087` (pushed: yes)

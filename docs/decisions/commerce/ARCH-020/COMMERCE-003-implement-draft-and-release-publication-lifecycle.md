@@ -249,7 +249,7 @@ Attempt 4 implements the remaining A3-R1 rehearsal correction:
 - Report mappings now use the actual lifecycle test names. The prior unsupported
   corrupted-hash result claim is not repeated; the existing test is accurately
   named `rejects malformed ranges and incompatible activation/rollback without
-  pointer or audit writes`.
+pointer or audit writes`.
 
 ### Validation Results
 
@@ -432,22 +432,22 @@ Commands and outcomes for Attempt 3:
 Requirement-to-fixture matrix:
 
 - **A2-R1 / input boundary:** `rejects injection fields and malformed capability
-  draft content before writes` verifies unknown privilege fields, Shared
+draft content before writes` verifies unknown privilege fields, Shared
   configuration and binding validation, and prompt bounds with zero writes and
   zero audits. `detaches a validated request before the first await` mutates the
   caller object while authorization is blocked and proves the stored command
   and audit retain the admitted values.
 - **A2-R2 / release compatibility:** `validates release compatibility ranges`
   rejects malformed ranges with zero release/audit writes. `checks immutable
-  release metadata and compatibility on activate and rollback` exercises valid
+release metadata and compatibility on activate and rollback` exercises valid
   activation and rollback, incompatible runners, corrupted hashes and stale CAS;
   invalid cases leave the pointer and audit count unchanged.
 - **A2-R3 / feature identity and storage allocation:** `enforces canonical
-  feature identity and ISO metadata CAS` verifies nullable feature identity,
+feature identity and ISO metadata CAS` verifies nullable feature identity,
   read-only existence lookup, the three binding rules, storage-allocated IDs,
   ISO timestamps and stale timestamp rejection.
 - **A2-R4 / transaction outcomes:** `allocates concurrent revisions and rejects
-  a stale edit CAS`, `recovers the committed result after a lost response`, and
+a stale edit CAS`, `recovers the committed result after a lost response`, and
   `rejects role denial and unavailable registries without writes` prove the
   required two-service local cases. Existing replay, altered-payload conflict,
   pointer race, rollback, pre-audit rollback, shared-tool, immutable release and
@@ -599,14 +599,14 @@ Commands and outcomes for Attempt 2:
 Requirement-to-fixture matrix:
 
 - **R1 / Shared validation and hashes:** `accepts the Shared baseline and optional
-  required keyword...`, `hashes only the Shared six-key tool definition`, and
+required keyword...`, `hashes only the Shared six-key tool definition`, and
   `keeps malformed draft content editable but rejects it atomically at
-  publication`. Valid cases commit normally; invalid publication leaves the
+publication`. Valid cases commit normally; invalid publication leaves the
   draft unchanged and adds **0** publication audit rows.
 - **R2 / immutable ownership and membership:** `detaches admitted inputs,
-  snapshots, and replay results`, `rejects duplicate release membership with
-  zero release/member/audit writes`, and `allows two capabilities to share one
-  revision and rejects conflicting tool revisions atomically`. Duplicate and
+snapshots, and replay results`, `rejects duplicate release membership with
+zero release/member/audit writes`, and `allows two capabilities to share one
+revision and rejects conflicting tool revisions atomically`. Duplicate and
   conflict cases add **0** releases and **0** audit rows; the valid shared-tool
   release commits one release and one audit.
 - **R3 / ports and transactions:** `serializes two service instances...` proves
@@ -708,7 +708,6 @@ Correct the Completion Report to name tests that actually exist. For example, th
 
 Publish the corrected rehearsal/tests/report on the same mirrored branches and return to Review. Normal preparation owns any next claim; this review retains Attempt3 and publishes the parent overlay before handoff. No database execution, production implementation rewrite, downstream launch, main merge or gitlink update is requested.
 
-
 ### Changes Requested — Attempt 2 — 2026-09-21
 
 **Current decision: Ready, Attempt 2 preserved, executor/claimed_at cleared; not accepted.** Supersedes earlier current-state wording, preserving review history. Reviewed published implementation `d5d7f566f89bf62b385af550b435c6199e87590e` and parent report `6f4359a3383d5e36056e66149cbaf89430ea4cad`; both remote heads verified and dedicated worktrees clean. No implementation changes, main integration, gitlink updates or dependent promotion.
@@ -759,7 +758,6 @@ Complete the local two-service fixture cases promised in original R3: concurrent
 
 Make A2-R1–R4 corrections in the files above, preserving accepted R1/R2/R4 progress. Run permanent regressions and focused/full local tests, lint, typecheck, build and diff check; keep database/live013 validation honestly pending with runnable instructions. Publish the same implementation/report task branches and return to Review. This parent review overlay is published before handoff; it does not claim Attempt3. No new downstream task is started.
 
-
 ### Changes Requested — Attempt 1 — 2026-09-21
 
 **Not accepted; Ready for corrections**, Attempt 1 preserved, executor/claimed_at cleared. Submission report says Ready for Review but YAML was in_progress; this review reconciles the authoritative state. Reviewed implementation 211b4a30a7fb73acf0195ca79e07e3c679a9e999 and report 194419508136a18edf21be8fa0decd3ebc162443 in clean dedicated worktrees. No new attempt or downstream promotion.
@@ -805,7 +803,6 @@ Independent harness at `/tmp/commerce003-review/lifecycle-review.test.ts` import
 For each R1–R4, report changed files, named tests, expected/actual state and audit counts, and exact command/results. Required local success: permanent regression cases plus C17 port/two-transaction/omitted-command fixtures, lint, typecheck/build and diff check. Keep developer database rehearsal and013 integration separately pending with runnable instructions, not marked passed. Preserve accepted dependencies and original report history. Commit/push the same implementation/report branches and resubmit; normal preparation owns the next claim after this review overlay is published.
 
 ### Historical definition review
-
 
 ### Review Status
 

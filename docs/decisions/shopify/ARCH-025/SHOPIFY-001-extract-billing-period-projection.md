@@ -173,7 +173,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Prefer direct function exports from the internal module rather than a class; this capability has no owned mutable state. Do not create a generic billing utility module. The extracted names may remain unchanged where practical so the diff is mechanically reviewable.
 
-
 ## Completion Report
 
 ### Status
@@ -195,26 +194,26 @@ Review
 - Implementation commit: `ed1e4eb` (`Extract billing period projection helpers`), pushed to `task/ARCH-025-SHOPIFY-001`.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-001`
-  parent branch: `task/ARCH-025-SHOPIFY-001`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-001`
-  implementation branch: `task/ARCH-025-SHOPIFY-001`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-001`
+parent branch: `task/ARCH-025-SHOPIFY-001`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-001`
+implementation branch: `task/ARCH-025-SHOPIFY-001`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent `origin/main` incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation `origin/main` incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent `origin/main` incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation `origin/main` incorporated: already-current
 
 Recursive implementation submodules:
-  `git submodule sync --recursive`: passed
-  `git submodule update --init --recursive`: passed
-  recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
-  preparation claim: Attempt 1, executor `copilot`, claim commit `c2b5751f3f2276ca1eefe149a59c26e63c1ba909`, pushed
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
+preparation claim: Attempt 1, executor `copilot`, claim commit `c2b5751f3f2276ca1eefe149a59c26e63c1ba909`, pushed
 
 ### Validation Results
 

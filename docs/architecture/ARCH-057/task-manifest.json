@@ -6,9 +6,7 @@
   "baseline_zip_sha256": "a2c582c7aecb087b5c997d953bb1ab398f4e0d90d4fa79d555f8dd267b7233ee",
   "parent_architecture": "docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md",
   "mandatory_contract": "docs/architecture/ARCH-057/task-contract.md",
-  "initial_ready": [
-    "ARCH-057-SHOPIFY-001"
-  ],
+  "initial_ready": ["ARCH-057-SHOPIFY-001"],
   "recommended_execution_order": [
     "ARCH-057-SHOPIFY-001",
     "ARCH-057-SHOPIFY-002",
@@ -30,58 +28,19 @@
       "repository": "moda-interact",
       "path": "package.json",
       "independent_owners": [
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-006"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-007"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-008"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-010"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-007"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-008"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-010"
-        ],
-        [
-          "ARCH-057-SHOPIFY-007",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-007",
-          "ARCH-057-SHOPIFY-010"
-        ],
-        [
-          "ARCH-057-SHOPIFY-008",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-008",
-          "ARCH-057-SHOPIFY-010"
-        ]
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-006"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-007"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-008"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-010"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-007"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-008"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-010"],
+        ["ARCH-057-SHOPIFY-007", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-007", "ARCH-057-SHOPIFY-010"],
+        ["ARCH-057-SHOPIFY-008", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-008", "ARCH-057-SHOPIFY-010"]
       ]
     }
   ],
@@ -206,9 +165,7 @@
       "priority": 20,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-001"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-001"],
       "enables": [
         "ARCH-057-SHOPIFY-003",
         "ARCH-057-SHOPIFY-004",
@@ -356,13 +313,8 @@
       "priority": 65,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-001"
-      ],
-      "enables": [
-        "ARCH-057-SHOPIFY-010",
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-001"],
+      "enables": ["ARCH-057-SHOPIFY-010", "ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md",
       "definition_sha256": "c1887bdcfb6bf6d8a850c14c743030214ebbe6fcca38532ab5a0bbd7aada6ea5",
       "declared_touchpoints": [
@@ -496,13 +448,8 @@
       "priority": 30,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-002"
-      ],
-      "enables": [
-        "ARCH-057-SHOPIFY-004",
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-002"],
+      "enables": ["ARCH-057-SHOPIFY-004", "ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-003-simplify-recovery-credit-purchases-and-refunds.md",
       "definition_sha256": "bb824837a74e7dfae3edb5c9d392e8e1b29f51eb043adb5335c6696d2bd72835",
       "declared_touchpoints": [
@@ -593,12 +540,8 @@
       "priority": 70,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-009"
-      ],
-      "enables": [
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-009"],
+      "enables": ["ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-010-bound-webhook-ingress-and-queue-publication.md",
       "definition_sha256": "c97ccf4eaa713a426f90ab6c6fd9b6ec8f59946d81503ada8cb48b451c3ade00",
       "declared_touchpoints": [
@@ -698,12 +641,8 @@
       "priority": 40,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-001"
-      ],
-      "enables": [
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-001"],
+      "enables": ["ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-005-simplify-support-inbox-reads-and-acknowledgements.md",
       "definition_sha256": "b8ee46b35acaf112eb968b18bd96769521dc2c3682006bc8ccc0fb34c393420c",
       "declared_touchpoints": [
@@ -781,9 +720,7 @@
         "ARCH-057-SHOPIFY-002",
         "ARCH-057-SHOPIFY-003"
       ],
-      "enables": [
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "enables": ["ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-004-consolidate-commercial-read-projections.md",
       "definition_sha256": "6e4403a091aad8b5c7a4c3e2694bb773d1687206b7ac168215ae969ae49b94e6",
       "declared_touchpoints": [
@@ -931,12 +868,8 @@
       "priority": 40,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-001"
-      ],
-      "enables": [
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-001"],
+      "enables": ["ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-006-reuse-recovery-read-context-and-preserve-command-admission.md",
       "definition_sha256": "c8e22c1f3da4c2878d16713055fe07e5f0b3bb10adc2b7f64f0f2cd6db06d7d6",
       "declared_touchpoints": [
@@ -1066,13 +999,8 @@
       "priority": 40,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-001"
-      ],
-      "enables": [
-        "ARCH-057-SHOPIFY-008",
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-001"],
+      "enables": ["ARCH-057-SHOPIFY-008", "ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-007-unify-settings-reads-and-guard-policy-writes.md",
       "definition_sha256": "9b239e3a5bfe631b5f5d3b2bc3b3bf278289bf3456782d7b43c63df6e6d61c98",
       "declared_touchpoints": [
@@ -1198,13 +1126,8 @@
       "priority": 50,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-001",
-        "ARCH-057-SHOPIFY-007"
-      ],
-      "enables": [
-        "ARCH-057-SHOPIFY-011"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-001", "ARCH-057-SHOPIFY-007"],
+      "enables": ["ARCH-057-SHOPIFY-011"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-008-simplify-merchant-knowledge-processing-and-refresh.md",
       "definition_sha256": "0ac330aa1a48f2c4bb7eccc5117334979e82c03b05fadcd0cc73df6d17ff942d",
       "declared_touchpoints": [
@@ -1400,9 +1323,7 @@
         "ARCH-057-SHOPIFY-009",
         "ARCH-057-SHOPIFY-010"
       ],
-      "enables": [
-        "ARCH-057-SHOPIFY-012"
-      ],
+      "enables": ["ARCH-057-SHOPIFY-012"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-011-complete-server-error-diagnostics.md",
       "definition_sha256": "df4843523c38de86e5180a4a4a9e5d5076e0e0a4e44b9762f9cfb3e823c4039e",
       "declared_touchpoints": [
@@ -1520,12 +1441,8 @@
       "priority": 90,
       "repository": "moda-interact",
       "assigned_agent": "moda_app",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-011"
-      ],
-      "enables": [
-        "ARCH-057-SYSTEM-TEST-001"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-011"],
+      "enables": ["ARCH-057-SYSTEM-TEST-001"],
       "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-012-enforce-domain-runtime-names.md",
       "definition_sha256": "18888b0c6b4b3288496a72217ec129743419e22f4dbc519b9155f4ece2d40d30",
       "declared_touchpoints": [
@@ -1613,9 +1530,7 @@
       "priority": 100,
       "repository": "moda-interact-system-test",
       "assigned_agent": "moda_system_test",
-      "depends_on": [
-        "ARCH-057-SHOPIFY-012"
-      ],
+      "depends_on": ["ARCH-057-SHOPIFY-012"],
       "enables": [],
       "definition": "docs/decisions/system-test/ARCH-057/SYSTEM-TEST-001-verify-shopify-persistence-and-diagnostics.md",
       "definition_sha256": "e82fc820df1b4e8e449efbd4b9463326b173c7098d9894e1adad798e4abe634c",

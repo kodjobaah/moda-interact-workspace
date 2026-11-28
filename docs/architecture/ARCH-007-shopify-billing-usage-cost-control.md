@@ -299,6 +299,7 @@ The initial Free plan has five lifetime recovery conversations. Usage does not r
 ### INV-005A — Free allowance adjustments are the supported testing/support override
 
 The canonical Free base allowance is 5. Effective Free allowance is `base + SUM(signed BillingAllowanceAdjustment)` for that durable shop. Positive adjustments may raise a test/support shop above 5; negative adjustments may lower it. Historical committed/reserved usage is never rewritten to make a lower allowance fit, and remaining capacity is never negative. Do not add `FREE_RECOVERY_LIMIT` environment switches, `isTestShop` branches or domain-name special cases. Every adjustment is append-only, reasoned and audited through Admin.
+
 ### INV-006 — Conversation consumption begins at successful provider initiation
 
 Creating a `Conversation` row alone does not consume/bill a recovery conversation. Admission first reserves capacity. A successful initial recovery-provider send commits the reservation and creates the durable recovery-conversation UsageEvent. A definitive pre-initiation failure releases the reservation. Duplicate/replayed workflow execution must resolve the same reservation/usage identity.
@@ -318,6 +319,7 @@ Every plan may enable a recovery-credit-pack Shopify usage meter. A merchant may
 ### INV-008B — Capacity consumption order is deterministic
 
 Free uses `effective lifetime Free allowance -> purchased credits -> block`. Paid uses `current-period included recovery allowance -> purchased credits -> normal Shopify recovery overage`. A recovery committed against purchased credits creates internal usage/accounting state but MUST NOT also publish the normal paid recovery meter for the same recovery.
+
 ### INV-009 — Exactly one Shopify usage unit per committed paid recovery conversation
 
 The positive billing event uses the plan mapping's configured Shopify usage meter handle and `value=1`. The stable event identity is derived from durable Moda usage identity and is <=64 characters. Repeated publisher attempts reuse it.
@@ -325,6 +327,7 @@ The positive billing event uses the plan mapping's configured Shopify usage mete
 ### INV-009A — Pack billing activates credits only after successful Shopify reporting
 
 A merchant pack request creates one durable `RECOVERY_CREDIT_PACK_PURCHASE +1` UsageEvent using the current plan's snapshotted pack meter and a permanent idempotency identity. The UI request does not grant credits. Only a linked UsageEvent that reaches `REPORTED` may activate its `RecoveryCreditPurchase` and increment purchased `grantedQuantity`, exactly once under replay/concurrency.
+
 ### INV-010 — Billing publication is asynchronous
 
 Shopify App Events is never called inside the recovery admission/provider-send transaction and is not a prerequisite for continuing the business workflow. A local committed UsageEvent/outbox record is the durable handoff.
@@ -364,6 +367,7 @@ Before tenant/database routing, Background applies atomic rolling-window admissi
 Raw abuse denial performs no tenant lookup, ConversationMessage persistence, turn enqueue, AI work or provider call. Settled-turn abuse denial preserves already-persisted raw fragments, marks the observed inbound version handled, clears processing/pending state and performs no outbound reservation, AI/tool work or provider call.
 
 Abuse counters are operational Redis state, replay-idempotent and atomic across applicable scopes. They are not merchant billing usage. No raw phone number or message content may appear in Redis key names or metric labels.
+
 ### INV-016 — All outbound WhatsApp sends use one admission boundary
 
 No recovery/AI/product/clarification workflow may call raw `sendWhatsAppText()` or equivalent provider send without durable message intent, an already-resolved durable `conversationId`, tenant ownership validation and effective safety admission. Recovery-linked conversations retain their recovery identity. Product/support/clarification flows use one unique active standalone scope per shop/customer/type and a 24-hour inactivity lifecycle so the per-conversation cap cannot be reset by creating a new row for every message. All existing direct-send paths must be routed through the accepted boundary.
@@ -398,6 +402,7 @@ configuration.
 ### INV-018A — Outbound capacity is reserved before CommerceAgent execution
 
 For customer-driven turns, Background persists/coalesces the inbound messages, resolves the durable conversation, then reserves a normal outbound slot before invoking CommerceAgent/LLM/tools. If normal slots are exhausted, CommerceAgent is not invoked; only the one deterministic reserved terminal response may be sent. If the terminal response was already used, further agent/provider work is suppressed for that conversation.
+
 ### INV-019 — Merchant notifications are idempotent SYSTEM messages
 
 Billing warning/exhaustion/plan-change notifications use existing MerchantSupportMessage SYSTEM semantics and a unique deterministic `sourceKey`. Action destinations are rendered by merchant UI from `systemCode`; URLs are not embedded inside translated message text.
@@ -718,6 +723,7 @@ pricing?                // bounded billable/category/model metadata only
 ```
 
 `shopId` is deliberately absent. Messaging cannot derive a trustworthy Moda tenant from the signed raw webhook without database state. Background resolves the local outbound message by `providerMessageId` and derives the owning shop from durable local state. Provider identities must never be used to guess a different tenant.
+
 - deterministic bounded source/idempotency-key helpers where identities cross repositories;
 - any shared billing-operation DTO actually transferred across runtime boundaries.
 
@@ -820,48 +826,48 @@ Recommended implementation order is encoded by task dependencies. Repository age
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-007-DATABASE-001 | moda_database | Complete | - |
-| ARCH-007-DATABASE-002 | moda_database | Complete | DATABASE-001 |
-| ARCH-007-DATABASE-003 | moda_database | Complete | DATABASE-002 |
-| ARCH-007-DATABASE-004 | moda_database | Complete | DATABASE-003 |
-| ARCH-007-DATABASE-005 | moda_database | **Ready — Changes Requested; next claim Attempt 2** | DATABASE-004 |
-| ARCH-007-DATABASE-006 | moda_database | Pending | DATABASE-005 |
-| ARCH-007-SHARED-001 | moda_shared | Complete | DATABASE-003 |
-| ARCH-007-SHARED-002 | moda_shared | Complete | SHARED-001 |
-| ARCH-007-SHARED-003 | moda_shared | Complete | SHARED-002 |
-| ARCH-007-SHARED-004 | moda_shared | Complete | SHARED-003 |
-| ARCH-007-SHARED-005 | moda_shared | Pending | DATABASE-005 |
-| ARCH-007-SHARED-006 | moda_shared | Pending | SHARED-005 |
-| ARCH-007-SHOPIFY-001 | moda_app | Complete | SHARED-002, DATABASE-003 |
-| ARCH-007-SHOPIFY-002 | moda_app | **Ready — Changes Requested, next claim Attempt 2** | SHOPIFY-001 |
-| ARCH-007-SHOPIFY-003 | moda_app | **Ready** | SHOPIFY-001 |
-| ARCH-007-SHOPIFY-004 | moda_app | Pending | SHOPIFY-002, DATABASE-005, SHARED-006, ADMIN-005 |
-| ARCH-007-MESSAGING-001 | moda_messaging | **Complete (Attempt 3)** | SHARED-002, SHARED-004 |
-| ARCH-007-BACKGROUND-001 | moda_background | Complete | SHARED-002, DATABASE-003 |
-| ARCH-007-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001 |
-| ARCH-007-BACKGROUND-003 | moda_background | Complete | BACKGROUND-002, SHOPIFY-001 |
-| ARCH-007-BACKGROUND-004 | moda_background | Complete | BACKGROUND-003, DATABASE-004 |
-| ARCH-007-BACKGROUND-005 | moda_background | **Ready** | BACKGROUND-004, MESSAGING-001, SHARED-004 |
-| ARCH-007-BACKGROUND-006 | moda_background | Complete | SHARED-002, DATABASE-002 |
-| ARCH-007-BACKGROUND-007 | moda_background | Complete | BACKGROUND-003, BACKGROUND-006 |
-| ARCH-007-BACKGROUND-008 | moda_background | Pending | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
-| ARCH-007-BACKGROUND-009 | moda_background | Pending | DATABASE-005, SHARED-006, BACKGROUND-007 |
-| ARCH-007-BACKGROUND-010 | moda_background | Complete | DATABASE-006, BACKGROUND-004 |
-| ARCH-007-BACKGROUND-011 | moda_background | Complete | BACKGROUND-010 |
-| ARCH-007-BACKGROUND-012 | moda_background | Ready | BACKGROUND-010, BACKGROUND-011 |
-| ARCH-007-ADMIN-001 | moda_admin | **Ready** | SHARED-002, DATABASE-003 |
-| ARCH-007-ADMIN-002 | moda_admin | Pending | ADMIN-001 |
-| ARCH-007-ADMIN-003 | moda_admin | Pending | ADMIN-002, BACKGROUND-007, SHOPIFY-001 |
-| ARCH-007-ADMIN-004 | moda_admin | Pending | ADMIN-003, BACKGROUND-008 |
-| ARCH-007-ADMIN-005 | moda_admin | Pending | ADMIN-001, DATABASE-005, SHARED-006 |
-| ARCH-007-GATEWAY-001 | moda_gateway | Pending | BACKGROUND-008 |
-| ARCH-007-SYSTEM-TEST-001 | moda_system_test | Pending / manual-gated | SHOPIFY-002, BACKGROUND-003, ADMIN-002 |
-| ARCH-007-SYSTEM-TEST-002 | moda_system_test | Pending / manual-gated | SHOPIFY-002, BACKGROUND-008, ADMIN-004, GATEWAY-001 |
-| ARCH-007-SYSTEM-TEST-003 | moda_system_test | Pending / manual-gated | SHOPIFY-003, MESSAGING-001, BACKGROUND-005, BACKGROUND-008, ADMIN-004, GATEWAY-001 |
-| ARCH-007-SYSTEM-TEST-004 | moda_system_test | Pending / manual-gated | SHOPIFY-004, BACKGROUND-009, BACKGROUND-008, ADMIN-005 |
-| ARCH-007-SYSTEM-TEST-005 | moda_system_test | Pending / manual-gated | BACKGROUND-010, BACKGROUND-004, BACKGROUND-011, BACKGROUND-012 |
+| Task                     | Owner            | Status                                              | Depends On                                                                         |
+| ------------------------ | ---------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| ARCH-007-DATABASE-001    | moda_database    | Complete                                            | -                                                                                  |
+| ARCH-007-DATABASE-002    | moda_database    | Complete                                            | DATABASE-001                                                                       |
+| ARCH-007-DATABASE-003    | moda_database    | Complete                                            | DATABASE-002                                                                       |
+| ARCH-007-DATABASE-004    | moda_database    | Complete                                            | DATABASE-003                                                                       |
+| ARCH-007-DATABASE-005    | moda_database    | **Ready — Changes Requested; next claim Attempt 2** | DATABASE-004                                                                       |
+| ARCH-007-DATABASE-006    | moda_database    | Pending                                             | DATABASE-005                                                                       |
+| ARCH-007-SHARED-001      | moda_shared      | Complete                                            | DATABASE-003                                                                       |
+| ARCH-007-SHARED-002      | moda_shared      | Complete                                            | SHARED-001                                                                         |
+| ARCH-007-SHARED-003      | moda_shared      | Complete                                            | SHARED-002                                                                         |
+| ARCH-007-SHARED-004      | moda_shared      | Complete                                            | SHARED-003                                                                         |
+| ARCH-007-SHARED-005      | moda_shared      | Pending                                             | DATABASE-005                                                                       |
+| ARCH-007-SHARED-006      | moda_shared      | Pending                                             | SHARED-005                                                                         |
+| ARCH-007-SHOPIFY-001     | moda_app         | Complete                                            | SHARED-002, DATABASE-003                                                           |
+| ARCH-007-SHOPIFY-002     | moda_app         | **Ready — Changes Requested, next claim Attempt 2** | SHOPIFY-001                                                                        |
+| ARCH-007-SHOPIFY-003     | moda_app         | **Ready**                                           | SHOPIFY-001                                                                        |
+| ARCH-007-SHOPIFY-004     | moda_app         | Pending                                             | SHOPIFY-002, DATABASE-005, SHARED-006, ADMIN-005                                   |
+| ARCH-007-MESSAGING-001   | moda_messaging   | **Complete (Attempt 3)**                            | SHARED-002, SHARED-004                                                             |
+| ARCH-007-BACKGROUND-001  | moda_background  | Complete                                            | SHARED-002, DATABASE-003                                                           |
+| ARCH-007-BACKGROUND-002  | moda_background  | Complete                                            | BACKGROUND-001                                                                     |
+| ARCH-007-BACKGROUND-003  | moda_background  | Complete                                            | BACKGROUND-002, SHOPIFY-001                                                        |
+| ARCH-007-BACKGROUND-004  | moda_background  | Complete                                            | BACKGROUND-003, DATABASE-004                                                       |
+| ARCH-007-BACKGROUND-005  | moda_background  | **Ready**                                           | BACKGROUND-004, MESSAGING-001, SHARED-004                                          |
+| ARCH-007-BACKGROUND-006  | moda_background  | Complete                                            | SHARED-002, DATABASE-002                                                           |
+| ARCH-007-BACKGROUND-007  | moda_background  | Complete                                            | BACKGROUND-003, BACKGROUND-006                                                     |
+| ARCH-007-BACKGROUND-008  | moda_background  | Pending                                             | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001                        |
+| ARCH-007-BACKGROUND-009  | moda_background  | Pending                                             | DATABASE-005, SHARED-006, BACKGROUND-007                                           |
+| ARCH-007-BACKGROUND-010  | moda_background  | Complete                                            | DATABASE-006, BACKGROUND-004                                                       |
+| ARCH-007-BACKGROUND-011  | moda_background  | Complete                                            | BACKGROUND-010                                                                     |
+| ARCH-007-BACKGROUND-012  | moda_background  | Ready                                               | BACKGROUND-010, BACKGROUND-011                                                     |
+| ARCH-007-ADMIN-001       | moda_admin       | **Ready**                                           | SHARED-002, DATABASE-003                                                           |
+| ARCH-007-ADMIN-002       | moda_admin       | Pending                                             | ADMIN-001                                                                          |
+| ARCH-007-ADMIN-003       | moda_admin       | Pending                                             | ADMIN-002, BACKGROUND-007, SHOPIFY-001                                             |
+| ARCH-007-ADMIN-004       | moda_admin       | Pending                                             | ADMIN-003, BACKGROUND-008                                                          |
+| ARCH-007-ADMIN-005       | moda_admin       | Pending                                             | ADMIN-001, DATABASE-005, SHARED-006                                                |
+| ARCH-007-GATEWAY-001     | moda_gateway     | Pending                                             | BACKGROUND-008                                                                     |
+| ARCH-007-SYSTEM-TEST-001 | moda_system_test | Pending / manual-gated                              | SHOPIFY-002, BACKGROUND-003, ADMIN-002                                             |
+| ARCH-007-SYSTEM-TEST-002 | moda_system_test | Pending / manual-gated                              | SHOPIFY-002, BACKGROUND-008, ADMIN-004, GATEWAY-001                                |
+| ARCH-007-SYSTEM-TEST-003 | moda_system_test | Pending / manual-gated                              | SHOPIFY-003, MESSAGING-001, BACKGROUND-005, BACKGROUND-008, ADMIN-004, GATEWAY-001 |
+| ARCH-007-SYSTEM-TEST-004 | moda_system_test | Pending / manual-gated                              | SHOPIFY-004, BACKGROUND-009, BACKGROUND-008, ADMIN-005                             |
+| ARCH-007-SYSTEM-TEST-005 | moda_system_test | Pending / manual-gated                              | BACKGROUND-010, BACKGROUND-004, BACKGROUND-011, BACKGROUND-012                     |
 
 Individual task YAML is authoritative for execution state. System tests are terminal/manual-gated and must never block implementation/publication/infrastructure work.
 

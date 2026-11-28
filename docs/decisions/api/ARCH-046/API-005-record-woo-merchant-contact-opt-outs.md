@@ -20,9 +20,10 @@ enables:
   - ARCH-046-WOOCOMMERCE-007
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
-created: '2026-10-21'
+created: "2026-10-21"
 updated: 2026-10-22
 ---
+
 # Manage merchant recovery suppression for Woo customers
 
 ## Architecture
@@ -60,6 +61,7 @@ A merchant may choose not to recover a customer or receive a customer opt-out by
 - [x] Another merchant or browser without WP admin authorization cannot forge opt-out or grant.
 
 ## Work Items
+
 - [x] Accept only authenticated active installation and privileged WP admin-proxied request for the one unambiguous existing Woo Customer/active canonical phone within the authenticated merchant and explicit opt-out evidence reference; shop is always inferred from installation.
 - [x] Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and installation/phone changes; allow clearing only a merchant-owned recovery suppression after checking current GRANTED consent; never grant consent or clear CUSTOMER_STOP.
 - [x] Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on either command.
@@ -227,21 +229,27 @@ Observed in the 2026-10-22 local terminal log:
 ## Architect Review
 
 ### Review Status
+
 Pending — no implementation reviewed.
 
 ### Review Notes
+
 None.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Not assessed.
 
 ### Follow-up
+
 None.
 
 ## Developer Self-Review Passed/Accepted
@@ -260,7 +268,7 @@ completion decision is recorded below.
   `origin/main`, which was created after Attempt 1 began.
 - Original launcher preparation packet confirms the canonical parent and
   implementation worktree paths, task branch identity, `origin_main_incorporated:
-  already-current`, clean preparation, recursive database submodule
+already-current`, clean preparation, recursive database submodule
   initialization, passed `ARCH-045-DATABASE-002` dependency gate, and pushed
   Attempt 1 claim. Current Git worktree listings independently confirm both
   canonical registrations.
@@ -279,6 +287,7 @@ completion decision is recorded below.
   database contract question, not an API-005 acceptance failure.
 
 ### Completion Authority
+
 ## Developer Completion Decision
 
 The developer explicitly invoked `/moda_developer_update ARCH-046-API-005 complete` after the durable Attempt 1 Developer Self-Review Passed/Accepted record. No required Work Item or Acceptance Criterion is incomplete; the implementation task branch and parent task report are committed and pushed.

@@ -13,10 +13,10 @@ status: complete
 priority: 64
 attempt: 2
 depends_on:
-- ARCH-014-BACKGROUND-001
+  - ARCH-014-BACKGROUND-001
 enables:
-- ARCH-014-BACKGROUND-004
-- ARCH-014-BACKGROUND-005
+  - ARCH-014-BACKGROUND-004
+  - ARCH-014-BACKGROUND-005
 created: 2026-09-16
 updated: 2026-09-16
 ---

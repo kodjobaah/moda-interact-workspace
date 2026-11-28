@@ -84,7 +84,9 @@ interface WooGuardedInitialSender {
     idempotencyKey: string;
     recoveryCreditSourceKey: string;
   }): Promise<{ kind: "admitted" } | { kind: "suppressed"; reason: string }>;
-  findExistingAdmission(idempotencyKey: string): Promise<PersistedMessage | null>;
+  findExistingAdmission(
+    idempotencyKey: string,
+  ): Promise<PersistedMessage | null>;
 }
 ```
 
@@ -92,16 +94,16 @@ The canonical declaration and `PersistedMessage` type live in `woo-recovery-outr
 
 ### R2 — Final decision matrix
 
-| Current evidence at final permit | Required behaviour |
-|---|---|
-| Exact recipient GRANTED; no STOP/suppression; active installation; no known terminal state; verified Marketing template; no prior provider permit | Admit **once**, then use approved provider-delivery path after SQL commit |
-| Customer STOP or merchant suppression; consent withdrawn/unknown/recipient changed; shop/installation inactive | Suppress before provider permit; no Meta call; reversible credit reservation released |
-| Paid/cancelled/terminal order **already observed by Moda** or terminal recovery status | Suppress without Meta send even when candidate BullMQ job is absent |
-| Missing/Utility/Authentication/unverified template category | Suppress without Meta call, no credit consumed |
-| Database/guard dependency unavailable or unexpected failure | Fail closed and propagate; do not claim customer refusal or mark job completed |
-| Existing `PENDING` provider admission with uncertain outcome | Reconcile; **never** blindly send twice or release a potentially earned charge |
-| Existing provider-confirmed `SENT`/`DELIVERED`/`READ` | Return existing admission for BG004's idempotent finalization, no new Meta call |
-| Existing confirmed `FAILED` admission | Follow existing compensation/reconciliation; no second first-send attempt |
+| Current evidence at final permit                                                                                                                  | Required behaviour                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Exact recipient GRANTED; no STOP/suppression; active installation; no known terminal state; verified Marketing template; no prior provider permit | Admit **once**, then use approved provider-delivery path after SQL commit             |
+| Customer STOP or merchant suppression; consent withdrawn/unknown/recipient changed; shop/installation inactive                                    | Suppress before provider permit; no Meta call; reversible credit reservation released |
+| Paid/cancelled/terminal order **already observed by Moda** or terminal recovery status                                                            | Suppress without Meta send even when candidate BullMQ job is absent                   |
+| Missing/Utility/Authentication/unverified template category                                                                                       | Suppress without Meta call, no credit consumed                                        |
+| Database/guard dependency unavailable or unexpected failure                                                                                       | Fail closed and propagate; do not claim customer refusal or mark job completed        |
+| Existing `PENDING` provider admission with uncertain outcome                                                                                      | Reconcile; **never** blindly send twice or release a potentially earned charge        |
+| Existing provider-confirmed `SENT`/`DELIVERED`/`READ`                                                                                             | Return existing admission for BG004's idempotent finalization, no new Meta call       |
+| Existing confirmed `FAILED` admission                                                                                                             | Follow existing compensation/reconciliation; no second first-send attempt             |
 
 An initial-send reentry is still sequence **1** and follows the same final fence. A different checkout or shop may not reuse this attempt's provider idempotency key.
 
@@ -159,7 +161,7 @@ After the scope, criteria and validation are complete, set `status: review`, fil
 
 ## Implementation Notes
 
-The earlier BG004 definition required a Woo follow-up engine that ARCH-048 deliberately does not provide. This revision removes that *implementation prerequisite* and narrows the task to the real initial-send safety gap. It does **not** assert that the guard is already implemented. Do not alter the completed ARCH-048-BG004 service merely to make an unguarded `sendTemplate()` typecheck. If a safe adapter cannot be built using current provider-admission capabilities, return a concrete missing primitive to the architect rather than silently weakening the final fence. Do not update domain `_index.md` files.
+The earlier BG004 definition required a Woo follow-up engine that ARCH-048 deliberately does not provide. This revision removes that _implementation prerequisite_ and narrows the task to the real initial-send safety gap. It does **not** assert that the guard is already implemented. Do not alter the completed ARCH-048-BG004 service merely to make an unguarded `sendTemplate()` typecheck. If a safe adapter cannot be built using current provider-admission capabilities, return a concrete missing primitive to the architect rather than silently weakening the final fence. Do not update domain `_index.md` files.
 
 ## Completion Report
 
@@ -228,31 +230,31 @@ These commits record the implementation and validation corrections and remain pr
 - After developer Changes Requested, added race cases using separate PostgreSQL clients for STOP-before-permit and already-observed completed/cancelled order before a waiting permit, with durable dispatch-key assertions; a database rollback/logging/retry case; and a real Redis read-failure scenario using the existing test-only outreach sender. The latter is **not** proof of production worker composition.
 - Added provider failure/uncertain-outcome and ordinary HUMAN/AI existing-fence regression assertions in unit tests, and refined fixtures and exception-chain handling to satisfy lint. A prior focused run passed **102/102** (`typescript(20261025-200807)`); the production implementation was not altered by the subsequent test-only changes.
 - Split the former 975-line HUMAN dispatch integration test into seven independently focused suites (each at most 202 lines in the supplied snapshot), retaining 28 executable cases; restricted disposable integration **file-level** parallelism to avoid cross-suite interference through global due-command claims, while preserving within-test concurrency. This refactor and the corrected Woo race test are in `5e7a6d0`; all eight selected integration suites **passed 32/32** in `typescript(20261026-030803)`.
-- Added an infrastructure-only integration startup retry (`ac5d455`) that retries *only* Shared's PostgreSQL-readiness timeout once, logs safe diagnostic metadata through the canonical shared logger, and preserves original/secondary failures. Seven targeted retry tests passed; the integration and production failure boundaries remain fail-closed.
+- Added an infrastructure-only integration startup retry (`ac5d455`) that retries _only_ Shared's PostgreSQL-readiness timeout once, logs safe diagnostic metadata through the canonical shared logger, and preserves original/secondary failures. Seven targeted retry tests passed; the integration and production failure boundaries remain fail-closed.
 
 ### Validation Results
 
 Earlier evidence below spans 25–26 October 2026 and is retained as historical context. The Attempt 3 results are separate reruns against the synchronized implementation branch and are identified explicitly.
 
-| Validation | Verified result / source |
-|---|---|
-| Attempt 3 focused Woo/outbound unit regressions | **PASS: 78/78 tests across 5 files** using `npx vitest run` on `woo-guarded-initial-sender`, `woo-initial-delivery`, `woo-initial-send-fence`, `woo-recovery-outreach`, and `outbound-provider-failure` tests. |
-| Attempt 3 disposable PostgreSQL/Redis regressions | **PASS: 54/54 tests across 13 files** using `npm exec -- node scripts/test-integration.mjs` for Woo final permit/races/Redis faults; HUMAN/AI ownership, dispatch, billing, cancellation, claims and provider recovery/status; conversation services; and general/routing STOP fences. |
-| Attempt 3 bounded PostgreSQL startup-retry tests | **PASS: 7/7** via `node --test scripts/integration-startup-retry.test.mjs`. |
-| Attempt 3 repository lint | **PASS:** `npm run lint` (`eslint .`) completed without errors. |
-| Attempt 3 TypeScript and production build | **PASS:** `npx tsc --noEmit` completed without diagnostics; `npm run build` completed with Prisma Client v6.19.3 generation and TypeScript compilation. |
-| Attempt 3 Git validation | **PASS:** `git diff --check` reported no errors; implementation worktree remained clean and synchronized after validation. |
-| Earlier focused Woo/outbound unit regressions | **PASS: 102/102 tests** in `typescript(20261025-200807)` (earlier 89/89 suite also passed in `typescript(20261025-170947)`). Includes initial delivery, final fence and outbound provider failure assertions. |
-| Base Woo final-permit PostgreSQL integration | **PASS: 5/5** in `typescript(20261025-172449)`; current consent/recipient and installation changes, STOP, terminal state and idempotent provider permit. |
-| Concurrent Woo STOP/order/transaction rollback races | **PASS: 4/4** in `typescript(20261026-014840)` and again within the later 32/32 group; separate SQL-client lock ordering and rollback/retry. |
-| Seven refactored HUMAN/AI and provider/billing suites plus Woo race suite | **PASS: 8/8 suites, 32/32 tests** in `typescript(20261026-030803)`, including HUMAN dispatch, AI ownership/handover, provider recovery/status, follow-up billing, follow-up claims, cancellation races and Woo concurrency. No regression remains from the earlier parallel-suite interference. |
+| Validation                                                                            | Verified result / source                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Attempt 3 focused Woo/outbound unit regressions                                       | **PASS: 78/78 tests across 5 files** using `npx vitest run` on `woo-guarded-initial-sender`, `woo-initial-delivery`, `woo-initial-send-fence`, `woo-recovery-outreach`, and `outbound-provider-failure` tests.                                                                                              |
+| Attempt 3 disposable PostgreSQL/Redis regressions                                     | **PASS: 54/54 tests across 13 files** using `npm exec -- node scripts/test-integration.mjs` for Woo final permit/races/Redis faults; HUMAN/AI ownership, dispatch, billing, cancellation, claims and provider recovery/status; conversation services; and general/routing STOP fences.                      |
+| Attempt 3 bounded PostgreSQL startup-retry tests                                      | **PASS: 7/7** via `node --test scripts/integration-startup-retry.test.mjs`.                                                                                                                                                                                                                                 |
+| Attempt 3 repository lint                                                             | **PASS:** `npm run lint` (`eslint .`) completed without errors.                                                                                                                                                                                                                                             |
+| Attempt 3 TypeScript and production build                                             | **PASS:** `npx tsc --noEmit` completed without diagnostics; `npm run build` completed with Prisma Client v6.19.3 generation and TypeScript compilation.                                                                                                                                                     |
+| Attempt 3 Git validation                                                              | **PASS:** `git diff --check` reported no errors; implementation worktree remained clean and synchronized after validation.                                                                                                                                                                                  |
+| Earlier focused Woo/outbound unit regressions                                         | **PASS: 102/102 tests** in `typescript(20261025-200807)` (earlier 89/89 suite also passed in `typescript(20261025-170947)`). Includes initial delivery, final fence and outbound provider failure assertions.                                                                                               |
+| Base Woo final-permit PostgreSQL integration                                          | **PASS: 5/5** in `typescript(20261025-172449)`; current consent/recipient and installation changes, STOP, terminal state and idempotent provider permit.                                                                                                                                                    |
+| Concurrent Woo STOP/order/transaction rollback races                                  | **PASS: 4/4** in `typescript(20261026-014840)` and again within the later 32/32 group; separate SQL-client lock ordering and rollback/retry.                                                                                                                                                                |
+| Seven refactored HUMAN/AI and provider/billing suites plus Woo race suite             | **PASS: 8/8 suites, 32/32 tests** in `typescript(20261026-030803)`, including HUMAN dispatch, AI ownership/handover, provider recovery/status, follow-up billing, follow-up claims, cancellation races and Woo concurrency. No regression remains from the earlier parallel-suite interference.             |
 | Remaining Woo PostgreSQL, real Redis fault, general STOP and conversation regressions | **PASS: 5/5 suites, 22/22 tests** in `typescript(20261026-033946)`: recovery-conversation 11; Woo SQL fence 5; Woo Redis failure 1; general outbound STOP 3; routing-guidance STOP 2. Intentional Redis fault emitted a structured error and propagated without provider send or committed recovery charge. |
-| Bounded PostgreSQL startup-retry tests | **PASS: 7/7** via `node --test scripts/integration-startup-retry.test.mjs` in `typescript(20261026-033946)`. Failure-retry rules exclude test assertion failure, Redis faults and unrelated migration errors. |
-| Repository lint | **PASS:** `npm run lint` (`eslint .`) completed without errors in `typescript(20261026-033946)`. |
-| Repository TypeScript | **PASS:** `npx tsc --noEmit` completed without diagnostics in `typescript(20261026-033946)`. |
-| Production build | **PASS:** `npm run build` (`npm run prisma:generate && tsc`) completed without diagnostics; Prisma Client v6.19.3 generation succeeded in `typescript(20261026-033946)`. |
-| Implementation task branch | **PASS:** current tip `e88d9345015202e915a9198d4c6803f41e9adfdb` equals `origin/task/ARCH-046-BACKGROUND-004`; it includes the preserved implementation head `ac5d455` and the launcher synchronization merge. |
-| Canonical developer Attempt 3 launch, synchronization and claim | **PASS:** parent claim commit `0e41dc305038de33e6685354e782f032d13534e1`; launcher verified four dependencies complete and prepared the implementation worktree. Review and completion preserve Attempt 3 and clear claim fields. |
+| Bounded PostgreSQL startup-retry tests                                                | **PASS: 7/7** via `node --test scripts/integration-startup-retry.test.mjs` in `typescript(20261026-033946)`. Failure-retry rules exclude test assertion failure, Redis faults and unrelated migration errors.                                                                                               |
+| Repository lint                                                                       | **PASS:** `npm run lint` (`eslint .`) completed without errors in `typescript(20261026-033946)`.                                                                                                                                                                                                            |
+| Repository TypeScript                                                                 | **PASS:** `npx tsc --noEmit` completed without diagnostics in `typescript(20261026-033946)`.                                                                                                                                                                                                                |
+| Production build                                                                      | **PASS:** `npm run build` (`npm run prisma:generate && tsc`) completed without diagnostics; Prisma Client v6.19.3 generation succeeded in `typescript(20261026-033946)`.                                                                                                                                    |
+| Implementation task branch                                                            | **PASS:** current tip `e88d9345015202e915a9198d4c6803f41e9adfdb` equals `origin/task/ARCH-046-BACKGROUND-004`; it includes the preserved implementation head `ac5d455` and the launcher synchronization merge.                                                                                              |
+| Canonical developer Attempt 3 launch, synchronization and claim                       | **PASS:** parent claim commit `0e41dc305038de33e6685354e782f032d13534e1`; launcher verified four dependencies complete and prepared the implementation worktree. Review and completion preserve Attempt 3 and clear claim fields.                                                                           |
 
 The prior test-fixture violations (digits-only attempt recipient and funded `UsageReservation`) were corrected without loosening database constraints. The earlier PostgreSQL Docker readiness timeout was addressed with a narrowly bounded startup retry. Attempt 3 validation was rerun after the launcher synchronization and all selected checks passed. No task-level validation blocker remains; separately gated BG005/system-test work remains outstanding.
 

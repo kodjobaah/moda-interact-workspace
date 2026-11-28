@@ -24,7 +24,6 @@ created: 2026-10-14
 updated: 2026-10-15
 ---
 
-
 # Migrate Background Woo REST-read grant decryption to Shared
 
 ## Architecture

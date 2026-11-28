@@ -15,9 +15,9 @@ updated: 2026-10-22
 
 **Authoritative hosted contract:** `GET /v1/merchant/usage-history` retains the six existing bounded query filters (`view`, `periodId`, `kind`, `page`, `pageSize`, `periodCursor`) and additionally permits **one optional** server-to-server `responseVersion=1|2`. Omitted (or `1`) means the **unchanged strict v1** request/response shape and `schemaVersion:1`; its usage events have no `chargedAgainst` field. `responseVersion=2` selects `schemaVersion:2`, preserving the same state, period, paging, quantity and recovery-source fields and adding exactly one required per-event `chargedAgainst` field with values `LIFETIME_FREE_CREDITS`, `INCLUDED_PLAN_ALLOWANCE`, `PURCHASED_TOP_UP`, `PROMOTIONAL_CREDITS`, `NOT_APPLICABLE` or `UNATTRIBUTED`. Other parameters, versions and malformed shapes fail closed.
 
-**Authority and safety:** API-022 remains the contract owner. Attribution comes only from **committed, same-Shop** usage-reservation/entitlement-allocation evidence, with corrections tied to the verified original debit; never infer a charge from the merchant's current plan, the event's free-text source type or the selected billing period. Missing, conflicting or invalid allocation evidence is `UNATTRIBUTED`; non-consumption credit-pack purchases are `NOT_APPLICABLE`. Legacy v1 means *Not available* to the Woo UI, which is **not** equivalent to v2 `UNATTRIBUTED`. Preserve existing tenant isolation, installation credentials, source-recovery verification, signed correction semantics, bounds, error mapping and no-store response. Use the published Shared logger for unexpected errors and anomalous attribution without disclosing sensitive identifiers or credentials; do not swallow database failures or build a competing logger.
+**Authority and safety:** API-022 remains the contract owner. Attribution comes only from **committed, same-Shop** usage-reservation/entitlement-allocation evidence, with corrections tied to the verified original debit; never infer a charge from the merchant's current plan, the event's free-text source type or the selected billing period. Missing, conflicting or invalid allocation evidence is `UNATTRIBUTED`; non-consumption credit-pack purchases are `NOT_APPLICABLE`. Legacy v1 means _Not available_ to the Woo UI, which is **not** equivalent to v2 `UNATTRIBUTED`. Preserve existing tenant isolation, installation credentials, source-recovery verification, signed correction semantics, bounds, error mapping and no-store response. Use the published Shared logger for unexpected errors and anomalous attribution without disclosing sensitive identifiers or credentials; do not swallow database failures or build a competing logger.
 
-**WooCommerce consumer:** This decision **architecturally approves** `ARCH-035-WOOCOMMERCE-018` requesting v2 within its privileged PHP-to-hosted-API client and strictly validating v1/v2 responses. Its WordPress browser REST contract must **not** expose or forward browser-controlled `responseVersion`, `shopId` or arbitrary provider parameters. A single bounded legacy-v1 fallback is permitted only for the proven older-API `HTTP 400 invalid_request` compatibility case; never retry as v1 after 401/403, cursor/period conflicts, backend failure, response-integrity errors or changed installation identity. The *Charged against* column and corresponding 20-locale strings are authorised Usage History presentation changes. Preserve Purchase History and the Free lifetime / paid period distinction.
+**WooCommerce consumer:** This decision **architecturally approves** `ARCH-035-WOOCOMMERCE-018` requesting v2 within its privileged PHP-to-hosted-API client and strictly validating v1/v2 responses. Its WordPress browser REST contract must **not** expose or forward browser-controlled `responseVersion`, `shopId` or arbitrary provider parameters. A single bounded legacy-v1 fallback is permitted only for the proven older-API `HTTP 400 invalid_request` compatibility case; never retry as v1 after 401/403, cursor/period conflicts, backend failure, response-integrity errors or changed installation identity. The _Charged against_ column and corresponding 20-locale strings are authorised Usage History presentation changes. Preserve Purchase History and the Free lifetime / paid period distinction.
 
 **Review and rollout:** The existing developer self-review of WooCommerce-018 correctly identified a mismatch **before this approval**. This amendment satisfies its option to provide an architect-approved extension backed by an updated API-022 contract; it supersedes the instruction to remove v2 solely because it was undocumented. The remaining correction contract is to validate the documented v1/v2 behavior, verify the actual API v2 implementation against the now-approved contract and record applicable LocalWP/availability/rollout evidence. The API v2 implementation already observed on API `main` must be audited against the contract and its test/branch evidence; the earlier API-022 v1 acceptance alone is not proof of that audit. Do **not** silently change API-022 `complete`/Attempt 3, WooCommerce-018 `ready`/Attempt 1, its active-claim fields or any historical review outcomes. API support must be deployed before Woo enables its v2 negotiation. `ARCH-035-SYSTEM-TEST-007` remains a terminal validation task after accepted implementation and developer manual checks. No database migration, new feature task, cross-repository implementation or `_index.md` edit is authorised here.
 
@@ -29,76 +29,76 @@ This section is the **current architecture-wide execution rollup** for the uploa
 
 **Scope:** ARCH-035 now contains four separate, deliberately bounded streams: (1) Woo merchant UI surfaces and UI-only certification; (2) capture-only Woo checkout/order activity and terminal capture validation; (3) authenticated feature preferences / Merchant Knowledge / browser-direct R2 upload and terminal certification; (4) full two-way merchant Support through the existing support tables, with its own API, WordPress bridge and terminal test. Historical provider coupon/offer issuance, live recovery materialisation and recovered-revenue analytics remain outside this initiative. In particular, completion of capture-only jobs must not be presented as active checkout recovery or WhatsApp delivery.
 
-**Overview decision:** `ARCH-035-WOOCOMMERCE-010` is **superseded, unimplemented**. The existing Woo Overview continues to show installation/account/store/category context. The Recoveries list/detail, Billing and Usage History have dedicated views. There is no authoritative Woo recovery-performance/pending/capacity aggregates contract supporting Shopify-style analytics cards. A future dashboard requires a separate approved analytics API and UI outcome, not unsupported or misleading placeholder cards. `SYSTEM-TEST-001` therefore no longer depends on WOOCOMMERCE-010 and becomes **Ready** for *UI-only* certification of the nine implemented prerequisite merchant surfaces. This does **not** certify analytics parity.
+**Overview decision:** `ARCH-035-WOOCOMMERCE-010` is **superseded, unimplemented**. The existing Woo Overview continues to show installation/account/store/category context. The Recoveries list/detail, Billing and Usage History have dedicated views. There is no authoritative Woo recovery-performance/pending/capacity aggregates contract supporting Shopify-style analytics cards. A future dashboard requires a separate approved analytics API and UI outcome, not unsupported or misleading placeholder cards. `SYSTEM-TEST-001` therefore no longer depends on WOOCOMMERCE-010 and becomes **Ready** for _UI-only_ certification of the nine implemented prerequisite merchant surfaces. This does **not** certify analytics parity.
 
 **Status totals after reconciliation:** **48 tasks — 26 Complete, 15 Superseded, 3 Ready, 4 Pending.** None is currently recorded In Progress or Review in this snapshot. No implementation source changes, task claims, commits, live acceptance tests or runtime deployments are performed by this documentation reconciliation.
 
 ### Current task matrix
 
-| Task ID | Recorded state | `depends_on` (ARCH-035 prefix omitted unless external) |
-|---|---|---|
-| `ARCH-035-API-001` | Superseded | — |
-| `ARCH-035-API-002` | Complete | — |
-| `ARCH-035-API-003` | Superseded | — |
-| `ARCH-035-API-004` | Superseded | — |
-| `ARCH-035-API-005` | Superseded | API-004 |
-| `ARCH-035-API-006` | Superseded | — |
-| `ARCH-035-API-007` | Superseded | — |
-| `ARCH-035-API-008` | Complete | — |
-| `ARCH-035-API-009` | Complete | — |
-| `ARCH-035-API-010` | Superseded | BACKGROUND-002, API-009 |
-| `ARCH-035-API-011` | Superseded | ARCH-026-API-008 |
-| `ARCH-035-API-012` | Superseded | API-011, DATABASE-002 |
-| `ARCH-035-API-013` | Complete | API-009 |
-| `ARCH-035-API-014` | Complete | — |
-| `ARCH-035-API-015` | Complete | — |
-| `ARCH-035-API-016` | Complete | API-015 |
-| `ARCH-035-API-017` | Complete | API-015 |
-| `ARCH-035-API-018` | Complete | API-017, ARCH-043-API-002 |
-| `ARCH-035-API-019` | Complete | API-008 |
-| `ARCH-035-API-020` | Ready | — |
-| `ARCH-035-BACKGROUND-001` | Complete | API-008, WOOCOMMERCE-007 |
-| `ARCH-035-BACKGROUND-002` | Ready | API-019, WOOCOMMERCE-008 |
-| `ARCH-035-BACKGROUND-003` | Superseded | BACKGROUND-002, API-012, DATABASE-002 |
-| `ARCH-035-DATABASE-001` | Superseded | SHARED-001 |
-| `ARCH-035-DATABASE-002` | Superseded | API-011 |
-| `ARCH-035-GATEWAY-001` | Complete | API-018 |
-| `ARCH-035-SHARED-001` | Superseded | — |
-| `ARCH-035-SYSTEM-TEST-001` | Ready | WOOCOMMERCE-001, WOOCOMMERCE-002, WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-005, WOOCOMMERCE-006, WOOCOMMERCE-009, WOOCOMMERCE-012, WOOCOMMERCE-013 |
-| `ARCH-035-SYSTEM-TEST-002` | Pending | API-008, API-019, WOOCOMMERCE-007, WOOCOMMERCE-008, BACKGROUND-001, BACKGROUND-002 |
-| `ARCH-035-SYSTEM-TEST-003` | Superseded | BACKGROUND-003, WOOCOMMERCE-011, SYSTEM-TEST-002 |
-| `ARCH-035-SYSTEM-TEST-004` | Pending | API-014, API-015, API-016, API-017, API-018, GATEWAY-001, WOOCOMMERCE-015 |
-| `ARCH-035-SYSTEM-TEST-005` | Pending | API-020, WOOCOMMERCE-016 |
-| `ARCH-035-WOOCOMMERCE-001` | Complete | WOOCOMMERCE-012 |
-| `ARCH-035-WOOCOMMERCE-002` | Complete | — |
-| `ARCH-035-WOOCOMMERCE-003` | Complete | WOOCOMMERCE-002 |
-| `ARCH-035-WOOCOMMERCE-004` | Complete | WOOCOMMERCE-003 |
-| `ARCH-035-WOOCOMMERCE-005` | Complete | WOOCOMMERCE-012 |
-| `ARCH-035-WOOCOMMERCE-006` | Complete | WOOCOMMERCE-012 |
-| `ARCH-035-WOOCOMMERCE-007` | Complete | API-008 |
-| `ARCH-035-WOOCOMMERCE-008` | Complete | API-019, WOOCOMMERCE-007 |
-| `ARCH-035-WOOCOMMERCE-009` | Complete | WOOCOMMERCE-012 |
-| `ARCH-035-WOOCOMMERCE-010` | Superseded | WOOCOMMERCE-006, WOOCOMMERCE-013 |
-| `ARCH-035-WOOCOMMERCE-011` | Complete | — |
-| `ARCH-035-WOOCOMMERCE-012` | Complete | — |
-| `ARCH-035-WOOCOMMERCE-013` | Complete | WOOCOMMERCE-009 |
-| `ARCH-035-WOOCOMMERCE-014` | Complete | API-014, API-015, API-016, API-017, API-018 |
-| `ARCH-035-WOOCOMMERCE-015` | Complete | WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-014, GATEWAY-001 |
-| `ARCH-035-WOOCOMMERCE-016` | Pending | API-020 |
+| Task ID                    | Recorded state | `depends_on` (ARCH-035 prefix omitted unless external)                                                                                                  |
+| -------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ARCH-035-API-001`         | Superseded     | —                                                                                                                                                       |
+| `ARCH-035-API-002`         | Complete       | —                                                                                                                                                       |
+| `ARCH-035-API-003`         | Superseded     | —                                                                                                                                                       |
+| `ARCH-035-API-004`         | Superseded     | —                                                                                                                                                       |
+| `ARCH-035-API-005`         | Superseded     | API-004                                                                                                                                                 |
+| `ARCH-035-API-006`         | Superseded     | —                                                                                                                                                       |
+| `ARCH-035-API-007`         | Superseded     | —                                                                                                                                                       |
+| `ARCH-035-API-008`         | Complete       | —                                                                                                                                                       |
+| `ARCH-035-API-009`         | Complete       | —                                                                                                                                                       |
+| `ARCH-035-API-010`         | Superseded     | BACKGROUND-002, API-009                                                                                                                                 |
+| `ARCH-035-API-011`         | Superseded     | ARCH-026-API-008                                                                                                                                        |
+| `ARCH-035-API-012`         | Superseded     | API-011, DATABASE-002                                                                                                                                   |
+| `ARCH-035-API-013`         | Complete       | API-009                                                                                                                                                 |
+| `ARCH-035-API-014`         | Complete       | —                                                                                                                                                       |
+| `ARCH-035-API-015`         | Complete       | —                                                                                                                                                       |
+| `ARCH-035-API-016`         | Complete       | API-015                                                                                                                                                 |
+| `ARCH-035-API-017`         | Complete       | API-015                                                                                                                                                 |
+| `ARCH-035-API-018`         | Complete       | API-017, ARCH-043-API-002                                                                                                                               |
+| `ARCH-035-API-019`         | Complete       | API-008                                                                                                                                                 |
+| `ARCH-035-API-020`         | Ready          | —                                                                                                                                                       |
+| `ARCH-035-BACKGROUND-001`  | Complete       | API-008, WOOCOMMERCE-007                                                                                                                                |
+| `ARCH-035-BACKGROUND-002`  | Ready          | API-019, WOOCOMMERCE-008                                                                                                                                |
+| `ARCH-035-BACKGROUND-003`  | Superseded     | BACKGROUND-002, API-012, DATABASE-002                                                                                                                   |
+| `ARCH-035-DATABASE-001`    | Superseded     | SHARED-001                                                                                                                                              |
+| `ARCH-035-DATABASE-002`    | Superseded     | API-011                                                                                                                                                 |
+| `ARCH-035-GATEWAY-001`     | Complete       | API-018                                                                                                                                                 |
+| `ARCH-035-SHARED-001`      | Superseded     | —                                                                                                                                                       |
+| `ARCH-035-SYSTEM-TEST-001` | Ready          | WOOCOMMERCE-001, WOOCOMMERCE-002, WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-005, WOOCOMMERCE-006, WOOCOMMERCE-009, WOOCOMMERCE-012, WOOCOMMERCE-013 |
+| `ARCH-035-SYSTEM-TEST-002` | Pending        | API-008, API-019, WOOCOMMERCE-007, WOOCOMMERCE-008, BACKGROUND-001, BACKGROUND-002                                                                      |
+| `ARCH-035-SYSTEM-TEST-003` | Superseded     | BACKGROUND-003, WOOCOMMERCE-011, SYSTEM-TEST-002                                                                                                        |
+| `ARCH-035-SYSTEM-TEST-004` | Pending        | API-014, API-015, API-016, API-017, API-018, GATEWAY-001, WOOCOMMERCE-015                                                                               |
+| `ARCH-035-SYSTEM-TEST-005` | Pending        | API-020, WOOCOMMERCE-016                                                                                                                                |
+| `ARCH-035-WOOCOMMERCE-001` | Complete       | WOOCOMMERCE-012                                                                                                                                         |
+| `ARCH-035-WOOCOMMERCE-002` | Complete       | —                                                                                                                                                       |
+| `ARCH-035-WOOCOMMERCE-003` | Complete       | WOOCOMMERCE-002                                                                                                                                         |
+| `ARCH-035-WOOCOMMERCE-004` | Complete       | WOOCOMMERCE-003                                                                                                                                         |
+| `ARCH-035-WOOCOMMERCE-005` | Complete       | WOOCOMMERCE-012                                                                                                                                         |
+| `ARCH-035-WOOCOMMERCE-006` | Complete       | WOOCOMMERCE-012                                                                                                                                         |
+| `ARCH-035-WOOCOMMERCE-007` | Complete       | API-008                                                                                                                                                 |
+| `ARCH-035-WOOCOMMERCE-008` | Complete       | API-019, WOOCOMMERCE-007                                                                                                                                |
+| `ARCH-035-WOOCOMMERCE-009` | Complete       | WOOCOMMERCE-012                                                                                                                                         |
+| `ARCH-035-WOOCOMMERCE-010` | Superseded     | WOOCOMMERCE-006, WOOCOMMERCE-013                                                                                                                        |
+| `ARCH-035-WOOCOMMERCE-011` | Complete       | —                                                                                                                                                       |
+| `ARCH-035-WOOCOMMERCE-012` | Complete       | —                                                                                                                                                       |
+| `ARCH-035-WOOCOMMERCE-013` | Complete       | WOOCOMMERCE-009                                                                                                                                         |
+| `ARCH-035-WOOCOMMERCE-014` | Complete       | API-014, API-015, API-016, API-017, API-018                                                                                                             |
+| `ARCH-035-WOOCOMMERCE-015` | Complete       | WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-014, GATEWAY-001                                                                                          |
+| `ARCH-035-WOOCOMMERCE-016` | Pending        | API-020                                                                                                                                                 |
 
 ### Execution frontier and remaining gates
 
-| Stream | Executable / unblocked now | Waiting / terminal certification | Boundary |
-|---|---|---|---|
-| Merchant UI-only | `SYSTEM-TEST-001` **Ready** | Developer may do manual LocalWP review first | Existing Overview account/store information, recoveries, settings, support shell, promotions, usage and navigation. Unsupported operations must remain visibly unavailable. |
-| Woo activity capture-only | `BACKGROUND-002` **Ready** | `SYSTEM-TEST-002` **Pending** until BACKGROUND-002 Complete | Checkout/order queue ingestion and isolated validation only; no CheckoutRecovery mutation, WhatsApp, usage billing or offer execution. |
-| Merchant Knowledge and feature settings | Existing implementation tasks recorded **Complete** | `SYSTEM-TEST-004` **Pending** while acceptance/evidence consistency is reconciled | Requires accepted Gateway CORS configuration and end-to-end R2 browser-origin/Shop isolation proof. |
-| Two-way merchant Support | `API-020` **Ready** | `WOOCOMMERCE-016` **Pending** on API-020; `SYSTEM-TEST-005` **Pending** on both | Full read/send/mark-read via authenticated Woo installation; include ADMINISTRATIVE/MERCHANT/SYSTEM notices in one thread. |
+| Stream                                  | Executable / unblocked now                          | Waiting / terminal certification                                                  | Boundary                                                                                                                                                                    |
+| --------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merchant UI-only                        | `SYSTEM-TEST-001` **Ready**                         | Developer may do manual LocalWP review first                                      | Existing Overview account/store information, recoveries, settings, support shell, promotions, usage and navigation. Unsupported operations must remain visibly unavailable. |
+| Woo activity capture-only               | `BACKGROUND-002` **Ready**                          | `SYSTEM-TEST-002` **Pending** until BACKGROUND-002 Complete                       | Checkout/order queue ingestion and isolated validation only; no CheckoutRecovery mutation, WhatsApp, usage billing or offer execution.                                      |
+| Merchant Knowledge and feature settings | Existing implementation tasks recorded **Complete** | `SYSTEM-TEST-004` **Pending** while acceptance/evidence consistency is reconciled | Requires accepted Gateway CORS configuration and end-to-end R2 browser-origin/Shop isolation proof.                                                                         |
+| Two-way merchant Support                | `API-020` **Ready**                                 | `WOOCOMMERCE-016` **Pending** on API-020; `SYSTEM-TEST-005` **Pending** on both   | Full read/send/mark-read via authenticated Woo installation; include ADMINISTRATIVE/MERCHANT/SYSTEM notices in one thread.                                                  |
 
 ### Review and evidence inconsistencies requiring follow-up
 
-- **GATEWAY-001:** YAML says `complete`, but the canonical task's Completion Report still says *Not Started*, its Architect Review says *Pending*, and `attempt: 0`. The snapshot contains general R2 deployment guidance but no GATEWAY-001-specific Accepted review or live Woo-origin CORS evidence. **Do not infer architect acceptance from the YAML status alone.** Preserve the historical state until the developer supplies reconciliation/acceptance evidence or explicitly reopens it; keep `SYSTEM-TEST-004` gated for that review. The completed dependent WOOCOMMERCE-015 is not automatically regressed.
-- **Developer-executed work:** Complete status and detailed developer completion/self-review records exist for several API, Background and WooCommerce tasks; some older initial `## Architect Review` headings remain *Pending* or *Changes Requested* although later dated appended records show a passing Attempt 2/3 and an explicit developer completion. Read the **full chronological task record**, not only the first review-status heading. This snapshot is not the canonical remote/worktree state, so do not backfill missing commits, claim authority or validation.
+- **GATEWAY-001:** YAML says `complete`, but the canonical task's Completion Report still says _Not Started_, its Architect Review says _Pending_, and `attempt: 0`. The snapshot contains general R2 deployment guidance but no GATEWAY-001-specific Accepted review or live Woo-origin CORS evidence. **Do not infer architect acceptance from the YAML status alone.** Preserve the historical state until the developer supplies reconciliation/acceptance evidence or explicitly reopens it; keep `SYSTEM-TEST-004` gated for that review. The completed dependent WOOCOMMERCE-015 is not automatically regressed.
+- **Developer-executed work:** Complete status and detailed developer completion/self-review records exist for several API, Background and WooCommerce tasks; some older initial `## Architect Review` headings remain _Pending_ or _Changes Requested_ although later dated appended records show a passing Attempt 2/3 and an explicit developer completion. Read the **full chronological task record**, not only the first review-status heading. This snapshot is not the canonical remote/worktree state, so do not backfill missing commits, claim authority or validation.
 - **API-020 / WOOCOMMERCE-016:** The full two-way Support definitions exist but are unclaimed/unimplemented in this snapshot. The current production Support client remains read/send/markRead unavailable. Completion of WOOCOMMERCE-001 certifies the UI shell only; ARCH-046's narrower notice-only API/proxy are superseded and must not be reintroduced.
 - **All terminal certification:** SYSTEM-TEST-001, -002, -004 and -005 have no execution evidence. The architecture stays **In Progress**, regardless of implementation task totals. Developer manual checks are separate from automated/system-test acceptance. No non-system-test task depends on a system-test task.
 
@@ -110,11 +110,11 @@ This section is the **current architecture-wide execution rollup** for the uploa
 
 **Decision:** WooCommerce merchants must have the **same two-way merchant-to-Moda Support conversation as Shopify**, not a read-only SYSTEM notice feed. `ARCH-035-WOOCOMMERCE-001` is already Complete as a UI-only screen, while its production `src/support/support-client.js` still has `read:false`, `send:false`, `markRead:false`. Shopify reference is `moda-interact/app/services/merchant-support/merchant-support.service.ts` and `app/routes/app/merchant-support/route.jsx`; existing `support.MerchantSupportThread`, `MerchantSupportMessage` and translation state are reused without database changes.
 
-| New task | Owner | State | Dependency | Deliverable |
-|---|---|---|---|---|
-| `ARCH-035-API-020` | `moda_api` | **Ready** (portable definition) | — | Installation-authenticated paginated Support history, idempotent send, mark-read |
-| `ARCH-035-WOOCOMMERCE-016` | `moda_woocommerce` | Pending | API-020 | WordPress privileged proxy + production Support controller connection |
-| `ARCH-035-SYSTEM-TEST-005` | `moda_system_test` | Pending | API-020, WOOCOMMERCE-016 | Terminal integrated read/send/admin-reply/notice/read-state certification |
+| New task                   | Owner              | State                           | Dependency               | Deliverable                                                                      |
+| -------------------------- | ------------------ | ------------------------------- | ------------------------ | -------------------------------------------------------------------------------- |
+| `ARCH-035-API-020`         | `moda_api`         | **Ready** (portable definition) | —                        | Installation-authenticated paginated Support history, idempotent send, mark-read |
+| `ARCH-035-WOOCOMMERCE-016` | `moda_woocommerce` | Pending                         | API-020                  | WordPress privileged proxy + production Support controller connection            |
+| `ARCH-035-SYSTEM-TEST-005` | `moda_system_test` | Pending                         | API-020, WOOCOMMERCE-016 | Terminal integrated read/send/admin-reply/notice/read-state certification        |
 
 **Cross-architecture consolidation:** The unexecuted narrow `ARCH-046-API-002` (read-only notices) and `ARCH-046-WOOCOMMERCE-004` (read-only WP proxy) are **superseded** by these full Support tasks. ARCH-046's consent-related SYSTEM notices remain produced/stored by their owning consent/recovery work, but appear in the **same** Woo Support thread through API-020/WOOCOMMERCE-016. `ARCH-046-WOOCOMMERCE-007` (merchant off-channel no-contact action) now depends on WOOCOMMERCE-016, plus its independent `ARCH-046-API-005` action dependency; ARCH-046 SYSTEM-TEST-002 remains blocked on the absent live Woo recovery engine and uses the full Support path when later executable.
 
@@ -128,14 +128,14 @@ This section is the **current architecture-wide execution rollup** for the uploa
 
 **Decision:** Keep completed Woo UI tasks `ARCH-035-WOOCOMMERCE-005` (Promotions) and `ARCH-035-WOOCOMMERCE-006` (Usage History) closed. Their existing production clients are unavailable until an approved hosted contract and server-side WordPress proxy exist. Implement **full merchant functionality** as separate, independently reviewed API and Woo integration tasks. Historical `ARCH-035-API-006` and `API-007` remain Superseded rather than silently reopened. No new database models, payment-provider commands, Woo coupons, or duplicate accounting are approved.
 
-| Task | Owner | Status | Dependencies | Deliverable |
-|---|---|---|---|---|
-| `ARCH-035-API-021` | moda_api | Ready | None | Woo-authenticated promotions offers/current selection/history and guarded selection |
-| `ARCH-035-WOOCOMMERCE-017` | moda_woocommerce | Pending | API-021, WOOCOMMERCE-005 | WordPress privilege-gated proxy and real Promotions UI integration |
-| `ARCH-035-SYSTEM-TEST-006` | moda_system_test | Pending | API-021, WOOCOMMERCE-017 | End-to-end selection, history, grant safety and tenant isolation |
-| `ARCH-035-API-022` | moda_api | Ready | None | Provider-safe current/past usage, periods, cursors, Free lifetime |
-| `ARCH-035-WOOCOMMERCE-018` | moda_woocommerce | Pending | API-022, WOOCOMMERCE-006 | WordPress proxy and real Usage History UI integration |
-| `ARCH-035-SYSTEM-TEST-007` | moda_system_test | Pending | API-022, WOOCOMMERCE-018 | Live period/usage/correction/Free/tenant certification |
+| Task                       | Owner            | Status  | Dependencies             | Deliverable                                                                         |
+| -------------------------- | ---------------- | ------- | ------------------------ | ----------------------------------------------------------------------------------- |
+| `ARCH-035-API-021`         | moda_api         | Ready   | None                     | Woo-authenticated promotions offers/current selection/history and guarded selection |
+| `ARCH-035-WOOCOMMERCE-017` | moda_woocommerce | Pending | API-021, WOOCOMMERCE-005 | WordPress privilege-gated proxy and real Promotions UI integration                  |
+| `ARCH-035-SYSTEM-TEST-006` | moda_system_test | Pending | API-021, WOOCOMMERCE-017 | End-to-end selection, history, grant safety and tenant isolation                    |
+| `ARCH-035-API-022`         | moda_api         | Ready   | None                     | Provider-safe current/past usage, periods, cursors, Free lifetime                   |
+| `ARCH-035-WOOCOMMERCE-018` | moda_woocommerce | Pending | API-022, WOOCOMMERCE-006 | WordPress proxy and real Usage History UI integration                               |
+| `ARCH-035-SYSTEM-TEST-007` | moda_system_test | Pending | API-022, WOOCOMMERCE-018 | Live period/usage/correction/Free/tenant certification                              |
 
 **Ownership and sequencing:** API-021 and API-022 can execute independently; each accepted API enables its corresponding Woo integration. Each system-test is terminal and runs only after its API and Woo prerequisite tasks are Complete, following developer manual validation where desired. The existing `SYSTEM-TEST-001` remains **UI-only** and neither blocks these tasks nor substitutes for functional certification. `SYSTEM-TEST-005` remains independently scoped to two-way Support. Preserve the historical UI-only contract as a description of the earlier phase; this section authorizes the explicit follow-on functionality.
 
@@ -151,15 +151,15 @@ This section is the **current architecture-wide execution rollup** for the uploa
 
 ### Reopened capture tasks and ownership
 
-| Task | Responsibility | Initial status | Dependencies |
-|---|---|---|---|
-| `ARCH-035-API-008` | Authenticated Woo `CHECKOUT_UPDATED` API, queue producer and contract | Ready | None |
-| `ARCH-035-WOOCOMMERCE-007` | Guest/authenticated Classic + Blocks checkout capture and bounded retry | Pending | API-008 |
-| `ARCH-035-API-019` | Add placed/paid/cancelled order variants on same API endpoint, order queue producer | Pending | API-008 |
-| `ARCH-035-WOOCOMMERCE-008` | Authoritative Woo order hooks with checkout-to-order key and publisher reuse | Pending | API-019, WOOCOMMERCE-007 |
-| `ARCH-035-BACKGROUND-001` | Woo checkout queue consumer, validate and observe capture only | Pending | API-008, WOOCOMMERCE-007 |
-| `ARCH-035-BACKGROUND-002` | Woo order queue consumer, validate and observe capture only | Pending | API-019, WOOCOMMERCE-008 |
-| `ARCH-035-SYSTEM-TEST-002` | Terminal capture-only integration certification | Pending | All six implementation tasks above |
+| Task                       | Responsibility                                                                      | Initial status | Dependencies                       |
+| -------------------------- | ----------------------------------------------------------------------------------- | -------------- | ---------------------------------- |
+| `ARCH-035-API-008`         | Authenticated Woo `CHECKOUT_UPDATED` API, queue producer and contract               | Ready          | None                               |
+| `ARCH-035-WOOCOMMERCE-007` | Guest/authenticated Classic + Blocks checkout capture and bounded retry             | Pending        | API-008                            |
+| `ARCH-035-API-019`         | Add placed/paid/cancelled order variants on same API endpoint, order queue producer | Pending        | API-008                            |
+| `ARCH-035-WOOCOMMERCE-008` | Authoritative Woo order hooks with checkout-to-order key and publisher reuse        | Pending        | API-019, WOOCOMMERCE-007           |
+| `ARCH-035-BACKGROUND-001`  | Woo checkout queue consumer, validate and observe capture only                      | Pending        | API-008, WOOCOMMERCE-007           |
+| `ARCH-035-BACKGROUND-002`  | Woo order queue consumer, validate and observe capture only                         | Pending        | API-019, WOOCOMMERCE-008           |
+| `ARCH-035-SYSTEM-TEST-002` | Terminal capture-only integration certification                                     | Pending        | All six implementation tasks above |
 
 **API endpoint:** single `POST /v1/woocommerce/activity`, authenticated with the existing active Woo installation credentials. The API owns the exact bounded `woo.activity.v1` schema and current installation-derived Shop identity; the client never chooses `shopId`. Queue acceptance is the durable HTTP acknowledgement point. API-008 creates the Woo checkout producer and API-019 adds the Woo order producer, both using existing Redis/BullMQ infrastructure but **not** Shopify queues. The two Woo workers must not compete for jobs on the same queue, or feed the existing Shopify recovery services. The same `eventId` is retained on retries of one source event; true new updates have new IDs. Redis job retention bounds deduplication; this architecture does not claim permanent event receipts or permanent order fencing.
 
@@ -177,7 +177,7 @@ This section is the **current architecture-wide execution rollup** for the uploa
 
 **Current design supersedes the 16 October PHP-mediated file transfer only; it does not reopen `ARCH-035-API-017`.** In `moda-interact-workspace(20261017-114953).zip`, API-014, API-015, API-016 and API-017 are each recorded `complete` in their task YAML. API-017 already implements shop-bound presigned `PUT` intents, `uploadUrl`, `requiredHeaders` (`Content-Type`, `If-None-Match: *`, `x-amz-meta-sha256`), bounded expiry and verified size/type/SHA-256 finalisation. That completed implementation and its historical acceptance remain unchanged.
 
-**New gap and owner:** `ARCH-035-API-018` is a new, independently reviewable API task for browser-direct compatibility, no-store/credential-safe handoff, signed-header/redirect/URL guarantees, accurate OpenAPI/browser integration evidence and any *proven* minimal correction; it does **not** repeat API-017 lifecycle implementation. `ARCH-035-GATEWAY-001` owns the operational R2 CORS policy and approved Woo site-origin enrolment. CORS is not authentication: signed object-scoped URL and tenant-bound API intent/finalise remain the authority. There is no wildcard-origin grant or automatic trust of arbitrary `Origin` values.
+**New gap and owner:** `ARCH-035-API-018` is a new, independently reviewable API task for browser-direct compatibility, no-store/credential-safe handoff, signed-header/redirect/URL guarantees, accurate OpenAPI/browser integration evidence and any _proven_ minimal correction; it does **not** repeat API-017 lifecycle implementation. `ARCH-035-GATEWAY-001` owns the operational R2 CORS policy and approved Woo site-origin enrolment. CORS is not authentication: signed object-scoped URL and tenant-bound API intent/finalise remain the authority. There is no wildcard-origin grant or automatic trust of arbitrary `Origin` values.
 
 **Canonical file flow:** privileged Woo React requests metadata-only intent through same-origin WordPress (`WOOCOMMERCE-014`) → authenticated Moda API returns a short-lived presigned R2 `PUT` URL and exact required headers → WordPress returns only that bounded capability to the authenticated administrator without caching/logging → React (`WOOCOMMERCE-015`) hashes/validates and sends the **binary directly to the approved R2 S3 endpoint** without Woo installation secrets → React requests metadata-only finalisation through WordPress → API-017 verifies the R2 object and durably records source/revision → existing Background reconciliation processes eligible pending revisions. WordPress PHP never accepts, buffers or proxies the CSV/XLSX bytes. Fail closed on missing CORS enrolment, failed preflight, expired signature, invalid header, wrong hash, aborted upload, provider failure, site URL change or rotated installation credentials. No client-asserted success before server finalisation.
 
@@ -217,11 +217,11 @@ The uploaded `moda-interact-workspace(20261016-225609).zip` implements the ARCH-
 
 ### Proposed versioned HTTP boundary (owned by moda_api)
 
-| Endpoint | Role | Task |
-|---|---|---|
-| `GET/PUT /v1/merchant/feature-preferences` | Read effective/required/optional feature state, compare-and-set changed preference | API-014 |
-| `GET /v1/merchant/merchant-knowledge` | Real entitlement, allowed formats, language tags, sources/revisions/capacity | API-015 |
-| `POST /v1/merchant/merchant-knowledge/sources`, `PATCH/DELETE /.../sources/{id}`, `POST /.../sources/{id}/refresh`, `PUT /.../order` | Shop-scoped source lifecycle and ordering | API-016 |
+| Endpoint                                                                                                                                                      | Role                                                                                             | Task                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------- |
+| `GET/PUT /v1/merchant/feature-preferences`                                                                                                                    | Read effective/required/optional feature state, compare-and-set changed preference               | API-014                       |
+| `GET /v1/merchant/merchant-knowledge`                                                                                                                         | Real entitlement, allowed formats, language tags, sources/revisions/capacity                     | API-015                       |
+| `POST /v1/merchant/merchant-knowledge/sources`, `PATCH/DELETE /.../sources/{id}`, `POST /.../sources/{id}/refresh`, `PUT /.../order`                          | Shop-scoped source lifecycle and ordering                                                        | API-016                       |
 | `POST /v1/merchant/merchant-knowledge/upload-intents`, `POST /.../upload-finalize`, `PATCH /.../uploads/{sourceId}`, `POST /.../uploads/{sourceId}/reprocess` | Accepted signed/verified upload lifecycle (unchanged); browser-facing contract review in API-018 | API-017 Complete, API-018 new |
 
 API-014 establishes the versioned feature-pref DTO with `expectedRevision` and bounded `changes` (not the W003 fixture's `preferences` request without mediation). API-015 defines the canonical knowledge read DTO. API-016/017 publish matching strict OpenAPI request/response/error schemas; Woo adapters validate and map them, rather than define competing business authority. All APIs derive `shopId` exclusively from the Woo installation principal, verify `Shop.platform === WOOCOMMERCE`, use bounded input/error projection, fail closed on revoked/rotated grants, and never trust browser-submitted shop/plan/entitlement identity.
@@ -251,15 +251,15 @@ API-015 (knowledge read) ---+---------+                               |
 
 New task identifiers (all docs under `docs/decisions/<domain>/ARCH-035/`):
 
-| Task | Assigned Agent | Initial status | Depends on |
-|---|---|---|---|
-| ARCH-035-API-014 | moda_api | Ready | None |
-| ARCH-035-API-015 | moda_api | Ready | None |
-| ARCH-035-API-016 | moda_api | Pending | API-015 |
-| ARCH-035-API-017 | moda_api | Pending | API-015 |
-| ARCH-035-WOOCOMMERCE-014 | moda_woocommerce | Pending | API-014, API-015, API-016, API-017 |
-| ARCH-035-WOOCOMMERCE-015 | moda_woocommerce | Pending | WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-014 |
-| ARCH-035-SYSTEM-TEST-004 | moda_system_test | Pending | API-014, API-015, API-016, API-017, WOOCOMMERCE-015 |
+| Task                     | Assigned Agent   | Initial status | Depends on                                          |
+| ------------------------ | ---------------- | -------------- | --------------------------------------------------- |
+| ARCH-035-API-014         | moda_api         | Ready          | None                                                |
+| ARCH-035-API-015         | moda_api         | Ready          | None                                                |
+| ARCH-035-API-016         | moda_api         | Pending        | API-015                                             |
+| ARCH-035-API-017         | moda_api         | Pending        | API-015                                             |
+| ARCH-035-WOOCOMMERCE-014 | moda_woocommerce | Pending        | API-014, API-015, API-016, API-017                  |
+| ARCH-035-WOOCOMMERCE-015 | moda_woocommerce | Pending        | WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-014   |
+| ARCH-035-SYSTEM-TEST-004 | moda_system_test | Pending        | API-014, API-015, API-016, API-017, WOOCOMMERCE-015 |
 
 **Current 17 October dependency frontier (supersedes the earlier task-creation graph above):**
 
@@ -287,7 +287,7 @@ API-014/015/016/017 (Complete) --- API-018 --- GATEWAY-001 --- WOO-015 ---------
 
 ## 16 October 2026 — source-based reconciliation (historical snapshot)
 
-*The states recorded in this dated section are superseded by the consolidated 21 October task matrix above.*
+_The states recorded in this dated section are superseded by the consolidated 21 October task matrix above._
 
 This reconciliation uses the `moda-interact-workspace(20261016-105855).zip` snapshot as implementation evidence, **not** a history of completed task worktrees, commits or test runs. The original UI-only/supersession scope remains in force. No runtime code, `docs/decisions/**/_index.md`, task attempt counters or original Completion Reports were changed by this review.
 
@@ -343,22 +343,22 @@ Following merchant approval, the shared Shopify/WooCommerce coupon catalogue, pr
 
 ## 12 October 2026 — Native coupon catalogue preview (bounded UI exception)
 
-The developer authorised a staged *Specific WooCommerce Coupon* experience. Stage 1, `ARCH-035-WOOCOMMERCE-011`, is limited to merchant-facing discovery of **local Woo coupon records** with a privileged WordPress GET, bounded pagination, search, responsive layout and explicit preview-only state. It does **not** activate the earlier superseded coupon eligibility/selection/database/background tasks; it does not add a hosted read grant or new cross-service contract. The Recovery Behaviour PUT remains delay/follow-up-only with the existing offer unchanged. Coupons are not offered to customers and the preview radio choice is not persisted. Durable selection and send-time verification require a separately agreed provider-capability architecture. This narrow local catalogue UI exception supersedes the earlier blanket coupon UI exclusion only for this Stage 1.
+The developer authorised a staged _Specific WooCommerce Coupon_ experience. Stage 1, `ARCH-035-WOOCOMMERCE-011`, is limited to merchant-facing discovery of **local Woo coupon records** with a privileged WordPress GET, bounded pagination, search, responsive layout and explicit preview-only state. It does **not** activate the earlier superseded coupon eligibility/selection/database/background tasks; it does not add a hosted read grant or new cross-service contract. The Recovery Behaviour PUT remains delay/follow-up-only with the existing offer unchanged. Coupons are not offered to customers and the preview radio choice is not persisted. Durable selection and send-time verification require a separately agreed provider-capability architecture. This narrow local catalogue UI exception supersedes the earlier blanket coupon UI exclusion only for this Stage 1.
 
 ## Shopify-to-Woo source map
 
-| Shopify reference | Native Woo target | Task |
-|---|---|---|
-| `app/routes/app/merchant-support/route.jsx` | Support submenu: message thread/composer | WOOCOMMERCE-001 |
-| `app/routes/app/recovery-settings/RecoverySettingsView.tsx` | Recovery Settings: effective policy + behaviour sections | WOOCOMMERCE-002 |
-| `app/components/settings/FeaturePreferences.tsx` | Feature controls **within Recovery Settings** | WOOCOMMERCE-003 |
-| `app/components/settings/MerchantKnowledgeSection.tsx` | Merchant Knowledge **within Recovery Settings** | WOOCOMMERCE-004 |
-| `app/routes/app/promotions/route.tsx` | Promotions credits submenu | WOOCOMMERCE-005 |
-| `app/components/dashboard/UsageEvents.tsx` | Usage History linked from merchant surfaces | WOOCOMMERCE-006 |
-| `app/routes/app/recoveries/RecoveryList.tsx` | Recoveries list/filter/pagination submenu | WOOCOMMERCE-009 |
-| `app/routes/app/recovery-detail/RecoveryDetail.tsx` | Recoveries detail with message history | WOOCOMMERCE-013 |
+| Shopify reference                                                         | Native Woo target                                                                         | Task                           |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------ |
+| `app/routes/app/merchant-support/route.jsx`                               | Support submenu: message thread/composer                                                  | WOOCOMMERCE-001                |
+| `app/routes/app/recovery-settings/RecoverySettingsView.tsx`               | Recovery Settings: effective policy + behaviour sections                                  | WOOCOMMERCE-002                |
+| `app/components/settings/FeaturePreferences.tsx`                          | Feature controls **within Recovery Settings**                                             | WOOCOMMERCE-003                |
+| `app/components/settings/MerchantKnowledgeSection.tsx`                    | Merchant Knowledge **within Recovery Settings**                                           | WOOCOMMERCE-004                |
+| `app/routes/app/promotions/route.tsx`                                     | Promotions credits submenu                                                                | WOOCOMMERCE-005                |
+| `app/components/dashboard/UsageEvents.tsx`                                | Usage History linked from merchant surfaces                                               | WOOCOMMERCE-006                |
+| `app/routes/app/recoveries/RecoveryList.tsx`                              | Recoveries list/filter/pagination submenu                                                 | WOOCOMMERCE-009                |
+| `app/routes/app/recovery-detail/RecoveryDetail.tsx`                       | Recoveries detail with message history                                                    | WOOCOMMERCE-013                |
 | `app/components/dashboard/RecoveryOverview.tsx` + `PendingRecoveries.jsx` | Deferred; current Woo Overview retains account/store context; no analytics aggregates API | WOOCOMMERCE-010 **Superseded** |
-| Shopify merchant navigation layout | WordPress Admin surface registry/breadcrumbs/links | WOOCOMMERCE-012 |
+| Shopify merchant navigation layout                                        | WordPress Admin surface registry/breadcrumbs/links                                        | WOOCOMMERCE-012                |
 
 Existing Woo Billing and Store Category/connection screens are preserved and included in UI regression comparison; no speculative redesign task is assigned to already implemented capabilities. New gaps discovered in comparison return to the architect for bounded follow-up.
 

@@ -3,8 +3,8 @@ id: ARCH-056
 title: Background persistence and initial recovery progress
 status: proposed
 coordinator: moda_architect
-created: '2026-11-03'
-updated: '2026-11-04'
+created: "2026-11-03"
+updated: "2026-11-04"
 ---
 
 # ARCH-056: Background persistence and initial recovery progress
@@ -101,15 +101,15 @@ Business blocking, retryable technical failure, provider uncertainty, lineage co
 
 ## Repository Responsibilities and Task Graph
 
-| Task | Owner and touchpoint | Initial status | Direct new prerequisite |
-|---|---|---|---|
-| [ARCH-056-API-001](../decisions/api/ARCH-056/API-001-align-accepted-database-dependency.md) | API; recorded/materialized Database dependency | Ready | None |
-| [ARCH-056-BACKGROUND-001](../decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md) | Background; inbound Conversation transaction and existing WhatsApp worker failure diagnostics | Ready | None |
-| [ARCH-056-BACKGROUND-002](../decisions/background/ARCH-056/BACKGROUND-002-settle-confirmed-initial-outreach-credit.md) | Background; exact-source billing, ledger wrappers and competing status/compensation entry locks | Ready | None |
-| [ARCH-056-BACKGROUND-003](../decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md) | Background; outbound admission, final fence, cleanup and receipt | Ready | None |
-| [ARCH-056-BACKGROUND-004](../decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md) | Background; candidate, orchestration, fallback and finalisation | Pending | BACKGROUND-002, BACKGROUND-003 |
-| [ARCH-056-SYSTEM-TEST-001](../decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md) | System-test; existing catalogue/runner and scoped scenarios | Pending | All five implementation tasks |
-| [ARCH-056-SYSTEM-TEST-002](../decisions/system-test/ARCH-056/SYSTEM-TEST-002-replace-architecture-based-test-names.md) | System-test; final semantic test naming and coverage preservation | Pending | SYSTEM-TEST-001 |
+| Task                                                                                                                                   | Owner and touchpoint                                                                            | Initial status | Direct new prerequisite        |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------- | ------------------------------ |
+| [ARCH-056-API-001](../decisions/api/ARCH-056/API-001-align-accepted-database-dependency.md)                                            | API; recorded/materialized Database dependency                                                  | Ready          | None                           |
+| [ARCH-056-BACKGROUND-001](../decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md)               | Background; inbound Conversation transaction and existing WhatsApp worker failure diagnostics   | Ready          | None                           |
+| [ARCH-056-BACKGROUND-002](../decisions/background/ARCH-056/BACKGROUND-002-settle-confirmed-initial-outreach-credit.md)                 | Background; exact-source billing, ledger wrappers and competing status/compensation entry locks | Ready          | None                           |
+| [ARCH-056-BACKGROUND-003](../decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md)                  | Background; outbound admission, final fence, cleanup and receipt                                | Ready          | None                           |
+| [ARCH-056-BACKGROUND-004](../decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md)               | Background; candidate, orchestration, fallback and finalisation                                 | Pending        | BACKGROUND-002, BACKGROUND-003 |
+| [ARCH-056-SYSTEM-TEST-001](../decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md) | System-test; existing catalogue/runner and scoped scenarios                                     | Pending        | All five implementation tasks  |
+| [ARCH-056-SYSTEM-TEST-002](../decisions/system-test/ARCH-056/SYSTEM-TEST-002-replace-architecture-based-test-names.md)                 | System-test; final semantic test naming and coverage preservation                               | Pending        | SYSTEM-TEST-001                |
 
 Current handoff (2026-11-04): BACKGROUND-002 Attempt 4 and BACKGROUND-003 Attempt 3 are accepted and complete. BACKGROUND-004 Attempt 2 is accepted and complete; its four Attempt 1 findings were resolved and the scoped unit, PostgreSQL/Redis worker, Support-race, build, lint and whitespace evidence is recorded in the [BACKGROUND-004 review](../decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md#attempt-2-acceptance-and-dependency-reconciliation). All five implementation prerequisites for SYSTEM-TEST-001 are now complete. SYSTEM-TEST-001 is `ready`, unclaimed at Attempt 0; it was not started in this review. SYSTEM-TEST-002 remains pending on SYSTEM-TEST-001. The task table above preserves the initial definition statuses.
 
@@ -193,15 +193,15 @@ The existing provider failure contract in `docs/observability/shared-logging.md`
 
 The read-only serializer probe imported the uploaded sibling Shared `src/logging/redaction.ts` with synthetic fixtures. It confirmed name/message retention, omission of ordinary cause/code/meta and aggregate children, independent visibility of explicitly named primary/cleanup errors, and retention of a phone-shaped span in a generic error string. The source hash, package versions and exact probe limits are recorded in `source-baseline.json`. It did not load Background's installed Shared package or exercise a deployed transport.
 
-| Audited baseline location | Diagnostic gap or preserved behavior | Assigned owner |
-|---|---|---|
-| Shared `src/logging/types.ts`, `logger.ts`, `redaction.ts` | Event-first API; Error name/message only; explicit semantic source fields required | Read-only contract for all tasks |
-| Background `src/services/conversation.service.ts`, `src/workers/whatsapp.worker.ts` | Existing inbound source error is useful; distinguish post-commit stage and prevent raw worker fields from bypassing redaction | BACKGROUND-001 |
-| Background `src/services/whatsapp-provider-status.service.ts`, `src/services/recovery-delivery-compensation/reconcile.service.ts` | Record truthful retry/after-commit stage and detailed source owner; an in-transaction applied record is premature | BACKGROUND-002 |
-| Background `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts`, `woo-guarded-initial-sender.service.ts` and owned tests | Replace synthetic PERSISTENCE_FAILURE logging and raw-phone retention assertion | BACKGROUND-003 |
-| Background `src/services/whatsapp.service.ts` | Preserve source provider messages; validate nested trace identifier and propagate nested detail-array redaction/truncation flags | BACKGROUND-003, diagnostics only |
-| Background `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`, fallback/finalisation owners, `src/workers/pending-recovery-candidate.worker.ts` | Original safe messages at conversion boundaries; independently visible operation and cleanup failures | BACKGROUND-004 |
-| System-Test `src/harness/background-worker-container.js`, `processes.js`, `redaction.js` | Existing raw stdout/stderr buffers support checks before the evidence redactor can obscure emitted content | SYSTEM-TEST-001, existing modules and run artifacts |
+| Audited baseline location                                                                                                                                         | Diagnostic gap or preserved behavior                                                                                             | Assigned owner                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Shared `src/logging/types.ts`, `logger.ts`, `redaction.ts`                                                                                                        | Event-first API; Error name/message only; explicit semantic source fields required                                               | Read-only contract for all tasks                    |
+| Background `src/services/conversation.service.ts`, `src/workers/whatsapp.worker.ts`                                                                               | Existing inbound source error is useful; distinguish post-commit stage and prevent raw worker fields from bypassing redaction    | BACKGROUND-001                                      |
+| Background `src/services/whatsapp-provider-status.service.ts`, `src/services/recovery-delivery-compensation/reconcile.service.ts`                                 | Record truthful retry/after-commit stage and detailed source owner; an in-transaction applied record is premature                | BACKGROUND-002                                      |
+| Background `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts`, `woo-guarded-initial-sender.service.ts` and owned tests                         | Replace synthetic PERSISTENCE_FAILURE logging and raw-phone retention assertion                                                  | BACKGROUND-003                                      |
+| Background `src/services/whatsapp.service.ts`                                                                                                                     | Preserve source provider messages; validate nested trace identifier and propagate nested detail-array redaction/truncation flags | BACKGROUND-003, diagnostics only                    |
+| Background `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`, fallback/finalisation owners, `src/workers/pending-recovery-candidate.worker.ts` | Original safe messages at conversion boundaries; independently visible operation and cleanup failures                            | BACKGROUND-004                                      |
+| System-Test `src/harness/background-worker-container.js`, `processes.js`, `redaction.js`                                                                          | Existing raw stdout/stderr buffers support checks before the evidence redactor can obscure emitted content                       | SYSTEM-TEST-001, existing modules and run artifacts |
 
 ## Delivery and Rollout
 

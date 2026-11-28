@@ -12,9 +12,13 @@ function hasFlag(name) {
 }
 
 function normaliseEmail(value) {
-  const email = String(value ?? "").trim().toLowerCase();
+  const email = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!email || !email.includes("@")) {
-    throw new Error("--email must contain a valid administrator email address.");
+    throw new Error(
+      "--email must contain a valid administrator email address.",
+    );
   }
   return email;
 }
@@ -23,7 +27,9 @@ async function main() {
   const email = normaliseEmail(argument("email"));
 
   if (hasFlag("disable")) {
-    const existing = await prisma.platformAdmin.findUnique({ where: { email } });
+    const existing = await prisma.platformAdmin.findUnique({
+      where: { email },
+    });
     if (!existing) throw new Error(`No PlatformAdmin exists for ${email}.`);
 
     const disabled = await prisma.platformAdmin.update({
@@ -33,13 +39,19 @@ async function main() {
     });
 
     console.log(JSON.stringify(disabled, null, 2));
-    console.log("Administrator disabled. No credential material was changed or stored.");
+    console.log(
+      "Administrator disabled. No credential material was changed or stored.",
+    );
     return;
   }
 
-  const rawRole = String(argument("role") ?? "ADMIN").trim().toUpperCase();
+  const rawRole = String(argument("role") ?? "ADMIN")
+    .trim()
+    .toUpperCase();
   if (!Object.values(PlatformAdminRole).includes(rawRole)) {
-    throw new Error(`--role must be one of: ${Object.values(PlatformAdminRole).join(", ")}`);
+    throw new Error(
+      `--role must be one of: ${Object.values(PlatformAdminRole).join(", ")}`,
+    );
   }
 
   const admin = await prisma.platformAdmin.upsert({
@@ -70,7 +82,11 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error(error instanceof Error ? error.message : "Platform admin provisioning failed.");
+    console.error(
+      error instanceof Error
+        ? error.message
+        : "Platform admin provisioning failed.",
+    );
     process.exitCode = 1;
   })
   .finally(async () => {

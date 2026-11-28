@@ -63,12 +63,17 @@ Create `src/services/recovery-template-preparation/initial-checkout-items-policy
 ```typescript
 export type InitialCheckoutItemsBindingDecision =
   | Readonly<{ ok: true; bodyPosition: number | null }>
-  | Readonly<{ ok: false; reason: "BINDINGS_INVALID" | "DEFINITION_UNAVAILABLE" }>;
+  | Readonly<{
+      ok: false;
+      reason: "BINDINGS_INVALID" | "DEFINITION_UNAVAILABLE";
+    }>;
 
-export function decideInitialCheckoutItemsBinding(input: Readonly<{
-  stage: "INITIAL" | "FOLLOW_UP";
-  parameterBindingsSnapshot: unknown;
-}>): InitialCheckoutItemsBindingDecision;
+export function decideInitialCheckoutItemsBinding(
+  input: Readonly<{
+    stage: "INITIAL" | "FOLLOW_UP";
+    parameterBindingsSnapshot: unknown;
+  }>,
+): InitialCheckoutItemsBindingDecision;
 ```
 
 Deterministic rules:
@@ -90,15 +95,15 @@ If a new helper is necessary in `recovery-template-bindings.ts`, limit it to exp
 
 ### B. Required variant behaviour
 
-| INPUT | REQUIRED outcome |
-|---|---|
-| INITIAL NO_OFFER approved TEXT with exactly one BODY basket binding | PREPARED and nonempty basket parameter |
-| INITIAL single/multi CODE or AUTOMATIC checkout TEXT | PREPARED with original basket plus approved offer presentation |
-| INITIAL ALTERNATIVE_PRODUCT TEXT | PREPARED with **original checkout basket** summary and separate alternative-product parameters |
-| INITIAL approved IMAGE variant | Same BODY basket requirement; header media preparation remains independently controlled by BG007 |
-| INITIAL with no BODY basket binding, duplicate binding, invalid position, missing BODY token or wrong fingerprint | Typed unavailable/no-send, **never** fallback to any missing-summary template |
-| INITIAL with malformed/empty/unsafe/cross-merchant saved line items | `BINDING_VALUE_UNAVAILABLE`/no-send; no Meta send or additional billing commit |
-| FOLLOW_UP valid historical template without basket binding | Unchanged behaviour |
+| INPUT                                                                                                             | REQUIRED outcome                                                                                 |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| INITIAL NO_OFFER approved TEXT with exactly one BODY basket binding                                               | PREPARED and nonempty basket parameter                                                           |
+| INITIAL single/multi CODE or AUTOMATIC checkout TEXT                                                              | PREPARED with original basket plus approved offer presentation                                   |
+| INITIAL ALTERNATIVE_PRODUCT TEXT                                                                                  | PREPARED with **original checkout basket** summary and separate alternative-product parameters   |
+| INITIAL approved IMAGE variant                                                                                    | Same BODY basket requirement; header media preparation remains independently controlled by BG007 |
+| INITIAL with no BODY basket binding, duplicate binding, invalid position, missing BODY token or wrong fingerprint | Typed unavailable/no-send, **never** fallback to any missing-summary template                    |
+| INITIAL with malformed/empty/unsafe/cross-merchant saved line items                                               | `BINDING_VALUE_UNAVAILABLE`/no-send; no Meta send or additional billing commit                   |
+| FOLLOW_UP valid historical template without basket binding                                                        | Unchanged behaviour                                                                              |
 
 The basket summary comes exclusively from the **actual saved checkout lines** of the authenticated shop and recovery generation. Do not infer items from product recommendations or a merchant's generic catalogue. Formatter truncation to first three lines and `+N` remainder is allowed; silently omitting the entire summary is not.
 

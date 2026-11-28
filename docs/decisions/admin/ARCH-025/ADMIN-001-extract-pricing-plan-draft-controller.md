@@ -83,7 +83,6 @@ Moving substantial step JSX; server action changes; domain-helper rewrites; chil
   - `tests/unit/merchant-pricing-translations.test.ts` — SHA-256 `90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92`
   - `tests/unit/merchant-pricing-translation-workbook.test.ts` — SHA-256 `385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8`
 
-
 ### R1 — typed draft/controller and complete downstream contract
 
 Create one typed draft initialized from the current props/plan and one pure reducer/action surface for local transitions. A thin hook wraps it for React. Keep non-draft external inputs (`cataloguePlans`, feature/source/model catalogues, minimum premium) explicit rather than copying entire server objects into mutable state.

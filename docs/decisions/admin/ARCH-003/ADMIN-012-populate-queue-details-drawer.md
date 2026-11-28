@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-05
 ---
+
 # Populate queue details drawer with metrics and filtered recent jobs
 
 ## Objective
@@ -141,6 +142,7 @@ Active -> Started/processed at + no failure reason requirement
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
@@ -218,6 +220,7 @@ None.
 ## Architect Review
 
 ### Review Status
+
 Accepted
 
 ### Review Notes

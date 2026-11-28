@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
+
 # ARCH-006-SHOPIFY-002: Emit one subscription-ended SYSTEM message from the authoritative billing transition
 
 ## Architecture
@@ -173,8 +174,6 @@ SHOPIFY-002 dependencies are therefore satisfied and this task is Ready for its
 first repository-agent attempt. Claim only SHOPIFY-002, return it to `review`, and
 STOP. Do not promote SHOPIFY-003.
 
-
-
 ### Architect Review — Attempt 1 — 2026-09-06
 
 **Review Status: Corrections required.**
@@ -301,8 +300,6 @@ Required focused regressions:
 
 Run the focused billing tests, build, Prisma validation, touched-file diagnostics, and `git diff --check`. Return this same task to `review` and STOP. Do not modify production code, promote SHOPIFY-003, or start any system-test task.
 
-
-
 ### Architect Review — Attempt 4 — 2026-09-06
 
 **Review Status: Validation contract not executed.**
@@ -350,4 +347,3 @@ Verified acceptance evidence:
 The Attempt 5 task metadata returned with `executor: null` despite a populated `claimed_at`. That is an audit-metadata defect in the repository-agent claim lifecycle, but it does not invalidate the independently verified code/test result and is recorded here rather than forcing another no-op implementation attempt. Future repository-agent claims must preserve the executor identity through `review`.
 
 `ARCH-006-SHOPIFY-003` remains Pending because `ARCH-006-BACKGROUND-007` is not yet Complete. No downstream system-test task is promoted automatically.
-

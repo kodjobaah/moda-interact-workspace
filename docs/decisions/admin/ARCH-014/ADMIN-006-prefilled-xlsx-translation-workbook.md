@@ -15,9 +15,9 @@ executor:
 claimed_at:
 attempt: 2
 depends_on:
-- ARCH-014-ADMIN-005
+  - ARCH-014-ADMIN-005
 enables:
-- ARCH-014-SYSTEM-TEST-001
+  - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15T22:15:00Z
 ---
@@ -170,27 +170,27 @@ If the existing Next.js production build cannot bundle the accepted ExcelJS brow
 
 The workbook MUST contain exactly these 20 rows, in exactly this order:
 
-| Language label | Locale |
-|---|---|
-| Czech | `cs` |
-| Danish | `da` |
-| German | `de` |
-| English | `en` |
-| Spanish | `es` |
-| Finnish | `fi` |
-| French | `fr` |
-| Italian | `it` |
-| Japanese | `ja` |
-| Korean | `ko` |
-| Norwegian Bokmål | `nb` |
-| Dutch | `nl` |
-| Polish | `pl` |
-| Portuguese (Brazil) | `pt-BR` |
-| Portuguese (Portugal) | `pt-PT` |
-| Swedish | `sv` |
-| Thai | `th` |
-| Turkish | `tr` |
-| Chinese (Simplified) | `zh-Hans` |
+| Language label        | Locale    |
+| --------------------- | --------- |
+| Czech                 | `cs`      |
+| Danish                | `da`      |
+| German                | `de`      |
+| English               | `en`      |
+| Spanish               | `es`      |
+| Finnish               | `fi`      |
+| French                | `fr`      |
+| Italian               | `it`      |
+| Japanese              | `ja`      |
+| Korean                | `ko`      |
+| Norwegian Bokmål      | `nb`      |
+| Dutch                 | `nl`      |
+| Polish                | `pl`      |
+| Portuguese (Brazil)   | `pt-BR`   |
+| Portuguese (Portugal) | `pt-PT`   |
+| Swedish               | `sv`      |
+| Thai                  | `th`      |
+| Turkish               | `tr`      |
+| Chinese (Simplified)  | `zh-Hans` |
 | Chinese (Traditional) | `zh-Hant` |
 
 The human-readable labels MUST come from the shared `translation-workbook-common.ts` locale metadata. `merchant-pricing-translation-workbook.ts` MUST NOT redefine the labels.

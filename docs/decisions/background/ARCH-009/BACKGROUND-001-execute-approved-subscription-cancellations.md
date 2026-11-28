@@ -54,7 +54,7 @@ Logical interface:
 cancelSubscription({
   shopifyShopId,
   mode,
-})
+});
 ```
 
 Map mode only through Shared:
@@ -245,29 +245,44 @@ Return review and STOP.
 ## Completion Report
 
 ### Status
+
 Ready for Review
+
 ### Files Changed
+
 - `src/services/subscription-cancellation.service.ts`
 - `tests/unit/services/subscription-cancellation.service.test.ts`
+
 ### Work Completed
+
 - Attempt 3 completed the six Architect Review proof areas with a stateful Prisma-shaped lifecycle fake covering stale lease recovery, provider verification, due/future RETRYABLE selection, confirmation outcomes, deterministic completion messaging, approved identity snapshots, and secret-safe persisted provider failures.
 - Added explicit confirmation coverage for END_OF_CYCLE and all three immediate cancellation modes, including no-contract and still-active provider states.
 - Added exact due selection assertions for `nextAttemptAt = null` or `nextAttemptAt <= now`, and replay assertions keyed by `createMerchantBillingSystemSourceKey`.
 - A new secret-safety regression exposed that arbitrary provider error summaries were persisted verbatim; bounded credential-labelled values are now redacted before persistence. No other production behavior changed.
 - Attempt 4 fixed the `Authorization: Bearer <token>` ordering defect by redacting complete authorization-bearer, Shopify access-token, access-token, and standalone bearer forms before fallback matching. Added table-driven persistence regressions for all requested credential variants; no cancellation lifecycle behavior changed.
+
 ### Validation Results
+
 - Focused cancellation-service tests: passed, 1 file and 38 tests.
 - `npm run test:unit`: passed, 44 files and 487 tests.
 - `npm run build`: passed.
 - `npm run prisma:validate`: passed.
 - `git diff --check`: passed.
+
 ### Deviations
+
 The Attempt 3 scope was test-only unless a regression exposed a genuine defect. The secret-summary regression exposed a real persistence safety defect, so `errorSummary` now redacts credential-labelled values before applying the existing 2,000-character bound.
+
 ### Assumptions
+
 The accepted Attempt 1/2 cancellation implementation, Shared 0.9.0 contract, database schema, Partner API 2026-07 mutation, and billing-worker integration remain the baseline. The provider contract does not expose credential material in normal errors; the service redaction is defense in depth for credential-labelled provider exceptions.
+
 ### Unresolved Issues
+
 None.
+
 ### Architectural Concerns
+
 None.
 
 ### Git / VCS
@@ -275,36 +290,36 @@ None.
 Task branch: `task/ARCH-009-BACKGROUND-001`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-BACKGROUND-001`
-  parent branch: `task/ARCH-009-BACKGROUND-001`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-BACKGROUND-001`
-  implementation branch: `task/ARCH-009-BACKGROUND-001`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-009-BACKGROUND-001`
+parent branch: `task/ARCH-009-BACKGROUND-001`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-009-BACKGROUND-001`
+implementation branch: `task/ARCH-009-BACKGROUND-001`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: already-current
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: already-current
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: already-current
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: already-current
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-background`
-  commit: `c92da43d21d042653338e2000d62327718523d21`
-  remote branch: `origin/task/ARCH-009-BACKGROUND-001`
-  pushed: yes
+repository: `moda-interact-background`
+commit: `c92da43d21d042653338e2000d62327718523d21`
+remote branch: `origin/task/ARCH-009-BACKGROUND-001`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
-  claim commit: `f544549`
-  review handoff commit: `c64061aad065f554c555ab0afd8de1e1e5c3a315`
-  metadata/report commit(s): `c64061aad065f554c555ab0afd8de1e1e5c3a315`
-  final parent handoff / branch tip: `f465028d36f9dbe3ff3e92142f407c5d7e82a4ae`
-  remote branch: `origin/task/ARCH-009-BACKGROUND-001`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/background/ARCH-009/BACKGROUND-001-execute-approved-subscription-cancellations.md`
+claim commit: `f544549`
+review handoff commit: `c64061aad065f554c555ab0afd8de1e1e5c3a315`
+metadata/report commit(s): `c64061aad065f554c555ab0afd8de1e1e5c3a315`
+final parent handoff / branch tip: `f465028d36f9dbe3ff3e92142f407c5d7e82a4ae`
+remote branch: `origin/task/ARCH-009-BACKGROUND-001`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -312,6 +327,7 @@ Merged to workspace main: no
 ## Architect Review
 
 ### Review Status
+
 Accepted
 
 ### Review Notes
@@ -424,6 +440,7 @@ f465028d36f9dbe3ff3e92142f407c5d7e82a4ae
 The parent tip follows the Attempt-4 review handoff and records the final task evidence.
 
 ### Architecture Conformance
+
 Accepted.
 
 ### Follow-up

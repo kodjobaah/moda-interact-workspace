@@ -8,29 +8,29 @@ fallback, and removed raw subscription-status presentation are not part of this 
 The English source strings below are exact. Add each listed key to every one of the
 20 existing locale catalogues, preserving the complete pre-existing catalogue.
 
-| Key | Exact English source / semantic value |
-|---|---|
-| `common.logoAlt` | `Moda Interact logo` |
-| `support.thread` | `Support thread` |
-| `support.empty` | `No messages yet.` |
-| `support.paginationLabel` | `Support thread pages` |
-| `support.previous` | `Previous` |
-| `support.next` | `Next` |
-| `support.page` | `Page {page} of {totalPages}` |
-| `support.contactHeading` | `Contact Moda Support` |
-| `support.messageLabel` | `Message` |
-| `support.messageLengthError` | `Message must contain between 1 and {max} graphemes.` |
-| `support.sending` | `Sending...` |
-| `support.send` | `Send` |
-| `support.you` | `You` |
-| `support.system` | `System` |
-| `support.modaSupport` | `Moda Support` |
-| `support.translationUnavailable` | `Translation unavailable. Please try again later.` |
-| `support.translationProcessing` | `Translation is processing.` |
-| `support.viewTranslation` | `View translation` |
-| `support.viewOriginal` | `View original` |
-| `support.sendFailed` | `Unable to send message. Please try again.` |
-| `support.unsupportedAction` | `That support action is not available.` |
+| Key                              | Exact English source / semantic value                 |
+| -------------------------------- | ----------------------------------------------------- |
+| `common.logoAlt`                 | `Moda Interact logo`                                  |
+| `support.thread`                 | `Support thread`                                      |
+| `support.empty`                  | `No messages yet.`                                    |
+| `support.paginationLabel`        | `Support thread pages`                                |
+| `support.previous`               | `Previous`                                            |
+| `support.next`                   | `Next`                                                |
+| `support.page`                   | `Page {page} of {totalPages}`                         |
+| `support.contactHeading`         | `Contact Moda Support`                                |
+| `support.messageLabel`           | `Message`                                             |
+| `support.messageLengthError`     | `Message must contain between 1 and {max} graphemes.` |
+| `support.sending`                | `Sending...`                                          |
+| `support.send`                   | `Send`                                                |
+| `support.you`                    | `You`                                                 |
+| `support.system`                 | `System`                                              |
+| `support.modaSupport`            | `Moda Support`                                        |
+| `support.translationUnavailable` | `Translation unavailable. Please try again later.`    |
+| `support.translationProcessing`  | `Translation is processing.`                          |
+| `support.viewTranslation`        | `View translation`                                    |
+| `support.viewOriginal`           | `View original`                                       |
+| `support.sendFailed`             | `Unable to send message. Please try again.`           |
+| `support.unsupportedAction`      | `That support action is not available.`               |
 
 ### Locale catalogues
 

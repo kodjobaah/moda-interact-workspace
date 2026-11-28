@@ -34,16 +34,13 @@ updated: 2026-10-13
 
 ## Objective
 
-
 Resolve an eligible coupon candidate under NONE/FIXED/AI policy and **verify the chosen Woo coupon directly from Background** before any outbound discount promise, using only existing catalogue, policy, read-grant and attempt records.
 
 ## Context
 
-
 The former BACKGROUND-002 candidate-filtering task is superseded because candidates must be selected as part of the same send-time flow that verifies provider eligibility. There is no API-003 coupon-proof route or ARCH-036 Shared proof schema. `isAvailable` marks merchant selection, not provider validity; an unchanged FIXED SQL check requires one actual internal discount FK.
 
 ## Scope
-
 
 In `moda-interact-background`, adapt the existing recovery policy resolution and outreach path to resolve bounded candidates, fetch provider coupon detail directly with the secure read-grant client established by BACKGROUND-001, evaluate trusted checkout restrictions and persist one proven existing attempt. Preserve existing Shopify path, Admin override priority, immutable recipient/offer snapshot, outbox, charging and ordering semantics. No other repository changes.
 
@@ -56,7 +53,6 @@ In `moda-interact-background`, adapt the existing recovery policy resolution and
 
 ## Requirements
 
-
 1. **Policy/candidates:** NONE => never offer. Woo merchant FIXED => only same-Shop merchant-checked (`isAvailable=true`) ACTIVE, fixedSelectable, in-date coupons from CURRENT catalogue; Woo AI => all supported ACTIVE current coupons whether checked or not. Admin FIXED override retains its one real internal FK independent of merchant checkbox state. Shopify keeps its existing single chosen FK. Bound candidate count, sort deterministically, do not stack offers.
 2. **Direct live proof:** for a Woo candidate re-resolve the current ACTIVE shop/installation/read grant and exact `woo:coupon:<id>` identity; use the secure Background Woo client to GET `/wp-json/wc/v3/coupons/{id}` with pinned/TLS/SSRF/no-redirect/size/time rules. Confirm code, provider state, expiry, usage limits and checkout applicability with authoritative basket/customer/product facts. A `wc/v3` coupon object alone does not prove customer-specific rules that lack those facts.
 3. **Concurrency/failure:** recheck Shop, grant/credential generation, catalogue freshness, checked FIXED state and provider eligibility before committing/send. If a coupon changes, disappears, is exhausted, unverified or unprovable, fail closed; never create a fake FIXED NULL-FK attempt or claim/promote an offer. Unknown restrictions, timeout, private origin, revoked grant and missing checkout facts are not successful proof. No unsupported coupon-free fallback may silently override FIXED.
@@ -65,7 +61,6 @@ In `moda-interact-background`, adapt the existing recovery policy resolution and
 
 ## Work Items
 
-
 - [ ] Integrate deterministic NONE/FIXED/AI current-catalogue candidate filtering into existing Background recovery policy resolution (former BACKGROUND-002 scope).
 - [ ] Reuse BACKGROUND-001 secure Woo grant/transport to read one exact coupon at send time, verify rules against trusted checkout facts and recheck current selection/grant.
 - [ ] Persist one real internal coupon FK and immutable offer evidence only after valid proof; fail closed without invalid FIXED insert on unknown/no candidate.
@@ -73,11 +68,9 @@ In `moda-interact-background`, adapt the existing recovery policy resolution and
 
 ## Interfaces / Contracts
 
-
 Existing `ShopifyDiscountCatalogue`, `ShopifyDiscount`, `ShopSettings`, `ShopRecoveryPolicyOverride`, `RecoveryOutreachAttempt`, approved Woo grant and direct `wc/v3/coupons/{id}` GET. Existing Commerce evaluator where its actual call boundary is demonstrated. No API-003 route and no new Shared proof schema.
 
 ## Dependencies
-
 
 - `ARCH-036-BACKGROUND-001` — secure provider client and current catalogue.
 - `ARCH-036-API-002` — persisted checkbox/offer-mode semantics.
@@ -85,11 +78,9 @@ Existing `ShopifyDiscountCatalogue`, `ShopifyDiscount`, `ShopSettings`, `ShopRec
 
 ## Enables
 
-
 - `ARCH-036-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
-
 
 - [ ] NONE never offers a coupon; FIXED uses only selected valid alternatives; AI ignores selected flags but never offers invalid coupons; Admin and Shopify single-FK rules still work.
 - [ ] Background directly obtains provider detail with verified grant, exact site/coupon identity and checkout facts; no API proof proxy/Shared contract.
@@ -98,7 +89,6 @@ Existing `ShopifyDiscountCatalogue`, `ShopifyDiscount`, `ShopSettings`, `ShopRec
 - [ ] Existing database schema and recovery/outbound ordering, retry and billing safety maintained.
 
 ## Validation
-
 
 - [ ] Focused policy/candidate evaluator tests for NONE/FIXED/AI, selected/unselected, admin override and Shopify single FK.
 - [ ] Direct Woo live-proof transport and checkout eligibility matrix with hostile/expired/revoked/restricted providers and concurrent selection/grant changes.
@@ -110,7 +100,6 @@ Existing `ShopifyDiscountCatalogue`, `ShopifyDiscount`, `ShopSettings`, `ShopRec
 After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
-
 
 Candidate resolution and send-time proof now form one bounded Background task. The previous BACKGROUND-002 is superseded, not an additional dependency. Use the approved provider credential resolver/transport from BACKGROUND-001, and perform required send-time checks within Background. CommerceAgent evaluation is separate and cannot substitute for proof; when a genuine cross-repository gap is found, stop and refer it to the architect. No new contract, schema or coupon source of truth.
 

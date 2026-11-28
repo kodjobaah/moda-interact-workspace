@@ -8,15 +8,15 @@ This is an investigation record, not an architecture task specification. Propose
 
 ## Investigation order
 
-| ID | Issue | Status | Completion criterion |
-| --- | --- | --- | --- |
-| CS01 | Shopify offline token refresh | Commerce expiry-path verified; other consumers pending | Refresh after access-token expiry succeeds without manual login and the resulting token permits a product read. |
-| CS02 | Required referral after failed tools | Open | A definitive failed tool produces a valid store-referral response instead of a failed conversation. |
-| CS03 | Repeated product searches and empty results | Open | Search results are explained by provider data and filters, and the agent reaches a grounded answer within an agreed bounded number of calls. |
-| CS04 | Merchant Knowledge denied | Commerce disabled-feature handling verified; Background pending | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
-| CS05 | Unsupported Shopify brand integration | Open | App configuration can be released and brand acquisition uses a verified supported source with an explicit fallback. |
-| CS06 | Category resolution and search sequencing | Open | Trace the resolver outcome and demonstrate that suitable category candidates are used in product search, with an explicit fallback when no suitable candidate is available. |
-| CS07 | Shop voice and product fallback after no match | Guidance updated; deployed verification pending | The assistant speaks for the shop, offers a verified fallback product, inspects permitted offers and gives a verified recommendation or a focused clarification. |
+| ID   | Issue                                          | Status                                                          | Completion criterion                                                                                                                                                        |
+| ---- | ---------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CS01 | Shopify offline token refresh                  | Commerce expiry-path verified; other consumers pending          | Refresh after access-token expiry succeeds without manual login and the resulting token permits a product read.                                                             |
+| CS02 | Required referral after failed tools           | Open                                                            | A definitive failed tool produces a valid store-referral response instead of a failed conversation.                                                                         |
+| CS03 | Repeated product searches and empty results    | Open                                                            | Search results are explained by provider data and filters, and the agent reaches a grounded answer within an agreed bounded number of calls.                                |
+| CS04 | Merchant Knowledge denied                      | Commerce disabled-feature handling verified; Background pending | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied.                                                       |
+| CS05 | Unsupported Shopify brand integration          | Open                                                            | App configuration can be released and brand acquisition uses a verified supported source with an explicit fallback.                                                         |
+| CS06 | Category resolution and search sequencing      | Open                                                            | Trace the resolver outcome and demonstrate that suitable category candidates are used in product search, with an explicit fallback when no suitable candidate is available. |
+| CS07 | Shop voice and product fallback after no match | Guidance updated; deployed verification pending                 | The assistant speaks for the shop, offers a verified fallback product, inspects permitted offers and gives a verified recommendation or a focused clarification.            |
 
 ## Working method
 
@@ -168,12 +168,12 @@ The Studio test that progressed furthest used 8 model steps, 8 remote calls, 2,0
 
 ### Completed diagnostic changes
 
-| Repository | Commit | Change |
-| --- | --- | --- |
-| Commerce | `07a9abd` | Bounded refresh-response classification and preservation of nonretryable failures. |
-| MCP | `a8d54a8` | Preservation of nonretryable credential failures in the product adapter. |
-| Commerce | `89e05c0` | Bounded search summaries with counts, filters and fingerprints. |
-| Commerce | `4c909b5` | Specific failure reason, stage, tool and run ID retained for Studio; schema issue metadata retained in correlation logs. |
+| Repository | Commit    | Change                                                                                                                   |
+| ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Commerce   | `07a9abd` | Bounded refresh-response classification and preservation of nonretryable failures.                                       |
+| MCP        | `a8d54a8` | Preservation of nonretryable credential failures in the product adapter.                                                 |
+| Commerce   | `89e05c0` | Bounded search summaries with counts, filters and fingerprints.                                                          |
+| Commerce   | `4c909b5` | Specific failure reason, stage, tool and run ID retained for Studio; schema issue metadata retained in correlation logs. |
 
 A pushed commit is not deployment proof. For each reproduction, record the actual Render deployment commit.
 
@@ -209,7 +209,6 @@ Remaining CS01 verification: after approximately 17:06, request the session thro
 
 No issue is closed yet. Next action: CS01 automatic refresh verification once the refresh window opens.
 
-
 ### Render test verification at 17 10 on 7 November 2026
 
 Conversation `5e237c06-58fc-4807-8148-5885a473e692` confirms the Commerce local-preview path:
@@ -222,7 +221,6 @@ Conversation `5e237c06-58fc-4807-8148-5885a473e692` confirms the Commerce local-
 - Three product searches each returned zero provider rows, zero normalization or availability rejections, and `hasMore: false`. This remains CS03; it is not a failed token refresh or a disabled-knowledge failure.
 
 CS01 is verified for Commerce local preview. MCP and Background expiry-path verification remains separate. CS04 is verified for a disabled shop in Commerce; Background deployment verification and the enabled-shop path remain to be exercised. CS02's general failed-tool referral handling is still open: this successful run avoided the failure rather than proving recovery from a genuine failed tool.
-
 
 ### CS03 direct catalogue checks after the successful refresh
 

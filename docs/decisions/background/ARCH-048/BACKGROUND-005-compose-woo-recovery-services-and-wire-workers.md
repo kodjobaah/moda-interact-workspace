@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-048-BACKGROUND-001
-- ARCH-048-BACKGROUND-002
-- ARCH-048-BACKGROUND-003
-- ARCH-048-BACKGROUND-004
-- ARCH-046-BACKGROUND-002
-- ARCH-046-BACKGROUND-004
+  - ARCH-048-BACKGROUND-001
+  - ARCH-048-BACKGROUND-002
+  - ARCH-048-BACKGROUND-003
+  - ARCH-048-BACKGROUND-004
+  - ARCH-046-BACKGROUND-002
+  - ARCH-046-BACKGROUND-004
 enables:
-- ARCH-048-SYSTEM-TEST-001
-created: '2026-10-23'
+  - ARCH-048-SYSTEM-TEST-001
+created: "2026-10-23"
 updated: 2026-10-26
 ---
 
@@ -98,7 +98,10 @@ BG006 first freezes cross-service interfaces; BG001–BG004 independently implem
 interface WooRecoveryOrchestrator {
   onCheckout(event: WooCheckoutCapture): Promise<WooCheckoutActivityOutcome>;
   onOrder(event: WooOrderCapture): Promise<WooOrderReconciliationOutcome>;
-  onCandidateMatured(candidate: WooPendingCandidate, context: { jobId?: string }): Promise<WooAdmissionOutcome>;
+  onCandidateMatured(
+    candidate: WooPendingCandidate,
+    context: { jobId?: string },
+  ): Promise<WooAdmissionOutcome>;
   onInitialDispatch(recoveryId: string): Promise<WooOutreachDispatchOutcome>;
 }
 ```

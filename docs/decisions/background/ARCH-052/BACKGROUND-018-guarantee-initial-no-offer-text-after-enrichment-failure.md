@@ -88,9 +88,13 @@ export type InitialFallbackResult =
     }>
   | Readonly<{
       kind: "BLOCKED";
-      reason: "INELIGIBLE_RECOVERY" | "INVALID_ATTEMPT" |
-        "CHECKOUT_ITEMS_UNAVAILABLE" | "TEMPLATE_UNAPPROVED" |
-        "APPROVED_BINDING_UNAVAILABLE" | "MERCHANT_OR_SENDER_MISMATCH";
+      reason:
+        | "INELIGIBLE_RECOVERY"
+        | "INVALID_ATTEMPT"
+        | "CHECKOUT_ITEMS_UNAVAILABLE"
+        | "TEMPLATE_UNAPPROVED"
+        | "APPROVED_BINDING_UNAVAILABLE"
+        | "MERCHANT_OR_SENDER_MISMATCH";
     }>
   | Readonly<{
       kind: "RETRY";
@@ -98,12 +102,14 @@ export type InitialFallbackResult =
     }>;
 
 export interface InitialNoOfferFallbackPort {
-  prepare(input: Readonly<{
-    shopId: string;
-    recoveryId: string;
-    outreachAttemptId: string;
-    trigger: InitialFallbackTrigger;
-  }>): Promise<InitialFallbackResult>;
+  prepare(
+    input: Readonly<{
+      shopId: string;
+      recoveryId: string;
+      outreachAttemptId: string;
+      trigger: InitialFallbackTrigger;
+    }>,
+  ): Promise<InitialFallbackResult>;
 }
 ```
 
@@ -121,21 +127,48 @@ Add `src/services/recovery-template-integration/initial-outreach-fallback-select
 import type { InitialFallbackTrigger } from "./initial-no-offer-fallback.service.js";
 
 export type InitialOutreachFailureInput =
-  | Readonly<{ kind: "OPTIONAL_ENRICHMENT_FAILURE"; trigger: InitialFallbackTrigger; beforeProviderAdmission: true }>
-  | Readonly<{ kind: "MANDATORY_SEND_BLOCK"; reason:
-      "STOP" | "CONSENT" | "TERMINAL_RECOVERY_OR_ORDER" |
-      "WRONG_SHOP_OR_RECIPIENT" | "MODERATION" | "BILLING_OR_CAPACITY" |
-      "TEMPLATE_NOT_APPROVED" | "CHECKOUT_ITEMS_UNAVAILABLE" }>
-  | Readonly<{ kind: "TRANSIENT_REQUIRED_STATE"; reason:
-      "DB_OR_CONFIG_UNAVAILABLE" | "CURRENT_RECOVERY_UNVERIFIABLE" }>
+  | Readonly<{
+      kind: "OPTIONAL_ENRICHMENT_FAILURE";
+      trigger: InitialFallbackTrigger;
+      beforeProviderAdmission: true;
+    }>
+  | Readonly<{
+      kind: "MANDATORY_SEND_BLOCK";
+      reason:
+        | "STOP"
+        | "CONSENT"
+        | "TERMINAL_RECOVERY_OR_ORDER"
+        | "WRONG_SHOP_OR_RECIPIENT"
+        | "MODERATION"
+        | "BILLING_OR_CAPACITY"
+        | "TEMPLATE_NOT_APPROVED"
+        | "CHECKOUT_ITEMS_UNAVAILABLE";
+    }>
+  | Readonly<{
+      kind: "TRANSIENT_REQUIRED_STATE";
+      reason: "DB_OR_CONFIG_UNAVAILABLE" | "CURRENT_RECOVERY_UNVERIFIABLE";
+    }>
   | Readonly<{ kind: "PROVIDER_OUTCOME_UNCERTAIN" }>;
 
 export type InitialFallbackDecision =
-  | Readonly<{ action: "PREPARE_NO_OFFER_TEXT"; trigger: InitialFallbackTrigger }>
-  | Readonly<{ action: "DO_NOT_SEND"; reason: Extract<InitialOutreachFailureInput,
-      {kind:"MANDATORY_SEND_BLOCK"}>["reason"] }>
-  | Readonly<{ action: "RETRY_EXISTING_ATTEMPT"; reason: Extract<InitialOutreachFailureInput,
-      {kind:"TRANSIENT_REQUIRED_STATE"}>["reason"] }>
+  | Readonly<{
+      action: "PREPARE_NO_OFFER_TEXT";
+      trigger: InitialFallbackTrigger;
+    }>
+  | Readonly<{
+      action: "DO_NOT_SEND";
+      reason: Extract<
+        InitialOutreachFailureInput,
+        { kind: "MANDATORY_SEND_BLOCK" }
+      >["reason"];
+    }>
+  | Readonly<{
+      action: "RETRY_EXISTING_ATTEMPT";
+      reason: Extract<
+        InitialOutreachFailureInput,
+        { kind: "TRANSIENT_REQUIRED_STATE" }
+      >["reason"];
+    }>
   | Readonly<{ action: "RECONCILE_EXISTING_SEND" }>;
 
 export function classifyInitialOutreachFallback(
@@ -160,7 +193,7 @@ Modify **only** the existing initial paths:
 - `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts`: adapt `templates.select` so an optional preparer failure selects the independently approved fallback. `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts` retains its existing `WooGuardedInitialSender` final SQL consent/STOP + terminal-order fence and exactly-once attempt lifecycle. A temporary optional failure must not become an irreversible `suppressed`/`FAILED` attempt without trying the safe fallback.
 - `src/services/recovery-template-integration/automated-recovery-template.service.ts`: do not disguise optional result failures as mandatory configuration failures. Reuse the new, typed fallback decision or make its optional failure explicit for both callers. Do not change the FOLLOW_UP path. Do not call the offer agent a second time on fallback, and do not open another conversation.
 
-If an optional enhancement fails *after credit reservation but before provider admission*, reuse or safely release/re-admit the same reservation according to the existing billing contract; never reserve two billable initial conversations. If a mandatory pre-send check fails, release according to the existing compensation path. Only a provider-confirmed outbound message may finalize the attempt and its `ConversationMessage.content.recoveryPromise:{kind:"NO_OFFER"}`. No confirmed send means no promised coupon, no false `sentAt`, and no extra follow-up scheduling.
+If an optional enhancement fails _after credit reservation but before provider admission_, reuse or safely release/re-admit the same reservation according to the existing billing contract; never reserve two billable initial conversations. If a mandatory pre-send check fails, release according to the existing compensation path. Only a provider-confirmed outbound message may finalize the attempt and its `ConversationMessage.content.recoveryPromise:{kind:"NO_OFFER"}`. No confirmed send means no promised coupon, no false `sentAt`, and no extra follow-up scheduling.
 
 ### D. Required send prohibitions and retries
 
@@ -422,7 +455,6 @@ task, rerun affected unit/Woo integration suites after reconciliation, and
 complete the declared build. Keep SYSTEM-TEST-001/002 blocked on their other
 prerequisites; no downstream status changed in this review.
 
-
 ## Architect Review — Attempt 2
 
 ### Review Status
@@ -489,7 +521,6 @@ Ready for architect review. Attempt 1 and Attempt 2 Architect Reviews and comple
 ### Attempt 3 Handoff
 
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. Parent claim commit `86cade1369e2958551b36198c4b1784d1d58d73b` was pushed before implementation; this report follows implementation commit `b39a84e`. Neither task branch was merged to `main`; no downstream task status was changed.
-
 
 ## Architect Review — Attempt 3
 
@@ -560,23 +591,21 @@ Ready for architect review. The Attempt 1, 2 and 3 reports and all Architect Rev
 
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. Parent claim commit `7e647d111748eacfe94def3a0ce991e9fffbbf28` preceded implementation commit `870c0933c4e394edaeffef3f2ee902255a7f1fd7`. No downstream task status was changed; SYSTEM-TEST-001 and SYSTEM-TEST-002 remain Pending. The task is returned to review for `moda_architect`; this report does not make an acceptance decision.
 
-
-
 Physical worktree isolation (verified during architect review from Git worktree registrations and commit history):
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`
-  parent branch: `task/ARCH-052-BACKGROUND-018`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`
-  implementation branch: `task/ARCH-052-BACKGROUND-018`
-  shared workspace checkout switched/mutated for task work: no; task-report commits are on the dedicated parent worktree branch
-  shared implementation checkout switched/mutated for task work: no; implementation commits are on the dedicated implementation worktree branch
-  another task worktree reused: no; both registered worktrees are the canonical paths for this task
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`
+parent branch: `task/ARCH-052-BACKGROUND-018`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`
+implementation branch: `task/ARCH-052-BACKGROUND-018`
+shared workspace checkout switched/mutated for task work: no; task-report commits are on the dedicated parent worktree branch
+shared implementation checkout switched/mutated for task work: no; implementation commits are on the dedicated implementation worktree branch
+another task worktree reused: no; both registered worktrees are the canonical paths for this task
 
 Start-of-attempt synchronization (reconstructed from branch reflogs and commit ancestry):
-  parent remote task branch fast-forwarded: not-needed; remote was at `7da1122d` before the Attempt 4 claim commit `7e647d11`, whose parent is `7da1122d`
-  parent `origin/main` incorporated: already-current; the claim commit descends from `e150b936`, the parent `origin/main` tip at the Attempt 4 start (the next main-ref update was later)
-  implementation remote task branch fast-forwarded: not-needed; `origin/task/ARCH-052-BACKGROUND-018` was at `b39a84e` at Attempt 4 start, before the Attempt 4 implementation commit
-  implementation `origin/main` incorporated: already-current; the Attempt 4 base `b39a84e` descends from merge commit `e1933b7`, which incorporated `origin/main` at `42f1f88`
+parent remote task branch fast-forwarded: not-needed; remote was at `7da1122d` before the Attempt 4 claim commit `7e647d11`, whose parent is `7da1122d`
+parent `origin/main` incorporated: already-current; the claim commit descends from `e150b936`, the parent `origin/main` tip at the Attempt 4 start (the next main-ref update was later)
+implementation remote task branch fast-forwarded: not-needed; `origin/task/ARCH-052-BACKGROUND-018` was at `b39a84e` at Attempt 4 start, before the Attempt 4 implementation commit
+implementation `origin/main` incorporated: already-current; the Attempt 4 base `b39a84e` descends from merge commit `e1933b7`, which incorporated `origin/main` at `42f1f88`
 
 The parent claim commit timestamp is 2026-11-01 21:56:26 UTC. Reflogs show the preceding remote task-branch tips and mainline refs above; the implementation task worktree and parent task worktree are registered at the canonical paths listed here.
 

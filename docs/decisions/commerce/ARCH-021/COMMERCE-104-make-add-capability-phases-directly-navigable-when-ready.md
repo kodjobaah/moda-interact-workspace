@@ -144,24 +144,23 @@ The implementation MUST distinguish these two concepts instead of treating `enab
 Use semantics equivalent to:
 
 ```ts
-phaseUnlocked(candidate) =
-  phaseIndex(candidate) <= phaseIndex(enabledThrough)
+phaseUnlocked(candidate) = phaseIndex(candidate) <= phaseIndex(enabledThrough);
 
-phaseReadyForFirstEntry('Capability') = true
-phaseReadyForFirstEntry('Tool')       = validCapability
-phaseReadyForFirstEntry('Review')     = canReview
+phaseReadyForFirstEntry("Capability") = true;
+phaseReadyForFirstEntry("Tool") = validCapability;
+phaseReadyForFirstEntry("Review") = canReview;
 
 phaseAvailable(candidate) =
-  phaseUnlocked(candidate) || phaseReadyForFirstEntry(candidate)
+  phaseUnlocked(candidate) || phaseReadyForFirstEntry(candidate);
 ```
 
 The exact helper names may differ, but the truth table below is authoritative.
 
-| Phase | Never unlocked + current candidate not ready | Never unlocked + current candidate ready | Previously unlocked + current candidate later invalid |
-|---|---|---|---|
-| Capability | Available | Available | Available |
-| Tool | Unavailable | Available when `validCapability === true` | Available |
-| Review | Unavailable | Available when `canReview === true` | Available |
+| Phase      | Never unlocked + current candidate not ready | Never unlocked + current candidate ready  | Previously unlocked + current candidate later invalid |
+| ---------- | -------------------------------------------- | ----------------------------------------- | ----------------------------------------------------- |
+| Capability | Available                                    | Available                                 | Available                                             |
+| Tool       | Unavailable                                  | Available when `validCapability === true` | Available                                             |
+| Review     | Unavailable                                  | Available when `canReview === true`       | Available                                             |
 
 `pending` and `outcomeUnknown` are independent global navigation locks and still disable phase navigation regardless of this table.
 
@@ -279,7 +278,7 @@ Local `phase` / `enabledThrough` state changes are expected and are not persiste
 Do not weaken or replace the existing final Create rule:
 
 ```ts
-canReview = validCapability && selectedTool !== undefined
+canReview = validCapability && selectedTool !== undefined;
 ```
 
 `Create capability` must remain disabled when `canReview` is false even if `Review` is historically unlocked and visible.
@@ -448,11 +447,11 @@ function isPhaseUnlocked(candidate: Phase): boolean {
 
 function isPhaseReadyForFirstEntry(candidate: Phase): boolean {
   switch (candidate) {
-    case 'Capability':
+    case "Capability":
       return true;
-    case 'Tool':
+    case "Tool":
       return validCapability;
-    case 'Review':
+    case "Review":
       return canReview;
   }
 }

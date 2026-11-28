@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-032-DATABASE-001
+  - ARCH-032-DATABASE-001
 enables:
-- ARCH-032-MCP-016
+  - ARCH-032-MCP-016
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-MCP-015 — Enforce mandatory platform MCP execution policy
@@ -97,6 +97,7 @@ Use the canonical developer workflow and launcher-managed isolated parent and re
 Changes Requested — Attempt 1 implements and validates standalone MCP policy enforcement, but does not cover the direct Commerce Local Preview path required by this task's shared-enforcement contract. Claim released without incrementing the attempt.
 
 ### Files Changed
+
 - `database` gitlink, advanced to `139765042baad3901682cfe9c54a3d6bba73e75c` (ARCH-032-DATABASE-001)
 - `src/composition.ts`
 - `src/connections/ports.ts`
@@ -128,6 +129,7 @@ Changes Requested — Attempt 1 implements and validates standalone MCP policy e
 - `tests/unit/openapi/spec.test.ts`
 
 ### Work Completed
+
 - Added a strict environment-scoped JSON policy reader for `PlatformBillingPolicy.mcpExecutionPolicy`; selected policy is read for every published `tools/call`, with no stale-success cache or hardcoded business-budget fallback.
 - Enforced total call deadline, provider response timeout, provider request count and response-byte limits across the standalone MCP Shopify, WooCommerce and Merchant Knowledge execution paths.
 - Made missing/invalid/unavailable policy fail closed before shop/provider execution; connected readiness probing and safe per-occurrence structured logging.
@@ -135,6 +137,7 @@ Changes Requested — Attempt 1 implements and validates standalone MCP policy e
 - Advanced the implementation repository's database gitlink from `12c3bee` to the completed ARCH-032-DATABASE-001 commit containing the policy JSONB field.
 
 ### Validation Results
+
 - Passed: `npm test` — 161 passed, 0 failed.
 - Passed: `npm run typecheck`.
 - Passed: `npm run lint` (`--max-warnings=0`).
@@ -145,48 +148,61 @@ Changes Requested — Attempt 1 implements and validates standalone MCP policy e
 - Published implementation branch: `task/ARCH-032-MCP-015`, commit `bb0f41ba81b92b3ea9f23a3129b700c0cf5df447`, including database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
 
 ### Deviations
+
 The standalone MCP service is implemented and validated. Commerce Local Preview executes directly without the standalone MCP service and remains outside this repository's implementation boundary; its policy ownership/contract must be resolved before the shared published/preview criterion can be accepted.
 
 ### Assumptions
+
 None recorded
 
 ### Unresolved Issues
+
 The current architecture separates Commerce Local Preview (direct real-provider calls) from standalone MCP Live Test/published calls. Commerce `src/commerce/preview/service.ts` defaults `TOOL_DEADLINE_MS` to 30,000 ms, and `src/commerce/preview/local-selected-shop-executor.ts` applies a 10,000 ms deadline and 12-request budget; neither path reads `PlatformBillingPolicy` or enforces the configured provider-response timeout/response-byte limits. Decide whether Commerce Local Preview must consume this policy and which task/repository owns that integration. No Commerce files were changed.
 
 ### Architectural Concerns
+
 None recorded
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed
 
 ### Reviewed Files
+
 None
 
 ### Validation Reviewed
+
 None
 
 ### Architecture Conformance
+
 Pending
 
 ### Follow-up
+
 None
 
 ## Developer Self-Review — Changes Requested
 
 ### Outcome
+
 Changes Requested for Attempt 1. The standalone MCP implementation is committed, pushed, clean, and passes all required unit, lint, typecheck, build and Docker integration validations. The explicit shared published/preview requirement is not met because the current Commerce Local Preview path bypasses standalone MCP.
 
 ### Required Corrections
+
 - Resolve with `moda_architect` whether Local Preview must use the same environment-scoped `PlatformBillingPolicy` limits. The current task body and ARCH-032 policy decision require shared enforcement, while Local Preview runs direct provider calls in `moda-interact-commerce`.
 - If shared Local Preview enforcement remains required, assign/update the Commerce-owned task or a cross-repository contract to read the same policy and enforce all four limits, fail closed on missing/invalid/unavailable policy, and cover that path with focused tests. Do not make an unowned Commerce edit from this MCP task.
 - If the requirement is intentionally narrowed to standalone MCP, amend the active task scope/acceptance criteria through architect reconciliation, then review this already-pushed MCP implementation against that revised contract.
 
 ### Review Evidence
+
 - MCP implementation commit `bb0f41ba81b92b3ea9f23a3129b700c0cf5df447` is pushed on `task/ARCH-032-MCP-015`; canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-MCP-015` was clean.
 - The commit pins database submodule `139765042baad3901682cfe9c54a3d6bba73e75c`, which contains `PlatformBillingPolicy.mcpExecutionPolicy`; the disposable PostgreSQL run applied the corresponding migration.
 - Validation: `npm test` 161/161; `npm run typecheck`; `npm run lint`; `npm run build`; `npm run typecheck:integration`; `npm run test:integration:docker` 16 passed, 1 opt-in live Shopify test skipped.
@@ -208,7 +224,6 @@ The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton
 ## 2026-10-15 — Dependency Frontier Reconciliation
 
 `ARCH-032-DATABASE-001` completed Attempt 1 with explicit developer completion and accepted review in parent commit `2d3dbcf9`. This task's sole declared dependency is now satisfied. Promote `pending` to `ready`; preserve `attempt: 0`, `executor: null`, and `claimed_at: null`. This is an eligibility update only, not an implementation claim or completion decision.
-
 
 ## 2026-10-15 — Active architect scope correction: published standalone MCP only
 

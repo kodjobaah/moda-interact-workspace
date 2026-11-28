@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-004-BACKGROUND-002
-- ARCH-016-BACKGROUND-003
+  - ARCH-004-BACKGROUND-002
+  - ARCH-016-BACKGROUND-003
 enables:
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-20
 ---
@@ -602,7 +602,6 @@ Status: Ready for Review
 5. No direct ShopSettings recovery-delay scheduling read remains in `PendingRecoveryCandidateService`.
 
 No blockers for the scoped implementation. The unrelated full-suite billing-reconciliation failures remain documented above for architect review.
-
 
 ## Architect Review — Attempt 1
 

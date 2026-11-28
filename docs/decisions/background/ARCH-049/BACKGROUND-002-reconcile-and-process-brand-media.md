@@ -52,10 +52,13 @@ ShopBrand persists role-specific source/work/ready fields; there is no media job
 Export an application-level source updater usable in Background and reproducible by the API service (the persistence JSON format is the architecture contract, not a Shared AST package):
 
 ```typescript
-type BrandRole = 'LOGO'|'SQUARE_LOGO'|'COVER_IMAGE';
+type BrandRole = "LOGO" | "SQUARE_LOGO" | "COVER_IMAGE";
 interface SourceObservation {
-  shopId: string; role: BrandRole; sourceUrl: string|null;
-  sourceReference: string|null; sourceFingerprint: string|null;
+  shopId: string;
+  role: BrandRole;
+  sourceUrl: string | null;
+  sourceReference: string | null;
+  sourceFingerprint: string | null;
   observedAt: string;
 }
 ```
@@ -162,15 +165,15 @@ This report changes only the canonical parent task file. It does not modify impl
 
 Developer-run evidence: `typescript(20261027-143828)` terminal log, uploaded with the task worktree snapshot on 2026-10-27. The code and tests listed below are present in the accompanying overlaid Background repository snapshot.
 
-| Command | Result |
-| --- | --- |
-| `npm run prisma:generate` | PASS — Prisma Client 6.19.3 generated against `database/prisma/schema.prisma`. |
-| `npm test -- tests/unit/services/shop-brand-media-orchestration` | PASS — 23 tests in 3 files, including 3 transaction-exception logging tests. |
-| `node scripts/test-integration.mjs tests/integration/shop-brand-media-orchestration.integration.test.ts` | PASS — 3 PostgreSQL integration tests. |
-| `npm run lint` | PASS — ESLint completed without reported errors. |
-| `npm run build` | PASS — Prisma generation and TypeScript compilation completed without reported errors. |
-| `git diff --check` | PASS — no whitespace errors reported. |
-| `git status` after commit/push | Branch up to date with `origin/task/ARCH-049-BACKGROUND-002`; only untracked local terminal capture `typescript` remains. |
+| Command                                                                                                  | Result                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `npm run prisma:generate`                                                                                | PASS — Prisma Client 6.19.3 generated against `database/prisma/schema.prisma`.                                            |
+| `npm test -- tests/unit/services/shop-brand-media-orchestration`                                         | PASS — 23 tests in 3 files, including 3 transaction-exception logging tests.                                              |
+| `node scripts/test-integration.mjs tests/integration/shop-brand-media-orchestration.integration.test.ts` | PASS — 3 PostgreSQL integration tests.                                                                                    |
+| `npm run lint`                                                                                           | PASS — ESLint completed without reported errors.                                                                          |
+| `npm run build`                                                                                          | PASS — Prisma generation and TypeScript compilation completed without reported errors.                                    |
+| `git diff --check`                                                                                       | PASS — no whitespace errors reported.                                                                                     |
+| `git status` after commit/push                                                                           | Branch up to date with `origin/task/ARCH-049-BACKGROUND-002`; only untracked local terminal capture `typescript` remains. |
 
 Implementation branch `task/ARCH-049-BACKGROUND-002`: commit `6617d97`, followed by successful `git push -u origin task/ARCH-049-BACKGROUND-002` as shown in the terminal evidence. These are evidence reported by the local terminal, not Git remote actions performed by the architect in this sandbox.
 

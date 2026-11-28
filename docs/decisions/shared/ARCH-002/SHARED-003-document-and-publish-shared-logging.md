@@ -18,6 +18,7 @@ enables:
 created: 2026-08-30
 updated: 2026-08-30
 ---
+
 # Document and Publish Shared Logging Package Release
 
 ## Architecture
@@ -237,9 +238,7 @@ npm install @modainteract/moda-interact-shared@<exact-version>
 Smoke-test the public logging export:
 
 ```js
-import {
-  createLogger
-} from "@modainteract/moda-interact-shared/logging";
+import { createLogger } from "@modainteract/moda-interact-shared/logging";
 
 const records = [];
 
@@ -417,9 +416,9 @@ shasum: 3963a516c8840be98f995aaa8ff85c317ebba765
 No unrelated release changes were included. The `src/logging/` directory and
 `tsup.config.ts` were already part of the architect-accepted SHARED-002
 implementation.
+
 - `.codex/agents/moda_shared.toml` — corrected the stale published package name in the agent description to `@modainteract/moda-interact-shared`.
 - `.claude/agents/moda_shared.agent.md` — generated description kept aligned with the canonical package-name correction.
-
 
 ### Work Completed
 
@@ -512,7 +511,7 @@ records it explicitly.
   and was not silently redesigned.
 - The `moda_shared` agent-definition description references an older
   `@kodjobaah/moda-interact-shared` name, but the authoritative contract
-  (`package.json`, ARCH-002 
+  (`package.json`, ARCH-002
 
 ## Architect Review
 
@@ -610,4 +609,3 @@ and replace its local generic structured logger with:
 ```
 
 while retaining Shopify-specific OpenTelemetry locally.
-

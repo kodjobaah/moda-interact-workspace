@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables: []
-created: '2026-10-23'
-updated: '2026-10-23'
+created: "2026-10-23"
+updated: "2026-10-23"
 ---
 
 # ARCH-048-WOOCOMMERCE-001 — Superseded — do not expose Woo checkout/order read endpoint

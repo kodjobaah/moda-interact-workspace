@@ -559,10 +559,15 @@ The later Background host task is required for production runtime adoption becau
 ## Completion Report
 
 ### Status
+
 Ready for Review — Attempt 2
+
 ### Files Changed
+
 Attempt 1 implementation is preserved without source changes in the dedicated `moda-interact-commerce` task worktree. It covers effective instruction resolution/contracts, MCP authorization and reserved prompts, Preview selection/revalidation, Agent Configuration read-only context, removal of Studio-only mutation adapters, and related tests. This Attempt 2 changes only this parent task report and lifecycle metadata.
+
 ### Work Completed
+
 Attempt 1 implementation remains unchanged after the required synchronization. It provides deterministic additive Platform plus optional Shop instruction resolution. Platform is required; an invalid present Shop configuration fails closed. Existing Shop-over-Platform model selection semantics are preserved, and effective metadata includes source template edit-version provenance.
 
 Exact resolved text is exposed through the fixed `commerce/platform-instructions` and `commerce/shop-instructions` MCP prompt names, scoped through the authenticated authorization snapshot. Capability prompt behavior and names remain unchanged.
@@ -572,10 +577,13 @@ Commerce Preview treats the selected shop ID only as a selector, revalidates it 
 Platform/Shop and template authoring mutations are removed from Commerce Studio while retaining model editing and a read-only effective-instructions/provenance view labeled “Managed in Admin”. Durable Commerce prompt/template services remain available to Admin/runtime.
 
 Attempt 2 correction dispositions:
+
 - Synchronization and start-of-attempt evidence: implemented by the prepared launcher; both canonical task worktrees were synchronized before any Attempt 2 source inspection or validation.
 - Canonical worktree/provenance evidence: recorded below from the prepared launcher packet and final submission.
 - Completion-report bookkeeping and refreshed validation inventory: implemented here; all Work Items, Acceptance Criteria and Validation checkboxes reflect the completed focused checks, the lint count is corrected, and the refreshed full-suite failures are listed below.
+
 ### Validation Results
+
 Prepared launcher evidence (2026-09-30T23:36:50Z):
 
 ```text
@@ -636,15 +644,22 @@ tests/studio-services-errors.test.ts
 tests/studio-workspace.test.tsx
 ```
 
-
 A diagnostic `npm test -- --maxWorkers=1 --no-file-parallelism --isolate=false` run exited nonzero and reported 77 failed suite results / 147 failed assertions with further cross-file state contamination; it is not used as the package-wide result. Setup/collection failures in the normal full run include PostgreSQL, C20 and local external-MCP integration suites. Remaining reported failures span Admin Explore, unrelated tool/release authoring, health/readiness, response/runtime, discount, discovery, and Studio workflows. `agent-configuration-model-ui.test.tsx` and `agent-configuration-shop-ui.test.tsx` appeared in the package run but passed in the focused reruns (including the 63-test rerun); no task-owned assertion failure reproduced in focused validation. The package-wide failures are retained for Architect attribution, not silently treated as passing.
+
 ### Deviations
+
 No implementation-source changes were needed for Attempt 2. Work remained within Commerce and did not modify Background. C20/PostgreSQL integration validation was limited by the unavailable disposable test targets.
+
 ### Assumptions
+
 The reserved MCP prompts are the production-facing Commerce contract; a separate bounded Background task must fetch them and append Platform then Shop after true host-owned Level-2 instructions before invoking `runCommerceTurn`.
+
 ### Unresolved Issues
+
 The package-wide failures listed above remain for Architect attribution; the Shop/model UI failures did not reproduce in focused reruns. C20/PostgreSQL integration requires configured disposable database and Redis targets. The full production build passed, but standalone packaged-runtime smoke reruns failed inconsistently and require separate attribution.
+
 ### Architectural Concerns
+
 Production conversation execution remains Background-owned, so these resolved prompts are not consumed by the production runner until the required Background host-integration task is completed. No Background files were edited here.
 
 ## Architect Review
@@ -710,9 +725,11 @@ The production runner remains Background-owned. The required bounded Background 
 #### Historical Attempt 1 — Changes Requested
 
 ### Review Status
+
 Changes Requested — Attempt 1
 
 ### Review Notes
+
 No implementation-source correction is requested. The submitted Commerce implementation is architecturally conformant for this attempt: additive Platform + optional Shop resolution, fixed reserved MCP prompts, Preview ordering, Studio mutation retirement, model-selection preservation and the Background ownership boundary are all within the task contract. No Background files were changed.
 
 Attempt 1 cannot be accepted because the task execution/report evidence does not satisfy the repository workflow contract:
@@ -729,9 +746,11 @@ parent report:  3218da44
 ```
 
 ### Reviewed Files
+
 Reviewed the COMMERCE-003 task/completion report and the task-owned implementation surfaces for effective instruction resolution, MCP authorization/service reserved prompts, Preview host-instruction composition, Agent Configuration read-only presentation/mutation retirement, and focused regression coverage.
 
 ### Validation Reviewed
+
 The following evidence is sufficient for code-level review and does not itself block acceptance:
 
 ```text
@@ -747,11 +766,13 @@ changed-file diagnostics                  PASS
 The package-wide suite is not clean (61 failed tests) and the C20 integration suite could not start without disposable PostgreSQL/Redis configuration. These results are not, by themselves, an Attempt 1 implementation blocker because the task-owned focused validation is green; Attempt 2 must rerun after synchronization and record the exact remaining full-suite failure set clearly enough for architect attribution.
 
 ### Architecture Conformance
+
 No code-level architecture blocker was found. Platform and Shop Instructions are additive and deterministic, trusted text is exported through the reserved MCP prompt contract, Preview consumes the same order, model-selection semantics remain independent, and Platform/Shop authoring is retired from Commerce Studio without moving runtime ownership into Commerce.
 
 The required Background host-consumption follow-up remains mandatory before final ARCH-023 system acceptance. It is an architect coordination follow-up, not an implementation-source correction for this task.
 
 ### Follow-up
+
 Return the same task to `ready` with `attempt: 1`, `executor: null`, and `claimed_at: null`. Then start Attempt 2 only through:
 
 ```text

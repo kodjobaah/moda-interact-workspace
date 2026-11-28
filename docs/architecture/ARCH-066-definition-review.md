@@ -4,19 +4,19 @@ Scope: current local architecture/task definitions checked against relevant sour
 
 ## Findings and disposition
 
-| Finding | Disposition |
-|---|---|
-| SHARED-004 supplied names and broad prose without implementable contracts | Rewritten task points to normative outreach contract specifying Zod payloads, ports, relocation map, ordered state transitions, refusal reasons, result/render fields and tests |
-| Outreach consumers depended on completed SHARED-003 although5.6.0 excludes outreach | New SHARED-005 publication task; explicit consumer dependencies corrected; completed003 untouched |
-| Existing graph allows alternative-product outreach, contradicting checkout-only requirement | Explicit new checkout-only decision schema; unexpected alternative refuses OUTSIDE_CHECKOUT; Background historical receipt handling and later conversational recommendations retained |
-| Production context builder requires real active outreach attempt; preview must not create one | Reusable contract has run/checkout identity only; real attempt/credit/send fences remain host-owned |
-| NONE policy currently skips live price reconciliation | New evaluator requires exact product read and final recheck for every distinct checkout identity even in NONE; zero offer/model calls in NONE |
-| Template preparation facade includes WABA/database/media resolution | Pure helpers identified individually; hosts pass frozen validated projections; Studio uses ready existing media/TEXT fallback without upload/Meta calls |
-| Claimed Studio route used nonexistent src/app directory | Commerce task now uses actual app/api/studio/preview/initial-outreach route family with list/start/status/cancel contracts and status codes |
-| Duplicate/stale reads, changed checkout, retry budget and historical/current price semantics unspecified | Exact first-occurrence ordering, two reads per distinct ready basket pair, counted calls, no hidden retry, fingerprint fence and typed change refusal defined |
-| Database task no longer contained previously requested Prisma block | Restored exact model/backrelations and CHECK SQL, JSON shape and ownership responsibilities |
-| Architecture/index snapshots contradicted newer task state | Current summary/indexes rebuilt from frontmatter; historical completion notes retained and labelled historical |
-| Earlier generic-description/attribute amendment absent from accepted5.6.0 contract | Resolved as new additive SHARED-006; provider/bootstrap/profile/host/system tasks now depend on SHARED-005 publication. Accepted5.6.0 history unchanged |
+| Finding                                                                                                  | Disposition                                                                                                                                                                           |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SHARED-004 supplied names and broad prose without implementable contracts                                | Rewritten task points to normative outreach contract specifying Zod payloads, ports, relocation map, ordered state transitions, refusal reasons, result/render fields and tests       |
+| Outreach consumers depended on completed SHARED-003 although5.6.0 excludes outreach                      | New SHARED-005 publication task; explicit consumer dependencies corrected; completed003 untouched                                                                                     |
+| Existing graph allows alternative-product outreach, contradicting checkout-only requirement              | Explicit new checkout-only decision schema; unexpected alternative refuses OUTSIDE_CHECKOUT; Background historical receipt handling and later conversational recommendations retained |
+| Production context builder requires real active outreach attempt; preview must not create one            | Reusable contract has run/checkout identity only; real attempt/credit/send fences remain host-owned                                                                                   |
+| NONE policy currently skips live price reconciliation                                                    | New evaluator requires exact product read and final recheck for every distinct checkout identity even in NONE; zero offer/model calls in NONE                                         |
+| Template preparation facade includes WABA/database/media resolution                                      | Pure helpers identified individually; hosts pass frozen validated projections; Studio uses ready existing media/TEXT fallback without upload/Meta calls                               |
+| Claimed Studio route used nonexistent src/app directory                                                  | Commerce task now uses actual app/api/studio/preview/initial-outreach route family with list/start/status/cancel contracts and status codes                                           |
+| Duplicate/stale reads, changed checkout, retry budget and historical/current price semantics unspecified | Exact first-occurrence ordering, two reads per distinct ready basket pair, counted calls, no hidden retry, fingerprint fence and typed change refusal defined                         |
+| Database task no longer contained previously requested Prisma block                                      | Restored exact model/backrelations and CHECK SQL, JSON shape and ownership responsibilities                                                                                           |
+| Architecture/index snapshots contradicted newer task state                                               | Current summary/indexes rebuilt from frontmatter; historical completion notes retained and labelled historical                                                                        |
+| Earlier generic-description/attribute amendment absent from accepted5.6.0 contract                       | Resolved as new additive SHARED-006; provider/bootstrap/profile/host/system tasks now depend on SHARED-005 publication. Accepted5.6.0 history unchanged                               |
 
 ## Current task-record state
 

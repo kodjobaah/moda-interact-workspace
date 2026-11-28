@@ -35,7 +35,7 @@ On 2026-10-19, `/moda_developer_create ARCH-040-API-003` was invoked to take ove
 
 ## Objective
 
-Expose an authenticated **WooCommerce-only** control command that atomically takes over or resumes the *existing* customer conversation via compare-and-set and immutable transition history.
+Expose an authenticated **WooCommerce-only** control command that atomically takes over or resumes the _existing_ customer conversation via compare-and-set and immutable transition history.
 
 ## Context
 
@@ -87,11 +87,9 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 - A suspended shop cannot Take Over into `HUMAN`; return stable `403 human_messaging_suspended`. It may still explicitly Resume AI for a previously HUMAN-controlled conversation. Reading the same conversation remains allowed.
 - Read the persisted DATABASE-001 restriction using the installation-authenticated shop and coordinate the takeover decision with restriction state changes; an optimistic browser badge does not authorize a transition.
 
-
 ### Platform-specific transport, shared durable authority
 
 This hosted endpoint is **WooCommerce-only** because the existing Woo installation credential is the HTTP authentication boundary; it does not implement a Woo-only conversation policy. Resolve tenant via `CheckoutRecovery.shopId` and apply exactly the same transaction/CAS, shop-restriction and `ConversationControlEvent` semantics that SHOPIFY-001 applies under a Shopify session. Do not enqueue BullMQ or schedule a follow-up on control change; Background's shared revision and provider fence protect all existing recovery-linked sends. The response contains `controlChangedAt` only (no obsolete `humanTakenOverAt`). When a provider permit has already committed, a mode change does not claim that the Meta request can be recalled.
-
 
 ## Work Items
 
@@ -175,9 +173,11 @@ Complete — Attempt 1 accepted and explicitly completed by developer on 2026-10
 - The repository-wide `npm test` pretest registry guard reports that the new integration test is not listed in `tests/unit/http/integration-runner-registration.test.ts`; the dedicated ARCH-040 runner and direct focused tests pass, and this does not affect the implemented endpoint behavior.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
@@ -185,6 +185,7 @@ The architecture is proposed; implementation starts only after agreed/materialis
 - Repository-wide integration-test registry bookkeeping remains outside the implementation diff; the focused ARCH-040 runner is the authoritative validation for this task.
 
 ### Architectural Concerns
+
 Return newly discovered contract or ownership gaps to moda_architect.
 
 ## Developer Self-Review - Accepted
@@ -198,19 +199,25 @@ On 2026-10-19, the developer confirmed that no required Work Item or Acceptance 
 ## Architect Review
 
 ### Review Status
+
 Developer self-review accepted; explicit developer completion recorded.
 
 ### Review Notes
+
 Implementation reviewed against the task contract and validated from the canonical implementation worktree. No scope deviation requiring architect action was identified.
 
 ### Reviewed Files
+
 Implementation commit `76d5f052534c2f893e22d213d66efc417b8bd18c` and its focused tests, OpenAPI contract and route registration.
 
 ### Validation Reviewed
+
 Focused unit/contract tests, disposable PostgreSQL integration test, typecheck, lint, diff checks and mirrored branch publication.
 
 ### Architecture Conformance
+
 Conforms to the Woo installation boundary, recovery-linked ownership, transaction/CAS/event semantics and no-side-effect control-command scope.
 
 ### Follow-up
+
 No task-local follow-up. The repository-wide integration-test registry assertion should be reconciled separately if required by the broader test suite.

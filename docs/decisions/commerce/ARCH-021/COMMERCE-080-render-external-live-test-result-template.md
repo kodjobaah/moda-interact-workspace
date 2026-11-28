@@ -67,7 +67,6 @@ tests/external-http-live-test.test.ts
 tests/external-http-live-test-action.test.ts
 ```
 
-
 ## Out of Scope
 
 - Changing External Request/Response authoring semantics.
@@ -137,7 +136,7 @@ Then construct a valid `CommerceToolResult` success and call:
 renderDefinitionResult(definition, result, {
   maxRecommendations: 20,
   maxSearchResults: 20,
-})
+});
 ```
 
 Do not implement a second template renderer.

@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-DATABASE-014
-- ARCH-010-BACKGROUND-022
-- ARCH-010-SHOPIFY-025
-- ARCH-010-SHARED-008
-- ARCH-010-ADMIN-010
+  - ARCH-010-DATABASE-014
+  - ARCH-010-BACKGROUND-022
+  - ARCH-010-SHOPIFY-025
+  - ARCH-010-SHARED-008
+  - ARCH-010-ADMIN-010
 enables:
-- ARCH-010-ADMIN-003
+  - ARCH-010-ADMIN-003
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -209,9 +209,11 @@ STOP if SHOPIFY-025 does not create durable merchant refund requests, if DATABAS
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/lib/admin/recovery-credit-refunds.ts`
 - `moda-interact-admin/src/lib/admin/types.ts`
 - `moda-interact-admin/src/components/admin/recovery-credit-refunds.tsx`
@@ -223,6 +225,7 @@ Ready for Review.
 - `moda-interact-admin/tests/security/admin-billing-progressive-disclosure.test.mjs`
 
 ### Work Completed
+
 - Added an authorized, read-only, database-paginated recovery-credit refund queue with default page size 20 and maximum page size 50.
 - Added derived `READY_FOR_PROVIDER_ACTION` and `WAITING_FOR_RESERVATIONS` labels from the exact withdrawn purchase state; invalid active/non-terminal combinations surface integrity attention.
 - Added bounded refund detail data for request-time snapshots, current purchase amounts, billing-period/provider/plan provenance, provider valuation evidence, support context identity, reservation history and refund history.
@@ -233,6 +236,7 @@ Ready for Review.
 - Attempt 3 corrected the derived `NEEDS_ATTENTION` filter so persisted attention rows and `REQUESTED` rows with invalid purchase states or zero-credit withdrawn balances are database-filtered into the same operator view as `queueStatus()`. Valid waiting and ready withdrawn states remain excluded from this filter.
 
 ### Validation Results
+
 - `node --test tests/security/admin-recovery-credit-refunds.test.mjs`: passed, 2 tests.
 - `node --test tests/security/admin-billing-progressive-disclosure.test.mjs tests/security/admin-internationalization.test.mjs tests/security/admin-recovery-credit-refunds.test.mjs`: passed, 18 tests.
 - `npm exec tsc -- --noEmit`: passed after `npm run prisma:generate`; the first post-edit run caught and the focused rerun confirmed the optional support-context identifier fix.
@@ -244,11 +248,13 @@ Ready for Review.
 - Attempt 3 focused predicate assertions: passed; the test covers persisted `NEEDS_ATTENTION`, `REQUESTED` + invalid `REQUESTED`/`ACTIVE`/`COMPLETED`/`REFUNDED`, and zero-credit `WITHDRAWN` attention branches while retaining the valid waiting/ready predicates.
 
 ### Two-Pass Audit
+
 - First pass: all queue/detail authorization and merchant-route boundaries, shop isolation, database pagination/sorting, lifecycle derivation, snapshots versus live values, provenance, support context, reservation/refund history, read-only behavior, UI controls, non-goals, and existing validation coverage were present. One production omission was found: derived invalid `REQUESTED` rows were shown as `NEEDS_ATTENTION` in the queue but excluded by the `NEEDS_ATTENTION` database filter.
 - Correction: added the explicit database `OR` predicate in `src/lib/admin/recovery-credit-refunds.ts` and focused assertions in `tests/security/admin-recovery-credit-refunds.test.mjs`. No schema, database, Shopify, Background, Shared, provider, or ADMIN-003 changes were required.
 - Second independent pass: the filter now includes persisted `NEEDS_ATTENTION`, `REQUESTED` + invalid `REQUESTED`/`ACTIVE`/`COMPLETED`/`REFUNDED`, and invalid zero-credit `WITHDRAWN` rows; valid waiting and ready withdrawn states remain excluded. Queue queries remain database-scoped and bounded, and no mutation, provider action, quantity control, or settlement behavior was added. All task requirements pass. Residual validation limitation: focused security tests inspect the generated Prisma predicate rather than using a database fixture, consistent with the Architect Review allowance; full existing tests remain green.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-002`.
 - Implementation branch: `task/ARCH-010-ADMIN-002`.
 - Implementation commits: `cd0eda5` (`feat(admin): triage recovery credit refund requests`), `9e571cd5076b3783f6a8845ba860c3ab7d2e9fd7` (`fix(admin): complete refund triage detail evidence`), `bb7ccc10ec3aadfe19693143f47d6a7c2ad922a7` (`fix(admin): include derived refund attention states`).
@@ -256,6 +262,7 @@ Ready for Review.
 - Parent report is being published from `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-002` on the mirrored `task/ARCH-010-ADMIN-002` branch.
 
 ### Architect Review
+
 Ready for architect review. No unresolved task-scope blocker identified.
 
 ## Architect Review — Attempt 2
@@ -344,7 +351,9 @@ status = NEEDS_ATTENTION
 by returning only:
 
 ```ts
-{ status: RecoveryCreditRefundStatus.NEEDS_ATTENTION }
+{
+  status: RecoveryCreditRefundStatus.NEEDS_ATTENTION;
+}
 ```
 
 That excludes the derived integrity-attention rows above because their persisted
@@ -777,4 +786,3 @@ ARCH-010-ADMIN-003
 ```
 
 No Attempt 4 is required for `ARCH-010-ADMIN-002`.
-

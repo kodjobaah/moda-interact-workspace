@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-058-MCP-002
-- ARCH-058-SHOPIFY-001
+  - ARCH-058-MCP-002
+  - ARCH-058-SHOPIFY-001
 enables:
-- ARCH-058-COMMERCE-001
-- ARCH-058-BACKGROUND-001
-- ARCH-058-SYSTEM-TEST-001
-created: '2026-11-04'
+  - ARCH-058-COMMERCE-001
+  - ARCH-058-BACKGROUND-001
+  - ARCH-058-SYSTEM-TEST-001
+created: "2026-11-04"
 updated: 2026-11-05
 ---
 
@@ -49,18 +49,18 @@ Only `moda-interact-mcp`, its tests and this report. Consume accepted MCP-002 as
 
 ### Exact implementation map
 
-| Path relative to MCP worktree | Required change |
-| --- | --- |
-| `src/execution/policy/shipping-information.ts` — new | Export `createShippingInformationAdapter`, the three fixed named query documents, native fact parsers and independent policy/product projection. Its sole execution method is `getShippingInformation(context, parsedInput)`. Inject the resolved connection and trusted clock; no Prisma/provider client inside this adapter. |
-| `src/execution/policy/shopify-core-executor.ts` | Add the shipping output/template-path entry and allowed arguments; use the shipping Shared parser explicitly; extend provider support and no-cursor-secret eligibility; dispatch to the new adapter and validate with `CommerceShippingInformationSchema`. |
-| `src/connections/ports.ts` | Add GraphQL `requiredScope?: "read_legal_policies"`; add `projection?: "SHIPPING"` on the two Woo **exact** operations only. Public MCP arguments remain unchanged. |
-| `src/connections/shopify/session-reader.ts` | Return one validated `{accessToken, scope}` value from the same existing offline row; include scope in the existing select and preserve original database error causes. Export the narrow missing-scope error class described below. |
-| `src/connections/resolver.ts` | Validate/forward requiredScope and the Woo exact projection key. Keep opaque shop/context handling and provider-budget reservation. |
-| `src/connections/shopify/provider.ts` | Consume the paired session, perform exact trusted policy-scope preflight, and otherwise preserve document guard, API pin, fetch/cancellation/response bounds and original-error logging. |
-| `src/connections/woocommerce/{provider,direct-product-reader}.ts` | Extend strict exact-read key checks and `pathFor` shipping projection; reuse the accepted grant/credential/transport and parent endpoint path. List/search requests do not gain shipping projection. |
-| `src/runtime/{ports,service-ports,prisma}.ts` | Pass existing connection/clock/logger dependencies through the registered core executor and update paired-session test/type seams. No second shipping handler, Prisma client or environment setting. |
-| Existing `src/execution/policy/shopify-core.ts` | Reuse its PolicyContext/PolicyResult types; export its existing `safeStoreUrl` helper unchanged and import it in the shipping adapter after validating the primary-domain candidate; do not change product output, product get document/version or search cursor semantics. |
-| Tests named in Validation | Add focused adapter/composition fixtures and update every session fixture from a token string to the paired value. |
+| Path relative to MCP worktree                                     | Required change                                                                                                                                                                                                                                                                                                                |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/execution/policy/shipping-information.ts` — new              | Export `createShippingInformationAdapter`, the three fixed named query documents, native fact parsers and independent policy/product projection. Its sole execution method is `getShippingInformation(context, parsedInput)`. Inject the resolved connection and trusted clock; no Prisma/provider client inside this adapter. |
+| `src/execution/policy/shopify-core-executor.ts`                   | Add the shipping output/template-path entry and allowed arguments; use the shipping Shared parser explicitly; extend provider support and no-cursor-secret eligibility; dispatch to the new adapter and validate with `CommerceShippingInformationSchema`.                                                                     |
+| `src/connections/ports.ts`                                        | Add GraphQL `requiredScope?: "read_legal_policies"`; add `projection?: "SHIPPING"` on the two Woo **exact** operations only. Public MCP arguments remain unchanged.                                                                                                                                                            |
+| `src/connections/shopify/session-reader.ts`                       | Return one validated `{accessToken, scope}` value from the same existing offline row; include scope in the existing select and preserve original database error causes. Export the narrow missing-scope error class described below.                                                                                           |
+| `src/connections/resolver.ts`                                     | Validate/forward requiredScope and the Woo exact projection key. Keep opaque shop/context handling and provider-budget reservation.                                                                                                                                                                                            |
+| `src/connections/shopify/provider.ts`                             | Consume the paired session, perform exact trusted policy-scope preflight, and otherwise preserve document guard, API pin, fetch/cancellation/response bounds and original-error logging.                                                                                                                                       |
+| `src/connections/woocommerce/{provider,direct-product-reader}.ts` | Extend strict exact-read key checks and `pathFor` shipping projection; reuse the accepted grant/credential/transport and parent endpoint path. List/search requests do not gain shipping projection.                                                                                                                           |
+| `src/runtime/{ports,service-ports,prisma}.ts`                     | Pass existing connection/clock/logger dependencies through the registered core executor and update paired-session test/type seams. No second shipping handler, Prisma client or environment setting.                                                                                                                           |
+| Existing `src/execution/policy/shopify-core.ts`                   | Reuse its PolicyContext/PolicyResult types; export its existing `safeStoreUrl` helper unchanged and import it in the shipping adapter after validating the primary-domain candidate; do not change product output, product get document/version or search cursor semantics.                                                    |
+| Tests named in Validation                                         | Add focused adapter/composition fixtures and update every session fixture from a token string to the paired value.                                                                                                                                                                                                             |
 
 ## Out of Scope
 
@@ -74,19 +74,19 @@ Parse the installed `CommerceShippingInformationInputSchema`. Both optional null
 
 Execute in this order: validate input/provider/native identity; if a product is requested, read and validate product/variant facts; only after that succeeds read the Shopify policy (or construct Woo's no-read UNSUPPORTED policy); validate the full result and return it. A product failure therefore makes no additional policy HTTP call. A missing policy permission is the one specifically classified preflight outcome that can coexist with successful product facts. Abort/deadline after either await is a hard outer error, never a partial successful result. Set root observedAt once from the injected trusted clock after the required reads complete.
 
-| Condition | Public product outcome / outer error |
-| --- | --- |
-| productId null and variantId null | `NOT_REQUESTED`, every product ID/fact null. Never select a product to populate the response. |
-| Shopify productId alone; exact product exists | `VARIANT_REQUIRED`, observed productId, variantId/facts null. |
-| Woo type variable alone; exact parent exists | Same VARIANT_REQUIRED mapping. |
-| Shopify exact selected variant belonging to requested product | AVAILABLE with both observed IDs and native variant facts. |
-| Woo type simple, no variation | AVAILABLE, observed productId, variantId null, native product facts. |
-| Woo type variable with verified requested variation | AVAILABLE with both observed IDs and effective variation facts. |
-| Invalid native ID, simple Woo product with variant, unsupported/custom/grouped/external Woo shipping type | Outer `INVALID_INPUT`, retryable false. Do not add a new error enum or alter ordinary get/search type behavior. |
-| Missing exact product/variant | Outer `NOT_FOUND`, retryable false. |
-| Returned ID/parent relationship contradicts the requested identity | Outer `DENIED`, retryable false; never echo an unchecked ID as fact. |
-| Malformed provider shape/field/value, unsafe policy URL or invalid timestamp | Outer `UNAVAILABLE`, retryable false, with original safe parse/validation diagnostics. |
-| Existing provider/authorization/rate-limit/cancellation failure | Preserve the existing outer error classification and retryability. No conversion to NOT_CONFIGURED/UNSUPPORTED/SCOPE_NOT_GRANTED. |
+| Condition                                                                                                 | Public product outcome / outer error                                                                                              |
+| --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| productId null and variantId null                                                                         | `NOT_REQUESTED`, every product ID/fact null. Never select a product to populate the response.                                     |
+| Shopify productId alone; exact product exists                                                             | `VARIANT_REQUIRED`, observed productId, variantId/facts null.                                                                     |
+| Woo type variable alone; exact parent exists                                                              | Same VARIANT_REQUIRED mapping.                                                                                                    |
+| Shopify exact selected variant belonging to requested product                                             | AVAILABLE with both observed IDs and native variant facts.                                                                        |
+| Woo type simple, no variation                                                                             | AVAILABLE, observed productId, variantId null, native product facts.                                                              |
+| Woo type variable with verified requested variation                                                       | AVAILABLE with both observed IDs and effective variation facts.                                                                   |
+| Invalid native ID, simple Woo product with variant, unsupported/custom/grouped/external Woo shipping type | Outer `INVALID_INPUT`, retryable false. Do not add a new error enum or alter ordinary get/search type behavior.                   |
+| Missing exact product/variant                                                                             | Outer `NOT_FOUND`, retryable false.                                                                                               |
+| Returned ID/parent relationship contradicts the requested identity                                        | Outer `DENIED`, retryable false; never echo an unchecked ID as fact.                                                              |
+| Malformed provider shape/field/value, unsafe policy URL or invalid timestamp                              | Outer `UNAVAILABLE`, retryable false, with original safe parse/validation diagnostics.                                            |
+| Existing provider/authorization/rate-limit/cancellation failure                                           | Preserve the existing outer error classification and retryability. No conversion to NOT_CONFIGURED/UNSUPPORTED/SCOPE_NOT_GRANTED. |
 
 Use the existing `commerce.v1` envelope, typed error enum and result-byte limit. Background owns conversation admission and the response to a tool failure. Do not return model-authored shipping prose or eligibility judgments.
 
@@ -118,15 +118,25 @@ Use exactly these three documents through the real resolver/provider, one operat
 ```graphql
 query CommerceShippingPolicy {
   shop {
-    primaryDomain { url }
-    shopPolicies { type title body url updatedAt }
+    primaryDomain {
+      url
+    }
+    shopPolicies {
+      type
+      title
+      body
+      url
+      updatedAt
+    }
   }
 }
 ```
 
 ```graphql
 query CommerceShippingProduct($productId: ID!) {
-  product(id: $productId) { id }
+  product(id: $productId) {
+    id
+  }
 }
 ```
 
@@ -134,10 +144,17 @@ query CommerceShippingProduct($productId: ID!) {
 query CommerceShippingVariant($variantId: ID!) {
   productVariant(id: $variantId) {
     id
-    product { id }
+    product {
+      id
+    }
     inventoryItem {
       requiresShipping
-      measurement { weight { value unit } }
+      measurement {
+        weight {
+          value
+          unit
+        }
+      }
     }
   }
 }
@@ -153,14 +170,14 @@ The Shopify policy response must contain a valid shop object and shopPolicies ar
 
 For a selected native policy, validate the queried fields: body/title are strings, url is a valid current-shop HTTPS URL, and updatedAt is a valid source ISO timestamp. Blank title maps to null; a nonblank title must fit 512 characters and is preserved. Missing/null/malformed queried required fields are malformed provider data, not ordinary absence. Verify the primary domain is itself a valid HTTPS URL without credentials/nondefault port before using its hostname as an additional allowed policy host; otherwise do not expand the authenticated-shop host set. Never guess a `/policies/shipping-policy` URL, normalize an unsafe value into one or fetch the returned URL.
 
-| Policy observation | Frozen output |
-| --- | --- |
+| Policy observation                                       | Frozen output                                                                                                  |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Successful authorized read with no SHIPPING_POLICY entry | status NOT_CONFIGURED; trust UNTRUSTED_REFERENCE; bodyStatus NOT_AVAILABLE; title/bodyHtml/url/updatedAt null. |
-| Private missing-scope preflight subtype | Same null payload, status SCOPE_NOT_GRANTED; zero policy HTTP calls. |
-| Woo native provider | Same null payload, status UNSUPPORTED; zero policy HTTP calls. |
-| Existing policy whose `body.trim()` is empty | status AVAILABLE; bodyStatus EMPTY; bodyHtml null; retain verified URL, nullable title and source timestamp. |
-| Existing nonblank body within both limits | status AVAILABLE; bodyStatus AVAILABLE; preserve exact original bodyHtml bytes. |
-| Existing nonblank body exceeds either limit | status AVAILABLE; bodyStatus TOO_LARGE; bodyHtml null; retain verified URL/title/timestamp. |
+| Private missing-scope preflight subtype                  | Same null payload, status SCOPE_NOT_GRANTED; zero policy HTTP calls.                                           |
+| Woo native provider                                      | Same null payload, status UNSUPPORTED; zero policy HTTP calls.                                                 |
+| Existing policy whose `body.trim()` is empty             | status AVAILABLE; bodyStatus EMPTY; bodyHtml null; retain verified URL, nullable title and source timestamp.   |
+| Existing nonblank body within both limits                | status AVAILABLE; bodyStatus AVAILABLE; preserve exact original bodyHtml bytes.                                |
+| Existing nonblank body exceeds either limit              | status AVAILABLE; bodyStatus TOO_LARGE; bodyHtml null; retain verified URL/title/timestamp.                    |
 
 The selected-body limits are 8000 JavaScript string code units (the installed Shared string-length check) and 16384 UTF-8 bytes. Check both; do not trim or truncate a nonblank retained body. Whole-provider response overflow stays hard under the existing transport bound and is never TOO_LARGE. Preserve all required nullable fields. Validate with `CommerceShippingInformationSchema` after the adapter's cross-field/UTF-8 rules; do not copy a local public schema.
 

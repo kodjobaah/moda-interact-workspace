@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-014-ADMIN-002
+  - ARCH-014-ADMIN-002
 enables:
-- ARCH-014-SYSTEM-TEST-001
+  - ARCH-014-SYSTEM-TEST-001
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -356,11 +356,11 @@ Ready for Architect Review. The implementation branch is pushed at
 Passed:
 
 - focused security, visibility, MerchantPricing, progressive-disclosure, and
-   preserved economics/guardrail tests: 74/74;
+  preserved economics/guardrail tests: 74/74;
 - JSON parse and exact nine-key absence validation;
 - exact nine-file absence check;
 - MerchantPricing ownership and legacy-reference scans, with only intentional
-   negative assertions remaining;
+  negative assertions remaining;
 - preserved drawer/control surface checks;
 - `git diff --check`.
 
@@ -371,12 +371,12 @@ database submodule remains `c6a8fb5b1debb309bb8aaea9d1168a3758f09201`.
 Environment-blocked validation:
 
 - `npm test` still fails during unrelated test module loading because local
-   dependencies including `bullmq` and `react` are not installed;
+  dependencies including `bullmq` and `react` are not installed;
 - `npm run lint` is unavailable because `eslint` is not installed;
 - `npm run format:check` is unavailable because `prettier` is not installed;
 - `npm run build` is unavailable because `prisma` is not installed;
 - no `typecheck` script is declared in `package.json`, so no replacement was
-   invented.
+  invented.
 
 No task-caused focused-test failure was observed.
 
@@ -458,9 +458,9 @@ source/test reference.
 Passed:
 
 - MerchantPricing ownership and legacy-reference scans; no active runtime
-   legacy consumer remains.
+  legacy consumer remains.
 - `node --test tests/security/admin-billing-progressive-disclosure.test.mjs`
-   (9/9).
+  (9/9).
 - Focused progressive-disclosure and economics security tests (13/13).
 - Focused visibility, MerchantPricing security, preserved economics-validation,
   and upgrade-guardrail tests (61/61); combined focused run passed 74/74.
@@ -469,20 +469,20 @@ Passed:
 - MerchantPricing integration scan for page/catalogue/reader/drawer symbols.
 - Exact nine-file absence check.
 - Database/schema proof from supplied baseline `7665c1a`: no changed path matched
-   `(^|/)(prisma|migrations|database)/`.
+  `(^|/)(prisma|migrations|database)/`.
 
 Environment-blocked or unavailable:
 
 - `npm test` was attempted; unrelated existing repository tests fail during
-   module loading because local dependencies including `bullmq` and `react` are
-   not installed (`ERR_MODULE_NOT_FOUND`).
+  module loading because local dependencies including `bullmq` and `react` are
+  not installed (`ERR_MODULE_NOT_FOUND`).
 - `npm run lint` could not start because `eslint` is not installed.
 - `npm run format:check` could not start because `prettier` is not installed.
 - `npm run build` could not start because `prisma` is not installed.
 - No `typecheck` script is declared in `package.json`; no replacement command
-   was invented.
+  was invented.
 - The workspace doctor was attempted for the dependency condition but could not
-   resolve the supplied workspace root (`FAIL workspace root not found`).
+  resolve the supplied workspace root (`FAIL workspace root not found`).
 
 No task-caused failure was observed in the focused tests. No Prisma schema,
 migration, database script, operational economics/control file, subscription

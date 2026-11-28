@@ -41,7 +41,6 @@ Coordinator:
 
 `moda_architect`
 
-
 ## Objective
 
 Replace the Phase-2 selection/pointer/generation/replay service machinery with direct transactional reads/writes over `CommerceAgentConfiguration`, while preserving explicit CAS, audit, and a lightweight UI reconciliation endpoint that never swallows real errors.
@@ -130,18 +129,18 @@ Replace `kind:'unknown'` contracts with:
 
 ```ts
 type AgentConfigurationMutationResult<T> =
-  | { kind: 'ok'; operationId: string; value: T }
+  | { kind: "ok"; operationId: string; value: T }
   | {
-      kind: 'error';
+      kind: "error";
       operationId: string;
       code:
-        | 'FORBIDDEN'
-        | 'INVALID_INPUT'
-        | 'NOT_FOUND'
-        | 'CAS_CONFLICT'
-        | 'DATABASE_UNAVAILABLE'
-        | 'OPERATION_ALREADY_COMMITTED'
-        | 'INTERNAL_ERROR';
+        | "FORBIDDEN"
+        | "INVALID_INPUT"
+        | "NOT_FOUND"
+        | "CAS_CONFLICT"
+        | "DATABASE_UNAVAILABLE"
+        | "OPERATION_ALREADY_COMMITTED"
+        | "INTERNAL_ERROR";
       message: string;
       retryable: boolean;
     };
@@ -243,7 +242,10 @@ Resolve independently:
 
 ```ts
 modelId = shopConfig?.modelId ?? platformConfig?.modelId ?? null;
-promptRevisionId = shopConfig?.activePromptRevisionId ?? platformConfig?.activePromptRevisionId ?? null;
+promptRevisionId =
+  shopConfig?.activePromptRevisionId ??
+  platformConfig?.activePromptRevisionId ??
+  null;
 ```
 
 Return each source independently as `SHOP | PLATFORM | UNAVAILABLE`.
@@ -296,7 +298,6 @@ Consumes DATABASE-002 models directly. No Shared contract changes.
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
-
 
 ## Implementation Notes
 

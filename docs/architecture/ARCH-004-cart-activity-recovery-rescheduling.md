@@ -516,7 +516,6 @@ ARCH-004-SYSTEM-TEST-001
   Verify correlated cart activity resets the recovery inactivity clock
 ```
 
-
 ## Current execution state
 
 ```text

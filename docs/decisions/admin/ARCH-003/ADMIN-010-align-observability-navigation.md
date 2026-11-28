@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Align Admin sidebar shell and Observability navigation with approved UI
 
 ## Objective
@@ -98,6 +99,7 @@ navigation state.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Implementation

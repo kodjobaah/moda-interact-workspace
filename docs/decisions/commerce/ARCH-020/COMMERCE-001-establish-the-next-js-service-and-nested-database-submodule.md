@@ -110,7 +110,6 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 
 ## Dependencies
 
-
 None.
 
 Every dependency must be Complete and architect-accepted before execution. Reconcile accepted dependency metadata into the matching parent task branch before promotion. Developer integration or explicitly approved accepted-commit consumption is required to obtain prerequisite source. Readiness never launches a task. Commerce tasks additionally require the new-owner setup checkpoint.
@@ -164,13 +163,13 @@ Addressed the current Attempt 2 Changes Requested finding on process-group teard
 
 #### Requirement-to-fixture results
 
-| Requirement | Expected effects / command | Result |
-|---|---|---|
+| Requirement                                     | Expected effects / command                                                         | Result                                                                              |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | Timeout and AbortSignal after early leader exit | Synthetic local child processes only; `npm test -- tests/readiness-docker.test.ts` | **10 passed**, including both new descendant regressions and existing cleanup tests |
-| Foundation and cleanup regression coverage | Local mocks/loopback/subprocesses; `npm test` | **29 passed, five suites** |
-| Declared command-runner cancellation type | `npm run typecheck` | **Passed** after adding the explicit existing AbortSignal option declaration |
-| Lint / whitespace | `npm run lint`; `git diff --check` and staged check | **Passed** |
-| Schema ownership | Nested `database` status and unchanged pin | **Clean**, no database edit/pin change |
+| Foundation and cleanup regression coverage      | Local mocks/loopback/subprocesses; `npm test`                                      | **29 passed, five suites**                                                          |
+| Declared command-runner cancellation type       | `npm run typecheck`                                                                | **Passed** after adding the explicit existing AbortSignal option declaration        |
+| Lint / whitespace                               | `npm run lint`; `git diff --check` and staged check                                | **Passed**                                                                          |
+| Schema ownership                                | Nested `database` status and unchanged pin                                         | **Clean**, no database edit/pin change                                              |
 
 Validation used workspace-bootstrap Node 24.19.0/npm 11.17.0 in the prepared implementation worktree. During implementation the new typed call exposed that JavaScript inference omitted the runner's existing `signal` option; an explicit JSDoc signature corrected it, and typecheck/lint then passed. No unresolved correction validation remains.
 
@@ -221,19 +220,19 @@ is superseded by this successful authorized execution.
 
 #### Requirement-to-fixture results
 
-| Requirement / fixture | Expected effects | Actual command / result |
-| --- | --- | --- |
-| Existing foundation plus new lifecycle tests | Local mock/loopback/subprocess checks only | `npm test`: **27 passed, five suites** |
-| Types and lint | Local generated types/cache only | `npm run typecheck`, `npm run lint`: **passed** |
-| Disposable local infrastructure | Pull two official images; create only own network and two tmpfs containers | `npm run test:readiness-docker`: **passed, exit 0** |
-| Pinned schema | Apply recorded Prisma schema only to the new empty local fixture database | Docker command's `prisma db push --schema database/prisma/schema.prisma --skip-generate`: **passed** |
-| Production build | Generate pinned client/build locally; no app startup migrations | Docker command's `npm run build`: **passed** |
-| Real healthy connectivity | Read-only SQL/schema check and Redis PING through production Next process | **HTTP 200 ready, 226.4 ms** |
-| Unavailable Redis | Probe unreachable loopback endpoint; no shared service stopped | **HTTP 503 not_ready, 136.7 ms** |
-| Unavailable PostgreSQL | Probe unreachable loopback endpoint; no shared service stopped | **HTTP 503 not_ready, 98.2 ms** |
-| Invalid verification keys | Fresh app process with synthetic invalid key configuration | **HTTP 503 not_ready, 58.3 ms** |
-| Cleanup | Remove own containers/network only; no persistent volumes | **passed**; independent label-filtered container/network inventory returned no resources |
-| Git/schema ownership | No whitespace errors or nested database modifications | `git diff --check`, nested `git status --short`: **passed/clean** |
+| Requirement / fixture                        | Expected effects                                                           | Actual command / result                                                                              |
+| -------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Existing foundation plus new lifecycle tests | Local mock/loopback/subprocess checks only                                 | `npm test`: **27 passed, five suites**                                                               |
+| Types and lint                               | Local generated types/cache only                                           | `npm run typecheck`, `npm run lint`: **passed**                                                      |
+| Disposable local infrastructure              | Pull two official images; create only own network and two tmpfs containers | `npm run test:readiness-docker`: **passed, exit 0**                                                  |
+| Pinned schema                                | Apply recorded Prisma schema only to the new empty local fixture database  | Docker command's `prisma db push --schema database/prisma/schema.prisma --skip-generate`: **passed** |
+| Production build                             | Generate pinned client/build locally; no app startup migrations            | Docker command's `npm run build`: **passed**                                                         |
+| Real healthy connectivity                    | Read-only SQL/schema check and Redis PING through production Next process  | **HTTP 200 ready, 226.4 ms**                                                                         |
+| Unavailable Redis                            | Probe unreachable loopback endpoint; no shared service stopped             | **HTTP 503 not_ready, 136.7 ms**                                                                     |
+| Unavailable PostgreSQL                       | Probe unreachable loopback endpoint; no shared service stopped             | **HTTP 503 not_ready, 98.2 ms**                                                                      |
+| Invalid verification keys                    | Fresh app process with synthetic invalid key configuration                 | **HTTP 503 not_ready, 58.3 ms**                                                                      |
+| Cleanup                                      | Remove own containers/network only; no persistent volumes                  | **passed**; independent label-filtered container/network inventory returned no resources             |
+| Git/schema ownership                         | No whitespace errors or nested database modifications                      | `git diff --check`, nested `git status --short`: **passed/clean**                                    |
 
 Full fixture ran once successfully on local Docker Engine **29.5.2**, Node
 **24.19.0**, npm **11.17.0**, with implementation source subsequently committed
@@ -316,22 +315,22 @@ The reusable form acquires its guard before awaiting, immediately disables the c
 
 All commands below ran in the canonical implementation worktree with Node 24.19.0 unless stated otherwise.
 
-| Requirement / fixture | Expected side effects | Command / evidence | Actual result |
-| --- | --- | --- | --- |
-| Canonical schema client | Generated local client only; no migration/query | `npm run prisma:generate` | PASS; Prisma 6.19.3, database pin below |
-| MCP C5 stateless profile | Synthetic loopback HTTP only, no provider calls | `npm test`, `tests/mcp-compatibility.test.ts` | PASS; initialize protocol 2025-11-25, resources/prompts/tools, JSON/no session, GET/DELETE 405, Origin/batch/credential rejection |
-| Readiness/configuration | Mock dependency checks, synthetic RSA keys | `npm test`, `tests/health.test.ts` | PASS; success/failure/redaction/config rejection and 1.8-second abort behavior |
-| Pinned SQL adapter | Mock transaction plus actual pinned schema inspection | `npm test`, `tests/database-contract.test.ts` | PASS; exact SELECTs, existing schema/columns, transaction limits and no release/migration reads |
-| UI duplicate action | Synthetic local promise only | `npm test`, `tests/pending-action-form.test.tsx` | PASS; same-tick duplicate submit/button/keyboard paths, accessible busy feedback, retry after known failure, unknown reconciliation and stale completion |
-| All focused tests | Local only | `npm test` | **19 passed, four suites** |
-| Types/lint | Local generated types/cache only | `npm run typecheck`; `npm run lint` | **PASS**, no diagnostics |
-| Production build | Local client and Next build output only | `NEXT_TELEMETRY_DISABLED=1 npm run build` | **PASS**; root, not-found and two health routes only |
-| Production process | Own temporary loopback process, no shared config | `npm run test:health` | **PASS**; live 200, missing-dependency ready 503, root 200, MCP GET/POST/DELETE 404 |
-| Fresh recursive clone | Own temporary checkout/npm installation, cleaned afterward | `npm run test:clean-clone` at `3ae6c7f12f2f0f6467c93ca49012967f26d16b44` | **PASS**; npm ci, recorded database pin, Prisma generation, production build/start/health |
-| Responsive shell | Local browser only | In-app browser at 1024px and 320px | **PASS**, no mobile horizontal overflow; viewport and task tab cleaned up |
-| Client boundary | Read-only built bundle scan | `rg -l 'PrismaClient|COMMERCE_ASSERTION_PUBLIC_KEYS|AUTH_GOOGLE_SECRET|DATABASE_URL' .next/static` | No matches; server modules additionally use server-only |
-| Git/submodule | Read-only checks | `git diff --check`; `git submodule status --recursive` | **PASS**, exact database pin, no nested edits |
-| Real healthy readiness | Read-only SELECT/PING to disposable local services, own app processes | `npm run test:readiness-local` with explicit local fixture URLs | **PENDING developer execution**; unit-injected success does not establish real PostgreSQL/Redis connectivity |
+| Requirement / fixture    | Expected side effects                                                 | Command / evidence                                                       | Actual result                                                                                                                                            |
+| ------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canonical schema client  | Generated local client only; no migration/query                       | `npm run prisma:generate`                                                | PASS; Prisma 6.19.3, database pin below                                                                                                                  |
+| MCP C5 stateless profile | Synthetic loopback HTTP only, no provider calls                       | `npm test`, `tests/mcp-compatibility.test.ts`                            | PASS; initialize protocol 2025-11-25, resources/prompts/tools, JSON/no session, GET/DELETE 405, Origin/batch/credential rejection                        |
+| Readiness/configuration  | Mock dependency checks, synthetic RSA keys                            | `npm test`, `tests/health.test.ts`                                       | PASS; success/failure/redaction/config rejection and 1.8-second abort behavior                                                                           |
+| Pinned SQL adapter       | Mock transaction plus actual pinned schema inspection                 | `npm test`, `tests/database-contract.test.ts`                            | PASS; exact SELECTs, existing schema/columns, transaction limits and no release/migration reads                                                          |
+| UI duplicate action      | Synthetic local promise only                                          | `npm test`, `tests/pending-action-form.test.tsx`                         | PASS; same-tick duplicate submit/button/keyboard paths, accessible busy feedback, retry after known failure, unknown reconciliation and stale completion |
+| All focused tests        | Local only                                                            | `npm test`                                                               | **19 passed, four suites**                                                                                                                               |
+| Types/lint               | Local generated types/cache only                                      | `npm run typecheck`; `npm run lint`                                      | **PASS**, no diagnostics                                                                                                                                 |
+| Production build         | Local client and Next build output only                               | `NEXT_TELEMETRY_DISABLED=1 npm run build`                                | **PASS**; root, not-found and two health routes only                                                                                                     |
+| Production process       | Own temporary loopback process, no shared config                      | `npm run test:health`                                                    | **PASS**; live 200, missing-dependency ready 503, root 200, MCP GET/POST/DELETE 404                                                                      |
+| Fresh recursive clone    | Own temporary checkout/npm installation, cleaned afterward            | `npm run test:clean-clone` at `3ae6c7f12f2f0f6467c93ca49012967f26d16b44` | **PASS**; npm ci, recorded database pin, Prisma generation, production build/start/health                                                                |
+| Responsive shell         | Local browser only                                                    | In-app browser at 1024px and 320px                                       | **PASS**, no mobile horizontal overflow; viewport and task tab cleaned up                                                                                |
+| Client boundary          | Read-only built bundle scan                                           | `rg -l 'PrismaClient                                                     | COMMERCE_ASSERTION_PUBLIC_KEYS                                                                                                                           | AUTH_GOOGLE_SECRET | DATABASE_URL' .next/static` | No matches; server modules additionally use server-only |
+| Git/submodule            | Read-only checks                                                      | `git diff --check`; `git submodule status --recursive`                   | **PASS**, exact database pin, no nested edits                                                                                                            |
+| Real healthy readiness   | Read-only SELECT/PING to disposable local services, own app processes | `npm run test:readiness-local` with explicit local fixture URLs          | **PENDING developer execution**; unit-injected success does not establish real PostgreSQL/Redis connectivity                                             |
 
 Developer validation required after provisioning disposable local PostgreSQL with the pinned schema and local Redis:
 
@@ -414,7 +413,6 @@ sole task dependency is now satisfied, but it remains Pending until developer
 integration or explicit accepted-commit consumption is established. Background
 and terminal system-test dependencies are not yet all satisfied; no downstream
 task is launched or promoted by this review. ARCH-020 remains unfinished.
-
 
 ### Historical review — Attempt 2, Changes Requested (2026-09-20)
 

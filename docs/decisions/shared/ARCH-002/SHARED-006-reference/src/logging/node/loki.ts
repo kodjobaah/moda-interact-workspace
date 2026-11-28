@@ -116,28 +116,20 @@ export function initNodeLokiLogging(
 
   const basicAuth =
     nonEmpty(options.basicAuth) ??
-    buildBasicAuth(
-      envString("LOKI_USERNAME"),
-      envString("LOKI_PASSWORD"),
-    );
+    buildBasicAuth(envString("LOKI_USERNAME"), envString("LOKI_PASSWORD"));
 
   const transport = new LokiTransport({
     host,
     json: true,
     batching: options.batching ?? envBool("LOKI_BATCHING") ?? true,
     interval:
-      options.intervalSeconds ??
-      envInt("LOKI_BATCH_INTERVAL_SECONDS", 5),
-    timeout:
-      options.timeoutMs ??
-      envInt("LOKI_TIMEOUT_MS", 10_000),
+      options.intervalSeconds ?? envInt("LOKI_BATCH_INTERVAL_SECONDS", 5),
+    timeout: options.timeoutMs ?? envInt("LOKI_TIMEOUT_MS", 10_000),
 
     // Prefer bounded loss to unbounded memory growth when the logging backend
     // is unavailable. Loki must never become an application dependency.
     clearOnError:
-      options.clearOnError ??
-      envBool("LOKI_CLEAR_ON_ERROR") ??
-      true,
+      options.clearOnError ?? envBool("LOKI_CLEAR_ON_ERROR") ?? true,
 
     // Current winston-loki guidance recommends keeping timestamp replacement
     // enabled unless there is a specific reason not to.
@@ -193,16 +185,11 @@ export function initNodeLokiLogging(
   return runtime;
 }
 
-export function getNodeLokiLoggingRuntime():
-  | NodeLokiLoggingRuntime
-  | null {
+export function getNodeLokiLoggingRuntime(): NodeLokiLoggingRuntime | null {
   return runtime;
 }
 
-function writeCanonicalRecord(
-  logger: WinstonLogger,
-  record: LogRecord,
-): void {
+function writeCanonicalRecord(logger: WinstonLogger, record: LogRecord): void {
   try {
     // Winston requires a `message`; use the canonical event name.
     //
@@ -227,9 +214,7 @@ async function safeFlush(transport: LokiTransport): Promise<void> {
   }
 }
 
-async function safeCloseTransport(
-  transport: LokiTransport,
-): Promise<void> {
+async function safeCloseTransport(transport: LokiTransport): Promise<void> {
   try {
     const closeable = transport as LokiTransport & {
       close?: () => unknown | Promise<unknown>;
@@ -296,7 +281,5 @@ function envInt(name: string, fallback: number): number {
 
   const parsed = Number(value);
 
-  return Number.isFinite(parsed) && parsed > 0
-    ? Math.floor(parsed)
-    : fallback;
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }

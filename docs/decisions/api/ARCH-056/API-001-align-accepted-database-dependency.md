@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-055-DATABASE-001
-- ARCH-055-API-005
+  - ARCH-055-DATABASE-001
+  - ARCH-055-API-005
 enables:
-- ARCH-056-SYSTEM-TEST-001
-created: '2026-11-03'
+  - ARCH-056-SYSTEM-TEST-001
+created: "2026-11-03"
 updated: 2026-11-04
 ---
 
@@ -45,15 +45,15 @@ The ZIP cannot reveal whether the real recorded gitlink is old or only its expor
 
 One repository: `moda-interact-api`. Paths below are relative to that implementation repository.
 
-| Path | Operation | Boundary |
-|---|---|---|
-| `database` | Verify/materialize; update this gitlink only if the recorded pin lacks the accepted contract | The only allowed committed implementation change |
-| `package.json` | Read only | Use the existing generation, build and focused test scripts; no script/dependency bump |
-| `database/prisma/schema.prisma` and `database/prisma/migrations/` | Read only through the verified dependency | Never edit a nested schema or historical migration |
-| `scripts/arch047-canonical-schema.mjs` | Read only | Existing predicate is not broadened into a new architecture validator |
-| `scripts/test-arch040-woo-human-send-postgres.mjs` | Read only | Verify normal client generation uses the synchronized dependency |
-| `src/merchant/conversations/messages/admission.service.ts` | Read only | Verify the accepted claim-key field compiles normally |
-| `src/merchant/merchant-knowledge/upload.service.ts` | Read only | Verify the accepted purpose field compiles normally |
+| Path                                                              | Operation                                                                                    | Boundary                                                                               |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `database`                                                        | Verify/materialize; update this gitlink only if the recorded pin lacks the accepted contract | The only allowed committed implementation change                                       |
+| `package.json`                                                    | Read only                                                                                    | Use the existing generation, build and focused test scripts; no script/dependency bump |
+| `database/prisma/schema.prisma` and `database/prisma/migrations/` | Read only through the verified dependency                                                    | Never edit a nested schema or historical migration                                     |
+| `scripts/arch047-canonical-schema.mjs`                            | Read only                                                                                    | Existing predicate is not broadened into a new architecture validator                  |
+| `scripts/test-arch040-woo-human-send-postgres.mjs`                | Read only                                                                                    | Verify normal client generation uses the synchronized dependency                       |
+| `src/merchant/conversations/messages/admission.service.ts`        | Read only                                                                                    | Verify the accepted claim-key field compiles normally                                  |
+| `src/merchant/merchant-knowledge/upload.service.ts`               | Read only                                                                                    | Verify the accepted purpose field compiles normally                                    |
 
 No new implementation or test file is required. Record evidence in this task's Completion Report. If the recorded dependency is already correct, accurate rematerialization and validation can produce a zero-diff implementation result; do not manufacture code churn or an implementation commit.
 

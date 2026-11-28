@@ -384,7 +384,6 @@ The Redis-dependent integration test may remain skipped only when
 Return this same task to `status: review` and STOP. No commit, push or package
 publication.
 
-
 ## Architect Review — Attempt 2
 
 ### Review Status

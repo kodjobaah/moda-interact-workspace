@@ -31,6 +31,7 @@ Hard dependency: `ARCH-078-DATABASE-001` must be architect-accepted and the Admi
 ## Objective
 
 Reuse the existing `/billing?view=unmapped` Admin surface to display both:
+
 - subscriptions with status `UNMAPPED` whose exact Shopify plan handle needs a catalogue/operational plan mapping;
 - otherwise valid `ACTIVE`/`TRIALING` subscriptions with one or more provider-returned usage-event handles that lack `MerchantPricingUsageEvent` catalogue entries.
 
@@ -104,6 +105,7 @@ tests/security/admin-unmapped-shopify-usage-event-mappings.test.mjs
 ```
 
 Cover:
+
 - list query includes `UNMAPPED` rows and ACTIVE/TRIALING rows with a non-empty array;
 - ACTIVE/TRIALING status is displayed and is not rewritten;
 - exact unmapped provider handles are rendered;

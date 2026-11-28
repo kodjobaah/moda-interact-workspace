@@ -200,7 +200,6 @@ SHOPIFY-002 Complete at Attempt 3, executor/claim cleared; prior reviews retaine
 
 ### Historical Architect Review — Attempt 2 and earlier
 
-
 #### Review Status
 
 Changes Requested — 2026-09-20, Attempt 2. Not accepted. Same task returned to Ready, claim cleared, attempt preserved at 2.
@@ -236,7 +235,6 @@ GitHub confirms implementation PR #38 was merged by the developer at `2026-09-20
 Reclaim `/moda-task ARCH-019-SHOPIFY-002` for Attempt 3 on the same canonical branch/worktrees, following normal main synchronization. Fix only the harness, supply focused and required PostgreSQL evidence, and return to review. SHOPIFY-001 remains Complete and SHOPIFY-003 remains In Progress at Attempt 1; preserve its active claim. No dependent promotion, implementation mutation, merge or deployment is performed by this review. Publish this parent review under the developer-delegated review-publication workflow.
 
 #### Historical Architect Review — Attempt 1
-
 
 ##### Review Status
 

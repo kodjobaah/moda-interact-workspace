@@ -13,12 +13,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-SHARED-012
+  - ARCH-002-SHARED-012
 enables:
-- ARCH-002-BACKGROUND-008
+  - ARCH-002-BACKGROUND-008
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Publish composable GenAI observability release
 
 ## Objective

@@ -17,6 +17,7 @@ enables:
 created: 2026-08-31
 updated: 2026-09-02
 ---
+
 # Add Platform-Admin Identity Registry
 
 ## Objective
@@ -150,7 +151,7 @@ Accepted / Complete
   Client 6.19.3.
 - `npm run erd`: passed; PlantUML and PNG artifacts regenerated.
 - `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moda_interact"
-  npm run migrate:deploy`: passed; the new migration applied successfully to
+npm run migrate:deploy`: passed; the new migration applied successfully to
   local PostgreSQL.
 - The same local `npm run status`: passed; database schema is up to date.
 - Scoped secret/credential review of the new model and migration: passed.

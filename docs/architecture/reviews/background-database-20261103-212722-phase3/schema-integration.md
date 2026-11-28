@@ -22,13 +22,13 @@ The audit reads schema/migration bytes, package scripts and source references, t
 
 Observed in this review:
 
-| Exported Database copy | Schema bytes | Models | Migration files | SQL migrations | Difference from canonical |
-|---|---:|---:|---:|---:|---|
-| `moda-interact-database/prisma` | 191,864 | 130 | 72 | 71 | Reference |
-| `moda-interact-background/database/prisma` | 191,864 | 130 | 72 | 71 | Identical schema and migration bytes |
-| `moda-interact/database/prisma` | 191,864 | 130 | 72 | 71 | Identical schema and migration bytes |
-| `moda-interact-admin/database/prisma` | 191,864 | 130 | 72 | 71 | Identical schema and migration bytes |
-| `moda-interact-api/database/prisma` | 191,707 | 130 | 69 | 68 | Two missing model fields; three missing migrations |
+| Exported Database copy                     | Schema bytes | Models | Migration files | SQL migrations | Difference from canonical                          |
+| ------------------------------------------ | -----------: | -----: | --------------: | -------------: | -------------------------------------------------- |
+| `moda-interact-database/prisma`            |      191,864 |    130 |              72 |             71 | Reference                                          |
+| `moda-interact-background/database/prisma` |      191,864 |    130 |              72 |             71 | Identical schema and migration bytes               |
+| `moda-interact/database/prisma`            |      191,864 |    130 |              72 |             71 | Identical schema and migration bytes               |
+| `moda-interact-admin/database/prisma`      |      191,864 |    130 |              72 |             71 | Identical schema and migration bytes               |
+| `moda-interact-api/database/prisma`        |      191,707 |    130 |              69 |             68 | Two missing model fields; three missing migrations |
 
 Migration-file counts include `migration_lock.toml`. All 69 common API/canonical migration files have identical bytes. Removing exactly the two new field lines from the canonical schema produces the API schema byte for byte. This narrows U1 to a specific dependency divergence; it does not describe arbitrary schema drift.
 
@@ -39,10 +39,10 @@ Schema SHA-256 values:
 
 The exact field definitions and source use are:
 
-| Model field | Accepted definition | Current API use | Consequence of the old API schema |
-|---|---|---|---|
-| `MerchantConversationSendCommand.followUpClaimKey` | `String? @db.VarChar(255)` | `src/merchant/conversations/messages/admission.service.ts:188` includes it in typed command creation | Normal client generation has no field corresponding to the creation argument |
-| `MerchantKnowledgeUploadedAsset.intentPurposeKey` | `String? @db.VarChar(64)` | `src/merchant/merchant-knowledge/upload.service.ts:156,170,196,207,211,244,251` reads, creates, selects and compares it | Normal client generation has no corresponding scalar/input/select property |
+| Model field                                        | Accepted definition        | Current API use                                                                                                         | Consequence of the old API schema                                            |
+| -------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `MerchantConversationSendCommand.followUpClaimKey` | `String? @db.VarChar(255)` | `src/merchant/conversations/messages/admission.service.ts:188` includes it in typed command creation                    | Normal client generation has no field corresponding to the creation argument |
+| `MerchantKnowledgeUploadedAsset.intentPurposeKey`  | `String? @db.VarChar(64)`  | `src/merchant/merchant-knowledge/upload.service.ts:156,170,196,207,211,244,251` reads, creates, selects and compares it | Normal client generation has no corresponding scalar/input/select property   |
 
 The canonical definitions are in `moda-interact-database/prisma/schema.prisma:601` and `:4191`. The API imports the generated Prisma client and uses its typed transaction/client services. This is direct source/schema incompatibility. Actual compiler error text or runtime failure was **not** produced here; no installed API dependencies or generated client are present in the supplied export.
 
@@ -68,12 +68,12 @@ The human-send harness has a separate schema selector whose scope remains ARCH-0
 
 The existing selector was actually executed against the export, with these results:
 
-| Probe | Observed result |
-|---|---|
-| Default selection with workspace root supplied | API's stale nested schema |
-| Explicit canonical-schema selection | Workspace canonical Database schema |
-| Old API schema accepted by the ARCH-047 predicate | `true` |
-| API/canonical common migration lineage compatible | `true` |
+| Probe                                             | Observed result                     |
+| ------------------------------------------------- | ----------------------------------- |
+| Default selection with workspace root supplied    | API's stale nested schema           |
+| Explicit canonical-schema selection               | Workspace canonical Database schema |
+| Old API schema accepted by the ARCH-047 predicate | `true`                              |
+| API/canonical common migration lineage compatible | `true`                              |
 
 Thus `ARCH047_CANONICAL_DATABASE_SCHEMA` can select a newer disposable **database migration source**, while the generated **API client** remains old. This split is an integration trap, not evidence that the ARCH-047 helper promised ARCH-055 validation. Expanding a helper or using an override would not replace the dependency correction: the ordinary build still uses the recorded nested path.
 
@@ -83,11 +83,11 @@ The knowledge-upload harness is simpler: both generation and `migrate deploy` us
 
 All paths below are under `moda-interact-database/prisma/migrations/`. They are absent from the API copy and present, byte-identically, in the other four inspected copies.
 
-| Ordered migration | Bytes and SHA-256 | Required behavior |
-|---|---|---|
-| `20261102120000_arch055_rest_read_lifecycle/migration.sql` | 3,465; `c129466fdb53190b7f8ce6c2d3a04867c6bacbd55e334c5e0bceeb1b28e4e53b` | Replaces the named attempt time CHECK and `arch026_rest_read_attempt_guard` so failure terminalization can happen after expiry or credential change while preserving identity and single-use checks; successful bearer consumption retains its expiry/current-installation checks |
-| `20261102121000_arch055_human_follow_up_claim_identity/migration.sql` | 1,263; `e4689790fbba7f606803b2d0370a66ba8b4f57bb3cb0b67b154336f90c2d41fb` | Adds the nullable claim key and backfills historical template commands from their own original public idempotency keys without changing attempt ownership |
-| `20261102122000_arch055_upload_intake_identity/migration.sql` | 975; `e9ce08d49576f84a4e1b95c39637c69e97f0f620b4fae608fadf2712fefb6a37` | Adds nullable upload purpose and a partial unique original-intake index, rejecting duplicate existing original-intake history |
+| Ordered migration                                                     | Bytes and SHA-256                                                         | Required behavior                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261102120000_arch055_rest_read_lifecycle/migration.sql`            | 3,465; `c129466fdb53190b7f8ce6c2d3a04867c6bacbd55e334c5e0bceeb1b28e4e53b` | Replaces the named attempt time CHECK and `arch026_rest_read_attempt_guard` so failure terminalization can happen after expiry or credential change while preserving identity and single-use checks; successful bearer consumption retains its expiry/current-installation checks |
+| `20261102121000_arch055_human_follow_up_claim_identity/migration.sql` | 1,263; `e4689790fbba7f606803b2d0370a66ba8b4f57bb3cb0b67b154336f90c2d41fb` | Adds the nullable claim key and backfills historical template commands from their own original public idempotency keys without changing attempt ownership                                                                                                                         |
+| `20261102122000_arch055_upload_intake_identity/migration.sql`         | 975; `e9ce08d49576f84a4e1b95c39637c69e97f0f620b4fae608fadf2712fefb6a37`   | Adds nullable upload purpose and a partial unique original-intake index, rejecting duplicate existing original-intake history                                                                                                                                                     |
 
 ### REST-read lifecycle
 
@@ -115,12 +115,12 @@ The upload service's persisted purpose, finalization locking and original-intake
 
 The supplied task records contain useful historical evidence:
 
-| Record | What it says | What this review can establish |
-|---|---|---|
-| `docs/decisions/database/ARCH-055/DATABASE-001-establish-api-lifecycle-persistence-contracts.md:539` | Accepted implementation is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; consumers adopt the accepted dependency in their own task worktrees | The recorded SHA and accepted contract exist in the document; no commit object or remote ref was inspected |
-| `docs/decisions/api/ARCH-055/API-005-correct-knowledge-source-and-upload-lifecycle.md` | Accepted API work used that Database pin and reports generated-client/typecheck/upload-suite success | Historical task evidence; not a fresh run against this ZIP |
-| `docs/decisions/shopify/ARCH-055/SHOPIFY-001-bind-human-follow-up-commands-to-internal-claim-key.md:254` | Merged Database revision `8e74634ff92be9900f693c0c449ffce888e7d617` has the same tree as accepted `5907b…` | Both SHAs and the tree-equivalence claim are documentary evidence, not independently verified current pins |
-| `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md:237` | API-004 remains Ready; API-009 and SYSTEM-TEST-001 still have incomplete prerequisites | Source presence alone does not establish acceptance or architecture-wide completion |
+| Record                                                                                                   | What it says                                                                                                                               | What this review can establish                                                                             |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `docs/decisions/database/ARCH-055/DATABASE-001-establish-api-lifecycle-persistence-contracts.md:539`     | Accepted implementation is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; consumers adopt the accepted dependency in their own task worktrees | The recorded SHA and accepted contract exist in the document; no commit object or remote ref was inspected |
+| `docs/decisions/api/ARCH-055/API-005-correct-knowledge-source-and-upload-lifecycle.md`                   | Accepted API work used that Database pin and reports generated-client/typecheck/upload-suite success                                       | Historical task evidence; not a fresh run against this ZIP                                                 |
+| `docs/decisions/shopify/ARCH-055/SHOPIFY-001-bind-human-follow-up-commands-to-internal-claim-key.md:254` | Merged Database revision `8e74634ff92be9900f693c0c449ffce888e7d617` has the same tree as accepted `5907b…`                                 | Both SHAs and the tree-equivalence claim are documentary evidence, not independently verified current pins |
+| `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md:237`                  | API-004 remains Ready; API-009 and SYSTEM-TEST-001 still have incomplete prerequisites                                                     | Source presence alone does not establish acceptance or architecture-wide completion                        |
 
 The accepted implementation SHA and documented merged SHA must not be treated as interchangeable Git ancestry evidence. A squash can preserve a tree while changing ancestry. Likewise, a correct API gitlink may have been exported alongside the wrong materialized nested files. The observed source mismatch does not retroactively invalidate another worktree's historical test report, and those historical reports do not validate this export.
 
@@ -167,16 +167,16 @@ Run these from the API worktree. Both invoke normal Prisma generation. Record th
 
 ### C. Reuse the existing migration and application proofs
 
-| Owner / worktree | Existing command | Purpose and boundary |
-|---|---|---|
-| Canonical Database accepted task/history context | `npm run test:arch055-database-contracts` | Exact accepted schema/SQL/change-scope validation, including original migration bytes |
-| Canonical Database | `npm run test:arch055-database-contracts:postgres:fresh` | All three forward contracts on fresh disposable PostgreSQL |
-| Canonical Database | `npm run test:arch055-database-contracts:postgres:upgrade` | Historical-key preservation, trigger restoration/rollback, duplicate-intake abort and retry on populated predecessor state |
-| API | `npm run test:arch026-woo-rest-read:postgres` | Updated failure lifecycle, concurrent callbacks, current-generation revoke and rollback on actual migrations |
-| API | `npm run test:arch035-knowledge-upload:postgres` | Intent retry/purpose matching, original-intake replay, reprocessing and cleanup-lock interleaving |
-| API | `npm run test:arch040-human-send:postgres` | Same public key across shops produces distinct private owners; matching replay and claim/command atomicity; transaction-bound configuration and prepared evidence |
-| Background | `npm run test:arch040-recovery-conversation` followed by `npm run test:arch040-background-runtime:postgres` | Persisted key unit coverage plus actual historical-key release, reclaim races and missing-key fail-closed behavior |
-| Shopify | `npx --no-install vitest run tests/unit/arch040-shopify-command.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts` | Existing producer argument/replay coverage; this is not cross-platform PostgreSQL proof |
+| Owner / worktree                                 | Existing command                                                                                                             | Purpose and boundary                                                                                                                                              |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canonical Database accepted task/history context | `npm run test:arch055-database-contracts`                                                                                    | Exact accepted schema/SQL/change-scope validation, including original migration bytes                                                                             |
+| Canonical Database                               | `npm run test:arch055-database-contracts:postgres:fresh`                                                                     | All three forward contracts on fresh disposable PostgreSQL                                                                                                        |
+| Canonical Database                               | `npm run test:arch055-database-contracts:postgres:upgrade`                                                                   | Historical-key preservation, trigger restoration/rollback, duplicate-intake abort and retry on populated predecessor state                                        |
+| API                                              | `npm run test:arch026-woo-rest-read:postgres`                                                                                | Updated failure lifecycle, concurrent callbacks, current-generation revoke and rollback on actual migrations                                                      |
+| API                                              | `npm run test:arch035-knowledge-upload:postgres`                                                                             | Intent retry/purpose matching, original-intake replay, reprocessing and cleanup-lock interleaving                                                                 |
+| API                                              | `npm run test:arch040-human-send:postgres`                                                                                   | Same public key across shops produces distinct private owners; matching replay and claim/command atomicity; transaction-bound configuration and prepared evidence |
+| Background                                       | `npm run test:arch040-recovery-conversation` followed by `npm run test:arch040-background-runtime:postgres`                  | Persisted key unit coverage plus actual historical-key release, reclaim races and missing-key fail-closed behavior                                                |
+| Shopify                                          | `npx --no-install vitest run tests/unit/arch040-shopify-command.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts` | Existing producer argument/replay coverage; this is not cross-platform PostgreSQL proof                                                                           |
 
 The Database static validator requires the recorded baseline `7c377282aa5819b3008b7d7f3018f44f4161523e` and an exact changed-file allowlist (`scripts/validate-arch055-database-contracts.mjs:10–54`). It should be interpreted/run in its accepted task/history context. Do not report it as runnable in this Git-free export, or broaden its allowlist to make an unrelated integrated revision pass. Fresh/upgrade database scripts separately exercise the named migration chain through the ARCH-055 target and are existing focused gates.
 

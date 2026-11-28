@@ -40,7 +40,6 @@ Coordinator:
 
 `moda_architect`
 
-
 ## Objective
 
 Replace the fragmented Phase-2 model-selection/prompt-pointer/template-revision persistence with one Agent Configuration model, keep prompt revisions and template categories, add the shop-scoped merchant Studio authorization record, and make audit events support both platform-admin and merchant actors plus lightweight operation reconciliation.
@@ -509,7 +508,6 @@ No Shared-package contract is introduced.
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
 
-
 ## Implementation Notes
 
 Do not retain old selection/pointer/template-revision models behind compatibility views. ARCH-021 is pre-production and this task is an intentional breaking simplification after deterministic data migration.
@@ -538,25 +536,25 @@ Review
 - Attempt 2 correction commit: `f2629f1` on `task/ARCH-021-DATABASE-002`.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-DATABASE-002`
-  parent branch: `task/ARCH-021-DATABASE-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-DATABASE-002`
-  implementation branch: `task/ARCH-021-DATABASE-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-DATABASE-002`
+parent branch: `task/ARCH-021-DATABASE-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-DATABASE-002`
+implementation branch: `task/ARCH-021-DATABASE-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded submodule commits: none
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded submodule commits: none
 
 ### Validation Results
 

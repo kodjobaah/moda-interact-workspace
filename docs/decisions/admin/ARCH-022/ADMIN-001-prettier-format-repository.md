@@ -180,7 +180,6 @@ None. Phase-1 repository formatting tasks are intentionally independent.
 - [ ] `git diff --check`
 - [ ] Verify `git -C database status --short` is empty and the parent gitlink is unchanged.
 
-
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set

@@ -38,7 +38,6 @@ Coordinator:
 
 `moda_architect`
 
-
 ## Objective
 
 Keep one Auth.js/Google authentication path while resolving authorization through `PlatformAdmin` first and otherwise through shop-scoped `CommerceStudioMerchantAccess`; add a manual operator command for initial merchant step-up and do not introduce a second login/session system.
@@ -89,17 +88,17 @@ Define principal types exactly:
 
 ```ts
 type PlatformStudioPrincipal = {
-  kind: 'PLATFORM_ADMIN';
+  kind: "PLATFORM_ADMIN";
   id: string;
-  role: 'ADMIN' | 'SUPER_ADMIN';
+  role: "ADMIN" | "SUPER_ADMIN";
   developmentBypass: boolean;
 };
 
 type MerchantStudioPrincipal = {
-  kind: 'MERCHANT';
+  kind: "MERCHANT";
   id: string;
   shopId: string;
-  role: 'ADMIN' | 'EDITOR' | 'VIEWER';
+  role: "ADMIN" | "EDITOR" | "VIEWER";
   developmentBypass: false;
 };
 
@@ -381,7 +380,6 @@ Consumes `CommerceStudioMerchantAccess` from DATABASE-002. No new external auth 
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
-
 
 ## Implementation Notes
 

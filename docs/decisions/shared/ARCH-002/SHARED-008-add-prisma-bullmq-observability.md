@@ -18,6 +18,7 @@ enables:
 created: 2026-08-31
 updated: 2026-08-31
 ---
+
 # Add Prisma and BullMQ observability adapters
 
 ## Objective
@@ -208,4 +209,3 @@ the compressed archive because installed dependencies are not included.
 No corrective implementation is required.
 
 `ARCH-002-SHARED-008` is architect-accepted Complete.
-

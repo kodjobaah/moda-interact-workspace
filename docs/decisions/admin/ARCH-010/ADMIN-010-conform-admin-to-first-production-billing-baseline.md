@@ -15,15 +15,15 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-ADMIN-001
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-ADMIN-001
 enables:
-- ARCH-010-ADMIN-002
-- ARCH-010-ADMIN-004
-- ARCH-010-ADMIN-008
+  - ARCH-010-ADMIN-002
+  - ARCH-010-ADMIN-004
+  - ARCH-010-ADMIN-008
 created: 2026-09-12
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-ADMIN-010: Conform Admin billing controls to the clean first-production baseline
@@ -300,20 +300,20 @@ Ready for Review.
 - Stale-i18n search has only the new negative assertion in `admin-billing-visibility.test.mjs`.
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010
-  parent branch: task/ARCH-010-ADMIN-010
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-010
-  implementation branch: task/ARCH-010-ADMIN-010
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-010
+parent branch: task/ARCH-010-ADMIN-010
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-010
+implementation branch: task/ARCH-010-ADMIN-010
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 ### Deviations
 
@@ -625,4 +625,3 @@ claimed_at: null
 #### Dependency reconciliation
 
 Acceptance of ADMIN-010 does not by itself promote its listed dependants in the returned snapshot because each still has additional incomplete dependencies. Do not start ADMIN-002, ADMIN-004, or ADMIN-008 solely because ADMIN-010 is now Complete; readiness must be recalculated from each authoritative individual task file against the latest workspace state.
-

@@ -21,6 +21,7 @@ enables:
 created: 2026-08-31
 updated: 2026-09-03
 ---
+
 # Adopt shared observability runtime in admin process
 
 ## Objective
@@ -97,7 +98,7 @@ attributes.
 - [x] confirm temporary telemetry diagnostic routes/scaffolding are removed;
 - [x] affected repository tests;
 - [x] repository-defined lint as applicable (no `typecheck` script is defined;
-  the production build completed its TypeScript check);
+      the production build completed its TypeScript check);
 - [x] production build;
 - [x] duplicate provider/exporter ownership review.
 
@@ -192,8 +193,8 @@ Ready for Review
   `moda-interact-admin/observability.mjs` preload, preloaded before the Next.js
   production CLI entrypoint.
 - Removed the temporary `/telemetry-probe` application route. Production `npm
-  start` now runs the exact repository command (`node --import
-  ./observability.mjs ./node_modules/next/dist/bin/next start`) with no
+start` now runs the exact repository command (`node --import
+./observability.mjs ./node_modules/next/dist/bin/next start`) with no
   diagnostic scaffolding.
 - Introduced the test-only preload fixture
   (`tests/observability/fixtures/probe-preload.mjs`) for Undici/fetch client-span
@@ -248,7 +249,7 @@ Ready for Review
 - Production build passes and the build route listing confirms no
   `/telemetry-probe` route remains.
 - Note: this environment cannot discover test files by directory path (`node
-  --test tests/observability/` fails with MODULE_NOT_FOUND — pre-existing,
+--test tests/observability/` fails with MODULE_NOT_FOUND — pre-existing,
   reproduced with a scratch directory), so the suite is run with explicit test
   files or a glob, e.g. `node --test tests/observability/*.test.mjs`.
 

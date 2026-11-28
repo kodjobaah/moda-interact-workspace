@@ -105,15 +105,13 @@ Extend the existing shop-scoped Recovery Detail read to project each message's `
 - When DATABASE-001 is available, include only `humanMessagingAllowed`/`humanMessagingStatus` in the existing Woo recovery-detail response. Default ACTIVE for a shop without a restriction row; do not expose private admin reason/audit notes.
 - Rendering a suspended conversation or saved basket remains available. The response is presentation metadata, not a replacement for command authorization. Do not introduce a generic conversations inbox or a Shopify API endpoint.
 
-
 ### Configured follow-up read-side consistency
 
 The original `lastInboundAt`/`windowExpiresAt` projection must use the newest provider-verified CUSTOMER/INBOUND row since initial sequence-1 `sentAt`, bounded by current time. If exposing a `followUp.eligible` or equivalent advisory flag, it must respect the recovery's effective persisted sequence-1 `followUpDueAt` (non-null and due), a closed verified customer window, and an available sequence-2 attempt—not a fixed delay from initial outreach. Keep this presentation-only: API-005 separately owns corrective POST admission and Background-008 final provider permit. API-002 remains independently executable once its own ARCH-035 and database prerequisites are satisfied; it **does not depend** on API-005 or Shopify.
 
 ### Read projection clarifications
 
-The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields actually stored by the Woo recovery writer and label `totalPrice` as the recorded recovery total, never imply live checkout prices or fabricate missing images/discounted line totals. Return the authoritative `controlRevision`, HUMAN restriction status (without admin notes), and *advisory* service-window expiry calculated from latest verified customer inbound; do not use `lastMessageAt` or an outbound template to open a window. Reading recovery details does not grant human-send eligibility; API-004 remains the authoritative command admission owner.
-
+The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields actually stored by the Woo recovery writer and label `totalPrice` as the recorded recovery total, never imply live checkout prices or fabricate missing images/discounted line totals. Return the authoritative `controlRevision`, HUMAN restriction status (without admin notes), and _advisory_ service-window expiry calculated from latest verified customer inbound; do not use `lastMessageAt` or an outbound template to open a window. Reading recovery details does not grant human-send eligibility; API-004 remains the authoritative command admission owner.
 
 ## Work Items
 
@@ -131,8 +129,8 @@ The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields a
 - ARCH-040-DATABASE-001
 - ARCH-035-API-013
 
-
 - ARCH-040-DATABASE-005
+
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-001
@@ -173,6 +171,7 @@ The developer invoked `/moda_developer_create ARCH-040-API-002` to take over thi
 ## Completion Report
 
 ### Status
+
 Complete — developer Attempt 1 was accepted and explicitly completed on 2026-10-21. Attempt remains 1; `executor` and `claimed_at` are null.
 
 ### Files Changed
@@ -258,19 +257,25 @@ The developer explicitly requested `/moda_developer_update ARCH-040-API-002 comp
 ## Architect Review
 
 ### Review Status
+
 Developer self-review accepted; separate architect review is not required for this developer-controlled completion.
 
 ### Review Notes
+
 See the durable Developer Self-Review — Accepted — Attempt 1 above.
 
 ### Reviewed Files
+
 The implementation files and tests listed in the Completion Report, plus the task definition and validation evidence.
 
 ### Validation Reviewed
+
 Focused unit (30/30), PostgreSQL integration (3/3), typecheck, lint, build, and `git diff --check`; all passed.
 
 ### Architecture Conformance
+
 Conforms to the task's existing recovery-detail and read-only projection boundaries; see the accepted developer self-review.
 
 ### Follow-up
+
 No implementation follow-up identified. No task branches were merged to `main`.

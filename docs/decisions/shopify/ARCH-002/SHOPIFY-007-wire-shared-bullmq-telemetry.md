@@ -13,13 +13,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-SHOPIFY-006
+  - ARCH-002-SHOPIFY-006
 enables:
-- ARCH-002-GATEWAY-006
-- ARCH-002-SYSTEM-TEST-002
+  - ARCH-002-GATEWAY-006
+  - ARCH-002-SYSTEM-TEST-002
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Wire shared BullMQ telemetry on Shopify queue producers
 
 ## Objective

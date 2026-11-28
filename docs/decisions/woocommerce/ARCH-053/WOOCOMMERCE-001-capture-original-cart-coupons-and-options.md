@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-053-API-001
-- ARCH-053-BACKGROUND-001
+  - ARCH-053-API-001
+  - ARCH-053-BACKGROUND-001
 enables:
-- ARCH-053-WOOCOMMERCE-002
-- ARCH-053-WOOCOMMERCE-003
-- ARCH-053-WOOCOMMERCE-004
+  - ARCH-053-WOOCOMMERCE-002
+  - ARCH-053-WOOCOMMERCE-003
+  - ARCH-053-WOOCOMMERCE-004
 created: 2026-10-29
 updated: 2026-10-31
 ---
@@ -107,7 +107,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2 canonical-phone helper. Reuse them rather than new cookies or queues; the v2 phone check is retained *inside v1*, not as a second HTTP version. Include a test that one valid v1 event contains both the normalised phone proof and supported `checkout.restoration`, and a second valid v1 event contains restoration but omits a non-normalisable phone. Snapshot must contain the original coupon list, while publishing events for coupon-only additions/removals is owned by WOOCOMMERCE-004. Do not duplicate its hooks in this task.
+The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2 canonical-phone helper. Reuse them rather than new cookies or queues; the v2 phone check is retained _inside v1_, not as a second HTTP version. Include a test that one valid v1 event contains both the normalised phone proof and supported `checkout.restoration`, and a second valid v1 event contains restoration but omits a non-normalisable phone. Snapshot must contain the original coupon list, while publishing events for coupon-only additions/removals is owned by WOOCOMMERCE-004. Do not duplicate its hooks in this task.
 
 ## Completion Report
 

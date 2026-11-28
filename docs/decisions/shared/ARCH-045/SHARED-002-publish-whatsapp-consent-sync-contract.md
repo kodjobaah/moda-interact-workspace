@@ -28,6 +28,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-22
 ---
+
 # Publish Shopify consent-sync and canonical identity contracts
 
 ## Architecture
@@ -136,16 +137,16 @@ Complete — developer Attempt 1 reconciled, passed, and explicitly completed. R
 
 ### Validation Results
 
-| Evidence | Result |
-|---|---|
-| `npm version` / `npm version minor` | **PASS** — version advanced from `2.4.2` to `2.5.0`. |
-| First `npm publish` | **FAIL** — automatic `prepack` build could not find `tsup` (`exit 127`). No successful release claimed from this attempt. |
-| `npm ci` | **PASS** — 211 packages installed; npm reported one low and one high vulnerability and install-script approval warnings. |
-| Second `npm publish` | **PASS** — the repository `prepack` lifecycle automatically ran a successful `tsup` ESM/declaration build; npm returned `+ @modainteract/moda-interact-shared@2.5.0`. |
-| Registry verification | First `npm view` returned **E404** during processing; the repeated `npm view @modainteract/moda-interact-shared@2.5.0` **PASS**, showing `latest: 2.5.0`, tarball URL, and matching SHA-1. |
-| Tarball/package-shape evidence | **PASS (manifest/output inspection)** — the npm release file list and supplied `package.json` show Shopify and identity exports and portable fixture JSON. No downstream consumer installation was run or required here. |
-| Release commit/tag, source diff, `git diff --check` | **PASS** — `777c2dd`/`v2.5.0` differs from accepted `12f6ff5` only in `package.json` and `package-lock.json` version metadata; diff check passed. |
-| `/moda_developer_create` `--prepare` synchronization/recursive-submodule packet | **PASS** — Attempt 1 packet recorded parent `d4492fa1`, implementation `93dc666e`, recursive submodule readiness, dependency gate, and claim commit `9c45e6d5`. |
+| Evidence                                                                        | Result                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm version` / `npm version minor`                                             | **PASS** — version advanced from `2.4.2` to `2.5.0`.                                                                                                                                                                     |
+| First `npm publish`                                                             | **FAIL** — automatic `prepack` build could not find `tsup` (`exit 127`). No successful release claimed from this attempt.                                                                                                |
+| `npm ci`                                                                        | **PASS** — 211 packages installed; npm reported one low and one high vulnerability and install-script approval warnings.                                                                                                 |
+| Second `npm publish`                                                            | **PASS** — the repository `prepack` lifecycle automatically ran a successful `tsup` ESM/declaration build; npm returned `+ @modainteract/moda-interact-shared@2.5.0`.                                                    |
+| Registry verification                                                           | First `npm view` returned **E404** during processing; the repeated `npm view @modainteract/moda-interact-shared@2.5.0` **PASS**, showing `latest: 2.5.0`, tarball URL, and matching SHA-1.                               |
+| Tarball/package-shape evidence                                                  | **PASS (manifest/output inspection)** — the npm release file list and supplied `package.json` show Shopify and identity exports and portable fixture JSON. No downstream consumer installation was run or required here. |
+| Release commit/tag, source diff, `git diff --check`                             | **PASS** — `777c2dd`/`v2.5.0` differs from accepted `12f6ff5` only in `package.json` and `package-lock.json` version metadata; diff check passed.                                                                        |
+| `/moda_developer_create` `--prepare` synchronization/recursive-submodule packet | **PASS** — Attempt 1 packet recorded parent `d4492fa1`, implementation `93dc666e`, recursive submodule readiness, dependency gate, and claim commit `9c45e6d5`.                                                          |
 
 Source: developer terminal capture `Pasted text(20261022-095355).txt` and the supplied `moda-interact-workspace-ARCH-045-SHARED-002.zip` snapshot. Publication commands are not to be rerun merely to obtain documentation evidence.
 

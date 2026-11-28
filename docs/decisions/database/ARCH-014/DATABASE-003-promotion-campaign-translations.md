@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-014-DATABASE-002
+  - ARCH-014-DATABASE-002
 enables:
-- ARCH-014-ADMIN-008
-- ARCH-014-SHOPIFY-003
+  - ARCH-014-ADMIN-008
+  - ARCH-014-SHOPIFY-003
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -30,7 +30,9 @@ updated: 2026-09-15
 Add localized merchant-facing title/description persistence for `PromotionCampaign` without changing the existing campaign table or operational promotion semantics.
 
 `PromotionCampaign.name` remains the **internal Admin campaign name**. Merchant-facing text moves to a new additive child table.
+
 ## Binding GPT-5.6 Luna rule
+
 ## Binding GPT-5.6 Luna rule
 
 Implement exactly one new Prisma model/table and its new-table constraints/indexes. Do not alter, rename, drop, backfill, add a column/index/constraint/trigger to, or otherwise modify an existing table/enum. Do not change campaign targeting, grant, selection, reservation or lifecycle semantics.
@@ -207,7 +209,7 @@ Migration/environment limitation:
 - Local `npm run status` reached PostgreSQL at `localhost:5432` and reported the
   expected pending migrations.
 - Local `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact
-  npm run migrate:deploy` was blocked by the pre-existing failed migration
+npm run migrate:deploy` was blocked by the pre-existing failed migration
   `20260915140000_arch015_fractional_provider_usage_snapshots` (`P3009`). No
   migration resolution, reset, baseline edit, or unrelated repair was performed.
 - The repository has no declared `test` script; `npm test` returned “Missing

@@ -39,7 +39,6 @@ The adopted ARCH-047 design is **Moda Admin-only authoring**. A saved English so
 
 The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**. They own separate route/action/service/component modules, use stable documented persistence payloads, and must prove their capability with fixtures or injected dependencies when a sibling Admin/Background implementation is not yet complete. The end-to-end system test, not an artificial task chain, verifies their integration.
 
-
 ## Scope
 
 - Own translation request creation, status reads and retry-action UI under `src/lib/admin/whatsapp-templates/translations/`, `src/components/admin/whatsapp-templates/translations/` and `src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/translations/`.
@@ -49,7 +48,6 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Transactionally create one `WhatsAppTemplateTranslationRun` and **19** `WhatsAppTemplateTranslationItem` rows using the model configuration chosen by the established Admin translation configuration; ensure durable source hash/model identity, per-language technical identity and no translation before the immutable English locale has committed. Duplicate requests do not generate a second active run for the same source/configuration; use application serialisation/idempotency.
 - The request is picked up asynchronously by `BACKGROUND-002` using the existing Batch worker mechanisms. **Do not call Background synchronously, translate inside an Admin action or invent a new cross-service queue schema.** If operational wake-up is required, use an existing approved handoff, with the database remaining durable truth.
 - UI shows `SAVED`, `TRANSLATION_QUEUED`, `TRANSLATING`, `PARTIALLY_FAILED`, `READY_FOR_REVIEW` from persisted run/item status. Show 1 English source + 19 language results distinctly, counts, per-language failure and bounded refresh (auto-poll only while active and stop on selection/unmount). The retry action requests only failed/pending work using the persisted fields; Background owns retry execution and provider Batch correlation.
-
 
 ### Required React component decomposition
 
@@ -68,7 +66,6 @@ Place polling, request/retry state, stale-response cancellation and selection-aw
 - No AST redesign, new translation engine, provider Batch submit/poll, translated content reconstruction, Meta submission or wrapper/shop publication.
 - Do not create a per-segment database table or rename existing `TranslationItem.translatedAst`; it stores the keyed translated segments until Admin reconstructs them.
 
-
 ## Requirements
 
 - [x] The source snapshot contains exactly one stable entry per translatable component and protected token occurrences without leaking actual customer values or secrets; duplicate/missing segment keys are rejected on request creation.
@@ -76,9 +73,7 @@ Place polling, request/retry state, stale-response cancellation and selection-aw
 - [x] A verified source hash and immutable source locale are captured; a later clone cannot receive an older run's outputs. Per-language progress comes from persisted items, not simulated UI state.
 - [x] Translation request write and model identity assignment are atomic; repeated start/retry is idempotent and does not discard completed languages.
 
-
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
-
 
 ## Work Items
 
@@ -87,14 +82,11 @@ All server reads/mutations of template management require the existing authentic
 - [x] Implement transactional run/item creation, deduplicated request action, progress/list/retry endpoints and bounded polling UI.
 - [x] Add tests for duplicate starts, 19 target items, exact source-hash binding and meaningful failed/queued states.
 
-
 ## Interfaces / Contracts
 
 **Reads:** immutable English `WhatsAppTemplateLocale.localeAst`, definition, configured translation-model record. **Writes:** `WhatsAppTemplateTranslationRun.sourceSnapshot` and `WhatsAppTemplateTranslationItem` rows; status/progress UI reads Run/Item/Batch/BatchItem. Background's agreed contract is `{schemaVersion:1,segments:[{key:string,text:string,protectedTokens:[{marker:string,variable:string}]}]}` for source and `{schemaVersion:1,segments:[{key:string,text:string}]}` in `TranslationItem.translatedAst`. Protected marker strings are opaque and unique **per occurrence**, including two occurrences of the same `shopBrand.*` key. The `variable` field retains the canonical `shopBrand.*` identifier, never a `ShopBrand` value. The compiler/reconstructor module (ADMIN-005) owns reinsertion of results by `key`. The database schema stays unchanged.
 
-
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/translations/`, components under `src/components/admin/whatsapp-templates/translations/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-translations.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
-
 
 ## Dependencies
 
@@ -114,12 +106,10 @@ None at task-definition time. Completion of this task does not grant permission 
 - [x] Progress, partial failures and retry controls reflect PostgreSQL; reloading/navigation does not lose progress or cause an extra run.
 - [x] Repeated concurrent requests do not produce duplicate active work, and are audited and SUPER_ADMIN-only.
 
-
 ## Validation
 
 - [x] Pure keyed-segment extraction/marker tests (including repeated brand name, brand alt text, header/body placement and wrapper footer/conditional text); 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
 - [x] Database integration tests for run/items creation and idempotent retry requests using stubbed Background statuses; relevant lint/typecheck/build and `git diff --check`.
-
 
 ## Stop Condition
 
@@ -128,7 +118,6 @@ After task-scoped work, acceptance criteria, validation and Completion Report ar
 ## Implementation Notes
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md`, `docs/developer-task-workflow.md`, the revised parent ARCH-047 architecture and current Admin repository instructions. Use launcher-prepared dedicated parent/implementation task worktrees and mirrored `task/<TASK_ID>` branches. In the Completion Report record prepared physical worktree isolation, start sync, recursive submodule materialisation, exact test commands/outcomes, changed paths and commits. The implementing agent must not modify `docs/decisions/**/_index.md`, another task, the parent architecture, another repository, or follow-on work. Reuse existing Admin Store Category AST authoring and Merchant Pricing translation UX patterns without copying their domain services or creating a competing generic runtime. Inspect the actual worktree state before implementation; the attached snapshot is not a live Git-branch guarantee.
-
 
 ## Completion Report
 
@@ -196,7 +185,6 @@ None identified within ADMIN-004's ownership. Translation generation, provider B
 - Change: The developer explicitly invoked `/moda_developer_create ARCH-047-ADMIN-004` for this ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_admin`, repository, coordinator, dependencies, task scope and acceptance criteria.
 - Claim: Attempt 1 was claimed by `developer` after canonical worktree synchronization and dependency verification.
-
 
 ## Architect Review
 

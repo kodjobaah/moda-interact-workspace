@@ -21,6 +21,7 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06
 ---
+
 # ARCH-006-SHARED-004: Publish corrected merchant-communications shared release
 
 ## Architecture

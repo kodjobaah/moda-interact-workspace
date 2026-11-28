@@ -399,9 +399,11 @@ Do not solve those conditions by inventing compatibility state.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-background/src/providers/shopify-partner-billing.provider.ts`
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
@@ -411,6 +413,7 @@ Ready for Review.
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`
 
 ### Work Completed
+
 - Wired subscription reconciliation to the mandatory BACKGROUND-015 combined live-subscription/lifecycle snapshot without a compatibility fallback.
 - Added dedicated FROZEN snapshot-failure retry handling, replay-safe lifecycle ordering, lifecycle-specific error clearing, one-hour UNFROZEN-without-contract retry, and verified unfreeze delegation/restoration paths.
 - Preserved newer persisted lifecycle evidence over older provider evidence; repeated FROZEN evidence advances one deterministic hourly retry and frozen rows remain actionable through the existing durable scheduler query.
@@ -419,17 +422,20 @@ Ready for Review.
 - Negative hard-removal search found no local cancellation executor or cancellation symbols matching the task list in Background `src`/`tests`.
 
 ### Correction-to-File Mapping
+
 - Mandatory BACKGROUND-015 snapshot contract and fallback removal: `src/providers/shopify-partner-billing.provider.ts`; provider and reconciliation fixtures in `tests/unit/providers/shopify-partner-billing.provider.test.ts`, `tests/unit/services/billing-reconciliation.service.test.ts`, and `tests/unit/services/billing-subscription-reconciliation.service.test.ts`.
 - FROZEN snapshot failure preservation, guarded retry scheduling, and frozen reconstruction: `src/services/billing-subscription-reconciliation.service.ts`; `tests/unit/services/billing-subscription-reconciliation.service.test.ts`.
 - Snapshot-driven lifecycle routing and provider-error preservation: `src/services/billing-reconciliation.service.ts`; `tests/unit/services/billing-reconciliation.service.test.ts`.
 - Lifecycle event ordering, FROZEN projection, unresolved UNFROZEN handling, verified restoration delegation, and effective cancellation: `src/services/shopify-subscription-lifecycle-reconciliation.service.ts`; `tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts`.
 
 ### Attempt 5 Correction-to-File Mapping
+
 - Pending-update precedence and exact scheduled-cancellation drain-boundary handling: `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts` and `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts`.
 - Older lifecycle evidence ordering while preserving frozen retry scheduling: `moda-interact-background/src/services/shopify-subscription-lifecycle-reconciliation.service.ts` and `moda-interact-background/tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts`.
 - Removed temporary diagnostic output and retained only the four intended Attempt 5 implementation/test files.
 
 ### Validation Results
+
 - Focused Attempt 5 service suite after final correction: **passed**, 2 files and 143 tests.
 - Integration suite: **passed**, 2 files and 3 tests.
 - `npm run test:unit`: **baseline failure**, 10 unchanged failures: 8 in `recovery-credit-purchase.service.test.ts` from the documented DATABASE-013/generated-client purchase schema/status mismatch, and 2 in `runtime/observability-startup.test.ts` from existing source/release assertions.
@@ -438,6 +444,7 @@ Ready for Review.
 - The focused Attempt 5 tests cover pending-update projection, scheduled-cancellation pre-close scheduling at and before the drain boundary, and stale lifecycle replay retry behavior. Other enumerated branches remain explicit architect review items rather than being represented as completed evidence.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`.
 - Parent/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-012`.
 - Mirrored branch: `task/ARCH-010-BACKGROUND-012`.
@@ -447,6 +454,7 @@ Ready for Review.
 - Recursive parent submodule evidence was unchanged; `moda-interact-background` remained recorded at `eff586b2a23c1315018bbd27cefb96500d7681da`, and the implementation submodule gitlink was not staged or changed.
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review — Attempt 1
@@ -1000,11 +1008,7 @@ version
 reservedQuantity
 ```
 
-and increment `version`;
-7. require update count = 1;
-8. re-read and verify the closed counter totals;
-9. close BillingPeriod with guarded `updateMany` requiring `status=OPEN`;
-10. require exactly one close.
+and increment `version`; 7. require update count = 1; 8. re-read and verify the closed counter totals; 9. close BillingPeriod with guarded `updateMany` requiring `status=OPEN`; 10. require exactly one close.
 
 Use:
 
@@ -1484,6 +1488,7 @@ The task requires every original requirement 1 through 26 to have a permanent ex
 ## Completion Report — Attempt 4
 
 ### Correction-to-File Mapping
+
 - Finding 1: `billing-subscription-reconciliation.service.ts` and `billing-reconciliation.service.ts` retain pending-update precedence and guarded same-cycle lifecycle projection; the Attempt 4 fixtures now provide a null pending handle where ordinary rollover is intended.
 - Finding 2: `billing-reconciliation.service.ts` and `shopify-subscription-lifecycle-reconciliation.service.ts` use `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS` and the exact pre-close/period-end schedule.
 - Finding 3: `shopify-subscription-lifecycle-reconciliation.service.ts` re-reads lifecycle identity under lock, preserves newer evidence, and advances a future retry for older/replayed FROZEN evidence.
@@ -1492,6 +1497,7 @@ The task requires every original requirement 1 through 26 to have a permanent ex
 - Follow-up correction from validation: FROZEN projection and its fixture use the published `PartnerSubscription.cancelAtPeriodEnd` field.
 
 ### Files Changed
+
 - `moda-interact-background/src/services/billing-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/src/services/shopify-subscription-lifecycle-reconciliation.service.ts`
@@ -1501,36 +1507,38 @@ The task requires every original requirement 1 through 26 to have a permanent ex
 - `moda-interact-background/tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts`
 
 ### Requirement Evidence Map
-| Requirement | Exact test title(s) | Test file | Result |
-| --- | --- | --- | --- |
-| 1. Snapshot failure preserves state and retries | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` | Proven |
-| 2. FROZEN preserves plan/period/capacity | `projects FROZEN evidence and schedules one hourly retry` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Partial |
-| 3. Replayed FROZEN advances hourly retry | `replays the same FROZEN event and advances one hourly retry` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 4. Older evidence cannot overwrite newer | `ignores strictly older lifecycle evidence without overwriting newer identity` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 5. UNFROZEN with null live remains FROZEN | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 6. Same-plan same-cycle restoration | `restores an unfrozen subscription only from live same-cycle evidence` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Partial |
-| 7. Later same-plan delegates BACKGROUND-007 | No exact permanent assertion | N/A | Not proven |
-| 8. Paid catch-up grants current cycle once | No exact permanent assertion | N/A | Not proven |
-| 9. Free catch-up preserves lifetime Free | No exact permanent assertion | N/A | Not proven |
-| 10. Changed plan delegates BACKGROUND-010 | No exact permanent assertion | N/A | Not proven |
-| 11. Pending update precedes cancellation | `refreshes pending provider state in one guarded update` | `billing-subscription-reconciliation.service.test.ts` | Partial |
-| 12. Scheduled cancellation preserves entitlement | No exact permanent assertion | N/A | Not proven |
-| 13. Cancellation reversal clears only the flag | No exact permanent assertion | N/A | Not proven |
-| 14. CANCELED closes and writes NO_CONTRACT | `closes the current period and writes NO_CONTRACT for effective cancellation` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 15. Effective cancellation replay is idempotent | No exact permanent assertion | N/A | Not proven |
-| 16. FROZEN null-live never writes NO_CONTRACT | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Partial |
-| 17. Ambiguous null-live does not close | `keeps established entitlement unresolved when Partner reports no active subscription` | `billing-subscription-reconciliation.service.test.ts` | Partial |
-| 18. Cancellation preserves lifetime histories | No exact permanent assertion | N/A | Not proven |
-| 19. Frozen startup repair is effectively once | `runs periodic reconstruction when it is part of the billing cadence` | `billing-scheduler.test.ts` | Partial |
-| 20. Pending top-up remains non-spendable while FROZEN | No exact permanent assertion | N/A | Not proven |
-| 21. Old-cycle UsageEvent is not retimestamped | No exact permanent assertion | N/A | Not proven |
-| 22. No local cancellation executor | Required forbidden-symbol `rg` returned no matches in `src`/`tests` | Static search | Proven |
-| 23. Post-commit unfreeze capacity hint | No exact permanent assertion | N/A | Not proven |
-| 24. Unfreeze does not recreate intentionally dropped jobs | No exact permanent assertion | N/A | Not proven |
-| 25. No new queue schema | Existing `billing-subscription-reconcile` and `recovery-capacity-resume` paths retained; no new queue/job schema in the seven-file diff | Diff/static inspection | Proven |
-| 26. No HTTP ingress lifecycle lookup | Workspace sibling search matched only existing billing provider/service references; no messaging path exists in the checkout | Parent-workspace static search | Partial |
+
+| Requirement                                               | Exact test title(s)                                                                                                                     | Test file                                                       | Result     |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------- |
+| 1. Snapshot failure preserves state and retries           | `keeps established entitlement on Partner failure and publishes one bounded retry`                                                      | `billing-subscription-reconciliation.service.test.ts`           | Proven     |
+| 2. FROZEN preserves plan/period/capacity                  | `projects FROZEN evidence and schedules one hourly retry`                                                                               | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Partial    |
+| 3. Replayed FROZEN advances hourly retry                  | `replays the same FROZEN event and advances one hourly retry`                                                                           | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 4. Older evidence cannot overwrite newer                  | `ignores strictly older lifecycle evidence without overwriting newer identity`                                                          | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 5. UNFROZEN with null live remains FROZEN                 | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour`                                                               | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 6. Same-plan same-cycle restoration                       | `restores an unfrozen subscription only from live same-cycle evidence`                                                                  | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Partial    |
+| 7. Later same-plan delegates BACKGROUND-007               | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 8. Paid catch-up grants current cycle once                | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 9. Free catch-up preserves lifetime Free                  | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 10. Changed plan delegates BACKGROUND-010                 | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 11. Pending update precedes cancellation                  | `refreshes pending provider state in one guarded update`                                                                                | `billing-subscription-reconciliation.service.test.ts`           | Partial    |
+| 12. Scheduled cancellation preserves entitlement          | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 13. Cancellation reversal clears only the flag            | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 14. CANCELED closes and writes NO_CONTRACT                | `closes the current period and writes NO_CONTRACT for effective cancellation`                                                           | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 15. Effective cancellation replay is idempotent           | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 16. FROZEN null-live never writes NO_CONTRACT             | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour`                                                               | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Partial    |
+| 17. Ambiguous null-live does not close                    | `keeps established entitlement unresolved when Partner reports no active subscription`                                                  | `billing-subscription-reconciliation.service.test.ts`           | Partial    |
+| 18. Cancellation preserves lifetime histories             | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 19. Frozen startup repair is effectively once             | `runs periodic reconstruction when it is part of the billing cadence`                                                                   | `billing-scheduler.test.ts`                                     | Partial    |
+| 20. Pending top-up remains non-spendable while FROZEN     | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 21. Old-cycle UsageEvent is not retimestamped             | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 22. No local cancellation executor                        | Required forbidden-symbol `rg` returned no matches in `src`/`tests`                                                                     | Static search                                                   | Proven     |
+| 23. Post-commit unfreeze capacity hint                    | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 24. Unfreeze does not recreate intentionally dropped jobs | No exact permanent assertion                                                                                                            | N/A                                                             | Not proven |
+| 25. No new queue schema                                   | Existing `billing-subscription-reconcile` and `recovery-capacity-resume` paths retained; no new queue/job schema in the seven-file diff | Diff/static inspection                                          | Proven     |
+| 26. No HTTP ingress lifecycle lookup                      | Workspace sibling search matched only existing billing provider/service references; no messaging path exists in the checkout            | Parent-workspace static search                                  | Partial    |
 
 ### Validation Results
+
 - Exact focused command: 7 files, 5 files passed; 228 tests passed. The only 8 failures were the unchanged `recovery-credit-purchase.service.test.ts` baseline failures; no changed reconciliation/provider test failed.
 - `npm run test:unit`: baseline failure, 10 failures: 8 recovery-credit purchase failures and 2 observability-startup source/release assertion failures; no changed Attempt 4 file failed.
 - `npm run test:integration`: passed, 2 files and 3 tests.
@@ -1542,6 +1550,7 @@ The task requires every original requirement 1 through 26 to have a permanent ex
 - Parent-workspace sibling search: matched existing `moda-interact/app` billing lifecycle provider/service references (`getSubscriptionLifecycleSnapshot`, `SUBSCRIPTION_CANCELED`, `SUBSCRIPTION_FROZEN`); `moda-interact-messaging/src` is absent from this checkout. No new HTTP ingress lookup was introduced by the seven-file diff.
 
 ### Workflow / Git Evidence
+
 - Dedicated parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-012`, `task/ARCH-010-BACKGROUND-012`.
 - Dedicated implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-012`, `task/ARCH-010-BACKGROUND-012`.
 - Attempt 1 implementation: `b5fb37982b69dce5265872d28b1e2f0e0fc8cd7`; Attempt 1 final parent report: `9a2707317aa36139d158aff12e9efcebda9a01b4`.
@@ -2428,7 +2437,7 @@ automatic-completion task.
 Both task-owned same-cycle projection blocks are entered only when:
 
 ```ts
-provider.cancelAtPeriodEnd || existing.cancelAtPeriodEnd
+provider.cancelAtPeriodEnd || existing.cancelAtPeriodEnd;
 ```
 
 That means this valid provider state is not projected:
@@ -2486,13 +2495,13 @@ invoke ordinary rollover in the same attempt after this guarded projection commi
 The rotating path currently hard-codes:
 
 ```ts
-provider.currentPeriodEnd - 5 * 60 * 1000
+provider.currentPeriodEnd - 5 * 60 * 1000;
 ```
 
 and both task-owned projection paths effectively use:
 
 ```ts
-Math.max(now, preCloseAt)
+Math.max(now, preCloseAt);
 ```
 
 For `preCloseAt <= now < currentPeriodEnd`, that produces `nextReconcileAt = now`,
@@ -2514,34 +2523,34 @@ No production file, shared contract, Prisma schema, migration, queue schema, or 
 
 ### Permanent Evidence Matrix
 
-| Requirement | Exact test title(s) / evidence | File or scan | Result |
-| --- | --- | --- | --- |
-| 1. Provider failure preserves state and retries | `keeps established entitlement on Partner failure and publishes one bounded retry` | `billing-subscription-reconciliation.service.test.ts` | Proven |
-| 2. FROZEN preserves plan, period, and capacity | `projects FROZEN while preserving plan period and all capacity state` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 3. Repeated FROZEN is idempotent and advances hourly retry | `replays the same FROZEN event and advances one hourly retry` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 4. Older lifecycle evidence cannot overwrite newer evidence | `ignores strictly older lifecycle evidence without overwriting newer identity` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 5. UNFROZEN plus null live remains FROZEN | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 6. Same-plan same-cycle restoration preserves capacity | `restores same mapped plan and same cycle without granting or resetting capacity` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 7. Later same-plan restoration delegates to BACKGROUND-007 | `restores later same-plan Paid cycle through BACKGROUND-007 exactly once` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 8. Paid catch-up grants only the current cycle once | `does not add a second Paid grant after BACKGROUND-007 restoration` plus BACKGROUND-007 transition assertion | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 9. Free catch-up never resets lifetime Free | `restores later same-plan Free cycle without resetting lifetime Free` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 10. Changed mapped plan delegates to BACKGROUND-010 | `restores changed mapped plan through BACKGROUND-010 exactly once` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 11. Pending update precedes cancellation interpretation | `persists pending provider truth when pre-close drain fails`; `projects pending update even when outgoing cancelAtEndOfCycle is false` | `billing-subscription-reconciliation.service.test.ts` | Proven |
-| 12. Scheduled cancellation preserves entitlement to boundary | `projects scheduled full cancellation without changing current entitlement`; exact pre-close and boundary tests | `billing-subscription-reconciliation.service.test.ts` | Proven |
-| 13. Reversal clears cancellation without granting | `clears reversed scheduled cancellation without granting entitlement` | `billing-subscription-reconciliation.service.test.ts` | Proven |
-| 14. Effective cancellation closes one period and writes NO_CONTRACT | `closes the current period and writes NO_CONTRACT for effective cancellation` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 15. Effective cancellation replay is idempotent | `replays effective cancellation without a second close or counter mutation` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 16. Null live plus FROZEN never writes NO_CONTRACT | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour`; FROZEN projection assertions | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 17. Null live plus ambiguous lifecycle never closes or writes NO_CONTRACT | Existing unresolved-provider test proves preservation but does not assert the ambiguous lifecycle branch and close side effect together | `billing-subscription-reconciliation.service.test.ts` | Not proven |
-| 18. Cancellation preserves purchased, lifetime, refund, promotion, and selection history | `preserves lifetime purchased refund promotion and selection history on cancellation` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 19. Frozen startup repair is effectively once | `reconstructs a missing FROZEN reconciliation job with one deterministic identity` | `billing-subscription-reconciliation.service.test.ts` | Proven |
-| 20. Pre-freeze pending top-up remains non-spendable while FROZEN | `does not reconcile a pending top-up as spendable while lifecycle remains FROZEN` | `billing-subscription-reconciliation.service.test.ts` | Proven |
-| 21. Old-cycle UsageEvent is never retimestamped | `does not retimestamp old-cycle UsageEvents during effective cancellation` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 22. No local cancellation executor remains | Required forbidden-symbol scan returned no matches in `src` or `tests` | Static `rg` scan | Proven |
-| 23. Verified unfreeze publishes one post-commit capacity hint | `publishes one best-effort unfreeze capacity-resume hint after commit`; `swallows unfreeze capacity-resume failure after committed restoration` | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven |
-| 24. Unfreeze does not recreate intentionally dropped FROZEN-denial jobs | `does not publish unfreeze capacity-resume for unresolved or repeated FROZEN state` covers unresolved/repeated state, but not an intentionally dropped business job | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Not proven |
-| 25. No new queue schema is introduced | Attempt 8 diff-name-only check lists only the two authorized test files; queue scan shows existing `billing-subscription-reconcile` and `recovery-capacity-resume` contracts | Diff/static scan | Proven |
-| 26. No Shopify HTTP ingress lifecycle lookup is introduced | Required sibling scan found pre-existing lifecycle API references under `moda-interact/app`; `moda-interact-messaging/src` is absent from this workspace, so that part cannot be proven by executable scan | Parent-workspace static scan | Not proven |
+| Requirement                                                                              | Exact test title(s) / evidence                                                                                                                                                                             | File or scan                                                    | Result     |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------- |
+| 1. Provider failure preserves state and retries                                          | `keeps established entitlement on Partner failure and publishes one bounded retry`                                                                                                                         | `billing-subscription-reconciliation.service.test.ts`           | Proven     |
+| 2. FROZEN preserves plan, period, and capacity                                           | `projects FROZEN while preserving plan period and all capacity state`                                                                                                                                      | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 3. Repeated FROZEN is idempotent and advances hourly retry                               | `replays the same FROZEN event and advances one hourly retry`                                                                                                                                              | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 4. Older lifecycle evidence cannot overwrite newer evidence                              | `ignores strictly older lifecycle evidence without overwriting newer identity`                                                                                                                             | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 5. UNFROZEN plus null live remains FROZEN                                                | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour`                                                                                                                                  | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 6. Same-plan same-cycle restoration preserves capacity                                   | `restores same mapped plan and same cycle without granting or resetting capacity`                                                                                                                          | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 7. Later same-plan restoration delegates to BACKGROUND-007                               | `restores later same-plan Paid cycle through BACKGROUND-007 exactly once`                                                                                                                                  | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 8. Paid catch-up grants only the current cycle once                                      | `does not add a second Paid grant after BACKGROUND-007 restoration` plus BACKGROUND-007 transition assertion                                                                                               | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 9. Free catch-up never resets lifetime Free                                              | `restores later same-plan Free cycle without resetting lifetime Free`                                                                                                                                      | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 10. Changed mapped plan delegates to BACKGROUND-010                                      | `restores changed mapped plan through BACKGROUND-010 exactly once`                                                                                                                                         | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 11. Pending update precedes cancellation interpretation                                  | `persists pending provider truth when pre-close drain fails`; `projects pending update even when outgoing cancelAtEndOfCycle is false`                                                                     | `billing-subscription-reconciliation.service.test.ts`           | Proven     |
+| 12. Scheduled cancellation preserves entitlement to boundary                             | `projects scheduled full cancellation without changing current entitlement`; exact pre-close and boundary tests                                                                                            | `billing-subscription-reconciliation.service.test.ts`           | Proven     |
+| 13. Reversal clears cancellation without granting                                        | `clears reversed scheduled cancellation without granting entitlement`                                                                                                                                      | `billing-subscription-reconciliation.service.test.ts`           | Proven     |
+| 14. Effective cancellation closes one period and writes NO_CONTRACT                      | `closes the current period and writes NO_CONTRACT for effective cancellation`                                                                                                                              | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 15. Effective cancellation replay is idempotent                                          | `replays effective cancellation without a second close or counter mutation`                                                                                                                                | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 16. Null live plus FROZEN never writes NO_CONTRACT                                       | `keeps FROZEN for UNFROZEN with no live contract and retries in one hour`; FROZEN projection assertions                                                                                                    | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 17. Null live plus ambiguous lifecycle never closes or writes NO_CONTRACT                | Existing unresolved-provider test proves preservation but does not assert the ambiguous lifecycle branch and close side effect together                                                                    | `billing-subscription-reconciliation.service.test.ts`           | Not proven |
+| 18. Cancellation preserves purchased, lifetime, refund, promotion, and selection history | `preserves lifetime purchased refund promotion and selection history on cancellation`                                                                                                                      | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 19. Frozen startup repair is effectively once                                            | `reconstructs a missing FROZEN reconciliation job with one deterministic identity`                                                                                                                         | `billing-subscription-reconciliation.service.test.ts`           | Proven     |
+| 20. Pre-freeze pending top-up remains non-spendable while FROZEN                         | `does not reconcile a pending top-up as spendable while lifecycle remains FROZEN`                                                                                                                          | `billing-subscription-reconciliation.service.test.ts`           | Proven     |
+| 21. Old-cycle UsageEvent is never retimestamped                                          | `does not retimestamp old-cycle UsageEvents during effective cancellation`                                                                                                                                 | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 22. No local cancellation executor remains                                               | Required forbidden-symbol scan returned no matches in `src` or `tests`                                                                                                                                     | Static `rg` scan                                                | Proven     |
+| 23. Verified unfreeze publishes one post-commit capacity hint                            | `publishes one best-effort unfreeze capacity-resume hint after commit`; `swallows unfreeze capacity-resume failure after committed restoration`                                                            | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Proven     |
+| 24. Unfreeze does not recreate intentionally dropped FROZEN-denial jobs                  | `does not publish unfreeze capacity-resume for unresolved or repeated FROZEN state` covers unresolved/repeated state, but not an intentionally dropped business job                                        | `shopify-subscription-lifecycle-reconciliation.service.test.ts` | Not proven |
+| 25. No new queue schema is introduced                                                    | Attempt 8 diff-name-only check lists only the two authorized test files; queue scan shows existing `billing-subscription-reconcile` and `recovery-capacity-resume` contracts                               | Diff/static scan                                                | Proven     |
+| 26. No Shopify HTTP ingress lifecycle lookup is introduced                               | Required sibling scan found pre-existing lifecycle API references under `moda-interact/app`; `moda-interact-messaging/src` is absent from this workspace, so that part cannot be proven by executable scan | Parent-workspace static scan                                    | Not proven |
 
 ### Validation Results
 
@@ -2580,7 +2589,7 @@ behaviour.
 Use only the canonical shared constant:
 
 ```ts
-APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS
+APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS;
 ```
 
 Import it in `billing-reconciliation.service.ts` from the existing published Shared
@@ -3524,11 +3533,12 @@ src/services/billing-subscription-reconciliation.service.ts
 the exact-cycle task-owned branch currently computes:
 
 ```ts
-let next = provider.pendingPlanHandle && provider.pendingEffectiveAt
-  ? provider.pendingEffectiveAt
-  : this.now() < preCloseAt
-    ? preCloseAt
-    : provider.currentPeriodEnd;
+let next =
+  provider.pendingPlanHandle && provider.pendingEffectiveAt
+    ? provider.pendingEffectiveAt
+    : this.now() < preCloseAt
+      ? preCloseAt
+      : provider.currentPeriodEnd;
 ```
 
 That means a pending plan update with a provider `pendingEffectiveAt` at the cycle
@@ -5891,4 +5901,3 @@ Both have all remaining prerequisites Complete and are promoted to `ready`.
 `ARCH-010-SHOPIFY-016`.
 
 `ARCH-010-BACKGROUND-012` requires no Attempt 9.
-

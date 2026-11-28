@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-014-ADMIN-009
+  - ARCH-014-ADMIN-009
 enables:
-- ARCH-018-SYSTEM-TEST-001
+  - ARCH-018-SYSTEM-TEST-001
 created: 2026-09-20
 updated: 2026-09-20
 ---
@@ -210,7 +210,6 @@ Recursive implementation-submodule materialisation: `database` present at `3cb8f
 Exact implementation commit reviewed: `1407869c1c62d5df1904c10a33ef8755056fdc0e`.
 Parent report commit: `48ab19a0` (final submitted parent task/report commit; supersedes the intermediate evidence-report commit recorded during Attempt 2 preparation).
 
-
 ## Architect Review — Attempt 1
 
 ### Review Status
@@ -274,7 +273,6 @@ STOP and return to `moda_architect` without changing implementation code if any 
 - correcting the evidence would require altering runtime-control schema, action/API behavior, component structure or any file outside the three authorized implementation/test files.
 
 No new Admin functionality, tests beyond the focused evidence above, schema work, or runtime-control design change is requested. Attempt 2 exists only to provide deterministic acceptance evidence for the already functionally conformant implementation.
-
 
 ## Architect Review — Attempt 2
 

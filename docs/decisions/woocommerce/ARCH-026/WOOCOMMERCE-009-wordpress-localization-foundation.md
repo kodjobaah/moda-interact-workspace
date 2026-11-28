@@ -108,7 +108,7 @@ After Work Items, Acceptance Criteria and the scoped Validation pass, set the ta
 
 ## Implementation Notes
 
-Use WordPress gettext/native translation loading for the browser and PHP. Existing Shopify ICU JSON messages are a translation-memory input only: never copy `{var}` ICU syntax blindly into gettext `%s` fields. Defer *full* twenty-pack enforcement to WOO-014 so this infrastructure task remains independently executable.
+Use WordPress gettext/native translation loading for the browser and PHP. Existing Shopify ICU JSON messages are a translation-memory input only: never copy `{var}` ICU syntax blindly into gettext `%s` fields. Defer _full_ twenty-pack enforcement to WOO-014 so this infrastructure task remains independently executable.
 
 ## Completion Report
 

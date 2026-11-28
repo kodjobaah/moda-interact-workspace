@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add bounded failed-job server reader and API
 
 ## Architecture
@@ -135,14 +136,17 @@ pending ARCH-003 task before refinement. The task body is authoritative.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/lib/admin/queue-monitor.ts`
 - `moda-interact-admin/src/app/api/admin/queues/failed/route.ts`
 - `moda-interact-admin/tests/security/admin-failed-jobs.test.mjs`
 
 ### Work Completed
+
 - Added an allowlisted, bounded failed-job reader for the four observed Admin
   queues.
 - Added approved sorting by `failedAt`, `attemptsMade`, `name` and `id`, with
@@ -155,6 +159,7 @@ Ready for Review.
   payload exclusion and API security ordering.
 
 ### Validation Results
+
 - `npm exec -- node --test tests/security/admin-failed-jobs.test.mjs` passed
   (4 tests).
 - `npm test` passed (42 tests).
@@ -164,17 +169,21 @@ Ready for Review.
 - `git diff --check` passed.
 
 ### Deviations
+
 The production build retains existing warnings for Next.js multiple-lockfile
 workspace-root inference and BullMQ's optional `@valkey/valkey-glide` module.
 
 ### Assumptions
+
 BullMQ `finishedOn` is the failure timestamp for failed jobs and is normalized
 to the Admin `failedAt` ISO string.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

@@ -28,6 +28,7 @@ enables:
 created: 2026-08-29
 updated: 2026-09-02
 ---
+
 # Create Render Test and Production Deployment Topology
 
 ## Architecture
@@ -574,7 +575,7 @@ GET /health
 as gateway-local liveness and returns:
 
 ```json
-{"status":"ok","service":"moda-interact-gateway"}
+{ "status": "ok", "service": "moda-interact-gateway" }
 ```
 
 instead of proxying that request to `moda_admin`.

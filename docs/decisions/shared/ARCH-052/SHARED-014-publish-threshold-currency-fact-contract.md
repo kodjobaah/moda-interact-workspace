@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-SHARED-013
+  - ARCH-052-SHARED-013
 enables:
-- ARCH-052-MCP-002
-- ARCH-052-BACKGROUND-010
+  - ARCH-052-MCP-002
+  - ARCH-052-BACKGROUND-010
 created: 2026-10-31
 updated: 2026-10-31
 ---

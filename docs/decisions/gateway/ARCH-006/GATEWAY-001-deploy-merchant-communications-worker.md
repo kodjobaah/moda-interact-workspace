@@ -116,9 +116,11 @@ The canonical workspace currently uses environment-specific Render files; modify
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `moda-interact-gateway/render.test.yaml`
 - `moda-interact-gateway/render.production.yaml`
 - `moda-interact-gateway/tests/validate-render-blueprints.sh`

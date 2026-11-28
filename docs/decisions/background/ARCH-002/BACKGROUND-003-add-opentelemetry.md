@@ -12,12 +12,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-002-BACKGROUND-001
-- ARCH-002-SHARED-010
+  - ARCH-002-BACKGROUND-001
+  - ARCH-002-SHARED-010
 enables: []
 created: 2026-08-29
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Add OpenTelemetry to Background Workers
 
 ## Superseded — Granular Replacement (2026-08-31)

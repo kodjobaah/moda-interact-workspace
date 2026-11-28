@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-011-DATABASE-001
-- ARCH-011-SHARED-002
-- ARCH-011-BACKGROUND-001
+  - ARCH-011-DATABASE-001
+  - ARCH-011-SHARED-002
+  - ARCH-011-BACKGROUND-001
 enables:
-- ARCH-011-BACKGROUND-003
-- ARCH-011-SHOPIFY-002
+  - ARCH-011-BACKGROUND-003
+  - ARCH-011-SHOPIFY-002
 created: 2026-09-14
 updated: 2026-09-14
 ---
@@ -28,9 +28,11 @@ updated: 2026-09-14
 # ARCH-011-BACKGROUND-002
 
 ## Objective
+
 Extend the **existing** billing-subscription reconciliation worker so Shopify's actual current plan is reconciled into ARCH-011 transitions/segments/entitlement. Do not implement recovery admission safety here.
 
 ## Authorized implementation surface
+
 ```text
 src/services/billing-subscription-reconciliation.service.ts
 src/services/plan-upgrade-reconciliation.service.ts          # new
@@ -40,9 +42,11 @@ tests/unit/services/billing-subscription-reconciliation.service.test.ts
 tests/unit/services/plan-upgrade-reconciliation.service.test.ts # new
 tests/integration/plan-upgrade-reconciliation.concurrency.integration.test.ts # new
 ```
+
 No other billing/reservation service may be edited.
 
 ## Exact architecture
+
 Create class `PlanUpgradeReconciliationService` in the new file. `BillingSubscriptionReconciliationService.reconcileJob` remains the sole worker entrypoint and delegates to it after one fresh `getSubscriptionReconciliationSnapshot` call.
 
 Extend `reconstruct()` and job eligibility so a Subscription with an unresolved transition (`REQUESTED|PROVIDER_CONFIRMED|NEEDS_ATTENTION`) and non-null `nextReconcileAt` is reconstructed even when `pendingPlanId` is null.
@@ -50,6 +54,7 @@ Extend `reconstruct()` and job eligibility so a Subscription with an unresolved 
 Use published Shared constants: first merchant observation at 60s; REQUESTED expires at `requestedAt + 30m`; subsequent REQUESTED/NEEDS_ATTENTION retries are exactly 60s capped at that deadline/current cycle boundary, whichever is earlier.
 
 ## Binding decision table
+
 Given local plan/cycle and fresh provider snapshot:
 
 ```text
@@ -80,9 +85,11 @@ UNRESOLVED/unmapped -> no grant/application; persist bounded sync error/NEEDS_AT
 ```
 
 ## Same-cycle application transaction
+
 Implement in `PlanUpgradeReconciliationService.applySameCycleUpgrade` using one `Prisma.TransactionIsolationLevel.Serializable` transaction and existing `FOR UPDATE` order: ShopSettings (if needed) -> Subscription -> BillingPeriod -> included counter/transition rows. No advisory/process/Redis lock.
 
 Inside transaction exactly:
+
 1. re-read Subscription, open BillingPeriod, transition/version, final segment, INCLUDED counter;
 2. verify provider target/cycle/event evidence still matches pre-transaction snapshot;
 3. if no segments exist, create opening segment from `BillingPeriod` opening snapshots for `periodStart..periodEnd`; if opening allowance snapshot is null, STOP/NEEDS_ATTENTION (do not guess);
@@ -100,9 +107,11 @@ Inside transaction exactly:
 New-cycle higher/lower and same-plan cycle rollover MUST call/retain existing ARCH-010 boundary services; do not duplicate full-opening logic in this task.
 
 ## Exact tests
+
 Add cases matching the 28 cases from architecture, including requested Scale/provider Growth, provider-observed, lost callback scheduled job, request expiry, pending lower supersession, same-cycle lower fail closed, half-cycle 100/300=>200/delta100, usage independence, direct skip, repeated upgrades, duplicate event, two reconciler race, counter CAS race, missing-event recovery, cycle-close failure, event-at-cycle-start boundary path, null cycle no proration, target<granted.
 
 ## Validation
+
 ```text
 npm run prisma:validate
 npm run prisma:generate
@@ -114,6 +123,7 @@ git diff --check
 ```
 
 ## Stop conditions
+
 STOP rather than redesign if exact event evidence is unavailable, opening allowance cannot be proven, baseline rollover service is absent, lower-paid normally becomes current same-cycle, or a new locking strategy would be required.
 
 ## Completion protocol

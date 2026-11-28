@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-032-MCP-004
+  - ARCH-032-MCP-004
 enables:
-- ARCH-032-MCP-006
+  - ARCH-032-MCP-006
 created: 2026-10-10
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # Shopify authenticated connection and pinned execution
@@ -109,6 +109,6 @@ Source and test-file evidence from the 2026-10-15 12:08 workspace snapshot (`mod
 - `src/execution/shopify/execute.ts`
 - `tests/unit/connections/shopify/provider.test.ts`
 
-**Completion authority:** explicit developer decision (`completion_mode: developer`); retrospective source-based reconciliation. This records completion of the *original bounded task scope*, not certification of subsequently discovered system-level defects or unimplemented follow-up tasks. Existing `depends_on` and `enables` remain intact; downstream eligibility is determined from current task metadata.
+**Completion authority:** explicit developer decision (`completion_mode: developer`); retrospective source-based reconciliation. This records completion of the _original bounded task scope_, not certification of subsequently discovered system-level defects or unimplemented follow-up tasks. Existing `depends_on` and `enables` remain intact; downstream eligibility is determined from current task metadata.
 
 **Evidence boundary:** the files above were inspected for presence in the uploaded snapshot, not executed as a fresh CI or integration run. Historical branch/worktree provenance, original commits, test command results, pushes and any prior architect acceptance not visible in the snapshot remain unverified; no such evidence is fabricated. The earlier Completion Report and Architect Review remain historical records and are not retrospectively rewritten. Original `attempt`, `executor` and `claimed_at` values are preserved.

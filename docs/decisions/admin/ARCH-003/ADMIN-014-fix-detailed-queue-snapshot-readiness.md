@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Fix detailed queue snapshot cold-connection readiness
 
 ## Objective
@@ -409,6 +410,7 @@ safe diagnostic evidence. Do NOT return it to `review`.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
@@ -419,36 +421,36 @@ Ready for Review.
 ### Work Completed
 
 - Added bounded readiness to the raw ioredis reader abstraction, safely
-   handling already-ready, lazy, ended, and in-progress connections.
+  handling already-ready, lazy, ended, and in-progress connections.
 - Established all detailed BullMQ queue readers and the raw Redis reader before
-   the first detailed queue counts, worker counts, or event-stream commands.
+  the first detailed queue counts, worker counts, or event-stream commands.
 - Preserved the existing fail-fast settings: offline queue disabled, one retry,
-   2500ms connect timeout, and 2500ms command timeout.
+  2500ms connect timeout, and 2500ms command timeout.
 - Added a regression test proving cold BullMQ and raw Redis readiness precede
-   detailed queue commands and `XREVRANGE`.
+  detailed queue commands and `XREVRANGE`.
 - Updated the existing detailed snapshot fixture to implement the readiness
-   contract.
+  contract.
 - Removed `skipWaitingForReady: true` after live diagnosis showed it bypassed
-   BullMQ's supported startup handshake and caused `Stream isn't writeable and
-   enableOfflineQueue options is false` on every detailed queue reader.
+  BullMQ's supported startup handshake and caused `Stream isn't writeable and
+ enableOfflineQueue options is false` on every detailed queue reader.
 - Reset detailed queue reader caches after an unavailable snapshot so a later
-   healthy refresh recreates failed readers.
+  healthy refresh recreates failed readers.
 - Added a cache-recovery regression covering a failed refresh followed by a
-   healthy four-queue refresh.
+  healthy four-queue refresh.
 
 ### Attempt 2 Live Evidence
 
 - Raw Redis readiness: PASS; event-stream `XREVRANGE`: PASS for all four queues.
 - BullMQ `Queue.waitUntilReady`, `getJobCounts`, and `getWorkersCount`: FAIL
-   for all four queues with `Stream isn't writeable and enableOfflineQueue
-   options is false` while `skipWaitingForReady: true` was configured.
+  for all four queues with `Stream isn't writeable and enableOfflineQueue
+ options is false` while `skipWaitingForReady: true` was configured.
 - The live control probe with the same fail-fast settings and the default
-   BullMQ startup wait passed for all four queues; `checkout-events` reported
-   `waiting=0`, `active=0`, `delayed=0`, `failed=12`, `workers=1`.
+  BullMQ startup wait passed for all four queues; `checkout-events` reported
+  `waiting=0`, `active=0`, `delayed=0`, `failed=12`, `workers=1`.
 - The real `readQueueMonitorSnapshot()` returned four rows, including the
-   real `checkout-events` count.
+  real `checkout-events` count.
 - The local `GET /api/admin/queues` returned HTTP 200 with four rows and
-   `checkout-events.failed=12`.
+  `checkout-events.failed=12`.
 
 ### Validation Results
 
@@ -456,10 +458,10 @@ Ready for Review.
 - `npm test`: 59 passed.
 - `npm exec tsc -- --noEmit`: passed.
 - `npm run lint`: passed with two existing
-   `react-hooks/exhaustive-deps` warnings in
-   `src/components/admin/queue-monitor.tsx`.
+  `react-hooks/exhaustive-deps` warnings in
+  `src/components/admin/queue-monitor.tsx`.
 - `npm run build`: passed with the existing multiple-lockfile workspace-root
-   warning and optional BullMQ `@valkey/valkey-glide` warning.
+  warning and optional BullMQ `@valkey/valkey-glide` warning.
 - `git diff --check`: passed.
 
 ### Deviations
@@ -470,8 +472,8 @@ and sanitized error text. No temporary diagnostic file was added.
 ### Assumptions
 
 - ioredis connection lifecycle events are the supported readiness mechanism for
-   an in-progress lazy connection; the existing operation timeout bounds the
-   complete readiness batch.
+  an in-progress lazy connection; the existing operation timeout bounds the
+  complete readiness batch.
 
 ### Unresolved Issues
 

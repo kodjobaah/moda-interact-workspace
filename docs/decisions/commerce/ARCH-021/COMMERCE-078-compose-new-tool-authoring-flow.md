@@ -201,7 +201,6 @@ Changing Tool Definition, Request, Response or Result Template and running local
 
 Do not restore C076's six-tab order (`Request -> Response -> Test -> Agent contract -> Result template -> Review`). The new flow replaces it. Reuse the surviving C066/C067/C068 implementation primitives but follow this task's product order/ownership.
 
-
 ### R9 — Test state is part of the authoring session; C078 does not reimplement Test execution
 
 COMMERCE-080 and COMMERCE-082 already provide the canonical External HTTP and Shopify Admin non-durable live-Test backends respectively.
@@ -223,11 +222,7 @@ Add exactly one Test state to the new-Tool authoring session:
 
 ```ts
 type AuthoringTestStatus =
-  | "NOT_RUN"
-  | "RUNNING"
-  | "PASSED"
-  | "FAILED"
-  | "STALE";
+  "NOT_RUN" | "RUNNING" | "PASSED" | "FAILED" | "STALE";
 
 type AuthoringTestSnapshot = {
   toolDefinitionRevision: number;
@@ -257,17 +252,13 @@ Define:
 
 ```ts
 function currentAuthoringSnapshot(
-  session: ToolAuthoringSession
+  session: ToolAuthoringSession,
 ): AuthoringTestSnapshot {
   return {
-    toolDefinitionRevision:
-      session.validation.toolDefinition.revision,
-    requestRevision:
-      session.validation.request.revision,
-    responseRevision:
-      session.validation.response.revision,
-    resultTemplateRevision:
-      session.validation.resultTemplate.revision,
+    toolDefinitionRevision: session.validation.toolDefinition.revision,
+    requestRevision: session.validation.request.revision,
+    responseRevision: session.validation.response.revision,
+    resultTemplateRevision: session.validation.resultTemplate.revision,
   };
 }
 ```
@@ -275,9 +266,7 @@ function currentAuthoringSnapshot(
 Define current successful Test exactly as:
 
 ```ts
-function isCurrentTestPassed(
-  session: ToolAuthoringSession
-): boolean {
+function isCurrentTestPassed(session: ToolAuthoringSession): boolean {
   if (
     session.test.status !== "PASSED" ||
     session.test.testedSnapshot === null

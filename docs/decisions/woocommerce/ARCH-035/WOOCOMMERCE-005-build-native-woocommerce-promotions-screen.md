@@ -45,6 +45,7 @@ Implement the Shopify-style Promotions cards, current selection and history in t
 Shopify app/routes/app/promotions/route.tsx offers promotional recovery-credit selection (not coupon or discount issuance), with selected/locked state, available offers, pagination and history. Woo promotions submenu is a placeholder.
 
 Source references:
+
 - Shopify: app/routes/app/promotions/route.tsx.
 - Woo: includes/Admin/NativeNavigation.php.
 
@@ -215,7 +216,6 @@ Accepted — the developer supplied “Architect Review Accepted” with the exp
 ### Review Notes
 
 Accepted for this UI-only task. The source-aligned recovery-credit UI is implemented; missing production read/write capabilities are explicitly unavailable and were not fabricated. The combined native navigation and translations preserve WOO-001 Support and Promotions. The developer confirmed acceptance and explicitly completed Attempt 1.
-
 
 **Architect reconciliation (2026-10-16, historical):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Promotions was then a planned/unavailable destination. Status was promoted from Pending to Ready after dependency reconciliation. No source code was changed by that promotion. The task was subsequently implemented, reviewed and completed in Attempt 1 as recorded above.
 

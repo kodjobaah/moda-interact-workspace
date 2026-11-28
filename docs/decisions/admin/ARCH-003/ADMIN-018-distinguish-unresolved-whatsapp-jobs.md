@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
+
 # Distinguish unresolved WhatsApp jobs from orphan tenant metadata
 
 ## Architecture

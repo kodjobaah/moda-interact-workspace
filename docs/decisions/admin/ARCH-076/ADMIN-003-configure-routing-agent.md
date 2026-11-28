@@ -197,7 +197,6 @@ Conforms within Admin ownership. Routing remains separate from allowance renewal
 
 Before live routing activation, complete the owning Commerce Studio guard against routing-tagged revisions being selected as normal Commerce prompts. Runtime per-request snapshots and use-time validation remain BACKGROUND-004. SYSTEM-TEST remains user-deferred.
 
-
 ### 15 November definition amendment
 
 This is a new independently scoped definition, not implementation evidence. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.

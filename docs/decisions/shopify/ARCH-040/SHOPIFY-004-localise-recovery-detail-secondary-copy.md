@@ -171,7 +171,7 @@ The separate ARCH-043 Shopify configuration unseal error should use a bounded, t
 
 ### Final developer implementation and validation evidence (21 October 2026)
 
-The following is developer-supplied **final review handoff evidence** for `ARCH-040-SHOPIFY-004`. It supersedes the earlier recorded typecheck failure as the *latest observed validation result*, without erasing that failure's history or claiming that the separate SHOPIFY-005 task was accepted or merged.
+The following is developer-supplied **final review handoff evidence** for `ARCH-040-SHOPIFY-004`. It supersedes the earlier recorded typecheck failure as the _latest observed validation result_, without erasing that failure's history or claiming that the separate SHOPIFY-005 task was accepted or merged.
 
 - **Implementation repository/worktree:** `moda-interact` at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-SHOPIFY-004`, on `task/ARCH-040-SHOPIFY-004`.
 - **Final implementation HEAD:** `a9040befe995d22a4436413f7794fc100b78ddcb` (developer-supplied `git rev-parse HEAD`).

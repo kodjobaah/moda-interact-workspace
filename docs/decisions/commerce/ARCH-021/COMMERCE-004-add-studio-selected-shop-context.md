@@ -184,6 +184,7 @@ Ready for Review
 - Added direct-entry/refresh route coverage and an outside-bounded-list resolver regression.
 
 Acceptance mapping:
+
 - real selection and refresh/navigation state: `components/studio-selected-shop-context.tsx`, `components/studio-composer-context.tsx`, `tests/selected-shop-navigation.test.tsx`
 - primary/detail/Connections/Preview preservation: `components/studio-composer-context.tsx`, route entry points, `tests/selected-shop-navigation.test.tsx`
 - no implicit selection and invalid-id handling: `src/studio/selected-shop.ts`, `tests/selected-shop-context.test.ts`
@@ -194,6 +195,7 @@ Acceptance mapping:
 - Attempt 2 review correction 2: `src/studio/selected-shop.ts`, `tests/selected-shop-context.test.ts`; focused resolver test passed and confirmed exact selected-shop representation and durable-id deduplication.
 
 Prepared execution evidence:
+
 - `prepared_execution=true`, `dependency_gate=passed`, `execution_state=claimed`, `attempt=2`, `executor=copilot` at handoff.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-004`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-004`.

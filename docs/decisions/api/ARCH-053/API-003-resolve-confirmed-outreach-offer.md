@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-SHARED-012
-- ARCH-053-API-002
-- ARCH-053-SHARED-002
-- ARCH-053-BACKGROUND-004
+  - ARCH-052-SHARED-012
+  - ARCH-053-API-002
+  - ARCH-053-SHARED-002
+  - ARCH-053-BACKGROUND-004
 enables:
-- ARCH-053-WOOCOMMERCE-007
+  - ARCH-053-WOOCOMMERCE-007
 created: 2026-10-30
 updated: 2026-11-01
 ---
@@ -33,7 +33,7 @@ updated: 2026-11-01
 
 ## Objective
 
-Extend the existing **installation-authenticated, read-only** WooCommerce recovery-link resolver to return a verified, *confirmed outbound* checkout offer in a canonical v1 response. v1 is not implemented yet, so return the full offer-aware v1 response from its first implementation; do not introduce a compatibility version.
+Extend the existing **installation-authenticated, read-only** WooCommerce recovery-link resolver to return a verified, _confirmed outbound_ checkout offer in a canonical v1 response. v1 is not implemented yet, so return the full offer-aware v1 response from its first implementation; do not introduce a compatibility version.
 
 ## Context
 
@@ -45,7 +45,7 @@ Modify only these `moda-interact-api` paths, and related focused tests within `t
 
 - **Create** `src/woocommerce/recovery-restore/offer-receipt.ts` — parse only a confirmed initial automated template receipt; return a typed internal result with no untrusted interpretations.
 - **Create** `src/woocommerce/recovery-restore/offer-resolver.ts` — read existing Prisma attempt/message relations scoped to the already authorized shop and recovery and project into `WooRestoreOutreachOfferV1`.
-- **Update** `src/woocommerce/recovery-restore/contract.ts` — import v1 schemas from the *published* `@modainteract/moda-interact-shared/woocommerce` export. Use the single published v1 resolver type.
+- **Update** `src/woocommerce/recovery-restore/contract.ts` — import v1 schemas from the _published_ `@modainteract/moda-interact-shared/woocommerce` export. Use the single published v1 resolver type.
 - **Update** `src/woocommerce/recovery-restore/service.ts` — reuse all API-002 eligibility checks for v1; after authorization, load offer evidence and recheck eligible recovery identity/generation before returning the final v1 response.
 - **Update** `src/woocommerce/recovery-restore/routes.ts` — same POST route and installation authenticator; one strict v1 body parser and existing 4 KiB request cap, no version switch or second endpoint.
 - **Update** `src/composition/woocommerce.ts` only if required for dependency injection of offer reader; no new route prefix/Gateway rule.
@@ -60,7 +60,6 @@ No discount discovery, AI/CommerceAgent call, Woo provider API call, coupon crea
 ### Multi-discount v1 offer resolution — normative 30 October 2026
 
 For a confirmed `promotionTarget:CHECKOUT` initial receipt with 2..3 source-grounded entries, import the published `InitialOutreachCheckoutOfferSetSchema` and `WooRestoreOutreachOfferV1Schema`, verify whole ordered group (not just its first code), match every trusted provider discount ID and emit `outreachOffer:{kind:"CHECKOUT_OFFERS",offers:[...]}` inside the **same** `woo.restore.resolve.v1` success payload. Preserve existing singleton branches. Malformed/incomplete/duplicate/unsupported group cannot be projected as a verified subset from the API: emit `NONE/UNVERIFIABLE` while keeping the originally restored basket eligible. Database/read outage remains 503. Never extract codes from message prose, coupon URL, current merchant selection or unsigned model text. Keep API read-only and no extra v2 route.
-
 
 1. **Authenticate first:** `WooInstallationAuthenticator` supplies `shopId`. Do not accept shopId, checkoutKey, providerDiscountId, coupon code, message ID or recipient from request body. The plugin sends the same recoveryId/token pair defined in API-002. Exactly one request version `woo.restore.resolve.v1` is allowed; return its mandatory `outreachOffer` field, derived only from confirmed evidence. Reject `woo.restore.resolve.v2` and all unknown versions with 400; no compatibility adapter.
 2. **Authorize recovery exactly as API-002:** installed active merchant, latest generation, eligible status, not terminal/completed/order-suppressed, 7-day freshness, stored HTTPS host/path and 32-byte token. Neither `outreachOffer` nor message evidence may override a denial. Uniform `404 {"error":"restore_unavailable"}` for authorization denial; `Cache-Control: no-store`, never reflect supplied token.
@@ -77,7 +76,6 @@ For a confirmed `promotionTarget:CHECKOUT` initial receipt with 2..3 source-grou
 - Node services use `@modainteract/moda-interact-shared/logging`. Log bounded identifiers and event codes, not raw URLs, bearer tokens, coupon codes, full customer data, original message text or unbounded provider bodies. Log and propagate unexpected dependency errors to the owner; never silently swallow them. PHP uses existing plugin-safe diagnostics, not a new generic logger.
 - Keep checkout restoration read-only in the hosted API and cart-local in WooCommerce. Never have PHP query Moda PostgreSQL/Redis or an API handler change a visitor cart. Never create a new discount, extend an expired coupon, use ARCH-052 discovery code, bypass merchant consent/STOP/order/final provider gates or impose a cross-generation outreach cap.
 - When the specified receipt/provider contract is absent, conflicting or untestable, **stop and return the gap to moda_architect**; do not invent an approximation, copy a Shared schema locally or broaden the task to another repo. System-test tasks are terminal and may not gate implementation tasks.
-
 
 ## Work Items
 
@@ -116,9 +114,13 @@ The token is illustrative and never loggable. The v1 request is the **only** acc
     "kind": "supported",
     "appliedCouponCodes": ["SAVE10"],
     "lines": [
-      {"productId": "101", "quantity": 2},
-      {"productId": "202", "variationId": "207", "quantity": 1,
-        "attributes": {"attribute_pa_color": "navy"}}
+      { "productId": "101", "quantity": 2 },
+      {
+        "productId": "202",
+        "variationId": "207",
+        "quantity": 1,
+        "attributes": { "attribute_pa_color": "navy" }
+      }
     ]
   },
   "outreachOffer": {
@@ -132,8 +134,7 @@ The token is illustrative and never loggable. The v1 request is the **only** acc
 **Internal implementation interface (keep code in API repo; no parallel Shared domain rules):**
 
 ```typescript
-import type { WooRestoreOutreachOfferV1 } from
-  '@modainteract/moda-interact-shared/woocommerce';
+import type { WooRestoreOutreachOfferV1 } from "@modainteract/moda-interact-shared/woocommerce";
 
 interface ConfirmedWooSentOfferReader {
   read(input: {
@@ -144,20 +145,20 @@ interface ConfirmedWooSentOfferReader {
 }
 ```
 
-The reader is called **only after** successful API-002 authorization. Source query must be grounded in `RecoveryOutreachAttempt` and `ConversationMessage`, not synthesized from the abandoned basket's `appliedCouponCodes`, `offerSnapshot` or current merchant setting. Strict parser for receipt JSON lives in this API repo because it is a *local durable database/Meta evidence format*, distinct from the Shared wire response. No new HTTP exposed route.
+The reader is called **only after** successful API-002 authorization. Source query must be grounded in `RecoveryOutreachAttempt` and `ConversationMessage`, not synthesized from the abandoned basket's `appliedCouponCodes`, `offerSnapshot` or current merchant setting. Strict parser for receipt JSON lives in this API repo because it is a _local durable database/Meta evidence format_, distinct from the Shared wire response. No new HTTP exposed route.
 
 **Denial/error table:**
 
-| Condition | V1 outcome |
-|---|---|
-| Wrong shop / wrong token / superseded generation / order terminal / unsupported basket | `404 restore_unavailable`, no basket or offer |
-| Valid recovery, no confirmed initial message | 200 with `outreachOffer: {kind:'NONE',reason:'NO_CONFIRMED_OFFER'}` |
-| Confirmed checkout CODE_OFFER, explicit target | 200 `CHECKOUT_CODE` |
-| Confirmed checkout AUTOMATIC_OFFER, explicit target | 200 `CHECKOUT_AUTOMATIC` |
-| Confirmed alternative-product promotion | 200 `ALTERNATIVE_PRODUCT`; no code |
-| Confirmed receipt corrupt / missing explicit target | 200 `{kind:'NONE',reason:'UNVERIFIABLE'}` + bounded warning |
-| DB unavailable, pool timeout, unexpected read error | `503` (not 200 NONE) |
-| Invalid body/version/extra request fields | `400` |
+| Condition                                                                              | V1 outcome                                                          |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Wrong shop / wrong token / superseded generation / order terminal / unsupported basket | `404 restore_unavailable`, no basket or offer                       |
+| Valid recovery, no confirmed initial message                                           | 200 with `outreachOffer: {kind:'NONE',reason:'NO_CONFIRMED_OFFER'}` |
+| Confirmed checkout CODE_OFFER, explicit target                                         | 200 `CHECKOUT_CODE`                                                 |
+| Confirmed checkout AUTOMATIC_OFFER, explicit target                                    | 200 `CHECKOUT_AUTOMATIC`                                            |
+| Confirmed alternative-product promotion                                                | 200 `ALTERNATIVE_PRODUCT`; no code                                  |
+| Confirmed receipt corrupt / missing explicit target                                    | 200 `{kind:'NONE',reason:'UNVERIFIABLE'}` + bounded warning         |
+| DB unavailable, pool timeout, unexpected read error                                    | `503` (not 200 NONE)                                                |
+| Invalid body/version/extra request fields                                              | `400`                                                               |
 
 ## Dependencies
 

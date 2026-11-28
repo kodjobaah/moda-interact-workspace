@@ -264,15 +264,15 @@ Admin MUST import the canonical model contracts from:
 At minimum consume:
 
 ```ts
-CommerceModelAvailabilitySchema
-CommerceModelAvailability
-CommerceModelCatalogueEntrySchema
-CommerceModelCatalogueEntry
-CommerceModelProviderSchema
-CommerceProviderModelIdSchema
-CommerceModelConfigurationSchema
-COMMERCE_MODEL_CONFIGURATION_SCHEMA_VERSION
-createOpenRouterModelId
+CommerceModelAvailabilitySchema;
+CommerceModelAvailability;
+CommerceModelCatalogueEntrySchema;
+CommerceModelCatalogueEntry;
+CommerceModelProviderSchema;
+CommerceProviderModelIdSchema;
+CommerceModelConfigurationSchema;
+COMMERCE_MODEL_CONFIGURATION_SCHEMA_VERSION;
+createOpenRouterModelId;
 ```
 
 Do not recreate those schemas locally.
@@ -476,7 +476,7 @@ Validation is exact:
 9. validate the derived OpenRouter ID using:
 
 ```ts
-createOpenRouterModelId({ provider, providerModelId })
+createOpenRouterModelId({ provider, providerModelId });
 ```
 
 10. never accept these as separate form fields:
@@ -717,10 +717,7 @@ or:
 DISABLE_MODEL_CATALOGUE_ENTRY
 ```
 
-with both `modelCatalogueEntryId` and current `modelAvailabilityId` populated;
-9. do not block disable because `selectionCount > 0`;
-10. do not clear Agent Configuration;
-11. revalidate Catalogue and Availability routes.
+with both `modelCatalogueEntryId` and current `modelAvailabilityId` populated; 9. do not block disable because `selectionCount > 0`; 10. do not clear Agent Configuration; 11. revalidate Catalogue and Availability routes.
 
 There is no DELETE action.
 
@@ -762,7 +759,7 @@ Create default text:
 Edit text MUST be rendered from the stored object using:
 
 ```ts
-JSON.stringify(configuration, null, 2)
+JSON.stringify(configuration, null, 2);
 ```
 
 The UI MAY provide descriptive helper text and an example, but it MUST NOT:

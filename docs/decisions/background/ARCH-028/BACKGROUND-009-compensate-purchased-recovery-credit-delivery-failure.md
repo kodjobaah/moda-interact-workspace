@@ -48,7 +48,7 @@ Extend the accepted generic ARCH-028 compensation orchestrator to correct a COMM
 
 Generic compensation is intentionally not gated by ARCH-027-BACKGROUND-005. Only committed purchased-credit cases need final provider-refund semantics. RESERVED purchased sources were already releasable by BACKGROUND-004. The purchased negative correction follows the same provider-attribution invariant as BACKGROUND-004: copy the original committed `UsageEvent.shopId` and `provider` explicitly; never rely on the Prisma default `SHOPIFY`, and never make a correction Shopify-reportable.
 
-The current trigger remains correlated `FAILED/131026` under the approved ARCH-028 policy. BACKGROUND-013 must call this purchased-source owner for any eventual *separately approved* general delivery-failure correction, not create a new refund/credit ledger. Its uncertain-send commitment/repair is a different lifecycle operation.
+The current trigger remains correlated `FAILED/131026` under the approved ARCH-028 policy. BACKGROUND-013 must call this purchased-source owner for any eventual _separately approved_ general delivery-failure correction, not create a new refund/credit ledger. Its uncertain-send commitment/repair is a different lifecycle operation.
 
 ## Scope
 
@@ -96,7 +96,7 @@ For the exact purchased lot linked by the original reservation:
 - [x] Test exact recovery-template source lineage (including HUMAN sequence-2 where already durably linked) and reject unrelated HUMAN_TEXT/cross-Shop or ambiguous provider evidence.
 - [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 - [x] Align the observability startup test with the architecture-approved exact Shared dependency `2.5.0`, without changing `package.json` or installed dependency versions.
-- [x] Isolate the checkout-refresh *history ordering* fixture from platform moderation configuration using explicitly approved synthetic history; retain production moderation fail-closed policy.
+- [x] Isolate the checkout-refresh _history ordering_ fixture from platform moderation configuration using explicitly approved synthetic history; retain production moderation fail-closed policy.
 - [x] Replace B011-03/B011-05 obsolete worker source-string checks with behaviour tests exercising raw admission before routing/persistence and denial before all downstream operations.
 - [x] Update recovery-agent-context expectations to preserve `summary: null` for persisted summaries without content-specific moderation provenance.
 - [x] Re-run the five affected suites and full Background suite; document exact validation, build and any remaining failures in this task's Completion Report.

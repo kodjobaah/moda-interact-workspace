@@ -179,11 +179,12 @@ In `src/commerce/preview/types.ts`, replace the conversation-facing `PreviewSele
 
 ```ts
 export const PreviewSelectionSchema = z.strictObject({
-  kind: z.literal('FEATURES'),
-  featureIds: z.array(SavedIdSchema)
+  kind: z.literal("FEATURES"),
+  featureIds: z
+    .array(SavedIdSchema)
     .min(1)
     .max(32)
-    .refine((ids) => new Set(ids).size === ids.length, 'duplicate Feature id'),
+    .refine((ids) => new Set(ids).size === ids.length, "duplicate Feature id"),
 });
 
 export type PreviewSelection = z.infer<typeof PreviewSelectionSchema>;
@@ -210,7 +211,7 @@ In `src/commerce/integration/backend.ts`, add exactly these exported domain shap
 
 ```ts
 export type CommerceFeatureCompositionResult = {
-  kind: 'FEATURES';
+  kind: "FEATURES";
   featureIds: string[];
   featureBehaviours: Array<{
     featureId: string;
@@ -257,8 +258,8 @@ featureComposition?: CommerceFeatureComposition;
 `createCommerceBackend(...)` MUST wire:
 
 ```ts
-featureComposition:
-  dependencies.featureComposition ?? createPrismaFeatureComposition(dependencies.prisma)
+featureComposition: dependencies.featureComposition ??
+  createPrismaFeatureComposition(dependencies.prisma);
 ```
 
 Do not overload `CommerceSavedSelection` with Feature composition. `saved` remains the retained saved Release/Draft read boundary for internal consumers; `featureComposition` is the new Feature-composed conversation boundary.
@@ -421,7 +422,7 @@ If the same Tool identity somehow resolves to conflicting revision/definition da
 For each selected Feature, set:
 
 ```ts
-behaviourPrompt = feature.commerceFeatureConfiguration?.behaviourPrompt ?? '';
+behaviourPrompt = feature.commerceFeatureConfiguration?.behaviourPrompt ?? "";
 ```
 
 Return exactly one `featureBehaviours` entry per selected Feature, in exact `featureIds` input order.
@@ -437,7 +438,7 @@ Because R6 rejects zero-Capability Features, every `featureBehaviours.featureId`
 For `FEATURES`, use exactly:
 
 ```ts
-EMPTY_RESPONSE_CONTRACT
+EMPTY_RESPONSE_CONTRACT;
 ```
 
 and calculate its canonical hash with the existing Commerce response-contract hash helper.
@@ -459,7 +460,7 @@ Release pointer
 backend.featureComposition.resolve({
   principal,
   featureIds: selection.featureIds,
-})
+});
 ```
 
 For the required `CommerceManifest.releaseId`, create a synthetic non-durable ID exactly as:
@@ -645,7 +646,7 @@ Produces the conversation composition input:
 
 ```ts
 type PreviewSelection = {
-  kind: 'FEATURES';
+  kind: "FEATURES";
   featureIds: string[]; // 1..32, unique, order significant
 };
 ```
@@ -654,7 +655,7 @@ Produces the backend result:
 
 ```ts
 type CommerceFeatureCompositionResult = {
-  kind: 'FEATURES';
+  kind: "FEATURES";
   featureIds: string[];
   featureBehaviours: Array<{
     featureId: string;

@@ -210,7 +210,6 @@ closeReason = MIGRATION_RECONCILED
 
 If a Subscription has zero OPEN periods, do not fabricate one.
 
-
 ## Free-plan provider BillingPeriod invariant
 
 A mapped active Free plan may have a Shopify monthly billing cycle even though its Moda recovery entitlement is lifetime. This distinction is mandatory when the Free Shopify App Pricing plan carries the recovery-credit-pack usage meter.
@@ -389,15 +388,18 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `prisma/schema.prisma`
 - `prisma/migrations/20260911200000_add_billing_period_lifecycle_history/migration.sql`
 - `scripts/validate-billing-lifecycle-schema.mjs`
 - `docs/generated/prisma-erd.puml`
 
 ### Work Completed
+
 - Attempt 2 correction checklist: Correction 1 implemented in `prisma/migrations/20260911200000_add_billing_period_lifecycle_history/migration.sql` with an explicit `BEGIN`/`COMMIT` envelope; `scripts/validate-billing-lifecycle-schema.mjs` asserts both transaction boundaries.
 - Attempt 2 correction checklist: Correction 2 implemented in the same migration by requiring the pointer-selected BillingPeriod to be owned and `OPEN` before closing any other OPEN row; the validator asserts the pointer, ownership, and OPEN survivor predicates.
 - Added `BillingPeriodCloseReason` and nullable `UsageReservationReleaseReason` vocabulary.
@@ -409,6 +411,7 @@ Ready for Review.
 - Regenerated the PlantUML ERD and extended the billing lifecycle validator with the ownership, migration-safety, snapshot, close/release, partial-index, and paid-counter assertions.
 
 ### Validation Results
+
 - `npm ci` — passed in the isolated implementation worktree; npm reported three existing high-severity audit findings.
 - `npm run format` — passed.
 - `npm run validate` — passed.
@@ -425,34 +428,34 @@ Ready for Review.
 Task branch: `task/ARCH-010-DATABASE-004`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-004`
-  parent branch: `task/ARCH-010-DATABASE-004`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-004`
-  implementation branch: `task/ARCH-010-DATABASE-004`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-004`
+parent branch: `task/ARCH-010-DATABASE-004`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-004`
+implementation branch: `task/ARCH-010-DATABASE-004`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: already-current
-  parent origin/main incorporated: merge commit `aa331a9`
-  implementation remote task branch fast-forwarded: already-current
-  implementation origin/main incorporated: merge commit `3c90780`
+parent remote task branch fast-forwarded: already-current
+parent origin/main incorporated: merge commit `aa331a9`
+implementation remote task branch fast-forwarded: already-current
+implementation origin/main incorporated: merge commit `3c90780`
 
 Implementation repository:
-  repository: `moda-interact-database`
-  commit: `835e777`
-  remote branch: `origin/task/ARCH-010-DATABASE-004`
-  pushed: yes
+repository: `moda-interact-database`
+commit: `835e777`
+remote branch: `origin/task/ARCH-010-DATABASE-004`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/database/ARCH-010/DATABASE-004-billing-period-lifecycle-history.md`
-  claim commit: `763b1c9`
-  review-report commit: `202bbdf`
-  remote branch: `origin/task/ARCH-010-DATABASE-004`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/database/ARCH-010/DATABASE-004-billing-period-lifecycle-history.md`
+claim commit: `763b1c9`
+review-report commit: `202bbdf`
+remote branch: `origin/task/ARCH-010-DATABASE-004`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -767,4 +770,3 @@ Dependency reconciliation:
 
 - the other DATABASE-004 dependants remain pending because each still has one or
   more additional unfinished prerequisites.
-

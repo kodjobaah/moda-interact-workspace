@@ -546,8 +546,11 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
+
 Ready for Review.
+
 ### Files Changed
+
 Attempt 2 implementation changes in `moda-interact`:
 
 - `app/services/merchant-knowledge/r2-client.server.ts`
@@ -557,11 +560,15 @@ Attempt 2 implementation changes in `moda-interact`:
 - `tests/integration/merchant-knowledge-upload.integration.test.ts`
 
 Earlier task implementation on the same task branch remains unchanged, including the R2 configuration and upload lifecycle services/routes, Merchant Knowledge settings UI/locales, related focused tests, and AWS SDK dependency files. Parent workspace change: this task file only. No Gateway code/configuration, database schema/source changes, task index, architecture document, or submodule gitlink changes were made. Architect Review is preserved verbatim.
+
 ### Work Completed
+
 - A1-R1: Added `IfNoneMatch: "*"` to the signed `PutObjectCommand`; the R2 client requires the literal conditional value, and upload intent returns exactly `{ "Content-Type": validatedContentType, "If-None-Match": "*" }`. The browser already forwarded generic `requiredHeaders` unchanged; its mocked PUT assertion now proves both values arrive unchanged. Presigner coverage inspects `X-Amz-SignedHeaders` and verifies lowercase `if-none-match`. Existing asset creation, finalization, replacement, and Reprocess lifecycle remains unchanged.
 - Deployed CORS/preflight and live replay validation remain owned by amended GATEWAY-001/SYSTEM-TEST-002; no Gateway implementation was added here.
 - A1-R3: Made the PostgreSQL integration fixture create the opt-in Feature row when absent from the accepted migration state, matching the neighboring Merchant Knowledge lifecycle fixture; the existing purpose/format catalogue remains migration-backed. The prior ACTIVE revision fixture now satisfies the database content metadata constraint.
+
 ### Validation Results
+
 - Focused upload service/presigner and browser component tests: 14 passed across `tests/unit/merchant-knowledge-upload.test.ts` and `tests/unit/merchant-knowledge-upload-form.test.tsx`.
 - Disposable PostgreSQL transaction integration: 4 passed, 0 skipped, using `MODA_DISPOSABLE_INTEGRATION=1` and the per-command Colima socket settings. Testcontainers started PostgreSQL, deployed the accepted migrations, and executed intent/source-slot, cross-shop rejection, create/replace/reprocess immutability, and OFF/queue-failure transaction cases.
 - `npm run typecheck`: passed.
@@ -570,19 +577,28 @@ Earlier task implementation on the same task branch remains unchanged, including
 - `npm run build`: passed for client and SSR bundles; existing dependency annotation and large-chunk warnings remain.
 - `git diff --check`: passed.
 - Full `npm run lint`: run; reports the same 17 unrelated repository lint errors documented in Attempt 1. No changed file is among those errors; changed-file ESLint is clean.
+
 ### Deviations
+
 - None for implementation scope. Required `If-None-Match: *` was implemented as directed by A1-R1. Audit findings from the earlier dependency installation remain outside this task's scope.
+
 ### Assumptions
+
 - `If-None-Match: *` is signed by the AWS SDK S3 presigner as the lowercase `if-none-match` request header. Attempt 2 presigner coverage confirms that header is listed in `X-Amz-SignedHeaders`; browser component coverage confirms the required header is forwarded unchanged.
 - Gateway CORS allowance and deployed replay rejection are validated by GATEWAY-001/SYSTEM-TEST-002, not this task.
+
 ### Unresolved Issues
+
 - None blocking this review submission. Full repository lint retains 17 unrelated baseline errors; Gateway deployment/replay evidence remains assigned to its owning tasks.
+
 ### Architectural Concerns
+
 - None newly identified. A1-R1, A1-R2, and A1-R3 are implemented with the evidence above.
 - Attempt 2 launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-005`, branch `task/ARCH-023-SHOPIFY-005`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-005`, branch `task/ARCH-023-SHOPIFY-005`. At the start boundary, parent and implementation task-remote fast-forwards were both not needed; parent and implementation already contained current `origin/main`. Launcher-synchronized parent HEAD was `ef949a7a797bec37ad6f602bf52b27585be63b82`, followed by pushed Attempt 2 claim commit `79bbde8554d7ae5c260b86664810276b3b29caa0`; implementation prepared HEAD was `7c97d90cc9ae0eeacd4aa6121ef7801342437d7f`. Recursive submodule sync/update passed; `database` was clean at `a5e633a6ed1631e64510b936b2b19e8e50c7a5de`. Dependency ARCH-023-SHOPIFY-004 was complete. Claim: executor `copilot`, Attempt 2, claimed at `2026-10-01T09:31:32Z`.
 - Submitted implementation HEAD: `244f3f60035c3651168571869234ab23654854d3`, pushed to `origin/task/ARCH-023-SHOPIFY-005`. The parent Completion Report is pushed on the same task branch; the report commit is the pushed parent branch HEAD at submission, following claim HEAD `79bbde8554d7ae5c260b86664810276b3b29caa0`. Its exact commit SHA is included in the execution handoff.
 
 ### Attempt 3 Revalidation
+
 - No implementation source or tests were changed in Attempt 3. The implementation branch remains at submitted HEAD `244f3f60035c3651168571869234ab23654854d3`, pushed to `origin/task/ARCH-023-SHOPIFY-005`.
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-005`, `task/ARCH-023-SHOPIFY-005`. Launcher-synchronized parent HEAD: `e40a137d93fc15859348459559a9a7cdea856feb`; pushed Attempt 3 claim commit: `c08e16c0bc5e40d090a290e4b3d23f013d76e708`.
@@ -650,6 +666,7 @@ Accepted. The implementation was already architecture-conformant at Attempt 2; A
 `ARCH-023-SHOPIFY-005` is now Complete / Accepted Attempt 3. Its enabled `ARCH-023-GATEWAY-001` does **not** become Ready yet because `ARCH-023-BACKGROUND-005` remains Pending on BACKGROUND-004; `ARCH-023-COMMERCE-002` is already Complete. No downstream task is started or claimed by this acceptance.
 
 ### Review Status
+
 Changes Requested — Attempt 2
 
 ### Review Notes
@@ -687,6 +704,7 @@ Return the same task to Ready at Attempt 2 with claim cleared. Reclaim normally 
 ---
 
 ### Review Status
+
 Changes Requested — Attempt 1
 
 ### Review Notes

@@ -226,20 +226,20 @@ Do not replace them with differently named static model/provider/API-key variabl
 
 The accepted Blueprint after this task MUST satisfy this matrix:
 
-| Variable / group | Admin | Commerce | Messaging worker | Other services/workers |
-|---|---:|---:|---:|---:|
-| common `DEPLOYMENT_ENVIRONMENT_NAME` | yes | yes | yes | existing topology unchanged |
-| `commerce-credential-keyring` group | yes | yes | yes | **no** |
-| `COMMERCE_CONNECTION_KEYS_JSON` | via group | via group | via group | **absent** |
-| `commerce-credential-writer-config` group | yes | yes | **no** | **no** |
-| `COMMERCE_CONNECTION_ACTIVE_KEY_ID` | via group | via group | **absent** | **absent** |
-| `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` | **absent** | service-level `sync:false` | **absent** | **absent** |
-| `COMMERCE_PREVIEW_ENABLED` | absent | via Commerce config group | absent | absent |
-| `COMMERCE_PREVIEW_PROVIDER` | absent | absent | absent | absent |
-| `COMMERCE_PREVIEW_MODEL` | absent | absent | absent | absent |
-| `COMMERCE_PREVIEW_API_KEY` | absent | absent | absent | absent |
-| `OPENROUTER_API_KEY` / equivalent | absent | absent | absent | absent |
-| `GROQ_API_KEY` | existing Admin state unchanged | existing Commerce state unchanged | retain existing AI/transcription wiring | existing topology unchanged |
+| Variable / group                          |                          Admin |                          Commerce |                        Messaging worker |      Other services/workers |
+| ----------------------------------------- | -----------------------------: | --------------------------------: | --------------------------------------: | --------------------------: |
+| common `DEPLOYMENT_ENVIRONMENT_NAME`      |                            yes |                               yes |                                     yes | existing topology unchanged |
+| `commerce-credential-keyring` group       |                            yes |                               yes |                                     yes |                      **no** |
+| `COMMERCE_CONNECTION_KEYS_JSON`           |                      via group |                         via group |                               via group |                  **absent** |
+| `commerce-credential-writer-config` group |                            yes |                               yes |                                  **no** |                      **no** |
+| `COMMERCE_CONNECTION_ACTIVE_KEY_ID`       |                      via group |                         via group |                              **absent** |                  **absent** |
+| `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`    |                     **absent** |        service-level `sync:false` |                              **absent** |                  **absent** |
+| `COMMERCE_PREVIEW_ENABLED`                |                         absent |         via Commerce config group |                                  absent |                      absent |
+| `COMMERCE_PREVIEW_PROVIDER`               |                         absent |                            absent |                                  absent |                      absent |
+| `COMMERCE_PREVIEW_MODEL`                  |                         absent |                            absent |                                  absent |                      absent |
+| `COMMERCE_PREVIEW_API_KEY`                |                         absent |                            absent |                                  absent |                      absent |
+| `OPENROUTER_API_KEY` / equivalent         |                         absent |                            absent |                                  absent |                      absent |
+| `GROQ_API_KEY`                            | existing Admin state unchanged | existing Commerce state unchanged | retain existing AI/transcription wiring | existing topology unchanged |
 
 The matrix is a least-privilege contract, not documentation commentary.
 

@@ -308,9 +308,11 @@ Do not invent a balancing adjustment.
 ## Completion Report
 
 ### Status
+
 Implemented; awaiting Architect Review
 
 ### Files Changed
+
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20260911130000_add_purchased_credit_lot_accounting/migration.sql`
 - `moda-interact-database/scripts/validate-purchased-credit-lot-schema.mjs`
@@ -318,6 +320,7 @@ Implemented; awaiting Architect Review
 - `moda-interact-database/package.json`
 
 ### Work Completed
+
 - Added durable purchased-credit lot counters and versioning without persisting `availableQuantity`.
 - Added exact purchased reservation lot ownership, one-to-many purchase refunds, explicit partial-refund quantities, provider action evidence, and required lookup/FIFO indexes.
 - Added a deterministic additive migration ordered by purchase `activatedAt ASC NULLS LAST, createdAt ASC, id ASC` and reservation `createdAt ASC, id ASC`.
@@ -326,6 +329,7 @@ Implemented; awaiting Architect Review
 - Updated the billing lifecycle regression for the new multi-refund contract.
 
 ### Validation Results
+
 - `npm ci` completed; installation reported existing audit warnings for three high-severity transitive vulnerabilities.
 - `npm run format`, `npm run prisma:generate`, and `npm run prisma:validate` passed.
 - `npm run test:purchased-credit-lots`, `npm run test:recovery-credit-packs`, and `npm run test:billing-lifecycle` passed.
@@ -335,16 +339,20 @@ Implemented; awaiting Architect Review
 - Implementation commit: `0329323` (`feat(database): add purchased credit lot accounting`).
 
 ### Deviations
+
 - The migration was not executed against the configured remote Render PostgreSQL database. Validation is schema-, migration-text-, fixture-, and generated-client-based to avoid mutating shared data.
 
 ### Assumptions
+
 - Existing purchased-credit reservations use positive whole-credit quantities and can be allocated without splitting; the migration stops if that is false.
 - Existing aggregate counters must already reconcile exactly; the migration does not invent balancing adjustments.
 
 ### Unresolved Issues
+
 - Live database legacy-row contents and migration execution remain unverified because no migration was applied.
 
 ### Architectural Concerns
+
 - Runtime reservation/refund orchestration must populate and maintain the new lot fields in dependent background, Admin, and Shopify tasks; this task intentionally implements schema, migration, and validation only.
 
 ### Architect Review
@@ -702,7 +710,7 @@ then fail if that first lot has less than reservation.quantity
 The validator currently does:
 
 ```js
-remaining.find((candidate) => candidate.remaining >= reservation.quantity)
+remaining.find((candidate) => candidate.remaining >= reservation.quantity);
 ```
 
 which skips an undersized earlier FIFO lot and allocates from a later lot. That validates behaviour the SQL intentionally rejects.
@@ -983,9 +991,9 @@ Because `completion_mode: automatic`, the task is complete. `executor` and `clai
 The submitted handoff identifies parent review-report commit `02068e7`. It is not embedded into this same task file because the commit containing this file cannot durably contain its own final hash.
 
 This acceptance satisfies DATABASE-007 for its direct dependants:
+
 - `ARCH-010-ADMIN-002`
 - `ARCH-010-BACKGROUND-014`
 - `ARCH-010-SHOPIFY-017`
 
 Their Ready status must still be recalculated against any other dependencies in the current canonical parent workspace.
-

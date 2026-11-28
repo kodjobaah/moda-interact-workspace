@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-057-SHOPIFY-001
+  - ARCH-057-SHOPIFY-001
 enables:
-- ARCH-057-SHOPIFY-010
-- ARCH-057-SHOPIFY-011
+  - ARCH-057-SHOPIFY-010
+  - ARCH-057-SHOPIFY-011
 created: 2026-11-04
 updated: 2026-11-05
 ---
@@ -55,36 +55,36 @@ Paths are relative to `moda-interact`.
 
 ### Existing files to modify
 
-| Path | Selected responsibility |
-|---|---|
-| `app/services/shop/shop.service.ts` | Transaction-owned uninstall cleanup; typed uninstall/reinstall outcomes; lock and durable credential admission in `beginReinstallReconciliation` and `retryReinstallReconciliation`; preserve SHOPIFY-001 resolver/context work |
-| `app/routes/webhooks/app/uninstalled/route.jsx` | Remove route-owned Session deletion; consume the service result and log the committed semantic outcome |
-| `app/routes/webhooks/app/scopes-update/route.jsx` | Keep Shop-before-Session lock ordering; tolerate an authenticated session removed by a committed uninstall without recreating it; retain durable offline-scope eligibility |
-| `app/routes/auth/catchall/route.jsx` | Handle typed reinstall outcomes and authenticated-domain login redirection; enqueue only a returned committed schedule |
-| `app/routes/app/reinstalling/route.jsx` | Handle typed explicit-retry outcomes and authenticated-domain login redirection while preserving the standalone shell and stopped state |
-| `app/services/discounts/shopify-discount-lifecycle.service.ts` | Preserve the common lock and invalidation semantics; avoid updating discounts already unavailable when only their availability Boolean is unchanged; own safe original errors from best-effort activation publication |
-| `app/services/webhooks/shopify-webhook-observability.server.ts` | Safe original failure/cause/code fields for lifecycle routes, authentication and lifecycle service diagnostics; retain Shared logging and existing metric ownership |
-| `shopify.app.moda-interact.toml` | Add the seven missing topic declarations to the existing intended app identity; retain its API version, scopes and compliance subscriptions |
-| `shopify.app.toml` | At most a comment identifying the separate template app; retain its distinct identity, URLs, version and topic/scope contents |
-| `scripts/shopify.mjs`, `scripts/shopify-dev.mjs`, `scripts/shopify-dev-cloud.mjs` | Make the existing dev child commands explicitly select `--config moda-interact`; no process-management rewrite |
-| `tests/unit/services/shop.service.test.ts` | Uninstall/reinstall transition, credential, return-type and retry cases |
-| `tests/unit/services/shopify-discount-lifecycle.service.test.ts` | Invalidation timestamp/no-op predicates, postcommit publication and emitted diagnostics |
-| `tests/unit/routes/scopes-update.test.jsx` | Lock-before-Session, missing-session race, persisted offline scope and after-commit publication |
-| `tests/unit/routes/auth-catchall.test.ts`, `tests/unit/routes/reinstalling-route.test.ts` | Typed schedule/no-change/login outcomes and trusted domain handling |
-| `tests/unit/webhooks/shopify-whatsapp-consent-config.test.js`, `tests/unit/webhooks/shopify-brand-scope-config.test.ts` | Retain the existing consent/version and distinct-app scope constraints |
-| `package.json` | Add the exact test commands below; select the named config in the existing `dev` and `deploy` commands; no dependency/version change |
+| Path                                                                                                                    | Selected responsibility                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/services/shop/shop.service.ts`                                                                                     | Transaction-owned uninstall cleanup; typed uninstall/reinstall outcomes; lock and durable credential admission in `beginReinstallReconciliation` and `retryReinstallReconciliation`; preserve SHOPIFY-001 resolver/context work |
+| `app/routes/webhooks/app/uninstalled/route.jsx`                                                                         | Remove route-owned Session deletion; consume the service result and log the committed semantic outcome                                                                                                                          |
+| `app/routes/webhooks/app/scopes-update/route.jsx`                                                                       | Keep Shop-before-Session lock ordering; tolerate an authenticated session removed by a committed uninstall without recreating it; retain durable offline-scope eligibility                                                      |
+| `app/routes/auth/catchall/route.jsx`                                                                                    | Handle typed reinstall outcomes and authenticated-domain login redirection; enqueue only a returned committed schedule                                                                                                          |
+| `app/routes/app/reinstalling/route.jsx`                                                                                 | Handle typed explicit-retry outcomes and authenticated-domain login redirection while preserving the standalone shell and stopped state                                                                                         |
+| `app/services/discounts/shopify-discount-lifecycle.service.ts`                                                          | Preserve the common lock and invalidation semantics; avoid updating discounts already unavailable when only their availability Boolean is unchanged; own safe original errors from best-effort activation publication           |
+| `app/services/webhooks/shopify-webhook-observability.server.ts`                                                         | Safe original failure/cause/code fields for lifecycle routes, authentication and lifecycle service diagnostics; retain Shared logging and existing metric ownership                                                             |
+| `shopify.app.moda-interact.toml`                                                                                        | Add the seven missing topic declarations to the existing intended app identity; retain its API version, scopes and compliance subscriptions                                                                                     |
+| `shopify.app.toml`                                                                                                      | At most a comment identifying the separate template app; retain its distinct identity, URLs, version and topic/scope contents                                                                                                   |
+| `scripts/shopify.mjs`, `scripts/shopify-dev.mjs`, `scripts/shopify-dev-cloud.mjs`                                       | Make the existing dev child commands explicitly select `--config moda-interact`; no process-management rewrite                                                                                                                  |
+| `tests/unit/services/shop.service.test.ts`                                                                              | Uninstall/reinstall transition, credential, return-type and retry cases                                                                                                                                                         |
+| `tests/unit/services/shopify-discount-lifecycle.service.test.ts`                                                        | Invalidation timestamp/no-op predicates, postcommit publication and emitted diagnostics                                                                                                                                         |
+| `tests/unit/routes/scopes-update.test.jsx`                                                                              | Lock-before-Session, missing-session race, persisted offline scope and after-commit publication                                                                                                                                 |
+| `tests/unit/routes/auth-catchall.test.ts`, `tests/unit/routes/reinstalling-route.test.ts`                               | Typed schedule/no-change/login outcomes and trusted domain handling                                                                                                                                                             |
+| `tests/unit/webhooks/shopify-whatsapp-consent-config.test.js`, `tests/unit/webhooks/shopify-brand-scope-config.test.ts` | Retain the existing consent/version and distinct-app scope constraints                                                                                                                                                          |
+| `package.json`                                                                                                          | Add the exact test commands below; select the named config in the existing `dev` and `deploy` commands; no dependency/version change                                                                                            |
 
 ### New files
 
-| Path | Purpose |
-|---|---|
-| `tests/unit/routes/uninstalled.test.jsx` | Actual route delegation, duplicate/session-less success and failure ownership |
-| `tests/unit/webhooks/shopify-lifecycle-errors.test.ts` | Real Shared emitted-record, original cause/code, privacy and throwing-sink tests |
-| `tests/unit/webhooks/shopify-webhook-config.test.ts` | Complete topic/URI/config-identity and dev/deploy selection checks |
-| `tests/integration/shopify-session-lifecycle.postgres.test.ts` | Migrated real PostgreSQL rollback, duplicate retry and tenant-isolation cases |
-| `tests/integration/shopify-session-lifecycle-races.postgres.test.ts` | Independent-connection uninstall, SDK persistence, reinstall and scopes races |
-| `tests/helpers/shopify-lifecycle-postgres.ts` | Small task-owned PG17 container, forward migration, synthetic fixture and explicit barrier helpers |
-| `docs/shopify-webhook-configuration.md` | Exact configuration identity/topic map, explicit launch commands and non-deployment evidence |
+| Path                                                                 | Purpose                                                                                            |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `tests/unit/routes/uninstalled.test.jsx`                             | Actual route delegation, duplicate/session-less success and failure ownership                      |
+| `tests/unit/webhooks/shopify-lifecycle-errors.test.ts`               | Real Shared emitted-record, original cause/code, privacy and throwing-sink tests                   |
+| `tests/unit/webhooks/shopify-webhook-config.test.ts`                 | Complete topic/URI/config-identity and dev/deploy selection checks                                 |
+| `tests/integration/shopify-session-lifecycle.postgres.test.ts`       | Migrated real PostgreSQL rollback, duplicate retry and tenant-isolation cases                      |
+| `tests/integration/shopify-session-lifecycle-races.postgres.test.ts` | Independent-connection uninstall, SDK persistence, reinstall and scopes races                      |
+| `tests/helpers/shopify-lifecycle-postgres.ts`                        | Small task-owned PG17 container, forward migration, synthetic fixture and explicit barrier helpers |
+| `docs/shopify-webhook-configuration.md`                              | Exact configuration identity/topic map, explicit launch commands and non-deployment evidence       |
 
 Test files/helpers remain below 300 lines each. The helper uses the existing Testcontainers and Prisma dependencies; it is not a second general integration framework. Unit/module injection may bind the actual service to disposable clients; add no production injection endpoint or SDK-storage proxy.
 
@@ -126,14 +126,14 @@ No Shopify app deployment, remote subscription mutation, app-identity merge, add
 15. Treat `shopify.app.moda-interact.toml` as the selected application configuration for this task's dev/deploy entrypoints. Keep its current client ID, `app-test.modainteract.com` URLs, scopes and webhook API `2026-07`. Retain the distinct default template config; no inference is made about either deployed subscription set.
 16. The named config must have exactly these existing endpoint mappings, without duplicate topic declarations:
 
-| Endpoint | Topics |
-|---|---|
-| `/webhooks` | `orders/create`, `carts/create`, `carts/update`, `checkouts/create`, `checkouts/update`, `customers_whats_app_marketing_consent/update`, `discounts/create`, `discounts/update`, `discounts/delete`, `discounts/redeemcode_added`, `discounts/redeemcode_removed` |
-| `/webhooks/app/uninstalled` | `app/uninstalled` |
-| `/webhooks/app/scopes_update` | `app/scopes_update` |
-| `/webhooks/customers/data_request` | compliance `customers/data_request` |
-| `/webhooks/customers/redact` | compliance `customers/redact` |
-| `/webhooks/shop/redact` | compliance `shop/redact` |
+| Endpoint                           | Topics                                                                                                                                                                                                                                                            |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/webhooks`                        | `orders/create`, `carts/create`, `carts/update`, `checkouts/create`, `checkouts/update`, `customers_whats_app_marketing_consent/update`, `discounts/create`, `discounts/update`, `discounts/delete`, `discounts/redeemcode_added`, `discounts/redeemcode_removed` |
+| `/webhooks/app/uninstalled`        | `app/uninstalled`                                                                                                                                                                                                                                                 |
+| `/webhooks/app/scopes_update`      | `app/scopes_update`                                                                                                                                                                                                                                               |
+| `/webhooks/customers/data_request` | compliance `customers/data_request`                                                                                                                                                                                                                               |
+| `/webhooks/customers/redact`       | compliance `customers/redact`                                                                                                                                                                                                                                     |
+| `/webhooks/shop/redact`            | compliance `shop/redact`                                                                                                                                                                                                                                          |
 
 17. Preserve `read_customers`, `read_discounts`, `read_brand` and the other existing named-app scopes; request no new write scope. Match the existing runtime/consent `2026-07` contract. Use TOML-managed subscriptions, not a second per-shop after-auth registration mechanism.
 18. Existing `dev`/`deploy` and the three custom dev child commands explicitly pass `--config moda-interact`. Document how the separate default app is intentionally selected by an operator. Tests inspect arguments without starting ngrok/cloudflared or deploying an app. Running local tests or configuration validation must not create/release a Shopify app version.
@@ -219,19 +219,19 @@ Accepted historical contracts from ARCH-010/016/045/049 are preservation require
 
 ### Required cases and diagnostic ownership
 
-| Case / injection | Owner and required emitted evidence | Outcome to preserve |
-|---|---|---|
-| SDK HMAC/auth throws a harmless Error marker with cause | Existing auth adapter: original safe message/cause, `sdk_exception`, fixed route; no untrusted headers | Original exception/SDK status propagated; no DB/queue work |
-| Expected SDK 401 Response | Auth adapter records actual status and control-flow classification, never arbitrary Response body | SDK denial unchanged |
-| Uninstall lookup/lock/guard/Session delete/catalogue write fails | Uninstall route adapter: actual error/code/cause and failed stage, trusted Shop/domain where already known | Transaction rollback; failure remains retryable; no success log |
-| Duplicate uninstall with absent SDK session and replacement persisted offline session | Semantic committed outcome, no fabricated error | HTTP success; new credentials and marker preserved |
-| Begin/retry DB lookup/lock/session/schedule write fails | `recordShopifyLifecycleFailure`: actual message/code/cause and method stage | Rethrow; no partial marker/schedule, no enqueue |
-| Begin/retry finds missing/expired-unrefreshable offline session | Bounded `AUTHENTICATION_REQUIRED` outcome, not a fabricated provider failure | No writes/enqueue; login via authenticated domain |
-| Scopes handler's authenticated Session was deleted before its lock | Bounded missing-session outcome; no fabricated P2025 | No recreation; unavailable catalogue/no publication when offline grant absent |
-| Scope persistence or catalogue write fails | Scope route adapter: original message/code/cause | Rollback and retryable failure |
-| Scope publication fails after commit | Scope route adapter: original queue cause plus committed stage | Committed sync intent retained; HTTP failure permits retry |
-| Activation discount publication fails after commit | Existing best-effort helper owns original queue failure through Shared | Already committed subscription/lifecycle result stays successful |
-| Sensitive sentinels in source error and a throwing Shared sink | Actual emitted JSON checked before harness redaction; original harmless markers retained, sensitive spans absent | Same rollback/redirect/HTTP/no-op behavior |
+| Case / injection                                                                      | Owner and required emitted evidence                                                                              | Outcome to preserve                                                           |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| SDK HMAC/auth throws a harmless Error marker with cause                               | Existing auth adapter: original safe message/cause, `sdk_exception`, fixed route; no untrusted headers           | Original exception/SDK status propagated; no DB/queue work                    |
+| Expected SDK 401 Response                                                             | Auth adapter records actual status and control-flow classification, never arbitrary Response body                | SDK denial unchanged                                                          |
+| Uninstall lookup/lock/guard/Session delete/catalogue write fails                      | Uninstall route adapter: actual error/code/cause and failed stage, trusted Shop/domain where already known       | Transaction rollback; failure remains retryable; no success log               |
+| Duplicate uninstall with absent SDK session and replacement persisted offline session | Semantic committed outcome, no fabricated error                                                                  | HTTP success; new credentials and marker preserved                            |
+| Begin/retry DB lookup/lock/session/schedule write fails                               | `recordShopifyLifecycleFailure`: actual message/code/cause and method stage                                      | Rethrow; no partial marker/schedule, no enqueue                               |
+| Begin/retry finds missing/expired-unrefreshable offline session                       | Bounded `AUTHENTICATION_REQUIRED` outcome, not a fabricated provider failure                                     | No writes/enqueue; login via authenticated domain                             |
+| Scopes handler's authenticated Session was deleted before its lock                    | Bounded missing-session outcome; no fabricated P2025                                                             | No recreation; unavailable catalogue/no publication when offline grant absent |
+| Scope persistence or catalogue write fails                                            | Scope route adapter: original message/code/cause                                                                 | Rollback and retryable failure                                                |
+| Scope publication fails after commit                                                  | Scope route adapter: original queue cause plus committed stage                                                   | Committed sync intent retained; HTTP failure permits retry                    |
+| Activation discount publication fails after commit                                    | Existing best-effort helper owns original queue failure through Shared                                           | Already committed subscription/lifecycle result stays successful              |
+| Sensitive sentinels in source error and a throwing Shared sink                        | Actual emitted JSON checked before harness redaction; original harmless markers retained, sensitive spans absent | Same rollback/redirect/HTTP/no-op behavior                                    |
 
 Real database cases include two tenants; simultaneous duplicate uninstall; rollback injected after the real Session delete; simultaneous begin/retry with explicit barriers; both SDK persistence orders and persistence inside the first-uninstall transaction window; duplicate arrival before/after new marker; and scopes/uninstall orderings. Check actual persisted rows and returned schedule, not only call order.
 
@@ -322,6 +322,7 @@ No new schema, durable identity, SDK storage, queue or cross-repository contract
 Task branch: `task/ARCH-057-SHOPIFY-009`.
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-009`, branch `task/ARCH-057-SHOPIFY-009`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-009`, branch `task/ARCH-057-SHOPIFY-009`.
@@ -331,10 +332,12 @@ Physical worktree isolation:
 
 Implementation repository:
 Implementation commits: `838cfae586585c176590ba46a4ccee8973b27097` (lifecycle implementation), `de55ee8d0f2840785ccf50f414f8d450a09383d6` (typed Prisma SQL evidence), `76d69d8a3f93392eeb9a6353e5036857c22404ca` (required origin/main synchronization), and `f0cf26877a9e3f7503c0f9a956b02ede3eff2571` (shared diagnostic boundary and code classification corrections).
+
 - Remote branch: `origin/task/ARCH-057-SHOPIFY-009`.
 - Pushed: yes; implementation head `f0cf26877a9e3f7503c0f9a956b02ede3eff2571` matches the task remote.
 
 Parent workspace:
+
 - Task file: `docs/decisions/shopify/ARCH-057/SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md`.
 - Attempt 2 report update: committed and pushed on `origin/task/ARCH-057-SHOPIFY-009` as the review submission.
 - Submodule gitlink staged: no.
@@ -375,7 +378,6 @@ The reviewed lifecycle implementation covers atomic transition-owned cleanup, du
 
 The owning agent must reclaim this same task, correct both findings, add the emitted-record regression coverage, rerun relevant checks and update the completion report before resubmitting for architect review. ARCH-057-SHOPIFY-010 and ARCH-057-SHOPIFY-011 remain unpromoted by this review; this task does not satisfy their dependency until accepted.
 
-
 ### Attempt 2 — Accepted
 
 Architect decision on 2026-11-04: accepted; task Complete. Reviewed source `f0cf26877a9e3f7503c0f9a956b02ede3eff2571` matches `origin/task/ARCH-057-SHOPIFY-009`; the implementation worktree is clean. Both Attempt 1 findings are resolved and no actionable findings remain.
@@ -388,11 +390,9 @@ Architect decision on 2026-11-04: accepted; task Complete. Reviewed source `f0cf
 
 Completion clears executor/claimed_at without increasing attempt. SHOPIFY-010 is promoted to Ready, unclaimed, because its sole prerequisite is now Complete. SHOPIFY-011 remains Pending on the remaining prerequisites recorded in this branch, including SHOPIFY-010; SHOPIFY-012 and SYSTEM-TEST-001 remain Pending. No downstream implementation is started by this decision. The historical Attempt 1 findings and validation limits above remain part of the review record.
 
-
 ### Downstream Reconciliation — 2026-11-05
 
 Reconciled with published parent main `d9e959e37` after SHOPIFY-010 Attempt 1 acceptance (`4dfa4c1df`). SHOPIFY-009 remains Complete at Attempt 2; its implementation and acceptance are unchanged. SHOPIFY-010 is now Complete, superseding the historical Ready frontier above. SHOPIFY-011 remains Pending solely because SHOPIFY-004 is still recorded in Review in the published task definitions. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending transitively. The task index and execution plan already reflect this frontier; no additional task promotion or execution is warranted. The parent task branch was fast-forwarded to incorporate the published records; no implementation checkout or gitlink was changed.
-
 
 ### Published Dependency Correction — 2026-11-05
 

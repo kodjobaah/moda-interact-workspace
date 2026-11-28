@@ -116,10 +116,7 @@ checkConnectionAvailability(input: {
 After loading the exact immutable connection revision:
 
 ```ts
-const credentialShopId =
-  revision.scope === 'PLATFORM'
-    ? null
-    : input.shopId;
+const credentialShopId = revision.scope === "PLATFORM" ? null : input.shopId;
 ```
 
 Then preserve the existing checks:
@@ -194,7 +191,7 @@ Canonical consumer call:
 checkConnectionAvailability({
   connectionRevisionId: candidate.connectionRevisionId,
   shopId: trustedMerchantShopId,
-})
+});
 ```
 
 COMMERCE-032 must not need connection scope metadata.
@@ -366,25 +363,25 @@ The producer and consumer now share merchant-identity availability semantics whi
 credential storage and resolution retain nullable credential-row scope semantics.
 
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-037
-  parent branch: task/ARCH-020-COMMERCE-037
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-037
-  implementation branch: task/ARCH-020-COMMERCE-037
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-037
+parent branch: task/ARCH-020-COMMERCE-037
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-037
+implementation branch: task/ARCH-020-COMMERCE-037
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded submodule commits: database @ 7f920e8f2ad523e78e566f4dbdfbb1f68118b082
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded submodule commits: database @ 7f920e8f2ad523e78e566f4dbdfbb1f68118b082
 
 ## Architect Review
 

@@ -46,10 +46,12 @@ export type NodeObservabilityRuntime = {
 let runtime: NodeObservabilityRuntime | undefined;
 
 export function resolveDeploymentEnvironmentName(): string {
-  return nonEmpty(process.env.DEPLOYMENT_ENVIRONMENT_NAME)
-    ?? nonEmpty(process.env.OTEL_DEPLOYMENT_ENVIRONMENT)
-    ?? nonEmpty(process.env.NODE_ENV)
-    ?? "development";
+  return (
+    nonEmpty(process.env.DEPLOYMENT_ENVIRONMENT_NAME) ??
+    nonEmpty(process.env.OTEL_DEPLOYMENT_ENVIRONMENT) ??
+    nonEmpty(process.env.NODE_ENV) ??
+    "development"
+  );
 }
 
 export function initNodeObservability(
@@ -63,16 +65,20 @@ export function initNodeObservability(
 
   // Logging destinations are independently best-effort. Existing shared logger
   // continues to write stdout even when both transports are disabled.
-  const otelLogs = safeInit(() => initNodeOpenTelemetryLogging({
-    serviceName,
-    environment,
-    serviceNamespace,
-  }));
-  const loki = safeInit(() => initNodeLokiLogging({
-    serviceName,
-    environment,
-    serviceNamespace,
-  }));
+  const otelLogs = safeInit(() =>
+    initNodeOpenTelemetryLogging({
+      serviceName,
+      environment,
+      serviceNamespace,
+    }),
+  );
+  const loki = safeInit(() =>
+    initNodeLokiLogging({
+      serviceName,
+      environment,
+      serviceNamespace,
+    }),
+  );
 
   if (!options.forceEnable && envBool("OTEL_SDK_DISABLED") === true) {
     runtime = disabledRuntime(serviceName, environment, otelLogs, loki);
@@ -153,19 +159,24 @@ export function initNodeObservability(
     // startup solely because SDK/exporter configuration is invalid.
     runtime = {
       ...disabledRuntime(serviceName, environment, otelLogs, loki),
-      error: error instanceof Error
-        ? error.message.slice(0, 300)
-        : "observability-init-failed",
+      error:
+        error instanceof Error
+          ? error.message.slice(0, 300)
+          : "observability-init-failed",
     };
     return runtime;
   }
 }
 
-export function getNodeObservabilityRuntime(): NodeObservabilityRuntime | undefined {
+export function getNodeObservabilityRuntime():
+  NodeObservabilityRuntime | undefined {
   return runtime;
 }
 
-function resolveSampler(explicitRatio: number | undefined, environment: string): Sampler {
+function resolveSampler(
+  explicitRatio: number | undefined,
+  environment: string,
+): Sampler {
   if (explicitRatio !== undefined) {
     return new ParentBasedSampler({
       root: new TraceIdRatioBasedSampler(clampRatio(explicitRatio)),
@@ -227,10 +238,7 @@ function disabledRuntime(
       ]);
     },
     shutdown: async () => {
-      await Promise.allSettled([
-        otelLogs?.shutdown?.(),
-        loki?.shutdown?.(),
-      ]);
+      await Promise.allSettled([otelLogs?.shutdown?.(), loki?.shutdown?.()]);
     },
   };
 }
@@ -277,9 +285,15 @@ function clampRatio(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-function signalEndpoint(signal: "TRACES" | "METRICS", suffix: string): string | undefined {
+function signalEndpoint(
+  signal: "TRACES" | "METRICS",
+  suffix: string,
+): string | undefined {
   const exact = nonEmpty(process.env[`OTEL_EXPORTER_OTLP_${signal}_ENDPOINT`]);
   if (exact) return exact;
-  const base = nonEmpty(process.env.OTEL_EXPORTER_OTLP_ENDPOINT)?.replace(/\/+$/, "");
+  const base = nonEmpty(process.env.OTEL_EXPORTER_OTLP_ENDPOINT)?.replace(
+    /\/+$/,
+    "",
+  );
   return base ? `${base}/v1/${suffix}` : undefined;
 }

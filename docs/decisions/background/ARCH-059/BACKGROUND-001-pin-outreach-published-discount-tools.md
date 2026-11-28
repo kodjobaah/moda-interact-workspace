@@ -14,32 +14,46 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: ["ARCH-059-SHARED-002", "ARCH-059-COMMERCE-001", "ARCH-059-MCP-001", "ARCH-058-BACKGROUND-001"]
+depends_on:
+  [
+    "ARCH-059-SHARED-002",
+    "ARCH-059-COMMERCE-001",
+    "ARCH-059-MCP-001",
+    "ARCH-058-BACKGROUND-001",
+  ]
 enables: ["ARCH-059-SYSTEM-TEST-001"]
 created: 2026-11-05
 updated: 2026-11-05
 ---
+
 # Consume MCP-authorized published discount capabilities
 
 ## Architecture
+
 ARCH-059; docs/architecture/ARCH-059-unified-discount-capability-registration.md. Coordinator: moda_architect.
 
 ## Objective
+
 Consume published discount capabilities while MCP owns current release/revision selection and execution authorization for each request.
 
 ## Context
+
 MCP currently appends global discount tools outside published membership. Follow parent architecture identity, parity and compatible migration decisions.
 
 ## Scope
+
 Only moda-interact-background source/tests/documentation required by Work Items.
 
 ## Out of Scope
+
 Other repositories, new Feature identities, provider evaluator redesign, schema changes, main merges and automatic execution.
 
 ## Requirements
+
 Feature product_search (Product Search) owns both canonical discount tools exactly once. INITIAL_RECOVERY_OUTREACH remains purpose with checkout_recovery host admission. Preserve active-plan permission parity including Free through explicit provisioning verification; preserve merchant settings and provider evaluation. Fail closed on missing release or stale identity. No global fallback, duplicate descriptors, contract hashes or locally copied Shared contracts. Follow recorded rollout order.
 
 ## Work Items
+
 - [x] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [x] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; derive tool membership from the authorized published capability, remove the hardcoded tool-name allowlist, and retain bounded execution budgets and deadline.
 - [x] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
@@ -47,6 +61,7 @@ Feature product_search (Product Search) owns both canonical discount tools exact
 - [x] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
 
 ## Interfaces / Contracts
+
 Published @modainteract/moda-interact-shared/commerce input/output, release/capability/revision/grant validators; versioned extensions owned by ARCH-059-SHARED-001, registry availability by ARCH-059-SHARED-002. Producers/consumers and storage trust boundary are normative in parent architecture.
 
 ### Controlling developer-as-architect decision — MCP-owned revision selection (2026-11-05)
@@ -64,15 +79,18 @@ Required deterministic proof: Background supplies trusted shop/purpose and only 
 This decision changes the task contract, not its completion status. Existing implementation contains host manifest-pinning checks and must be reconciled against this boundary in a subsequent implementation/review cycle. No passing review, completion or runtime change is asserted here.
 
 ## Dependencies
+
 - ARCH-059-SHARED-002
 - ARCH-059-COMMERCE-001
 - ARCH-059-MCP-001
 - ARCH-058-BACKGROUND-001
 
 ## Enables
+
 - ARCH-059-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
 - [x] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [x] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; derive tool membership from the authorized published capability, remove the hardcoded tool-name allowlist, and retain bounded execution budgets and deadline.
 - [x] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
@@ -81,51 +99,57 @@ This decision changes the task contract, not its completion status. Existing imp
 - [x] Existing authorization/provider evaluation and unrelated published members remain intact.
 
 ## Validation
+
 - [x] Inspect package.json and run declared focused tests for every Work Item, plus declared typecheck/build when deployable TypeScript changes; record exact commands/results. Do not invent missing scripts.
 - [x] Reports contain no secrets and demonstrate task scope only.
 
 ## Stop Condition
+
 After Work Items, Acceptance Criteria and Validation complete, submit Completion Report for review and STOP. Explicit developer completion via /moda_developer_update is required. Do not start enabled work. System Test is manually invoked after prerequisites complete.
 
-
 ### Canonical operation mapping
-| Tool key / display name | Policy operation | Version | Input/output contract |
-|---|---|---|---|
-| commerce_get_discount_options / Get Discount Options | discounts.getOptions | 1.0.0 | CommerceToolInputs/Outputs.commerce_get_discount_options |
-| commerce_get_discount_details / Get Discount Details | discounts.getDetails | 1.0.0 | CommerceToolInputs/Outputs.commerce_get_discount_details |
+
+| Tool key / display name                              | Policy operation     | Version | Input/output contract                                    |
+| ---------------------------------------------------- | -------------------- | ------- | -------------------------------------------------------- |
+| commerce_get_discount_options / Get Discount Options | discounts.getOptions | 1.0.0   | CommerceToolInputs/Outputs.commerce_get_discount_options |
+| commerce_get_discount_details / Get Discount Details | discounts.getDetails | 1.0.0   | CommerceToolInputs/Outputs.commerce_get_discount_details |
 
 `discounts.getDetails` is a NEW operation ID required by this architecture. `discounts.evaluate` is an existing basket-evaluation operation with a different contract and MUST NOT substitute for details. Existing getOptions schema/operation is reused; the MCP published-capability adapter still requires implementation. Existing discount catalogue/provider evaluation is reused, not reimplemented. Both operations bind trusted shop/context from the host, never an input shopId. Add new details ID to Shared validation before Commerce/MCP consume it. Definition version is an immutable published tool revision version, separate from operationVersion; select the new revision identity through existing version rules, do not overwrite 2.0.0 built-in identity in place.
 
 ### Configuration versus new runtime capability
+
 Once an operation/version is implemented, an authorized staff user may configure a draft via the existing Policy Operation editor, validate/test it, attach it to an existing Feature capability, publish a complete release and activate that release. Setup automates those same lifecycle APIs for these six canonical tools. UI draft save, Feature attachment or publication alone never grants an MCP call or modifies Background purpose admission. New operations/versions or new provider I/O require Shared contract, Commerce authoring registry and MCP runtime implementation/review before UI selection becomes executable; the UI cannot install arbitrary server code. Future capabilities reuse this lifecycle but are not implemented by ARCH-059. Background requests the authorized capability and exposes its MCP-resolved published tools to the agent. No Background-owned tool-name allowlist determines membership. A newly published supported tool in that authorized capability is available without a Background tool-list edit; unrelated capabilities remain excluded by capability authorization.
 
 ### Verified implementation touchpoints
+
 Paths below exist at definition time; changes are task requirements, not completed work.
 
-| File | Existing symbol/surface | Required change |
-|---|---|---|
-| `moda-interact-background/src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts` | OUTREACH_MCP_TOOL_NAMES; RecoveryOutreachMcpSelectorService | Remove OUTREACH_MCP_TOOL_NAMES membership filtering; discover the requested authorized capability's published tools and let the agent select among them. Preserve list-before-call, current authorization and unrelated-capability isolation. |
-| `moda-interact-background/src/commerce/mcp-client.ts` | CommerceMcpClient; CommerceOutreachMcpIdentity; encodeCommerceContext | Carry trusted purpose and canonical release/capability identities through client transport, never model inputs. |
-| `moda-interact-background/src/commerce/grants.ts` | validateRelease; persistGrant; manifestMatchesGrant | Persist and validate canonical published identity; no synthesis from built-in descriptor trust. |
-| `moda-interact-background/src/agents/initial-outreach-offer.graph.ts` | initial outreach graph module | Preserve first-call/options sequencing, validated result projection and budgets. |
-| `moda-interact-background/src/agents/initial-outreach-offer.eligibility.ts` | evaluateCheckoutDiscount | Regression protection only: same authorized facts yield same eligibility. |
-| `moda-interact-background/tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` | selector tests | Test exact list, new unrelated published tool excluded, stale identity and missing members. |
+| File                                                                                                          | Existing symbol/surface                                               | Required change                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `moda-interact-background/src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts`             | OUTREACH_MCP_TOOL_NAMES; RecoveryOutreachMcpSelectorService           | Remove OUTREACH_MCP_TOOL_NAMES membership filtering; discover the requested authorized capability's published tools and let the agent select among them. Preserve list-before-call, current authorization and unrelated-capability isolation. |
+| `moda-interact-background/src/commerce/mcp-client.ts`                                                         | CommerceMcpClient; CommerceOutreachMcpIdentity; encodeCommerceContext | Carry trusted purpose and canonical release/capability identities through client transport, never model inputs.                                                                                                                               |
+| `moda-interact-background/src/commerce/grants.ts`                                                             | validateRelease; persistGrant; manifestMatchesGrant                   | Persist and validate canonical published identity; no synthesis from built-in descriptor trust.                                                                                                                                               |
+| `moda-interact-background/src/agents/initial-outreach-offer.graph.ts`                                         | initial outreach graph module                                         | Preserve first-call/options sequencing, validated result projection and budgets.                                                                                                                                                              |
+| `moda-interact-background/src/agents/initial-outreach-offer.eligibility.ts`                                   | evaluateCheckoutDiscount                                              | Regression protection only: same authorized facts yield same eligibility.                                                                                                                                                                     |
+| `moda-interact-background/tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` | selector tests                                                        | Test exact list, new unrelated published tool excluded, stale identity and missing members.                                                                                                                                                   |
 
 ### Deterministic acceptance matrix
-| Fixture/trigger | Required result |
-|---|---|
-| Clean active-plan canonical setup | Exactly six product_search capabilities: four existing product/shipping plus two discounts; each tool key once |
-| Existing unrelated capability/release member | Preserved; total may exceed six, canonical subset remains exactly six |
-| Repeat apply / dry-run / interrupted retry | No duplicate tool/revision/member; dry-run zero writes; retry converges |
-| Free and paid ACTIVE/TRIALING on active plans | Same prior discount eligibility after explicit product_search mapping provisioning |
-| Inactive plan/shop/Feature, revoked mapping or permission | No unauthorized call; preserve existing policy denial semantics |
-| NONE / FIXED / AI_BEST_APPLICABLE; expired override | Same evaluator facts/results as baseline for same tenant/time/provider |
-| Missing member, wrong revision, duplicate name or forged tenant | Fail closed before provider I/O; bounded diagnostic, no global fallback |
-| Extra future published capability | Available only through authorized capability selection; unrelated capabilities remain excluded. New supported tools within the requested capability require no host name-list change |
-| UI save without published active membership | No MCP tool/grant created by save alone |
-| Old MCP + staged canonical release | Old pointer remains active; new release not activated until strict MCP cutover |
+
+| Fixture/trigger                                                 | Required result                                                                                                                                                                      |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Clean active-plan canonical setup                               | Exactly six product_search capabilities: four existing product/shipping plus two discounts; each tool key once                                                                       |
+| Existing unrelated capability/release member                    | Preserved; total may exceed six, canonical subset remains exactly six                                                                                                                |
+| Repeat apply / dry-run / interrupted retry                      | No duplicate tool/revision/member; dry-run zero writes; retry converges                                                                                                              |
+| Free and paid ACTIVE/TRIALING on active plans                   | Same prior discount eligibility after explicit product_search mapping provisioning                                                                                                   |
+| Inactive plan/shop/Feature, revoked mapping or permission       | No unauthorized call; preserve existing policy denial semantics                                                                                                                      |
+| NONE / FIXED / AI_BEST_APPLICABLE; expired override             | Same evaluator facts/results as baseline for same tenant/time/provider                                                                                                               |
+| Missing member, wrong revision, duplicate name or forged tenant | Fail closed before provider I/O; bounded diagnostic, no global fallback                                                                                                              |
+| Extra future published capability                               | Available only through authorized capability selection; unrelated capabilities remain excluded. New supported tools within the requested capability require no host name-list change |
+| UI save without published active membership                     | No MCP tool/grant created by save alone                                                                                                                                              |
+| Old MCP + staged canonical release                              | Old pointer remains active; new release not activated until strict MCP cutover                                                                                                       |
 
 ### Deployment gate: prevent duplicate old/new registration
+
 Commerce task completion means code and a tested STAGED immutable release are ready; it MUST NOT activate the new discount-member release against an old MCP binary. Old MCP appends global discount names, so activation there would duplicate registration. This is a hard staging gate, not a dependency cycle: Commerce implementation can be accepted while activation is deferred to coordinated rollout after MCP implementation acceptance.
 
 1. Publish Shared package and deploy Commerce support. Plan/provision mappings, create and validate the complete staged release while the OLD active pointer remains unchanged. Record staged release ID, previous pointer/version and ready-to-activate member list. Do not activate from ordinary setup apply until the operator supplies explicit cutover confirmation; add a stage-only/default-safe activation gate to the setup workflow and test its argument handling. No new Render environment variable is required.
@@ -137,6 +161,7 @@ Commerce task completion means code and a tested STAGED immutable release are re
 MCP must reject duplicate persisted names before server registration. No name-based deduplication is permission evidence. Missing membership cannot fall back to projectShopDiscountTools in strict runtime. Historical built-in grants remain historical and are rejected by the new path; do not rewrite them into capabilities.
 
 ## Implementation Notes
+
 Use launcher-resolved isolated matching task worktrees/branches and record synchronization evidence. No execution started by this definition. Reuse existing policy/lifecycle services. Return missing schema/contract capability or permission-parity conflicts to architect.
 
 ## Completion Report
@@ -204,17 +229,29 @@ None from the controlling amended scope. The fixed product_search Feature key is
 No implementation or required focused-check failure remains. Developer reconciliation/review and explicit completion remain separate workflow actions. The earlier expected-call gap and portable prerequisites are withdrawn by the task's controlling decision and must not block this attempt. Operator rollout/activation gates remain unchanged; implementation readiness does not execute them.
 
 ## Architect Review
+
 ### Review Status
+
 Pending
+
 ### Review Notes
+
 Definition only.
+
 ### Reviewed Files
+
 None
+
 ### Validation Reviewed
+
 None
+
 ### Architecture Conformance
+
 Pending implementation.
+
 ### Follow-up
+
 None
 
 ## Architect Dependency Reconciliation — 5 November 2026
@@ -225,18 +262,15 @@ SHARED-002 Attempt 1 passed review and is explicitly developer-completed. Exact 
 
 COMMERCE-001 Attempt 1 passed developer self-review and is explicitly developer-completed at implementation `770d6ab`. Remains Pending on remaining explicit prerequisites; attempt/claim/dependency list unchanged. No automatic execution or cutover is authorized. Staged-release activation remains gated on accepted strict MCP and the explicit operator rollout confirmation; preserve the previous compatible release pointer until that gate.
 
-
 ## Architect Dependency Reconciliation — 5 November 2026
 
 Developer-completed ARCH-059-MCP-001 after durable accepted Attempt 1 review `7cbf62320` and published implementation `519e905`. All explicit prerequisites are Complete (ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-059-MCP-001, ARCH-058-BACKGROUND-001). Promoted Pending -> Ready; Attempt 0, executor null and claimed_at null preserved. No claim/execution is authorized by reconciliation alone. Retain staged-release cutover, pause/drain and operator activation gates.
-
 
 ## Developer-authorized definition and publication update — 5 November 2026
 
 The developer requested: “can you update the task definition commit and push”. The definition now explicitly records the architect-confirmed expected-call prerequisite, positive enforcement support and zero-provider race tests. Original acceptance requirements are preserved, not waived. The original formal dependencies remain unchanged until the portable prerequisite definitions are materialised and reconciled through the architect workflow. No lifecycle/claim/attempt or architect review decision was changed.
 
 Both matching task branches are published for preservation/review of the current implementation state. Publication does not establish task completion or readiness for deployment; the cross-repository prerequisite remains required. No main branch or submodule gitlink is staged or updated.
-
 
 ## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-05)
 
@@ -263,11 +297,9 @@ Reviewed the reported 64 focused tests, 197 recommendation tests, 70 host tests,
 
 ARCH-059-SYSTEM-TEST-001 remains gated on Background completion and terminal manual execution requirements. No downstream task is promoted. Explicit developer completion is unavailable until required work and a later passing review are durable.
 
-
 ## Definition Decision Superseding Expected-Call Blocker — 2026-11-05
 
 The developer explicitly directed MCP-owned revision selection and requested this definition update. The earlier Developer Self-Review Changes Requested record remains historical, but its expected-call prerequisites and activation-alone zero-provider-call criterion are superseded by the controlling decision above. They must not be used to block this task or spawn additional work. The task remains Ready, developer/developer, claim null, Attempt 1 unchanged. Reconcile the existing host manifest/grant checks and tests with the amended responsibility boundary before a new passing review; do not simply relabel the prior implementation accepted. Formal dependency IDs are unchanged. No downstream promotion, claim, code change, package publication, deployment or activation occurs.
-
 
 ## Controlling capability-discovery decision — 5 November 2026
 
@@ -278,7 +310,6 @@ MCP retains current tenant, capability membership, entitlement, operation suppor
 Required regression proof: expose a supported additional tool published inside the requested capability without editing Background's tool list; let the agent select and invoke it through MCP. Reject a tool from an unrelated/unentitled capability, invented model tool names, revoked permissions and missing membership before unauthorized execution. Preserve trusted purpose, current conversation state, deadlines, aggregate budgets and validated-output boundaries. No new operation implementation is authorized merely by publication.
 
 Earlier four-tool allowlist requirements, review instructions and implementation-report statements are historical and superseded by this decision. Existing source still requires implementation reconciliation; this definition amendment neither removes runtime code itself nor certifies a passing review. Task Ready, developer-owned, Attempt 1 preserved; no automatic claim, completion, package publication, rollout or downstream promotion.
-
 
 ## Mandatory implementation scope — remove fixed tool-membership gates (2026-11-05)
 
@@ -308,11 +339,9 @@ Run the declared focused agent/graph, selector/client, conversation-host and off
 
 This amendment is authoritative over historical hardcoded-tool requirements and prior source reports. Task remains Ready, developer/developer, Attempt 1 preserved with no active claim. Runtime allowlist removal is still implementation work; no passing review/completion or automatic execution is asserted by this definition commit.
 
-
 ## Developer-authorized Attempt 2 publication — 5 November 2026
 
 The developer explicitly requested commit and push after the amended implementation and its 343 passing focused tests, build and lint. Published implementation `772f9e8` and this current task/report record on matching `task/ARCH-059-BACKGROUND-001` branches. Staged only the 17 task-owned implementation files and this task document; whitespace checks passed. No implementation change or repeated validation was required for publication. At that publication point status remained In Progress, executor developer, Attempt 2; the later Developer Self-Review record governs current review status. No main merge/push, gitlink change, deployment, activation or downstream promotion.
-
 
 ## Developer Self-Review Passed / Accepted — Attempt 2 (2026-11-05)
 
@@ -340,7 +369,6 @@ Implementation `772f9e8` is already committed/pushed. The canonical implementati
 ### Follow-up
 
 Explicit developer completion remains pending. SYSTEM-TEST-001 is not promoted while Background remains Review; terminal execution and staged-release rollout remain separately gated. This passing review certifies the amended task scope and deterministic local evidence, not live provider behavior or deployment.
-
 
 ## Explicit Developer Completion Decision — Attempt 2 (2026-11-05)
 

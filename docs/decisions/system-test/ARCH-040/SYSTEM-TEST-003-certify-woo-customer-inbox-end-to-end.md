@@ -69,11 +69,9 @@ Within the existing Woo Recovery Detail and WP REST facade, verify pending/block
 - Exercise WordPress admin -> WP REST -> installation-authenticated hosted API with suspended shop: basket/transcript readable, Take Over and human composer/template disabled, forged direct HTTP commands rejected with typed `human_messaging_suspended`, Resume AI allowed. Verify prior queued command blocked by Background and safe error status transported by WordPress facade.
 - Include WP nonce/capability and cross-installation spoof negatives; this certification does not depend on Shopify tasks/system tests.
 
-
 ### WooCommerce producer boundary certification
 
 Verify WordPress uses only authenticated REST/hosted Woo API submission and status reads; it never calls Meta, PostgreSQL or BullMQ directly. The hosted API writes the same canonical persisted command/attempt contract as Shopify, and a single Background database poller consumes it. Cover reused/claimed sequence-2 attempts, closed/open windows, human-suspended shops and correct command-state feedback. Assert the existing 20-locale and Recovery Detail layouts remain intact; no Shopify implementation/system-test prerequisite.
-
 
 ### Service-window and configured follow-up certification (2026-10-20 policy)
 
@@ -117,7 +115,6 @@ None.
 
 This terminal system-test task is separate from the developer-owned validation of the consolidated Woo implementation; results here do not gate implementation acceptance of WOOCOMMERCE-001.
 
-
 - [ ] LocalWP/full WP REST and system-test provider fixtures, responsive screenshots against ASCII.
 - [ ] Plugin ZIP, 20-locale coverage, `git diff --check` and task worktree evidence.
 
@@ -132,47 +129,61 @@ After only this task's Work Items, Acceptance Criteria and Validation are comple
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
+
 None recorded at definition time.
 
 ### Architectural Concerns
+
 Return newly discovered contract or ownership gaps to moda_architect.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.
 
 ## Definition reconciliation — 2026-11-02

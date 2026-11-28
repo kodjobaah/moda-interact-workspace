@@ -191,14 +191,14 @@ verified ended contract + no durable credits -> POST_CONTRACT_EXHAUSTED
 
 Server-side action guards are mandatory; UI disabled state is not security/correctness authority.
 
-| State | New top-up | Shopify-hosted plan select/change |
-|---|---|---|
-| ACTIVE/TRIALING normal | normal SHOPIFY-014/015 rules | allowed |
-| scheduled full cancellation | normal active-contract top-up rules | allowed |
-| FROZEN/restoring | DENY | DENY until restored |
-| effective NO_CONTRACT — never subscribed | DENY | allowed to establish first provider contract |
-| effective NO_CONTRACT — verified ended contract | DENY | allowed to subscribe again; purchased/lifetime-Free recovery capacity may still be spent |
-| fresh NO_CONTRACT onboarding | DENY | allowed through onboarding selection flow |
+| State                                           | New top-up                          | Shopify-hosted plan select/change                                                        |
+| ----------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| ACTIVE/TRIALING normal                          | normal SHOPIFY-014/015 rules        | allowed                                                                                  |
+| scheduled full cancellation                     | normal active-contract top-up rules | allowed                                                                                  |
+| FROZEN/restoring                                | DENY                                | DENY until restored                                                                      |
+| effective NO_CONTRACT — never subscribed        | DENY                                | allowed to establish first provider contract                                             |
+| effective NO_CONTRACT — verified ended contract | DENY                                | allowed to subscribe again; purchased/lifetime-Free recovery capacity may still be spent |
+| fresh NO_CONTRACT onboarding                    | DENY                                | allowed through onboarding selection flow                                                |
 
 Do not add a Moda cancellation/refund mutation as a workaround.
 
@@ -258,24 +258,29 @@ STOP and return to `moda_architect` if:
 ### Completion Report
 
 ### Status
+
 Ready for Review after corrective attempt 3.
 
 ### Files Changed
+
 - Implementation: `app/routes/app/billing/route.tsx` and `tests/unit/billing-ui.test.ts` only.
 - Parent repository: this task report only.
 
 ### Work Completed
+
 - `/app/billing` now reads the existing local recovery-capacity projection alongside billing state and returns only `lifecycleRestriction: capacity.availability`.
 - Scheduled full cancellation uses `cancelAtPeriodEnd === true` with no pending plan to suppress the legacy top-up control while retaining Shopify-hosted plan management.
 - `CONTRACT_FROZEN` suppresses both the legacy top-up control and `/app/billing/select` plan-management link; existing server action guards and all unrelated lifecycle behavior remain unchanged.
 - Added the two required rendered billing UI regression tests; existing direct-action rejection tests remain intact.
 
 ### Validation Results
+
 - Focused validation: `npm test -- --run tests/unit/billing-ui.test.ts` -> 1 file passed, 20 tests passed, 0 failed.
 - `git diff --check` passed.
 - `npm run typecheck` remains nonzero on existing repository-wide JSX implicit-any and unrelated diagnostics; neither touched file appears in the diagnostics after the local test typing fix.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-016`.
 - Implementation branch: `task/ARCH-010-SHOPIFY-016`, commit `3de1f33fd321e72919cb26f7f1dca56c2abdad16`, pushed to `origin/task/ARCH-010-SHOPIFY-016`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-SHOPIFY-016`.
@@ -283,6 +288,7 @@ Ready for Review after corrective attempt 3.
 - No submodule gitlink or unrelated parent files were changed.
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review — Attempt 2
@@ -384,9 +390,7 @@ The server guard alone is not sufficient because this task explicitly requires b
 At the bottom of `/app/billing`, the route currently renders:
 
 ```tsx
-<Link to="/app/billing/select">
-  ...
-</Link>
+<Link to="/app/billing/select">...</Link>
 ```
 
 unconditionally.
@@ -439,7 +443,7 @@ or an equivalent existing-query composition if preferred.
 Return only the minimal lifecycle authority needed by the component, for example:
 
 ```ts
-lifecycleRestriction: capacity.availability
+lifecycleRestriction: capacity.availability;
 ```
 
 Do not create another lifecycle vocabulary.
@@ -877,4 +881,3 @@ ARCH-010-SHOPIFY-025
 ```
 
 No Attempt 4 is required for `ARCH-010-SHOPIFY-016`.
-

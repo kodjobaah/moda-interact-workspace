@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
+
 # Emit canonical buyer international context on Shopify recovery events
 
 ## Architecture

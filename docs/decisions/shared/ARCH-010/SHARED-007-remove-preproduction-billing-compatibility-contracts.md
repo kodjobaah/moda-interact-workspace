@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-SHARED-006
-- ARCH-010-BACKGROUND-020
-- ARCH-010-SHOPIFY-024
+  - ARCH-010-SHARED-006
+  - ARCH-010-BACKGROUND-020
+  - ARCH-010-SHOPIFY-024
 enables:
-- ARCH-010-SHARED-008
+  - ARCH-010-SHARED-008
 created: 2026-09-12
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-SHARED-007: Remove superseded pre-production billing compatibility contracts

@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-053-WOOCOMMERCE-004
-- ARCH-053-WOOCOMMERCE-006
-- ARCH-053-BACKGROUND-003
-- ARCH-053-WOOCOMMERCE-003
-- ARCH-048-BACKGROUND-011
-- ARCH-046-WOOCOMMERCE-003
+  - ARCH-053-WOOCOMMERCE-004
+  - ARCH-053-WOOCOMMERCE-006
+  - ARCH-053-BACKGROUND-003
+  - ARCH-053-WOOCOMMERCE-003
+  - ARCH-048-BACKGROUND-011
+  - ARCH-046-WOOCOMMERCE-003
 enables: []
 created: 2026-10-29
 updated: 2026-11-02
@@ -44,7 +44,7 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 
 - Add coupon-specific e2e fixtures and scenarios in `moda-interact-system-test` using its existing runner and WordPress/Woo Classic and Checkout Blocks; coordinate real API/BullMQ/Background/PostgreSQL paths with provider mocks. Do not modify application repositories.
 - Exercise original coupon addition and removal on an observed checkout (including no change to products or totals), canonical HTTP v1→v1 queue payload, updating delayed candidate, immutable coupon evidence at recovery admission, and resolution for the correct generation.
-- From WhatsApp-like URL open on another browser, ensure GET does not mutate cart/recovery; confirm POST restores the original products and *attempts* exactly the original codes under current shop policy, recalculates the price, records rejection privately and does **not** display any Moda-originated error or Woo error notice triggered by the plugin.
+- From WhatsApp-like URL open on another browser, ensure GET does not mutate cart/recovery; confirm POST restores the original products and _attempts_ exactly the original codes under current shop policy, recalculates the price, records rejection privately and does **not** display any Moda-originated error or Woo error notice triggered by the plugin.
 - Verify coupon-only updates use the **same** `woo.activity.v1` checkout event and that v2/v3 HTTP checkout activity is rejected after pre-production cutover; do not treat missing restoration as an empty coupon list.
 - Coupon matrix: zero coupons (`[]`), one valid, expired, deleted, usage exhausted, minimum spend no longer met, product exclusion, stacking conflict, mixed valid/invalid, coupon removed before abandonment, and coupon-only update after a previously stored recovery (new generation).
 - Prove invalid coupon does not force previous total, block otherwise-valid products or trigger automatic ARCH-052 incentive replacement; test 2 tenants, stale generation URL and no token/coupon logging.
@@ -60,7 +60,7 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 - Only current WooCommerce policies determine if a historical coupon remains applicable. Business rejection and unexpected platform/restore failure must be separately visible in test reports.
 - Both Classic and Blocks must show accurate Woo totals and correctly applied coupon state **without any Moda-generated rejection/errors after redirect**. Ordinary pre-existing Woo notices and errors entered by the shopper directly remain unchanged; do not accept mock-only checkout UI results.
 - Only run after every listed implementation dependency is architect-accepted Complete and the developer has had the optional manual-verification checkpoint; system test is terminal and enables no implementation tasks.
-- Use exact shared schema from accepted `ARCH-053-SHARED-001` (PHP must match its JSON fixtures, not import Node code). Zod validates wire *shape*, never WooCommerce coupon policy. Preserve stable checkoutKey, tenant scoping and generation semantics.
+- Use exact shared schema from accepted `ARCH-053-SHARED-001` (PHP must match its JSON fixtures, not import Node code). Zod validates wire _shape_, never WooCommerce coupon policy. Preserve stable checkoutKey, tenant scoping and generation semantics.
 - Never log original coupon codes, raw restoration URLs/tokens, customer contact details or unbounded exception content. Merchant-side PHP uses existing protected server-side plugin diagnostics only; the Shared npm logger applies to hosted Node services, not WooCommerce PHP. Original safe failure details must be preserved privately, not rendered into storefront HTML/notices.
 - Honour launcher-prepared, dedicated synchronised task worktrees and `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`; the repository agent updates only its assigned task metadata and Completion Report. Never mark itself Complete or push main.
 

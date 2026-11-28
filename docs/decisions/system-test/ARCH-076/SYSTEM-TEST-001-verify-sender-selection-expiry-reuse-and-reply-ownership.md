@@ -14,7 +14,14 @@ priority: 95
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: [ARCH-076-ADMIN-001, ARCH-076-ADMIN-002, ARCH-076-ADMIN-003, ARCH-076-BACKGROUND-004, ARCH-076-COMMERCE-001]
+depends_on:
+  [
+    ARCH-076-ADMIN-001,
+    ARCH-076-ADMIN-002,
+    ARCH-076-ADMIN-003,
+    ARCH-076-BACKGROUND-004,
+    ARCH-076-COMMERCE-001,
+  ]
 enables: []
 created: 2026-11-13
 updated: 2026-11-15

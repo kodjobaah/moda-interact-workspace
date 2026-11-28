@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-052-MCP-003
-created: '2026-10-30'
+  - ARCH-052-MCP-003
+created: "2026-10-30"
 updated: 2026-10-30
 ---
 
@@ -139,33 +139,33 @@ Escalate gaps in published security primitives rather than implement another cry
 Task branch: `task/ARCH-052-MCP-005`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-005`
-  parent branch: `task/ARCH-052-MCP-005`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-005`
-  implementation branch: `task/ARCH-052-MCP-005`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-005`
+parent branch: `task/ARCH-052-MCP-005`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-005`
+implementation branch: `task/ARCH-052-MCP-005`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-mcp`
-  commit: `72ca88dd35967607e6749a5aed9b42cc49339d0b`
-  remote branch: `origin/task/ARCH-052-MCP-005`
-  pushed: yes
+repository: `moda-interact-mcp`
+commit: `72ca88dd35967607e6749a5aed9b42cc49339d0b`
+remote branch: `origin/task/ARCH-052-MCP-005`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md`
-  commit: this final task-report commit (see final task-branch HEAD)
-  remote branch: `origin/task/ARCH-052-MCP-005`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md`
+commit: this final task-report commit (see final task-branch HEAD)
+remote branch: `origin/task/ARCH-052-MCP-005`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 

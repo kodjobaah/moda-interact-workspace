@@ -59,9 +59,9 @@ ARCH-039 standardises hosted credential security before consumer refactoring. Th
 ```ts
 export type CredentialEnvelope = Readonly<{
   keyId: string;
-  nonce: Uint8Array;       // 12 bytes
-  ciphertext: Uint8Array;  // 1..8192 bytes
-  authTag: Uint8Array;     // 16 bytes
+  nonce: Uint8Array; // 12 bytes
+  ciphertext: Uint8Array; // 1..8192 bytes
+  authTag: Uint8Array; // 16 bytes
 }>;
 export function encryptCredential(input: {
   keyring: CredentialKeyring;
@@ -77,6 +77,7 @@ export function decryptCredential(input: {
 ```
 
 **Cryptographic rules:**
+
 - AES-256-GCM only, via `node:crypto`; 32-byte key selected from SHARED-001 private keyring by output `keyId`. `encryptCredential` verifies the active ID is configured; `decryptCredential` selects the envelope's own key ID and does not need an active selector (supports decryption of an older configured ID after changing active ID).
 - A cryptographically random 12-byte nonce is generated for **every** encryption. Authentication tag exactly 16 bytes. Never accept caller-specified nonce/tag, deterministic nonce, arbitrary IV size or plaintext fallback.
 - AAD is **required** and supplied unchanged by the caller; accept UTF-8 string or `Uint8Array`, copy/convert into bytes and reject zero length or >4096 bytes. Do not reconstruct/guess domain AAD in AEAD module.
@@ -134,7 +135,7 @@ After all Work Items, Acceptance Criteria and required Validation are complete, 
 
 ## Implementation Notes
 
-Include an independent known-format Node `createCipheriv` / `createDecipheriv` vector to catch matching bugs in encryption and decryption. Do not modify the existing service-local crypto until consumer tasks. The development-data wipe means compatibility with *persisted old ciphertext* is not required, but AEAD integrity/failure invariants still are.
+Include an independent known-format Node `createCipheriv` / `createDecipheriv` vector to catch matching bugs in encryption and decryption. Do not modify the existing service-local crypto until consumer tasks. The development-data wipe means compatibility with _persisted old ciphertext_ is not required, but AEAD integrity/failure invariants still are.
 
 Use the canonical dedicated parent/implementation task-worktree launcher and preserve initial synchronization evidence. Do not create/update `docs/decisions/**/_index.md` until the architecture session is explicitly confirmed complete. No implementation edits outside `moda-interact-shared`.
 

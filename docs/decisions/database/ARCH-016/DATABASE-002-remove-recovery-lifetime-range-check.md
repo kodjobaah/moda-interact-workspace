@@ -78,7 +78,7 @@ scripts/validate-arch016-recovery-schema.mjs                                    
 
 3. Preserve the existing `INTEGER NOT NULL DEFAULT 21` column, the singleton row, optimistic-version field, audit events, other check constraints and index definitions.
 4. Never rewrite or delete prior migration history. The new migration must apply both to a **fresh database** (all migrations in order) and to an **upgrade database** (all preceding migrations and an existing configuration row).
-5. Accept `0`, `1`, `21`, `90`, `91`, `180`, `365` and `2147483647` as column values following the migration. PostgreSQL `INTEGER` is the *storage* representation; this task does not promise integers outside the representable SQL range.
+5. Accept `0`, `1`, `21`, `90`, `91`, `180`, `365` and `2147483647` as column values following the migration. PostgreSQL `INTEGER` is the _storage_ representation; this task does not promise integers outside the representable SQL range.
 6. Because the old check is dropped, direct SQL can technically store a negative value; **do not advertise the database as preventing negative values**. ARCH-016-ADMIN-003 rejects them on normal mutations; ARCH-016-BACKGROUND-005 fails closed on a corrupted row.
 
 ## Work Items
@@ -124,6 +124,7 @@ SQL post-migration invariant: `pg_constraint` has no `ck_arch016_checkout_recove
 ## Validation
 
 git diff --check
+
 - [x] `npm run validate`
 - [x] `npm run prisma:generate`
 - [x] `npm run test:arch016-recovery-schema`

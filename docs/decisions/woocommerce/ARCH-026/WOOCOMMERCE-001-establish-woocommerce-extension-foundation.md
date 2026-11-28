@@ -551,24 +551,24 @@ The extension foundation MUST not require any secret to render its minimal Admin
 ## Work Items
 
 - [x] Scaffold the repository from the current official WooCommerce
-  `create-woo-extension` template using the `moda-interact` plugin slug.
+      `create-woo-extension` template using the `moda-interact` plugin slug.
 - [x] Remove generated sample/demo behaviour unrelated to the Moda WooCommerce Admin
-  foundation.
+      foundation.
 - [x] Establish the canonical Moda plugin name, slug, text domain, PHP namespace and
-  bootstrap entry point.
+      bootstrap entry point.
 - [x] Commit deterministic npm and Composer dependency metadata/lockfiles.
 - [x] Add repository-owned local WordPress/WooCommerce development configuration
-  pinned to the ARCH-026 baseline.
+      pinned to the ARCH-026 baseline.
 - [x] Register one minimal React-powered `Moda Interact` page under WooCommerce Admin
-  at `/moda-interact`.
+      at `/moda-interact`.
 - [x] Ensure the React page is served from plugin-built local assets and requires no
-  remote Moda service.
+      remote Moda service.
 - [x] Establish documented build, lint, PHP check, JS test, PHP test,
-  local-environment and plugin-ZIP commands.
+      local-environment and plugin-ZIP commands.
 - [x] Generate `moda-interact.zip` with the correct plugin root and without
-  development-only dependency directories/secrets.
+      development-only dependency directories/secrets.
 - [x] Add focused tests covering PHP bootstrap/Admin registration and React foundation
-  rendering.
+      rendering.
 - [x] Document clean-checkout setup and local validation in the repository README.
 - [x] Verify no Moda backend/API/database/queue integration has been introduced.
 
@@ -646,26 +646,26 @@ WOO-002 may begin only after this task is architect-reviewed and `complete`.
 ## Acceptance Criteria
 
 - [x] `moda-interact-woocommerce` contains a conventional installable
-  WordPress/WooCommerce extension rather than a separately hosted web application.
+      WordPress/WooCommerce extension rather than a separately hosted web application.
 - [x] The installed WordPress plugin directory is `moda-interact/`.
 - [x] The main plugin bootstrap is `moda-interact.php`.
 - [x] Plugin name, slug, text domain and PHP namespace match this task.
 - [x] Clean npm and Composer dependency installation succeeds from committed
-  manifests/lockfiles.
+      manifests/lockfiles.
 - [x] Production JavaScript build succeeds.
 - [x] PHP checks/tests succeed.
 - [x] JavaScript lint/tests succeed.
 - [x] The pinned local WordPress/WooCommerce environment starts successfully.
 - [x] The plugin installs and activates with WooCommerce active.
 - [x] WooCommerce Admin exposes the Moda Interact page without creating a branded
-  top-level WordPress menu.
+      top-level WordPress menu.
 - [x] Navigating to the Moda page renders the minimal React foundation successfully.
 - [x] The browser does not require or receive a Moda server credential.
 - [x] The foundation makes no network call to a Moda backend.
 - [x] `moda-interact.zip` installs with the correct root directory and contains no
-  `node_modules`, `.git`, local secrets or environment state.
+      `node_modules`, `.git`, local secrets or environment state.
 - [x] No billing, recovery, event-ingress, Merchant Knowledge, CommerceAgent or
-  Background behaviour has been implemented.
+      Background behaviour has been implemented.
 
 ## Validation
 
@@ -675,8 +675,8 @@ exact names/results in the Completion Report.
 Required validation categories:
 
 - [x] `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` succeeds and
-  the Completion Report records the resolved Node/npm, PHP, Composer and Docker
-  versions;
+      the Completion Report records the resolved Node/npm, PHP, Composer and Docker
+      versions;
 - [x] clean npm dependency installation from lockfile;
 - [x] clean Composer dependency installation from lockfile;
 - [x] production asset build;
@@ -686,16 +686,16 @@ Required validation categories:
 - [x] PHP unit tests;
 - [x] `git diff --check`;
 - [x] repository clean-state check (completed; the implementation worktree retains
-  one documented, unstaged `.gitignore` cache exclusion from the prior attempt);
+      one documented, unstaged `.gitignore` cache exclusion from the prior attempt);
 - [x] local `wp-env` start using the pinned WordPress/WooCommerce baseline;
 - [x] plugin activation smoke;
 - [x] Woo Admin `/moda-interact` page smoke;
 - [x] browser/DOM evidence that the React foundation rendered;
 - [x] plugin ZIP creation;
 - [x] ZIP-content audit proving required files are present and prohibited
-  development/secret files are absent;
+      development/secret files are absent;
 - [x] clean installation of the generated ZIP into a clean local
-  WordPress/WooCommerce environment.
+      WordPress/WooCommerce environment.
 
 The Completion Report MUST record:
 

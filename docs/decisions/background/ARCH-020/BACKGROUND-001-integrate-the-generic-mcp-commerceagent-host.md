@@ -115,21 +115,21 @@ These are **new user-requested scope amendments A1/A2**, not defects against the
 
 All cases below require named deterministic fixtures and observed side effects, not only prompt assertions. Keep them separate from the original Attempt 1 results.
 
-| Case | Required outcome |
-|---|---|
-| A1-L01 UK shop / French-number customer | Initial message uses configured shop English regardless of phone country. |
-| A1-L02 shop language initialization | Valid shop language initializes existing language/source fields; no phone parser or new enum required. |
-| A1-L03 later turn after French reply | Persisted detected French remains French on subsequent turns; shop English does not reset it. |
-| A1-L04 missing detected-language template | Approved shop-language template fallback is honestly labelled, without changing detected conversation language; unavailable shop variant follows existing no-template outcome. |
-| A1-L05 customer replies in another language | Substantive text or persisted transcript establishes the new language for subsequent replies; amount/currency/URLs/policy unchanged. |
-| A1-L06 ambiguous replies | Short, numeric, URL-only, emoji-only and otherwise ambiguous input retain current language and do not emit false detection. |
-| A2-V01 French and English voice notes | Provider mocks preserve spoken language despite opposite shop language; request does not force initial language or request English translation. |
-| A2-V02 successful transcript-to-reply | Full ordered workflow persists once, admits once, invokes CommerceAgent once and delivers the WhatsApp text reply. |
-| A2-V03 unsupported audio | Validation/bounded conversion decision is explicit; unsupported result uses request-to-type with zero CommerceAgent calls. |
-| A2-V04 empty transcription | Request-to-type, zero CommerceAgent calls/reservations and no invented transcript. |
-| A2-V05 timeout/provider failure | Existing bounded retry/terminal handling, request-to-type on exhaustion, no silent provider fallback, no agent invocation. |
-| A2-V06 duplicate delivery | Single transcript completion/turn/admission/reply; preserve existing engagement semantics. |
-| A2-V07 stale completion | Late audio/model completion cannot send or mutate the newer turn/language; assert version/lease checks and zero stale delivery. |
+| Case                                        | Required outcome                                                                                                                                                               |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A1-L01 UK shop / French-number customer     | Initial message uses configured shop English regardless of phone country.                                                                                                      |
+| A1-L02 shop language initialization         | Valid shop language initializes existing language/source fields; no phone parser or new enum required.                                                                         |
+| A1-L03 later turn after French reply        | Persisted detected French remains French on subsequent turns; shop English does not reset it.                                                                                  |
+| A1-L04 missing detected-language template   | Approved shop-language template fallback is honestly labelled, without changing detected conversation language; unavailable shop variant follows existing no-template outcome. |
+| A1-L05 customer replies in another language | Substantive text or persisted transcript establishes the new language for subsequent replies; amount/currency/URLs/policy unchanged.                                           |
+| A1-L06 ambiguous replies                    | Short, numeric, URL-only, emoji-only and otherwise ambiguous input retain current language and do not emit false detection.                                                    |
+| A2-V01 French and English voice notes       | Provider mocks preserve spoken language despite opposite shop language; request does not force initial language or request English translation.                                |
+| A2-V02 successful transcript-to-reply       | Full ordered workflow persists once, admits once, invokes CommerceAgent once and delivers the WhatsApp text reply.                                                             |
+| A2-V03 unsupported audio                    | Validation/bounded conversion decision is explicit; unsupported result uses request-to-type with zero CommerceAgent calls.                                                     |
+| A2-V04 empty transcription                  | Request-to-type, zero CommerceAgent calls/reservations and no invented transcript.                                                                                             |
+| A2-V05 timeout/provider failure             | Existing bounded retry/terminal handling, request-to-type on exhaustion, no silent provider fallback, no agent invocation.                                                     |
+| A2-V06 duplicate delivery                   | Single transcript completion/turn/admission/reply; preserve existing engagement semantics.                                                                                     |
+| A2-V07 stale completion                     | Late audio/model completion cannot send or mutate the newer turn/language; assert version/lease checks and zero stale delivery.                                                |
 
 Representative real-audio quality checks are a **separate evidence record**, not deterministic workflow-test results: identify synthetic/consented fixture IDs, French/English spoken language, container/codec/MIME, duration, provider/model/date, conversion if any, language retention and material transcription errors. Do not put transcript/audio/credentials in runtime logs. Report any not-run checks and their validation limitation explicitly; mocks cannot prove real codec acceptance or transcription quality. Do not automatically run paid/provider tests as part of unit tests.
 
@@ -162,7 +162,6 @@ Unit/integration fixtures cover valid reference delayed1h/10h, no-reference0/1/2
 For this task, record a requirement-to-fixture matrix with expected side effects, actual commands and results in the Completion Report. Do not implement another repository's changes to bypass a dependency.
 
 ## Dependencies
-
 
 - ARCH-016-BACKGROUND-003
 - ARCH-020-SHARED-001
@@ -261,28 +260,28 @@ Compatibility actually exercised: Node 24.19.0, npm 11.17.0, Prisma client/gener
 
 #### Requirement-to-fixture matrix
 
-| Requirement | Fixture / expected side effects | Actual outcome |
-| --- | --- | --- |
-| C2 delayed explicit reference | `recovery-routing.service.test.ts`: 1h/10h confirmed outbound, including later FAILED delivery state; select only referenced recovery, no phone fallback query | Passed |
-| C2 0/1/2 distinct; cross-shop terminal ambiguity | Same file: DISTINCT/LIMIT 2 query shape, 0/2 guidance before eligibility, 1 normal route; completed/expired candidates remain ambiguous | Passed with mocked query results; SQL not executed against PostgreSQL in this task |
-| C13 initial/follow-up/agent reference | Same file: each outbound category routes to one recovery conversation; query uses EXISTS so multiple sent messages cannot multiply candidates; existing `recovery-outreach-follow-up.test.ts` remains green | Passed |
-| Invalid/unknown/wrong-customer/provider/missing ownership | Routing fixtures: no fallback or execution; stored inbound mismatch rejected; audio persistence ownership race rejected before download | Passed |
-| C3 platform guidance | `routing-guidance.service.test.ts`: exact four reason texts; hashed environment key, EX 86400/NX, concurrent one-winner, Redis errors, guard retained after failed send, unsupported/wrong sender suppressed | Passed; no merchant service dependency in helper |
-| Routing before audio/model/admission side effects | `whatsapp.worker.test.ts`: ambiguous voice never downloads, records recovery activity or enqueues agent; raw abuse guard precedes routing | Passed |
-| C2 history/order/bounds | `commerce-history.test.ts`, checkout context ordering fixture: prior question retained, ID dedupe, Unicode cap/drop-oldest, current overflow and explicit automation-descriptor label; query excludes unsupported/incomplete audio/unsent outbound | Passed; query filters inspected, not a database query-plan rehearsal |
-| C5 first resolve / execute credentials | `commerce/host.test.ts`: verify RS256 signature, fixed iss/sub/aud/environment, <=120s lifetime, no resolve grant selector; tools/list params exactly {}, tool calls carry no credentials in model args | Passed over actual local SDK HTTP |
-| Grant retry/restart/new turn and release race | Host fixtures: persistent mock row reused across independent host invocations; concurrent inserts select one grant; P2002 winner with a different release replaces the losing candidate | Passed; database uniqueness itself is accepted DATABASE-001 evidence |
-| C14 newly authored tool / no expansion | Host fixture uses distinct new tool/revision IDs and arbitrary name for a new conversation, while old grant excludes it; server expansion denied, revocation omits tools, empty original grant remains usable for referral | Passed with synthetic immutable manifests; not a live Studio publication |
-| C6.1 P01–P04 | Host table fixtures for COMPLETED with null completedAt, EXPIRED, CANCELLED, MESSAGE_SENT and ENGAGED: fresh status as data, fixed status matrix/original-grant restrictions, historical total preserved; separate zero-tool fixture | Passed scripted/context composition evidence |
-| C6.1 P05 | Second version loads COMPLETED while retaining original release/grant/hash | Passed |
-| C6.1 P06 | Explicit French blocks model language replacement; host referral uses French and verified Shop.domain, never model contact text | Passed |
-| C6.1 P07–P09, P12 | Host metadata/null fallback cases plus existing language service and conversation tests: confidence/stability rules, explicit preference, no invented regional upgrade, amount unchanged, version/lease CAS persistence | Passed; fixed referral locale coverage noted below |
-| C6.1 P10 | Customer instruction-like name stays in data, summary omitted; extra model shopId tool argument rejected INVALID_INPUT before tools/call | Passed; not a semantic guarantee for arbitrary model prose |
-| C6.1 P11 | Invalid final rejected; changed version/expired lease/cancellation cannot return a deliverable result; processor does not persist language or send when stale | Passed |
-| C16 R02/R08 | Synthetic response.v1 details schema requires bounded `summary` for ANSWER; custom details validate but never leave host, referral permits {} despite required answer detail | Passed |
-| C16 R07/R12 | Old release response hash survives publication/turn; missing/wrong hash, unknown contract/runner fail before model use | Passed |
-| C6 deadlines/outage | MCP outage gives bounded failure, cancellation interrupts model; accelerated timer fixture asserts real 90,000ms host/10,000ms request timeout configuration and DEADLINE result | Passed; no 90-second wall-clock wait |
-| Existing lifecycle/telemetry | Quiet/max-settle, admission/reservations, outreach, duplicate handling, language, stale result and provider fixtures; fixed `commerce-mcp` telemetry identity excludes sensitive fields | Passed |
+| Requirement                                               | Fixture / expected side effects                                                                                                                                                                                                                    | Actual outcome                                                                     |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| C2 delayed explicit reference                             | `recovery-routing.service.test.ts`: 1h/10h confirmed outbound, including later FAILED delivery state; select only referenced recovery, no phone fallback query                                                                                     | Passed                                                                             |
+| C2 0/1/2 distinct; cross-shop terminal ambiguity          | Same file: DISTINCT/LIMIT 2 query shape, 0/2 guidance before eligibility, 1 normal route; completed/expired candidates remain ambiguous                                                                                                            | Passed with mocked query results; SQL not executed against PostgreSQL in this task |
+| C13 initial/follow-up/agent reference                     | Same file: each outbound category routes to one recovery conversation; query uses EXISTS so multiple sent messages cannot multiply candidates; existing `recovery-outreach-follow-up.test.ts` remains green                                        | Passed                                                                             |
+| Invalid/unknown/wrong-customer/provider/missing ownership | Routing fixtures: no fallback or execution; stored inbound mismatch rejected; audio persistence ownership race rejected before download                                                                                                            | Passed                                                                             |
+| C3 platform guidance                                      | `routing-guidance.service.test.ts`: exact four reason texts; hashed environment key, EX 86400/NX, concurrent one-winner, Redis errors, guard retained after failed send, unsupported/wrong sender suppressed                                       | Passed; no merchant service dependency in helper                                   |
+| Routing before audio/model/admission side effects         | `whatsapp.worker.test.ts`: ambiguous voice never downloads, records recovery activity or enqueues agent; raw abuse guard precedes routing                                                                                                          | Passed                                                                             |
+| C2 history/order/bounds                                   | `commerce-history.test.ts`, checkout context ordering fixture: prior question retained, ID dedupe, Unicode cap/drop-oldest, current overflow and explicit automation-descriptor label; query excludes unsupported/incomplete audio/unsent outbound | Passed; query filters inspected, not a database query-plan rehearsal               |
+| C5 first resolve / execute credentials                    | `commerce/host.test.ts`: verify RS256 signature, fixed iss/sub/aud/environment, <=120s lifetime, no resolve grant selector; tools/list params exactly {}, tool calls carry no credentials in model args                                            | Passed over actual local SDK HTTP                                                  |
+| Grant retry/restart/new turn and release race             | Host fixtures: persistent mock row reused across independent host invocations; concurrent inserts select one grant; P2002 winner with a different release replaces the losing candidate                                                            | Passed; database uniqueness itself is accepted DATABASE-001 evidence               |
+| C14 newly authored tool / no expansion                    | Host fixture uses distinct new tool/revision IDs and arbitrary name for a new conversation, while old grant excludes it; server expansion denied, revocation omits tools, empty original grant remains usable for referral                         | Passed with synthetic immutable manifests; not a live Studio publication           |
+| C6.1 P01–P04                                              | Host table fixtures for COMPLETED with null completedAt, EXPIRED, CANCELLED, MESSAGE_SENT and ENGAGED: fresh status as data, fixed status matrix/original-grant restrictions, historical total preserved; separate zero-tool fixture               | Passed scripted/context composition evidence                                       |
+| C6.1 P05                                                  | Second version loads COMPLETED while retaining original release/grant/hash                                                                                                                                                                         | Passed                                                                             |
+| C6.1 P06                                                  | Explicit French blocks model language replacement; host referral uses French and verified Shop.domain, never model contact text                                                                                                                    | Passed                                                                             |
+| C6.1 P07–P09, P12                                         | Host metadata/null fallback cases plus existing language service and conversation tests: confidence/stability rules, explicit preference, no invented regional upgrade, amount unchanged, version/lease CAS persistence                            | Passed; fixed referral locale coverage noted below                                 |
+| C6.1 P10                                                  | Customer instruction-like name stays in data, summary omitted; extra model shopId tool argument rejected INVALID_INPUT before tools/call                                                                                                           | Passed; not a semantic guarantee for arbitrary model prose                         |
+| C6.1 P11                                                  | Invalid final rejected; changed version/expired lease/cancellation cannot return a deliverable result; processor does not persist language or send when stale                                                                                      | Passed                                                                             |
+| C16 R02/R08                                               | Synthetic response.v1 details schema requires bounded `summary` for ANSWER; custom details validate but never leave host, referral permits {} despite required answer detail                                                                       | Passed                                                                             |
+| C16 R07/R12                                               | Old release response hash survives publication/turn; missing/wrong hash, unknown contract/runner fail before model use                                                                                                                             | Passed                                                                             |
+| C6 deadlines/outage                                       | MCP outage gives bounded failure, cancellation interrupts model; accelerated timer fixture asserts real 90,000ms host/10,000ms request timeout configuration and DEADLINE result                                                                   | Passed; no 90-second wall-clock wait                                               |
+| Existing lifecycle/telemetry                              | Quiet/max-settle, admission/reservations, outreach, duplicate handling, language, stale result and provider fixtures; fixed `commerce-mcp` telemetry identity excludes sensitive fields                                                            | Passed                                                                             |
 
 ### Deviations
 
@@ -364,19 +363,19 @@ architect acceptance or Complete decision.
 
 #### Amendment requirement-to-fixture matrix
 
-| Requirement | Deterministic evidence and observed side effects | Outcome |
-| --- | --- | --- |
-| A1-L01/L02 | `checkout-refresh.test.ts` and `conversation.service.test.ts`: French checkout/number still asks selector for shop fallback; shop `en-GB`/`fr` initializes existing fields with `MERCHANT_DEFAULT`; invalid/missing config invents no locale | Passed |
-| A1-L03 | `conversation.service.test.ts`: persisted detected French wins over shop English on the next resolution/upsert path | Passed |
-| A1-L04 | `whatsapp-template-selector.service.test.ts`: missing French selects approved English shop variant with actual descriptor language; immutable detected French remains; absent shop variant returns template-unavailable | Passed |
-| A1-L05 | `host.test.ts`, conversation CAS fixtures and `voice-workflow.test.ts`: substantive text/transcript returns and persists confident language while recovery amount, currency, URLs and policy remain trusted context | Passed |
-| A1-L06 | `host.test.ts` and language fixtures: short, numeric, URL and emoji input forces null detection and retains current referral language | Passed |
-| A2-V01 | `speech-transcription.service.test.ts`: French/English provider results are returned unchanged; multipart has only file/model/JSON response format and uses transcription, never translation | Passed with mocked provider; acoustic quality not claimed |
-| A2-V02 | `voice-workflow.test.ts`: raw abuse → route → engagement → download → validation → transcription → persistence → one admission → one agent → one text reply | Passed |
-| A2-V03/V04 | Audio-service/workflow fixtures: MIME/container mismatch and empty transcript persist terminal state/request-to-type with zero agent reservation | Passed |
-| A2-V05 | Speech/audio fixtures: 408/429/5xx and network failures remain one selected provider, retry only within the queue budget, then terminal request-to-type; no raw error leakage | Passed |
-| A2-V06 | Audio/workflow fixtures: replay and concurrent completion produce one transcript turn/admission/reply; interrupted enqueue recovery is limited to the same unprocessed latest transcript | Passed |
-| A2-V07 | Audio/workflow fixtures: newer inbound version rejects late completion as stale, sends no fallback/agent reply and retains newer language | Passed |
+| Requirement | Deterministic evidence and observed side effects                                                                                                                                                                                             | Outcome                                                   |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| A1-L01/L02  | `checkout-refresh.test.ts` and `conversation.service.test.ts`: French checkout/number still asks selector for shop fallback; shop `en-GB`/`fr` initializes existing fields with `MERCHANT_DEFAULT`; invalid/missing config invents no locale | Passed                                                    |
+| A1-L03      | `conversation.service.test.ts`: persisted detected French wins over shop English on the next resolution/upsert path                                                                                                                          | Passed                                                    |
+| A1-L04      | `whatsapp-template-selector.service.test.ts`: missing French selects approved English shop variant with actual descriptor language; immutable detected French remains; absent shop variant returns template-unavailable                      | Passed                                                    |
+| A1-L05      | `host.test.ts`, conversation CAS fixtures and `voice-workflow.test.ts`: substantive text/transcript returns and persists confident language while recovery amount, currency, URLs and policy remain trusted context                          | Passed                                                    |
+| A1-L06      | `host.test.ts` and language fixtures: short, numeric, URL and emoji input forces null detection and retains current referral language                                                                                                        | Passed                                                    |
+| A2-V01      | `speech-transcription.service.test.ts`: French/English provider results are returned unchanged; multipart has only file/model/JSON response format and uses transcription, never translation                                                 | Passed with mocked provider; acoustic quality not claimed |
+| A2-V02      | `voice-workflow.test.ts`: raw abuse → route → engagement → download → validation → transcription → persistence → one admission → one agent → one text reply                                                                                  | Passed                                                    |
+| A2-V03/V04  | Audio-service/workflow fixtures: MIME/container mismatch and empty transcript persist terminal state/request-to-type with zero agent reservation                                                                                             | Passed                                                    |
+| A2-V05      | Speech/audio fixtures: 408/429/5xx and network failures remain one selected provider, retry only within the queue budget, then terminal request-to-type; no raw error leakage                                                                | Passed                                                    |
+| A2-V06      | Audio/workflow fixtures: replay and concurrent completion produce one transcript turn/admission/reply; interrupted enqueue recovery is limited to the same unprocessed latest transcript                                                     | Passed                                                    |
+| A2-V07      | Audio/workflow fixtures: newer inbound version rejects late completion as stale, sends no fallback/agent reply and retains newer language                                                                                                    | Passed                                                    |
 
 #### Validation
 
@@ -427,9 +426,9 @@ Status: Review, Attempt 3. Both requested corrections are implemented; no archit
 acceptance decision is asserted. The prior A1/A2 OpenAI/language implementation in
 399cc2f remains present. The user's quoted Groq-only report predates that source.
 
-| Review item | Change and focused evidence | Disposition |
-| --- | --- | --- |
-| R1 processing time versus event order | Audio admission compares persisted inbound createdAt/id order; never compares a provider sent timestamp with completion-time lastInboundAt. Tests cover a queued newer event after an older note completed, both overlapping provider completion orders and genuine newer-message rejection before download. The valid new note advances one turn; older superseded results remain ignored. | Implemented |
+| Review item                                           | Change and focused evidence                                                                                                                                                                                                                                                                                                                                                                                                | Disposition |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| R1 processing time versus event order                 | Audio admission compares persisted inbound createdAt/id order; never compares a provider sent timestamp with completion-time lastInboundAt. Tests cover a queued newer event after an older note completed, both overlapping provider completion orders and genuine newer-message rejection before download. The valid new note advances one turn; older superseded results remain ignored.                                | Implemented |
 | R2 prior reply completion versus new inbound activity | Removed lastProcessedVersion from audio staleness/preconditions. Completion locks the conversation row, rechecks durable inbound order, then conditionally persists the pending transcript and increments the turn atomically. Unit and worker-flow tests finish the prior reply during provider work and immediately at the completion transaction; the new voice is persisted/admitted/delivered once, including replay. | Implemented |
 
 Changed files: src/services/inbound-whatsapp-audio.service.ts,
@@ -498,7 +497,6 @@ By explicit user instruction, retain the task in **Review, Attempt 2** and do no
 
 This status-only workflow override supersedes the prior Ready/Attempt 3 preparation direction, not the R1/R2 findings. Implementation remains 399cc2f31f52d9ca88797a266129ee16c8465b14; no corrected implementation or new validation is asserted. R1/R2 remain open and architect acceptance remains withheld. Continue review against an explicitly identified correction submission when available; no automatic preparation or implementation launch.
 
-
 ### Changes Requested — Attempt 2 — 2026-09-20
 
 **Not accepted. Task returned to Ready**, Attempt 2 preserved, executor/claimed_at cleared. No new attempt is claimed. Latest reviewed implementation: `399cc2f31f52d9ca88797a266129ee16c8465b14`; report: `0ed919099feadf291d0521b07ed54c86157121ac`. PR #48/#168 remote heads verified open; both worktrees were clean. This decision supersedes older readiness/review notes below. The latest simplified shop-language scope remains binding: no phone-country inference or new Shared/Database provenance prerequisites.
@@ -531,7 +529,6 @@ Correct R1/R2 on the same implementation task branch, add the named regression/n
 
 ### Historical architect decisions (superseded where inconsistent)
 
-
 ### Review disposition — scope amended, acceptance pending — 2026-09-20
 
 Historical scope-amendment decision (superseded by the simplified-language Ready decision below): status remained **Review**, Attempt 1, claim cleared. User-requested A1/A2 above are scope amendments, **not original-task defects**. No Accepted/Complete or Changes Requested defect verdict is asserted by this amendment. Original report/implementation remain preserved; no new attempt is claimed and no downstream task is promoted. Do not reclaim until the new Shared/Database owner prerequisites have been materialised/reconciled and the architect returns the expanded task to Ready.
@@ -541,7 +538,6 @@ Reviewed submission heads: implementation `c3042825ac54f6fbb366baef6dd44b2adbef6
 Shared owner confirmed the new phone-country source requires both Shared validation/publication and Database enum support; no accepted task is reopened. Gateway owner confirmed messaging worker needs its own scoped transcription configuration/credentials; the translation worker's OpenAI key is not sufficient. Handoffs are durable in the contract and domain coordination notes. The seven-language fixed referral coverage remains an explicit item to assess under A1; do not silently treat English fallback as matching another language.
 
 ### Historical definition review
-
 
 ### Review Status
 
@@ -566,7 +562,6 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
-
 
 ## Dependency readiness — 2026-09-20
 

@@ -74,7 +74,6 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 Own `src/commerce/mcp/` and the existing /api/mcp entry. C19 AuthorizedToolCall/DefinitionExecutionPort separates004 transport from014 execution.013 installs the production014 adapter;004 acceptance uses a contract-faithful executor double.
 
-
 ## Dependencies
 
 - ARCH-020-COMMERCE-003
@@ -90,6 +89,7 @@ Use dedicated launcher worktrees and accepted source; do not launch enabled work
 - ARCH-020-COMMERCE-010
 - ARCH-020-COMMERCE-014
 - ARCH-020-SYSTEM-TEST-001
+
 ## Acceptance Criteria
 
 - [x] M01: resolve vs execute matrix, malformed JWT/Origin/body and mismatched tenant/turn deny before executor calls.
@@ -154,12 +154,12 @@ that the required MCP route is private rather than absent.
 
 Requirement-to-fixture matrix:
 
-| Requirement | Fixture/test | Expected and observed effect |
-| --- | --- | --- |
-| M01 | `tests/mcp-service.test.ts`: resolve/execute matrix; origin, batch, params and argument bounds; JWT verifier | Resolve discovery succeeds, resolve execution and malformed/Origin inputs deny, executor calls remain zero, and RS256 issuer/audience/subject/kid/purpose/lifetime checks pass. |
-| M02 | `tests/mcp-service.test.ts`: exact pinned revision, manifest contract hash, zero-tool fixture | Only the granted tool whose name/version/revision match the immutable definition is listed/callable; bad contract denies before discovery and zero-tool discovery remains empty. |
-| M03 | `tests/mcp-service.test.ts`: tenant/turn mismatch, release mismatch, expiry and revocation mutations | Stale turn, wrong release, expired grant and revoked tool deny; no executor call occurs. Authorization is re-read for each request through the injected port. |
-| M04 | `tests/mcp-service.test.ts`: pinned `tools/call` executor double and denied-call assertions | One authorized call reaches the executor with pinned grant/release context; denied or revoked calls reach it zero times; typed execution failures map to unavailable/error responses. |
+| Requirement | Fixture/test                                                                                                 | Expected and observed effect                                                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M01         | `tests/mcp-service.test.ts`: resolve/execute matrix; origin, batch, params and argument bounds; JWT verifier | Resolve discovery succeeds, resolve execution and malformed/Origin inputs deny, executor calls remain zero, and RS256 issuer/audience/subject/kid/purpose/lifetime checks pass.       |
+| M02         | `tests/mcp-service.test.ts`: exact pinned revision, manifest contract hash, zero-tool fixture                | Only the granted tool whose name/version/revision match the immutable definition is listed/callable; bad contract denies before discovery and zero-tool discovery remains empty.      |
+| M03         | `tests/mcp-service.test.ts`: tenant/turn mismatch, release mismatch, expiry and revocation mutations         | Stale turn, wrong release, expired grant and revoked tool deny; no executor call occurs. Authorization is re-read for each request through the injected port.                         |
+| M04         | `tests/mcp-service.test.ts`: pinned `tools/call` executor double and denied-call assertions                  | One authorized call reaches the executor with pinned grant/release context; denied or revoked calls reach it zero times; typed execution failures map to unavailable/error responses. |
 
 ### Validation Results
 
@@ -264,12 +264,12 @@ and listeners are removed, typed execution failures remain C4 results with
 
 Requirement-to-effect evidence for this attempt:
 
-| Requirement | Fixture/test | Expected and observed effect |
-| --- | --- | --- |
-| M01 | `tests/mcp-service.test.ts` protocol, origin, streamed-body and purpose cases; `tests/mcp-compatibility.test.ts` real SDK client | Resolve discovery succeeds; execute-only methods, malformed JSON, invalid notifications/protocol, Origin and >128 KiB input fail before execution; the pinned client interoperates with the production handler. |
-| M02 | `tests/mcp-authorization.test.ts` absent/malformed/mismatched definitions, prompt aggregate and zero-tool cases | Missing current or pinned records fail closed with typed availability/compatibility errors; escaped aggregate prompt content is bounded; legitimate zero-tool discovery stays empty. |
-| M03 | duplicate original associations in both orders plus resolver-to-service execution/revocation fixture | Both orders produce `1/2` minima, removed/new provenance cannot restore authority, those limits reach the executor once, and current tool revocation removes the method with no additional execution. |
-| M04 | ignored-abort deadline and typed-failure service cases | A never-settling executor yields a bounded `DEADLINE` result by assertion expiry, successful dispatch occurs once, and typed `NOT_FOUND` remains a C4 `isError` tool result. |
+| Requirement | Fixture/test                                                                                                                     | Expected and observed effect                                                                                                                                                                                    |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M01         | `tests/mcp-service.test.ts` protocol, origin, streamed-body and purpose cases; `tests/mcp-compatibility.test.ts` real SDK client | Resolve discovery succeeds; execute-only methods, malformed JSON, invalid notifications/protocol, Origin and >128 KiB input fail before execution; the pinned client interoperates with the production handler. |
+| M02         | `tests/mcp-authorization.test.ts` absent/malformed/mismatched definitions, prompt aggregate and zero-tool cases                  | Missing current or pinned records fail closed with typed availability/compatibility errors; escaped aggregate prompt content is bounded; legitimate zero-tool discovery stays empty.                            |
+| M03         | duplicate original associations in both orders plus resolver-to-service execution/revocation fixture                             | Both orders produce `1/2` minima, removed/new provenance cannot restore authority, those limits reach the executor once, and current tool revocation removes the method with no additional execution.           |
+| M04         | ignored-abort deadline and typed-failure service cases                                                                           | A never-settling executor yields a bounded `DEADLINE` result by assertion expiry, successful dispatch occurs once, and typed `NOT_FOUND` remains a C4 `isError` tool result.                                    |
 
 Agent-owned validation from the implementation worktree:
 
@@ -343,7 +343,6 @@ Permanent fake-clock/barrier tests: never-settling executor=>handler settles by1
 
 Implement A2-R1–A2-R3 within004-owned MCP files/tests, preserve working prompt/interop changes, and map each prior R1–R4 claim to actual effect evidence. Publish same implementation/report branch pair and return to review after focused/required checks. Live Redis and Background/provider integration remain developer-owned and are not blockers here. Parent overlay is committed/pushed before handoff; preparation owns the next attempt. No downstream task is promoted.
 
-
 ### Changes Requested — Attempt 1 — 2026-09-21
 
 **Current decision: Ready; Attempt 1 retained; executor/claimed_at null; not accepted.** Reviewed implementation `c97a85be3a1561adca06eb03577dd84ad30ed306` and report `566ecd9f74cda640f7ae5281dfead9c47d1657c1`; both remote task heads verified and dedicated worktrees clean. No implementation edits, next claim, dependent promotion, main integration or gitlink update. This supersedes pre-implementation readiness wording below.
@@ -389,7 +388,6 @@ Tests using fake clocks/barriers: valid assertion expires during authorization, 
 ### Resubmission and scope boundary
 
 Implement R1–R4 in004-owned MCP files and fixtures; update preparation/synchronization evidence and precise M01–M04 mapping. Commit/push the same implementation/report branches, then return to review. No new trusted commerce adapter work belongs in this task:015/006/016/007 and014 retain their separate ownership and normal preparation. The submitted “Starting: Implement trusted commerce adapters” progress line is not authorization to expand004. Parent overlay is published before handoff; no next attempt is claimed here. Live Background/Redis/provider integration remains developer-owned and is not the acceptance blocker.
-
 
 ### Review Status
 

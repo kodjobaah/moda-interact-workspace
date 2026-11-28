@@ -15,14 +15,13 @@ executor:
 claimed_at:
 attempt: 2
 depends_on:
-- ARCH-014-ADMIN-005
+  - ARCH-014-ADMIN-005
 enables: []
 created: 2026-09-15
 updated: 2026-09-15
 ---
 
 # ARCH-014-ADMIN-007
-
 
 ## Objective
 

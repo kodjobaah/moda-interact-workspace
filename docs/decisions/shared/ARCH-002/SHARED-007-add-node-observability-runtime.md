@@ -19,6 +19,7 @@ enables:
 created: 2026-08-31
 updated: 2026-08-31
 ---
+
 # Add reusable Node observability runtime
 
 ## Objective
@@ -328,4 +329,3 @@ ARCH-002-SHARED-010 -> Pending
 
 SHARED-008 and SHARED-009 may proceed independently. SHARED-010 remains blocked
 until both are architect-accepted Complete.
-

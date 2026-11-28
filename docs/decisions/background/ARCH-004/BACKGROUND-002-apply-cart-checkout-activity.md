@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T19:15:00Z
 ---
+
 # Apply checkout and cart activity to pending recovery
 
 ## Objective
@@ -184,21 +185,21 @@ Ready for Review.
 
 - Added canonical `activityAt` mapping for `checkout.updated` and `cart.activity`.
 - Added cart activity contract mapping using only `tenant.shopId`, cart token,
-    emptiness, and canonical envelope time.
+  emptiness, and canonical envelope time.
 - Added `cart-activity` to the existing `checkout-events` worker dispatch and
-    bounded worker telemetry job names.
+  bounded worker telemetry job names.
 - Made checkout updates refresh a matching pending candidate before falling
-    back to the existing durable `CheckoutRecovery` refresh path.
+  back to the existing durable `CheckoutRecovery` refresh path.
 - Added cart activity handling that delegates to O(1) candidate correlation and
-    never performs a Shopify lookup or creates a candidate.
+  never performs a Shopify lookup or creates a candidate.
 
 ### Validation Results
 
 - Focused integration and regression tests: 72 passed.
 - `npm run build`: passed.
 - `npm test`: 129 passed, 4 skipped, 1 unrelated baseline failure in
-    `tests/unit/services/recovery-routing.service.test.ts` because its Prisma
-    mock does not provide `customerPhone.findMany`.
+  `tests/unit/services/recovery-routing.service.test.ts` because its Prisma
+  mock does not provide `customerPhone.findMany`.
 - `git diff --check`: passed.
 - No commit or push performed.
 
@@ -210,12 +211,12 @@ only dispatches and consumes its service API.
 ### Assumptions
 
 - A checkout update that resolves to a pending candidate returns a bounded
-    pending outcome and does not also refresh a durable recovery.
+  pending outcome and does not also refresh a durable recovery.
 
 ### Unresolved Issues
 
 - The full suite retains the unrelated `customerPhone.findMany` Prisma-mock
-    failure documented above.
+  failure documented above.
 
 ### Architectural Concerns
 

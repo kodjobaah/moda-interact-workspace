@@ -21,9 +21,7 @@ created: 2026-10-31
 updated: 2026-11-01
 ---
 
-
 # ARCH-054-WOOCOMMERCE-001: Add WooCommerce AI delay control through protected WordPress REST
-
 
 ## Architecture
 
@@ -33,26 +31,21 @@ Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md
 
 Coordinator: `moda_architect`. Task materialised in the canonical parent worktree and claimed through the prepared launcher; see Worktree and Git Evidence below.
 
-
 ## Objective
 
 Provide authenticated WooCommerce settings UI for all whole-minute 0–30 values through the approved hosted API, without direct database access.
-
 
 ## Context
 
 ARCH-054 adds a **merchant-selectable integer 0–30 minute AI reply delay** to the existing ARCH-040 recovery-conversation processor and handover controls, leaving merchant-authored HUMAN replies without configured delay. See the parent architecture and current snapshot for specific boundaries.
 
-
 ## Scope
 
 Create `includes/Rest/AiResponseDelayController.php`, `includes/Api/AiResponseDelayResponseValidator.php`, `src/ai-response-delay-client.js`, `src/ai-response-delay-controller.js`, `src/recovery-settings/ai-response-delay-panel.js`. Modify `includes/Runtime.php`, `includes/Api/ModaApiClient.php`, `src/page/controller-factory.js`, page state/render plumbing, and `src/recovery-settings/recovery-settings-screen.js`; add focused PHP/JS tests. Do not change the existing RecoveryPolicyController contract.
 
-
 ## Out of Scope
 
 No unrelated architecture changes, new standalone chat service, per-user timer jobs, invented provider error explanations, or updates to `docs/decisions/**/_index.md`. No implementation outside the assigned repository.
-
 
 ## Requirements
 
@@ -61,34 +54,28 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 - UI labeled 0–30 integer input, translated through existing plugin gettext text-domain, clear "Human replies are immediate" guidance, separate Save from recovery delay, pending/conflict state and read-after-save. On reload reads saved canonical setting; `Cache-Control: private, no-store`.
 - Existing per-merchant Take Over and Reply composer continues to work unchanged; this setting has zero effect on the PHP/runtime human dispatch.
 
-
 ## Work Items
 
 - [x] Add PHP proxy/auth/validator + ModaApiClient method; register and route.
 - [x] Add JS controller/client/panel and recovery settings page integration.
 - [x] Test WP privilege/nonce, cross-site changed URL, installation rotation, type bounds, no-op/revision conflict, server failure, and HUMAN bypass UI copy.
 
-
 ## Interfaces / Contracts
 
 Exact Shared v1 GET and PUT examples from parent architecture. Woo PHP may validate the same wire shape, but must not invent another Node/Zod contract; the hosted API consumes the published schema.
-
 
 ## Dependencies
 
 - ARCH-054-API-001
 
-
 ## Enables
 
 None
-
 
 ## Acceptance Criteria
 
 - [x] Only authorised WP merchant can read/write their own shop setting; all integers 0–30 supported, floats/strings rejected at server boundaries.
 - [x] No direct DB/Redis access, no credential in browser and no change to existing recovery settings or human send admission.
-
 
 ## Validation
 
@@ -100,16 +87,13 @@ None
 - [x] `npm run build` (passed with bundle-size/performance warnings).
 - [x] `git diff --check` (passed).
 
-
 ## Stop Condition
 
 After all required Work Items, Acceptance Criteria and Validation are complete, update Completion Report, set status to `review`, return control to `moda_architect` and **STOP**. Do not implement dependent tasks. Publication tasks do not rerun accepted implementation validation.
 
-
 ## Implementation Notes
 
 Implement only the identified repository-owned changes; preserve original provider/SDK errors in shared structured logs and rethrow failures to the owning retry/admission boundary.
-
 
 ## Completion Report
 

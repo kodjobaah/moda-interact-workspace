@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-052-SHARED-010
+  - ARCH-052-SHARED-010
 enables:
-- ARCH-052-COMMERCE-007
-- ARCH-052-MCP-003
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-created: '2026-10-29'
+  - ARCH-052-COMMERCE-007
+  - ARCH-052-MCP-003
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+created: "2026-10-29"
 updated: 2026-10-30
 ---
 
@@ -64,7 +64,6 @@ Implement the **one product-tool synchronisation capability** in `moda-interact-
 ## Requirements
 
 **Attempt 14 contract gate (normative):** Update the Commerce `@modainteract/moda-interact-shared` package/lockfile to the version published by SHARED-010 (expected 2.7.0). The canonical product drafts must use its `CommerceToolInputs`/`CommerceToolOutputs`, including nullable `variantId` and optional provider taxonomy ID data. Audit the existing Commerce `src/commerce/products/index.ts` and its tests for consumers that assume every product `variantId` is non-null; narrow safely at points requiring a real Shopify variant ID, and never fabricate a Woo variant ID. This is necessary for this repository to compile against SHARED-010. The existing `discounts.getOptions` preview producer may continue to omit the optional `cursor` field; do not add a second discount pagination engine in Commerce. Keep code-driven `product_search` feature entitlement; do not create an `initial_outreach` entitlement or bypass merchant opt-in. Existing Studio release lifecycle and script flags remain as already specified; this is not a discount-tool publication task.
-
 
 **Canonical ownership and feature:**
 
@@ -145,57 +144,63 @@ import type { CommerceToolDraftDefinition } from "../tool-definition";
 import { InputSchemaSchema } from "@modainteract/moda-interact-shared/commerce";
 import { getPolicyOperationAuthoringDescriptor } from "../execution/policy-operation-authoring";
 
-export const SYSTEM_PRODUCT_TOOL_DRAFTS: readonly CommerceToolDraftDefinition[] = [
-  {
-    name: "commerce_search_products",
-    definitionVersion: "1.0.0",
-    description: "Search products from the authorised shop using provider-backed reads.",
-    inputSchema: InputSchemaSchema.parse(
-      getPolicyOperationAuthoringDescriptor("products.search", "1.0.0").argumentsSchema,
-    ),
-    execution: {
-      kind: "POLICY_OPERATION",
-      operation: "products.search",
-      operationVersion: "1.0.0",
-      arguments: {
-        query: { input: "query" },
-        availableOnly: { input: "availableOnly", omitIfMissing: true },
-        limit: { input: "limit", omitIfMissing: true },
-        maximumPrice: { input: "maximumPrice", omitIfMissing: true },
-        cursor: { input: "cursor", omitIfMissing: true },
+export const SYSTEM_PRODUCT_TOOL_DRAFTS: readonly CommerceToolDraftDefinition[] =
+  [
+    {
+      name: "commerce_search_products",
+      definitionVersion: "1.0.0",
+      description:
+        "Search products from the authorised shop using provider-backed reads.",
+      inputSchema: InputSchemaSchema.parse(
+        getPolicyOperationAuthoringDescriptor("products.search", "1.0.0")
+          .argumentsSchema,
+      ),
+      execution: {
+        kind: "POLICY_OPERATION",
+        operation: "products.search",
+        operationVersion: "1.0.0",
+        arguments: {
+          query: { input: "query" },
+          availableOnly: { input: "availableOnly", omitIfMissing: true },
+          limit: { input: "limit", omitIfMissing: true },
+          maximumPrice: { input: "maximumPrice", omitIfMissing: true },
+          cursor: { input: "cursor", omitIfMissing: true },
+        },
+      },
+      responseTemplate: {
+        kind: "nunjucks",
+        runtimeVersion: "nunjucks.v1",
+        source:
+          "Product search complete. Use the structured result for product details.",
+        unavailable: "Product information is unavailable.",
       },
     },
-    responseTemplate: {
-      kind: "nunjucks",
-      runtimeVersion: "nunjucks.v1",
-      source: "Product search complete. Use the structured result for product details.",
-      unavailable: "Product information is unavailable.",
-    },
-  },
-  {
-    name: "commerce_get_product",
-    definitionVersion: "1.0.0",
-    description: "Retrieve one product or variant from the authorised shop.",
-    inputSchema: InputSchemaSchema.parse(
-      getPolicyOperationAuthoringDescriptor("products.get", "1.0.0").argumentsSchema,
-    ),
-    execution: {
-      kind: "POLICY_OPERATION",
-      operation: "products.get",
-      operationVersion: "1.0.0",
-      arguments: {
-        productId: { input: "productId" },
-        variantId: { input: "variantId" },
+    {
+      name: "commerce_get_product",
+      definitionVersion: "1.0.0",
+      description: "Retrieve one product or variant from the authorised shop.",
+      inputSchema: InputSchemaSchema.parse(
+        getPolicyOperationAuthoringDescriptor("products.get", "1.0.0")
+          .argumentsSchema,
+      ),
+      execution: {
+        kind: "POLICY_OPERATION",
+        operation: "products.get",
+        operationVersion: "1.0.0",
+        arguments: {
+          productId: { input: "productId" },
+          variantId: { input: "variantId" },
+        },
+      },
+      responseTemplate: {
+        kind: "nunjucks",
+        runtimeVersion: "nunjucks.v1",
+        source:
+          "Product lookup complete. Use the structured result for product details.",
+        unavailable: "Product information is unavailable.",
       },
     },
-    responseTemplate: {
-      kind: "nunjucks",
-      runtimeVersion: "nunjucks.v1",
-      source: "Product lookup complete. Use the structured result for product details.",
-      unavailable: "Product information is unavailable.",
-    },
-  },
-];
+  ];
 ```
 
 The `InputSchemaSchema.parse(...)` call is required because the authoring descriptor has a generic JSON-schema TypeScript type while published tools require the constrained Commerce input subset. An incompatible generated schema must fail the task validation; never cast it to bypass the validator. Optional/defaulted product-search inputs must be omitted from the mapped operation arguments when not supplied, and MCP-003 must apply the published Shared defaults.

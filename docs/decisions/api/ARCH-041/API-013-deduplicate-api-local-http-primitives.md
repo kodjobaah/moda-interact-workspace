@@ -87,7 +87,7 @@ API-local `node:http` request/response mechanics only; consume the canonical han
 ## Acceptance Criteria
 
 - [x] New and relocated tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/`; no tests remain in `src/`; assertions and required fixtures are preserved.
-- [x] `src/http/route-handler.ts` from API-012 remains the single canonical handler contract; no duplicated generic helper remains *within the selected equivalent consumers*; incompatible security-sensitive mechanics remain separate.
+- [x] `src/http/route-handler.ts` from API-012 remains the single canonical handler contract; no duplicated generic helper remains _within the selected equivalent consumers_; incompatible security-sensitive mechanics remain separate.
 - [x] Request parsing, response codes/headers, credential validation and endpoint matching retain exact baseline behaviour.
 - [x] Helper tests cover truncation, stream abort, over-limit and duplicate headers without leaking values.
 - [x] No unrelated business controllers, webhook verification protocols, authentication policy, migrations or shared service contracts change.
@@ -137,12 +137,12 @@ The implementation commit range is `origin/main..task/ARCH-041-API-013` and cont
 
 HTTP helper equivalence and exclusions:
 
-| Mechanic | Shared helper and migrated consumers | Deliberately retained separately |
-| --- | --- | --- |
+| Mechanic                                      | Shared helper and migrated consumers                                                                                                                                                                    | Deliberately retained separately                                                                                                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Bounded request body and strict JSON decoding | `src/http/body.ts`; billing command, merchant store-context/category-selection, and Woo installation connect request parsing, with each caller supplying its established byte limit and 400/413 mapping | Woo REST-read callback retains its callback-specific stream/error path and 4 KiB credential-payload boundary; signed Woo billing webhook retains raw-byte signature verification. |
-| Raw header multiplicity | `src/http/headers.ts`; billing, merchant request parsing, Woo installation, and Woo REST-read authorization (including the final `a24202a` deduplication) | No normalized-header fallback was introduced; endpoint-specific body-presence checks remain separate where their malformed/zero-length semantics differ. |
-| JSON response writing | `src/http/response.ts` used for identical no-store JSON writers across billing and merchant route consumers | Woo REST-read keeps CSP/referrer protections; recoveries keeps `private, no-store`; server health/404 writers preserve their existing exact header contract. |
-| Route handler interface | The existing API-012 `src/http/route-handler.ts` `ApiRouteHandler` is the sole interface; domain factories and dispatcher consume it. | No endpoint-specific handler behavior or security policy is merged into the interface. |
+| Raw header multiplicity                       | `src/http/headers.ts`; billing, merchant request parsing, Woo installation, and Woo REST-read authorization (including the final `a24202a` deduplication)                                               | No normalized-header fallback was introduced; endpoint-specific body-presence checks remain separate where their malformed/zero-length semantics differ.                          |
+| JSON response writing                         | `src/http/response.ts` used for identical no-store JSON writers across billing and merchant route consumers                                                                                             | Woo REST-read keeps CSP/referrer protections; recoveries keeps `private, no-store`; server health/404 writers preserve their existing exact header contract.                      |
+| Route handler interface                       | The existing API-012 `src/http/route-handler.ts` `ApiRouteHandler` is the sole interface; domain factories and dispatcher consume it.                                                                   | No endpoint-specific handler behavior or security policy is merged into the interface.                                                                                            |
 
 ### Validation Results
 

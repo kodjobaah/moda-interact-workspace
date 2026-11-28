@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-055-API-001
+  - ARCH-055-API-001
 enables:
-- ARCH-055-API-009
-- ARCH-055-SYSTEM-TEST-001
-created: '2026-11-02'
+  - ARCH-055-API-009
+  - ARCH-055-SYSTEM-TEST-001
+created: "2026-11-02"
 updated: 2026-11-03
 ---
 
@@ -61,13 +61,13 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
-| File / symbol touchpoint | Deterministic edit |
-|---|---|
-| `src/billing/commands/recurring-intent.ts; src/billing/commands/recovery-credit-intent.ts` | CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons. |
-| `src/billing/commands/recurring-intent.ts` | Replace all recurring history load/sort with bounded findFirst over exact unresolved OR applicable confirmed cancellation predicate; include provider reference and Free-terminal-reset exception, not last-N history. |
-| `src/billing/commands/recurring-outcome.ts; src/billing/commands/recovery-credit-outcome.ts` | Use guarded returning update for a winning outcome; retain zero-row reread and provider-reference advisory/collision guards. No post-admission rotation veto on valid evidence. |
-| `src/billing/commands/recovery-credit-intent.ts; src/woocommerce/billing/initial-free-activation.service.ts` | Select purchase ID only from create. Reuse accepted materialisation contract from API-001, preserving warm/cold validation and no early paid/credit activation. |
-| `src/woocommerce/billing/woo-billing-client.ts` | Preserve original transport/read/parse cause, HTTP status and bounded safe provider details through typed errors; public/durable codes unchanged; do not log headers/raw bodies/confirmation URLs or retry uncertain writes. |
+| File / symbol touchpoint                                                                                     | Deterministic edit                                                                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/billing/commands/recurring-intent.ts; src/billing/commands/recovery-credit-intent.ts`                   | CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons. |
+| `src/billing/commands/recurring-intent.ts`                                                                   | Replace all recurring history load/sort with bounded findFirst over exact unresolved OR applicable confirmed cancellation predicate; include provider reference and Free-terminal-reset exception, not last-N history.                                          |
+| `src/billing/commands/recurring-outcome.ts; src/billing/commands/recovery-credit-outcome.ts`                 | Use guarded returning update for a winning outcome; retain zero-row reread and provider-reference advisory/collision guards. No post-admission rotation veto on valid evidence.                                                                                 |
+| `src/billing/commands/recovery-credit-intent.ts; src/woocommerce/billing/initial-free-activation.service.ts` | Select purchase ID only from create. Reuse accepted materialisation contract from API-001, preserving warm/cold validation and no early paid/credit activation.                                                                                                 |
+| `src/woocommerce/billing/woo-billing-client.ts`                                                              | Preserve original transport/read/parse cause, HTTP status and bounded safe provider details through typed errors; public/durable codes unchanged; do not log headers/raw bodies/confirmation URLs or retry uncertain writes.                                    |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
 
@@ -131,15 +131,15 @@ The public API remains unchanged except documentation corrections explicitly aut
 
 This fixes the NEW helper-to-domain mapping without changing provider-facing operations or existing replay/quote errors. Source vocabulary/envelopes: `recurring-intent.ts:66–77`, `recovery-credit-intent.ts:38–57`, `commands/routes.ts:68–98,142–165` and `command-http.ts:96–112`.
 
-| Operation / condition | Exact HTTP result | Persistence / external-operation result |
-|---|---|---|
-| POST `/v1/billing/subscription`: current-principal helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new operation, materialised plan or subscription change commits; zero subscription-create provider calls. |
-| DELETE `/v1/billing/subscription`: helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new CANCEL operation; zero provider DELETE calls. |
-| POST `/v1/billing/subscription/switch`: helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new SWITCH operation or target materialisation commits; zero switch provider calls. |
-| POST `/v1/billing/recovery-credit-purchases`: helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new purchase/operation/credits; zero purchase provider calls. |
-| Same stale gate on a request whose idempotency key already exists | Same endpoint-specific `409`/`billing_shop_invalid` result | Existing operation/purchase remains unchanged; no replay/provider call. This retains revision 2's gate before both new and replay admission. |
-| Missing/invalid installed HTTP credentials | `401`, JSON `{"error":"unauthorized"}` | Admission is never called. |
-| Unexpected helper-read database exception, distinct from the typed mismatch/recognised existing domain retry | `500`, JSON `{"error":"internal_error"}` | Roll back admission; no provider call; preserve original exception for existing internal-error logging. |
+| Operation / condition                                                                                        | Exact HTTP result                                          | Persistence / external-operation result                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST `/v1/billing/subscription`: current-principal helper rejects                                            | `409`, JSON `{"error":"billing_shop_invalid"}`             | No new operation, materialised plan or subscription change commits; zero subscription-create provider calls.                                 |
+| DELETE `/v1/billing/subscription`: helper rejects                                                            | `409`, JSON `{"error":"billing_shop_invalid"}`             | No new CANCEL operation; zero provider DELETE calls.                                                                                         |
+| POST `/v1/billing/subscription/switch`: helper rejects                                                       | `409`, JSON `{"error":"billing_shop_invalid"}`             | No new SWITCH operation or target materialisation commits; zero switch provider calls.                                                       |
+| POST `/v1/billing/recovery-credit-purchases`: helper rejects                                                 | `409`, JSON `{"error":"billing_shop_invalid"}`             | No new purchase/operation/credits; zero purchase provider calls.                                                                             |
+| Same stale gate on a request whose idempotency key already exists                                            | Same endpoint-specific `409`/`billing_shop_invalid` result | Existing operation/purchase remains unchanged; no replay/provider call. This retains revision 2's gate before both new and replay admission. |
+| Missing/invalid installed HTTP credentials                                                                   | `401`, JSON `{"error":"unauthorized"}`                     | Admission is never called.                                                                                                                   |
+| Unexpected helper-read database exception, distinct from the typed mismatch/recognised existing domain retry | `500`, JSON `{"error":"internal_error"}`                   | Roll back admission; no provider call; preserve original exception for existing internal-error logging.                                      |
 
 Recurring intents map only `instanceof WooMutationPrincipalConflictError` to `RecurringBillingCommandError(409, "billing_shop_invalid", undefined, undefined, { cause: error })`. Purchase intents map it to `RecoveryCreditPurchaseCommandError(409, "billing_shop_invalid", undefined, undefined, undefined, { cause: error })`. Append optional `ErrorOptions` after the existing constructor parameters in `recurring-command-error.ts` and `recovery-credit-command-error.ts`, and pass it to `super`; preserve existing callers. For these pre-admission errors omit `operationId`, `purchaseId` and `providerErrorCode` entirely, not null. Do not map arbitrary Prisma/provider failures to this mismatch. Domain wrappers retain the internal helper and its cause without exposing diagnostic details in JSON.
 
@@ -171,13 +171,13 @@ Extend the existing `tests/unit/billing/commands/subscription-routes.test.ts` an
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
-| Case | Fixture / operation | Required result |
-|---|---|---|
-| G01 | Real auth then reconnect/revoke/suspend before create/cancel/switch/purchase admission; repeat with an existing key | Exact revision-3 table: 409 billing_shop_invalid without IDs, no new durable rows/provider calls; unchanged existing rows. Unknown helper-read failure is 500 internal_error. Current principal still works. |
-| G02 | Rotate only after admitted intent commits, then provider outcome arrives | Persist valid outcome; no credit/paid activation before verified reconciliation. |
-| G03 | No matching operation/older unresolved/confirmed cancellation/different contract/Free reset | Bounded blocker exactly equivalent to original policy; never latest-only. |
-| G04 | Outcome conditional update loses to newer durable result | Return winner by reread; no downgrade or invented success. |
-| G05 | Transport/HTTP/parse/config failure and repeated request | Original redacted diagnostics; existing safe output and no blind provider resend. |
+| Case | Fixture / operation                                                                                                 | Required result                                                                                                                                                                                              |
+| ---- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| G01  | Real auth then reconnect/revoke/suspend before create/cancel/switch/purchase admission; repeat with an existing key | Exact revision-3 table: 409 billing_shop_invalid without IDs, no new durable rows/provider calls; unchanged existing rows. Unknown helper-read failure is 500 internal_error. Current principal still works. |
+| G02  | Rotate only after admitted intent commits, then provider outcome arrives                                            | Persist valid outcome; no credit/paid activation before verified reconciliation.                                                                                                                             |
+| G03  | No matching operation/older unresolved/confirmed cancellation/different contract/Free reset                         | Bounded blocker exactly equivalent to original policy; never latest-only.                                                                                                                                    |
+| G04  | Outcome conditional update loses to newer durable result                                                            | Return winner by reread; no downgrade or invented success.                                                                                                                                                   |
+| G05  | Transport/HTTP/parse/config failure and repeated request                                                            | Original redacted diagnostics; existing safe output and no blind provider resend.                                                                                                                            |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
 
@@ -253,19 +253,20 @@ No schema/migration, dependency manifest, public schema, webhook runtime, presen
 
 ### Validation Results
 
-| Command | Final result |
-|---|---|
-| `node scripts/test-arch041-billing-postgres.mjs` | Exit 0; 25 tests, 24 pass, 0 fail, 1 intentional opt-in M15 skip (executed below). |
-| `ARCH055_BILLING_MEASURE=candidate node scripts/test-arch041-billing-postgres.mjs` | Exit 0; 20 pass, 0 fail, 5 intentional correctness-case skips; all 80 candidate samples and admission proof complete. |
-| `ARCH055_BILLING_MEASURE=baseline ARCH055_BILLING_SOURCE_ROOT=/tmp/arch055-api007-baseline node scripts/test-arch041-billing-postgres.mjs` | Exit 0; 20 pass, 0 fail, 5 intentional correctness-case skips; all 80 baseline samples and admission proof complete. |
-| `node scripts/test-arch041-cross-domain-postgres.mjs` | Exit 0; 2/2, including retained raw-body-digest receipt/concurrent-insert regression. |
-| `npx --no-install tsx --test "tests/unit/billing/commands/*.test.ts" "tests/unit/woocommerce/billing/*.test.ts" "tests/unit/woocommerce/billing/webhooks/*.test.ts"` | Exit 0; 123/123, no skips. |
-| `npm run typecheck` | Exit 0, including canonical Prisma Client 6.19.3 generation. |
-| `npm run lint` | Exit 1; only unchanged `src/merchant/support/routes.ts:75:17 no-empty`. All 25 changed files pass focused ESLint, exit 0. |
-| Task-start Support source through `npx --no-install eslint --stdin --stdin-filename src/merchant/support/routes.ts` | Exit 1, same single error. Input was `git show 4c1a57390226f438600679cd3af3f5cd7c0019d4:src/merchant/support/routes.ts`. No separate baseline ID allocated; this file was not edited. |
-| `git diff --check` | Pass before implementation commit and final clean-state check. |
+| Command                                                                                                                                                              | Final result                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node scripts/test-arch041-billing-postgres.mjs`                                                                                                                     | Exit 0; 25 tests, 24 pass, 0 fail, 1 intentional opt-in M15 skip (executed below).                                                                                                    |
+| `ARCH055_BILLING_MEASURE=candidate node scripts/test-arch041-billing-postgres.mjs`                                                                                   | Exit 0; 20 pass, 0 fail, 5 intentional correctness-case skips; all 80 candidate samples and admission proof complete.                                                                 |
+| `ARCH055_BILLING_MEASURE=baseline ARCH055_BILLING_SOURCE_ROOT=/tmp/arch055-api007-baseline node scripts/test-arch041-billing-postgres.mjs`                           | Exit 0; 20 pass, 0 fail, 5 intentional correctness-case skips; all 80 baseline samples and admission proof complete.                                                                  |
+| `node scripts/test-arch041-cross-domain-postgres.mjs`                                                                                                                | Exit 0; 2/2, including retained raw-body-digest receipt/concurrent-insert regression.                                                                                                 |
+| `npx --no-install tsx --test "tests/unit/billing/commands/*.test.ts" "tests/unit/woocommerce/billing/*.test.ts" "tests/unit/woocommerce/billing/webhooks/*.test.ts"` | Exit 0; 123/123, no skips.                                                                                                                                                            |
+| `npm run typecheck`                                                                                                                                                  | Exit 0, including canonical Prisma Client 6.19.3 generation.                                                                                                                          |
+| `npm run lint`                                                                                                                                                       | Exit 1; only unchanged `src/merchant/support/routes.ts:75:17 no-empty`. All 25 changed files pass focused ESLint, exit 0.                                                             |
+| Task-start Support source through `npx --no-install eslint --stdin --stdin-filename src/merchant/support/routes.ts`                                                  | Exit 1, same single error. Input was `git show 4c1a57390226f438600679cd3af3f5cd7c0019d4:src/merchant/support/routes.ts`. No separate baseline ID allocated; this file was not edited. |
+| `git diff --check`                                                                                                                                                   | Pass before implementation commit and final clean-state check.                                                                                                                        |
 
 **G01–G05 observed results**
+
 - G01: Real installed authentication pauses before admission; a second connection commits rotation/revocation/Shop suspension. All four HTTP routes return exactly 409/`{"error":"billing_shop_invalid"}`, no IDs/provider code, no new operations/purchases/materialization changes/provider calls, and identical financial snapshots. Existing-key rotation is checked per route. Invalid credentials return 401; distinct unexpected helper-read exception returns 500/original message with no intent/provider call. Current-principal success remains covered.
 - G02: For all four commands, INITIATING commits before the provider barrier. Independent rotation then commits; resumed outcomes persist (create/switch/purchase AWAITING_CONFIRMATION, cancel CONFIRMED). Subscription projections stay identical; purchases remain REQUESTED/currentAmount=0.
 - G03: One/1,000-row histories preserve an oldest unresolved blocker and clear-history success. Separate real PostgreSQL cases preserve terminal-Free reset, different-contract cancellation, same-contract blocking and cancellation-flag blocking.
@@ -289,33 +290,4280 @@ The first migrated run passed new admission/outcome races but exposed leftover c
 - Returned cardinalities/affected rows are observed real logical method results; SQL is separately captured. Engine-internal relation returned-row counts, bytes, trigger work and pure pool wait are not exposed/measured. Transaction duration includes acquisition/callback/commit. Fresh success has two service transactions/provider=1, replay/rejection one/provider=0, direct outcomes one/provider=0. All warm samples have service retry=0; rollback is recorded separately. Original cold materialization-race coverage is retained.
 - Timings are descriptive min/median/max of five local samples, with no production percentile, capacity or latency-percentage gate.
 
-| Profile | Baseline calls / SQL | Baseline min/median/max ms | Candidate calls / SQL | Candidate min/median/max ms |
-|---|---:|---|---:|---|
-| create-new | 13/21 | 57.918/67.245/79.060 | 14/20 | 69.286/76.932/113.385 |
-| create-replay | 6/10 | 31.723/33.068/33.424 | 8/12 | 42.840/64.429/86.216 |
-| cancel-new | 9/15 | 56.293/78.482/130.765 | 10/16 | 48.958/51.875/58.174 |
-| cancel-replay | 5/9 | 27.114/31.662/44.667 | 7/11 | 33.043/43.270/95.180 |
-| switch-new | 12/20 | 62.166/90.715/133.823 | 13/19 | 67.412/73.750/100.855 |
-| switch-replay | 6/10 | 49.359/164.895/323.396 | 8/12 | 38.608/46.406/50.660 |
-| purchase-new | 14/20 | 98.610/157.644/260.201 | 15/21 | 65.147/87.599/129.341 |
-| purchase-replay | 6/10 | 64.054/69.466/89.845 | 8/12 | 38.974/50.814/53.199 |
-| history-1-blocked | 6/10 | 34.745/45.701/82.116 | 8/12 | 37.113/45.028/57.131 |
-| history-1000-blocked | 6/10 | 31.487/45.582/50.738 | 8/12 | 34.560/40.329/43.903 |
-| history-1-clear | 13/21 | 72.340/85.909/94.964 | 14/20 | 64.014/72.822/107.901 |
-| history-1000-clear | 13/21 | 73.838/91.674/186.620 | 14/20 | 79.752/82.368/107.638 |
-| recurring-winner | 4/6 | 18.998/25.137/49.503 | 3/5 | 16.841/23.539/24.358 |
-| recurring-loser | 4/6 | 21.277/23.851/90.515 | 4/6 | 16.386/16.625/20.084 |
-| purchase-winner | 4/6 | 17.784/22.475/33.736 | 3/5 | 13.507/15.033/25.314 |
-| purchase-loser | 4/6 | 22.622/25.578/32.611 | 4/6 | 15.597/16.338/17.547 |
+| Profile              | Baseline calls / SQL | Baseline min/median/max ms | Candidate calls / SQL | Candidate min/median/max ms |
+| -------------------- | -------------------: | -------------------------- | --------------------: | --------------------------- |
+| create-new           |                13/21 | 57.918/67.245/79.060       |                 14/20 | 69.286/76.932/113.385       |
+| create-replay        |                 6/10 | 31.723/33.068/33.424       |                  8/12 | 42.840/64.429/86.216        |
+| cancel-new           |                 9/15 | 56.293/78.482/130.765      |                 10/16 | 48.958/51.875/58.174        |
+| cancel-replay        |                  5/9 | 27.114/31.662/44.667       |                  7/11 | 33.043/43.270/95.180        |
+| switch-new           |                12/20 | 62.166/90.715/133.823      |                 13/19 | 67.412/73.750/100.855       |
+| switch-replay        |                 6/10 | 49.359/164.895/323.396     |                  8/12 | 38.608/46.406/50.660        |
+| purchase-new         |                14/20 | 98.610/157.644/260.201     |                 15/21 | 65.147/87.599/129.341       |
+| purchase-replay      |                 6/10 | 64.054/69.466/89.845       |                  8/12 | 38.974/50.814/53.199        |
+| history-1-blocked    |                 6/10 | 34.745/45.701/82.116       |                  8/12 | 37.113/45.028/57.131        |
+| history-1000-blocked |                 6/10 | 31.487/45.582/50.738       |                  8/12 | 34.560/40.329/43.903        |
+| history-1-clear      |                13/21 | 72.340/85.909/94.964       |                 14/20 | 64.014/72.822/107.901       |
+| history-1000-clear   |                13/21 | 73.838/91.674/186.620      |                 14/20 | 79.752/82.368/107.638       |
+| recurring-winner     |                  4/6 | 18.998/25.137/49.503       |                   3/5 | 16.841/23.539/24.358        |
+| recurring-loser      |                  4/6 | 21.277/23.851/90.515       |                   4/6 | 16.386/16.625/20.084        |
+| purchase-winner      |                  4/6 | 17.784/22.475/33.736       |                   3/5 | 13.507/15.033/25.314        |
+| purchase-loser       |                  4/6 | 22.622/25.578/32.611       |                   4/6 | 15.597/16.338/17.547        |
 
 **Lossless raw measurements**
 SQL IDs resolve through sqlShapes; call IDs through callShapes (method, logical returned/affected rows, select projection). Every sample retains full SQL sequence, transaction/operation timing, provider count, before/after row counts and rollback/retry count. BEGIN/isolation/COMMIT/ROLLBACK are included. No parameters/credentials/bodies/confirmation URLs are recorded.
 
 ```json
-{"observationLimits":{"wireBytes":"not measured","triggerWork":"not measured","engineInternalReturnedRows":"not exposed"},"sqlShapes":{"1":"BEGIN","2":"SET TRANSACTION ISOLATION LEVEL READ COMMITTED","3":"SELECT \"id\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1 FOR UPDATE","4":"SELECT \"commerce\".\"Shop\".\"id\", \"commerce\".\"Shop\".\"domain\", \"commerce\".\"Shop\".\"platform\"::text, \"commerce\".\"Shop\".\"shopifyShopId\", \"commerce\".\"Shop\".\"status\"::text, \"commerce\".\"Shop\".\"onboardingCompleted\" FROM \"commerce\".\"Shop\" WHERE (\"commerce\".\"Shop\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","5":"SELECT \"id\" FROM \"billing\".\"Subscription\" WHERE \"shopId\" = $1 FOR UPDATE","6":"SELECT \"billing\".\"Subscription\".\"id\", \"billing\".\"Subscription\".\"shopId\", \"billing\".\"Subscription\".\"planId\", \"billing\".\"Subscription\".\"status\"::text, \"billing\".\"Subscription\".\"billingPeriodId\", \"billing\".\"Subscription\".\"cancelAtPeriodEnd\", \"billing\".\"Subscription\".\"providerSubscriptionId\" FROM \"billing\".\"Subscription\" WHERE (\"billing\".\"Subscription\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3","7":"SELECT \"billing\".\"BillingPlan\".\"id\", \"billing\".\"BillingPlan\".\"kind\"::text, \"billing\".\"BillingPlan\".\"shopifyPlanHandle\", \"billing\".\"BillingPlan\".\"active\" FROM \"billing\".\"BillingPlan\" WHERE \"billing\".\"BillingPlan\".\"id\" IN ($1) OFFSET $2","8":"SELECT \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\" FROM \"billing\".\"BillingOperation\" WHERE ((\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"requestKey\" = $2) AND 1=1) LIMIT $3 OFFSET $4","9":"SELECT \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"providerReference\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" IN (CAST($2::text AS \"billing\".\"BillingOperationKind\"),CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationKind\"))) ORDER BY \"billing\".\"BillingOperation\".\"createdAt\" ASC, \"billing\".\"BillingOperation\".\"id\" ASC OFFSET $5","10":"SELECT \"billing\".\"MerchantPricingPlan\".\"id\", \"billing\".\"MerchantPricingPlan\".\"shopifyPlanHandle\", \"billing\".\"MerchantPricingPlan\".\"displayName\", \"billing\".\"MerchantPricingPlan\".\"planKind\"::text, \"billing\".\"MerchantPricingPlan\".\"isActive\", \"billing\".\"MerchantPricingPlan\".\"publicationStatus\"::text, \"billing\".\"MerchantPricingPlan\".\"currentTranslationRunId\", \"billing\".\"MerchantPricingPlan\".\"cataloguePosition\", \"billing\".\"MerchantPricingPlan\".\"featured\", \"billing\".\"MerchantPricingPlan\".\"includedRecoveryCredits\", \"billing\".\"MerchantPricingPlan\".\"allowancePeriod\"::text, \"billing\".\"MerchantPricingPlan\".\"billingPeriod\"::text, \"billing\".\"MerchantPricingPlan\".\"recurringAmountMinor\", \"billing\".\"MerchantPricingPlan\".\"currency\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideEnabled\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideReason\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideApprovedAt\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideApprovedByAdminId\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideFailureCodes\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideFingerprint\", \"billing\".\"MerchantPricingPlan\".\"shopifyRecoveryUsageEventHandle\", \"billing\".\"MerchantPricingPlan\".\"materializedAt\", \"billing\".\"MerchantPricingPlan\".\"commerceModelId\", \"billing\".\"MerchantPricingPlan\".\"createdAt\", \"billing\".\"MerchantPricingPlan\".\"updatedAt\" FROM \"billing\".\"MerchantPricingPlan\" WHERE (\"billing\".\"MerchantPricingPlan\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","11":"SELECT \"billing\".\"MerchantPricingPlanFeature\".\"merchantPricingPlanId\", \"billing\".\"MerchantPricingPlanFeature\".\"featureId\", \"billing\".\"MerchantPricingPlanFeature\".\"configuration\", \"billing\".\"MerchantPricingPlanFeature\".\"createdAt\" FROM \"billing\".\"MerchantPricingPlanFeature\" WHERE \"billing\".\"MerchantPricingPlanFeature\".\"merchantPricingPlanId\" IN ($1) OFFSET $2","12":"SELECT \"billing\".\"Feature\".\"id\", \"billing\".\"Feature\".\"key\", \"billing\".\"Feature\".\"displayName\", \"billing\".\"Feature\".\"description\", \"billing\".\"Feature\".\"active\", \"billing\".\"Feature\".\"activationMode\"::text, \"billing\".\"Feature\".\"systemRequired\", \"billing\".\"Feature\".\"createdAt\", \"billing\".\"Feature\".\"updatedAt\" FROM \"billing\".\"Feature\" WHERE \"billing\".\"Feature\".\"id\" IN ($1) OFFSET $2","13":"SELECT \"billing\".\"BillingPlan\".\"id\", \"billing\".\"BillingPlan\".\"shopifyPlanHandle\", \"billing\".\"BillingPlan\".\"name\", \"billing\".\"BillingPlan\".\"kind\"::text, \"billing\".\"BillingPlan\".\"active\", \"billing\".\"BillingPlan\".\"shopifyUsageEventHandle\", \"billing\".\"BillingPlan\".\"includedRecoveryConversationAllowance\", \"billing\".\"BillingPlan\".\"recoveryCreditPackEnabled\", \"billing\".\"BillingPlan\".\"recoveryCreditsPerPack\", \"billing\".\"BillingPlan\".\"shopifyRecoveryCreditPackEventHandle\", \"billing\".\"BillingPlan\".\"createdAt\", \"billing\".\"BillingPlan\".\"updatedAt\" FROM \"billing\".\"BillingPlan\" WHERE (\"billing\".\"BillingPlan\".\"shopifyPlanHandle\" = $1 AND 1=1) LIMIT $2 OFFSET $3","14":"INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"merchantPricingPlanId\",\"quotedAmountMinor\",\"quotedCurrency\",\"quotedBillingPeriod\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9,CAST($10::text AS \"billing\".\"MerchantPricingBillingPeriod\"),$11,$12) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"","15":"COMMIT","16":"WITH provider_reference_lock AS MATERIALIZED ( SELECT pg_advisory_xact_lock(hashtextextended($1, 0)) ) SELECT 1 FROM provider_reference_lock","17":"SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"providerReference\" = $1 AND \"billing\".\"BillingOperation\".\"shopId\" <> $2) LIMIT $3 OFFSET $4","18":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL)","19":"SELECT \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","20":"INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"providerReference\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"","21":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"lastErrorCode\" = $2, \"updatedAt\" = $3 WHERE (\"billing\".\"BillingOperation\".\"id\" = $4 AND \"billing\".\"BillingOperation\".\"state\" = CAST($5::text AS \"billing\".\"BillingOperationState\"))","22":"SELECT \"billing\".\"MerchantPricingPlan\".\"id\" FROM \"billing\".\"MerchantPricingPlan\" WHERE (\"billing\".\"MerchantPricingPlan\".\"shopifyPlanHandle\" = $1 AND 1=1) LIMIT $2 OFFSET $3","23":"INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"merchantPricingPlanId\",\"quotedAmountMinor\",\"quotedCurrency\",\"quotedBillingPeriod\",\"providerReference\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9,CAST($10::text AS \"billing\".\"MerchantPricingBillingPeriod\"),$11,$12,$13) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"","24":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"confirmationUrl\" = $2, \"lastErrorCode\" = $3, \"updatedAt\" = $4 WHERE (\"billing\".\"BillingOperation\".\"id\" = $5 AND \"billing\".\"BillingOperation\".\"state\" = CAST($6::text AS \"billing\".\"BillingOperationState\"))","25":"SELECT \"billing\".\"Subscription\".\"id\", \"billing\".\"Subscription\".\"shopId\", \"billing\".\"Subscription\".\"planId\", \"billing\".\"Subscription\".\"status\"::text, \"billing\".\"Subscription\".\"billingPeriodId\", \"billing\".\"Subscription\".\"providerSubscriptionId\", \"billing\".\"Subscription\".\"cancelAtPeriodEnd\" FROM \"billing\".\"Subscription\" WHERE (\"billing\".\"Subscription\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3","26":"SELECT \"billing\".\"MerchantPricingPlan\".\"id\", \"billing\".\"MerchantPricingPlan\".\"planKind\"::text, \"billing\".\"MerchantPricingPlan\".\"isActive\", \"billing\".\"MerchantPricingPlan\".\"currency\" FROM \"billing\".\"MerchantPricingPlan\" WHERE (\"billing\".\"MerchantPricingPlan\".\"shopifyPlanHandle\" = $1 AND 1=1) LIMIT $2 OFFSET $3","27":"SELECT \"billing\".\"MerchantPricingUsageEvent\".\"id\", \"billing\".\"MerchantPricingUsageEvent\".\"merchantPricingPlanId\", \"billing\".\"MerchantPricingUsageEvent\".\"adminLabel\", \"billing\".\"MerchantPricingUsageEvent\".\"creditsGrantedPerUnit\", \"billing\".\"MerchantPricingUsageEvent\".\"pricingMode\"::text, \"billing\".\"MerchantPricingUsageEvent\".\"fixedUnitAmountMinor\", \"billing\".\"MerchantPricingUsageEvent\".\"currency\" FROM \"billing\".\"MerchantPricingUsageEvent\" WHERE (\"billing\".\"MerchantPricingUsageEvent\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","28":"SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" LEFT JOIN \"billing\".\"RecoveryCreditPurchase\" AS \"j0\" ON (\"j0\".\"id\") = (\"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\") WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" = CAST($2::text AS \"billing\".\"BillingOperationKind\") AND \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\" = $3 AND \"billing\".\"BillingOperation\".\"state\" IN (CAST($4::text AS \"billing\".\"BillingOperationState\"),CAST($5::text AS \"billing\".\"BillingOperationState\"),CAST($6::text AS \"billing\".\"BillingOperationState\"),CAST($7::text AS \"billing\".\"BillingOperationState\")) AND (\"j0\".\"provider\" = $8 AND \"j0\".\"status\" = CAST($9::text AS \"billing\".\"RecoveryCreditPurchaseStatus\") AND (\"j0\".\"id\" IS NOT NULL))) LIMIT $10 OFFSET $11","29":"INSERT INTO \"billing\".\"RecoveryCreditPurchase\" (\"id\",\"shopId\",\"planId\",\"billingPeriodId\",\"shopifyPlanHandleSnapshot\",\"shopifyEventHandleSnapshot\",\"providerSubscriptionIdSnapshot\",\"providerUsageQuantityBeforeSnapshot\",\"providerUsageCostBeforeSnapshot\",\"providerUsageCostCurrencyBeforeSnapshot\",\"providerUsageQuantityAfterSnapshot\",\"providerUsageCostAfterSnapshot\",\"providerUsageCostCurrencyAfterSnapshot\",\"providerPurchaseAmount\",\"providerPurchaseCurrency\",\"providerValuationConfirmedAt\",\"providerPriceSnapshot\",\"provider\",\"providerReference\",\"creditsGranted\",\"currentAmount\",\"reservedAmount\",\"version\",\"status\",\"usageEventId\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,CAST($24::text AS \"billing\".\"RecoveryCreditPurchaseStatus\"),$25,$26,$27) RETURNING \"billing\".\"RecoveryCreditPurchase\".\"id\", \"billing\".\"RecoveryCreditPurchase\".\"shopId\", \"billing\".\"RecoveryCreditPurchase\".\"planId\", \"billing\".\"RecoveryCreditPurchase\".\"billingPeriodId\", \"billing\".\"RecoveryCreditPurchase\".\"shopifyPlanHandleSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"shopifyEventHandleSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerSubscriptionIdSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageQuantityBeforeSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostBeforeSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostCurrencyBeforeSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageQuantityAfterSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostAfterSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostCurrencyAfterSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerPurchaseAmount\", \"billing\".\"RecoveryCreditPurchase\".\"providerPurchaseCurrency\", \"billing\".\"RecoveryCreditPurchase\".\"providerValuationConfirmedAt\", \"billing\".\"RecoveryCreditPurchase\".\"providerPriceSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"provider\", \"billing\".\"RecoveryCreditPurchase\".\"providerReference\", \"billing\".\"RecoveryCreditPurchase\".\"refundAttemptedAt\", \"billing\".\"RecoveryCreditPurchase\".\"creditsGranted\", \"billing\".\"RecoveryCreditPurchase\".\"currentAmount\", \"billing\".\"RecoveryCreditPurchase\".\"reservedAmount\", \"billing\".\"RecoveryCreditPurchase\".\"version\", \"billing\".\"RecoveryCreditPurchase\".\"status\"::text, \"billing\".\"RecoveryCreditPurchase\".\"usageEventId\", \"billing\".\"RecoveryCreditPurchase\".\"activatedAt\", \"billing\".\"RecoveryCreditPurchase\".\"createdAt\", \"billing\".\"RecoveryCreditPurchase\".\"updatedAt\"","30":"INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"merchantPricingPlanId\",\"merchantPricingUsageEventId\",\"quotedAmountMinor\",\"quotedCurrency\",\"quotedBillingPeriod\",\"recoveryCreditPurchaseId\",\"providerReference\",\"confirmationUrl\",\"lastErrorCode\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"","31":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL AND \"billing\".\"BillingOperation\".\"confirmationUrl\" IS NULL)","32":"SELECT \"billing\".\"MerchantPricingUsageEvent\".\"id\", \"billing\".\"MerchantPricingUsageEvent\".\"fixedUnitAmountMinor\", \"billing\".\"MerchantPricingUsageEvent\".\"currency\" FROM \"billing\".\"MerchantPricingUsageEvent\" WHERE (\"billing\".\"MerchantPricingUsageEvent\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","33":"ROLLBACK","34":"SELECT \"id\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE \"id\" = $1 FOR SHARE","35":"SELECT \"woocommerce\".\"WooCommerceInstallation\".\"id\", \"woocommerce\".\"WooCommerceInstallation\".\"shopId\", \"woocommerce\".\"WooCommerceInstallation\".\"canonicalSiteUrl\", \"woocommerce\".\"WooCommerceInstallation\".\"credentialVersion\", \"woocommerce\".\"WooCommerceInstallation\".\"status\"::text, \"woocommerce\".\"WooCommerceInstallation\".\"revokedAt\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE (\"woocommerce\".\"WooCommerceInstallation\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3","36":"SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" IN (CAST($2::text AS \"billing\".\"BillingOperationKind\"),CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationKind\")) AND \"billing\".\"BillingOperation\".\"state\" IN (CAST($5::text AS \"billing\".\"BillingOperationState\"),CAST($6::text AS \"billing\".\"BillingOperationState\"),CAST($7::text AS \"billing\".\"BillingOperationState\"))) LIMIT $8 OFFSET $9","37":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"","38":"SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" IN (CAST($2::text AS \"billing\".\"BillingOperationKind\"),CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationKind\")) AND (\"billing\".\"BillingOperation\".\"state\" IN (CAST($5::text AS \"billing\".\"BillingOperationState\"),CAST($6::text AS \"billing\".\"BillingOperationState\"),CAST($7::text AS \"billing\".\"BillingOperationState\")) OR (\"billing\".\"BillingOperation\".\"kind\" = CAST($8::text AS \"billing\".\"BillingOperationKind\") AND \"billing\".\"BillingOperation\".\"state\" = CAST($9::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" = $10))) LIMIT $11 OFFSET $12","39":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"lastErrorCode\" = $2, \"updatedAt\" = $3 WHERE (\"billing\".\"BillingOperation\".\"id\" = $4 AND \"billing\".\"BillingOperation\".\"state\" = CAST($5::text AS \"billing\".\"BillingOperationState\")) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"","40":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"confirmationUrl\" = $2, \"lastErrorCode\" = $3, \"updatedAt\" = $4 WHERE (\"billing\".\"BillingOperation\".\"id\" = $5 AND \"billing\".\"BillingOperation\".\"state\" = CAST($6::text AS \"billing\".\"BillingOperationState\")) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"","41":"INSERT INTO \"billing\".\"RecoveryCreditPurchase\" (\"id\",\"shopId\",\"planId\",\"billingPeriodId\",\"shopifyPlanHandleSnapshot\",\"shopifyEventHandleSnapshot\",\"providerSubscriptionIdSnapshot\",\"providerUsageQuantityBeforeSnapshot\",\"providerUsageCostBeforeSnapshot\",\"providerUsageCostCurrencyBeforeSnapshot\",\"providerUsageQuantityAfterSnapshot\",\"providerUsageCostAfterSnapshot\",\"providerUsageCostCurrencyAfterSnapshot\",\"providerPurchaseAmount\",\"providerPurchaseCurrency\",\"providerValuationConfirmedAt\",\"providerPriceSnapshot\",\"provider\",\"providerReference\",\"creditsGranted\",\"currentAmount\",\"reservedAmount\",\"version\",\"status\",\"usageEventId\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,CAST($24::text AS \"billing\".\"RecoveryCreditPurchaseStatus\"),$25,$26,$27) RETURNING \"billing\".\"RecoveryCreditPurchase\".\"id\"","42":"UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL AND \"billing\".\"BillingOperation\".\"confirmationUrl\" IS NULL) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\""},"callShapes":{"C1":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findMany","returned":0,"affected":0,"select":{"kind":true,"state":true,"providerReference":true}},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateMany","returned":1,"affected":1,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C2":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null}],"C3":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findMany","returned":0,"affected":0,"select":{"kind":true,"state":true,"providerReference":true}},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"billingOperation.updateMany","returned":1,"affected":1,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C4":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C5":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findMany","returned":0,"affected":0,"select":{"kind":true,"state":true,"providerReference":true}},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":{"id":true}},{"method":"billingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"billingOperation.updateMany","returned":1,"affected":1,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C6":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"providerSubscriptionId":true,"cancelAtPeriodEnd":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}},"billingPeriod":{"select":{"id":true,"shopId":true,"subscriptionId":true,"planId":true,"status":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":{"id":true,"planKind":true,"isActive":true,"currency":true}},{"method":"merchantPricingUsageEvent.findUnique","returned":1,"affected":0,"select":{"id":true,"merchantPricingPlanId":true,"adminLabel":true,"creditsGrantedPerUnit":true,"pricingMode":true,"fixedUnitAmountMinor":true,"currency":true}},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"recoveryCreditPurchase.create","returned":1,"affected":1,"select":null},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateMany","returned":1,"affected":1,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C7":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"providerSubscriptionId":true,"cancelAtPeriodEnd":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}},"billingPeriod":{"select":{"id":true,"shopId":true,"subscriptionId":true,"planId":true,"status":true}}}},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null},{"method":"merchantPricingUsageEvent.findUnique","returned":1,"affected":0,"select":{"id":true,"fixedUnitAmountMinor":true,"currency":true}}],"C8":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findMany","returned":1,"affected":0,"select":{"kind":true,"state":true,"providerReference":true}}],"C9":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findMany","returned":1000,"affected":0,"select":{"kind":true,"state":true,"providerReference":true}}],"C10":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findMany","returned":1,"affected":0,"select":{"kind":true,"state":true,"providerReference":true}},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateMany","returned":1,"affected":1,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C11":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findMany","returned":1000,"affected":0,"select":{"kind":true,"state":true,"providerReference":true}},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateMany","returned":1,"affected":1,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C12":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateMany","returned":1,"affected":1,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C13":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateMany","returned":0,"affected":0,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C14":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateManyAndReturn","returned":1,"affected":1,"select":null}],"C15":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null}],"C16":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"billingOperation.updateManyAndReturn","returned":1,"affected":1,"select":null}],"C17":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}],"C18":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":{"id":true}},{"method":"billingPlan.findUnique","returned":1,"affected":0,"select":null},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"billingOperation.updateManyAndReturn","returned":1,"affected":1,"select":null}],"C19":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"providerSubscriptionId":true,"cancelAtPeriodEnd":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}},"billingPeriod":{"select":{"id":true,"shopId":true,"subscriptionId":true,"planId":true,"status":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"merchantPricingPlan.findUnique","returned":1,"affected":0,"select":{"id":true,"planKind":true,"isActive":true,"currency":true}},{"method":"merchantPricingUsageEvent.findUnique","returned":1,"affected":0,"select":{"id":true,"merchantPricingPlanId":true,"adminLabel":true,"creditsGrantedPerUnit":true,"pricingMode":true,"fixedUnitAmountMinor":true,"currency":true}},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"recoveryCreditPurchase.create","returned":1,"affected":1,"select":{"id":true}},{"method":"billingOperation.create","returned":1,"affected":1,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateManyAndReturn","returned":1,"affected":1,"select":null}],"C20":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"providerSubscriptionId":true,"cancelAtPeriodEnd":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}},"billingPeriod":{"select":{"id":true,"shopId":true,"subscriptionId":true,"planId":true,"status":true}}}},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null},{"method":"merchantPricingUsageEvent.findUnique","returned":1,"affected":0,"select":{"id":true,"fixedUnitAmountMinor":true,"currency":true}}],"C21":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"shop.findUnique","returned":1,"affected":0,"select":{"id":true,"domain":true,"platform":true,"shopifyShopId":true,"status":true,"onboardingCompleted":true}},{"method":"wooCommerceInstallation.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"canonicalSiteUrl":true,"credentialVersion":true,"status":true,"revokedAt":true}},{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"subscription.findUnique","returned":1,"affected":0,"select":{"id":true,"shopId":true,"planId":true,"status":true,"billingPeriodId":true,"cancelAtPeriodEnd":true,"providerSubscriptionId":true,"plan":{"select":{"id":true,"kind":true,"shopifyPlanHandle":true,"active":true}}}},{"method":"billingOperation.findUnique","returned":0,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":1,"affected":0,"select":{"id":true}}],"C22":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateManyAndReturn","returned":1,"affected":1,"select":null}],"C23":[{"method":"$queryRaw","returned":1,"affected":0,"select":null},{"method":"billingOperation.findFirst","returned":0,"affected":0,"select":{"id":true}},{"method":"billingOperation.updateManyAndReturn","returned":0,"affected":0,"select":null},{"method":"billingOperation.findUnique","returned":1,"affected":0,"select":null}]},"samples":[{"version":"baseline","profile":"create-new","sample":1,"fixture":"arch055-billing-m15-create-new-2","operationMs":60.366199999999935,"transactionMs":[42.78602000000001,17.097089000000096],"calls":"C1","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-new","sample":2,"fixture":"arch055-billing-m15-create-new-3","operationMs":57.918300000000045,"transactionMs":[40.034075999999914,17.71401999999989],"calls":"C1","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-new","sample":3,"fixture":"arch055-billing-m15-create-new-4","operationMs":79.06020600000011,"transactionMs":[53.199988000000076,25.686858999999913],"calls":"C1","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-new","sample":4,"fixture":"arch055-billing-m15-create-new-5","operationMs":73.25508599999989,"transactionMs":[52.64820699999996,20.427824999999984],"calls":"C1","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-new","sample":5,"fixture":"arch055-billing-m15-create-new-6","operationMs":67.24475000000007,"transactionMs":[45.49065100000007,21.585829999999987],"calls":"C1","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-replay","sample":1,"fixture":"arch055-billing-m15-create-replay-2","operationMs":33.42404699999997,"transactionMs":[33.38592199999994],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-replay","sample":2,"fixture":"arch055-billing-m15-create-replay-3","operationMs":31.72258899999997,"transactionMs":[31.681449000000157],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-replay","sample":3,"fixture":"arch055-billing-m15-create-replay-4","operationMs":33.068412999999964,"transactionMs":[33.02750699999979],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-replay","sample":4,"fixture":"arch055-billing-m15-create-replay-5","operationMs":33.28787599999987,"transactionMs":[33.25217299999986],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"create-replay","sample":5,"fixture":"arch055-billing-m15-create-replay-6","operationMs":32.30145500000026,"transactionMs":[32.255259000000024],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-new","sample":1,"fixture":"arch055-billing-m15-cancel-new-2","operationMs":56.293317000000116,"transactionMs":[43.98158199999989,12.248090000000047],"calls":"C3","logicalCalls":9,"sql":[1,2,3,4,5,6,7,8,9,20,15,1,21,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-new","sample":2,"fixture":"arch055-billing-m15-cancel-new-3","operationMs":130.76516500000025,"transactionMs":[114.83837199999971,15.845745000000079],"calls":"C3","logicalCalls":9,"sql":[1,2,3,4,5,6,7,8,9,20,15,1,21,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-new","sample":3,"fixture":"arch055-billing-m15-cancel-new-4","operationMs":108.72156499999983,"transactionMs":[77.54412600000023,31.10202900000013],"calls":"C3","logicalCalls":9,"sql":[1,2,3,4,5,6,7,8,9,20,15,1,21,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-new","sample":4,"fixture":"arch055-billing-m15-cancel-new-5","operationMs":78.48153400000001,"transactionMs":[64.24004700000023,14.16942599999993],"calls":"C3","logicalCalls":9,"sql":[1,2,3,4,5,6,7,8,9,20,15,1,21,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-new","sample":5,"fixture":"arch055-billing-m15-cancel-new-6","operationMs":57.12107100000003,"transactionMs":[40.69476399999985,16.349886999999853],"calls":"C3","logicalCalls":9,"sql":[1,2,3,4,5,6,7,8,9,20,15,1,21,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-replay","sample":1,"fixture":"arch055-billing-m15-cancel-replay-2","operationMs":29.2122789999994,"transactionMs":[29.177387999999155],"calls":"C4","logicalCalls":5,"sql":[1,2,3,4,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-replay","sample":2,"fixture":"arch055-billing-m15-cancel-replay-3","operationMs":34.379265999999916,"transactionMs":[34.351520000000164],"calls":"C4","logicalCalls":5,"sql":[1,2,3,4,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-replay","sample":3,"fixture":"arch055-billing-m15-cancel-replay-4","operationMs":44.6668039999995,"transactionMs":[44.63687699999991],"calls":"C4","logicalCalls":5,"sql":[1,2,3,4,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-replay","sample":4,"fixture":"arch055-billing-m15-cancel-replay-5","operationMs":31.661826000000474,"transactionMs":[31.63195899999937],"calls":"C4","logicalCalls":5,"sql":[1,2,3,4,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"cancel-replay","sample":5,"fixture":"arch055-billing-m15-cancel-replay-6","operationMs":27.114383999999518,"transactionMs":[27.084007000000383],"calls":"C4","logicalCalls":5,"sql":[1,2,3,4,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-new","sample":1,"fixture":"arch055-billing-m15-switch-new-2","operationMs":62.16556599999967,"transactionMs":[50.76309599999968,11.271106000000145],"calls":"C5","logicalCalls":12,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,22,13,23,15,1,24,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-new","sample":2,"fixture":"arch055-billing-m15-switch-new-3","operationMs":66.86489200000051,"transactionMs":[53.77635000000009,12.966395000000375],"calls":"C5","logicalCalls":12,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,22,13,23,15,1,24,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-new","sample":3,"fixture":"arch055-billing-m15-switch-new-4","operationMs":90.71474200000011,"transactionMs":[73.13777200000004,17.451647000000776],"calls":"C5","logicalCalls":12,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,22,13,23,15,1,24,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-new","sample":4,"fixture":"arch055-billing-m15-switch-new-5","operationMs":92.11844800000017,"transactionMs":[75.64281800000026,16.35527000000002],"calls":"C5","logicalCalls":12,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,22,13,23,15,1,24,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-new","sample":5,"fixture":"arch055-billing-m15-switch-new-6","operationMs":133.8225680000005,"transactionMs":[109.34441699999934,24.357441000000108],"calls":"C5","logicalCalls":12,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,22,13,23,15,1,24,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-replay","sample":1,"fixture":"arch055-billing-m15-switch-replay-2","operationMs":49.35917700000027,"transactionMs":[49.33159700000033],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-replay","sample":2,"fixture":"arch055-billing-m15-switch-replay-3","operationMs":323.39610399999947,"transactionMs":[323.36396800000057],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-replay","sample":3,"fixture":"arch055-billing-m15-switch-replay-4","operationMs":118.01872300000105,"transactionMs":[117.98879699999998],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-replay","sample":4,"fixture":"arch055-billing-m15-switch-replay-5","operationMs":320.137447000001,"transactionMs":[320.10897600000135],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"switch-replay","sample":5,"fixture":"arch055-billing-m15-switch-replay-6","operationMs":164.89475499999935,"transactionMs":[164.86576799999966],"calls":"C2","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-new","sample":1,"fixture":"arch055-billing-m15-purchase-new-2","operationMs":132.60667099999955,"transactionMs":[97.83234900000025,34.57602600000064],"calls":"C6","logicalCalls":14,"sql":[1,2,3,4,5,25,7,8,26,27,28,29,30,15,1,16,17,31,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-new","sample":2,"fixture":"arch055-billing-m15-purchase-new-3","operationMs":243.18056400000023,"transactionMs":[196.98183399999834,45.4570590000003],"calls":"C6","logicalCalls":14,"sql":[1,2,3,4,5,25,7,8,26,27,28,29,30,15,1,16,17,31,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-new","sample":3,"fixture":"arch055-billing-m15-purchase-new-4","operationMs":157.64429700000073,"transactionMs":[127.48694400000022,29.987731999999596],"calls":"C6","logicalCalls":14,"sql":[1,2,3,4,5,25,7,8,26,27,28,29,30,15,1,16,17,31,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-new","sample":4,"fixture":"arch055-billing-m15-purchase-new-5","operationMs":260.2009670000007,"transactionMs":[231.3825769999985,28.68487599999935],"calls":"C6","logicalCalls":14,"sql":[1,2,3,4,5,25,7,8,26,27,28,29,30,15,1,16,17,31,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-new","sample":5,"fixture":"arch055-billing-m15-purchase-new-6","operationMs":98.6099209999993,"transactionMs":[69.26310299999932,29.20963699999993],"calls":"C6","logicalCalls":14,"sql":[1,2,3,4,5,25,7,8,26,27,28,29,30,15,1,16,17,31,19,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-replay","sample":1,"fixture":"arch055-billing-m15-purchase-replay-2","operationMs":70.50152999999955,"transactionMs":[70.46839999999975],"calls":"C7","logicalCalls":6,"sql":[1,2,3,4,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-replay","sample":2,"fixture":"arch055-billing-m15-purchase-replay-3","operationMs":64.05446799999845,"transactionMs":[64.01584500000172],"calls":"C7","logicalCalls":6,"sql":[1,2,3,4,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-replay","sample":3,"fixture":"arch055-billing-m15-purchase-replay-4","operationMs":69.46574500000133,"transactionMs":[69.42455100000006],"calls":"C7","logicalCalls":6,"sql":[1,2,3,4,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-replay","sample":4,"fixture":"arch055-billing-m15-purchase-replay-5","operationMs":89.84505400000126,"transactionMs":[89.81090799999947],"calls":"C7","logicalCalls":6,"sql":[1,2,3,4,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-replay","sample":5,"fixture":"arch055-billing-m15-purchase-replay-6","operationMs":64.60472200000004,"transactionMs":[64.56998999999996],"calls":"C7","logicalCalls":6,"sql":[1,2,3,4,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1-blocked","sample":1,"fixture":"arch055-billing-m15-history-1-blocked-2","operationMs":41.800271999998586,"transactionMs":[41.75460199999907],"calls":"C8","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1-blocked","sample":2,"fixture":"arch055-billing-m15-history-1-blocked-3","operationMs":34.74467000000004,"transactionMs":[34.70244300000013],"calls":"C8","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1-blocked","sample":3,"fixture":"arch055-billing-m15-history-1-blocked-4","operationMs":82.11648500000047,"transactionMs":[82.07640300000094],"calls":"C8","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1-blocked","sample":4,"fixture":"arch055-billing-m15-history-1-blocked-5","operationMs":45.70125100000041,"transactionMs":[45.66123200000038],"calls":"C8","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1-blocked","sample":5,"fixture":"arch055-billing-m15-history-1-blocked-6","operationMs":51.36786299999949,"transactionMs":[51.32511700000032],"calls":"C8","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1000-blocked","sample":1,"fixture":"arch055-billing-m15-history-1000-blocked-2","operationMs":32.3543299999983,"transactionMs":[32.313631000000896],"calls":"C9","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1000-blocked","sample":2,"fixture":"arch055-billing-m15-history-1000-blocked-3","operationMs":50.73819200000071,"transactionMs":[50.69903200000044],"calls":"C9","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1000-blocked","sample":3,"fixture":"arch055-billing-m15-history-1000-blocked-4","operationMs":45.58164100000067,"transactionMs":[45.535055999996985],"calls":"C9","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1000-blocked","sample":4,"fixture":"arch055-billing-m15-history-1000-blocked-5","operationMs":31.48717100000067,"transactionMs":[31.44381599999906],"calls":"C9","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1000-blocked","sample":5,"fixture":"arch055-billing-m15-history-1000-blocked-6","operationMs":48.36522600000171,"transactionMs":[48.32345999999961],"calls":"C9","logicalCalls":6,"sql":[1,2,3,4,5,6,7,8,9,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"baseline","profile":"history-1-clear","sample":1,"fixture":"arch055-billing-m15-history-1-clear-2","operationMs":85.90878399999929,"transactionMs":[64.0763079999997,21.72609100000045],"calls":"C10","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1-clear","sample":2,"fixture":"arch055-billing-m15-history-1-clear-3","operationMs":92.05265299999883,"transactionMs":[70.6026720000009,21.324404999999388],"calls":"C10","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1-clear","sample":3,"fixture":"arch055-billing-m15-history-1-clear-4","operationMs":72.3402129999995,"transactionMs":[50.9304000000011,21.31247599999915],"calls":"C10","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1-clear","sample":4,"fixture":"arch055-billing-m15-history-1-clear-5","operationMs":94.96429599999828,"transactionMs":[60.46943299999839,34.3549090000015],"calls":"C10","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1-clear","sample":5,"fixture":"arch055-billing-m15-history-1-clear-6","operationMs":73.72909699999946,"transactionMs":[56.036755000000994,17.590221999998903],"calls":"C10","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1000-clear","sample":1,"fixture":"arch055-billing-m15-history-1000-clear-2","operationMs":91.67360399999961,"transactionMs":[66.03725000000122,25.531737000001158],"calls":"C11","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1000-clear","sample":2,"fixture":"arch055-billing-m15-history-1000-clear-3","operationMs":186.62042999999903,"transactionMs":[146.5201449999986,39.92604399999982],"calls":"C11","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1000-clear","sample":3,"fixture":"arch055-billing-m15-history-1000-clear-4","operationMs":73.83769499999835,"transactionMs":[55.44339200000104,18.245036000000255],"calls":"C11","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1000-clear","sample":4,"fixture":"arch055-billing-m15-history-1000-clear-5","operationMs":76.01751300000251,"transactionMs":[58.579687000001286,17.324467000002187],"calls":"C11","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"history-1000-clear","sample":5,"fixture":"arch055-billing-m15-history-1000-clear-6","operationMs":114.56478499999866,"transactionMs":[83.95519499999864,30.479240000000573],"calls":"C11","logicalCalls":13,"sql":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,16,17,18,19,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-winner","sample":1,"fixture":"arch055-billing-m15-recurring-winner-2","operationMs":18.997839999999997,"transactionMs":[18.97124900000199],"calls":"C12","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-winner","sample":2,"fixture":"arch055-billing-m15-recurring-winner-3","operationMs":27.654101000000082,"transactionMs":[27.625676999999996],"calls":"C12","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-winner","sample":3,"fixture":"arch055-billing-m15-recurring-winner-4","operationMs":49.502722000001086,"transactionMs":[49.471598000000085],"calls":"C12","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-winner","sample":4,"fixture":"arch055-billing-m15-recurring-winner-5","operationMs":20.869096999998874,"transactionMs":[20.84102200000052],"calls":"C12","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-winner","sample":5,"fixture":"arch055-billing-m15-recurring-winner-6","operationMs":25.136602999999013,"transactionMs":[25.08494100000098],"calls":"C12","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-loser","sample":1,"fixture":"arch055-billing-m15-recurring-loser-2","operationMs":23.85073999999804,"transactionMs":[23.819690000000264],"calls":"C13","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-loser","sample":2,"fixture":"arch055-billing-m15-recurring-loser-3","operationMs":21.276748000000225,"transactionMs":[21.23466499999995],"calls":"C13","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-loser","sample":3,"fixture":"arch055-billing-m15-recurring-loser-4","operationMs":27.080849000001763,"transactionMs":[27.05361300000004],"calls":"C13","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-loser","sample":4,"fixture":"arch055-billing-m15-recurring-loser-5","operationMs":90.51522000000114,"transactionMs":[90.48490800000218],"calls":"C13","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"recurring-loser","sample":5,"fixture":"arch055-billing-m15-recurring-loser-6","operationMs":22.441062999998394,"transactionMs":[22.414604000001418],"calls":"C13","logicalCalls":4,"sql":[1,16,17,18,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-winner","sample":1,"fixture":"arch055-billing-m15-purchase-winner-2","operationMs":33.736165000002075,"transactionMs":[33.71459000000323],"calls":"C12","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-winner","sample":2,"fixture":"arch055-billing-m15-purchase-winner-3","operationMs":20.53921099999934,"transactionMs":[20.510202999998],"calls":"C12","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-winner","sample":3,"fixture":"arch055-billing-m15-purchase-winner-4","operationMs":22.47466500000155,"transactionMs":[22.36838599999828],"calls":"C12","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-winner","sample":4,"fixture":"arch055-billing-m15-purchase-winner-5","operationMs":27.90460499999972,"transactionMs":[27.877157999999326],"calls":"C12","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-winner","sample":5,"fixture":"arch055-billing-m15-purchase-winner-6","operationMs":17.78352900000027,"transactionMs":[17.762274000000616],"calls":"C12","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-loser","sample":1,"fixture":"arch055-billing-m15-purchase-loser-2","operationMs":23.602068000000145,"transactionMs":[23.577621000000363],"calls":"C13","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-loser","sample":2,"fixture":"arch055-billing-m15-purchase-loser-3","operationMs":32.61134199999651,"transactionMs":[32.58814100000018],"calls":"C13","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-loser","sample":3,"fixture":"arch055-billing-m15-purchase-loser-4","operationMs":28.79564300000129,"transactionMs":[28.7738219999992],"calls":"C13","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-loser","sample":4,"fixture":"arch055-billing-m15-purchase-loser-5","operationMs":25.578308000000106,"transactionMs":[25.554352999999537],"calls":"C13","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"baseline","profile":"purchase-loser","sample":5,"fixture":"arch055-billing-m15-purchase-loser-6","operationMs":22.622137000002112,"transactionMs":[22.599248000002262],"calls":"C13","logicalCalls":4,"sql":[1,16,17,31,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-new","sample":1,"fixture":"arch055-billing-m15-create-new-2","operationMs":113.38465500000007,"transactionMs":[87.97027700000012,25.18343200000004],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-new","sample":2,"fixture":"arch055-billing-m15-create-new-3","operationMs":93.0719180000001,"transactionMs":[70.66250200000013,22.224977999999965],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-new","sample":3,"fixture":"arch055-billing-m15-create-new-4","operationMs":74.17125599999963,"transactionMs":[52.51842399999987,21.452528000000257],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-new","sample":4,"fixture":"arch055-billing-m15-create-new-5","operationMs":76.93192900000031,"transactionMs":[57.791763000000174,18.979107999999997],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-new","sample":5,"fixture":"arch055-billing-m15-create-new-6","operationMs":69.28641700000026,"transactionMs":[51.59706099999994,17.519307000000026],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-replay","sample":1,"fixture":"arch055-billing-m15-create-replay-2","operationMs":86.2165,"transactionMs":[86.17677300000014],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-replay","sample":2,"fixture":"arch055-billing-m15-create-replay-3","operationMs":72.67768500000011,"transactionMs":[72.63872999999967],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-replay","sample":3,"fixture":"arch055-billing-m15-create-replay-4","operationMs":42.83971600000041,"transactionMs":[42.802983999999924],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-replay","sample":4,"fixture":"arch055-billing-m15-create-replay-5","operationMs":64.42923500000006,"transactionMs":[64.39282000000003],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"create-replay","sample":5,"fixture":"arch055-billing-m15-create-replay-6","operationMs":51.18348399999968,"transactionMs":[51.144022999999834],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-new","sample":1,"fixture":"arch055-billing-m15-cancel-new-2","operationMs":58.17399000000023,"transactionMs":[48.075542000000496,10.006725000000188],"calls":"C16","logicalCalls":10,"sql":[1,2,3,34,4,35,5,6,7,8,38,20,15,1,39,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-new","sample":2,"fixture":"arch055-billing-m15-cancel-new-3","operationMs":50.63797800000066,"transactionMs":[41.106840000000375,9.455512999999883],"calls":"C16","logicalCalls":10,"sql":[1,2,3,34,4,35,5,6,7,8,38,20,15,1,39,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-new","sample":3,"fixture":"arch055-billing-m15-cancel-new-4","operationMs":56.976628000000346,"transactionMs":[47.08526500000062,9.816829999999754],"calls":"C16","logicalCalls":10,"sql":[1,2,3,34,4,35,5,6,7,8,38,20,15,1,39,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-new","sample":4,"fixture":"arch055-billing-m15-cancel-new-5","operationMs":51.8751199999997,"transactionMs":[38.80721600000015,12.968202999999448],"calls":"C16","logicalCalls":10,"sql":[1,2,3,34,4,35,5,6,7,8,38,20,15,1,39,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-new","sample":5,"fixture":"arch055-billing-m15-cancel-new-6","operationMs":48.95832699999937,"transactionMs":[39.83876500000042,9.046291999999994],"calls":"C16","logicalCalls":10,"sql":[1,2,3,34,4,35,5,6,7,8,38,20,15,1,39,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-replay","sample":1,"fixture":"arch055-billing-m15-cancel-replay-2","operationMs":33.0434009999999,"transactionMs":[33.00843400000031],"calls":"C17","logicalCalls":7,"sql":[1,2,3,34,4,35,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-replay","sample":2,"fixture":"arch055-billing-m15-cancel-replay-3","operationMs":95.18030799999997,"transactionMs":[95.14862700000049],"calls":"C17","logicalCalls":7,"sql":[1,2,3,34,4,35,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-replay","sample":3,"fixture":"arch055-billing-m15-cancel-replay-4","operationMs":46.52863499999967,"transactionMs":[46.496712000000116],"calls":"C17","logicalCalls":7,"sql":[1,2,3,34,4,35,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-replay","sample":4,"fixture":"arch055-billing-m15-cancel-replay-5","operationMs":43.20570099999986,"transactionMs":[43.17630499999996],"calls":"C17","logicalCalls":7,"sql":[1,2,3,34,4,35,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"cancel-replay","sample":5,"fixture":"arch055-billing-m15-cancel-replay-6","operationMs":43.27002699999957,"transactionMs":[43.23884100000032],"calls":"C17","logicalCalls":7,"sql":[1,2,3,34,4,35,5,6,7,8,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-new","sample":1,"fixture":"arch055-billing-m15-switch-new-2","operationMs":73.74969400000009,"transactionMs":[63.598493999999846,9.971859999999651],"calls":"C18","logicalCalls":13,"sql":[1,2,3,34,4,35,5,6,7,8,38,10,22,13,23,15,1,40,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-new","sample":2,"fixture":"arch055-billing-m15-switch-new-3","operationMs":68.78104100000019,"transactionMs":[57.97619499999928,10.669133999999758],"calls":"C18","logicalCalls":13,"sql":[1,2,3,34,4,35,5,6,7,8,38,10,22,13,23,15,1,40,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-new","sample":3,"fixture":"arch055-billing-m15-switch-new-4","operationMs":100.85537600000043,"transactionMs":[74.56939200000033,26.153777000000446],"calls":"C18","logicalCalls":13,"sql":[1,2,3,34,4,35,5,6,7,8,38,10,22,13,23,15,1,40,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-new","sample":4,"fixture":"arch055-billing-m15-switch-new-5","operationMs":78.02743900000041,"transactionMs":[63.839632000000165,14.050266999999621],"calls":"C18","logicalCalls":13,"sql":[1,2,3,34,4,35,5,6,7,8,38,10,22,13,23,15,1,40,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-new","sample":5,"fixture":"arch055-billing-m15-switch-new-6","operationMs":67.4116269999995,"transactionMs":[58.21432800000002,9.073082000000795],"calls":"C18","logicalCalls":13,"sql":[1,2,3,34,4,35,5,6,7,8,38,10,22,13,23,15,1,40,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-replay","sample":1,"fixture":"arch055-billing-m15-switch-replay-2","operationMs":50.659803999999895,"transactionMs":[50.62964600000032],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-replay","sample":2,"fixture":"arch055-billing-m15-switch-replay-3","operationMs":46.40598200000022,"transactionMs":[46.37690300000031],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-replay","sample":3,"fixture":"arch055-billing-m15-switch-replay-4","operationMs":40.97363199999927,"transactionMs":[40.94335099999989],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-replay","sample":4,"fixture":"arch055-billing-m15-switch-replay-5","operationMs":38.60820799999965,"transactionMs":[38.57613300000048],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"switch-replay","sample":5,"fixture":"arch055-billing-m15-switch-replay-6","operationMs":46.47171100000014,"transactionMs":[46.441140000000814],"calls":"C15","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,10,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-new","sample":1,"fixture":"arch055-billing-m15-purchase-new-2","operationMs":100.97526199999993,"transactionMs":[72.32423700000072,28.339603000000352],"calls":"C19","logicalCalls":15,"sql":[1,2,3,34,4,35,5,25,7,8,26,27,28,41,30,15,1,16,17,42,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-new","sample":2,"fixture":"arch055-billing-m15-purchase-new-3","operationMs":129.3413410000012,"transactionMs":[102.67059399999926,26.52313900000081],"calls":"C19","logicalCalls":15,"sql":[1,2,3,34,4,35,5,25,7,8,26,27,28,41,30,15,1,16,17,42,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-new","sample":3,"fixture":"arch055-billing-m15-purchase-new-4","operationMs":87.59872700000051,"transactionMs":[68.61774399999922,18.83291300000019],"calls":"C19","logicalCalls":15,"sql":[1,2,3,34,4,35,5,25,7,8,26,27,28,41,30,15,1,16,17,42,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-new","sample":4,"fixture":"arch055-billing-m15-purchase-new-5","operationMs":74.56859700000132,"transactionMs":[54.144163999999364,20.215808000000834],"calls":"C19","logicalCalls":15,"sql":[1,2,3,34,4,35,5,25,7,8,26,27,28,41,30,15,1,16,17,42,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-new","sample":5,"fixture":"arch055-billing-m15-purchase-new-6","operationMs":65.14730500000042,"transactionMs":[48.7689790000004,16.237936999999874],"calls":"C19","logicalCalls":15,"sql":[1,2,3,34,4,35,5,25,7,8,26,27,28,41,30,15,1,16,17,42,15],"providerCalls":1,"operationRows":[0,1],"purchaseRows":[0,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-replay","sample":1,"fixture":"arch055-billing-m15-purchase-replay-2","operationMs":38.97422600000027,"transactionMs":[38.938216000000466],"calls":"C20","logicalCalls":8,"sql":[1,2,3,34,4,35,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-replay","sample":2,"fixture":"arch055-billing-m15-purchase-replay-3","operationMs":53.19864199999938,"transactionMs":[51.55365999999958],"calls":"C20","logicalCalls":8,"sql":[1,2,3,34,4,35,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-replay","sample":3,"fixture":"arch055-billing-m15-purchase-replay-4","operationMs":50.81350099999872,"transactionMs":[50.77528000000166],"calls":"C20","logicalCalls":8,"sql":[1,2,3,34,4,35,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-replay","sample":4,"fixture":"arch055-billing-m15-purchase-replay-5","operationMs":50.28394600000138,"transactionMs":[50.247629999999845],"calls":"C20","logicalCalls":8,"sql":[1,2,3,34,4,35,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-replay","sample":5,"fixture":"arch055-billing-m15-purchase-replay-6","operationMs":51.09428500000104,"transactionMs":[51.05210099999931],"calls":"C20","logicalCalls":8,"sql":[1,2,3,34,4,35,5,25,7,8,32,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1-blocked","sample":1,"fixture":"arch055-billing-m15-history-1-blocked-2","operationMs":37.112560999999914,"transactionMs":[37.06854299999941],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1-blocked","sample":2,"fixture":"arch055-billing-m15-history-1-blocked-3","operationMs":57.13126099999863,"transactionMs":[57.08403399999952],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1-blocked","sample":3,"fixture":"arch055-billing-m15-history-1-blocked-4","operationMs":42.295712000001004,"transactionMs":[42.24693400000069],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1-blocked","sample":4,"fixture":"arch055-billing-m15-history-1-blocked-5","operationMs":50.96616300000096,"transactionMs":[50.91574799999944],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1-blocked","sample":5,"fixture":"arch055-billing-m15-history-1-blocked-6","operationMs":45.02755100000104,"transactionMs":[44.982176999999865],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1000-blocked","sample":1,"fixture":"arch055-billing-m15-history-1000-blocked-2","operationMs":40.32889900000009,"transactionMs":[40.27264899999864],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1000-blocked","sample":2,"fixture":"arch055-billing-m15-history-1000-blocked-3","operationMs":42.69872000000032,"transactionMs":[42.64671400000043],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1000-blocked","sample":3,"fixture":"arch055-billing-m15-history-1000-blocked-4","operationMs":43.903394000000844,"transactionMs":[43.85940599999958],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1000-blocked","sample":4,"fixture":"arch055-billing-m15-history-1000-blocked-5","operationMs":38.22141499999998,"transactionMs":[38.17501499999889],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1000-blocked","sample":5,"fixture":"arch055-billing-m15-history-1000-blocked-6","operationMs":34.560284000002866,"transactionMs":[34.51629099999991],"calls":"C21","logicalCalls":8,"sql":[1,2,3,34,4,35,5,6,7,8,36,33],"providerCalls":0,"operationRows":[1000,1000],"purchaseRows":[0,0],"retries":0,"rollbackStatements":1},{"version":"candidate","profile":"history-1-clear","sample":1,"fixture":"arch055-billing-m15-history-1-clear-2","operationMs":72.8219480000007,"transactionMs":[54.809073999997054,17.896388000001025],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1-clear","sample":2,"fixture":"arch055-billing-m15-history-1-clear-3","operationMs":69.03655599999911,"transactionMs":[50.48168699999951,18.4415110000009],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1-clear","sample":3,"fixture":"arch055-billing-m15-history-1-clear-4","operationMs":64.01385799999844,"transactionMs":[49.024695000000065,14.881397000001016],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1-clear","sample":4,"fixture":"arch055-billing-m15-history-1-clear-5","operationMs":91.21088299999974,"transactionMs":[50.327430000001186,40.77665999999954],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1-clear","sample":5,"fixture":"arch055-billing-m15-history-1-clear-6","operationMs":107.90073199999824,"transactionMs":[88.49513400000069,19.293249000002106],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1,2],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1000-clear","sample":1,"fixture":"arch055-billing-m15-history-1000-clear-2","operationMs":82.36801599999671,"transactionMs":[62.14345500000127,20.119134000000486],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1000-clear","sample":2,"fixture":"arch055-billing-m15-history-1000-clear-3","operationMs":79.75222999999824,"transactionMs":[57.30960700000287,22.33619700000054],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1000-clear","sample":3,"fixture":"arch055-billing-m15-history-1000-clear-4","operationMs":107.63823000000048,"transactionMs":[79.84019700000135,27.685342000000674],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1000-clear","sample":4,"fixture":"arch055-billing-m15-history-1000-clear-5","operationMs":91.94293099999777,"transactionMs":[71.35111999999936,20.48619300000064],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"history-1000-clear","sample":5,"fixture":"arch055-billing-m15-history-1000-clear-6","operationMs":80.16361699999834,"transactionMs":[60.04627800000162,19.99369300000035],"calls":"C14","logicalCalls":14,"sql":[1,2,3,34,4,35,5,6,7,8,36,10,13,14,15,1,16,17,37,15],"providerCalls":1,"operationRows":[1000,1001],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-winner","sample":1,"fixture":"arch055-billing-m15-recurring-winner-2","operationMs":23.539027000002534,"transactionMs":[23.51079899999968],"calls":"C22","logicalCalls":3,"sql":[1,16,17,37,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-winner","sample":2,"fixture":"arch055-billing-m15-recurring-winner-3","operationMs":24.357712999997602,"transactionMs":[24.330699000001914],"calls":"C22","logicalCalls":3,"sql":[1,16,17,37,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-winner","sample":3,"fixture":"arch055-billing-m15-recurring-winner-4","operationMs":18.270229999998264,"transactionMs":[18.234948000001168],"calls":"C22","logicalCalls":3,"sql":[1,16,17,37,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-winner","sample":4,"fixture":"arch055-billing-m15-recurring-winner-5","operationMs":24.08223700000235,"transactionMs":[24.05605199999991],"calls":"C22","logicalCalls":3,"sql":[1,16,17,37,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-winner","sample":5,"fixture":"arch055-billing-m15-recurring-winner-6","operationMs":16.841410000000906,"transactionMs":[16.78952600000048],"calls":"C22","logicalCalls":3,"sql":[1,16,17,37,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-loser","sample":1,"fixture":"arch055-billing-m15-recurring-loser-2","operationMs":16.625056000000768,"transactionMs":[16.576795000000857],"calls":"C23","logicalCalls":4,"sql":[1,16,17,37,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-loser","sample":2,"fixture":"arch055-billing-m15-recurring-loser-3","operationMs":16.50553299999956,"transactionMs":[16.47718099999838],"calls":"C23","logicalCalls":4,"sql":[1,16,17,37,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-loser","sample":3,"fixture":"arch055-billing-m15-recurring-loser-4","operationMs":17.21824899999774,"transactionMs":[17.190275000000838],"calls":"C23","logicalCalls":4,"sql":[1,16,17,37,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-loser","sample":4,"fixture":"arch055-billing-m15-recurring-loser-5","operationMs":16.38568099999975,"transactionMs":[16.35613899999953],"calls":"C23","logicalCalls":4,"sql":[1,16,17,37,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"recurring-loser","sample":5,"fixture":"arch055-billing-m15-recurring-loser-6","operationMs":20.084310000002006,"transactionMs":[20.055414999998902],"calls":"C23","logicalCalls":4,"sql":[1,16,17,37,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[0,0],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-winner","sample":1,"fixture":"arch055-billing-m15-purchase-winner-2","operationMs":13.50689599999896,"transactionMs":[13.482233999999153],"calls":"C22","logicalCalls":3,"sql":[1,16,17,42,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-winner","sample":2,"fixture":"arch055-billing-m15-purchase-winner-3","operationMs":15.032585999997536,"transactionMs":[15.006755000002158],"calls":"C22","logicalCalls":3,"sql":[1,16,17,42,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-winner","sample":3,"fixture":"arch055-billing-m15-purchase-winner-4","operationMs":15.352413000000524,"transactionMs":[15.331508999999642],"calls":"C22","logicalCalls":3,"sql":[1,16,17,42,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-winner","sample":4,"fixture":"arch055-billing-m15-purchase-winner-5","operationMs":25.314070000000356,"transactionMs":[25.287735000001703],"calls":"C22","logicalCalls":3,"sql":[1,16,17,42,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-winner","sample":5,"fixture":"arch055-billing-m15-purchase-winner-6","operationMs":14.725569000001997,"transactionMs":[14.701563999999053],"calls":"C22","logicalCalls":3,"sql":[1,16,17,42,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-loser","sample":1,"fixture":"arch055-billing-m15-purchase-loser-2","operationMs":17.547301000002335,"transactionMs":[17.521003000001656],"calls":"C23","logicalCalls":4,"sql":[1,16,17,42,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-loser","sample":2,"fixture":"arch055-billing-m15-purchase-loser-3","operationMs":16.405985999997938,"transactionMs":[16.382778999999573],"calls":"C23","logicalCalls":4,"sql":[1,16,17,42,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-loser","sample":3,"fixture":"arch055-billing-m15-purchase-loser-4","operationMs":15.597389999998995,"transactionMs":[15.576003000001947],"calls":"C23","logicalCalls":4,"sql":[1,16,17,42,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-loser","sample":4,"fixture":"arch055-billing-m15-purchase-loser-5","operationMs":16.33835199999885,"transactionMs":[16.3104310000017],"calls":"C23","logicalCalls":4,"sql":[1,16,17,42,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0},{"version":"candidate","profile":"purchase-loser","sample":5,"fixture":"arch055-billing-m15-purchase-loser-6","operationMs":16.303929999998218,"transactionMs":[16.28125100000034],"calls":"C23","logicalCalls":4,"sql":[1,16,17,42,19,15],"providerCalls":0,"operationRows":[1,1],"purchaseRows":[1,1],"retries":0,"rollbackStatements":0}]}
+{
+  "observationLimits": {
+    "wireBytes": "not measured",
+    "triggerWork": "not measured",
+    "engineInternalReturnedRows": "not exposed"
+  },
+  "sqlShapes": {
+    "1": "BEGIN",
+    "2": "SET TRANSACTION ISOLATION LEVEL READ COMMITTED",
+    "3": "SELECT \"id\" FROM \"commerce\".\"Shop\" WHERE \"id\" = $1 FOR UPDATE",
+    "4": "SELECT \"commerce\".\"Shop\".\"id\", \"commerce\".\"Shop\".\"domain\", \"commerce\".\"Shop\".\"platform\"::text, \"commerce\".\"Shop\".\"shopifyShopId\", \"commerce\".\"Shop\".\"status\"::text, \"commerce\".\"Shop\".\"onboardingCompleted\" FROM \"commerce\".\"Shop\" WHERE (\"commerce\".\"Shop\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "5": "SELECT \"id\" FROM \"billing\".\"Subscription\" WHERE \"shopId\" = $1 FOR UPDATE",
+    "6": "SELECT \"billing\".\"Subscription\".\"id\", \"billing\".\"Subscription\".\"shopId\", \"billing\".\"Subscription\".\"planId\", \"billing\".\"Subscription\".\"status\"::text, \"billing\".\"Subscription\".\"billingPeriodId\", \"billing\".\"Subscription\".\"cancelAtPeriodEnd\", \"billing\".\"Subscription\".\"providerSubscriptionId\" FROM \"billing\".\"Subscription\" WHERE (\"billing\".\"Subscription\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "7": "SELECT \"billing\".\"BillingPlan\".\"id\", \"billing\".\"BillingPlan\".\"kind\"::text, \"billing\".\"BillingPlan\".\"shopifyPlanHandle\", \"billing\".\"BillingPlan\".\"active\" FROM \"billing\".\"BillingPlan\" WHERE \"billing\".\"BillingPlan\".\"id\" IN ($1) OFFSET $2",
+    "8": "SELECT \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\" FROM \"billing\".\"BillingOperation\" WHERE ((\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"requestKey\" = $2) AND 1=1) LIMIT $3 OFFSET $4",
+    "9": "SELECT \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"providerReference\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" IN (CAST($2::text AS \"billing\".\"BillingOperationKind\"),CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationKind\"))) ORDER BY \"billing\".\"BillingOperation\".\"createdAt\" ASC, \"billing\".\"BillingOperation\".\"id\" ASC OFFSET $5",
+    "10": "SELECT \"billing\".\"MerchantPricingPlan\".\"id\", \"billing\".\"MerchantPricingPlan\".\"shopifyPlanHandle\", \"billing\".\"MerchantPricingPlan\".\"displayName\", \"billing\".\"MerchantPricingPlan\".\"planKind\"::text, \"billing\".\"MerchantPricingPlan\".\"isActive\", \"billing\".\"MerchantPricingPlan\".\"publicationStatus\"::text, \"billing\".\"MerchantPricingPlan\".\"currentTranslationRunId\", \"billing\".\"MerchantPricingPlan\".\"cataloguePosition\", \"billing\".\"MerchantPricingPlan\".\"featured\", \"billing\".\"MerchantPricingPlan\".\"includedRecoveryCredits\", \"billing\".\"MerchantPricingPlan\".\"allowancePeriod\"::text, \"billing\".\"MerchantPricingPlan\".\"billingPeriod\"::text, \"billing\".\"MerchantPricingPlan\".\"recurringAmountMinor\", \"billing\".\"MerchantPricingPlan\".\"currency\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideEnabled\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideReason\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideApprovedAt\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideApprovedByAdminId\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideFailureCodes\", \"billing\".\"MerchantPricingPlan\".\"economicsOverrideFingerprint\", \"billing\".\"MerchantPricingPlan\".\"shopifyRecoveryUsageEventHandle\", \"billing\".\"MerchantPricingPlan\".\"materializedAt\", \"billing\".\"MerchantPricingPlan\".\"commerceModelId\", \"billing\".\"MerchantPricingPlan\".\"createdAt\", \"billing\".\"MerchantPricingPlan\".\"updatedAt\" FROM \"billing\".\"MerchantPricingPlan\" WHERE (\"billing\".\"MerchantPricingPlan\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "11": "SELECT \"billing\".\"MerchantPricingPlanFeature\".\"merchantPricingPlanId\", \"billing\".\"MerchantPricingPlanFeature\".\"featureId\", \"billing\".\"MerchantPricingPlanFeature\".\"configuration\", \"billing\".\"MerchantPricingPlanFeature\".\"createdAt\" FROM \"billing\".\"MerchantPricingPlanFeature\" WHERE \"billing\".\"MerchantPricingPlanFeature\".\"merchantPricingPlanId\" IN ($1) OFFSET $2",
+    "12": "SELECT \"billing\".\"Feature\".\"id\", \"billing\".\"Feature\".\"key\", \"billing\".\"Feature\".\"displayName\", \"billing\".\"Feature\".\"description\", \"billing\".\"Feature\".\"active\", \"billing\".\"Feature\".\"activationMode\"::text, \"billing\".\"Feature\".\"systemRequired\", \"billing\".\"Feature\".\"createdAt\", \"billing\".\"Feature\".\"updatedAt\" FROM \"billing\".\"Feature\" WHERE \"billing\".\"Feature\".\"id\" IN ($1) OFFSET $2",
+    "13": "SELECT \"billing\".\"BillingPlan\".\"id\", \"billing\".\"BillingPlan\".\"shopifyPlanHandle\", \"billing\".\"BillingPlan\".\"name\", \"billing\".\"BillingPlan\".\"kind\"::text, \"billing\".\"BillingPlan\".\"active\", \"billing\".\"BillingPlan\".\"shopifyUsageEventHandle\", \"billing\".\"BillingPlan\".\"includedRecoveryConversationAllowance\", \"billing\".\"BillingPlan\".\"recoveryCreditPackEnabled\", \"billing\".\"BillingPlan\".\"recoveryCreditsPerPack\", \"billing\".\"BillingPlan\".\"shopifyRecoveryCreditPackEventHandle\", \"billing\".\"BillingPlan\".\"createdAt\", \"billing\".\"BillingPlan\".\"updatedAt\" FROM \"billing\".\"BillingPlan\" WHERE (\"billing\".\"BillingPlan\".\"shopifyPlanHandle\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "14": "INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"merchantPricingPlanId\",\"quotedAmountMinor\",\"quotedCurrency\",\"quotedBillingPeriod\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9,CAST($10::text AS \"billing\".\"MerchantPricingBillingPeriod\"),$11,$12) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"",
+    "15": "COMMIT",
+    "16": "WITH provider_reference_lock AS MATERIALIZED ( SELECT pg_advisory_xact_lock(hashtextextended($1, 0)) ) SELECT 1 FROM provider_reference_lock",
+    "17": "SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"providerReference\" = $1 AND \"billing\".\"BillingOperation\".\"shopId\" <> $2) LIMIT $3 OFFSET $4",
+    "18": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL)",
+    "19": "SELECT \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "20": "INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"providerReference\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"",
+    "21": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"lastErrorCode\" = $2, \"updatedAt\" = $3 WHERE (\"billing\".\"BillingOperation\".\"id\" = $4 AND \"billing\".\"BillingOperation\".\"state\" = CAST($5::text AS \"billing\".\"BillingOperationState\"))",
+    "22": "SELECT \"billing\".\"MerchantPricingPlan\".\"id\" FROM \"billing\".\"MerchantPricingPlan\" WHERE (\"billing\".\"MerchantPricingPlan\".\"shopifyPlanHandle\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "23": "INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"merchantPricingPlanId\",\"quotedAmountMinor\",\"quotedCurrency\",\"quotedBillingPeriod\",\"providerReference\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9,CAST($10::text AS \"billing\".\"MerchantPricingBillingPeriod\"),$11,$12,$13) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"",
+    "24": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"confirmationUrl\" = $2, \"lastErrorCode\" = $3, \"updatedAt\" = $4 WHERE (\"billing\".\"BillingOperation\".\"id\" = $5 AND \"billing\".\"BillingOperation\".\"state\" = CAST($6::text AS \"billing\".\"BillingOperationState\"))",
+    "25": "SELECT \"billing\".\"Subscription\".\"id\", \"billing\".\"Subscription\".\"shopId\", \"billing\".\"Subscription\".\"planId\", \"billing\".\"Subscription\".\"status\"::text, \"billing\".\"Subscription\".\"billingPeriodId\", \"billing\".\"Subscription\".\"providerSubscriptionId\", \"billing\".\"Subscription\".\"cancelAtPeriodEnd\" FROM \"billing\".\"Subscription\" WHERE (\"billing\".\"Subscription\".\"shopId\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "26": "SELECT \"billing\".\"MerchantPricingPlan\".\"id\", \"billing\".\"MerchantPricingPlan\".\"planKind\"::text, \"billing\".\"MerchantPricingPlan\".\"isActive\", \"billing\".\"MerchantPricingPlan\".\"currency\" FROM \"billing\".\"MerchantPricingPlan\" WHERE (\"billing\".\"MerchantPricingPlan\".\"shopifyPlanHandle\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "27": "SELECT \"billing\".\"MerchantPricingUsageEvent\".\"id\", \"billing\".\"MerchantPricingUsageEvent\".\"merchantPricingPlanId\", \"billing\".\"MerchantPricingUsageEvent\".\"adminLabel\", \"billing\".\"MerchantPricingUsageEvent\".\"creditsGrantedPerUnit\", \"billing\".\"MerchantPricingUsageEvent\".\"pricingMode\"::text, \"billing\".\"MerchantPricingUsageEvent\".\"fixedUnitAmountMinor\", \"billing\".\"MerchantPricingUsageEvent\".\"currency\" FROM \"billing\".\"MerchantPricingUsageEvent\" WHERE (\"billing\".\"MerchantPricingUsageEvent\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "28": "SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" LEFT JOIN \"billing\".\"RecoveryCreditPurchase\" AS \"j0\" ON (\"j0\".\"id\") = (\"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\") WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" = CAST($2::text AS \"billing\".\"BillingOperationKind\") AND \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\" = $3 AND \"billing\".\"BillingOperation\".\"state\" IN (CAST($4::text AS \"billing\".\"BillingOperationState\"),CAST($5::text AS \"billing\".\"BillingOperationState\"),CAST($6::text AS \"billing\".\"BillingOperationState\"),CAST($7::text AS \"billing\".\"BillingOperationState\")) AND (\"j0\".\"provider\" = $8 AND \"j0\".\"status\" = CAST($9::text AS \"billing\".\"RecoveryCreditPurchaseStatus\") AND (\"j0\".\"id\" IS NOT NULL))) LIMIT $10 OFFSET $11",
+    "29": "INSERT INTO \"billing\".\"RecoveryCreditPurchase\" (\"id\",\"shopId\",\"planId\",\"billingPeriodId\",\"shopifyPlanHandleSnapshot\",\"shopifyEventHandleSnapshot\",\"providerSubscriptionIdSnapshot\",\"providerUsageQuantityBeforeSnapshot\",\"providerUsageCostBeforeSnapshot\",\"providerUsageCostCurrencyBeforeSnapshot\",\"providerUsageQuantityAfterSnapshot\",\"providerUsageCostAfterSnapshot\",\"providerUsageCostCurrencyAfterSnapshot\",\"providerPurchaseAmount\",\"providerPurchaseCurrency\",\"providerValuationConfirmedAt\",\"providerPriceSnapshot\",\"provider\",\"providerReference\",\"creditsGranted\",\"currentAmount\",\"reservedAmount\",\"version\",\"status\",\"usageEventId\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,CAST($24::text AS \"billing\".\"RecoveryCreditPurchaseStatus\"),$25,$26,$27) RETURNING \"billing\".\"RecoveryCreditPurchase\".\"id\", \"billing\".\"RecoveryCreditPurchase\".\"shopId\", \"billing\".\"RecoveryCreditPurchase\".\"planId\", \"billing\".\"RecoveryCreditPurchase\".\"billingPeriodId\", \"billing\".\"RecoveryCreditPurchase\".\"shopifyPlanHandleSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"shopifyEventHandleSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerSubscriptionIdSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageQuantityBeforeSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostBeforeSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostCurrencyBeforeSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageQuantityAfterSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostAfterSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerUsageCostCurrencyAfterSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"providerPurchaseAmount\", \"billing\".\"RecoveryCreditPurchase\".\"providerPurchaseCurrency\", \"billing\".\"RecoveryCreditPurchase\".\"providerValuationConfirmedAt\", \"billing\".\"RecoveryCreditPurchase\".\"providerPriceSnapshot\", \"billing\".\"RecoveryCreditPurchase\".\"provider\", \"billing\".\"RecoveryCreditPurchase\".\"providerReference\", \"billing\".\"RecoveryCreditPurchase\".\"refundAttemptedAt\", \"billing\".\"RecoveryCreditPurchase\".\"creditsGranted\", \"billing\".\"RecoveryCreditPurchase\".\"currentAmount\", \"billing\".\"RecoveryCreditPurchase\".\"reservedAmount\", \"billing\".\"RecoveryCreditPurchase\".\"version\", \"billing\".\"RecoveryCreditPurchase\".\"status\"::text, \"billing\".\"RecoveryCreditPurchase\".\"usageEventId\", \"billing\".\"RecoveryCreditPurchase\".\"activatedAt\", \"billing\".\"RecoveryCreditPurchase\".\"createdAt\", \"billing\".\"RecoveryCreditPurchase\".\"updatedAt\"",
+    "30": "INSERT INTO \"billing\".\"BillingOperation\" (\"id\",\"shopId\",\"kind\",\"state\",\"requestKey\",\"requestFingerprint\",\"merchantPricingPlanId\",\"merchantPricingUsageEventId\",\"quotedAmountMinor\",\"quotedCurrency\",\"quotedBillingPeriod\",\"recoveryCreditPurchaseId\",\"providerReference\",\"confirmationUrl\",\"lastErrorCode\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationState\"),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"",
+    "31": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL AND \"billing\".\"BillingOperation\".\"confirmationUrl\" IS NULL)",
+    "32": "SELECT \"billing\".\"MerchantPricingUsageEvent\".\"id\", \"billing\".\"MerchantPricingUsageEvent\".\"fixedUnitAmountMinor\", \"billing\".\"MerchantPricingUsageEvent\".\"currency\" FROM \"billing\".\"MerchantPricingUsageEvent\" WHERE (\"billing\".\"MerchantPricingUsageEvent\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "33": "ROLLBACK",
+    "34": "SELECT \"id\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE \"id\" = $1 FOR SHARE",
+    "35": "SELECT \"woocommerce\".\"WooCommerceInstallation\".\"id\", \"woocommerce\".\"WooCommerceInstallation\".\"shopId\", \"woocommerce\".\"WooCommerceInstallation\".\"canonicalSiteUrl\", \"woocommerce\".\"WooCommerceInstallation\".\"credentialVersion\", \"woocommerce\".\"WooCommerceInstallation\".\"status\"::text, \"woocommerce\".\"WooCommerceInstallation\".\"revokedAt\" FROM \"woocommerce\".\"WooCommerceInstallation\" WHERE (\"woocommerce\".\"WooCommerceInstallation\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3",
+    "36": "SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" IN (CAST($2::text AS \"billing\".\"BillingOperationKind\"),CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationKind\")) AND \"billing\".\"BillingOperation\".\"state\" IN (CAST($5::text AS \"billing\".\"BillingOperationState\"),CAST($6::text AS \"billing\".\"BillingOperationState\"),CAST($7::text AS \"billing\".\"BillingOperationState\"))) LIMIT $8 OFFSET $9",
+    "37": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"",
+    "38": "SELECT \"billing\".\"BillingOperation\".\"id\" FROM \"billing\".\"BillingOperation\" WHERE (\"billing\".\"BillingOperation\".\"shopId\" = $1 AND \"billing\".\"BillingOperation\".\"kind\" IN (CAST($2::text AS \"billing\".\"BillingOperationKind\"),CAST($3::text AS \"billing\".\"BillingOperationKind\"),CAST($4::text AS \"billing\".\"BillingOperationKind\")) AND (\"billing\".\"BillingOperation\".\"state\" IN (CAST($5::text AS \"billing\".\"BillingOperationState\"),CAST($6::text AS \"billing\".\"BillingOperationState\"),CAST($7::text AS \"billing\".\"BillingOperationState\")) OR (\"billing\".\"BillingOperation\".\"kind\" = CAST($8::text AS \"billing\".\"BillingOperationKind\") AND \"billing\".\"BillingOperation\".\"state\" = CAST($9::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" = $10))) LIMIT $11 OFFSET $12",
+    "39": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"lastErrorCode\" = $2, \"updatedAt\" = $3 WHERE (\"billing\".\"BillingOperation\".\"id\" = $4 AND \"billing\".\"BillingOperation\".\"state\" = CAST($5::text AS \"billing\".\"BillingOperationState\")) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"",
+    "40": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"confirmationUrl\" = $2, \"lastErrorCode\" = $3, \"updatedAt\" = $4 WHERE (\"billing\".\"BillingOperation\".\"id\" = $5 AND \"billing\".\"BillingOperation\".\"state\" = CAST($6::text AS \"billing\".\"BillingOperationState\")) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\"",
+    "41": "INSERT INTO \"billing\".\"RecoveryCreditPurchase\" (\"id\",\"shopId\",\"planId\",\"billingPeriodId\",\"shopifyPlanHandleSnapshot\",\"shopifyEventHandleSnapshot\",\"providerSubscriptionIdSnapshot\",\"providerUsageQuantityBeforeSnapshot\",\"providerUsageCostBeforeSnapshot\",\"providerUsageCostCurrencyBeforeSnapshot\",\"providerUsageQuantityAfterSnapshot\",\"providerUsageCostAfterSnapshot\",\"providerUsageCostCurrencyAfterSnapshot\",\"providerPurchaseAmount\",\"providerPurchaseCurrency\",\"providerValuationConfirmedAt\",\"providerPriceSnapshot\",\"provider\",\"providerReference\",\"creditsGranted\",\"currentAmount\",\"reservedAmount\",\"version\",\"status\",\"usageEventId\",\"createdAt\",\"updatedAt\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,CAST($24::text AS \"billing\".\"RecoveryCreditPurchaseStatus\"),$25,$26,$27) RETURNING \"billing\".\"RecoveryCreditPurchase\".\"id\"",
+    "42": "UPDATE \"billing\".\"BillingOperation\" SET \"state\" = CAST($1::text AS \"billing\".\"BillingOperationState\"), \"providerReference\" = $2, \"confirmationUrl\" = $3, \"lastErrorCode\" = $4, \"updatedAt\" = $5 WHERE (\"billing\".\"BillingOperation\".\"id\" = $6 AND \"billing\".\"BillingOperation\".\"state\" = CAST($7::text AS \"billing\".\"BillingOperationState\") AND \"billing\".\"BillingOperation\".\"providerReference\" IS NULL AND \"billing\".\"BillingOperation\".\"confirmationUrl\" IS NULL) RETURNING \"billing\".\"BillingOperation\".\"id\", \"billing\".\"BillingOperation\".\"shopId\", \"billing\".\"BillingOperation\".\"kind\"::text, \"billing\".\"BillingOperation\".\"state\"::text, \"billing\".\"BillingOperation\".\"requestKey\", \"billing\".\"BillingOperation\".\"requestFingerprint\", \"billing\".\"BillingOperation\".\"merchantPricingPlanId\", \"billing\".\"BillingOperation\".\"merchantPricingUsageEventId\", \"billing\".\"BillingOperation\".\"quotedAmountMinor\", \"billing\".\"BillingOperation\".\"quotedCurrency\", \"billing\".\"BillingOperation\".\"quotedBillingPeriod\"::text, \"billing\".\"BillingOperation\".\"recoveryCreditPurchaseId\", \"billing\".\"BillingOperation\".\"providerReference\", \"billing\".\"BillingOperation\".\"confirmationUrl\", \"billing\".\"BillingOperation\".\"lastErrorCode\", \"billing\".\"BillingOperation\".\"createdAt\", \"billing\".\"BillingOperation\".\"updatedAt\""
+  },
+  "callShapes": {
+    "C1": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findMany",
+        "returned": 0,
+        "affected": 0,
+        "select": { "kind": true, "state": true, "providerReference": true }
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C2": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C3": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findMany",
+        "returned": 0,
+        "affected": 0,
+        "select": { "kind": true, "state": true, "providerReference": true }
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C4": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C5": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findMany",
+        "returned": 0,
+        "affected": 0,
+        "select": { "kind": true, "state": true, "providerReference": true }
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C6": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "providerSubscriptionId": true,
+          "cancelAtPeriodEnd": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          },
+          "billingPeriod": {
+            "select": {
+              "id": true,
+              "shopId": true,
+              "subscriptionId": true,
+              "planId": true,
+              "status": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "planKind": true,
+          "isActive": true,
+          "currency": true
+        }
+      },
+      {
+        "method": "merchantPricingUsageEvent.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "merchantPricingPlanId": true,
+          "adminLabel": true,
+          "creditsGrantedPerUnit": true,
+          "pricingMode": true,
+          "fixedUnitAmountMinor": true,
+          "currency": true
+        }
+      },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "recoveryCreditPurchase.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C7": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "providerSubscriptionId": true,
+          "cancelAtPeriodEnd": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          },
+          "billingPeriod": {
+            "select": {
+              "id": true,
+              "shopId": true,
+              "subscriptionId": true,
+              "planId": true,
+              "status": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingUsageEvent.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": { "id": true, "fixedUnitAmountMinor": true, "currency": true }
+      }
+    ],
+    "C8": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findMany",
+        "returned": 1,
+        "affected": 0,
+        "select": { "kind": true, "state": true, "providerReference": true }
+      }
+    ],
+    "C9": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findMany",
+        "returned": 1000,
+        "affected": 0,
+        "select": { "kind": true, "state": true, "providerReference": true }
+      }
+    ],
+    "C10": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findMany",
+        "returned": 1,
+        "affected": 0,
+        "select": { "kind": true, "state": true, "providerReference": true }
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C11": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findMany",
+        "returned": 1000,
+        "affected": 0,
+        "select": { "kind": true, "state": true, "providerReference": true }
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C12": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C13": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateMany",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C14": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateManyAndReturn",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      }
+    ],
+    "C15": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C16": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.updateManyAndReturn",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      }
+    ],
+    "C17": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ],
+    "C18": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      {
+        "method": "billingOperation.updateManyAndReturn",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      }
+    ],
+    "C19": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "providerSubscriptionId": true,
+          "cancelAtPeriodEnd": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          },
+          "billingPeriod": {
+            "select": {
+              "id": true,
+              "shopId": true,
+              "subscriptionId": true,
+              "planId": true,
+              "status": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingPlan.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "planKind": true,
+          "isActive": true,
+          "currency": true
+        }
+      },
+      {
+        "method": "merchantPricingUsageEvent.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "merchantPricingPlanId": true,
+          "adminLabel": true,
+          "creditsGrantedPerUnit": true,
+          "pricingMode": true,
+          "fixedUnitAmountMinor": true,
+          "currency": true
+        }
+      },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "recoveryCreditPurchase.create",
+        "returned": 1,
+        "affected": 1,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.create",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateManyAndReturn",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      }
+    ],
+    "C20": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "providerSubscriptionId": true,
+          "cancelAtPeriodEnd": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          },
+          "billingPeriod": {
+            "select": {
+              "id": true,
+              "shopId": true,
+              "subscriptionId": true,
+              "planId": true,
+              "status": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "merchantPricingUsageEvent.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": { "id": true, "fixedUnitAmountMinor": true, "currency": true }
+      }
+    ],
+    "C21": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "shop.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "domain": true,
+          "platform": true,
+          "shopifyShopId": true,
+          "status": true,
+          "onboardingCompleted": true
+        }
+      },
+      {
+        "method": "wooCommerceInstallation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "canonicalSiteUrl": true,
+          "credentialVersion": true,
+          "status": true,
+          "revokedAt": true
+        }
+      },
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "subscription.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": {
+          "id": true,
+          "shopId": true,
+          "planId": true,
+          "status": true,
+          "billingPeriodId": true,
+          "cancelAtPeriodEnd": true,
+          "providerSubscriptionId": true,
+          "plan": {
+            "select": {
+              "id": true,
+              "kind": true,
+              "shopifyPlanHandle": true,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 1,
+        "affected": 0,
+        "select": { "id": true }
+      }
+    ],
+    "C22": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateManyAndReturn",
+        "returned": 1,
+        "affected": 1,
+        "select": null
+      }
+    ],
+    "C23": [
+      { "method": "$queryRaw", "returned": 1, "affected": 0, "select": null },
+      {
+        "method": "billingOperation.findFirst",
+        "returned": 0,
+        "affected": 0,
+        "select": { "id": true }
+      },
+      {
+        "method": "billingOperation.updateManyAndReturn",
+        "returned": 0,
+        "affected": 0,
+        "select": null
+      },
+      {
+        "method": "billingOperation.findUnique",
+        "returned": 1,
+        "affected": 0,
+        "select": null
+      }
+    ]
+  },
+  "samples": [
+    {
+      "version": "baseline",
+      "profile": "create-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-create-new-2",
+      "operationMs": 60.366199999999935,
+      "transactionMs": [42.78602000000001, 17.097089000000096],
+      "calls": "C1",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-create-new-3",
+      "operationMs": 57.918300000000045,
+      "transactionMs": [40.034075999999914, 17.71401999999989],
+      "calls": "C1",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-create-new-4",
+      "operationMs": 79.06020600000011,
+      "transactionMs": [53.199988000000076, 25.686858999999913],
+      "calls": "C1",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-create-new-5",
+      "operationMs": 73.25508599999989,
+      "transactionMs": [52.64820699999996, 20.427824999999984],
+      "calls": "C1",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-create-new-6",
+      "operationMs": 67.24475000000007,
+      "transactionMs": [45.49065100000007, 21.585829999999987],
+      "calls": "C1",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-create-replay-2",
+      "operationMs": 33.42404699999997,
+      "transactionMs": [33.38592199999994],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-create-replay-3",
+      "operationMs": 31.72258899999997,
+      "transactionMs": [31.681449000000157],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-create-replay-4",
+      "operationMs": 33.068412999999964,
+      "transactionMs": [33.02750699999979],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-create-replay-5",
+      "operationMs": 33.28787599999987,
+      "transactionMs": [33.25217299999986],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "create-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-create-replay-6",
+      "operationMs": 32.30145500000026,
+      "transactionMs": [32.255259000000024],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-cancel-new-2",
+      "operationMs": 56.293317000000116,
+      "transactionMs": [43.98158199999989, 12.248090000000047],
+      "calls": "C3",
+      "logicalCalls": 9,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 15, 1, 21, 19, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-cancel-new-3",
+      "operationMs": 130.76516500000025,
+      "transactionMs": [114.83837199999971, 15.845745000000079],
+      "calls": "C3",
+      "logicalCalls": 9,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 15, 1, 21, 19, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-cancel-new-4",
+      "operationMs": 108.72156499999983,
+      "transactionMs": [77.54412600000023, 31.10202900000013],
+      "calls": "C3",
+      "logicalCalls": 9,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 15, 1, 21, 19, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-cancel-new-5",
+      "operationMs": 78.48153400000001,
+      "transactionMs": [64.24004700000023, 14.16942599999993],
+      "calls": "C3",
+      "logicalCalls": 9,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 15, 1, 21, 19, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-cancel-new-6",
+      "operationMs": 57.12107100000003,
+      "transactionMs": [40.69476399999985, 16.349886999999853],
+      "calls": "C3",
+      "logicalCalls": 9,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 15, 1, 21, 19, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-cancel-replay-2",
+      "operationMs": 29.2122789999994,
+      "transactionMs": [29.177387999999155],
+      "calls": "C4",
+      "logicalCalls": 5,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-cancel-replay-3",
+      "operationMs": 34.379265999999916,
+      "transactionMs": [34.351520000000164],
+      "calls": "C4",
+      "logicalCalls": 5,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-cancel-replay-4",
+      "operationMs": 44.6668039999995,
+      "transactionMs": [44.63687699999991],
+      "calls": "C4",
+      "logicalCalls": 5,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-cancel-replay-5",
+      "operationMs": 31.661826000000474,
+      "transactionMs": [31.63195899999937],
+      "calls": "C4",
+      "logicalCalls": 5,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "cancel-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-cancel-replay-6",
+      "operationMs": 27.114383999999518,
+      "transactionMs": [27.084007000000383],
+      "calls": "C4",
+      "logicalCalls": 5,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-switch-new-2",
+      "operationMs": 62.16556599999967,
+      "transactionMs": [50.76309599999968, 11.271106000000145],
+      "calls": "C5",
+      "logicalCalls": 12,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 22, 13, 23, 15, 1, 24, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-switch-new-3",
+      "operationMs": 66.86489200000051,
+      "transactionMs": [53.77635000000009, 12.966395000000375],
+      "calls": "C5",
+      "logicalCalls": 12,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 22, 13, 23, 15, 1, 24, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-switch-new-4",
+      "operationMs": 90.71474200000011,
+      "transactionMs": [73.13777200000004, 17.451647000000776],
+      "calls": "C5",
+      "logicalCalls": 12,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 22, 13, 23, 15, 1, 24, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-switch-new-5",
+      "operationMs": 92.11844800000017,
+      "transactionMs": [75.64281800000026, 16.35527000000002],
+      "calls": "C5",
+      "logicalCalls": 12,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 22, 13, 23, 15, 1, 24, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-switch-new-6",
+      "operationMs": 133.8225680000005,
+      "transactionMs": [109.34441699999934, 24.357441000000108],
+      "calls": "C5",
+      "logicalCalls": 12,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 22, 13, 23, 15, 1, 24, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-switch-replay-2",
+      "operationMs": 49.35917700000027,
+      "transactionMs": [49.33159700000033],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-switch-replay-3",
+      "operationMs": 323.39610399999947,
+      "transactionMs": [323.36396800000057],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-switch-replay-4",
+      "operationMs": 118.01872300000105,
+      "transactionMs": [117.98879699999998],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-switch-replay-5",
+      "operationMs": 320.137447000001,
+      "transactionMs": [320.10897600000135],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "switch-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-switch-replay-6",
+      "operationMs": 164.89475499999935,
+      "transactionMs": [164.86576799999966],
+      "calls": "C2",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-new-2",
+      "operationMs": 132.60667099999955,
+      "transactionMs": [97.83234900000025, 34.57602600000064],
+      "calls": "C6",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 4, 5, 25, 7, 8, 26, 27, 28, 29, 30, 15, 1, 16, 17, 31, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-new-3",
+      "operationMs": 243.18056400000023,
+      "transactionMs": [196.98183399999834, 45.4570590000003],
+      "calls": "C6",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 4, 5, 25, 7, 8, 26, 27, 28, 29, 30, 15, 1, 16, 17, 31, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-new-4",
+      "operationMs": 157.64429700000073,
+      "transactionMs": [127.48694400000022, 29.987731999999596],
+      "calls": "C6",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 4, 5, 25, 7, 8, 26, 27, 28, 29, 30, 15, 1, 16, 17, 31, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-new-5",
+      "operationMs": 260.2009670000007,
+      "transactionMs": [231.3825769999985, 28.68487599999935],
+      "calls": "C6",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 4, 5, 25, 7, 8, 26, 27, 28, 29, 30, 15, 1, 16, 17, 31, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-new-6",
+      "operationMs": 98.6099209999993,
+      "transactionMs": [69.26310299999932, 29.20963699999993],
+      "calls": "C6",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 4, 5, 25, 7, 8, 26, 27, 28, 29, 30, 15, 1, 16, 17, 31, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-replay-2",
+      "operationMs": 70.50152999999955,
+      "transactionMs": [70.46839999999975],
+      "calls": "C7",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-replay-3",
+      "operationMs": 64.05446799999845,
+      "transactionMs": [64.01584500000172],
+      "calls": "C7",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-replay-4",
+      "operationMs": 69.46574500000133,
+      "transactionMs": [69.42455100000006],
+      "calls": "C7",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-replay-5",
+      "operationMs": 89.84505400000126,
+      "transactionMs": [89.81090799999947],
+      "calls": "C7",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-replay-6",
+      "operationMs": 64.60472200000004,
+      "transactionMs": [64.56998999999996],
+      "calls": "C7",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-blocked",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1-blocked-2",
+      "operationMs": 41.800271999998586,
+      "transactionMs": [41.75460199999907],
+      "calls": "C8",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-blocked",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1-blocked-3",
+      "operationMs": 34.74467000000004,
+      "transactionMs": [34.70244300000013],
+      "calls": "C8",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-blocked",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1-blocked-4",
+      "operationMs": 82.11648500000047,
+      "transactionMs": [82.07640300000094],
+      "calls": "C8",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-blocked",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1-blocked-5",
+      "operationMs": 45.70125100000041,
+      "transactionMs": [45.66123200000038],
+      "calls": "C8",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-blocked",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1-blocked-6",
+      "operationMs": 51.36786299999949,
+      "transactionMs": [51.32511700000032],
+      "calls": "C8",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-blocked",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1000-blocked-2",
+      "operationMs": 32.3543299999983,
+      "transactionMs": [32.313631000000896],
+      "calls": "C9",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-blocked",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1000-blocked-3",
+      "operationMs": 50.73819200000071,
+      "transactionMs": [50.69903200000044],
+      "calls": "C9",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-blocked",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1000-blocked-4",
+      "operationMs": 45.58164100000067,
+      "transactionMs": [45.535055999996985],
+      "calls": "C9",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-blocked",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1000-blocked-5",
+      "operationMs": 31.48717100000067,
+      "transactionMs": [31.44381599999906],
+      "calls": "C9",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-blocked",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1000-blocked-6",
+      "operationMs": 48.36522600000171,
+      "transactionMs": [48.32345999999961],
+      "calls": "C9",
+      "logicalCalls": 6,
+      "sql": [1, 2, 3, 4, 5, 6, 7, 8, 9, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-clear",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1-clear-2",
+      "operationMs": 85.90878399999929,
+      "transactionMs": [64.0763079999997, 21.72609100000045],
+      "calls": "C10",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-clear",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1-clear-3",
+      "operationMs": 92.05265299999883,
+      "transactionMs": [70.6026720000009, 21.324404999999388],
+      "calls": "C10",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-clear",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1-clear-4",
+      "operationMs": 72.3402129999995,
+      "transactionMs": [50.9304000000011, 21.31247599999915],
+      "calls": "C10",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-clear",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1-clear-5",
+      "operationMs": 94.96429599999828,
+      "transactionMs": [60.46943299999839, 34.3549090000015],
+      "calls": "C10",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1-clear",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1-clear-6",
+      "operationMs": 73.72909699999946,
+      "transactionMs": [56.036755000000994, 17.590221999998903],
+      "calls": "C10",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-clear",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1000-clear-2",
+      "operationMs": 91.67360399999961,
+      "transactionMs": [66.03725000000122, 25.531737000001158],
+      "calls": "C11",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-clear",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1000-clear-3",
+      "operationMs": 186.62042999999903,
+      "transactionMs": [146.5201449999986, 39.92604399999982],
+      "calls": "C11",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-clear",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1000-clear-4",
+      "operationMs": 73.83769499999835,
+      "transactionMs": [55.44339200000104, 18.245036000000255],
+      "calls": "C11",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-clear",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1000-clear-5",
+      "operationMs": 76.01751300000251,
+      "transactionMs": [58.579687000001286, 17.324467000002187],
+      "calls": "C11",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "history-1000-clear",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1000-clear-6",
+      "operationMs": 114.56478499999866,
+      "transactionMs": [83.95519499999864, 30.479240000000573],
+      "calls": "C11",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1, 16, 17, 18, 19, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-winner",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-recurring-winner-2",
+      "operationMs": 18.997839999999997,
+      "transactionMs": [18.97124900000199],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-winner",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-recurring-winner-3",
+      "operationMs": 27.654101000000082,
+      "transactionMs": [27.625676999999996],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-winner",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-recurring-winner-4",
+      "operationMs": 49.502722000001086,
+      "transactionMs": [49.471598000000085],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-winner",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-recurring-winner-5",
+      "operationMs": 20.869096999998874,
+      "transactionMs": [20.84102200000052],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-winner",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-recurring-winner-6",
+      "operationMs": 25.136602999999013,
+      "transactionMs": [25.08494100000098],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-loser",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-recurring-loser-2",
+      "operationMs": 23.85073999999804,
+      "transactionMs": [23.819690000000264],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-loser",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-recurring-loser-3",
+      "operationMs": 21.276748000000225,
+      "transactionMs": [21.23466499999995],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-loser",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-recurring-loser-4",
+      "operationMs": 27.080849000001763,
+      "transactionMs": [27.05361300000004],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-loser",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-recurring-loser-5",
+      "operationMs": 90.51522000000114,
+      "transactionMs": [90.48490800000218],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "recurring-loser",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-recurring-loser-6",
+      "operationMs": 22.441062999998394,
+      "transactionMs": [22.414604000001418],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 18, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-winner",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-winner-2",
+      "operationMs": 33.736165000002075,
+      "transactionMs": [33.71459000000323],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-winner",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-winner-3",
+      "operationMs": 20.53921099999934,
+      "transactionMs": [20.510202999998],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-winner",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-winner-4",
+      "operationMs": 22.47466500000155,
+      "transactionMs": [22.36838599999828],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-winner",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-winner-5",
+      "operationMs": 27.90460499999972,
+      "transactionMs": [27.877157999999326],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-winner",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-winner-6",
+      "operationMs": 17.78352900000027,
+      "transactionMs": [17.762274000000616],
+      "calls": "C12",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-loser",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-loser-2",
+      "operationMs": 23.602068000000145,
+      "transactionMs": [23.577621000000363],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-loser",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-loser-3",
+      "operationMs": 32.61134199999651,
+      "transactionMs": [32.58814100000018],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-loser",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-loser-4",
+      "operationMs": 28.79564300000129,
+      "transactionMs": [28.7738219999992],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-loser",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-loser-5",
+      "operationMs": 25.578308000000106,
+      "transactionMs": [25.554352999999537],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "baseline",
+      "profile": "purchase-loser",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-loser-6",
+      "operationMs": 22.622137000002112,
+      "transactionMs": [22.599248000002262],
+      "calls": "C13",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 31, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-create-new-2",
+      "operationMs": 113.38465500000007,
+      "transactionMs": [87.97027700000012, 25.18343200000004],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-create-new-3",
+      "operationMs": 93.0719180000001,
+      "transactionMs": [70.66250200000013, 22.224977999999965],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-create-new-4",
+      "operationMs": 74.17125599999963,
+      "transactionMs": [52.51842399999987, 21.452528000000257],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-create-new-5",
+      "operationMs": 76.93192900000031,
+      "transactionMs": [57.791763000000174, 18.979107999999997],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-create-new-6",
+      "operationMs": 69.28641700000026,
+      "transactionMs": [51.59706099999994, 17.519307000000026],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-create-replay-2",
+      "operationMs": 86.2165,
+      "transactionMs": [86.17677300000014],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-create-replay-3",
+      "operationMs": 72.67768500000011,
+      "transactionMs": [72.63872999999967],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-create-replay-4",
+      "operationMs": 42.83971600000041,
+      "transactionMs": [42.802983999999924],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-create-replay-5",
+      "operationMs": 64.42923500000006,
+      "transactionMs": [64.39282000000003],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "create-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-create-replay-6",
+      "operationMs": 51.18348399999968,
+      "transactionMs": [51.144022999999834],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-cancel-new-2",
+      "operationMs": 58.17399000000023,
+      "transactionMs": [48.075542000000496, 10.006725000000188],
+      "calls": "C16",
+      "logicalCalls": 10,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 20, 15, 1, 39, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-cancel-new-3",
+      "operationMs": 50.63797800000066,
+      "transactionMs": [41.106840000000375, 9.455512999999883],
+      "calls": "C16",
+      "logicalCalls": 10,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 20, 15, 1, 39, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-cancel-new-4",
+      "operationMs": 56.976628000000346,
+      "transactionMs": [47.08526500000062, 9.816829999999754],
+      "calls": "C16",
+      "logicalCalls": 10,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 20, 15, 1, 39, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-cancel-new-5",
+      "operationMs": 51.8751199999997,
+      "transactionMs": [38.80721600000015, 12.968202999999448],
+      "calls": "C16",
+      "logicalCalls": 10,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 20, 15, 1, 39, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-cancel-new-6",
+      "operationMs": 48.95832699999937,
+      "transactionMs": [39.83876500000042, 9.046291999999994],
+      "calls": "C16",
+      "logicalCalls": 10,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 20, 15, 1, 39, 15],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-cancel-replay-2",
+      "operationMs": 33.0434009999999,
+      "transactionMs": [33.00843400000031],
+      "calls": "C17",
+      "logicalCalls": 7,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-cancel-replay-3",
+      "operationMs": 95.18030799999997,
+      "transactionMs": [95.14862700000049],
+      "calls": "C17",
+      "logicalCalls": 7,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-cancel-replay-4",
+      "operationMs": 46.52863499999967,
+      "transactionMs": [46.496712000000116],
+      "calls": "C17",
+      "logicalCalls": 7,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-cancel-replay-5",
+      "operationMs": 43.20570099999986,
+      "transactionMs": [43.17630499999996],
+      "calls": "C17",
+      "logicalCalls": 7,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "cancel-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-cancel-replay-6",
+      "operationMs": 43.27002699999957,
+      "transactionMs": [43.23884100000032],
+      "calls": "C17",
+      "logicalCalls": 7,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-switch-new-2",
+      "operationMs": 73.74969400000009,
+      "transactionMs": [63.598493999999846, 9.971859999999651],
+      "calls": "C18",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 10, 22, 13, 23, 15, 1, 40, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-switch-new-3",
+      "operationMs": 68.78104100000019,
+      "transactionMs": [57.97619499999928, 10.669133999999758],
+      "calls": "C18",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 10, 22, 13, 23, 15, 1, 40, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-switch-new-4",
+      "operationMs": 100.85537600000043,
+      "transactionMs": [74.56939200000033, 26.153777000000446],
+      "calls": "C18",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 10, 22, 13, 23, 15, 1, 40, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-switch-new-5",
+      "operationMs": 78.02743900000041,
+      "transactionMs": [63.839632000000165, 14.050266999999621],
+      "calls": "C18",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 10, 22, 13, 23, 15, 1, 40, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-switch-new-6",
+      "operationMs": 67.4116269999995,
+      "transactionMs": [58.21432800000002, 9.073082000000795],
+      "calls": "C18",
+      "logicalCalls": 13,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 38, 10, 22, 13, 23, 15, 1, 40, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-switch-replay-2",
+      "operationMs": 50.659803999999895,
+      "transactionMs": [50.62964600000032],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-switch-replay-3",
+      "operationMs": 46.40598200000022,
+      "transactionMs": [46.37690300000031],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-switch-replay-4",
+      "operationMs": 40.97363199999927,
+      "transactionMs": [40.94335099999989],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-switch-replay-5",
+      "operationMs": 38.60820799999965,
+      "transactionMs": [38.57613300000048],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "switch-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-switch-replay-6",
+      "operationMs": 46.47171100000014,
+      "transactionMs": [46.441140000000814],
+      "calls": "C15",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 10, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-new",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-new-2",
+      "operationMs": 100.97526199999993,
+      "transactionMs": [72.32423700000072, 28.339603000000352],
+      "calls": "C19",
+      "logicalCalls": 15,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 26, 27, 28, 41, 30, 15, 1, 16, 17, 42,
+        15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-new",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-new-3",
+      "operationMs": 129.3413410000012,
+      "transactionMs": [102.67059399999926, 26.52313900000081],
+      "calls": "C19",
+      "logicalCalls": 15,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 26, 27, 28, 41, 30, 15, 1, 16, 17, 42,
+        15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-new",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-new-4",
+      "operationMs": 87.59872700000051,
+      "transactionMs": [68.61774399999922, 18.83291300000019],
+      "calls": "C19",
+      "logicalCalls": 15,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 26, 27, 28, 41, 30, 15, 1, 16, 17, 42,
+        15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-new",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-new-5",
+      "operationMs": 74.56859700000132,
+      "transactionMs": [54.144163999999364, 20.215808000000834],
+      "calls": "C19",
+      "logicalCalls": 15,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 26, 27, 28, 41, 30, 15, 1, 16, 17, 42,
+        15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-new",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-new-6",
+      "operationMs": 65.14730500000042,
+      "transactionMs": [48.7689790000004, 16.237936999999874],
+      "calls": "C19",
+      "logicalCalls": 15,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 26, 27, 28, 41, 30, 15, 1, 16, 17, 42,
+        15
+      ],
+      "providerCalls": 1,
+      "operationRows": [0, 1],
+      "purchaseRows": [0, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-replay",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-replay-2",
+      "operationMs": 38.97422600000027,
+      "transactionMs": [38.938216000000466],
+      "calls": "C20",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-replay",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-replay-3",
+      "operationMs": 53.19864199999938,
+      "transactionMs": [51.55365999999958],
+      "calls": "C20",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-replay",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-replay-4",
+      "operationMs": 50.81350099999872,
+      "transactionMs": [50.77528000000166],
+      "calls": "C20",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-replay",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-replay-5",
+      "operationMs": 50.28394600000138,
+      "transactionMs": [50.247629999999845],
+      "calls": "C20",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-replay",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-replay-6",
+      "operationMs": 51.09428500000104,
+      "transactionMs": [51.05210099999931],
+      "calls": "C20",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 25, 7, 8, 32, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-blocked",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1-blocked-2",
+      "operationMs": 37.112560999999914,
+      "transactionMs": [37.06854299999941],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-blocked",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1-blocked-3",
+      "operationMs": 57.13126099999863,
+      "transactionMs": [57.08403399999952],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-blocked",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1-blocked-4",
+      "operationMs": 42.295712000001004,
+      "transactionMs": [42.24693400000069],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-blocked",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1-blocked-5",
+      "operationMs": 50.96616300000096,
+      "transactionMs": [50.91574799999944],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-blocked",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1-blocked-6",
+      "operationMs": 45.02755100000104,
+      "transactionMs": [44.982176999999865],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-blocked",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1000-blocked-2",
+      "operationMs": 40.32889900000009,
+      "transactionMs": [40.27264899999864],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-blocked",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1000-blocked-3",
+      "operationMs": 42.69872000000032,
+      "transactionMs": [42.64671400000043],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-blocked",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1000-blocked-4",
+      "operationMs": 43.903394000000844,
+      "transactionMs": [43.85940599999958],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-blocked",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1000-blocked-5",
+      "operationMs": 38.22141499999998,
+      "transactionMs": [38.17501499999889],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-blocked",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1000-blocked-6",
+      "operationMs": 34.560284000002866,
+      "transactionMs": [34.51629099999991],
+      "calls": "C21",
+      "logicalCalls": 8,
+      "sql": [1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 33],
+      "providerCalls": 0,
+      "operationRows": [1000, 1000],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 1
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-clear",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1-clear-2",
+      "operationMs": 72.8219480000007,
+      "transactionMs": [54.809073999997054, 17.896388000001025],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-clear",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1-clear-3",
+      "operationMs": 69.03655599999911,
+      "transactionMs": [50.48168699999951, 18.4415110000009],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-clear",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1-clear-4",
+      "operationMs": 64.01385799999844,
+      "transactionMs": [49.024695000000065, 14.881397000001016],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-clear",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1-clear-5",
+      "operationMs": 91.21088299999974,
+      "transactionMs": [50.327430000001186, 40.77665999999954],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1-clear",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1-clear-6",
+      "operationMs": 107.90073199999824,
+      "transactionMs": [88.49513400000069, 19.293249000002106],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1, 2],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-clear",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-history-1000-clear-2",
+      "operationMs": 82.36801599999671,
+      "transactionMs": [62.14345500000127, 20.119134000000486],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-clear",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-history-1000-clear-3",
+      "operationMs": 79.75222999999824,
+      "transactionMs": [57.30960700000287, 22.33619700000054],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-clear",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-history-1000-clear-4",
+      "operationMs": 107.63823000000048,
+      "transactionMs": [79.84019700000135, 27.685342000000674],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-clear",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-history-1000-clear-5",
+      "operationMs": 91.94293099999777,
+      "transactionMs": [71.35111999999936, 20.48619300000064],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "history-1000-clear",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-history-1000-clear-6",
+      "operationMs": 80.16361699999834,
+      "transactionMs": [60.04627800000162, 19.99369300000035],
+      "calls": "C14",
+      "logicalCalls": 14,
+      "sql": [
+        1, 2, 3, 34, 4, 35, 5, 6, 7, 8, 36, 10, 13, 14, 15, 1, 16, 17, 37, 15
+      ],
+      "providerCalls": 1,
+      "operationRows": [1000, 1001],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-winner",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-recurring-winner-2",
+      "operationMs": 23.539027000002534,
+      "transactionMs": [23.51079899999968],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 37, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-winner",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-recurring-winner-3",
+      "operationMs": 24.357712999997602,
+      "transactionMs": [24.330699000001914],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 37, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-winner",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-recurring-winner-4",
+      "operationMs": 18.270229999998264,
+      "transactionMs": [18.234948000001168],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 37, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-winner",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-recurring-winner-5",
+      "operationMs": 24.08223700000235,
+      "transactionMs": [24.05605199999991],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 37, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-winner",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-recurring-winner-6",
+      "operationMs": 16.841410000000906,
+      "transactionMs": [16.78952600000048],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 37, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-loser",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-recurring-loser-2",
+      "operationMs": 16.625056000000768,
+      "transactionMs": [16.576795000000857],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 37, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-loser",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-recurring-loser-3",
+      "operationMs": 16.50553299999956,
+      "transactionMs": [16.47718099999838],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 37, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-loser",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-recurring-loser-4",
+      "operationMs": 17.21824899999774,
+      "transactionMs": [17.190275000000838],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 37, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-loser",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-recurring-loser-5",
+      "operationMs": 16.38568099999975,
+      "transactionMs": [16.35613899999953],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 37, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "recurring-loser",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-recurring-loser-6",
+      "operationMs": 20.084310000002006,
+      "transactionMs": [20.055414999998902],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 37, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [0, 0],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-winner",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-winner-2",
+      "operationMs": 13.50689599999896,
+      "transactionMs": [13.482233999999153],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 42, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-winner",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-winner-3",
+      "operationMs": 15.032585999997536,
+      "transactionMs": [15.006755000002158],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 42, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-winner",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-winner-4",
+      "operationMs": 15.352413000000524,
+      "transactionMs": [15.331508999999642],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 42, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-winner",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-winner-5",
+      "operationMs": 25.314070000000356,
+      "transactionMs": [25.287735000001703],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 42, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-winner",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-winner-6",
+      "operationMs": 14.725569000001997,
+      "transactionMs": [14.701563999999053],
+      "calls": "C22",
+      "logicalCalls": 3,
+      "sql": [1, 16, 17, 42, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-loser",
+      "sample": 1,
+      "fixture": "arch055-billing-m15-purchase-loser-2",
+      "operationMs": 17.547301000002335,
+      "transactionMs": [17.521003000001656],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 42, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-loser",
+      "sample": 2,
+      "fixture": "arch055-billing-m15-purchase-loser-3",
+      "operationMs": 16.405985999997938,
+      "transactionMs": [16.382778999999573],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 42, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-loser",
+      "sample": 3,
+      "fixture": "arch055-billing-m15-purchase-loser-4",
+      "operationMs": 15.597389999998995,
+      "transactionMs": [15.576003000001947],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 42, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-loser",
+      "sample": 4,
+      "fixture": "arch055-billing-m15-purchase-loser-5",
+      "operationMs": 16.33835199999885,
+      "transactionMs": [16.3104310000017],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 42, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    },
+    {
+      "version": "candidate",
+      "profile": "purchase-loser",
+      "sample": 5,
+      "fixture": "arch055-billing-m15-purchase-loser-6",
+      "operationMs": 16.303929999998218,
+      "transactionMs": [16.28125100000034],
+      "calls": "C23",
+      "logicalCalls": 4,
+      "sql": [1, 16, 17, 42, 19, 15],
+      "providerCalls": 0,
+      "operationRows": [1, 1],
+      "purchaseRows": [1, 1],
+      "retries": 0,
+      "rollbackStatements": 0
+    }
+  ]
+}
 ```
 
 **Canonical migration hashes**
+
 ```json
 {
   "20260912000000_arch010_first_production_baseline/migration.sql": "32ed7881a05eb81d465cf7641c2efc6aaf8186e7c18472b23f0fa5d4173b4604",

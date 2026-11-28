@@ -212,30 +212,30 @@ Mutations require POST plus the exact configured Origin, including development. 
 
 Entry-point matrix:
 
-| Family | Entry point | Guard | Exception/status behavior |
-| --- | --- | --- | --- |
-| Page | `/` | `requireStudioAdminPage` | no session -> `/sign-in`; denied/configuration -> `/access-denied` |
-| Public auth page | `/sign-in` | `getStudioAdminPrincipal` | authenticated/development -> `/`; otherwise Google control |
-| Direct read | `GET /api/studio/access` | `requireStudioAdmin` | typed 401/403/503, private no-store |
-| Direct privileged write | `POST /api/studio/access` | exact Origin + `requireStudioSuperAdmin` | ADMIN and forged origins denied |
-| Server Action | `signOutStudioAction` | exact Origin + `requireStudioAdmin` | typed denial before NextAuth sign-out |
-| Protocol/public | `/api/auth/*`, `/health/live`, `/health/ready` | NextAuth protocol or health contract | explicit exceptions; no Studio session grants MCP access |
+| Family                  | Entry point                                    | Guard                                    | Exception/status behavior                                          |
+| ----------------------- | ---------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| Page                    | `/`                                            | `requireStudioAdminPage`                 | no session -> `/sign-in`; denied/configuration -> `/access-denied` |
+| Public auth page        | `/sign-in`                                     | `getStudioAdminPrincipal`                | authenticated/development -> `/`; otherwise Google control         |
+| Direct read             | `GET /api/studio/access`                       | `requireStudioAdmin`                     | typed 401/403/503, private no-store                                |
+| Direct privileged write | `POST /api/studio/access`                      | exact Origin + `requireStudioSuperAdmin` | ADMIN and forged origins denied                                    |
+| Server Action           | `signOutStudioAction`                          | exact Origin + `requireStudioAdmin`      | typed denial before NextAuth sign-out                              |
+| Protocol/public         | `/api/auth/*`, `/health/live`, `/health/ready` | NextAuth protocol or health contract     | explicit exceptions; no Studio session grants MCP access           |
 
 Requirement-to-fixture matrix:
 
-| Contract | Fixture | Expected side effect | Result |
-| --- | --- | --- | --- |
-| A01 | verified allowlisted current Google subject | login timestamp refresh; no account creation | passed |
-| A02 | unverified/unlisted/inactive/wrong-provider/wrong-subject | deny; no bind/refresh | passed |
-| A03 | explicit development environment | server-resolved SUPER_ADMIN without Google credentials | passed |
-| A04 | production build plus development override | configuration failure before principal | passed |
-| A05 | test/production/unknown with missing configuration | fail closed as 503 adapter result | passed |
-| A06 | request-shaped bypass flags outside development | ignored; no bypass principal | passed |
-| A07 | concurrent reserved-row ensure and first-subject bind | one exact row/one subject; conflicts unchanged | passed with injected transaction/persistence fixtures |
-| A08 | page/read/write/Server Action matrix and all seven permissions | direct guards; ADMIN cannot publish, SUPER_ADMIN can | passed |
-| A09 | mutable role/active persistence behind repeated resolver calls | next request sees role/deactivation change | passed; no module-global principal cache |
-| A10 | wrong/missing Origin, development request and absent MCP production route | deny mutation; bypass cannot authorize MCP | passed |
-| A11 | sign-in redirect, badge and rapid mouse/keyboard auth controls | one flow, pending state, intentional retry after known failure | passed in DOM tests and local browser inspection |
+| Contract | Fixture                                                                   | Expected side effect                                           | Result                                                |
+| -------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
+| A01      | verified allowlisted current Google subject                               | login timestamp refresh; no account creation                   | passed                                                |
+| A02      | unverified/unlisted/inactive/wrong-provider/wrong-subject                 | deny; no bind/refresh                                          | passed                                                |
+| A03      | explicit development environment                                          | server-resolved SUPER_ADMIN without Google credentials         | passed                                                |
+| A04      | production build plus development override                                | configuration failure before principal                         | passed                                                |
+| A05      | test/production/unknown with missing configuration                        | fail closed as 503 adapter result                              | passed                                                |
+| A06      | request-shaped bypass flags outside development                           | ignored; no bypass principal                                   | passed                                                |
+| A07      | concurrent reserved-row ensure and first-subject bind                     | one exact row/one subject; conflicts unchanged                 | passed with injected transaction/persistence fixtures |
+| A08      | page/read/write/Server Action matrix and all seven permissions            | direct guards; ADMIN cannot publish, SUPER_ADMIN can           | passed                                                |
+| A09      | mutable role/active persistence behind repeated resolver calls            | next request sees role/deactivation change                     | passed; no module-global principal cache              |
+| A10      | wrong/missing Origin, development request and absent MCP production route | deny mutation; bypass cannot authorize MCP                     | passed                                                |
+| A11      | sign-in redirect, badge and rapid mouse/keyboard auth controls            | one flow, pending state, intentional retry after known failure | passed in DOM tests and local browser inspection      |
 
 ### Validation Results
 

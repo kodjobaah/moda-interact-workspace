@@ -102,7 +102,6 @@ HUMAN + closed window + follow-up available   HUMAN + closed + already used
 
 Show this server-derived status when SUSPENDED. Disable Take Over, composer and follow-up selection without hiding messages/basket; permit Resume AI. Surface worker-blocked/abuse-screened command outcomes without showing internal admin notes. Refresh status after server rejection, not merely on page load. Do not auto-resume AI.
 
-
 ## Work Items
 
 - [ ] Implement and test session-authenticated Shopify server-side takeover/resume CAS + audit and durable human send/status actions using the same recovery shop and control revision.
@@ -155,45 +154,59 @@ After only this task's Work Items, Acceptance Criteria and Validation are comple
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
+
 None recorded at definition time.
 
 ### Architectural Concerns
+
 Return newly discovered contract or ownership gaps to moda_architect.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.

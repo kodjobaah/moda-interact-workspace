@@ -231,9 +231,11 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Ready for Architect Review
 
 ### Files Changed
+
 - `moda-interact-background/src/services/shop-execution-eligibility.service.ts`
 - `moda-interact-background/src/services/pending-recovery-candidate.service.ts`
 - `moda-interact-background/src/services/checkout-recovery.service.ts`
@@ -243,6 +245,7 @@ Ready for Architect Review
 - `moda-interact-background/tests/unit/workers/pending-recovery-candidate.worker.test.ts`
 
 ### Work Completed
+
 - Added a Background-owned durable `Shop.status` eligibility service.
 - Added terminal no-op gating for `UNINSTALLED` and `SUSPENDED` checkout-created scheduling before BullMQ or Redis writes.
 - Added inactive-shop gates for matured candidates, checkout updates, cart activity, and order completion before Shopify or recovery-domain work.
@@ -253,6 +256,7 @@ Ready for Architect Review
 - Implementation commit: `c03027b` (`fix(background): gate inactive recovery execution`).
 
 ### Validation
+
 - Passed: `npm test -- --run tests/unit/services/pending-recovery-candidate.service.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/matured-candidate.materialization.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts` — 5 files, 83 tests passed.
 - Passed: `git diff --check`.
 - Repository-wide `npm run test:unit` remains blocked by the pre-existing ungenerated Prisma client, with the existing routing uniqueness-race fixture also failing.
@@ -261,23 +265,25 @@ Ready for Architect Review
 - `npm run typecheck` is not declared in `package.json`.
 
 ### Validation Results
+
 - Focused B004 suites: 5 files, 83 tests passed on Attempt 3.
 - Implementation worktree branch published: `task/ARCH-010-BACKGROUND-004` at `c03027b`.
 - No architect acceptance decision has been made by this agent.
 
 ### Git / VCS
+
 Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-004`
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-004`
 
 Negative isolation assertions:
-  parent is not the primary/shared workspace: yes
-  implementation is not the shared repository checkout: yes
+parent is not the primary/shared workspace: yes
+implementation is not the shared repository checkout: yes
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed (already current)
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed (already current)
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed (already current)
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed (already current)
+implementation origin/main incorporated: already-current
 
 Implementation commit: `c03027b`, pushed to `origin/task/ARCH-010-BACKGROUND-004`
 Parent report commit: `6689aaf` claim/report branch base; this Attempt 3 report follows on the same branch
@@ -638,4 +644,3 @@ Dependency reconciliation:
 - `ARCH-010-SHOPIFY-005` is already `superseded` by `ARCH-010-SHOPIFY-006`.
 
 No dependent task is promoted by this acceptance overlay.
-

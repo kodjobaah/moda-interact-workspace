@@ -43,6 +43,7 @@ Create one native WordPress Admin navigation/page shell that can host all ARCH-0
 NativeNavigation.php has real Overview, Billing and Recovery Settings destinations, but Recoveries, Promotions and Support are register_planned placeholders. src/native-admin/page-surface.js recognises three surfaces and src/page/connected-workspace.js mounts only Overview/Billing/Recovery Settings.
 
 Source references:
+
 - Woo: includes/Admin/NativeNavigation.php; src/native-admin/page-surface.js; src/page/connected-workspace.js; src/page/surface-navigation.js.
 - Shopify: app/routes/app/home/route.jsx; app/routes/app/recoveries/route.tsx; app/routes/app/promotions/route.tsx; app/routes/app/merchant-support/route.jsx.
 

@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-054-BACKGROUND-001
+  - ARCH-054-BACKGROUND-001
 enables:
-- ARCH-056-SYSTEM-TEST-001
-created: '2026-11-03'
+  - ARCH-056-SYSTEM-TEST-001
+created: "2026-11-03"
 updated: 2026-11-04
 ---
 
@@ -42,17 +42,17 @@ U3 arises because `ConversationService.receiveMessageInternal` inserts the child
 
 One repository: `moda-interact-background`. Exact paths and operations:
 
-| Path | Operation | Allowed edit |
-|---|---|---|
-| `src/services/conversation.service.ts` | MODIFY | Move the existing helper invocation before `tx.conversationMessage.create` inside the same transaction; retain its return value and later writes; add the required per-invocation diagnostic stage and safe original-error projection |
-| `src/workers/whatsapp.worker.ts` | MODIFY, diagnostics only | Correct existing `failed`/`error` callback projections and `boundedError` so raw outer errors cannot bypass the source log's redaction; retain every job route, retry, telemetry and queue setting |
-| `tests/unit/services/conversation.service.test.ts` | MODIFY | Assert transaction call order, rollback propagation and unchanged duplicate ownership behavior; capture actual Shared records for transaction/post-commit failure, redaction and sink isolation |
-| `tests/unit/workers/whatsapp.worker.test.ts` | MODIFY | Exercise existing callback records through the installed Shared logger; original safe message, code/context, redaction and sink failure |
-| `tests/integration/conversation-turn-scheduling.integration.test.ts` | MODIFY | Keep existing regression coverage; align the manually reconstructed rollback fixture with corrected ordering |
-| `tests/integration/arch056-inbound-lock-order.integration.test.ts` | CREATE | Real service/two-connection parent-first serialization and control/audio interleavings |
-| `tests/integration/arch056-inbound-rollback.integration.test.ts` | CREATE | Raced duplicate and injected post-helper failure atomicity |
-| `tests/integration/helpers/arch056-inbound-fixtures.ts` | CREATE | Minimal owned recovery/standalone fixtures and scoped cleanup using existing Prisma/schema |
-| `tests/integration/helpers/arch056-inbound-barriers.ts` | CREATE | Test-only transaction interception and observed lock/barrier coordination; no production hook |
+| Path                                                                 | Operation                | Allowed edit                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/services/conversation.service.ts`                               | MODIFY                   | Move the existing helper invocation before `tx.conversationMessage.create` inside the same transaction; retain its return value and later writes; add the required per-invocation diagnostic stage and safe original-error projection |
+| `src/workers/whatsapp.worker.ts`                                     | MODIFY, diagnostics only | Correct existing `failed`/`error` callback projections and `boundedError` so raw outer errors cannot bypass the source log's redaction; retain every job route, retry, telemetry and queue setting                                    |
+| `tests/unit/services/conversation.service.test.ts`                   | MODIFY                   | Assert transaction call order, rollback propagation and unchanged duplicate ownership behavior; capture actual Shared records for transaction/post-commit failure, redaction and sink isolation                                       |
+| `tests/unit/workers/whatsapp.worker.test.ts`                         | MODIFY                   | Exercise existing callback records through the installed Shared logger; original safe message, code/context, redaction and sink failure                                                                                               |
+| `tests/integration/conversation-turn-scheduling.integration.test.ts` | MODIFY                   | Keep existing regression coverage; align the manually reconstructed rollback fixture with corrected ordering                                                                                                                          |
+| `tests/integration/arch056-inbound-lock-order.integration.test.ts`   | CREATE                   | Real service/two-connection parent-first serialization and control/audio interleavings                                                                                                                                                |
+| `tests/integration/arch056-inbound-rollback.integration.test.ts`     | CREATE                   | Raced duplicate and injected post-helper failure atomicity                                                                                                                                                                            |
+| `tests/integration/helpers/arch056-inbound-fixtures.ts`              | CREATE                   | Minimal owned recovery/standalone fixtures and scoped cleanup using existing Prisma/schema                                                                                                                                            |
+| `tests/integration/helpers/arch056-inbound-barriers.ts`              | CREATE                   | Test-only transaction interception and observed lock/barrier coordination; no production hook                                                                                                                                         |
 
 Read-only dependencies include `src/services/conversation-ai-delay/pending-turn-repository.ts`, `src/services/inbound-whatsapp-audio.service.ts`, `src/services/whatsapp-inbound-processing.service.ts`, `src/services/conversation-turn-processor.service.ts`, the accepted Conversation FK/control migrations and `scripts/test-integration.mjs`. No helper lock-mode change or new production file is authorized.
 
@@ -114,16 +114,16 @@ No dependency on ARCH-056 billing/outbound/recovery tasks: their production file
 
 Use actual canonical migrations on disposable PostgreSQL 17 + pgvector and the existing disposable Redis runner. Intercept the real transaction only in test code; delegate each operation to real Prisma so the service boundary, FK and rollback are exercised. Establish independent session IDs and explicit barriers/observed lock waits. Do not use production sleeps. Bound every wait and release all barriers in `finally`.
 
-| Case | Forced boundary | Required observation |
-|---|---|---|
-| Distinct initial receives | A paused after parent/helper lock; B reaches its parent request | B cannot reach child INSERT; after A commits both messages exist, versions 1 and 2, one deadline |
-| Duplicate receive race | Both early duplicate reads miss; A commits; B performs helper then unique INSERT fails | Loser's transaction rolls back; retry returns duplicate; one message/version only |
-| Failure before INSERT | Inject original error after real helper update | All helper state rolls back; original exception reaches logger/caller |
-| Old completion versus receive | Complete old pending state after pre-read but before new helper lock | New turn opens from current state; MSG-01 does not reappear |
-| HUMAN/control transition | Run both parent-lock winner orders | No stale AI pending state/send authorization; current revision preserved |
-| Audio completion versus text | Compete on the same parent through real service transactions | First processable input anchors delay; later fragment preserves it |
-| Mid-turn setting change | Change delay after first committed fragment | Existing deadline/revision unchanged, including future deadlines |
-| Post-commit engagement failure | Inject once after receive commit, then retry | No duplicate message/version; existing-message route can complete subsequent work |
+| Case                           | Forced boundary                                                                        | Required observation                                                                             |
+| ------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Distinct initial receives      | A paused after parent/helper lock; B reaches its parent request                        | B cannot reach child INSERT; after A commits both messages exist, versions 1 and 2, one deadline |
+| Duplicate receive race         | Both early duplicate reads miss; A commits; B performs helper then unique INSERT fails | Loser's transaction rolls back; retry returns duplicate; one message/version only                |
+| Failure before INSERT          | Inject original error after real helper update                                         | All helper state rolls back; original exception reaches logger/caller                            |
+| Old completion versus receive  | Complete old pending state after pre-read but before new helper lock                   | New turn opens from current state; MSG-01 does not reappear                                      |
+| HUMAN/control transition       | Run both parent-lock winner orders                                                     | No stale AI pending state/send authorization; current revision preserved                         |
+| Audio completion versus text   | Compete on the same parent through real service transactions                           | First processable input anchors delay; later fragment preserves it                               |
+| Mid-turn setting change        | Change delay after first committed fragment                                            | Existing deadline/revision unchanged, including future deadlines                                 |
+| Post-commit engagement failure | Inject once after receive commit, then retry                                           | No duplicate message/version; existing-message route can complete subsequent work                |
 
 Extend the existing owned `tests/unit/services/conversation.service.test.ts`, `tests/unit/workers/whatsapp.worker.test.ts` and relevant new rollback fixture with real installed Shared `createLogger({serviceName: "moda-messaging-worker", environment: "test", sink})`. Use a distinct harmless message such as `arch056-inbound-fixture-source-failure`; serialize/parse the captured record and assert its original `data.error.message` or the worker's explicit `data.errorMessage`, event, service, stage/available job context, Conversation identity where known and actual injected Prisma code. The caller must receive the same error object. Cover both transaction failure and failure after commit, sink-throws isolation, and a sensitive-text fixture whose credential/PII portions are absent while safe source wording remains. Verify the worker has no second raw Error field that reintroduces the removed text. Do not inject secrets into a real provider or assert that a mock receiving an Error proves its final JSON fields.
 

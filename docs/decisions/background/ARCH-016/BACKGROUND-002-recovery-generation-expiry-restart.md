@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-016-DATABASE-001
+  - ARCH-016-DATABASE-001
 enables:
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16T18:42:00Z
 ---
@@ -492,7 +492,7 @@ provider call completed after the expiry race.
 ### Finding 4 — expiry history can record a stale fromStatus
 
 `CheckoutRecoveryExpiryService` reads `candidate.status`, but its conditional update
-currently allows *any* active status. If the row changes from (for example) `DETECTED`
+currently allows _any_ active status. If the row changes from (for example) `DETECTED`
 to `MESSAGE_SENT` between the read and update, expiry can succeed while history is still
 written as `DETECTED -> EXPIRED`.
 

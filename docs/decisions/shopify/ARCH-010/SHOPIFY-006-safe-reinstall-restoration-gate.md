@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-BACKGROUND-006
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-BACKGROUND-006
 enables:
-- ARCH-010-SYSTEM-TEST-002
+  - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -281,9 +281,11 @@ Do not deploy SHOPIFY-006 producer behaviour before the Background consumer/reco
 ## Completion Report
 
 ### Status
+
 Ready for Review. Attempt 2 completed; returned for architect review.
 
 ### Files Changed
+
 - `app/routes.ts`
 - `app/routes/auth/catchall/route.jsx`
 - `app/routes/app/reinstalling/route.jsx`
@@ -296,6 +298,7 @@ Ready for Review. Attempt 2 completed; returned for architect review.
 - `tests/unit/shop-access-policy.test.ts`
 
 ### Work Completed
+
 - APP_UNINSTALLED now transactionally preserves subscription, billing-period, credit, refund, history and onboarding state while setting `UNINSTALLED`, preserving the first uninstall cutoff, and clearing `reinstallPendingAt`.
 - Removed direct `markInstalled` reactivation. Active shops remain lifecycle no-ops and suspended shops cannot be silently reactivated.
 - Added durable first-attempt and explicit retry reinstall scheduling, preserving existing subscription projection state and returning committed reconciliation inputs.
@@ -305,6 +308,7 @@ Ready for Review. Attempt 2 completed; returned for architect review.
 - Attempt 2 corrected delayed duplicate-uninstall handling, stopped-attempt auth restart, first-attempt CAS-loss return values, and stale/live retry races. It also added executable evidence for suspended/stopped auth, pending and unmarked access routing, restoration redirects, rejected retry enqueue, and pending support access.
 
 ### Validation Results
+
 - Focused tests first: the required nine-file command -> 9 files passed, 57 tests passed. After Attempt 2 corrections, the same command -> 9 files passed, 66 tests passed.
 - Full tests: `npm test` -> 36 files passed, 2 skipped; 334 tests passed, 3 skipped.
 - Production build: `npm run build` -> passed, including Prisma generation and client/server bundles.
@@ -313,6 +317,7 @@ Ready for Review. Attempt 2 completed; returned for architect review.
 - `git diff --check` -> passed.
 
 ### Git / VCS
+
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-SHOPIFY-006`
 - Implementation branch: `task/ARCH-010-SHOPIFY-006`
 - Implementation commit: `9d55513` (`fix(shopify): harden reinstall restoration gate`)
@@ -324,6 +329,7 @@ Ready for Review. Attempt 2 completed; returned for architect review.
 ### Attempt 3 Completion Report
 
 #### Status
+
 Ready for Review. Attempt 3 corrections implemented; returned for architect review.
 
 #### Correction Mapping
@@ -369,6 +375,7 @@ Ready for Review. Attempt 3 corrections implemented; returned for architect revi
 - Implementation commit: `c15265e` (`fix(shopify): isolate reinstall restoration route`), pushed to `origin/task/ARCH-010-SHOPIFY-006`.
 
 ### Architect Review
+
 Pending.
 
 ## Architect Review — Attempt 1
@@ -1127,8 +1134,7 @@ Define the merchant-support exception exactly:
 
 ```js
 const isMerchantSupport =
-  pathname === "/app/merchant-support" ||
-  pathname === "/app/merchant-support/";
+  pathname === "/app/merchant-support" || pathname === "/app/merchant-support/";
 ```
 
 Then gate **before** either of these calls:
@@ -1346,7 +1352,7 @@ tests/unit/billing-ui.test.ts
 where a pending-reinstall redirect is asserted only as:
 
 ```ts
-headers: expect.any(Headers)
+headers: expect.any(Headers);
 ```
 
 strengthen the assertion to prove:
@@ -1579,4 +1585,3 @@ Dependency reconciliation:
   `BACKGROUND-012`, `BACKGROUND-013`, `BACKGROUND-018` and `SHOPIFY-016` are still
   incomplete.
 - No normal implementation task becomes newly Ready solely from this acceptance.
-

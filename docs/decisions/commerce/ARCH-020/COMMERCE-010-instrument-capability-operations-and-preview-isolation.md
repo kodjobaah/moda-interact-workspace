@@ -114,11 +114,7 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 ## Acceptance Criteria
 
-
-
 ## Validation
-
-
 
 Use package.json commands actually provided by the repository. New Commerce scripts and test fixtures are deliverables, not claims that they exist today. Follow docs/agent-validation-execution-policy.md and docs/agent-live-validation-execution-policy.md. Separate local evidence from pending developer-owned long/live validation; required evidence must exist before acceptance.
 
@@ -153,7 +149,6 @@ Correction checklist applied for this rework attempt:
 - [x] A2-R3: evaluator telemetry retains trusted preview/live purpose, environment, and trace/span correlation; MCP terminal events retain incoming trace correlation.
 - [x] A2-R4: real MCP/publication throwing-sink fixtures prove unchanged results/commit state; evaluator eligibility is distinct from Background-002-owned C18 refresh decisions.
 
-
 ### Work Completed
 
 Added `src/commerce/observability.ts`, integrated semantic events into discovery, MCP trace propagation, definition execution, publication, discount evaluation, and preview, and added `docs/observability-commerce.md` plus `tests/observability.test.ts`. Attempt 3 changed MCP terminal classification/attempt accounting, render-stage classification, policy/evaluator context propagation, and the local regression fixtures. Attempt 4 preserves a completed typed `DENIED` tool result through the valid JSON-RPC error envelope by tracking callback completion explicitly, and adds a service-level regression for response error state and terminal event cardinality.
@@ -171,14 +166,14 @@ Agent-executed:
 
 Requirement-to-fixture matrix:
 
-| Requirement | Fixture/check | Expected side effect | Result |
-| --- | --- | --- | --- |
-| MCP request denominator and terminal outcome | `tests/mcp-service.test.ts` real manifest/tool requests | one request event with logical call and provider-attempt counts; denial and unavailable remain distinct | PASS |
-| Stage cardinality and classification | `tests/definition-execution.test.ts`, `tests/discovery.test.ts`, `tests/commerce-lifecycle.test.ts` | one terminal stage event; invalid input/denial are not operational failure; fallback render is not renderer failure | PASS |
-| Trace and purpose continuity | `tests/query-execution.test.ts`, `tests/preview-service.test.ts` | incoming trace reaches provider boundary; preview retains `purpose=preview` and environment | PASS |
-| Sink isolation and redaction | real MCP tool and publication lifecycle with throwing logger plus sensitive-marker fixture | business result/commit behavior unchanged and sensitive content absent | PASS locally; hosted arrival pending |
-| Evidence refresh | `docs/observability-commerce.md` ownership handoff | evaluator `UNKNOWN` is not claimed as C18 refresh numerator/denominator; Background-002 owns exact-call refresh | Handoff recorded; external signal pending |
-| Completed tool denial | `tests/mcp-service.test.ts` typed `DENIED` executor result | JSON-RPC tool result has `isError: true`; one terminal MCP request event remains `DENIED` and non-operational | PASS, 1 regression test |
+| Requirement                                  | Fixture/check                                                                                       | Expected side effect                                                                                                | Result                                    |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| MCP request denominator and terminal outcome | `tests/mcp-service.test.ts` real manifest/tool requests                                             | one request event with logical call and provider-attempt counts; denial and unavailable remain distinct             | PASS                                      |
+| Stage cardinality and classification         | `tests/definition-execution.test.ts`, `tests/discovery.test.ts`, `tests/commerce-lifecycle.test.ts` | one terminal stage event; invalid input/denial are not operational failure; fallback render is not renderer failure | PASS                                      |
+| Trace and purpose continuity                 | `tests/query-execution.test.ts`, `tests/preview-service.test.ts`                                    | incoming trace reaches provider boundary; preview retains `purpose=preview` and environment                         | PASS                                      |
+| Sink isolation and redaction                 | real MCP tool and publication lifecycle with throwing logger plus sensitive-marker fixture          | business result/commit behavior unchanged and sensitive content absent                                              | PASS locally; hosted arrival pending      |
+| Evidence refresh                             | `docs/observability-commerce.md` ownership handoff                                                  | evaluator `UNKNOWN` is not claimed as C18 refresh numerator/denominator; Background-002 owns exact-call refresh     | Handoff recorded; external signal pending |
+| Completed tool denial                        | `tests/mcp-service.test.ts` typed `DENIED` executor result                                          | JSON-RPC tool result has `isError: true`; one terminal MCP request event remains `DENIED` and non-operational       | PASS, 1 regression test                   |
 
 Developer-owned hosted evidence required: confirm one live trace/log correlation and one preview event arrive in the configured hosted sink, with no sensitive marker; preview must be excluded from production alerts. No live/shared environment was contacted by this agent.
 
@@ -205,7 +200,6 @@ Expected execution branch: `task/ARCH-020-COMMERCE-010`.
 - Implementation commit: `e8b43e4604780754ba64b0653c7d6e029d58e3c3` (`fix(commerce): preserve denied MCP tool outcomes`), pushed to `origin/task/ARCH-020-COMMERCE-010`.
 - Recursive database submodule: accepted SHA `5abfd87f57038bae515aaa09ec7c8db62adcfb98`; no database files or gitlink were changed.
 - No main branch integration, merge, parent service gitlink update, or hosted validation was performed.
-
 
 ## Architect Review
 
@@ -334,7 +328,6 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
-
 
 ## Architect readiness reconciliation — COMMERCE-007 acceptance — 2026-09-21
 

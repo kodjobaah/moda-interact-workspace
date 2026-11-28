@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-058-MCP-003
-- ARCH-058-SYSTEM-TEST-001
-created: '2026-11-04'
+  - ARCH-058-MCP-003
+  - ARCH-058-SYSTEM-TEST-001
+created: "2026-11-04"
 updated: 2026-11-04
 ---
 
@@ -120,26 +120,26 @@ Run from the canonical launcher-provided Shopify implementation worktree. Before
 
 - [x] Inspect the actual `package.json`, then run the existing test runner on the owned configuration test and relevant established lifecycle tests:
 
-   ```bash
-   npm exec -- vitest run tests/unit/webhooks/shopify-shipping-scope-config.test.ts tests/unit/webhooks/shopify-brand-scope-config.test.ts tests/unit/routes/scopes-update.test.jsx tests/unit/routes/auth-catchall.test.ts
-   ```
+  ```bash
+  npm exec -- vitest run tests/unit/webhooks/shopify-shipping-scope-config.test.ts tests/unit/webhooks/shopify-brand-scope-config.test.ts tests/unit/routes/scopes-update.test.jsx tests/unit/routes/auth-catchall.test.ts
+  ```
 
-   The new test must exercise both real TOMLs, require exact-once addition, retain existing scopes and each distinct identity/API version, and check the existing scope-update subscription. It must not hard-code a different deployed client or rely only on a new hand-built scope list.
+  The new test must exercise both real TOMLs, require exact-once addition, retain existing scopes and each distinct identity/API version, and check the existing scope-update subscription. It must not hard-code a different deployed client or rely only on a new hand-built scope list.
 
 - [x] Parse both real files with Python 3.11+ `tomllib` or the repository's existing actual TOML parser. With Python available:
 
-   ```bash
-   python3 - <<'PY'
-   import tomllib
-   from pathlib import Path
-   for name in ('shopify.app.toml', 'shopify.app.moda-interact.toml'):
-       data = tomllib.loads(Path(name).read_text())
-       scopes = [value.strip() for value in data['access_scopes']['scopes'].split(',')]
-       assert scopes.count('read_legal_policies') == 1, name
-       assert len(scopes) == len(set(scopes)), name
-       assert 'read_legal_policies' not in data['access_scopes'].get('optional_scopes', []), name
-   PY
-   ```
+  ```bash
+  python3 - <<'PY'
+  import tomllib
+  from pathlib import Path
+  for name in ('shopify.app.toml', 'shopify.app.moda-interact.toml'):
+      data = tomllib.loads(Path(name).read_text())
+      scopes = [value.strip() for value in data['access_scopes']['scopes'].split(',')]
+      assert scopes.count('read_legal_policies') == 1, name
+      assert len(scopes) == len(set(scopes)), name
+      assert 'read_legal_policies' not in data['access_scopes'].get('optional_scopes', []), name
+  PY
+  ```
 
 - [x] Run `npm run typecheck` and `git diff --check`. Do not run a production deployment or a broad unrelated test/build suite to manufacture rollout evidence. If a known baseline condition is encountered, follow `docs/development-baseline.md` only for that condition, prove no regression and record the actual result.
 - [x] Review the runbook against both source configurations, runtime `SCOPES` ownership and the authenticated offline-session flow. Record missing live access/approval as `NOT_RUN`; do not report it as passed or require a fabricated merchant grant to complete local validation.

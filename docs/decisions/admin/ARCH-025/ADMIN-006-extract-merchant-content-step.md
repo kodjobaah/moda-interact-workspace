@@ -82,7 +82,6 @@ Translation workbook/review extraction; translation validation; economics; serve
   - `tests/unit/merchant-pricing-translations.test.ts` — SHA-256 `90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92`
   - `tests/unit/merchant-pricing-translation-workbook.test.ts` — SHA-256 `385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8`
 
-
 ### R1 — content presentation
 
 Move step-4 English description, highlight title/description edit/order/remove/add controls and invalid-content guidance into `merchant-content-step.tsx`. Preserve `crypto.randomUUID()` creation for new highlight `contentKey` values at the accepted ADMIN-001 hook/UI action boundary; the pure reducer receives the generated key and does not call `crypto.randomUUID()` itself.
@@ -155,6 +154,7 @@ Ready for Architect Review
 - Preserved the builder shell export/prop contract, form action/hidden fields, and step labels.
 
 Physical worktree isolation and launcher evidence:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-006`, `task/ARCH-025-ADMIN-006`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-006`, `task/ARCH-025-ADMIN-006`.

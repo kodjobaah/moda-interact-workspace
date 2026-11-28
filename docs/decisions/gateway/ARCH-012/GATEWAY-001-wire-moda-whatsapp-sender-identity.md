@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-012-BACKGROUND-003
+  - ARCH-012-BACKGROUND-003
 enables:
-- ARCH-012-SYSTEM-TEST-001
-- ARCH-012-SYSTEM-TEST-002
+  - ARCH-012-SYSTEM-TEST-001
+  - ARCH-012-SYSTEM-TEST-002
 created: 2026-09-14
 updated: 2026-09-16
 ---
@@ -26,9 +26,11 @@ updated: 2026-09-16
 # ARCH-012-GATEWAY-001
 
 ## Objective
+
 Update the canonical Render test/production topology so the Background messaging worker receives the WABA/account identity required by BACKGROUND-003 while preserving existing Moda-owned phone/token configuration.
 
 ## Current topology
+
 The snapshot already wires `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` and `GROQ_API_KEY` to the messaging worker. ARCH-012 adds one missing identity:
 
 ```text
@@ -50,6 +52,7 @@ other existing gateway validation fixture only if required by the changed declar
 Do not edit application repositories.
 
 ## Exact configuration
+
 For `moda-messaging-worker-test` and `moda-messaging-worker-production`:
 
 - declare `WHATSAPP_BUSINESS_ACCOUNT_ID` using the same secret/environment-group governance pattern as existing WhatsApp credentials;
@@ -61,6 +64,7 @@ For `moda-messaging-worker-test` and `moda-messaging-worker-production`:
 `GROQ_TRANSCRIPTION_MODEL` is optional in BACKGROUND-002 and therefore does **not** require a blueprint variable in this task unless the accepted BACKGROUND-002 implementation makes it mandatory. If that implementation changes the requirement, STOP for architect reconciliation rather than silently extending scope.
 
 ## Required tests
+
 Update blueprint validation to prove:
 
 - both messaging workers have WABA ID + phone-number ID + token;
@@ -76,6 +80,7 @@ Update blueprint validation to prove:
 - [ ] credential least-privilege is preserved.
 
 ## Validation
+
 Use existing gateway scripts exactly as declared, including at minimum:
 
 ```text
@@ -88,17 +93,21 @@ git diff --check
 Run other existing required gateway/developer validation scripts if `package`/README/task conventions require them.
 
 ## Stop conditions
+
 STOP if Render cannot represent the required variable without manual drift or if BACKGROUND-003 does not actually require `WHATSAPP_BUSINESS_ACCOUNT_ID` after architect acceptance.
 
 ## Completion protocol
+
 Return GATEWAY-001 to `review`; STOP.
 
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-gateway/render.test.yaml`
 - `moda-interact-gateway/render.production.yaml`
 - `moda-interact-gateway/tests/validate-render-blueprints.sh`
@@ -107,6 +116,7 @@ Ready for Review.
 Implementation commit: `64cb326` (`feat(gateway): wire WhatsApp business account identity`), pushed to `task/ARCH-012-GATEWAY-001`.
 
 ### Validation Results
+
 - `bash tests/validate-render-blueprints.sh`: passed for test and production Blueprints.
 - `bash tests/validate-render-blueprints-negative.sh`: passed; all negative cases rejected, including WABA-for-phone-number substitution.
 - `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
@@ -116,9 +126,11 @@ Implementation commit: `64cb326` (`feat(gateway): wire WhatsApp business account
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1.
 
 ### Review Notes
+
 Functionally accepted in the prior architect review. `render.test.yaml` and `render.production.yaml` carry `WHATSAPP_BUSINESS_ACCOUNT_ID` as a distinct member of the existing WhatsApp credential group while preserving `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN` and the existing worker topology. No public service, route or merchant-owned Meta credential surface was introduced.
 
 This file is reconciled here from the already-accepted live Gateway task branch so downstream ARCH-012 system-test dependency state is coherent on the BACKGROUND-001 acceptance branch. The prior Gateway evidence records the positive/negative Blueprint validators passing and the full gateway integration suite at 58 passed / 0 failed.

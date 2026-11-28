@@ -236,7 +236,7 @@ For example, this authored source must work in v2:
 ```js
 function transform(response) {
   return {
-    value: moda.text.stripHtml(response.bodyText)
+    value: moda.text.stripHtml(response.bodyText),
   };
 }
 ```
@@ -467,7 +467,7 @@ Provide the exact illustrative snippet:
 ```js
 function transform(response) {
   return {
-    value: moda.text.stripHtml(response.bodyText)
+    value: moda.text.stripHtml(response.bodyText),
   };
 }
 ```
@@ -692,7 +692,6 @@ Repository-wide typecheck remains non-green for the pre-existing diagnostics lis
 ### Architectural Concerns
 
 None identified. Shared contracts and the database submodule are unchanged; Architect Review remains pending.
-
 
 ### Architect Reconciliation Evidence
 

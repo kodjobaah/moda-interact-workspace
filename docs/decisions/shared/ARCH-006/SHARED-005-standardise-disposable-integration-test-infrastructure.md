@@ -19,6 +19,7 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06
 ---
+
 # ARCH-006-SHARED-005: Standardise disposable PostgreSQL and Redis integration-test infrastructure
 
 ## Architecture
@@ -160,30 +161,30 @@ Ready for Review.
 
 ### Files Changed
 
- - [moda-interact-shared/src/testing/node.ts](../../../../moda-interact-shared/src/testing/node.ts)
- - [moda-interact-shared/src/testing/node.test.ts](../../../../moda-interact-shared/src/testing/node.test.ts)
- - [moda-interact-shared/package.json](../../../../moda-interact-shared/package.json)
- - [moda-interact-shared/tsup.config.ts](../../../../moda-interact-shared/tsup.config.ts)
- - [moda-interact-shared/scripts/validate-testing-node.mjs](../../../../moda-interact-shared/scripts/validate-testing-node.mjs)
- - [moda-interact-shared/scripts/validate-testing-node-live.mjs](../../../../moda-interact-shared/scripts/validate-testing-node-live.mjs)
+- [moda-interact-shared/src/testing/node.ts](../../../../moda-interact-shared/src/testing/node.ts)
+- [moda-interact-shared/src/testing/node.test.ts](../../../../moda-interact-shared/src/testing/node.test.ts)
+- [moda-interact-shared/package.json](../../../../moda-interact-shared/package.json)
+- [moda-interact-shared/tsup.config.ts](../../../../moda-interact-shared/tsup.config.ts)
+- [moda-interact-shared/scripts/validate-testing-node.mjs](../../../../moda-interact-shared/scripts/validate-testing-node.mjs)
+- [moda-interact-shared/scripts/validate-testing-node-live.mjs](../../../../moda-interact-shared/scripts/validate-testing-node-live.mjs)
 
 ### Work Completed
 
- - Added injectable Docker-backed PostgreSQL and Redis lifecycle helpers with dynamic ports, unique identities, bounded command/readiness checks and forced volume cleanup.
- - Added caller-controlled Prisma `migrate deploy` orchestration and standard/test environment aliases.
- - Added failure-safe orchestration that prevents callback execution after migration failure and cleans both services.
- - Added the Node-only `@modainteract/moda-interact-shared/testing/node` package export without changing browser-safe roots.
- - Added Docker-free focused tests, package export validation, and an opt-in live Docker migration validation.
+- Added injectable Docker-backed PostgreSQL and Redis lifecycle helpers with dynamic ports, unique identities, bounded command/readiness checks and forced volume cleanup.
+- Added caller-controlled Prisma `migrate deploy` orchestration and standard/test environment aliases.
+- Added failure-safe orchestration that prevents callback execution after migration failure and cleans both services.
+- Added the Node-only `@modainteract/moda-interact-shared/testing/node` package export without changing browser-safe roots.
+- Added Docker-free focused tests, package export validation, and an opt-in live Docker migration validation.
 
 ### Validation Results
 
- - `npm run typecheck`: passed.
- - `npm test`: 98 passed, 1 existing Redis-dependent test skipped.
- - Focused `src/testing/node.test.ts`: 6 passed.
- - `npm run build`: passed.
- - `npm run validate:testing-node`: passed, including packed-artifact validation.
- - Live validation with `MODA_TEST_PRISMA_SCHEMA_PATH=../moda-interact-database/prisma/schema.prisma` and `MODA_TEST_PRISMA_CWD=../moda-interact-database`: passed.
- - `git diff --check`: passed.
+- `npm run typecheck`: passed.
+- `npm test`: 98 passed, 1 existing Redis-dependent test skipped.
+- Focused `src/testing/node.test.ts`: 6 passed.
+- `npm run build`: passed.
+- `npm run validate:testing-node`: passed, including packed-artifact validation.
+- Live validation with `MODA_TEST_PRISMA_SCHEMA_PATH=../moda-interact-database/prisma/schema.prisma` and `MODA_TEST_PRISMA_CWD=../moda-interact-database`: passed.
+- `git diff --check`: passed.
 
 ### Deviations
 

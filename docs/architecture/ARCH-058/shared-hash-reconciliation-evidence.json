@@ -339,10 +339,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/orderDiscounts/type",
         "before": "<absent>",
-        "after": [
-          "boolean",
-          "null"
-        ]
+        "after": ["boolean", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/productDiscounts/anyOf",
@@ -359,10 +356,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/productDiscounts/type",
         "before": "<absent>",
-        "after": [
-          "boolean",
-          "null"
-        ]
+        "after": ["boolean", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/shippingDiscounts/anyOf",
@@ -379,10 +373,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/shippingDiscounts/type",
         "before": "<absent>",
-        "after": [
-          "boolean",
-          "null"
-        ]
+        "after": ["boolean", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/shopifyPlus/anyOf",
@@ -399,10 +390,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/shopifyPlus/type",
         "before": "<absent>",
-        "after": [
-          "boolean",
-          "null"
-        ]
+        "after": ["boolean", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/discountCurrency/anyOf",
@@ -419,10 +407,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/discountCurrency/type",
         "before": "<absent>",
-        "after": [
-          "string",
-          "null"
-        ]
+        "after": ["string", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/excludesSaleItems/anyOf",
@@ -439,10 +424,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/excludesSaleItems/type",
         "before": "<absent>",
-        "after": [
-          "boolean",
-          "null"
-        ]
+        "after": ["boolean", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/individualUse/anyOf",
@@ -459,10 +441,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/individualUse/type",
         "before": "<absent>",
-        "after": [
-          "boolean",
-          "null"
-        ]
+        "after": ["boolean", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/observedAt/pattern",
@@ -484,10 +463,7 @@
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/subtotalRequirementCurrency/type",
         "before": "<absent>",
-        "after": [
-          "string",
-          "null"
-        ]
+        "after": ["string", "null"]
       },
       {
         "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/unavailableAt/anyOf/0/pattern",
@@ -532,9 +508,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "offerId"
-          ],
+          "required": ["offerId"],
           "type": "object"
         },
         "name": "commerce_get_discount_details",
@@ -545,24 +519,17 @@
               "additionalProperties": false,
               "properties": {
                 "outcome": {
-                  "enum": [
-                    "UNAVAILABLE"
-                  ],
+                  "enum": ["UNAVAILABLE"],
                   "maxLength": 11,
                   "type": "string"
                 },
                 "reasonCode": {
-                  "enum": [
-                    "TEMPORARY_UNAVAILABLE"
-                  ],
+                  "enum": ["TEMPORARY_UNAVAILABLE"],
                   "maxLength": 21,
                   "type": "string"
                 }
               },
-              "required": [
-                "outcome",
-                "reasonCode"
-              ],
+              "required": ["outcome", "reasonCode"],
               "type": "object"
             },
             {
@@ -699,19 +666,11 @@
                               "type": "object"
                             },
                             "completeness": {
-                              "enum": [
-                                "COMPLETE",
-                                "PARTIAL",
-                                "UNKNOWN"
-                              ],
+                              "enum": ["COMPLETE", "PARTIAL", "UNKNOWN"],
                               "type": "string"
                             },
                             "customerScope": {
-                              "enum": [
-                                "ALL",
-                                "RESTRICTED",
-                                "UNKNOWN"
-                              ],
+                              "enum": ["ALL", "RESTRICTED", "UNKNOWN"],
                               "type": "string"
                             },
                             "discountCurrency": {
@@ -818,10 +777,7 @@
                               ]
                             },
                             "provider": {
-                              "enum": [
-                                "SHOPIFY",
-                                "WOOCOMMERCE"
-                              ],
+                              "enum": ["SHOPIFY", "WOOCOMMERCE"],
                               "type": "string"
                             },
                             "providerStatus": {
@@ -1038,10 +994,7 @@
                               ]
                             },
                             "method": {
-                              "enum": [
-                                "AUTOMATIC",
-                                "CODE"
-                              ],
+                              "enum": ["AUTOMATIC", "CODE"],
                               "type": "string"
                             },
                             "offerId": {
@@ -1071,11 +1024,7 @@
                               ]
                             },
                             "support": {
-                              "enum": [
-                                "SUPPORTED",
-                                "UNSUPPORTED",
-                                "UNKNOWN"
-                              ],
+                              "enum": ["SUPPORTED", "UNSUPPORTED", "UNKNOWN"],
                               "type": "string"
                             },
                             "title": {
@@ -1109,11 +1058,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "offer",
-                        "facts",
-                        "providerDiscountId"
-                      ],
+                      "required": ["offer", "facts", "providerDiscountId"],
                       "type": "object"
                     },
                     {
@@ -1122,9 +1067,7 @@
                   ]
                 }
               },
-              "required": [
-                "details"
-              ],
+              "required": ["details"],
               "type": "object"
             }
           ]
@@ -1138,10 +1081,7 @@
           "properties": {
             "cursor": {
               "maxLength": 2048,
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "limit": {
               "maximum": 50,
@@ -1159,24 +1099,17 @@
               "additionalProperties": false,
               "properties": {
                 "outcome": {
-                  "enum": [
-                    "UNAVAILABLE"
-                  ],
+                  "enum": ["UNAVAILABLE"],
                   "maxLength": 11,
                   "type": "string"
                 },
                 "reasonCode": {
-                  "enum": [
-                    "TEMPORARY_UNAVAILABLE"
-                  ],
+                  "enum": ["TEMPORARY_UNAVAILABLE"],
                   "maxLength": 21,
                   "type": "string"
                 }
               },
-              "required": [
-                "outcome",
-                "reasonCode"
-              ],
+              "required": ["outcome", "reasonCode"],
               "type": "object"
             },
             {
@@ -1194,11 +1127,7 @@
                   ]
                 },
                 "mode": {
-                  "enum": [
-                    "NONE",
-                    "FIXED",
-                    "AI_BEST_APPLICABLE"
-                  ],
+                  "enum": ["NONE", "FIXED", "AI_BEST_APPLICABLE"],
                   "type": "string"
                 },
                 "offers": {
@@ -1230,10 +1159,7 @@
                         ]
                       },
                       "method": {
-                        "enum": [
-                          "AUTOMATIC",
-                          "CODE"
-                        ],
+                        "enum": ["AUTOMATIC", "CODE"],
                         "type": "string"
                       },
                       "offerId": {
@@ -1263,11 +1189,7 @@
                         ]
                       },
                       "support": {
-                        "enum": [
-                          "SUPPORTED",
-                          "UNSUPPORTED",
-                          "UNKNOWN"
-                        ],
+                        "enum": ["SUPPORTED", "UNSUPPORTED", "UNKNOWN"],
                         "type": "string"
                       },
                       "title": {
@@ -1295,11 +1217,7 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "mode",
-                "offers",
-                "truncated"
-              ],
+              "required": ["mode", "offers", "truncated"],
               "type": "object"
             }
           ]
@@ -1319,9 +1237,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "offerId"
-          ],
+          "required": ["offerId"],
           "type": "object"
         },
         "name": "commerce_get_discount_details",
@@ -1332,24 +1248,17 @@
               "additionalProperties": false,
               "properties": {
                 "outcome": {
-                  "enum": [
-                    "UNAVAILABLE"
-                  ],
+                  "enum": ["UNAVAILABLE"],
                   "maxLength": 11,
                   "type": "string"
                 },
                 "reasonCode": {
-                  "enum": [
-                    "TEMPORARY_UNAVAILABLE"
-                  ],
+                  "enum": ["TEMPORARY_UNAVAILABLE"],
                   "maxLength": 21,
                   "type": "string"
                 }
               },
-              "required": [
-                "outcome",
-                "reasonCode"
-              ],
+              "required": ["outcome", "reasonCode"],
               "type": "object"
             },
             {
@@ -1388,22 +1297,13 @@
                                       "additionalProperties": false,
                                       "properties": {
                                         "orderDiscounts": {
-                                          "type": [
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "type": ["boolean", "null"]
                                         },
                                         "productDiscounts": {
-                                          "type": [
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "type": ["boolean", "null"]
                                         },
                                         "shippingDiscounts": {
-                                          "type": [
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "type": ["boolean", "null"]
                                         }
                                       },
                                       "required": [
@@ -1454,10 +1354,7 @@
                                   ]
                                 },
                                 "shopifyPlus": {
-                                  "type": [
-                                    "boolean",
-                                    "null"
-                                  ]
+                                  "type": ["boolean", "null"]
                                 }
                               },
                               "required": [
@@ -1470,26 +1367,15 @@
                               "type": "object"
                             },
                             "completeness": {
-                              "enum": [
-                                "COMPLETE",
-                                "PARTIAL",
-                                "UNKNOWN"
-                              ],
+                              "enum": ["COMPLETE", "PARTIAL", "UNKNOWN"],
                               "type": "string"
                             },
                             "customerScope": {
-                              "enum": [
-                                "ALL",
-                                "RESTRICTED",
-                                "UNKNOWN"
-                              ],
+                              "enum": ["ALL", "RESTRICTED", "UNKNOWN"],
                               "type": "string"
                             },
                             "discountCurrency": {
-                              "type": [
-                                "string",
-                                "null"
-                              ]
+                              "type": ["string", "null"]
                             },
                             "discountKind": {
                               "enum": [
@@ -1514,16 +1400,10 @@
                               ]
                             },
                             "excludesSaleItems": {
-                              "type": [
-                                "boolean",
-                                "null"
-                              ]
+                              "type": ["boolean", "null"]
                             },
                             "individualUse": {
-                              "type": [
-                                "boolean",
-                                "null"
-                              ]
+                              "type": ["boolean", "null"]
                             },
                             "maximumSubtotal": {
                               "anyOf": [
@@ -1577,10 +1457,7 @@
                               ]
                             },
                             "provider": {
-                              "enum": [
-                                "SHOPIFY",
-                                "WOOCOMMERCE"
-                              ],
+                              "enum": ["SHOPIFY", "WOOCOMMERCE"],
                               "type": "string"
                             },
                             "providerStatus": {
@@ -1588,10 +1465,7 @@
                               "type": "string"
                             },
                             "subtotalRequirementCurrency": {
-                              "type": [
-                                "string",
-                                "null"
-                              ]
+                              "type": ["string", "null"]
                             },
                             "targeting": {
                               "additionalProperties": false,
@@ -1793,10 +1667,7 @@
                               ]
                             },
                             "method": {
-                              "enum": [
-                                "AUTOMATIC",
-                                "CODE"
-                              ],
+                              "enum": ["AUTOMATIC", "CODE"],
                               "type": "string"
                             },
                             "offerId": {
@@ -1826,11 +1697,7 @@
                               ]
                             },
                             "support": {
-                              "enum": [
-                                "SUPPORTED",
-                                "UNSUPPORTED",
-                                "UNKNOWN"
-                              ],
+                              "enum": ["SUPPORTED", "UNSUPPORTED", "UNKNOWN"],
                               "type": "string"
                             },
                             "title": {
@@ -1864,11 +1731,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "offer",
-                        "facts",
-                        "providerDiscountId"
-                      ],
+                      "required": ["offer", "facts", "providerDiscountId"],
                       "type": "object"
                     },
                     {
@@ -1877,9 +1740,7 @@
                   ]
                 }
               },
-              "required": [
-                "details"
-              ],
+              "required": ["details"],
               "type": "object"
             }
           ]
@@ -1893,10 +1754,7 @@
           "properties": {
             "cursor": {
               "maxLength": 2048,
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "limit": {
               "maximum": 50,
@@ -1914,24 +1772,17 @@
               "additionalProperties": false,
               "properties": {
                 "outcome": {
-                  "enum": [
-                    "UNAVAILABLE"
-                  ],
+                  "enum": ["UNAVAILABLE"],
                   "maxLength": 11,
                   "type": "string"
                 },
                 "reasonCode": {
-                  "enum": [
-                    "TEMPORARY_UNAVAILABLE"
-                  ],
+                  "enum": ["TEMPORARY_UNAVAILABLE"],
                   "maxLength": 21,
                   "type": "string"
                 }
               },
-              "required": [
-                "outcome",
-                "reasonCode"
-              ],
+              "required": ["outcome", "reasonCode"],
               "type": "object"
             },
             {
@@ -1949,11 +1800,7 @@
                   ]
                 },
                 "mode": {
-                  "enum": [
-                    "NONE",
-                    "FIXED",
-                    "AI_BEST_APPLICABLE"
-                  ],
+                  "enum": ["NONE", "FIXED", "AI_BEST_APPLICABLE"],
                   "type": "string"
                 },
                 "offers": {
@@ -1985,10 +1832,7 @@
                         ]
                       },
                       "method": {
-                        "enum": [
-                          "AUTOMATIC",
-                          "CODE"
-                        ],
+                        "enum": ["AUTOMATIC", "CODE"],
                         "type": "string"
                       },
                       "offerId": {
@@ -2018,11 +1862,7 @@
                         ]
                       },
                       "support": {
-                        "enum": [
-                          "SUPPORTED",
-                          "UNSUPPORTED",
-                          "UNKNOWN"
-                        ],
+                        "enum": ["SUPPORTED", "UNSUPPORTED", "UNKNOWN"],
                         "type": "string"
                       },
                       "title": {
@@ -2050,11 +1890,7 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "mode",
-                "offers",
-                "truncated"
-              ],
+              "required": ["mode", "offers", "truncated"],
               "type": "object"
             }
           ]
@@ -2084,10 +1920,7 @@
       "ARCH-058-COMMERCE-001",
       "ARCH-058-BACKGROUND-001"
     ],
-    "builtInIdentity": [
-      "toolName",
-      "definitionVersion"
-    ],
+    "builtInIdentity": ["toolName", "definitionVersion"],
     "descriptorVersionsChanged": true,
     "contractHashRemoved": true,
     "conversationToolContextRemoved": true,

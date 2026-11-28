@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Present the four queues in a compact summary table
 
 ## Architecture
@@ -128,14 +129,17 @@ pending ARCH-003 task before refinement. The task body is authoritative.
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/lib/admin/queue-monitor.ts`
 - `moda-interact-admin/src/components/admin/queue-monitor.tsx`
 - `moda-interact-admin/tests/security/admin-queue-monitor.test.mjs`
 
 ### Work Completed
+
 - Extended the Admin-local detailed queue definitions to cover all four observed
   queues while retaining canonical Shopify job names for checkout and order
   events.
@@ -147,6 +151,7 @@ Ready for Review.
 - Added focused assertions for four detailed rows and the table affordance.
 
 ### Validation Results
+
 - `npm exec -- node --test tests/security/admin-queue-monitor.test.mjs` passed
   (10 tests).
 - `npm test` passed (39 tests).
@@ -156,17 +161,21 @@ Ready for Review.
 - `git diff --check` passed.
 
 ### Deviations
+
 The production build retains existing warnings for Next.js multiple-lockfile
 workspace-root inference and BullMQ's optional `@valkey/valkey-glide` module.
 
 ### Assumptions
+
 The two non-Shopify queue labels remain Admin-local descriptive labels because
 no shared job-name contracts were changed.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review

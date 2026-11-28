@@ -23,7 +23,6 @@ created: 2026-10-14
 updated: 2026-10-14
 ---
 
-
 # Migrate MCP Merchant Knowledge keyring and embedding decryption to Shared
 
 ## Architecture

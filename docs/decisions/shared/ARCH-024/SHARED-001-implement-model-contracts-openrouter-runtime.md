@@ -68,7 +68,6 @@ This is still one repository-owned outcome: the complete unpublished Shared runt
 
 ### Existing model boundary that MUST remain public and Moda-owned
 
-
 ARCH-024 replaces the closed `OPENAI | GROQ` model-provider design with Admin-managed catalogue entries identified by dynamic `provider + providerModelId` strings. A catalogue entry belongs to exactly one Platform or Shop Model Availability and stores a bounded JSON configuration whose durable field names follow OpenRouter request semantics.
 
 Admin produces these contracts. Commerce Studio, Commerce Test Conversations and Background consume them. Therefore the runtime-safe schemas belong in `moda-interact-shared`.
@@ -114,7 +113,6 @@ The persisted `configuration` object is intentionally extensible. Adding a new O
 
 ### Existing runner problem and LangGraph target
 
-
 The current Shared runner concentrates all of these responsibilities in one file/function:
 
 ```text
@@ -145,7 +143,6 @@ The model-contract/OpenRouter portion of this task supplies the `CommerceModelIn
 
 ### Observability requirement
 
-
 The canonical generic logging API already exists at:
 
 ```text
@@ -170,22 +167,20 @@ This task owns the complete unpublished Shared implementation required by ARCH-0
 
 ### A. Model contracts and OpenRouter runtime
 
-
 This task owns all of the following in `moda-interact-shared`:
 
 1. a browser/runtime-safe public model-contract entrypoint;
 2. exact Zod schemas and TypeScript types for Model Availability, Catalogue Entry identity/configuration, Platform/Shop Agent model selection, Price Plan model assignment and effective selection source;
 3. an extensible bounded OpenRouter-compatible model configuration object;
 4. an explicit list of runtime/security fields that persisted Admin configuration is forbidden to override;
-7. one named existing-runner model dependency type (`CommerceModelInvoker`);
-8. a Node-only `OpenRouterModelClient` backed by `@langchain/openrouter` `ChatOpenRouter`;
-9. deterministic translation from OpenRouter-style persisted configuration to `ChatOpenRouter` fields / `modelKwargs`;
-10. deterministic translation between existing Moda `ModelRequest` / `ModelStep` and LangChain messages/tool calls;
-11. build/package public exports and clean-entrypoint validation;
-12. focused unit tests with no live OpenRouter network calls.
+5. one named existing-runner model dependency type (`CommerceModelInvoker`);
+6. a Node-only `OpenRouterModelClient` backed by `@langchain/openrouter` `ChatOpenRouter`;
+7. deterministic translation from OpenRouter-style persisted configuration to `ChatOpenRouter` fields / `modelKwargs`;
+8. deterministic translation between existing Moda `ModelRequest` / `ModelStep` and LangChain messages/tool calls;
+9. build/package public exports and clean-entrypoint validation;
+10. focused unit tests with no live OpenRouter network calls.
 
 ### B. Modular Commerce runner and LangGraph orchestration
-
 
 Authorised Shared implementation surface:
 
@@ -226,7 +221,6 @@ If a directly equivalent file name is required by the repository's established n
 
 ### C. Structured Commerce-turn logging
 
-
 Authorised implementation surface:
 
 ```text
@@ -244,7 +238,6 @@ After the modular runner/LangGraph modules in this task exist, logging changes m
 The following remain outside this Shared implementation task:
 
 ### Model/runtime exclusions
-
 
 - Prisma schema or migrations.
 - Model Availability resolution for a particular Shop.
@@ -265,7 +258,6 @@ The following remain outside this Shared implementation task:
 
 ### Runner/LangGraph exclusions
 
-
 - Admin, Commerce or Background consumer changes.
 - MCP connection/transport changes.
 - Replacing Background `CommerceMcpClient`.
@@ -281,7 +273,6 @@ The following remain outside this Shared implementation task:
 - Changes to `runnerVersion`; this refactor preserves the existing runner compatibility contract.
 
 ### Observability/consumer exclusions
-
 
 - Creating a new generic logger.
 - Creating a logger inside Shared with a new service identity.
@@ -305,7 +296,6 @@ The following remain outside this Shared implementation task:
 The implementing agent MUST execute the requirements below as one coherent implementation contract. Requirement numbering is intentionally scoped by subsection so the former task detail is preserved without ambiguity.
 
 ### A — Model contracts and OpenRouter runtime requirements
-
 
 ### R1 — Add exactly two public package entrypoints
 
@@ -392,8 +382,9 @@ export const CommerceModelAvailabilityScopeSchema = z.enum([
   "PLATFORM",
   "SHOP",
 ]);
-export type CommerceModelAvailabilityScope =
-  z.infer<typeof CommerceModelAvailabilityScopeSchema>;
+export type CommerceModelAvailabilityScope = z.infer<
+  typeof CommerceModelAvailabilityScopeSchema
+>;
 ```
 
 Model Availability is a strict discriminated union:
@@ -416,8 +407,9 @@ export const CommerceModelAvailabilitySchema = z.discriminatedUnion("scope", [
   }),
 ]);
 
-export type CommerceModelAvailability =
-  z.infer<typeof CommerceModelAvailabilitySchema>;
+export type CommerceModelAvailability = z.infer<
+  typeof CommerceModelAvailabilitySchema
+>;
 ```
 
 Do not add `environment` to Model Availability. Under ARCH-024 Availability controls who may select a catalogue entry; the existing Agent Configuration environment controls which model is active in each runtime environment.
@@ -435,8 +427,7 @@ export const CommerceModelProviderSchema = z
   .max(64)
   .regex(/^[a-z0-9][a-z0-9._-]{0,63}$/);
 
-export type CommerceModelProvider =
-  z.infer<typeof CommerceModelProviderSchema>;
+export type CommerceModelProvider = z.infer<typeof CommerceModelProviderSchema>;
 
 export const CommerceProviderModelIdSchema = z
   .string()
@@ -444,8 +435,9 @@ export const CommerceProviderModelIdSchema = z
   .max(255)
   .regex(/^[^\s/]+$/);
 
-export type CommerceProviderModelId =
-  z.infer<typeof CommerceProviderModelIdSchema>;
+export type CommerceProviderModelId = z.infer<
+  typeof CommerceProviderModelIdSchema
+>;
 ```
 
 Providers are canonical lowercase identifiers such as:
@@ -471,7 +463,7 @@ export function createOpenRouterModelId(input: {
 It MUST return exactly:
 
 ```ts
-`${input.provider}/${input.providerModelId}`
+`${input.provider}/${input.providerModelId}`;
 ```
 
 after validating both fields with the canonical schemas.
@@ -573,7 +565,7 @@ export const COMMERCE_MODEL_CONFIGURATION_RESERVED_KEYS = [
   "user",
   "plugins",
   "web_search_options",
-  "modalities"
+  "modalities",
 ] as const;
 ```
 
@@ -613,8 +605,9 @@ export const CommerceModelCatalogueEntrySchema = z.strictObject({
   editVersion: z.number().int().positive(),
 });
 
-export type CommerceModelCatalogueEntry =
-  z.infer<typeof CommerceModelCatalogueEntrySchema>;
+export type CommerceModelCatalogueEntry = z.infer<
+  typeof CommerceModelCatalogueEntrySchema
+>;
 ```
 
 Export the durable Agent model-selection contract as a discriminated union:
@@ -649,8 +642,9 @@ export const CommerceModelSelectionSourceSchema = z.enum([
   "SHOP",
 ]);
 
-export type CommerceModelSelectionSource =
-  z.infer<typeof CommerceModelSelectionSourceSchema>;
+export type CommerceModelSelectionSource = z.infer<
+  typeof CommerceModelSelectionSourceSchema
+>;
 ```
 
 Export the runtime-safe Price Plan assignment shape exactly:
@@ -662,8 +656,9 @@ export const CommercePricingPlanModelAssignmentSchema = z.strictObject({
   modelId: z.string().min(1).max(128).nullable(),
 });
 
-export type CommercePricingPlanModelAssignment =
-  z.infer<typeof CommercePricingPlanModelAssignmentSchema>;
+export type CommercePricingPlanModelAssignment = z.infer<
+  typeof CommercePricingPlanModelAssignmentSchema
+>;
 ```
 
 This contract is deliberately not another Agent Configuration scope. `PRICING_PLAN` selection comes from `MerchantPricingPlan.commerceModelId`, not from `CommerceAgentConfiguration`, and the assignment is global product configuration rather than environment-scoped selection.
@@ -684,8 +679,7 @@ export const ResolvedCommerceModelSchema = z.strictObject({
   configuration: CommerceModelConfigurationSchema,
 });
 
-export type ResolvedCommerceModel =
-  z.infer<typeof ResolvedCommerceModelSchema>;
+export type ResolvedCommerceModel = z.infer<typeof ResolvedCommerceModelSchema>;
 ```
 
 This contract contains no credential.
@@ -704,8 +698,9 @@ export const CommerceOpenRouterCredentialAadInputSchema = z.strictObject({
   keyId: z.string().trim().min(1).max(64),
 });
 
-export type CommerceOpenRouterCredentialAadInput =
-  z.infer<typeof CommerceOpenRouterCredentialAadInputSchema>;
+export type CommerceOpenRouterCredentialAadInput = z.infer<
+  typeof CommerceOpenRouterCredentialAadInputSchema
+>;
 
 export function createCommerceOpenRouterCredentialAad(
   input: CommerceOpenRouterCredentialAadInput,
@@ -730,10 +725,7 @@ In `src/commerce/runner/index.ts`, export exactly:
 
 ```ts
 export type CommerceModelInvoker = {
-  invoke(
-    request: ModelRequest,
-    signal: AbortSignal,
-  ): Promise<ModelStep>;
+  invoke(request: ModelRequest, signal: AbortSignal): Promise<ModelStep>;
 };
 ```
 
@@ -757,10 +749,7 @@ export type OpenRouterModelClientOptions = {
 export class OpenRouterModelClient implements CommerceModelInvoker {
   constructor(options: OpenRouterModelClientOptions);
 
-  invoke(
-    request: ModelRequest,
-    signal: AbortSignal,
-  ): Promise<ModelStep>;
+  invoke(request: ModelRequest, signal: AbortSignal): Promise<ModelStep>;
 }
 ```
 
@@ -1009,7 +998,6 @@ node:
 The Node entrypoint may depend on LangChain but must import successfully without an OpenRouter credential until a client instance is actually constructed.
 
 ### B — Modular runner and LangGraph requirements
-
 
 ### R1 — pin the reviewed LangGraph dependency exactly
 
@@ -1504,7 +1492,6 @@ Add focused module tests for the extracted responsibilities and at minimum these
 
 ### C — Structured Commerce-turn logging requirements
 
-
 ### R1 — extend the runner dependency contract only with an optional StructuredLogger
 
 Import the existing type from the same package logging module and extend `RunCommerceTurnInput.dependencies` additively:
@@ -1806,7 +1793,6 @@ Complete all work items from all three implementation facets before returning th
 
 ### Model/OpenRouter work items
 
-
 - [x] Add the exact `./commerce/model` pure schemas/types/helpers from R3-R7A, including the Shared-owned OpenRouter credential AAD contract.
 - [x] Add the `CommerceModelInvoker` named runner type without changing runner semantics.
 - [x] Add exact pinned LangChain/OpenRouter dependencies and core override from R2.
@@ -1819,7 +1805,6 @@ Complete all work items from all three implementation facets before returning th
 - [x] Run the focused validation matrix and record exact results.
 
 ### Runner/LangGraph work items
-
 
 - [x] Add exact `@langchain/langgraph@1.4.15` dependency and lockfile update while retaining SHARED-001 core pin.
 - [x] Extract the current public types/constants without changing their exports.
@@ -1834,7 +1819,6 @@ Complete all work items from all three implementation facets before returning th
 
 ### Logging work items
 
-
 - [x] Add optional `StructuredLogger` to `RunCommerceTurnInput.dependencies` without breaking existing callers.
 - [x] Create `runner/observability.ts` semantic adapter over the canonical logger.
 - [x] Add safe turn child context after validated preflight.
@@ -1848,7 +1832,6 @@ Complete all work items from all three implementation facets before returning th
 All interfaces/contracts below belong to this one implementation task and MUST be mutually consistent in the final Shared package.
 
 ### Model contracts
-
 
 ### Pure public entrypoint
 
@@ -1936,7 +1919,6 @@ Shared
 
 ### Runner/LangGraph contracts
 
-
 Consumes from SHARED-001/public runner:
 
 ```text
@@ -1963,7 +1945,6 @@ validateFinalResponse
 Contract owner: `ARCH-024-SHARED-001`.
 
 ### Logging contracts
-
 
 Consumes:
 
@@ -1995,7 +1976,6 @@ Every criterion below is required before this combined implementation may move t
 
 ### Model/OpenRouter acceptance
 
-
 - [x] `./commerce/model` and `./commerce/model/node` are published build entrypoints with the exact browser/Node boundary in R1.
 - [x] `@langchain/openrouter` and `@langchain/core` are pinned exactly as R2 requires and resolve one compatible core instance.
 - [x] No closed model-provider enum exists in the new Shared contract.
@@ -2017,7 +1997,6 @@ Every criterion below is required before this combined implementation may move t
 
 ### Runner/LangGraph acceptance
 
-
 - [x] `runCommerceTurn` public API/result/error semantics are unchanged.
 - [x] `runnerVersion` remains `1.0.0`.
 - [x] `index.ts` no longer contains the monolithic model/Tool/evidence loop.
@@ -2035,7 +2014,6 @@ Every criterion below is required before this combined implementation may move t
 
 ### Logging acceptance
 
-
 - [x] Runner uses only the canonical Shared `StructuredLogger` contract.
 - [x] Shared runner never creates its own service logger identity.
 - [x] Host service/environment identity survives unchanged.
@@ -2051,7 +2029,6 @@ Every criterion below is required before this combined implementation may move t
 Run the validation required by every facet. Do not drop a former validation obligation merely because the work is now one task.
 
 ### Model/OpenRouter validation
-
 
 Before running Node commands, follow the workspace Node bootstrap policy.
 
@@ -2089,7 +2066,6 @@ If the repository-wide baseline exposes a documented pre-existing condition, fol
 
 ### Runner/LangGraph validation
 
-
 From the prepared `moda-interact-shared` task worktree, after using the workspace Node bootstrap policy when required:
 
 ```bash
@@ -2118,7 +2094,6 @@ npm ls @langchain/langgraph @langchain/core
 and prove the resolved LangGraph/Core versions match the exact pins required by this task.
 
 ### Logging validation
-
 
 From the prepared `moda-interact-shared` task worktree:
 
@@ -2154,7 +2129,6 @@ This combined task is intentionally detailed because it replaces three formerly 
 
 ### Model/OpenRouter notes
 
-
 - Prefer the current LangChain standard chat-model interface instead of building a second provider framework.
 - `OpenRouterModelClient` is intentionally a thin bridge to the already-existing Moda runner contract; it is not a new agent orchestration layer.
 - OpenRouter's `provider` key inside `CommerceModelConfiguration` means OpenRouter provider-routing preferences. It is distinct from `CommerceModelCatalogueEntry.provider`, which is the first component of the active OpenRouter model slug.
@@ -2163,13 +2137,11 @@ This combined task is intentionally detailed because it replaces three formerly 
 
 ### Runner/LangGraph notes
 
-
 Prefer small pure functions with explicit inputs over hidden module state. The graph is an explicit representation of an already-existing state machine; do not move Background conversation lifecycle or host transport concerns into Shared.
 
 The official MCP SDK decision is closed for ARCH-024: Background keeps `CommerceMcpClient`; Shared remains `RunnerTool`-only.
 
 ### Logging notes
-
 
 Logging is a diagnostic side effect, never a correctness dependency. The host constructs the service logger; Shared adds a child component context only.
 
@@ -2278,7 +2250,6 @@ One blocking integration defect remains. The runner appends a synthetic denied T
 The new Merchant-Knowledge hostile-data regression does not expose this composition defect because it replaces `dependencies.model.invoke` with a test double that accepts the schema-invalid synthetic row directly. The task requires the runner and OpenRouter adapter to form one coherent unpublished Shared runtime, so this path must be proven through the actual adapter boundary before acceptance.
 
 The Runner R12 literal in this task conflicted with the model/OpenRouter R12 requirement that every `ModelRequest.messages` result is a `CommerceToolResult`. This review reconciles that task-definition inconsistency: the canonical synthetic denial row now includes `contractVersion: "commerce.v1"`. That narrow correction is authorised for Attempt 2 and does not weaken Tool authorization, trust boundaries, retry rules or forced-referral behaviour.
-
 
 ### Reviewed Files
 

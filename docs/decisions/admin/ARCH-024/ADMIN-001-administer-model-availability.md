@@ -218,9 +218,9 @@ Admin MUST import the canonical Availability contract from:
 At minimum consume:
 
 ```ts
-CommerceModelAvailabilitySchema
-CommerceModelAvailability
-CommerceModelAvailabilityScopeSchema
+CommerceModelAvailabilitySchema;
+CommerceModelAvailability;
+CommerceModelAvailabilityScopeSchema;
 ```
 
 Do not define a second local `PLATFORM | SHOP` Availability contract.
@@ -397,8 +397,7 @@ The function MUST:
 commerceModelAvailability IS NULL
 ```
 
-regardless of whether any historical Availability might otherwise have been disabled;
-6. order by:
+regardless of whether any historical Availability might otherwise have been disabled; 6. order by:
 
 ```text
 domain ASC
@@ -453,8 +452,8 @@ reason
 Export:
 
 ```ts
-parseCreateShopModelAvailabilityForm(formData)
-parseSetModelAvailabilityEnabledForm(formData)
+parseCreateShopModelAvailabilityForm(formData);
+parseSetModelAvailabilityEnabledForm(formData);
 ```
 
 `parseCreateShopModelAvailabilityForm` MUST NOT accept caller-supplied:
@@ -1151,9 +1150,11 @@ git diff --check
 ```
 
 If a validation command encounters a documented unchanged baseline condition, record its baseline ID in the Completion Report. A changed-file regression introduced by this task is not excused by baseline status.
+
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete:
+
 1. set the task Completion Report to `Ready for Review`;
 2. set task status to `review`;
 3. clear no architectural dependency yourself;
@@ -1165,6 +1166,7 @@ Do not begin `ARCH-024-ADMIN-002`, OpenRouter credential administration, Commerc
 ## Implementation Notes
 
 ### Exact ownership distinction
+
 Use these terms consistently in code/UI/tests:
 
 ```text
@@ -1203,9 +1205,11 @@ That is not an Admin database-repair opportunity. `ARCH-024-COMMERCE-002` owns e
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `package.json` and `package-lock.json` — consume exact Shared release `1.1.0`.
 - `src/lib/admin/model-availability-validation.ts` — the two bounded mutation input parsers.
 - `src/lib/admin/model-availability.ts` — Shared-schema-validated Availability read/search and the only two allowed mutation kinds.
@@ -1220,6 +1224,7 @@ Ready for Review
 - No additional files changed; the accepted `database/` gitlink remains unchanged at the launcher-prepared commit.
 
 ### Work Completed
+
 - Consumed `@modainteract/moda-interact-shared@1.1.0`, the exact SHARED-002 publication, and generated Prisma from accepted database commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 - Added a Platform-first Availability read model. It requires exactly one Platform row, validates every Availability through the published Shared schemas before scope partitioning, validates Shop identity, and projects only bounded identity/status/count fields.
 - Added case-insensitive, trimmed, 120-character-bounded Shop search that requires two characters, returns at most 25 Shops without any Availability, and selects only canonical Shop identity/status.
@@ -1235,6 +1240,7 @@ Ready for Review
 - Attempt 2 parent task report commit `83623ef4767f009e84763588ec9a067262301943` was pushed to `origin/task/ARCH-024-ADMIN-001`. After publication, both the parent and implementation task worktrees were verified on `task/ARCH-024-ADMIN-001`, up to date with their respective origin task branches, with clean working trees.
 
 ### Validation Results
+
 - `npm run prisma:generate` — passed against the accepted nested schema.
 - `npm run prisma:validate` — passed.
 - `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts tests/unit/model-availability-service.test.ts` — passed, 8/8 tests.
@@ -1251,17 +1257,21 @@ Ready for Review
 - Attempt 2 `git diff --check` passed in both the implementation and parent worktrees. Static source-level prohibitions are covered by the passing 11-test Admin security/navigation suite, including no Catalogue, Agent Configuration, credential or Availability deletion mutation path.
 
 ### Deviations
+
 - No code or schema deviation. The prepared Admin worktree already pointed at accepted database commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; it was verified and left unchanged rather than moving the gitlink.
 - `npm install --save-exact` reported 8 dependency audit findings (2 moderate, 5 high, 1 critical). Dependency remediation is outside this task and no audit fix was applied.
 
 ### Assumptions
+
 - The launcher dependency gate is authoritative for architect acceptance of DATABASE-001 and SHARED-002; both dependencies were complete at preparation.
 
 ### Unresolved Issues
+
 - Non-blocking build warnings remain in the pre-existing BullMQ import paths, including the optional `@valkey/valkey-glide` resolution warning; no matching development-baseline entry was found.
 - Node emitted `MODULE_TYPELESS_PACKAGE_JSON` warnings for the repository's TypeScript unit-test invocation; all required tests passed and no package module-mode change was made.
 
 ### Architectural Concerns
+
 - None identified within ADMIN-001 scope.
 
 ## Architect Review

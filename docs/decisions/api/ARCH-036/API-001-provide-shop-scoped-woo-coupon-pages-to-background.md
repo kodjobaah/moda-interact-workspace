@@ -19,8 +19,8 @@ enables: []
 created: 2026-10-12
 updated: 2026-10-12
 ---
-# ARCH-036-API-001 — Superseded: Background reads Woo coupon pages directly
 
+# ARCH-036-API-001 — Superseded: Background reads Woo coupon pages directly
 
 ## Architecture
 
@@ -30,16 +30,13 @@ updated: 2026-10-12
 
 ## Objective
 
-
 **SUPERSEDED.** No API coupon-page proxy is needed because Background has PostgreSQL access to the verified encrypted read grant and owns the bounded Woo REST sync client. This task must not be claimed, materialised or implemented.
 
 ## Context
 
-
 ARCH-036 Attempt 5 assigns this capability to `ARCH-036-BACKGROUND-001` and removes the earlier independent task or Shared/package boundary. The prior definition is retained only for historical traceability.
 
 ## Scope
-
 
 None. Implementation ownership is `ARCH-036-BACKGROUND-001` under the revised parent architecture.
 
@@ -49,36 +46,29 @@ No WordPress-to-Moda snapshot push, sync begin/page/complete ingestion, coupon D
 
 ## Requirements
 
-
 Do not implement any code, endpoint, package schema, publication, queue or configuration from this superseded task. No task depends on it.
 
 ## Work Items
-
 
 None — superseded without execution.
 
 ## Interfaces / Contracts
 
-
 None — the previous proposed contract/endpoint is no longer authorised.
 
 ## Dependencies
-
 
 None — superseded.
 
 ## Enables
 
-
 None — superseded.
 
 ## Acceptance Criteria
 
-
 Not applicable — superseded task.
 
 ## Validation
-
 
 Not applicable — no implementation.
 
@@ -87,7 +77,6 @@ Not applicable — no implementation.
 After bounded work, acceptance checks and required validation: document the Completion Report, set the task to `review` and STOP. Do not begin dependent tasks. For `superseded` tasks, do not execute or claim.
 
 ## Implementation Notes
-
 
 Do not run `/moda-task` or `/moda_developer_create` for this task. Refer to `ARCH-036-BACKGROUND-001` and the ARCH-036 Attempt 5 architecture instead. No `_index.md` updates.
 

@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T22:21:00Z
 ---
+
 # Extend Shopify recovery events with canonical international context
 
 ## Architecture

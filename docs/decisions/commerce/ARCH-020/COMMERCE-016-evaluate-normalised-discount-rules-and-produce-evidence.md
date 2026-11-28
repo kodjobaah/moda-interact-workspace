@@ -74,7 +74,6 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 Own `src/commerce/discounts/evaluator/`.006 owns DiscountRuleSnapshot/provider semantics;015 owns basket/current facts;007 owns recommendations.013 owns their real registration/composition.
 
-
 ## Dependencies
 
 - ARCH-020-COMMERCE-006
@@ -267,7 +266,6 @@ Independent validation: **15/15 evaluator tests passed**; prior architect harnes
 
 Dependency reconciliation: COMMERCE-015 is already Complete. COMMERCE-007 therefore becomes Ready, preserving attempt0 and null claim; no execution is started.012/013/system-test retain other unfinished prerequisites and are not promoted. Architecture status remains in implementation. Parent task/index/architecture/handoff/workspace state reconciled and published. No implementation edits/commits, new claim, main merge/push or gitlink update; developer final integration remains implementation first, then parent gitlink/report integration.
 
-
 ### Changes Requested — Attempt 1 — 2026-09-21
 
 **Current decision: Ready for corrections; Attempt 1 retained; executor/claimed_at null; not accepted.** Reviewed implementation `bfbd7839503b60e88b17da49f258c84c4e506c76` and parent report `f96b41dfe2e532bfacbc765c1dcd08243cbdc2be`, verified against remote task heads. Dedicated worktrees clean; implementation database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98`. No implementation edit, new claim, dependency promotion, main integration or gitlink update.
@@ -327,7 +325,6 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
-
 
 ### Architect readiness promotion — 2026-09-21
 

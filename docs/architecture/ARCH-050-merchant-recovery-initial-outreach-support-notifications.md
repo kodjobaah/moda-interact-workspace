@@ -59,7 +59,7 @@ Add nullable `MerchantSupportMessage.checkoutRecoveryId` and a Prisma relationsh
 
 The trigger is **the first successful transactional finalisation of an automated INITIAL (`sequence=1`) send**, based on the durable outbound message's matching conversation, identity, provider-admitted `SENT|DELIVERED|READ` state and non-null `sentAt`; NOT queue dispatch, model generation, a bare send invocation, or provider-request acceptance without confirmed persisted send evidence. Existing credit commit stays owned by the billing service and is not re-created.
 
-A Background-owned reusable service performs the **first attempt-state transition and optional Support insertion in one PostgreSQL transaction**. The transaction verifies matching shop/recovery/attempt/message lineage; it reads the opt-in at that first finalisation and records the one-time decision by the *fact of the first transition*. `false` means no notification, and a later retry after a merchant enables the option must not retroactively create one. `true` means the transactional transition inserts exactly one available, unread Support message; if it fails, the transaction rolls back and the worker retries (no silent swallow). A previously finalised attempt may be validated/replayed idempotently but MUST NOT create a fresh Support message after the first transition. Concurrent workers must safely create/find the single Support thread and dedupe with the existing unique `sourceKey`.
+A Background-owned reusable service performs the **first attempt-state transition and optional Support insertion in one PostgreSQL transaction**. The transaction verifies matching shop/recovery/attempt/message lineage; it reads the opt-in at that first finalisation and records the one-time decision by the _fact of the first transition_. `false` means no notification, and a later retry after a merchant enables the option must not retroactively create one. `true` means the transactional transition inserts exactly one available, unread Support message; if it fails, the transaction rolls back and the worker retries (no silent swallow). A previously finalised attempt may be validated/replayed idempotently but MUST NOT create a fresh Support message after the first transition. Concurrent workers must safely create/find the single Support thread and dedupe with the existing unique `sourceKey`.
 
 Canonical notification: `kind=SYSTEM`, `state=AVAILABLE`, `systemCode=RECOVERY_INITIAL_OUTREACH_SENT`, `systemVersion="1"`, `sourceKey=recovery-initial-outreach:v1:<outreachAttemptId>`, `checkoutRecoveryId=<id>`, bounded generic body, source language `en-GB`, no customer PII. Use the existing Support message translation/localisation conventions for merchant-facing text and translate/localise the action label in each UI. `lastMessageAt` updates without setting `needsAdminResponse` or incrementing `merchantMessageVersion` (this is not a ticket to internal support). Neither a new charge nor a merchant WhatsApp message is created.
 
@@ -70,7 +70,6 @@ Both automatic Shopify and Woo finalisers call the same Background primitive aft
 Both merchant Support reads include `checkoutRecoveryId: string|null` (only if `SYSTEM`, code/version match and the recovery has `shopId` matching the authenticated Support thread). The UI creates the URL locally using its first-party route builder and a stable `#recovery-conversation` anchor. Missing, stale or cross-tenant IDs produce no action; any direct URL requires the destination recovery's existing independent server-side tenant and entitlement checks. There are no absolute, merchant-supplied or provider-supplied URLs.
 
 For WooCommerce, the API is the **single HTTP contract owner**. Extend its strict Support history DTO to `schemaVersion:2` with required `checkoutRecoveryId` on every item (compose/read receipts remain v1), and its strict Recovery Policy DTO to `schemaVersion:2` with a **top-level** `notifyOnInitialRecoveryOutreach` Boolean in GET/PUT (unchanged `merchant/effective` four-field shapes); release matching WordPress browser validators/proxies together. These are hosted external application contracts, not new inter-service BullMQ payloads; the Woo extension cannot import Node-only `@modainteract/moda-interact-shared` APIs. Do not introduce Shared package work without a genuinely reusable runtime contract needed by multiple Node services. Shopify's internal loader is not a versioned external API.
-
 
 ## Explicit Implementation Contract (Attempt 2)
 
@@ -99,7 +98,9 @@ type InitialOutreachNoticeResult =
   | { outcome: "disabled"; outreachAttemptId: string }
   | { outcome: "replayed"; outreachAttemptId: string };
 interface ConfirmedInitialOutreachFinalizer {
-  finalizeConfirmedInitial(input: ConfirmedInitialRecoveryOutreachInput): Promise<InitialOutreachNoticeResult>;
+  finalizeConfirmedInitial(
+    input: ConfirmedInitialRecoveryOutreachInput,
+  ): Promise<InitialOutreachNoticeResult>;
 }
 ```
 
@@ -114,19 +115,19 @@ The port verifies **persisted** attempt/recovery/outbound ownership, trigger INI
 
 ### Exact implementation file boundaries
 
-| Task | Primary created/modified files |
-|---|---|
-| DATABASE-001 | `moda-interact-database/prisma/schema.prisma`, `prisma/migrations/<timestamp>_arch050_.../migration.sql`, PostgreSQL schema test |
-| BACKGROUND-001 | New `checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts` and `.service.ts`, unit and PostgreSQL integration tests |
-| BACKGROUND-002 | `checkout-recovery/recovery-outreach-finalization.service.ts` and focused tests; Shopify initial sequence only |
-| BACKGROUND-003 | `woocommerce-recovery/woo-recovery-outreach.adapters.ts` and focused tests; Woo initial sequence only |
-| SHOPIFY-001 | `recovery-policy.server.ts`, `settings-save/route.ts`, `recovery-settings/RecoverySettingsView.tsx`, 20 locale keys/tests |
-| SHOPIFY-002 | `merchant-support.service.ts`, `system-message-actions.ts`, `merchant-support/route.jsx`, `recovery-conversation-thread.tsx`, locales/tests |
-| API-001 | `src/merchant/recovery-policy/{contract,service,routes}.ts`, unit/PostgreSQL tests |
-| API-002 | `src/merchant/support/{contract,read.service,routes}.ts`, unit/PostgreSQL tests |
-| WOOCOMMERCE-001 | PHP `RecoveryPolicyResponseValidator.php`, JS `recovery-policy-client.js`, `recovery-behaviour-{fields,validation,panel}.js`, relevant proxy/tests |
-| WOOCOMMERCE-002 | PHP `SupportResponseValidator.php`, JS `support-contract.js`, `support-message-card.js`, `detail-navigation.js`, `conversation-panel.js`, tests |
-| SYSTEM-TEST-001/002 | `moda-interact-system-test/catalogue/scenarios.json`, separated `src/harness/recovery/` fixtures/executors, harness tests and evidence |
+| Task                | Primary created/modified files                                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DATABASE-001        | `moda-interact-database/prisma/schema.prisma`, `prisma/migrations/<timestamp>_arch050_.../migration.sql`, PostgreSQL schema test                   |
+| BACKGROUND-001      | New `checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts` and `.service.ts`, unit and PostgreSQL integration tests             |
+| BACKGROUND-002      | `checkout-recovery/recovery-outreach-finalization.service.ts` and focused tests; Shopify initial sequence only                                     |
+| BACKGROUND-003      | `woocommerce-recovery/woo-recovery-outreach.adapters.ts` and focused tests; Woo initial sequence only                                              |
+| SHOPIFY-001         | `recovery-policy.server.ts`, `settings-save/route.ts`, `recovery-settings/RecoverySettingsView.tsx`, 20 locale keys/tests                          |
+| SHOPIFY-002         | `merchant-support.service.ts`, `system-message-actions.ts`, `merchant-support/route.jsx`, `recovery-conversation-thread.tsx`, locales/tests        |
+| API-001             | `src/merchant/recovery-policy/{contract,service,routes}.ts`, unit/PostgreSQL tests                                                                 |
+| API-002             | `src/merchant/support/{contract,read.service,routes}.ts`, unit/PostgreSQL tests                                                                    |
+| WOOCOMMERCE-001     | PHP `RecoveryPolicyResponseValidator.php`, JS `recovery-policy-client.js`, `recovery-behaviour-{fields,validation,panel}.js`, relevant proxy/tests |
+| WOOCOMMERCE-002     | PHP `SupportResponseValidator.php`, JS `support-contract.js`, `support-message-card.js`, `detail-navigation.js`, `conversation-panel.js`, tests    |
+| SYSTEM-TEST-001/002 | `moda-interact-system-test/catalogue/scenarios.json`, separated `src/harness/recovery/` fixtures/executors, harness tests and evidence             |
 
 Each file path is relative to its owning implementation repository, not to the `docs` folder. Task files contain the exact interfaces, validations, negative cases and stopping points; this table is a navigation aid and does not supersede them.
 
@@ -167,20 +168,20 @@ Merchant recovery setting (Shopify UI or WooCommerce UI -> hosted API)
 
 ## Repository Responsibilities and Implementation Tasks
 
-| Task | Owner | Status | Depends on |
-|---|---|---|---|
-| ARCH-050-DATABASE-001 | moda_database | Complete | None |
-| ARCH-050-BACKGROUND-001 | moda_background | Ready | ARCH-050-DATABASE-001 |
-| ARCH-050-BACKGROUND-002 | moda_background | Pending | ARCH-050-BACKGROUND-001 |
-| ARCH-050-BACKGROUND-003 | moda_background | Pending | ARCH-050-BACKGROUND-001; ARCH-048-BACKGROUND-005 (Complete) |
-| ARCH-050-SHOPIFY-001 | moda_app | Ready | ARCH-050-DATABASE-001 |
-| ARCH-050-SHOPIFY-002 | moda_app | Ready | ARCH-050-DATABASE-001 |
-| ARCH-050-API-001 | moda_api | Ready | ARCH-050-DATABASE-001 |
-| ARCH-050-API-002 | moda_api | Complete | ARCH-050-DATABASE-001 |
-| ARCH-050-WOOCOMMERCE-001 | moda_woocommerce | Pending | ARCH-050-API-001 |
-| ARCH-050-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-050-API-002 |
-| ARCH-050-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-050-BACKGROUND-002; ARCH-050-SHOPIFY-001; ARCH-050-SHOPIFY-002 |
-| ARCH-050-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-050-BACKGROUND-003; ARCH-050-API-001; ARCH-050-API-002; ARCH-050-WOOCOMMERCE-001; ARCH-050-WOOCOMMERCE-002; ARCH-048-WOOCOMMERCE-002/003 |
+| Task                     | Owner            | Status   | Depends on                                                                                                                                    |
+| ------------------------ | ---------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARCH-050-DATABASE-001    | moda_database    | Complete | None                                                                                                                                          |
+| ARCH-050-BACKGROUND-001  | moda_background  | Ready    | ARCH-050-DATABASE-001                                                                                                                         |
+| ARCH-050-BACKGROUND-002  | moda_background  | Pending  | ARCH-050-BACKGROUND-001                                                                                                                       |
+| ARCH-050-BACKGROUND-003  | moda_background  | Pending  | ARCH-050-BACKGROUND-001; ARCH-048-BACKGROUND-005 (Complete)                                                                                   |
+| ARCH-050-SHOPIFY-001     | moda_app         | Ready    | ARCH-050-DATABASE-001                                                                                                                         |
+| ARCH-050-SHOPIFY-002     | moda_app         | Ready    | ARCH-050-DATABASE-001                                                                                                                         |
+| ARCH-050-API-001         | moda_api         | Ready    | ARCH-050-DATABASE-001                                                                                                                         |
+| ARCH-050-API-002         | moda_api         | Complete | ARCH-050-DATABASE-001                                                                                                                         |
+| ARCH-050-WOOCOMMERCE-001 | moda_woocommerce | Pending  | ARCH-050-API-001                                                                                                                              |
+| ARCH-050-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-050-API-002                                                                                                                              |
+| ARCH-050-SYSTEM-TEST-001 | moda_system_test | Pending  | ARCH-050-BACKGROUND-002; ARCH-050-SHOPIFY-001; ARCH-050-SHOPIFY-002                                                                           |
+| ARCH-050-SYSTEM-TEST-002 | moda_system_test | Pending  | ARCH-050-BACKGROUND-003; ARCH-050-API-001; ARCH-050-API-002; ARCH-050-WOOCOMMERCE-001; ARCH-050-WOOCOMMERCE-002; ARCH-048-WOOCOMMERCE-002/003 |
 
 Task status derives from canonical task metadata and verified prerequisites, not from this planning table. Complete prerequisite tasks do not need to be re-opened. The two terminal system-test tasks allow Shopify testing independently of the Woo plugin work; no implementation task depends on either system test. The developer may validate manually before invoking Ready system-test tasks.
 
@@ -198,7 +199,7 @@ Task status derives from canonical task metadata and verified prerequisites, not
 - **Node owners:** Background, hosted API and Shopify server-side code must use the existing approved `@modainteract/moda-interact-shared/logging` export and `docs/observability/shared-logging.md`. Reuse existing process/service loggers and injection points; do not introduce generic JSON loggers, ad hoc `console.*`, direct unstructured `JSON.stringify`, or a new observability transport. Set service/process identity through existing runtime configuration (`moda-recovery-worker`, `moda-interact-api`, `moda-interact` as applicable); never let individual feature modules override canonical environment identity.
 - **Authoritative Background event names:** `recovery.initial_outreach_support_notice.created`, `.disabled`, `.replayed` (info) and `.failed` (error). Use a stable result/outcome plus safe identifiers only after validation: `shopId`, `checkoutRecoveryId`, `outreachAttemptId`, `outboundMessageId`, `platform` (when available) and a bounded `errorCategory`; for unexpected exceptions pass `{ error }` to the Shared logger's bounded Error serializer. Do not log customer name, phone, email, checkout contents, message text, provider bodies, credentials, raw HTTP payloads or SQL parameters. Treat expected OFF/replay outcomes as successes, **not** errors.
 - **Caught operational exceptions are never silent.** In the shared Background transaction owner: catch outside the transaction, emit the failure event with safe correlation/error context, then `throw error` unchanged. In Shopify/Woo Background integration: preserve existing admission, billing, compensation and BullMQ retry semantics; if a callsite catches an error, log it with a platform-specific stage/context and rethrow the **same** exception. Do not return `disabled`, `replayed`, `null`, an empty page or apparent success for database/persistence/authorisation failures. Do not mark the original provider send failed, issue another send, or charge again solely due to a notification-write exception.
-- **Failure isolation exception:** A logging sink/serialisation exception alone may be suppressed in a narrowly scoped, documented log-safe adapter: it must never mask the original business exception or break a successfully committed transaction. This is the *only* allowed intentionally ignored exception for the new Background logic. Do not log from inside the interactive Prisma transaction.
+- **Failure isolation exception:** A logging sink/serialisation exception alone may be suppressed in a narrowly scoped, documented log-safe adapter: it must never mask the original business exception or break a successfully committed transaction. This is the _only_ allowed intentionally ignored exception for the new Background logic. Do not log from inside the interactive Prisma transaction.
 - **HTTP/API boundaries:** Keep existing approved `StructuredLogger` in route options and established error/status mapping. Log unexpected server/database failures using `.error` with a sanitized Error and operation, warn for handled conflict/integrity where appropriate; keep authorization/validation responses safe. No fake success, dropped rejection or generic fallbacks on infrastructure failure. Shopify server routes use the same Shared logger.
 - **WooCommerce boundary:** Node Shared logging is **not** a PHP or browser dependency. PHP continues the existing WordPress/WooCommerce logger/`WP_Error` conventions for caught operational failures with redacted metadata; browser controllers must surface failures in their existing error states rather than silently discarding promises. Pure invalid-link/invalid-input outcomes are expected results, not unexpected exceptions.
 - **Tests:** Inject a recording/failing logger into the Background unit tests. Verify each outcome event, failure event including bounded non-sensitive context, original exception identity on rejection, rollback and retry, and sink failure isolation. API/Shopify and Woo tests should exercise their owning catch/response/error-state boundaries. Integrated system tests confirm failed notification persistence is observable and never misreported as success, without requiring a new Grafana/OTLP service.

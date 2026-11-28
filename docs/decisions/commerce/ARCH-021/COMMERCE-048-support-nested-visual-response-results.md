@@ -181,7 +181,7 @@ Update test fixtures, seed/development definitions and local examples to `kind:"
 Use exactly one persisted root discriminator:
 
 ```ts
-kind: "VISUAL"
+kind: "VISUAL";
 ```
 
 Root OBJECT:
@@ -578,7 +578,7 @@ nested LIST -> [...]
 Provide one helper equivalent to:
 
 ```ts
-reconstructVisualAuthoringTree(processing, resultSchema)
+reconstructVisualAuthoringTree(processing, resultSchema);
 ```
 
 It only needs to support:
@@ -699,7 +699,7 @@ Exceeding a bound must fail closed through the existing bounded processor error/
 Every successful Visual/Direct/JavaScript External HTTP result must be validated through:
 
 ```ts
-compileCommerceResultSchema(execution.resultSchema).safeParse(processed.values)
+compileCommerceResultSchema(execution.resultSchema).safeParse(processed.values);
 ```
 
 before returning Tool success.
@@ -1098,9 +1098,11 @@ Do not introduce a second result-schema compiler in Studio or publication code.
 ## Completion Report
 
 ### Status
+
 Ready for architect review
 
 ### Execution Isolation
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-048`, `task/ARCH-021-COMMERCE-048`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-048`, `task/ARCH-021-COMMERCE-048`.
@@ -1109,9 +1111,11 @@ Ready for architect review
 - Prepared recursive submodule synchronization/update passed. The recorded implementation submodule is `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Files Changed
+
 Commerce result schema/contracts, recursive Visual derivation and reconstruction, External HTTP runtime/preview/publication/fixture validation, Studio synthetic processing and recursive response UI, the new External HTTP starter definition, and focused Commerce tests/fixtures. No Shared, database, or Prisma files changed.
 
 ### Work Completed
+
 - Added the Commerce-owned bounded result-schema parser/compiler (depth 12, 256 schema nodes) and moved Commerce output validation to it while retaining Shared input-schema validation.
 - Replaced flat root OBJECT/LIST response-processing kinds with the canonical DIRECT | VISUAL | JAVASCRIPT union; nested Visual OBJECT/LIST nodes use one recursive contract, projector, derivation/reconstruction path, and publication compatibility check.
 - Added recursive Visual authoring with local validation, synchronized current-validity disclosures, independent root shape drafts, and per-field SCALAR/OBJECT/LIST branch retention keyed by browser-only client IDs.
@@ -1119,6 +1123,7 @@ Commerce result schema/contracts, recursive Visual derivation and reconstruction
 - Documented the preproduction data rule: local definitions using the removed flat modes must be discarded and recreated through Studio, or the disposable local development database reset/reseeded using the repository's local procedure. No migration or compatibility adapter was added.
 
 ### Validation Results
+
 - `npm run test:arch021-commerce-tool-contract`: 16 passed.
 - `npm run test:arch021-external-tool-authoring-validation`: 47 passed.
 - `npm run test:arch020-code-processor`: 6 passed.
@@ -1129,24 +1134,30 @@ Commerce result schema/contracts, recursive Visual derivation and reconstruction
 - `git diff --check`: passed. Source audits confirmed Shared remains pinned at 0.14.2 and unchanged; no Commerce/Studio `DetailsSchemaSchema` or details-mode compiler use remains; Shared compilation is input-only; root processing is Direct/Visual/JavaScript, with OBJECT/LIST only as nested Visual nodes.
 
 ### Deviations
+
 - The task's suggested C048-specific UI npm script is absent from `package.json`; ran the existing `test:arch020-external-tools-ui` script instead.
 - Whole-repository typecheck remains non-green because of the documented unrelated baseline diagnostics; focused behavior tests and lint pass.
 
 ### Assumptions
+
 Old flat Visual definitions are development-only state and need local recreation; no production compatibility or data migration is required. Reset only a disposable local development database if manual recreation is not sufficient.
 
 ### Unresolved Issues
+
 None within C048 scope. Architect review is pending.
 
 ### Architectural Concerns
+
 None. Shared remains at 0.14.2 and no Shared or Prisma changes were introduced.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1
 
 ### Review Notes
+
 Reviewed implementation `e2f9e48` and parent report `ac39aab7` against the revised C048 contract. Accepted.
 
 The implementation completes the intended preproduction ownership and nested-Visual migration:
@@ -1165,6 +1176,7 @@ Primitive scalar arrays such as `{ "tags": ["red", "blue"] }` remain intentional
 One historical `src/studio/external-http/processor.ts` flat helper remains unreferenced; repository search shows no production/test import and the active sample port delegates to `createResponseProcessor(...)`. It is therefore not a runtime compatibility branch and is non-blocking for C048 acceptance. C049 may delete it as adjacent dead-code cleanup if it is still unreferenced when that task executes.
 
 ### Reviewed Files
+
 - `src/commerce/tool-definition/result-schema.ts`
 - `src/commerce/tool-definition/contracts.ts`
 - `src/commerce/tool-authoring/visual-result-contract.ts`
@@ -1181,6 +1193,7 @@ One historical `src/studio/external-http/processor.ts` flat helper remains unref
 - C048 Completion Report
 
 ### Validation Reviewed
+
 Accepted submitted evidence:
 
 ```text
@@ -1199,7 +1212,9 @@ Shared/result-schema ownership audits      passed
 The supplied archive does not include installed dependencies, so dependency-backed commands were not falsely claimed as independently rerun by the architect. Source/test inspection confirms the task-owned implementation paths and focused regressions described above.
 
 ### Architecture Conformance
+
 Conforms. C048 keeps genuine cross-domain contracts in Shared while making Commerce-local output/result semantics Commerce-owned, establishes one canonical preproduction recursive Visual grammar, preserves bounded execution/local-authoring invariants, and introduces no Shared publication, Prisma migration, live Response provider I/O or Phase 2 gating.
 
 ### Follow-up
+
 `ARCH-021-COMMERCE-049` is promoted to `ready` for the deliberately separate primitive-scalar-array Visual extension (`{tags:["red","blue"]}`).

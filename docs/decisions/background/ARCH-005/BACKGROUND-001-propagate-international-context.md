@@ -22,6 +22,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06
 ---
+
 # Adopt and materialise Shopify international context
 
 ## Architecture
@@ -269,8 +270,12 @@ query AbandonedCheckouts($query: String!, $first: Int!) {
       lineItems {
         nodes {
           id
-          product { id }
-          variant { id }
+          product {
+            id
+          }
+          variant {
+            id
+          }
           sku
           title
           variantTitle
@@ -802,4 +807,3 @@ ARCH-005-BACKGROUND-004   active-conversation language / CommerceAgent
 
 System tests remain terminal and depend on the later Background capabilities rather
 than directly on this task alone.
-

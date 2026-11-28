@@ -18,6 +18,7 @@ enables:
 created: 2026-08-29
 updated: 2026-09-02
 ---
+
 # Use Published Shared Package in Shopify Application
 
 ## Architecture
@@ -364,4 +365,3 @@ ARCH-002-GATEWAY-005
 This acceptance does not automatically change `GATEWAY-005` to Ready or start
 it. `moda_architect` must re-evaluate the authoritative `GATEWAY-005`
 dependencies before promotion.
-

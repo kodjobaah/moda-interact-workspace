@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T18:50:51Z
 ---
+
 # ARCH-006-BACKGROUND-006: Poll OpenAI batches in minutes and apply translation results idempotently
 
 ## Architecture
@@ -70,7 +71,6 @@ Result behavior:
 - SYSTEM never clears pending support.
 - MERCHANT original remains AVAILABLE even if its admin translation fails.
 - Mark logical Batch COMPLETED only after every expected item is durably terminal/applied.
-
 
 ### Shared queue worker topology
 
@@ -247,7 +247,6 @@ Run the focused translation lifecycle suite, TypeScript/build, Prisma validation
 
 Return only `ARCH-006-BACKGROUND-006` to `review` and STOP. Do not claim or modify `BACKGROUND-007`.
 
-
 ### Attempt 2 Decision — 2026-09-06
 
 Not accepted. Return the same task to `ready` for a bounded Attempt 3 correction.
@@ -318,4 +317,3 @@ Independent review confirmed that Attempt 3 satisfies the bounded correction con
 Validation evidence recorded by the repository agent: 47 focused translation tests passed, build passed, Prisma validation passed, repository diagnostics reported no issues, and `git diff --check` passed. The three documented unrelated recovery-service failures remain outside this task.
 
 This acceptance releases `ARCH-006-BACKGROUND-007` to Ready.
-

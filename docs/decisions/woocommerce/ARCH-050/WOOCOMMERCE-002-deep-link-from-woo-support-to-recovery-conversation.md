@@ -59,12 +59,12 @@ No new Woo public endpoint or background-provider callback is allowed.
 
 - Mirror **API-002 v2** exactly: successful Support history page `schemaVersion:2`, each item includes `checkoutRecoveryId:string|null`; `composeReceipt` and `readReceipt` remain v1.
 - Update both `SupportResponseValidator::history()` and `parseSupportPage()` exact keys to reject missing/extra property, wrong type, unsafe ID. Allow `null` for unrelated/deleted/rejected references; validate non-null ID with the same `[A-Za-z0-9_-]{1,191}` recovery-ID format already used in `detail-navigation.js`.
-- In `supportSystemHref(message)` detect `kind=SYSTEM`, `state=AVAILABLE`, `systemCode="RECOVERY_INITIAL_OUTREACH_SENT"`, `systemVersion="1"`, and valid non-null `checkoutRecoveryId`. Use `recoveryDetailHref(id)` to generate *only* `admin.php?page=moda-interact-recoveries&recoveryId=<encoded>` then append `#recovery-conversation`. Preserve existing `BILLING_*` fixed action targets and billing action labels.
+- In `supportSystemHref(message)` detect `kind=SYSTEM`, `state=AVAILABLE`, `systemCode="RECOVERY_INITIAL_OUTREACH_SENT"`, `systemVersion="1"`, and valid non-null `checkoutRecoveryId`. Use `recoveryDetailHref(id)` to generate _only_ `admin.php?page=moda-interact-recoveries&recoveryId=<encoded>` then append `#recovery-conversation`. Preserve existing `BILLING_*` fixed action targets and billing action labels.
 - Render a localized **View conversation** label for recovery notices (not View billing); keep WordPress `__()` translations and accessible link text. No HTML injected from message content; href never from remote provider/body.
 - Conversation panel section must have stable `id="recovery-conversation"`. If the detail is rendered asynchronously after initial navigation, ensure scrolling/heading focus executes once the panel is mounted; invalid/missing recovery still shows safe unavailable shell.
 - Existing WordPress `manage_woocommerce`, REST nonce and installation protections remain. Deep link does not bypass hosted recovery-details tenant authorization. Do not expose inaccessible recovery IDs if API returned null.
 - PHP/JS must **not** import the Node Shared logger. The hosted API-002 uses the canonical `@modainteract/moda-interact-shared/logging` logger for unexpected Support-history failures. If plugin PHP introduces a `\Throwable` catch around `SupportController.php` / `ModaApiClient.php`, use the existing Woo/WordPress logger (`wc_get_logger()` source `moda-interact`) with stable operation and redacted error code/class, then preserve the existing protected `WP_Error`/HTTP response. Avoid a competing generic PHP logger.
-- For browser errors, the current Support controller must show its existing error/retry state on transport or rejected strict-v2 contract responses; do not `catch {}` and return an empty successful Support inbox. A missing/deleted/other-shop recovery is an expected *null link*, while a failed API read is an exceptional error. No raw customer message, token, hosted response or full exception payload in client telemetry.
+- For browser errors, the current Support controller must show its existing error/retry state on transport or rejected strict-v2 contract responses; do not `catch {}` and return an empty successful Support inbox. A missing/deleted/other-shop recovery is an expected _null link_, while a failed API read is an exceptional error. No raw customer message, token, hosted response or full exception payload in client telemetry.
 
 ## Work Items
 
@@ -201,7 +201,6 @@ Conforms to task scope, ARCH-050, the API-002 contract, WooCommerce repository b
 #### Follow-up
 
 `ARCH-050-SYSTEM-TEST-002` remains Pending because `ARCH-050-WOOCOMMERCE-001` and other listed prerequisites are not yet complete. No dependent implementation task is promoted by this acceptance.
-
 
 ### Attempt 1 Architect Review
 

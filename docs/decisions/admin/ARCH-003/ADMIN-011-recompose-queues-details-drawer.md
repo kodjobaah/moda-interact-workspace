@@ -20,6 +20,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Recompose Shopify Queues into main table and right details drawer
 
 ## Objective

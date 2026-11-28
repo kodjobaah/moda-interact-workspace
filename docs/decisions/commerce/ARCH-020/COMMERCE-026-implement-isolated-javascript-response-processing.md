@@ -138,27 +138,27 @@ pin and focused adapter command.
 
 ### Validation Results
 
-* CA01: `tests/code-response-processor.test.ts` / `transforms JSON through the accepted kernel`,
+- CA01: `tests/code-response-processor.test.ts` / `transforms JSON through the accepted kernel`,
   `transforms TEXT without attempting JSON parsing` / `npm run test:arch020-code-processor`
   -> 6/6 tests passed after the review regression was added.
-* CA02: `rejects malformed responses and non-object output roots`,
+- CA02: `rejects malformed responses and non-object output roots`,
   `maps syntax, deadline, cancellation, and output-limit failures` / the same
   focused command -> passed; actual kernel diagnostics and bounded output checks observed.
-* C21 sections 2.3/9.4 schema boundary: `leaves result-schema enforcement at the Shared validation boundary`
+- C21 sections 2.3/9.4 schema boundary: `leaves result-schema enforcement at the Shared validation boundary`
   uses `compileSubset(resultSchema, "details")` after a successful adapter result;
   wrong-typed `title: 42` is rejected while `resultSchema` remains absent from
   `CodeResponseProcessorInput`. `npm run test:arch020-code-processor` -> passed.
-* CA03: `keeps simultaneous inputs isolated` plus accepted runtime proof
+- CA03: `keeps simultaneous inputs isolated` plus accepted runtime proof
   `tests/code-runtime-proof.test.ts` / `npm run test:arch020-code-processor` and
   `npm run test:arch020-code-runtime-proof` -> 5/5 and 10/10 passed.
-* Packaged runtime: `npm run code-runtime:package && npm run code-runtime:smoke`
+- Packaged runtime: `npm run code-runtime:package && npm run code-runtime:smoke`
   -> passed with `quickjs-sync.v1`, `quickjs-emscripten@0.31.0`, artifact SHA256
   `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, 64 MiB
   WASM ceiling, and max 4 workers.
-* `npm run lint` -> passed with two existing warnings in COMMERCE-029 runtime
+- `npm run lint` -> passed with two existing warnings in COMMERCE-029 runtime
   files. `npm run typecheck` -> blocked by unrelated existing integration/Prisma
   diagnostics; no new processor/test diagnostics were reported.
-* Review correction rerun: the first post-correction focused invocation once
+- Review correction rerun: the first post-correction focused invocation once
   returned `EXECUTION_ERROR` before subsequent clean reruns; no deterministic
   reproduction occurred. The final focused run passed 6/6, and the accepted
   runtime proof remained 10/10.

@@ -21,6 +21,7 @@ enables:
 created: 2026-10-08
 updated: 2026-10-11
 ---
+
 # Define compatible checkout-update lookup-context contract
 
 ## Architecture
@@ -109,14 +110,17 @@ This is a cross-repository runtime contract, so implement once in Shared. Versio
 Ready for Architect Review.
 
 ### Files Changed
+
 `src/shopify/constants.ts`, `src/shopify/index.ts`, `src/shopify/v3/checkout-updated.schema.ts`, `src/shopify/v3/recovery-event.schema.ts`, `src/shopify/recovery-event.schema.ts`, and `src/shopify/recovery-event.schema.test.ts`.
 
 ### Work Completed
+
 Added a separately versioned strict checkout.updated v3 contract. The v3 payload requires a non-empty checkout token and permits optional nullable cart token (bounded to 100 characters), ISO checkout creation time, and abandoned-checkout URL (bounded by the existing URL limit). The strict v3 event envelope carries schema version 3 and existing Shopify event metadata. Existing v2 schemas and `parseShopifyRecoveryEventV2` remain unchanged.
 
 Added the canonical `ShopifyRecoveryEventSchema`, `ShopifyRecoveryEvent`, and parse/safe-parse functions accepting existing v2 recovery events plus v3 checkout.updated. Exported v3 constants, payload/event schemas and types, and the canonical parser from `@modainteract/moda-interact-shared/shopify`. No producer/consumer, queue, ordering-key, package-version, or publication changes were made; no local consumer contract copies were added.
 
 ### Validation Results
+
 - Focused command `node_modules/.bin/tsx --test src/shopify/recovery-event.schema.test.ts src/shopify/v2/recovery-event.test.ts`: 25 passed, 0 failed.
 - `npm run typecheck`: passed.
 - `npm run build`: passed; generated `dist/shopify/index.d.ts` contains the v3 version/type/schema and canonical parser exports.
@@ -126,6 +130,7 @@ Added the canonical `ShopifyRecoveryEventSchema`, `ShopifyRecoveryEvent`, and pa
 - No package publication was performed.
 
 ### Deviations
+
 The new implementation worktree did not contain `node_modules`; validation temporarily linked the existing canonical Shared dependency tree into the implementation worktree. The temporary symlink was removed after validation; no dependency manifests or lockfiles were changed.
 
 ### Assumptions
@@ -133,9 +138,11 @@ The new implementation worktree did not contain `node_modules`; validation tempo
 None.
 
 ### Unresolved Issues
+
 One existing Redis-dependent test was skipped because `TEST_REDIS_URL` was not configured. All event-contract tests and remaining Shared tests passed.
 
 ### Architectural Concerns
+
 No architecture deviation. The strict v2 schemas/parser, Shopify queue contract and ordering helpers remain unchanged; only Shared exports were added. Producers, consumers, package version and publication state remain unchanged as required by scope.
 
 ### Attempt 1 Worktree and Launcher Evidence

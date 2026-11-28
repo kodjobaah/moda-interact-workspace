@@ -109,15 +109,15 @@ there is no reason to block it on this diagnostic-only correction.
 ## Work Items
 
 - [x] At Woo HTTP non-success handling, capture actual Woo error shape,
-  permitted request ID and redacted/bounded source body before existing typed
-  `McpRequestError` conversion, with no extra HTTP request.
+      permitted request ID and redacted/bounded source body before existing typed
+      `McpRequestError` conversion, with no extra HTTP request.
 - [x] Record original non-response exception `name`/`message`/cause at each
-  existing catch that currently discards it, while not logging credentials.
+      existing catch that currently discards it, while not logging credentials.
 - [x] Add focused tests covering HTTP 400/401/403/404/429/503 original error
-  shapes, non-JSON error body, missing body, TLS/timeout/DB failures,
-  redaction/truncation, existing MCP response and unchanged grant/security.
+      shapes, non-JSON error body, missing body, TLS/timeout/DB failures,
+      redaction/truncation, existing MCP response and unchanged grant/security.
 - [x] Run owning repository's declared focused tests, typecheck/build and
-  `git diff --check`; record execution results and worktree evidence.
+      `git diff --check`; record execution results and worktree evidence.
 
 ## Interfaces / Contracts
 
@@ -142,27 +142,27 @@ error. No new generic log serializer or secret redaction framework.
 ## Acceptance Criteria
 
 - [x] Provider supplies `{"code":"woocommerce_rest_invalid_product_id","message":"Invalid product ID."}`:
-  logged provider code/message match those literal source values after safe
-  redaction; the outward MCP failure still uses the existing typed code.
+      logged provider code/message match those literal source values after safe
+      redaction; the outward MCP failure still uses the existing typed code.
 - [x] Distinct 401/403/404/429/503 provider messages and approved request IDs
-  are preserved without leaking provider response bodies to MCP clients or AI.
+      are preserved without leaking provider response bodies to MCP clients or AI.
 - [x] Network/SDK/Prisma-only error logs actual original exception and no
-  invented upstream error text. Secret-bearing/PII-bearing error details are
-  redacted with visible flags; allowed source message text is not paraphrased.
+      invented upstream error text. Secret-bearing/PII-bearing error details are
+      redacted with visible flags; allowed source message text is not paraphrased.
 - [x] Existing grant, tenant, redirect, DNS pinning, cert, response size,
-  cancellation, timeout, typed failure, retry and product read tests still pass.
+      cancellation, timeout, typed failure, retry and product read tests still pass.
 - [x] No new provider call, Shared schema, persistent error row, logger utility
-  or modification to previously accepted MCP-005 task documentation.
+      or modification to previously accepted MCP-005 task documentation.
 
 ## Validation
 
 - [x] Focused direct Woo REST reader tests with injected `HttpResult` and
-  `Error`/logger sink; assert literal source message and absence of synthetic
-  provider explanation; verify redaction of tokens, email and signed query.
+      `Error`/logger sink; assert literal source message and absence of synthetic
+      provider explanation; verify redaction of tokens, email and signed query.
 - [x] Existing MCP reader security tests including cross-tenant and redirect
-  tests; repository declared typecheck/build and `git diff --check`.
+      tests; repository declared typecheck/build and `git diff --check`.
 - [x] Launcher-resolved dedicated parent/implementation worktrees,
-  synchronization and submodule evidence recorded in Completion Report.
+      synchronization and submodule evidence recorded in Completion Report.
 
 ## Stop Condition
 

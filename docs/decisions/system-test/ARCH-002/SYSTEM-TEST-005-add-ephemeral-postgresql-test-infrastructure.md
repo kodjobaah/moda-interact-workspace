@@ -17,6 +17,7 @@ enables:
 created: 2026-09-03
 updated: 2026-09-03
 ---
+
 # Add Isolated Ephemeral PostgreSQL Test Infrastructure
 
 ## Architecture
@@ -310,7 +311,7 @@ ordinary unit tests depend silently on Docker.
 ## Acceptance Criteria
 
 - [x] real PostgreSQL integration tests can use a test-owned PostgreSQL 17
-  container;
+      container;
 - [x] every run starts from isolated PostgreSQL state;
 - [x] no hardcoded host port 5432 is required;
 - [x] a generated `DATABASE_URL` is exposed to consumer processes;
@@ -336,7 +337,7 @@ The live PostgreSQL validation currently performs SQL using:
 docker exec <postgres-container> psql ...
 ```
 
-That proves the server is healthy *inside* the PostgreSQL container, but it does
+That proves the server is healthy _inside_ the PostgreSQL container, but it does
 not prove the fixture's generated host `DATABASE_URL` is usable by a consumer
 process outside the container. `ARCH-002-SYSTEM-TEST-002` launches Admin as such
 a consumer and therefore depends on the published host endpoint, not on

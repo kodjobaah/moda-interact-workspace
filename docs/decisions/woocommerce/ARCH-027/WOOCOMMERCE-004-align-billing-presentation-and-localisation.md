@@ -66,7 +66,7 @@ moda-interact/app/components/dashboard/TopUpPurchasePanel.jsx
 moda-interact/app/routes/app/billing/recovery-credit-purchases/route.tsx
 ```
 
-Use these for Moda *visual/product* consistency. Do not copy Shopify's React Router, hosted pricing, checkout or local refund actions into Woo.
+Use these for Moda _visual/product_ consistency. Do not copy Shopify's React Router, hosted pricing, checkout or local refund actions into Woo.
 
 ARCH-026's WordPress native i18n pipeline is implemented in the supplied plugin: `@wordpress/i18n`, `moda-interact` gettext domain, English POT, 19 non-English PO files, strict `.mo`/JavaScript JSON compilation and production ZIP checks. The ARCH-026 localisation task documents still appear Pending in this snapshot; this task does **not** change or purport to accept their statuses.
 

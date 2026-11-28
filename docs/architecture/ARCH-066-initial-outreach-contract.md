@@ -60,9 +60,19 @@ interface InitialOutreachPorts {
   callTool(call: InitialOutreachToolCall): Promise<unknown>;
   modelInvoker: CommerceModelInvoker;
   log(event: {
-    stage: 'INPUT'|'PRODUCT_READ'|'RECONCILE'|'OFFER_SELECT'|'REVALIDATE'|'COMPLETE';
-    runId: string; shopId: string; reasonCode: string | null;
-    lineKey: string | null; toolName: string | null; durationMs: number;
+    stage:
+      | "INPUT"
+      | "PRODUCT_READ"
+      | "RECONCILE"
+      | "OFFER_SELECT"
+      | "REVALIDATE"
+      | "COMPLETE";
+    runId: string;
+    shopId: string;
+    reasonCode: string | null;
+    lineKey: string | null;
+    toolName: string | null;
+    durationMs: number;
   }): void;
 }
 ```
@@ -71,15 +81,15 @@ interface InitialOutreachPorts {
 
 Relocate reusable code from Background, maintaining service delegates in BACKGROUND-002:
 
-| Source in Background | New Shared responsibility |
-|---|---|
-| `src/agents/initial-outreach-offer.types.ts` | Replace nested z.custom contracts with strict schemas; shared results omit production attempt metadata |
-| `initial-outreach-offer.agent.ts`, `.graph.ts`, `.instructions.ts` | Bounded offer-selection graph/model handling through injected model/tool ports |
-| `initial-outreach-offer.eligibility.ts`, `.combinations.ts`, `initial-outreach-offer-product-target.ts` | Current checkout eligibility/combination arithmetic and product membership checks |
-| `src/services/recovery-pricing/price-comparison.ts` and pure arithmetic in `checkout-price-reconciliation.service.ts` | Decimal-safe price comparison and checkout-line reconciliation |
-| `src/services/recovery-template-preparation/recovery-template-selection.ts` | Pure assignment selection from validated repository projections |
-| `recovery-template-bindings.ts`, `initial-checkout-items-policy.ts`, `recovery-template-items-summary.ts` | Frozen binding validation, checkout-summary slot and template parameter composition |
-| Pure label/value functions in `recovery-template-brand.ts` | Prepared variable resolution from passed brand/category/customer values |
+| Source in Background                                                                                                  | New Shared responsibility                                                                              |
+| --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `src/agents/initial-outreach-offer.types.ts`                                                                          | Replace nested z.custom contracts with strict schemas; shared results omit production attempt metadata |
+| `initial-outreach-offer.agent.ts`, `.graph.ts`, `.instructions.ts`                                                    | Bounded offer-selection graph/model handling through injected model/tool ports                         |
+| `initial-outreach-offer.eligibility.ts`, `.combinations.ts`, `initial-outreach-offer-product-target.ts`               | Current checkout eligibility/combination arithmetic and product membership checks                      |
+| `src/services/recovery-pricing/price-comparison.ts` and pure arithmetic in `checkout-price-reconciliation.service.ts` | Decimal-safe price comparison and checkout-line reconciliation                                         |
+| `src/services/recovery-template-preparation/recovery-template-selection.ts`                                           | Pure assignment selection from validated repository projections                                        |
+| `recovery-template-bindings.ts`, `initial-checkout-items-policy.ts`, `recovery-template-items-summary.ts`             | Frozen binding validation, checkout-summary slot and template parameter composition                    |
+| Pure label/value functions in `recovery-template-brand.ts`                                                            | Prepared variable resolution from passed brand/category/customer values                                |
 
 Do not move `recovery-template-preparer.service.ts` wholesale: it resolves WABA, database catalogue and media and may prepare derivatives. Keep those side effects in Background. Do not introduce caller-defined arbitrary render callback as a substitute for shared rendering. Shared must own the same binding/selection/summary algorithms exercised by both hosts.
 
@@ -120,14 +130,17 @@ Shared unit goldens assert exact call order, duplicate reuse, two product reads 
 Background/Studio integration tests compare parameters, provenance and full text for the same frozen inputs, not stochastic model wording. Verify no preview writes to recovery/attempt/customer/credit/outbox and no Meta/media mutation. Failure/expiry and configured-image TEXT fallback cases required. The reference-context DB table remains conversational only; outreach preview needs no schema migration.
 
 ## Compatibility correction gate — 2026-11-08
+
 Published5.8.0 does not yet preserve valid frozen savedbrand logoAltText/logoWidth/logoHeight/squareLogoAltText semantics; BACKGROUND002 positive fixtures prove refusal. SHARED011 corrects strict prepared data/resolver compatibility and mandatory savedbrand-vs-genericfallback distinction; SHARED012 releases accepted source. Required capability must be published before original consumer rework/acceptance, with exact pin. No local fork/callback or silently removed supported binding is allowed. Existing checkout-led scope, approved media ownership and final production admission fences remain mandatory; no standalone release.
 
 ## Accepted unpublished prepared-brand correction — 2026-11-08
+
 SHARED011 source6c8bbe1 adds strict optional nullable preparedBrand (saved same-shop brandName/logoAltText/logoWidth/logoHeight/squareLogoAltText) and preparedBrandMedia (logo/squareLogo/coverImage ready references) to schemaVersion1 render input. Shared owns strict shape/caps/identity/role resolution; hosts own saved database/media authorization. Generic variables.shopName cannot satisfy mandatory savedbrand; BODY media never borrows headerMedia. Old no-brand exact bytes remain; brand-bound callers must provide new projections. Mandatory INITIAL shop.name and onecheckout.itemsSummary remain required; full valid goldens include those plus exact brand/media subsequences. Current registry5.8 lacks this correction; no consumer may use new fields before accepted immutable012release.011Accepted/Review is not completion/publication; Background002 remaining72failures require independent same-task validation.
 
 ## Canonical synchronization disposition — 2026-11-08
+
 Main-to-task documentation conflict resolved preserving both histories and canonical completed011/012records. Current authoritative state: Shared011CompleteAttempt1 (9eb1af515), Shared012CompleteAttempt1 (4b5ff8d7f), public immutable5.9.0 verified; Background001CompleteAttempt2, Background002Ready for same-task correction at priorAttempt1/unclaimed. Existing72failures and latest correction checklist remain mandatory, no acceptance or increment. Checkout-led withdrawal and007/008/MCP002supersession preserved; no source/main/live/release/follow-on work performed by this sync. Earlier contradictory readiness/review narratives are historical and superseded by individual current task metadata.
 
-
 ## Studio-only existing-template rendering amendment — 2026-11-09
+
 The explicitly authorized SHARED015/016 and COMMERCE003 scope supersedes earlier Studio requirements for configured WABA/approval/registration/hash/category validation. Studio renders selected existing stored components/bindings using a separate strict public Shared renderer and marks templateValidation NOT_EVALUATED. Structural parsing, actual placeholder/value errors, body/fulltext bounds, same-shop prepared brand/media authorization and ready image data remain mandatory; absent image refuses, no automatic replacement selection. No dummy registration/sender/hash may be fabricated. Production renderInitialOutreachPreview, assignment selection, registration/category/hash checks and Background send behavior retain existing validation. Both Shared renderer entrypoints reuse one parameter constructor, one text substitution implementation and existing variable resolver. Existing offer classification/purpose helpers are publicly reused, never copied into Commerce. Sender projection013/014/Admin001 is not a prerequisite for this Studio-only correction. Published016 artifact gates separate Commerce003 adoption; no release or consumer work occurs in015.

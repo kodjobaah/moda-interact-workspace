@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-BACKGROUND-007
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-SHOPIFY-003
-- ARCH-010-SHOPIFY-004
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-SHOPIFY-003
+  - ARCH-010-SHOPIFY-004
 enables:
-- ARCH-010-SHOPIFY-012
-- ARCH-010-SHOPIFY-014
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-014
 created: 2026-09-11
 updated: 2026-09-14
 ---
@@ -230,11 +230,11 @@ For Free:
 
 ## Behaviour matrix
 
-| State | Paid new included recovery | Free lifetime recovery | Purchased-credit recovery | New top-up purchase |
-|---|---|---|---|---|
-| ACTIVE | allowed if capacity | allowed if lifetime capacity | allowed if purchased capacity | allowed if exact meter/cycle |
-| DRAINING | blocked | allowed | allowed | blocked |
-| RECONCILING | blocked | allowed if verified Free subscription/lifetime state remains current under ARCH-010 policy | allowed if no new billing event is required | blocked |
+| State       | Paid new included recovery | Free lifetime recovery                                                                     | Purchased-credit recovery                   | New top-up purchase          |
+| ----------- | -------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------- | ---------------------------- |
+| ACTIVE      | allowed if capacity        | allowed if lifetime capacity                                                               | allowed if purchased capacity               | allowed if exact meter/cycle |
+| DRAINING    | blocked                    | allowed                                                                                    | allowed                                     | blocked                      |
+| RECONCILING | blocked                    | allowed if verified Free subscription/lifetime state remains current under ARCH-010 policy | allowed if no new billing event is required | blocked                      |
 
 The Background entitlement layer remains final recovery-admission authority; this task must not add UI-only bypasses.
 
@@ -294,9 +294,11 @@ STOP if:
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `app/services/billing/billing.service.ts`
 - `app/routes/app/billing/route.tsx`
 - `app/i18n/locales/*.json` (20 supported catalogues)
@@ -305,47 +307,51 @@ Ready for Review.
 - `tests/unit/billing-i18n.test.ts`
 
 ### Work Completed
+
 - Preserved derived `ACTIVE`, `DRAINING`, and `RECONCILING` phases from exact timestamps and `APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`; no persisted phase or app-side rollover was added.
 - Made merchant top-up eligibility ACTIVE-only and required an exact OPEN local BillingPeriod for both Free and Paid before provider verification and again inside the write transaction.
 - Added truthful Paid/Free transition copy in every locale, suppressed expired Paid included allowance during RECONCILING, preserved lifetime-Free presentation, and kept the buy form behind an explicit ACTIVE guard.
 - Preserved replay-before-provider verification and Free pack independence from the Paid normal meter; successor Free cycles continue without lifetime counter mutation.
 
 ### Correction-to-Test Mapping
-| Correction | Exact test evidence | Result |
-|---|---|---|
-| Loader eligibility requires ACTIVE | `marks pack purchase ineligible during merchant billing phase: Paid DRAINING`, `Paid RECONCILING`, `Free DRAINING`, `Free RECONCILING`; `keeps pack purchase eligible for exact ACTIVE cycle: Paid`, `Free` | Passed |
-| Paid/Free transition presentation and no expired Paid allowance | `uses explicit phase copy for each plan and preserves Free lifetime presentation`; `reads paid included capacity from the current period counter` | Passed |
-| OPEN local period required for Paid and Free | `rejects new pack request for CLOSED local BillingPeriod: Paid`, `Free` | Passed |
-| Exact phase boundaries | `derives ACTIVE`, `DRAINING`, and `RECONCILING` from exact period timestamps | Passed |
-| DRAINING/RECONCILING mutation blocks | `blocks new pack request during billing-cycle phase: Paid DRAINING`, `Paid RECONCILING`, `Free DRAINING`, `Free RECONCILING` | Passed; zero UsageEvent, purchase, and counter writes asserted |
-| Replay after transition | `replays existing purchase after cycle enters DRAINING`, `RECONCILING` | Passed; provider not called on replay and one event/purchase retained |
-| Successor Free cycle | `restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state` | Passed; successor period referenced and no counter update/upsert |
+
+| Correction                                                      | Exact test evidence                                                                                                                                                                                         | Result                                                                |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Loader eligibility requires ACTIVE                              | `marks pack purchase ineligible during merchant billing phase: Paid DRAINING`, `Paid RECONCILING`, `Free DRAINING`, `Free RECONCILING`; `keeps pack purchase eligible for exact ACTIVE cycle: Paid`, `Free` | Passed                                                                |
+| Paid/Free transition presentation and no expired Paid allowance | `uses explicit phase copy for each plan and preserves Free lifetime presentation`; `reads paid included capacity from the current period counter`                                                           | Passed                                                                |
+| OPEN local period required for Paid and Free                    | `rejects new pack request for CLOSED local BillingPeriod: Paid`, `Free`                                                                                                                                     | Passed                                                                |
+| Exact phase boundaries                                          | `derives ACTIVE`, `DRAINING`, and `RECONCILING` from exact period timestamps                                                                                                                                | Passed                                                                |
+| DRAINING/RECONCILING mutation blocks                            | `blocks new pack request during billing-cycle phase: Paid DRAINING`, `Paid RECONCILING`, `Free DRAINING`, `Free RECONCILING`                                                                                | Passed; zero UsageEvent, purchase, and counter writes asserted        |
+| Replay after transition                                         | `replays existing purchase after cycle enters DRAINING`, `RECONCILING`                                                                                                                                      | Passed; provider not called on replay and one event/purchase retained |
+| Successor Free cycle                                            | `restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state`                                                                                                   | Passed; successor period referenced and no counter update/upsert      |
 
 ### Requirement Evidence
-| Requirement | Exact test(s) | Result |
-|---|---|---|
-| Paid ACTIVE derives ACTIVE | `keeps pack purchase eligible for exact ACTIVE cycle: Paid` | Passed |
-| Free ACTIVE derives ACTIVE | `keeps pack purchase eligible for exact ACTIVE cycle: Free` | Passed |
-| Exact drain-start derives DRAINING | `derives DRAINING from exact period timestamps`; phase matrix rows | Passed |
-| Exact period-end derives RECONCILING | `derives RECONCILING from exact period timestamps`; phase matrix rows | Passed |
-| Paid DRAINING presentation | `uses explicit phase copy for each plan and preserves Free lifetime presentation` | Passed |
-| Paid RECONCILING presentation | Same UI test; `billingPeriodPhase !== "RECONCILING"` excludes `paidIncludedAllowance` | Passed |
-| Free DRAINING lifetime presentation | `marks pack purchase ineligible during merchant billing phase: Free DRAINING` | Passed; lifetime quantities unchanged |
-| Free RECONCILING lifetime presentation | `marks pack purchase ineligible during merchant billing phase: Free RECONCILING` | Passed; lifetime quantities unchanged |
-| ACTIVE new purchase | `creates a pending pack request for a mapped FREE plan`, `PAID_METERED` | Passed |
-| Paid/Free DRAINING server block | `blocks new pack request during billing-cycle phase: Paid DRAINING`, `Free DRAINING` | Passed |
-| Paid/Free RECONCILING server block | `blocks new pack request during billing-cycle phase: Paid RECONCILING`, `Free RECONCILING` | Passed |
-| Existing-purchase replay after transition | `replays existing purchase after cycle enters DRAINING`, `RECONCILING` | Passed |
-| Free has no Paid normal-meter dependency | `creates a pending pack request for a mapped FREE plan`; Free ACTIVE eligibility row uses `shopifyUsageEventHandle: null` | Passed |
-| Free missing exact period | `fails closed when billingPeriodId is null`; initial pack-enabled Free activation coverage | Passed |
-| Free missing pack meter | `creates no usage event for missing meter` | Passed |
-| Free DRAINING admission remains lifetime-based | Free phase read-model rows preserve lifetime counter; Background-007 dependency remains admission authority | Passed / prerequisite evidence |
-| Free RECONCILING does not reset lifetime entitlement | Free RECONCILING read-model row and successor-cycle test assert unchanged lifetime state | Passed |
-| Plan selection/support/navigation remain available | Existing billing UI route, selection redirect, and system-message action tests | Passed |
-| No merchant Admin link | `keeps merchant billing surfaces out of the Admin application`; required route scan | Passed; 0 matches |
-| i18n parity and localized phase messages | `defines every billing key in every locale catalogue`; `preserves ICU placeholders and resolves every task key through the merchant runtime` | Passed; 20 catalogues, zero placeholders on new keys |
+
+| Requirement                                          | Exact test(s)                                                                                                                                | Result                                               |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Paid ACTIVE derives ACTIVE                           | `keeps pack purchase eligible for exact ACTIVE cycle: Paid`                                                                                  | Passed                                               |
+| Free ACTIVE derives ACTIVE                           | `keeps pack purchase eligible for exact ACTIVE cycle: Free`                                                                                  | Passed                                               |
+| Exact drain-start derives DRAINING                   | `derives DRAINING from exact period timestamps`; phase matrix rows                                                                           | Passed                                               |
+| Exact period-end derives RECONCILING                 | `derives RECONCILING from exact period timestamps`; phase matrix rows                                                                        | Passed                                               |
+| Paid DRAINING presentation                           | `uses explicit phase copy for each plan and preserves Free lifetime presentation`                                                            | Passed                                               |
+| Paid RECONCILING presentation                        | Same UI test; `billingPeriodPhase !== "RECONCILING"` excludes `paidIncludedAllowance`                                                        | Passed                                               |
+| Free DRAINING lifetime presentation                  | `marks pack purchase ineligible during merchant billing phase: Free DRAINING`                                                                | Passed; lifetime quantities unchanged                |
+| Free RECONCILING lifetime presentation               | `marks pack purchase ineligible during merchant billing phase: Free RECONCILING`                                                             | Passed; lifetime quantities unchanged                |
+| ACTIVE new purchase                                  | `creates a pending pack request for a mapped FREE plan`, `PAID_METERED`                                                                      | Passed                                               |
+| Paid/Free DRAINING server block                      | `blocks new pack request during billing-cycle phase: Paid DRAINING`, `Free DRAINING`                                                         | Passed                                               |
+| Paid/Free RECONCILING server block                   | `blocks new pack request during billing-cycle phase: Paid RECONCILING`, `Free RECONCILING`                                                   | Passed                                               |
+| Existing-purchase replay after transition            | `replays existing purchase after cycle enters DRAINING`, `RECONCILING`                                                                       | Passed                                               |
+| Free has no Paid normal-meter dependency             | `creates a pending pack request for a mapped FREE plan`; Free ACTIVE eligibility row uses `shopifyUsageEventHandle: null`                    | Passed                                               |
+| Free missing exact period                            | `fails closed when billingPeriodId is null`; initial pack-enabled Free activation coverage                                                   | Passed                                               |
+| Free missing pack meter                              | `creates no usage event for missing meter`                                                                                                   | Passed                                               |
+| Free DRAINING admission remains lifetime-based       | Free phase read-model rows preserve lifetime counter; Background-007 dependency remains admission authority                                  | Passed / prerequisite evidence                       |
+| Free RECONCILING does not reset lifetime entitlement | Free RECONCILING read-model row and successor-cycle test assert unchanged lifetime state                                                     | Passed                                               |
+| Plan selection/support/navigation remain available   | Existing billing UI route, selection redirect, and system-message action tests                                                               | Passed                                               |
+| No merchant Admin link                               | `keeps merchant billing surfaces out of the Admin application`; required route scan                                                          | Passed; 0 matches                                    |
+| i18n parity and localized phase messages             | `defines every billing key in every locale catalogue`; `preserves ICU placeholders and resolves every task key through the merchant runtime` | Passed; 20 catalogues, zero placeholders on new keys |
 
 ### Validation Results
+
 - Focused required routes/services/i18n: 5 files, 158 passed, 0 skipped.
 - Final changed-slice rerun: 3 files, 153 passed, 0 skipped.
 - Full suite: `npm test` -> 38 files passed, 2 skipped; 423 tests passed, 3 skipped.
@@ -358,6 +364,7 @@ Ready for Review.
 - Drain-window literal scan -> 0 matches.
 
 ### Git / VCS
+
 - Attempt-1 claim full SHA: `ef68ab10bd9a39ecf485383248c6c91eac3fd780`.
 - Attempt-1 implementation full SHA: `58a138cd27174d09843d04683547310a9e36c8b2`.
 - Attempt-1 parent/report full SHA: `c522bd727a9c860b7e1689da95b1d06eefe20faa`.
@@ -371,23 +378,27 @@ Ready for Review.
 ### Attempt-3 Completion
 
 #### Status
+
 Ready for Review.
 
 #### Files Changed
+
 - `app/services/billing/billing.service.ts`
 - `tests/unit/services/billing.service.test.ts`
 - `tests/unit/billing-ui.test.ts`
 
 #### Correction-to-Test Mapping
-| Attempt-3 correction | Exact test evidence | Result |
-|---|---|---|
-| Derive phase from exact durable local OPEN cycle before Shopify verification | `derives RECONCILING from the durable local period when Shopify has already advanced to the successor cycle`; `does not derive a merchant billing phase from an invalid local cycle` | Passed |
-| Preserve local phase when provider verification fails | `preserves durable local billing phase when Shopify verification fails: DRAINING`, `RECONCILING` | Passed; meter verification false and purchase eligibility false |
-| Keep provider truth separate from local presentation phase | Successor-cycle test asserts local `RECONCILING`, verified pack meter, and ineligible purchase despite provider successor dates | Passed |
-| Hide stale Paid included capacity during local RECONCILING | `uses durable RECONCILING phase to hide expired Paid included capacity` | Passed; non-null `paidIncluded` remains data projection but route excludes it |
-| Make successor-Free test time-independent | `restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state` | Passed with fixed `2026-10-02T00:00:00.000Z` clock |
+
+| Attempt-3 correction                                                         | Exact test evidence                                                                                                                                                                  | Result                                                                        |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Derive phase from exact durable local OPEN cycle before Shopify verification | `derives RECONCILING from the durable local period when Shopify has already advanced to the successor cycle`; `does not derive a merchant billing phase from an invalid local cycle` | Passed                                                                        |
+| Preserve local phase when provider verification fails                        | `preserves durable local billing phase when Shopify verification fails: DRAINING`, `RECONCILING`                                                                                     | Passed; meter verification false and purchase eligibility false               |
+| Keep provider truth separate from local presentation phase                   | Successor-cycle test asserts local `RECONCILING`, verified pack meter, and ineligible purchase despite provider successor dates                                                      | Passed                                                                        |
+| Hide stale Paid included capacity during local RECONCILING                   | `uses durable RECONCILING phase to hide expired Paid included capacity`                                                                                                              | Passed; non-null `paidIncluded` remains data projection but route excludes it |
+| Make successor-Free test time-independent                                    | `restores Free pack eligibility on an exact successor BillingPeriod without changing lifetime Free state`                                                                            | Passed with fixed `2026-10-02T00:00:00.000Z` clock                            |
 
 #### Cycle Phase Authority
+
 ```text
 Cycle phase authority:
   durable local exact OPEN BillingPeriod timestamps
@@ -404,6 +415,7 @@ Provider failure/moved successor:
 ```
 
 #### Attempt-3 Validation Results
+
 - Focused Attempt-3 suites: 2 files, 177 passed, 0 skipped.
 - Required focused routes/services/i18n: 5 discovered files, 185 passed, 0 skipped.
 - Full suite: `npm test` -> 38 files passed, 2 skipped; 450 tests passed, 3 skipped.
@@ -416,6 +428,7 @@ Provider failure/moved successor:
 - Drain-window literal scan -> 0 matches.
 
 #### Attempt-3 Git / VCS
+
 - Attempt-3 launcher claim full SHA: `04694ee7c8dd88d8af642312372b7f3f4f664cb6`.
 - Attempt-3 implementation commit: `11b3c690e53115a8c22b0fdc0deee331c1137f2a`, pushed to `origin/task/ARCH-010-SHOPIFY-007` in `moda-interact`.
 - Attempt-3 parent/report publication commit: `33a5fd556a1992a76320f8fbd639c58e522b3a25`; this evidence amendment is the only subsequent report change.
@@ -1242,7 +1255,7 @@ For a Paid merchant, `paidIncluded` may still be a valid projection of that old 
 period, so the route condition:
 
 ```ts
-billingPeriodPhase !== "RECONCILING" && paidIncluded
+billingPeriodPhase !== "RECONCILING" && paidIncluded;
 ```
 
 can render the **expired old included balance** as if it were current spendable
@@ -1280,24 +1293,23 @@ Use one explicit local validity predicate equivalent to:
 
 ```ts
 const hasExactOpenLocalCycle = Boolean(
-  subscription?.plan?.active
-    && subscription.status !== SubscriptionProjectionStatus.NO_CONTRACT
-    && hasDurableBillingPeriod(subscription)
-    && subscription.billingPeriod?.status === BillingPeriodStatus.OPEN
-    && subscription.currentPeriodStart
-    && subscription.currentPeriodEnd
-    && subscription.currentPeriodStart.getTime()
-         < subscription.currentPeriodEnd.getTime()
+  subscription?.plan?.active &&
+  subscription.status !== SubscriptionProjectionStatus.NO_CONTRACT &&
+  hasDurableBillingPeriod(subscription) &&
+  subscription.billingPeriod?.status === BillingPeriodStatus.OPEN &&
+  subscription.currentPeriodStart &&
+  subscription.currentPeriodEnd &&
+  subscription.currentPeriodStart.getTime() <
+    subscription.currentPeriodEnd.getTime(),
 );
 ```
 
 Then:
 
 ```ts
-const billingPeriodPhase =
-  hasExactOpenLocalCycle
-    ? deriveBillingPeriodPhase(subscription!.currentPeriodEnd)
-    : null;
+const billingPeriodPhase = hasExactOpenLocalCycle
+  ? deriveBillingPeriodPhase(subscription!.currentPeriodEnd)
+  : null;
 ```
 
 Equivalent TypeScript narrowing is acceptable.
@@ -1798,4 +1810,3 @@ work was introduced.
 Complete in the authoritative task snapshot. `ARCH-010-SHOPIFY-012` also remains
 Pending because its other prerequisites are not all Complete. Do not start either
 solely from this acceptance.
-

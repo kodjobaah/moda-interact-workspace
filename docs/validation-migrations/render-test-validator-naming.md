@@ -50,8 +50,7 @@ Target:
 ```json
 {
   "scripts": {
-    "validate:render:test":
-      "node scripts/validate-render-deployment.js --environment test"
+    "validate:render:test": "node scripts/validate-render-deployment.js --environment test"
   }
 }
 ```

@@ -915,6 +915,7 @@ None.
 Launcher: `scripts/start-agent-task.py ARCH-026-API-002 --prepare --executor copilot --json`; `prepared_execution: true`; dependency gate passed (`ARCH-026-API-001` and `ARCH-026-DATABASE-001` complete); prior attempt 1; this claim is attempt 2, executor `copilot`, claimed `2026-10-03T16:15:19Z`, durable claim commit `c9c5e6b7dca33a986d74b660895fcfa643b211d4`.
 
 Physical worktree isolation:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-API-002`, branch `task/ARCH-026-API-002`
 - implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-API-002`, branch `task/ARCH-026-API-002`
@@ -923,6 +924,7 @@ Physical worktree isolation:
 - another task worktree reused: no
 
 Start-of-attempt synchronization:
+
 - parent remote task branch fast-forwarded: `not-needed`
 - parent `origin/main` incorporated: `already-current`
 - implementation remote task branch fast-forwarded: `not-needed`
@@ -931,6 +933,7 @@ Start-of-attempt synchronization:
 - implementation launcher head: `940cb4115fc3eef4df9d4e34416b7f1293ba6271`
 
 Recursive implementation submodules:
+
 - `git submodule sync --recursive`: passed
 - `git submodule update --init --recursive`: passed
 - recursive status: ready
@@ -1253,7 +1256,7 @@ Correction:
 - do not return the SUSPENDED/incompatible state conflict before site-control proof;
 - retain the authoritative Shop-state check after proof, preferably inside the existing
   reconnect transaction/re-read;
-- update the unit test that currently asserts the verifier is *not* called for a
+- update the unit test that currently asserts the verifier is _not_ called for a
   suspended Shop;
 - prove a failed challenge still performs zero durable mutation/credential issuance,
   regardless of the observed tenant state.

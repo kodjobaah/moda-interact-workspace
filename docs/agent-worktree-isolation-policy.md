@@ -142,7 +142,6 @@ implementation repository.
 Do not use `git switch` in a shared checkout as a substitute for creating the
 canonical worktree.
 
-
 ### Canonical first-use creation procedure
 
 Use the launcher-resolved paths exactly. The following procedure is normative
@@ -260,7 +259,6 @@ task/<TASK_ID> -> main
 
 First-claim worktrees created directly from current `origin/main` already satisfy
 step 4 until `origin/main` advances again.
-
 
 A deterministic synchronization sequence is:
 

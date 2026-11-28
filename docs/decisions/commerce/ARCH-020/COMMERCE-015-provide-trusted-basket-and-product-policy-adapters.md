@@ -75,7 +75,6 @@ expected side effect, not just a screenshot/typecheck. C19 assigns final wiring.
 
 Own `src/commerce/products/`. Shared basket/product schemas are canonical; C19 ProductFactsPort supplies trusted current data to016/007.005 owns tokenless generic queries; no duplicated compiler or token lifecycle.
 
-
 ## Dependencies
 
 - ARCH-020-COMMERCE-001
@@ -152,17 +151,17 @@ Ready for Review.
 
 Agent-executed validation:
 
-| Requirement | Fixture / expected side effect | Command | Result |
-|---|---|---|---|
-| B01 / A2-R3 | Array and envelope snapshots; known source currency differing from current context; null/missing source currency; null line facts and known decimal zero | `npm test -- tests/products-policy.test.ts` | **13 passed** |
-| B02 / A2-R1 | Terminal provider page with two edges and limit one; first call returns v-1 plus cursor after c1, second returns v-2 plus null cursor | `npm test -- tests/products-policy.test.ts` | **13 passed** |
-| B03 / A2-R2 | Mixed `[validVariant,null]` response; both requested rows retained, missing row incomplete, known collections preserved | `npm test -- tests/products-policy.test.ts` | **13 passed** |
-| B04 / A2-R4 | Authorizer abort before recovery read and nested collection THROTTLED on second call; zero recovery I/O and no provider retry/fallback | `npm test -- tests/products-policy.test.ts` | **13 passed** |
-| Existing B01-B04/C19 | Raw request mapping, policy filters, cursor binding/tamper, collection paging, 3-page/12-request ceilings, descriptor validation and frozen registry | `npm test -- tests/products-policy.test.ts` | **13 passed** |
-| Repository lint and whitespace | Scoped source/test lint and patch whitespace | `npm run lint`; `git diff --check` | **Passed** |
-| Production compilation | Prisma generation and Next production build | `npm run build` | **Passed** |
-| TypeScript diagnostics | Generated route and repository types after pinned Prisma generation | `npm run typecheck` | **Passed** |
-| Full Commerce tests | Existing repository regression suite including all 13 product-policy cases | `npm test` | **157 passed, 1 unrelated failure**: `tests/discovery-limits.test.ts` timed out against configured Redis after 30 seconds |
+| Requirement                    | Fixture / expected side effect                                                                                                                           | Command                                     | Result                                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| B01 / A2-R3                    | Array and envelope snapshots; known source currency differing from current context; null/missing source currency; null line facts and known decimal zero | `npm test -- tests/products-policy.test.ts` | **13 passed**                                                                                                             |
+| B02 / A2-R1                    | Terminal provider page with two edges and limit one; first call returns v-1 plus cursor after c1, second returns v-2 plus null cursor                    | `npm test -- tests/products-policy.test.ts` | **13 passed**                                                                                                             |
+| B03 / A2-R2                    | Mixed `[validVariant,null]` response; both requested rows retained, missing row incomplete, known collections preserved                                  | `npm test -- tests/products-policy.test.ts` | **13 passed**                                                                                                             |
+| B04 / A2-R4                    | Authorizer abort before recovery read and nested collection THROTTLED on second call; zero recovery I/O and no provider retry/fallback                   | `npm test -- tests/products-policy.test.ts` | **13 passed**                                                                                                             |
+| Existing B01-B04/C19           | Raw request mapping, policy filters, cursor binding/tamper, collection paging, 3-page/12-request ceilings, descriptor validation and frozen registry     | `npm test -- tests/products-policy.test.ts` | **13 passed**                                                                                                             |
+| Repository lint and whitespace | Scoped source/test lint and patch whitespace                                                                                                             | `npm run lint`; `git diff --check`          | **Passed**                                                                                                                |
+| Production compilation         | Prisma generation and Next production build                                                                                                              | `npm run build`                             | **Passed**                                                                                                                |
+| TypeScript diagnostics         | Generated route and repository types after pinned Prisma generation                                                                                      | `npm run typecheck`                         | **Passed**                                                                                                                |
+| Full Commerce tests            | Existing repository regression suite including all 13 product-policy cases                                                                               | `npm test`                                  | **157 passed, 1 unrelated failure**: `tests/discovery-limits.test.ts` timed out against configured Redis after 30 seconds |
 
 Developer validation required:
 
@@ -298,7 +297,6 @@ Add fixtures copied from accepted persisted serialization (array plus supported 
 Implement R1–R5 in015-owned files, run focused corrections and required lint/type/build/diff validation, record unchanged baseline diagnostics separately, commit/push implementation and report to the same task branches, and return to review. Keep developer live Shopify/database/system checks explicitly pending; no dependent task is promoted by this decision. Parent review overlay is committed/pushed before handoff; normal preparation owns the next attempt claim.
 
 ### Historical pre-review placeholders
-
 
 ### Review Status
 

@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-032-COMMERCE-002
-- ARCH-032-COMMERCE-003
+  - ARCH-032-COMMERCE-002
+  - ARCH-032-COMMERCE-003
 enables:
-- ARCH-032-COMMERCE-005
+  - ARCH-032-COMMERCE-005
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-COMMERCE-004 — Remove embedded Commerce MCP server and legacy editor-specific live-test pathway

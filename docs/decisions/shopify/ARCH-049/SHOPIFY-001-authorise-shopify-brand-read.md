@@ -168,6 +168,7 @@ Both supplied Shopify app TOML variants are relevant to local validation, but th
 
 - **Review evidence note:** The original launcher-prepared start-of-attempt packet was not reconstructed. Current canonical worktree, commit, remote publication and ancestry evidence was independently verified; no historical packet is claimed.
 - **RESOLVED — validation gap:** Post-Prisma-generation `npm run typecheck` passed during this reconciliation. The focused ARCH-049 suites also passed 22/22.
+
 ## Developer Self-Review Passed — Attempt 1
 
 ### Review Decision
@@ -184,15 +185,15 @@ passed.
 ### Evidence Reviewed
 
 - Parent task worktree is clean on `task/ARCH-049-SHOPIFY-001` at
-	`20aca762f56a18bb738f22b829576d2c1c621ca8`, matching its origin task branch.
+  `20aca762f56a18bb738f22b829576d2c1c621ca8`, matching its origin task branch.
 - Shopify implementation worktree is clean on `task/ARCH-049-SHOPIFY-001` at
-	`884d08346bee33227f2f009209cda1ceeaca5311`, matching its origin task branch.
+  `884d08346bee33227f2f009209cda1ceeaca5311`, matching its origin task branch.
 - `npm run typecheck` passed after Prisma Client generation.
 - The four focused ARCH-049 suites passed 22/22 from the canonical
-	implementation worktree; both task diffs pass `git diff --check`.
+  implementation worktree; both task diffs pass `git diff --check`.
 - The existing separate ARCH-045 consent webhook configuration test mismatch
-	remains unchanged. Live app deployment, merchant scope approval and effective
-	runtime `SCOPES` remain unverified rollout checks; no such result is claimed.
+  remains unchanged. Live app deployment, merchant scope approval and effective
+  runtime `SCOPES` remain unverified rollout checks; no such result is claimed.
 
 ### Attempt State
 
@@ -201,31 +202,33 @@ Transitioned to `review`; `executor: null`, `claimed_at: null`, `attempt: 1`.
 is pending. No dependent task was started, and no branch was merged to `main`.
 
 ## Architect Review
+
 ## Developer Completion Decision
 
 - The developer explicitly completed `ARCH-049-SHOPIFY-001` Attempt 1 on
-	2026-10-27 after verifying the durable passing self-review, all checked Work
-	Items and Acceptance Criteria, required validation, and clean/published
-	canonical task worktrees.
+  2026-10-27 after verifying the durable passing self-review, all checked Work
+  Items and Acceptance Criteria, required validation, and clean/published
+  canonical task worktrees.
 - Lifecycle state: `complete`; `executor: null`; `claimed_at: null`;
-	`attempt: 1` (unchanged). The parent review/report revision immediately before
-	this decision was `f08529f31cf38443c88b56cae8db94822436d2e2`; the completion
-	decision is committed and pushed on the same parent task branch.
+  `attempt: 1` (unchanged). The parent review/report revision immediately before
+  this decision was `f08529f31cf38443c88b56cae8db94822436d2e2`; the completion
+  decision is committed and pushed on the same parent task branch.
 - Published implementation branch: `task/ARCH-049-SHOPIFY-001` at
-	`884d08346bee33227f2f009209cda1ceeaca5311`.
+  `884d08346bee33227f2f009209cda1ceeaca5311`.
 - No Shopify live deployment, merchant scope approval, effective runtime
-	`SCOPES`, or live offline grant is claimed. These remain rollout checks before
-	Background performs brand reads.
+  `SCOPES`, or live offline grant is claimed. These remain rollout checks before
+  Background performs brand reads.
 - Dependency-frontier reconciliation from current task records:
-	`ARCH-049-BACKGROUND-003` remains `pending`. Its Shopify and database
-	dependencies are now complete, but `ARCH-049-BACKGROUND-002` is still
-	`pending`; that task depends on `ARCH-049-BACKGROUND-001`, currently `ready`.
-	`ARCH-049-SYSTEM-TEST-001` remains `pending` and manual-gated because its
-	remaining declared dependencies are incomplete. No downstream status or
-	attempt was changed, and no dependent task was started.
+  `ARCH-049-BACKGROUND-003` remains `pending`. Its Shopify and database
+  dependencies are now complete, but `ARCH-049-BACKGROUND-002` is still
+  `pending`; that task depends on `ARCH-049-BACKGROUND-001`, currently `ready`.
+  `ARCH-049-SYSTEM-TEST-001` remains `pending` and manual-gated because its
+  remaining declared dependencies are incomplete. No downstream status or
+  attempt was changed, and no dependent task was started.
 - No task branch was merged to `main`.
 
 ## Architect Review
+
 - **Separate baseline issue:** ARCH-045 consent webhook configuration test mismatch remains in its owning scope.
 - **Deployment:** Live scope approval, installed-offline-token verification and deployment selection remain untested; record at rollout, before any Background brand GraphQL read.
 

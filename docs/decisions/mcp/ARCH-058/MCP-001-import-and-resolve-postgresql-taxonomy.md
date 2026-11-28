@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-058-DATABASE-001
-- ARCH-058-SHARED-002
+  - ARCH-058-DATABASE-001
+  - ARCH-058-SHARED-002
 enables:
-- ARCH-058-MCP-002
-- ARCH-058-SYSTEM-TEST-001
-created: '2026-11-04'
+  - ARCH-058-MCP-002
+  - ARCH-058-SYSTEM-TEST-001
+created: "2026-11-04"
 updated: 2026-11-04
 ---
 
@@ -205,7 +205,6 @@ The requested P2 correction is implemented and verified; architect review remain
 
 ## Attempt 2 Completion Report (historical; superseded by Attempt 3 above)
 
-
 ### Status
 
 Attempt 2 ready for architect review. The required disposable PostgreSQL integration gate has now passed under the explicit authorization in the Attempt 1 Architect Review. No architect acceptance or downstream promotion is claimed. Implementation commit: `30cdca4e62f768722388c1d94979a88ff24f7220` on `task/ARCH-058-MCP-001`.
@@ -271,7 +270,6 @@ Launcher packet: dependency gate passed for DATABASE-001/SHARED-002; parent remo
 The requested integration evidence gap is resolved. Independent architect acceptance remains pending and downstream tasks remain gated. No persistent database was migrated/imported, no tools were published, and no deployment/main merge was performed. Verified source/Shared/Database identities, implementation bounds and operator notes from Attempt 1 remain unchanged. No cross-repository change or new architecture decision was needed.
 
 ## Attempt 1 Completion Report (historical; superseded by Attempt 2 above)
-
 
 ### Status
 
@@ -398,7 +396,6 @@ The reviewed implementation stays within the MCP repository scope, consumes the 
 ### Follow-up
 
 Complete the authorized disposable integration validation, correct the report/worktree evidence if needed, publish both task branches, and return the same task for architect review. Do not start or promote either enabled task before acceptance.
-
 
 ## Architect Dependency Handoff (2026-11-04)
 

@@ -202,7 +202,6 @@ ARCH-007 SYSTEM-TEST-001..005 and ARCH-005 system tests are terminal/manual-gate
 
 No implementation, publication or infrastructure task may depend on a system-test task.
 
-
 ## Historical overlay artifacts
 
 Root-level `ARCH-007-*.zip` / `.patch` files are historical transport artifacts used to apply earlier coordination changes. They are **not** current sources of truth. A new architect must read canonical architecture, task YAML, domain indexes and this handoff instead of inferring state from an old overlay filename.
@@ -214,6 +213,7 @@ Repository agents implement/validate, commit and push both mirrored `task/<TASK_
 ## Architect review hygiene
 
 When accepting a task:
+
 - set `status: complete`;
 - clear `executor` and `claimed_at`;
 - preserve `attempt`;
@@ -223,6 +223,7 @@ When accepting a task:
 - promote a terminal/manual-gated system-test task to `ready` when all of its explicit YAML dependencies are Complete, but never auto-claim/auto-run it; execution requires explicit developer invocation.
 
 When requesting changes:
+
 - return the **same** task to `ready` unless a true external dependency makes it `blocked`;
 - clear `executor`/`claimed_at`;
 - preserve attempt so next claim increments it;

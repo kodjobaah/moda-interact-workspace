@@ -22,7 +22,6 @@ updated: 2026-10-12
 
 # ARCH-036-BACKGROUND-002 — Superseded: candidate filtering belongs in send-time proof
 
-
 ## Architecture
 
 - Architecture ID: `ARCH-036`.
@@ -32,16 +31,13 @@ updated: 2026-10-12
 
 ## Objective
 
-
 **SUPERSEDED.** Candidate filtering and live verification are consecutive parts of one Background send-time decision and need no separate repository handoff. This task must not be claimed, materialised or implemented.
 
 ## Context
 
-
 ARCH-036 Attempt 5 assigns this capability to `ARCH-036-BACKGROUND-003` and removes the earlier independent task or Shared/package boundary. The prior definition is retained only for historical traceability.
 
 ## Scope
-
 
 None. Implementation ownership is `ARCH-036-BACKGROUND-003` under the revised parent architecture.
 
@@ -54,36 +50,29 @@ None. Implementation ownership is `ARCH-036-BACKGROUND-003` under the revised pa
 
 ## Requirements
 
-
 Do not implement any code, endpoint, package schema, publication, queue or configuration from this superseded task. No task depends on it.
 
 ## Work Items
-
 
 None — superseded without execution.
 
 ## Interfaces / Contracts
 
-
 None — the previous proposed contract/endpoint is no longer authorised.
 
 ## Dependencies
-
 
 None — superseded.
 
 ## Enables
 
-
 None — superseded.
 
 ## Acceptance Criteria
 
-
 Not applicable — superseded task.
 
 ## Validation
-
 
 Not applicable — no implementation.
 
@@ -92,7 +81,6 @@ Not applicable — no implementation.
 After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
-
 
 Do not run `/moda-task` or `/moda_developer_create` for this task. Refer to `ARCH-036-BACKGROUND-003` and the ARCH-036 Attempt 5 architecture instead. No `_index.md` updates.
 

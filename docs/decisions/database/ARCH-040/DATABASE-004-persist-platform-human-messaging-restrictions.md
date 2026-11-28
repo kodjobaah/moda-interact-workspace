@@ -17,7 +17,7 @@ attempt: 0
 depends_on: []
 enables: []
 created: 2026-10-16
-updated: '2026-10-17'
+updated: "2026-10-17"
 ---
 
 # ARCH-040-DATABASE-004 — Superseded by ARCH-040-DATABASE-001
@@ -81,45 +81,59 @@ The original detailed persistence requirements are consolidated verbatim in subs
 ## Completion Report
 
 ### Status
+
 Not Started — superseded.
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run — superseded.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 None.
 
 ### Unresolved Issues
+
 None.
 
 ### Architectural Concerns
+
 None.
 
 ## Architect Review
 
 ### Review Status
+
 Superseded by architectural decision, no acceptance of implementation claimed.
 
 ### Review Notes
+
 Requirements transferred to ARCH-040-DATABASE-001; this task must never become Ready.
 
 ### Reviewed Files
+
 Task definition only.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Superseded.
 
 ### Follow-up
+
 ARCH-040-DATABASE-001.

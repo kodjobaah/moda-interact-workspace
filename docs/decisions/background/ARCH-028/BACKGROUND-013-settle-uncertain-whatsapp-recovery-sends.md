@@ -33,15 +33,15 @@ Architecture document: `docs/architecture/ARCH-028-whatsapp-delivery-failure-con
 
 Coordinator: `moda_architect`
 
-**Blocked design gate:** The proposed merchant policy charges an admitted provider attempt even if Meta returns no response; the architect has not yet resolved whether *durable final dispatch admission* (which is before HTTP) is an acceptable billable uncertainty boundary. This task must not be claimed or implemented while blocked. It must not be used to expand provider-FAILED compensation beyond `131026` without an approved separate architecture/Database amendment.
+**Blocked design gate:** The proposed merchant policy charges an admitted provider attempt even if Meta returns no response; the architect has not yet resolved whether _durable final dispatch admission_ (which is before HTTP) is an acceptable billable uncertainty boundary. This task must not be claimed or implemented while blocked. It must not be used to expand provider-FAILED compensation beyond `131026` without an approved separate architecture/Database amendment.
 
 ## Objective
 
-Converge recovery-credit reservations exactly once after an *admitted but uncertain* WhatsApp dispatch or worker crash, using existing source owners and a durable, Shop-checked send-to-reservation association, **without resending to Meta or fabricating delivery evidence**.
+Converge recovery-credit reservations exactly once after an _admitted but uncertain_ WhatsApp dispatch or worker crash, using existing source owners and a durable, Shop-checked send-to-reservation association, **without resending to Meta or fabricating delivery evidence**.
 
 ## Context
 
-The 22 October Background snapshot has both automated recovery sends and ARCH-040 merchant recovery follow-ups. `OutboundSendFenceService.admitFinalSend` persists `providerDispatchAdmittedAt` **before** provider HTTP; automated `RecoveryOutreachAttempt.outboundMessageId` is ordinarily linked only after confirmed send, whereas the HUMAN follow-up command links its attempt at admission. The lifecycle currently marks uncertain recovery usage `AMBIGUOUS`, and `HumanCommandDispatcherService.reconcileExpiredPermits` marks expired commands `UNKNOWN` without committing the associated recovery credit. The original system-test scenarios recorded safe *containment*, not exact settled billing.
+The 22 October Background snapshot has both automated recovery sends and ARCH-040 merchant recovery follow-ups. `OutboundSendFenceService.admitFinalSend` persists `providerDispatchAdmittedAt` **before** provider HTTP; automated `RecoveryOutreachAttempt.outboundMessageId` is ordinarily linked only after confirmed send, whereas the HUMAN follow-up command links its attempt at admission. The lifecycle currently marks uncertain recovery usage `AMBIGUOUS`, and `HumanCommandDispatcherService.reconcileExpiredPermits` marks expired commands `UNKNOWN` without committing the associated recovery credit. The original system-test scenarios recorded safe _containment_, not exact settled billing.
 
 Requested policy is immediate commitment after actual attempted dispatch and eventual commitment after a crash, with definitive rejection/release. Those two guarantees cannot be proven simultaneously from a pre-HTTP admission timestamp. **Proposed resolution, awaiting explicit merchant/architect agreement:** treat the durable final dispatch-admission transaction as the accounting boundary for unknown provider outcomes; acknowledge the rare crash-before-HTTP charge possibility. This boundary is not proof of provider contact or delivery. If that trade-off is rejected, uncertain crashes require a separate evidenced/authorised resolution mechanism rather than unconditional commitment.
 
@@ -52,7 +52,7 @@ Confirmed post-acceptance `FAILED` compensation remains owned by ARCH-028-BACKGR
 - Reuse final durable provider admission and immutable recipient/dispatch key as the candidate accounting fence; distinguish not-admitted, admitted-uncertain, confirmed Meta acceptance and definitive rejection using persisted evidence.
 - Establish exactly one durable recovery attempt -> outbound message/merchant send command -> `UsageReservation` source association **before** provider I/O. Use existing fields/constraints when sufficient; return any required schema constraint/index or compensation reason to `moda_database` for a separate task, never modify Prisma schema in Background.
 - Handle automated initial and scheduled recovery-template follow-up sends plus merchant-initiated `RECOVERY_FOLLOW_UP_TEMPLATE` when an exact recovery-credit source was reserved; exclude ordinary `HUMAN_TEXT` and non-recovery conversations.
-- Under the *approved* billing boundary, commit the same lifetime-Free, paid-included, promotional or purchased source once for a caught uncertain response; handle both `RESERVED` and already-`AMBIGUOUS` reservations using source-specific, race-safe transitions and one original positive UsageEvent.
+- Under the _approved_ billing boundary, commit the same lifetime-Free, paid-included, promotional or purchased source once for a caught uncertain response; handle both `RESERVED` and already-`AMBIGUOUS` reservations using source-specific, race-safe transitions and one original positive UsageEvent.
 - Repair eligible admitted-but-unsettled sources on restart using existing Background worker/dispatch reconciliation where possible, including human `DISPATCH_ADMITTED -> UNKNOWN` and automated stalled-job paths. Source/Shop locks/CAS prevent simultaneous normal finalisation and repair from double-committing.
 - Release a source only for a proven pre-provider denial or definitive rejection according to the accepted boundary; if a late definitive failure conflicts with an already-committed repair, use the existing exact correction authority rather than invalidly releasing COMMITTED usage. Do not alter reachability classification.
 - Use existing Shared structured logging for bounded branch/lineage/correction results; preserve the immutable no-repeat Meta send fence and leave provider status (including a missing provider message ID) unconfirmed when no acceptance evidence exists.
@@ -103,7 +103,7 @@ An additional Database-owned dependency must be defined and accepted if the insp
 
 ## Enables
 
-None currently. After the policy/schema gate is resolved, `moda_architect` should define a *separate terminal settlement system-test task* requiring BACKGROUND-013 and its accepted prerequisites, without making any implementation task depend on system tests. Keep ARCH-028-SYSTEM-TEST-001 scoped to the original `131026` policy.
+None currently. After the policy/schema gate is resolved, `moda_architect` should define a _separate terminal settlement system-test task_ requiring BACKGROUND-013 and its accepted prerequisites, without making any implementation task depend on system tests. Keep ARCH-028-SYSTEM-TEST-001 scoped to the original `131026` policy.
 
 ## Acceptance Criteria
 
@@ -182,7 +182,7 @@ following required corrections before this task can become Ready:
    `OutboundSendFenceService.admitFinalSend` persists
    `ConversationMessage.providerDispatchAdmittedAt` before the Meta HTTP call.
    A process may die between those two operations. The durable marker proves
-   dispatch *admission*, not that an HTTP request was actually attempted.
+   dispatch _admission_, not that an HTTP request was actually attempted.
    Automatic crash settlement cannot simultaneously guarantee both (a) never
    charge for a request not actually attempted and (b) commit every crashed
    admitted operation without later provider evidence. Record an explicit
@@ -243,7 +243,7 @@ following required corrections before this task can become Ready:
    `RECOVERY-PROVIDER-UNKNOWN-ID-001` and `MESSAGING-STATUS-001` passed against
    old behaviour. Their acceptance criteria and the planned
    `RECOVERY-PROVIDER-SETTLEMENT-001` executor must be separately reconciled by
-   `moda_system_test` *after* the production design is accepted; preserve
+   `moda_system_test` _after_ the production design is accepted; preserve
    historical PASS evidence and do not manufacture fresh PASS results. Ensure
    the ARCH-028 system-test dependency frontier includes the final settlement
    implementation and that the authenticated merchant view distinguishes an

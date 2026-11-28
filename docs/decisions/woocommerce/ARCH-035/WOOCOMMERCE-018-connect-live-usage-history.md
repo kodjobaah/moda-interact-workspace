@@ -22,6 +22,7 @@ enables:
 created: 2026-10-22
 updated: 2026-10-22
 ---
+
 # ARCH-035-WOOCOMMERCE-018: Connect WooCommerce Usage History screen to authoritative usage API
 
 ## Architecture
@@ -132,14 +133,14 @@ This is a task-scope summary of files touched during the supplied incremental pa
 
 **Automated — developer terminal log `typescript(20261022-194546)` (22 October 2026):**
 
-| Command | Result |
-| --- | --- |
-| `npm run test:js` | PASS — 55/55 JavaScript test files, 411/411 Vitest tests; Node integration/i18n runner 52/52. |
-| `npm run test:i18n` | PASS — 28/28. |
-| `npm run i18n:verify:20` | PASS — 470 source messages; 19/19 translation packs + English source locale (20/20 supported languages); 38 compiled assets. |
-| `npm run build` | PASS — production Webpack build; existing bundle-size/performance warnings are non-fatal. |
-| `npm run install:php` then `npm run test:php` | PASS — PHPUnit 148 tests, 1,118 assertions. |
-| `npm run plugin-zip` | PASS — `moda-interact.zip`, version 0.1.0, 124 entries, SHA-256 `2c5f4df1ffad41d34e669ec9f7c403985f29508ceb369fd3ebbd30adeb71e42a`. |
+| Command                                       | Result                                                                                                                              |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:js`                             | PASS — 55/55 JavaScript test files, 411/411 Vitest tests; Node integration/i18n runner 52/52.                                       |
+| `npm run test:i18n`                           | PASS — 28/28.                                                                                                                       |
+| `npm run i18n:verify:20`                      | PASS — 470 source messages; 19/19 translation packs + English source locale (20/20 supported languages); 38 compiled assets.        |
+| `npm run build`                               | PASS — production Webpack build; existing bundle-size/performance warnings are non-fatal.                                           |
+| `npm run install:php` then `npm run test:php` | PASS — PHPUnit 148 tests, 1,118 assertions.                                                                                         |
+| `npm run plugin-zip`                          | PASS — `moda-interact.zip`, version 0.1.0, 124 entries, SHA-256 `2c5f4df1ffad41d34e669ec9f7c403985f29508ceb369fd3ebbd30adeb71e42a`. |
 
 **LocalWP/WooCommerce — developer's manual screenshots and database evidence (22 October 2026):**
 
@@ -272,7 +273,7 @@ Attempt 1 remains the reviewed attempt. Transitioned to `ready` with `executor: 
 
 **Decision:** `moda_architect` **architecturally approves** the bounded API v2 consumer behavior already implemented for `ARCH-035-WOOCOMMERCE-018`. The canonical `ARCH-035-API-022` definition and the ARCH-035 parent architecture now document an optional `responseVersion=2` hosted contract. **No `ARCH-035-API-023` task is required.** The original v1 remains the default and is unchanged.
 
-**Effect on the preceding Changes Requested review:** The first correction's explicitly permitted *architect-approved amendment* path is now selected. **Do not remove v2 negotiation solely because it was previously undocumented.** The v1-only assertion in correction 2 is superseded by version-aware tests. Preserve the other security, failure-handling, LocalWP evidence and validation requirements. The original review remains accurate as historical evidence and has not itself been marked Accepted.
+**Effect on the preceding Changes Requested review:** The first correction's explicitly permitted _architect-approved amendment_ path is now selected. **Do not remove v2 negotiation solely because it was previously undocumented.** The v1-only assertion in correction 2 is superseded by version-aware tests. Preserve the other security, failure-handling, LocalWP evidence and validation requirements. The original review remains accurate as historical evidence and has not itself been marked Accepted.
 
 **Approved behavior / acceptance evidence for the next developer claim:**
 
@@ -281,7 +282,7 @@ Attempt 1 remains the reviewed attempt. Transitioned to `ready` with `executor: 
 3. At most one bounded **HTTP 400 `invalid_request`** fallback to a strict v1 request is allowed when speaking to a known older hosted API. Authentication/authorization failures, invalid/tampered period or cursor, server errors, unexpected/malformed responses and changed installation identity do not trigger a v1 retry or conceal a failure. No additional browser exposure, source-system changes, payment or usage writes are permitted.
 4. Next claim/review should verify v1/v2 PHP and JavaScript contract tests, allowed query parameters, Free lifetime and paid current/past presentation, row attribution labels, negative paths, 20 supported locales, production ZIP, shared structured logging and relevant LocalWP evidence. The API v2 implementation and its validation must be reconciled against the now-approved API-022 contract; historical API-022 v1 task acceptance alone does not certify later code. Record the previous LocalWP limitations honestly, including the absence of a demonstrated currently paid OPEN period and the post-reseed attribution screenshot unless newly supplied.
 
-**Lifecycle:** `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` are **preserved**. This amendment resolves the *contract-scope blocker* but is **not** an implementation acceptance, an Attempt 2 claim, a Completion Report rewrite or a developer completion decision. Resume through `/moda_developer_create ARCH-035-WOOCOMMERCE-018` when its reviewed dependency evidence is reconciled; preserve all historical reviews, then submit the new evidence for authorised developer/architect review. `ARCH-035-SYSTEM-TEST-007` remains terminal and Pending.
+**Lifecycle:** `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` are **preserved**. This amendment resolves the _contract-scope blocker_ but is **not** an implementation acceptance, an Attempt 2 claim, a Completion Report rewrite or a developer completion decision. Resume through `/moda_developer_create ARCH-035-WOOCOMMERCE-018` when its reviewed dependency evidence is reconciled; preserve all historical reviews, then submit the new evidence for authorised developer/architect review. `ARCH-035-SYSTEM-TEST-007` remains terminal and Pending.
 
 ## Developer Self-Review - Changes Requested (Attempt 2)
 
@@ -309,7 +310,6 @@ Changes Requested. Attempt 2 produced no implementation changes. The existing im
 ### Lifecycle
 
 Attempt 2 remains the reviewed attempt. Transitioned to `ready` with `executor: null` and `claimed_at: null`; attempt number remains 2. No Attempt 3 was claimed. The next `/moda_developer_create ARCH-035-WOOCOMMERCE-018` invocation may claim Attempt 3 after normal synchronization and dependency checks.
-
 
 ## Architect Scope Amendment — 22 October 2026 (LocalWP deployment/rollback requirement removed)
 

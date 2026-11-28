@@ -172,7 +172,6 @@ as merchant browser data.
 - [ ] cart work uses existing checkout-events queue.
 - [ ] evidence contains no merchant-facing sensitive leakage.
 
-
 ## Developer manual-validation checkpoint
 
 All implementation dependencies are now Complete and architect-accepted.

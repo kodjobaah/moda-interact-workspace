@@ -217,6 +217,7 @@ materialisation phase before execution:
    ```
 
    and treat the returned route/topology as authoritative;
+
 2. verify `task_materialized: false`; for an unmaterialised task,
    `execution_mode` and `completion_mode` are intentionally `null` because those
    values belong to task frontmatter and cannot be inferred from the ID alone;

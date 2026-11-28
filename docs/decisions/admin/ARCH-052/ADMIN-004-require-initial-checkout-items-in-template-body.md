@@ -72,15 +72,15 @@ Do not insert raw `{{...}}` strings into AST literal text. The merchant/product/
 
 ### B. Exact template matrix (all must be independently validated)
 
-| Stage | Offer type | Target | Header | Mandatory BODY semantic |
-|---|---|---|---|---|
-| INITIAL | NO_OFFER | none | TEXT | `checkout.itemsSummary` exactly once |
-| INITIAL | CODE_OFFER | CHECKOUT | TEXT / approved IMAGE where supported | Exactly once, plus existing singular/plural code binding |
-| INITIAL | AUTOMATIC_OFFER | CHECKOUT | TEXT / approved IMAGE where supported | Exactly once, plus existing honest automatic wording |
-| INITIAL | CODE_OFFER | ALTERNATIVE_PRODUCT | TEXT / approved IMAGE where supported | Exactly once, explicitly described as **original basket** |
-| INITIAL | AUTOMATIC_OFFER | ALTERNATIVE_PRODUCT | TEXT / approved IMAGE where supported | Exactly once, explicitly described as **original basket** |
-| FOLLOW_UP | Any existing valid variant | Existing rules | Existing rules | **No new mandatory condition** |
-| MODA_CONVERSATION_WRAPPER | Any | Existing rules | Existing rules | **No change** |
+| Stage                     | Offer type                 | Target              | Header                                | Mandatory BODY semantic                                   |
+| ------------------------- | -------------------------- | ------------------- | ------------------------------------- | --------------------------------------------------------- |
+| INITIAL                   | NO_OFFER                   | none                | TEXT                                  | `checkout.itemsSummary` exactly once                      |
+| INITIAL                   | CODE_OFFER                 | CHECKOUT            | TEXT / approved IMAGE where supported | Exactly once, plus existing singular/plural code binding  |
+| INITIAL                   | AUTOMATIC_OFFER            | CHECKOUT            | TEXT / approved IMAGE where supported | Exactly once, plus existing honest automatic wording      |
+| INITIAL                   | CODE_OFFER                 | ALTERNATIVE_PRODUCT | TEXT / approved IMAGE where supported | Exactly once, explicitly described as **original basket** |
+| INITIAL                   | AUTOMATIC_OFFER            | ALTERNATIVE_PRODUCT | TEXT / approved IMAGE where supported | Exactly once, explicitly described as **original basket** |
+| FOLLOW_UP                 | Any existing valid variant | Existing rules      | Existing rules                        | **No new mandatory condition**                            |
+| MODA_CONVERSATION_WRAPPER | Any                        | Existing rules      | Existing rules                        | **No change**                                             |
 
 IMAGE headers are optional and separate; `checkout.itemsSummary` remains a textual BODY parameter even when the header is IMAGE. The BODY displays the existing bounded first-three-line summary and `+N` remainder, not a fabricated entire-basket transcription. No price/savings is inferred from the summary.
 
@@ -189,6 +189,7 @@ review remain preserved below.
 - Revised source content produces new immutable hashes/positions; historical registrations were not rewritten. A changed initial Meta template revision still requires independent Meta review and provider approval. No provider submission or approval was executed.
 
 Physical worktree isolation:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-ADMIN-004`
 - parent branch: `task/ARCH-052-ADMIN-004`
@@ -199,6 +200,7 @@ Physical worktree isolation:
 - another task worktree reused: no
 
 Start-of-attempt synchronization and submodules:
+
 - parent remote task branch fast-forwarded: not-needed; parent origin/main incorporated: already-current
 - implementation remote task branch fast-forwarded: not-needed; implementation origin/main incorporated: already-current
 - `git submodule sync --recursive`: passed
@@ -314,6 +316,7 @@ promoted to Ready. SYSTEM-TEST-001/002 remain Pending on other prerequisites;
 SYSTEM-TEST-004 stays Pending until BACKGROUND-017 completes. No `_index.md`
 was changed; the architecture status matrix and dependent task frontmatter
 record the promotions.
+
 ## Architect Review — Attempt 1
 
 ### Review Status

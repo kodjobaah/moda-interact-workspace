@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T22:35:42Z
 ---
+
 # Publish Shopify international-context event contract
 
 ## Architecture
@@ -141,7 +142,7 @@ Ready for Review.
 - Package build during `prepack`: passed, including declaration generation.
 - `npm publish --access public`: passed; published version `0.6.2`.
 - `npm view @modainteract/moda-interact-shared@0.6.2 version dist.integrity
-  --json`: passed; registry integrity:
+--json`: passed; registry integrity:
   `sha512-/dDwRQqzWiZ1cO9sfCVZpg2ZVusztfca8PFJs9/zjIqCiVwdhWPISbSkeHEpM7PnhepMmmWy1KN9joB27vx75g==`.
 - Clean temporary install of `@modainteract/moda-interact-shared@0.6.2`:
   passed; imported both Shopify recovery and internationalization entrypoints.

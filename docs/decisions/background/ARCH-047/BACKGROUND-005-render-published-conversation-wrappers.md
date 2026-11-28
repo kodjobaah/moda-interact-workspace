@@ -84,14 +84,12 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - `ARCH-047-DATABASE-001`
 
-
 **Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
 
 ## Enables
 
 - `ARCH-047-BACKGROUND-008`
 - `ARCH-047-BACKGROUND-009`
-
 
 ## Acceptance Criteria
 

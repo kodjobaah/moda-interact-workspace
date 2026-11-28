@@ -282,6 +282,7 @@ Moved release composition to direct Capability membership, pinned each member to
 ### Validation Results
 
 On final merged implementation branch `task/ARCH-021-COMMERCE-089`:
+
 - Required disposable C20 PostgreSQL/Redis proof: PASS, 2/2 tests; task-owned containers and network cleaned up.
 - Focused post-merge matrix: 149 passed; 2 failed in `backend-integration.test.ts` because two existing process-global backend tests expected `getCommerceBackend()` to throw but received `undefined`.
 - Focused backend subset: 6 passed, 2 skipped (the two failing process-global cases).

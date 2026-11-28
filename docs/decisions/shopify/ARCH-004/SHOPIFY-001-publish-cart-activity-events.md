@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
+
 # Publish Shopify cart activity events
 
 ## Objective
@@ -284,4 +285,3 @@ No additional Shopify ARCH-004 task is promoted by this acceptance alone.
 
 `ARCH-004-BACKGROUND-001` remains the parallel executable implementation path
 after SHARED-002 acceptance.
-

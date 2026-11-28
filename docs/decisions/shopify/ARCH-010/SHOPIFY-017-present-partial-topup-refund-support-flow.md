@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHARED-008
-- ARCH-010-SHOPIFY-012
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHARED-008
+  - ARCH-010-SHOPIFY-012
 enables: []
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 superseded_by: ARCH-010-SHOPIFY-026
 ---
 
@@ -149,7 +149,6 @@ Run focused route/component tests, repository unit/type/lint/build commands decl
 
 Do not implement Admin triage/approval, provider settlement, lot reservation accounting, subscription refunds or refund eligibility promises beyond local unused-credit policy.
 
-
 ## Final promotional-credit refund exclusion
 
 Promotional credits are excluded from every purchased-credit refundability calculation and quantity limit. They may be displayed separately as non-refundable Moda-provided capacity, but must never be represented as a refundable RecoveryCreditPurchase lot or included in provider refund/credit instructions.
@@ -161,19 +160,25 @@ STOP if DATABASE-007 purchase-lot/refund fields are unavailable to the merchant 
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Files Changed
+
 Populate during implementation.
 
 ### Work Completed
+
 Populate during implementation.
 
 ### Validation Results
+
 Populate during implementation.
 
 ### Git / VCS
+
 Populate canonical isolated worktree/branch/commit/push evidence.
 
 ### Architect Review
+
 Pending.

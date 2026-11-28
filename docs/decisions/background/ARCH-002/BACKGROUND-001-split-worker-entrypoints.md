@@ -12,13 +12,14 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-GATEWAY-001
+  - ARCH-002-GATEWAY-001
 enables:
-- ARCH-002-BACKGROUND-002
-- ARCH-002-BACKGROUND-003
+  - ARCH-002-BACKGROUND-002
+  - ARCH-002-BACKGROUND-003
 created: 2026-08-29
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Create Independently Deployable Worker Entrypoints
 
 ## Architecture
@@ -219,42 +220,42 @@ Ready for Review
 ### Work Completed
 
 - Added production entrypoints for `moda-shopify-event-worker`,
-   `moda-recovery-worker` and `moda-messaging-worker`.
+  `moda-recovery-worker` and `moda-messaging-worker`.
 - Added deterministic `npm run start:*` commands for all three production
-   entrypoints.
+  entrypoints.
 - Kept the combined `npm start` / `npm run dev` local worker entrypoint and its
-   liveness server.
+  liveness server.
 - Moved process signal/resource lifecycle ownership out of individual workers
-   into a shared process helper. `SIGTERM`/`SIGINT` now close only the process's
-   explicitly owned workers, wait for BullMQ graceful `Worker.close()`, then
-   close Redis and Prisma resources.
+  into a shared process helper. `SIGTERM`/`SIGINT` now close only the process's
+  explicitly owned workers, wait for BullMQ graceful `Worker.close()`, then
+  close Redis and Prisma resources.
 - Added isolation, command mapping, idempotent shutdown, shutdown-failure and
-   direct `SIGTERM` tests.
+  direct `SIGTERM` tests.
 - Documented logical service commands and queue ownership.
 
 ### Validation Results
 
 - `npm test -- --run tests/unit/runtime/worker-process.test.ts tests/unit/runtime/entrypoint-isolation.test.ts`
-   passed: 2 files, 7 tests.
+  passed: 2 files, 7 tests.
 - `npm test` executed the full suite: 10 files passed, 1 file failed, 1 file
-   skipped; 57 tests passed, 1 failed, 2 skipped. The sole failure is the
-   pre-existing `recovery-routing.service.test.ts` Prisma mock omitting
-   `customerPhone.findMany`; the test/service are clean in Git and outside this
-   task's touched paths. No entrypoint/lifecycle test failed.
+  skipped; 57 tests passed, 1 failed, 2 skipped. The sole failure is the
+  pre-existing `recovery-routing.service.test.ts` Prisma mock omitting
+  `customerPhone.findMany`; the test/service are clean in Git and outside this
+  task's touched paths. No entrypoint/lifecycle test failed.
 - `./node_modules/.bin/tsc --noEmit` passed.
 - `npm run build` passed, including Prisma Client generation and TypeScript
-   production compilation.
+  production compilation.
 - Built command verification passed for `shopify-event`, `recovery` and
-   `messaging`: with `REDIS_URL` deliberately absent, each resolved its compiled
-   entrypoint, exited nonzero (`1`) and reported
-   `REDIS_URL environment variable is required`.
+  `messaging`: with `REDIS_URL` deliberately absent, each resolved its compiled
+  entrypoint, exited nonzero (`1`) and reported
+  `REDIS_URL environment variable is required`.
 - Entrypoint audit confirmed exact worker imports (2/1/1), no production HTTP
-   listener and no remaining worker-local signal/resource shutdown handlers.
+  listener and no remaining worker-local signal/resource shutdown handlers.
 - VS Code diagnostics reported no errors in changed source/tests.
 - Environment warning: one validation terminal inherited `PATH=tmp`; the
-   workspace bootstrap initially could not resolve `tr`. Standard macOS utility
-   paths were restored for the command and the workspace-owned bootstrap then
-   selected `.nvmrc` Node `24.19.0`; no alternate Node setup was introduced.
+  workspace bootstrap initially could not resolve `tr`. Standard macOS utility
+  paths were restored for the command and the workspace-owned bootstrap then
+  selected `.nvmrc` Node `24.19.0`; no alternate Node setup was introduced.
 
 ### Deviations
 
@@ -264,15 +265,15 @@ and Unresolved Issues rather than changed outside task scope.
 ### Assumptions
 
 - BullMQ `Worker.close()` default non-forced behavior is the repository-supported
-   graceful in-flight-job drain boundary.
+  graceful in-flight-job drain boundary.
 - Redis and Prisma instances imported by an entrypoint are process-local shared
-   resources and may be closed after every owned worker has closed.
+  resources and may be closed after every owned worker has closed.
 
 ### Unresolved Issues
 
 - The existing `recovery-routing.service.test.ts` unit-test mock does not provide
-   `prisma.customerPhone.findMany`, so the otherwise passing full suite remains
-   one test short of green. This task did not modify recovery routing or its test.
+  `prisma.customerPhone.findMany`, so the otherwise passing full suite remains
+  one test short of green. This task did not modify recovery routing or its test.
 
 ### Architectural Concerns
 

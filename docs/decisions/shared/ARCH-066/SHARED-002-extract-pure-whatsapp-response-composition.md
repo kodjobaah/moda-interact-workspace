@@ -19,15 +19,19 @@ enables: ["ARCH-066-SHARED-004", "ARCH-066-SHARED-003"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
+
 # Extract the pure WhatsApp response composition contract
 
 ## Objective and read first
+
 Implement only the owned work below. Read `docs/architecture/ARCH-066-conversation-product-context-and-whatsapp-preview-parity.md` first: its numbered contract decisions are normative and must not be redesigned by the implementor.
 
 ## Scope and touch points
+
 Own new `src/commerce/presentation/` and package browser-safe export `@modainteract/moda-interact-shared/commerce/presentation`. Sources to port, not import across repositories: Background `src/commerce/recommendations/{render,messages,money,candidates,shipping}.ts` and `src/services/conversation-wrappers/{contracts,render,selection,projection}.ts`.
 
 ## Exact work items
+
 - Implement architecture decisions 4 and 5. Export `composeCommerceWhatsAppPreview(input)` returning `{kind:'ready',body,candidates,wrapper:{definitionId,localeId,contentHash,slotEditVersion}|null}|{kind:'refused',reason}`. Input is validated final envelope + host-verified presentation projection + locale + saved brandName + prepared wrapper selection/context. No Prisma, server-only, service imports, fetch, Redis or Meta SDK in this export.
 - Preserve existing deterministic recommendation price/offer/currency/localization behavior and three-candidate shortening. Add deterministic option lines: every option name followed by supplied values; partial lists explicitly labelled incomplete. Variant selectedOptions never imply availability for other combinations. Missing options says details unavailable, never invent S/M/L or colours.
 - Port pure prepared wrapper rendering and slot/locale selection with existing rules unchanged. Preserve 4096 UTF-16 code-unit bound for complete conversational text including wrapper; preserve zero/one/multiple response-slot rejection, control character rejection, conditional checkout omissions and already-wrapped checks. Context, slot, hashes and provenance are passed by trusted hosts.
@@ -36,27 +40,33 @@ Own new `src/commerce/presentation/` and package browser-safe export `@modainter
 - Port all existing supported-language catalogue entries without losing locales; add translated option/unavailable/partial labels in that same catalogue. No untranslated English fallback over an existing resolved locale.
 
 ## Acceptance / validation
+
 - [x] Golden fixtures compare legacy deterministic product/offer/shipping/wrapper outputs byte-for-byte except the deliberately specified new option/plain-text formatting cases.
 - [x] Boundary tests 4096/4097 including wrapper, Unicode, multiline replies, **bold**, ~~sale~~, links, malicious HTML displayed as inert text, wrapper missing/configured-invalid, locale fallback, checkout unavailable.
 - [x] Import built export in Node and browser-like runtime with no server dependencies. Preserve production moderation/send ownership. Typecheck, lint, build and package export tests pass. No publication here.
 
 ## Execution boundary
+
 Definition only. Do not claim or implement until explicit dependency tasks are Complete. Use the canonical launcher-resolved parent and implementation task worktrees; execution_mode and completion_mode are developer. Do not change unrelated work or another repository. Record exact Shared package version/integrity, database migration and provider schema artifact used. No production customer messages, Meta registrations or live mutations are authorized by this task.
 
 ## Completion Report
 
 ### Status
+
 Complete — accepted Attempt1 explicitly developer-completed on 2026-11-08.
 
 ### Files Changed
+
 21 task-owned paths: new src/commerce/presentation/ pure modules/catalogue/fixtures/tests; package.json subpath/script; tsup.config.ts build entry; additive src/commerce/schemas.ts presentation selections; scripts/validate-commerce-presentation.mjs. No consumer source, dependency lock or version changes.
 
 ### Work Completed
+
 Browser-safe commerce/presentation export ports pure recommendation render/messages/money/candidates/shipping and wrapper contracts/projection/render/selection from Background d7e78bdb5e75248b9a15e2c84d07dcdc89027c19. Imports are local only; digest is injected; replay/applicationKey and I/O remain Background-owned. Strict host-verified projection checks current-shop URL consistency; exact product/variant selector provides typed limitations. Option renderer exposes only supplied facts, native selected variants and truthful unavailable/incomplete labels in all20 locales. Legacy absent options remain unknown/PARTIAL empty.
 
 Composer preserves referral safety, three complete ordered candidates,4096 UTF16 units including wrapper, variable2048 bound, response slot/control/checkout/already-wrapped guards, no-active-wrapper unwrapped result and configured-invalid refusal. Returns wrapper provenance; no send authorization. Model reply normalization yields plain text for balanced emphasis/strike/safe HTTPS links while leaving unmatched markers/HTML inert and retaining URLs. Added identifier-only productOptionSelections max3 and PRODUCT_OPTIONS selection disposition; immutable response schema/release update remains consumer publication responsibility.
 
 ### Validation Results
+
 - `npm run typecheck`: passed.
 - `npx tsx --test src/commerce/presentation/presentation.test.ts src/commerce/product-discovery-contracts.test.ts src/commerce/product-discovery-projection.test.ts src/commerce/response.test.ts src/commerce/runner/runner.test.ts`:130 total,129 passed,1 existing consumer-environment skip,0 failed.
 - `npm run build`: ESM/declarations passed.
@@ -68,16 +78,20 @@ Composer preserves referral safety, three complete ordered candidates,4096 UTF16
 - Lint unavailable: package has no declared lint script or ESLint dependency. Not claimed passed; no unrelated tooling added.
 
 ### Deviations / Assistance / Limits
+
 Material moda_shared assistance implemented source/tests; root reviewed composer boundaries and handled publication/report. Supporting package entry/build validator and additive selection schema are required by architecture decision4. No Background deletion here: downstream migration must adopt published exports and remove duplicated pure service implementations. No provider/model/network/customer/Meta mutation or deployment. No npm publication; source package remains5.5.0, immutable release integrity belongs to SHARED-003. No DB migration/provider schema artifact consumed by this pure port.
 
 ### Git / VCS
+
 Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace.
 Parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-002; implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-002; both task/ARCH-066-SHARED-002. Launcher synchronized before developer Attempt1 then failed report-format check after setting claim; normalized/published claimd8a0b7e4a without duplicate attempt. Implementation baseline7d48d05b519ac7c46a623c512278270f8522c4a1; main implementation7afdd9d147e507acd1d0c676784684d2a8c511e8 plus whitespace cleanup7255db5 published matching task branch. Parent report committed/pushed separately, exact SHA in Git history. Shared checkouts not switched, no other task worktree reused, no gitlink staged or main merge/push. No enabled task started.
 
 ## Dependency Reconciliation - 2026-11-08
+
 SHARED-001 accepted Attempt2 explicitly developer-completed; sole explicit dependency satisfied. Ready at unchanged Attempt0, executor/claimed_at null; no claim or execution. Accepted Shared source c3f9f07cfcf9ff60817f89d5c3d2aaca2dddfbf7 published on task/ARCH-066-SHARED-001; separate publication still gated on SHARED-002.
 
 ## Developer Self-Review - Passed / Accepted Attempt 1
+
 2026-11-08: Reconciled complete task and normative architecture decisions4/5, actual public composer/options/format/candidate implementations, wrapper pure projection/render/selection boundaries, regression fixtures and package export validation. Implementation7255db58ee1231e209c75c1466255787426d2e5a matches published task ref; parent06a6096b2cf9ccbe2ac99be777a5c540d9319e79 matches published report. Both canonical worktrees clean; physical worktree, synchronization, claim, source provenance and assigned-agent assistance evidence retained above.
 
 Scoped review passes: pure browser-safe export has no service I/O/send authority; static60-output golden comparison preserves legacy recommendation/money/offer/shipping catalogue across20 locales. Exact-ID current-product option selection preserves limitations and unknown legacy data; translated option facts remain inert and do not fabricate stock. Composer preserves referral replies, complete candidate fitting4096 including wrapper, strict current-shop URL checks, prepared hash/slot/locale/variable/checkout/already-wrapped safeguards, explicit unwrapped/no-active-slot and configured-invalid refusal. Wrapper provenance returned; replay/applicationKey stay Background-owned. Additive identifier-only option selections retain strict response publication boundaries.
@@ -87,7 +101,9 @@ Recorded final validation after semantic edits:129 passed/1 existing consumer-en
 No required scoped code correction remains. Consumer migration must still adopt the published export and remove duplicated pure Background code; this task does not claim consumer parity in deployment, moderation/window/billing evaluation, npm publication, migration or provider artifact changes. Package remains5.5.0; publication integrity belongs to SHARED-003. Historical reports retained. Status review, executor/claimed_at null, accepted Attempt1 unchanged, completion_mode developer preserved. Explicit `/moda_developer_update ARCH-066-SHARED-002 complete` is pending. No downstream promotion, enabled execution or main merge/push.
 
 ## Developer Completion Decision - 2026-11-08
+
 Developer explicitly invoked `/moda_developer_update ARCH-066-SHARED-002 complete`. Passing review60836eb3811d77f68993a8081e3d0f7afecc66ad is durable/published. Implementation7255db58ee1231e209c75c1466255787426d2e5a matches published task ref; both canonical worktrees clean at verification. No required scoped correction remains; lint unavailable and existing skip dispositions retained. Status Complete, accepted Attempt1 unchanged, executor/claimed_at null. No source change, package publication or main merge/push.
 
 ### Dependency-frontier reconciliation
+
 SHARED-003 explicit dependencies SHARED-001 and SHARED-002 now Complete; promote to Ready at unchanged Attempt0, unclaimed. Consumers remain publication-gated; terminal System Test remains manually gated on its explicit dependencies. No enabled task started. Readiness records published on completion branch without implying main integration.

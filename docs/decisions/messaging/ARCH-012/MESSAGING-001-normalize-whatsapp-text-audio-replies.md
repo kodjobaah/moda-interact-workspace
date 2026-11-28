@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-012-SHARED-001
-- ARCH-007-MESSAGING-001
+  - ARCH-012-SHARED-001
+  - ARCH-007-MESSAGING-001
 enables:
-- ARCH-012-SYSTEM-TEST-001
-- ARCH-012-SYSTEM-TEST-002
+  - ARCH-012-SYSTEM-TEST-001
+  - ARCH-012-SYSTEM-TEST-002
 created: 2026-09-14
 updated: 2026-09-16
 ---
@@ -27,12 +27,15 @@ updated: 2026-09-16
 # ARCH-012-MESSAGING-001
 
 ## Objective
+
 Make `moda-interact-messaging` a strict provider-normalization boundary for customer messages. It must preserve enough Meta evidence for Background to resolve either an explicit reply to a specific Moda message or an ordinary contextless WhatsApp message, and it must preserve voice media identity without downloading/transcribing media in the webhook request.
 
 ## Required dependency
+
 Adopt the **exact architect-accepted package version published by ARCH-012-SHARED-001**. SHARED-001 now owns implementation and publication in one task. Read the exact published version from its Completion Report and install that exact version; do not guess, use a range, or derive a newer version.
 
 ## Authorized implementation surface
+
 Expected files:
 
 ```text
@@ -49,6 +52,7 @@ new focused inbound-normalization test file if clearer
 Do not add database access, Meta media download, transcription or tenant routing to Messaging.
 
 ## Exact normalization
+
 For each verified Meta inbound `messages[]` object, construct and Shared-validate one `NormalizedWhatsAppInboundMessage`:
 
 ```text
@@ -99,6 +103,7 @@ Background owns both resolution paths.
 - no Meta media GET, speech API, Shopify API, DB or CommerceAgent operation in request lifecycle.
 
 ## Required tests
+
 Use realistic Meta-shaped fixtures and prove:
 
 - explicit text reply preserves `context.id`;
@@ -129,6 +134,7 @@ Use realistic Meta-shaped fixtures and prove:
 - [x] voice payload is transported by media identity only.
 
 ## Validation
+
 Inspect `package.json`, then run repository-declared commands:
 
 ```text
@@ -141,17 +147,21 @@ git diff --check
 Also run the focused normalization/queue tests explicitly.
 
 ## Stop conditions
+
 STOP if the implementation needs tenant/shop lookup, transcription, raw media download, or a new queue solely for ARCH-012. Return the architectural gap instead.
 
 ## Completion protocol
+
 Set to `review`, clear claim, return to `moda_architect`, STOP.
 
 ## Completion Report
 
 ### Status
+
 Implemented, validated, and published on the implementation task branch. Awaiting `moda_architect` review.
 
 ### Files Changed
+
 - `app/routes/whatsapp.tsx`
 - `app/lib/observability/whatsapp-ingress-telemetry.ts`
 - `app/lib/types/whatsapp.ts` (removed)
@@ -163,6 +173,7 @@ Implemented, validated, and published on the implementation task branch. Awaitin
 - `tests/startup-contract.test.mjs`
 
 ### Validation Results
+
 - Implementation commits: `2267f26`, `424e09d`, pushed to `task/ARCH-012-MESSAGING-001`.
 - Exact dependency installed: `@modainteract/moda-interact-shared@0.12.0`, the ARCH-012-SHARED-001 accepted publication.
 - Correction mapping: producer now uses `@modainteract/moda-interact-shared/whatsapp`, constructs strict Shared v1 events, preserves `entry.id` separately from `metadata.phone_number_id`, preserves explicit/contextless replies, transports audio media identity only, maps unsupported content explicitly, and rejects malformed payloads before queueing.
@@ -178,9 +189,11 @@ Implemented, validated, and published on the implementation task branch. Awaitin
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1.
 
 ### Review Notes
+
 Functionality-first review accepted implementation commits `2267f26` and `424e09d`.
 
 Verified functional behaviour:

@@ -190,13 +190,13 @@ remains separately blocked by the 3 errors listed above.
 ### Git / VCS
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-027`
-  parent branch: `task/ARCH-020-COMMERCE-027`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-027`
-  implementation branch: `task/ARCH-020-COMMERCE-027`
-  shared workspace checkout switched/mutated: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-027`
+parent branch: `task/ARCH-020-COMMERCE-027`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-027`
+implementation branch: `task/ARCH-020-COMMERCE-027`
+shared workspace checkout switched/mutated: no
+another task worktree reused: no
 
 Start synchronization from launcher: parent and implementation branches were
 already current; no remote fast-forward or main incorporation was needed.
@@ -374,7 +374,7 @@ Make the local UI contract use the accepted Shared package directly:
 import type {
   ExternalResponseFormat,
   TransformSample,
-} from '@modainteract/moda-interact-shared/commerce';
+} from "@modainteract/moda-interact-shared/commerce";
 ```
 
 Remove the local `ExternalResponseFixture` type completely.
@@ -384,7 +384,7 @@ Use exactly:
 ```ts
 type RawResponseSamplePanelProps = {
   sample: TransformSample;
-  responseMode: ExternalResponseFormat['mode'];
+  responseMode: ExternalResponseFormat["mode"];
   processed?: Record<string, unknown>;
   renderedText?: string;
   failure?: RawSampleFailure | null;
@@ -494,7 +494,7 @@ Do not add a second canonical-JSON implementation.
 The helper must return lowercase hexadecimal SHA-256 of:
 
 ```ts
-canonicalJson({ source, runtimeVersion })
+canonicalJson({ source, runtimeVersion });
 ```
 
 and the component must use that exact hash for `validateCode` and draft save.
@@ -616,10 +616,10 @@ Use exactly:
 
 ```ts
 type SampleStartResult =
-  | { kind: 'accepted'; run: SampleRunResult }
-  | { kind: 'cooldown'; retryAfterMs: number }
-  | { kind: 'forbidden' }
-  | { kind: 'unavailable' };
+  | { kind: "accepted"; run: SampleRunResult }
+  | { kind: "cooldown"; retryAfterMs: number }
+  | { kind: "forbidden" }
+  | { kind: "unavailable" };
 ```
 
 Bounds:
@@ -837,8 +837,7 @@ package-lock.json
 record the exact diagnostics and prove no task-owned diagnostic. Do not repair unrelated
 Commerce execution/Prisma code in COMMERCE-027.
 
-Update Work Items, Acceptance Criteria and Validation checkboxes truthfully in Attempt
-2. The submitted Attempt 1 task moved to `review` with every checkbox still unchecked;
+Update Work Items, Acceptance Criteria and Validation checkboxes truthfully in Attempt 2. The submitted Attempt 1 task moved to `review` with every checkbox still unchecked;
 that contradicts the execution protocol even apart from the functional issues.
 
 ### Reviewed Files
@@ -1029,7 +1028,7 @@ and still calls:
 onPublish({
   contentHash: currentHash,
   reason: reason.trim(),
-})
+});
 ```
 
 Known publish failure retains source, sample and reason and displays no success.

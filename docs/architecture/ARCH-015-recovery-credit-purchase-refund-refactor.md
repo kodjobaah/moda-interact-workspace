@@ -246,7 +246,6 @@ REQUESTED
 
 Ambiguous/mismatching evidence -> `NEEDS_ATTENTION`, never speculative completion.
 
-
 ## Typed automatic-refund correction evidence
 
 Automatic correction settlement evidence is owned by `RecoveryCreditRefund`; provider submission state is owned by `UsageEvent`.
@@ -367,6 +366,7 @@ migration chain applies ARCH-015 successfully. It does not block this acceptance
 
 `ARCH-015-DATABASE-001` is therefore **Complete**. Enabled dependants remain subject
 to their other declared prerequisites; this acceptance does not bypass the task graph.
+
 ## Post-review update — SHARED-001 Attempt 1 Changes Requested
 
 Architect review of `ARCH-015-SHARED-001` accepted the provider-context identity
@@ -397,7 +397,6 @@ must not be overwritten. The corrected task must publish and exact-version smoke
 `0.11.2` before architect acceptance.
 
 No downstream dependency is unblocked until `ARCH-015-SHARED-001` is Complete.
-
 
 ## Post-review update — SHARED-001 Attempt 2 External Publication Blocker
 
@@ -519,7 +518,6 @@ The row lock is present and must remain. Attempt 3 must add Prisma Serializable 
 
 Therefore `ARCH-015-SHOPIFY-002` remains **Ready** on the same task after Attempt-2 review. `ARCH-015-BACKGROUND-001` and `ARCH-015-SHOPIFY-003` remain Pending until SHOPIFY-002 is architect-accepted Complete.
 
-
 ## Post-review update — SHOPIFY-002 Attempt 3 Accepted
 
 `ARCH-015-SHOPIFY-002` Attempt 3 is architect-accepted and **Complete**.
@@ -556,7 +554,6 @@ ARCH-015-SHOPIFY-002     Complete
 ```
 
 `ARCH-015-SHOPIFY-003` remains Pending because `ARCH-015-BACKGROUND-001` is still an unsatisfied declared prerequisite.
-
 
 ## Post-review update — BACKGROUND-001 Attempt 2 Changes Requested
 
@@ -657,7 +654,6 @@ ARCH-015-BACKGROUND-001  Complete
 ```
 
 BACKGROUND-003 remains Pending because SHOPIFY-003 is not yet Complete.
-
 
 ## Post-review update — BACKGROUND-002 Attempt 2 Changes Requested
 
@@ -768,7 +764,6 @@ ARCH-015-SHOPIFY-003     Complete
 SYSTEM-TEST-001 is not promoted by BACKGROUND-002 acceptance alone because BACKGROUND-003
 and ADMIN-001 are still unsatisfied declared prerequisites.
 
-
 ## Pre-implementation correction — BACKGROUND-003 typed refund evidence (2026-09-16)
 
 Architect review before executing `ARCH-015-BACKGROUND-003` found that the original task contract instructed Background to store correction baseline/expected evidence in `UsageEvent.metadata`.
@@ -791,7 +786,6 @@ UsageEvent
 `ARCH-015-BACKGROUND-003` therefore returns from Ready to **Pending** until DATABASE-002 is architect-accepted Complete. Its corrected task contract forbids `UsageEvent.metadata`, freezes typed correction evidence atomically with the linked UsageEvent, and treats all later scheduler runs as reconciliation-only against those immutable values.
 
 `ARCH-015-ADMIN-001` is also corrected to use `refund.automaticCorrectionUsageEventId` as the double-settlement authority instead of a loose `UsageEvent sourceType/sourceId` search. The source fields remain consistency evidence only.
-
 
 ## Post-review update — DATABASE-002 Attempt 1 Accepted
 
@@ -845,7 +839,6 @@ ARCH-015-DATABASE-001   Complete
 SYSTEM-TEST-001 remains Pending until BACKGROUND-003 and ADMIN-001 are Complete and the
 target database migration history is healthy enough to apply the accepted migrations.
 
-
 ## Post-review update — BACKGROUND-003 Attempt 2 Changes Requested
 
 `ARCH-015-BACKGROUND-003` Attempt 2 is not yet architect-accepted. The typed automatic
@@ -877,6 +870,7 @@ ARCH-015-BACKGROUND-003  Ready (Attempt 3 correction)
 ```
 
 The pre-existing database P3009 remains an external deployment/integration prerequisite.
+
 ## Admin implementation consolidation — 16 September 2026
 
 The Admin server/read-model changes and Refund Requests UI adaptation are one atomic implementation task:
@@ -902,7 +896,6 @@ docs/decisions/admin/ARCH-015/ADMIN-001-localization-matrix.json
 ```
 
 The matrix provides wording only; it does not authorize ADMIN-001 to invent an Admin-wide multilingual runtime when the current Admin runtime remains English-only.
-
 
 ## Post-review update — BACKGROUND-003 Attempt 3 Accepted
 
@@ -937,7 +930,6 @@ ARCH-015-BACKGROUND-003  Complete
 ```
 
 SYSTEM-TEST-001 remains Pending until ADMIN-001 is Complete. The pre-existing database P3009 remains an external deployment/integration prerequisite before deployed end-to-end acceptance can apply the accepted migration chain.
-
 
 ## Post-review update — ADMIN-001 Attempt 2 Accepted
 
@@ -982,7 +974,6 @@ ARCH-015-ADMIN-001       Complete
 
 The existing database P3009 remains an external deployment/integration prerequisite and should be
 resolved before terminal deployed acceptance can apply the complete migration chain.
-
 
 ## Post-implementation integration correction — provider-meter mutation serialization (2026-09-16)
 

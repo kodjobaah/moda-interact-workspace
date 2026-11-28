@@ -1221,8 +1221,26 @@ Export target: `@modainteract/moda-interact-shared/internationalization`
 
 ```ts
 export const MODA_SUPPORTED_LANGUAGE_TAGS = [
-  "zh-Hans", "zh-Hant", "cs", "da", "nl", "en", "fi", "fr", "de", "it",
-  "ja", "ko", "nb", "pl", "pt-BR", "pt-PT", "es", "sv", "th", "tr",
+  "zh-Hans",
+  "zh-Hant",
+  "cs",
+  "da",
+  "nl",
+  "en",
+  "fi",
+  "fr",
+  "de",
+  "it",
+  "ja",
+  "ko",
+  "nb",
+  "pl",
+  "pt-BR",
+  "pt-PT",
+  "es",
+  "sv",
+  "th",
+  "tr",
 ] as const;
 ```
 
@@ -1238,13 +1256,16 @@ Consumers: `moda-interact-admin`, `moda-interact`, `moda-interact-background`,
 `moda-interact-commerce`.
 
 ```ts
-export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION = 1 as const;
+export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION =
+  1 as const;
 
-export const MerchantKnowledgeFeatureConfigurationSchema = z.object({
-  schemaVersion: z.literal(1),
-  maxKnowledgeEntries: z.number().int().min(1).max(100),
-  maxContentUnitsPerLocaleSource: z.number().int().min(1).max(25000),
-}).strict();
+export const MerchantKnowledgeFeatureConfigurationSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    maxKnowledgeEntries: z.number().int().min(1).max(100),
+    maxContentUnitsPerLocaleSource: z.number().int().min(1).max(25000),
+  })
+  .strict();
 ```
 
 No downstream consumer may redefine this shape locally.
@@ -1278,16 +1299,19 @@ Consumer: `moda-interact-background`
 
 ```ts
 export const MERCHANT_KNOWLEDGE_QUEUE_NAME = "merchant-knowledge" as const;
-export const MERCHANT_KNOWLEDGE_PROCESS_JOB_NAME = "process-source-revision" as const;
+export const MERCHANT_KNOWLEDGE_PROCESS_JOB_NAME =
+  "process-source-revision" as const;
 export const MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION = 1 as const;
 
-export const MerchantKnowledgeProcessSourceRevisionJobSchema = z.object({
-  schemaVersion: z.literal(1),
-  shopId: z.string().trim().min(1).max(128),
-  sourceRevisionId: z.string().trim().min(1).max(128),
-  generation: z.number().int().positive(),
-  requestedAt: z.iso.datetime({ offset: true }),
-}).strict();
+export const MerchantKnowledgeProcessSourceRevisionJobSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    shopId: z.string().trim().min(1).max(128),
+    sourceRevisionId: z.string().trim().min(1).max(128),
+    generation: z.number().int().positive(),
+    requestedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
 ```
 
 The deterministic BullMQ job id is:
@@ -1317,9 +1341,12 @@ Producer: `moda-interact-admin`
 Consumer: `moda-interact-background`
 
 ```ts
-export const COMMERCE_CONFIGURATION_QUEUE_NAME = "commerce-configuration" as const;
-export const COMMERCE_PROMPT_TEMPLATE_TRANSLATION_JOB_NAME = "translate-prompt-template" as const;
-export const COMMERCE_CATEGORY_TRANSLATION_JOB_NAME = "translate-prompt-template-category" as const;
+export const COMMERCE_CONFIGURATION_QUEUE_NAME =
+  "commerce-configuration" as const;
+export const COMMERCE_PROMPT_TEMPLATE_TRANSLATION_JOB_NAME =
+  "translate-prompt-template" as const;
+export const COMMERCE_CATEGORY_TRANSLATION_JOB_NAME =
+  "translate-prompt-template-category" as const;
 export const COMMERCE_CONFIGURATION_TRANSLATION_SCHEMA_VERSION = 1 as const;
 ```
 
@@ -1332,7 +1359,7 @@ z.object({
   sourceEditVersion: z.number().int().positive(),
   requestedByAdminId: z.string().trim().min(1).max(128),
   requestedAt: z.iso.datetime({ offset: true }),
-}).strict()
+}).strict();
 ```
 
 Category payload:
@@ -1344,7 +1371,7 @@ z.object({
   sourceEditVersion: z.number().int().positive(),
   requestedByAdminId: z.string().trim().min(1).max(128),
   requestedAt: z.iso.datetime({ offset: true }),
-}).strict()
+}).strict();
 ```
 
 Job ids use the same SHA-256/U+001F convention with prefixes:

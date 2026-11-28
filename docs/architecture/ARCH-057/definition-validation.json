@@ -9,9 +9,7 @@
   "canonical_sections_and_metadata": "passed",
   "dependency_dag_and_reciprocal_enables": "passed",
   "recommended_order": "passed",
-  "initial_ready": [
-    "ARCH-057-SHOPIFY-001"
-  ],
+  "initial_ready": ["ARCH-057-SHOPIFY-001"],
   "prechecked_implementation_criteria": 0,
   "explicit_test_references_checked": 177,
   "package_script_contracts_checked": 23,
@@ -22,58 +20,19 @@
       "repository": "moda-interact",
       "path": "package.json",
       "independent_owners": [
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-006"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-007"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-008"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-005",
-          "ARCH-057-SHOPIFY-010"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-007"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-008"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-006",
-          "ARCH-057-SHOPIFY-010"
-        ],
-        [
-          "ARCH-057-SHOPIFY-007",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-007",
-          "ARCH-057-SHOPIFY-010"
-        ],
-        [
-          "ARCH-057-SHOPIFY-008",
-          "ARCH-057-SHOPIFY-009"
-        ],
-        [
-          "ARCH-057-SHOPIFY-008",
-          "ARCH-057-SHOPIFY-010"
-        ]
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-006"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-007"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-008"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-005", "ARCH-057-SHOPIFY-010"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-007"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-008"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-006", "ARCH-057-SHOPIFY-010"],
+        ["ARCH-057-SHOPIFY-007", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-007", "ARCH-057-SHOPIFY-010"],
+        ["ARCH-057-SHOPIFY-008", "ARCH-057-SHOPIFY-009"],
+        ["ARCH-057-SHOPIFY-008", "ARCH-057-SHOPIFY-010"]
       ]
     }
   ],

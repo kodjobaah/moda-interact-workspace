@@ -178,7 +178,7 @@ It installed with:
   `commerce/runner`.
 - Strict consumer typecheck passed using the repository TypeScript compiler with
   `--noEmit --strict --skipLibCheck --module NodeNext --moduleResolution NodeNext
-  --target ES2022`, importing `ExternalHttpExecution`, `ExternalHttpResultData`,
+--target ES2022`, importing `ExternalHttpExecution`, `ExternalHttpResultData`,
   `ResponseProcessing`, `TransformResponse`, `VisualResponseProcessorInput`, and
   `ConnectionView`.
 - `npm view` confirmed public version `0.14.1`, tarball
@@ -336,14 +336,14 @@ passed, including clean-process imports, schema, scripted `finalResponse`, and
 R1/R2 regressions.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-SHARED-002`
-  parent branch: `task/ARCH-020-SHARED-002`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-SHARED-002`
-  implementation branch: `task/ARCH-020-SHARED-002`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-SHARED-002`
+parent branch: `task/ARCH-020-SHARED-002`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-SHARED-002`
+implementation branch: `task/ARCH-020-SHARED-002`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization: parent remote task branch fast-forwarded
 `not-needed`; parent `origin/main` incorporated `already-current`; implementation
@@ -368,7 +368,7 @@ Files: `src/commerce/external.ts`, `src/commerce/definitions.ts`, `src/commerce/
 
 1. `ExternalPathSchema` currently accepts `/catalogue/../admin` and dot segments generally. Add `value.split('/').every(segment => segment !== '.' && segment !== '..')` to the existing refinement. Preserve `/`, trailing slash and ordinary dots inside names; reject exact dot segments at all positions. Do not normalize them into a different authorized path.
 2. `ExternalResponseFormatSchema` currently accepts JSON+image/png and TEXT+application/octet-stream. Keep existing lowercase/exact/no-wildcard/unique bounds, then refine by mode: JSON allows application/json or a concrete application subtype ending +json; TEXT allows a concrete text subtype, application/xml or a concrete application subtype ending +xml, plus the JSON set. Test accepted application/problem+json, text/html and application/atom+xml, and rejected image/png/octet-stream in their forbidden modes. Preserve0-parameter configuration; sample contentType may include charset per C21.2.3.
-3. External query *keys* reject credential names, but mapped input names do not: query `{q:{input:'password'}}` with a declared string password input currently parses. Apply C21's case-insensitive credential/header list to external mapping source names as well as destination keys: authorization,cookie,set-cookie,host,x-api-key,api_key,apikey,access_token,token,secret,password. Keep existing authority exclusions and old execution contracts. No new endpoint/credential authority may arrive through renamed query keys.
+3. External query _keys_ reject credential names, but mapped input names do not: query `{q:{input:'password'}}` with a declared string password input currently parses. Apply C21's case-insensitive credential/header list to external mapping source names as well as destination keys: authorization,cookie,set-cookie,host,x-api-key,api_key,apikey,access_token,token,secret,password. Keep existing authority exclusions and old execution contracts. No new endpoint/credential authority may arrive through renamed query keys.
 4. `mapToolArguments` currently returns a2049-byte mapped string when inputSchema permits it; nullable scalar input can also map to null although external query values allow only string/finite number/boolean. After resolving each EXTERNAL_HTTP mapping, validate its actual value with the same bounded scalar contract used for literals (string<=2048 UTF-8 bytes, finite number, boolean; no null/array/object). Do not change Shopify/policy mapping semantics. Optional missing is omitted only with omitIfMissing:true; explicit null is not missing. Assert zero returned invalid mapping for oversized multibyte text/null and preserve valid0/false/empty string where allowed by input schema.
 
 Acceptance includes positive controls plus each independent rejected path/format/key/source/value case. These are Shared contract checks; DNS, socket, credentials and live transport remain Commerce-owned.
@@ -437,7 +437,6 @@ A4-R3 — reconcile the Completion Report to one current Attempt 4/next-attempt 
 
 Return the same task to Review after A4-R1–R3. Do not launch or promote downstream tasks; SHARED-002 remains an unsatisfied dependency until architect-accepted Complete.
 
-
 ## User-authorized npm publication — 2026-09-21
 
 The user explicitly authorized public publication of
@@ -474,7 +473,7 @@ The consumer had no previous package installation or workspace link.
   runner imports, manifest schema, scripted finalResponse and retained regressions.
 - Consumer .mts imports of new public contract types, checked with the repository
   TypeScript compiler using `--noEmit --strict --skipLibCheck --module NodeNext
-  --moduleResolution NodeNext --target ES2022`: PASS. This validates consumer
+--moduleResolution NodeNext --target ES2022`: PASS. This validates consumer
   imports/types; skipLibCheck excludes dependency declaration internals.
 
 Verification artifacts reside in the temporary consumer recorded by
@@ -485,7 +484,6 @@ were part of these package checks.
 This entry records publication execution only; it is not architect acceptance or
 a claim that SHARED-002 is Complete. Existing execution claim/status is preserved
 for the owning task to finish its report and submission. No downstream launch.
-
 
 ## Parent branch reconciliation — 2026-09-21
 

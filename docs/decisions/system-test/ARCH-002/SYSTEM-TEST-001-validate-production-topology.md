@@ -120,15 +120,15 @@ It is not permission to claim production capacity.
 
 Record at minimum:
 
-| Validation Area | Owning Task | Result | Evidence Reference |
-|-----------------|-------------|--------|--------------------|
-| Local deterministic integration | SYSTEM-TEST-002 | PASS/FAIL | ... |
-| Shared observability / failure isolation | SYSTEM-TEST-002 | PASS/FAIL | ... |
-| Deployed Render test topology | SYSTEM-TEST-006 | PASS/FAIL | ... |
-| Gateway/public-private routing | SYSTEM-TEST-006 | PASS/FAIL | ... |
-| Production Blueprint/readiness | SYSTEM-TEST-007 | PASS/FAIL | ... |
-| Test/production resource isolation | SYSTEM-TEST-007 | PASS/FAIL | ... |
-| Production capacity target | SYSTEM-TEST-008 | PROVEN/UNMET | ... |
+| Validation Area                          | Owning Task     | Result       | Evidence Reference |
+| ---------------------------------------- | --------------- | ------------ | ------------------ |
+| Local deterministic integration          | SYSTEM-TEST-002 | PASS/FAIL    | ...                |
+| Shared observability / failure isolation | SYSTEM-TEST-002 | PASS/FAIL    | ...                |
+| Deployed Render test topology            | SYSTEM-TEST-006 | PASS/FAIL    | ...                |
+| Gateway/public-private routing           | SYSTEM-TEST-006 | PASS/FAIL    | ...                |
+| Production Blueprint/readiness           | SYSTEM-TEST-007 | PASS/FAIL    | ...                |
+| Test/production resource isolation       | SYSTEM-TEST-007 | PASS/FAIL    | ...                |
+| Production capacity target               | SYSTEM-TEST-008 | PROVEN/UNMET | ...                |
 
 Do not change a prerequisite task's result while aggregating it.
 

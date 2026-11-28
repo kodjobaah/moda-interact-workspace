@@ -62,13 +62,14 @@ external-result caching and other owners' implementation files. No live deployme
 
 Use C21 named interfaces and bounded examples. All dependencies must be accepted
 Complete before claim. Readiness is not execution. Component tasks may prove their
+
 - Implemented `createExternalAvailabilityResolver({checkConnectionAvailability})`.
 - Inspection resolves all base-eligible candidates; live execution filters by the original grant's exact tool and revision identity before checking current connection status.
 - New credentials or releases cannot expand an old grant; candidate capability provenance must still overlap the original grant.
 - Current disabled, missing-revision, missing-credential and unavailable-key states retain the actual tool, tool revision, capability keys and connection revision identity. Lookup outages return typed unavailable instead of an eligibility exclusion.
 - Availability checks are shop-scoped and reused by connection revision only within one resolver call; no provider calls, secrets, grant writes or cross-call caching are introduced.
-Protect every UI command against double clicks, preserve same-operation retries,
-and never expose secrets or raw external response data in errors/logs.
+  Protect every UI command against double clicks, preserve same-operation retries,
+  and never expose secrets or raw external response data in errors/logs.
 
 - AV01 -> `tests/external-availability.test.ts` / `returns eligible descriptors and real missing-credential exclusions` -> `npm run test:arch020-external-availability` -> passed.
 - AV02 -> `tests/external-availability.test.ts` / `uses the same current status projection for inspection and live authorization` -> `npm run test:arch020-external-availability` -> passed; concurrent shop-scoped calls retained separate shop IDs and disabled/missing-credential reasons.
@@ -81,46 +82,51 @@ and never expose secrets or raw external response data in errors/logs.
 
 - [x] Export section9 createExternalAvailabilityResolver over current connection status/credential availability and the accepted base eligibility result.
 - [x] Keep original granted tool/revision set as the upper bound; new credentials/releases cannot expand old grants. Recheck exact scope/enabled/revision and key availability consistently.
-The first focused test invocation required `npm ci` because the prepared implementation worktree had no installed dependencies. The locked dependency install completed with existing peer/engine/audit warnings; no package lock changes were made.
+      The first focused test invocation required `npm ci` because the prepared implementation worktree had no installed dependencies. The locked dependency install completed with existing peer/engine/audit warnings; no package lock changes were made.
 - [x] Prove two merchants, pinned old/new revisions, changed credential configuration, disabled connection and missing-key paths with same resolver used by both consumers.
 
 ## Interfaces / Contracts
+
 C21 section9 supplies already accepted base-eligible external candidates and the connection availability port. Candidate descriptors are preserved unchanged, and the trusted caller supplies the shop identity.
 C21 sections1–8 retain data/behavior requirements. [Section9](../../../architecture/ARCH-020-external-api-tools.md#9-tightened-implementation-boundaries-and-evidence) is authoritative for the narrowed ownership, factory signatures, scenario IDs and handoff rules. Consume accepted exports; no consumer may repair a missing producer by weakening the contract. Record actual dependency commits and published package versions.
 
 ## Dependencies
+
 Repository-wide typecheck and lint remain blocked by pre-existing unrelated failures listed above. Architect review should confirm the exact success/unavailable result shape expected by the eventual COMMERCE-024 composition consumer.
+
 - ARCH-020-COMMERCE-013
 - ARCH-020-COMMERCE-028
 - ARCH-020-COMMERCE-037
 - ARCH-020-SHARED-002
-No cross-repository or contract conflict found. The implementation does not modify Shared, Background, connection services, HTTP execution or grant creation.
+  No cross-repository or contract conflict found. The implementation does not modify Shared, Background, connection services, HTTP execution or grant creation.
+
 ## Enables
 
 - ARCH-020-COMMERCE-012
 - ARCH-020-COMMERCE-024
-Expected mirrored branch: `task/ARCH-020-COMMERCE-032`. Attempt1 claimed by `copilot` through the launcher. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-032`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-032`.
+  Expected mirrored branch: `task/ARCH-020-COMMERCE-032`. Attempt1 claimed by `copilot` through the launcher. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-032`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-032`.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent branch: `task/ARCH-020-COMMERCE-032`
-  implementation branch: `task/ARCH-020-COMMERCE-032`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent branch: `task/ARCH-020-COMMERCE-032`
+implementation branch: `task/ARCH-020-COMMERCE-032`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  `git submodule sync --recursive`: passed
-  `git submodule update --init --recursive`: passed
-  recorded `database` submodule commit: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded `database` submodule commit: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
 
 Implementation commit: `10639c7` (`feat(commerce): add external availability resolver`), pushed to `origin/task/ARCH-020-COMMERCE-032`. Parent report commit and push follow; no main merge or service gitlink update is performed.
+
 ## Acceptance Criteria
 
 - [x] AV01: eligible PLATFORM and exact PER_SHOP cases return expected descriptors; missing credential excluded with real identities/reason, not a fabricated feature ID.
@@ -193,18 +199,18 @@ Ready for Architect Review.
 ### Git / VCS
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-032`
-  parent branch: `task/ARCH-020-COMMERCE-032`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-032`
-  implementation branch: `task/ARCH-020-COMMERCE-032`
-  shared checkouts switched or mutated: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-032`
+parent branch: `task/ARCH-020-COMMERCE-032`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-032`
+implementation branch: `task/ARCH-020-COMMERCE-032`
+shared checkouts switched or mutated: no
 
 Attempt 2 launcher evidence:
-  parent origin/main incorporated: already-current
-  implementation origin/main incorporated: yes
-  recursive submodules: ready
-  database submodule commit: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+parent origin/main incorporated: already-current
+implementation origin/main incorporated: yes
+recursive submodules: ready
+database submodule commit: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
 
 Implementation commit: pending commit and push after this report update. Parent report commit and push follow. No main merge or service gitlink update is performed.
 
@@ -272,7 +278,7 @@ resolve({
   shopId: "<trusted merchant shop ID>",
   candidates,
   grant,
-})
+});
 ```
 
 and passes that merchant shop ID to `checkConnectionAvailability` for every candidate.

@@ -419,9 +419,9 @@ Ready for Review
 ### Files Changed
 
 - Attempt 2 correction files:
-   - `lib/discovery/storefront-2026-07.json` (deleted)
-   - `scripts/check-storefront-schema-artifact.mjs`
-   - `tests/storefront-schema-graph.test.ts`
+  - `lib/discovery/storefront-2026-07.json` (deleted)
+  - `scripts/check-storefront-schema-artifact.mjs`
+  - `tests/storefront-schema-graph.test.ts`
 - `components/studio-workspace.tsx`
 - `lib/discovery/compiler.ts`
 - `lib/discovery/schema.ts`
@@ -450,6 +450,7 @@ Attempt 2 correction checklist:
 - [x] Preserved accepted artifact graph, provenance/hash, recursive references, truthful DTOs, shared restriction policy, no production `as SchemaPage`, and local/no-network browsing behavior.
 
 Correction mapping:
+
 - Attempt 1 accepted source/provenance and contract work: `lib/discovery/storefront-artifact.ts`, `lib/discovery/artifacts/storefront-2026-07.*`, `lib/discovery/schema.ts`, `lib/discovery/compiler.ts`, `src/studio/contracts.ts`, `src/commerce/integration/studio/services.ts`, `components/studio-workspace.tsx`, `src/studio/testing/in-memory-studio-services.ts`, `package.json`.
 - Attempt 2 legacy-source correction: deleted `lib/discovery/storefront-2026-07.json`; guarded exact path in `scripts/check-storefront-schema-artifact.mjs`; added invariant regression in `tests/storefront-schema-graph.test.ts`.
 

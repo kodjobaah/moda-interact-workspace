@@ -67,11 +67,14 @@ A small internal helper placed alongside expiry logic and its focused tests is p
    ```typescript
    const days = value.checkoutRecoveryLifetimeDays;
    if (!Number.isSafeInteger(days) || (days as number) < 0) {
-     throw new Error("Invalid background runtime configuration: invalid checkoutRecoveryLifetimeDays.");
+     throw new Error(
+       "Invalid background runtime configuration: invalid checkoutRecoveryLifetimeDays.",
+     );
    }
    ```
 
    It must be reached for both `start()` and configuration refresh (`getFresh()`); keep every other field's existing bounded validation intact.
+
 3. Treat `0` as a valid administrator-controlled value: the expiry cutoff is **now**; an active recovery with `lastExternalActivityAt <= now` expires in the next sweep, subject to the existing transaction/recheck safeguards. Never shift the cutoff to yesterday or substitute 1 day.
 4. Preserve the exact `<` / `<=` eligibility equivalence used by existing recovery-expiry semantics at the cutoff.
 5. Calculate the expiry cutoff safely for all non-negative persisted `Int` values. When subtracting the chosen lifetime would yield an unrepresentable timestamp for Prisma/PostgreSQL, treat the inactivity-expiry scan as finding **no age-expired recoveries**, return `0` and avoid passing an invalid/out-of-range `Date` to Prisma. Do not cap the config or reinterpret it as 90 days. Use a focused, tested representability check rather than catching and hiding a Prisma error.

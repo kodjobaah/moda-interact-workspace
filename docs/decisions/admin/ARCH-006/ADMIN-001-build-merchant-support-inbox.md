@@ -22,6 +22,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T17:02:14Z
 ---
+
 # ARCH-006-ADMIN-001: Implement Admin merchant-support server capability
 
 ## Architecture
@@ -59,7 +60,6 @@ The correction is limited to:
 
 If satisfying the correction requires changes outside the explicit file scope below, stop and return `blocked` to `moda_architect`. Do not broaden the task.
 
-
 ### Attempt 3 Architect Correction Contract
 
 Attempt 2 correctly repaired Shared `0.7.1` consumption, translation direction, Shared language validation, status-aware dispatch and the Redis producer lifecycle. Independent architect review found one remaining response-boundary defect in the retained compose transaction.
@@ -94,7 +94,6 @@ Production changes are permitted only in:
 
 No other source file is authorised.
 
-
 ### Attempt 3 File Boundary
 
 Production/test changes are permitted only in:
@@ -118,12 +117,14 @@ No package, lockfile, action, auth, Prisma/database-submodule, UI, queue-monitor
 ## Requirements
 
 Read/query capability:
+
 - authenticate active PlatformAdmin using existing guards;
 - bounded shop/thread search/history and translation views;
 - mark MERCHANT `readAt` first-read stable; reading does not clear pending;
 - no cross-auth spoofing.
 
 Compose capability:
+
 - current admin identity is server-derived;
 - transaction re-checks `thread.assignedPlatformAdminId == currentAdmin.id`;
 - SUPER_ADMIN does not bypass thread ownership for sending;
@@ -138,6 +139,7 @@ English target (primary language `en`): create message `AVAILABLE`, no translati
 Non-English target: create message `PROCESSING` + one PENDING `ADMIN_TO_MERCHANT` translation (`en-GB` -> target); commit first, then best-effort deterministic dispatch enqueue. Redis failure does not fail/delete the message.
 
 Additional translation request:
+
 - validate/canonicalise `targetLanguageTag` with the published Shared `LanguageTagSchema` from the internationalisation entrypoint; do not use a local regex or bare `Intl.Locale` as the validation boundary;
 - load both `kind` and `sourceLanguageTag` from the durable message; the client must not provide direction or source language;
 - derive direction only from the persisted message kind:
@@ -152,6 +154,7 @@ Additional translation request:
 - if the row is `FAILED`, do not bypass the reconciliation path by dispatching it directly; failed recovery is owned by the reconciliation commands below.
 
 Failed translation recovery:
+
 - any active PlatformAdmin with support read access may request targeted `TRANSLATION` reconciliation for a failed translation;
 - `SUPER_ADMIN` may additionally create a bounded `FAILED_TRANSLATIONS` reconciliation request covering failed translations platform-wide;
 - both commands persist `MerchantTranslationReconciliationRequest` first and may best-effort enqueue the shared reconcile hint;
@@ -159,12 +162,14 @@ Failed translation recovery:
 - the request remains durable if Redis is down.
 
 Shared runtime integration:
+
 - after SHARED-004, import deterministic Node helpers from the corrected published `merchant-communications/node` entrypoint;
 - remove the temporary local `.d.ts` declaration shim;
 - do **not** catch module-resolution/import failures and disguise them as Redis outages. A broken package artifact is a build/deployment fault and should fail validation visibly;
 - best-effort error handling should wrap the actual BullMQ enqueue operation, not the package import.
 
 Redis producer lifecycle:
+
 - do not construct an unbounded new BullMQ `Queue` connection for every server action invocation;
 - reuse one module/process-scoped producer for the merchant-communications queue for the configured Redis URL, or otherwise deterministically close an internally-created producer after use;
 - injected test queues must never be closed by production code.
@@ -183,7 +188,6 @@ Attempt 2 — now authorised because SHARED-004 is Complete:
 - [x] Add `tests/security/admin-merchant-support.test.mjs` covering the focused matrix below.
 - [x] Run the complete Validation section.
 - [x] Return this same task to `review` and STOP. Do not mark Complete and do not touch/promote `ADMIN-003`.
-
 
 Attempt 3 — architect-authorised bounded correction:
 
@@ -419,7 +423,6 @@ The implementation should not be discarded. Once SHARED-004 is Complete, archite
 
 `ARCH-006-ADMIN-003` remains Pending and must not be started or promoted by the Admin agent.
 
-
 ### Architect Re-entry Decision — 2026-09-06
 
 SHARED-004 is accepted Complete and `@modainteract/moda-interact-shared@0.7.1` passed registry/clean-consumer verification. ADMIN-001 is returned from Blocked to Ready for **Attempt 2**. Attempt remains `1` until the Admin agent claims the task; the claim must atomically increment it to `2`. Perform only the existing Attempt 2 correction contract, return the task to `review`, do not promote or claim ADMIN-003, and STOP.
@@ -466,8 +469,6 @@ The reported repository-wide 89/90 result is not itself a blocker: the sole fail
 ### Workflow Decision
 
 `ARCH-006-ADMIN-001` returns to `Ready` with `attempt: 2`; the next repository-agent claim must increment it to Attempt 3 and set executor/claimed timestamp atomically. `ARCH-006-ADMIN-003` remains Pending. The agent must perform only the bounded Attempt 3 correction above, return ADMIN-001 to `review`, and STOP.
-
-
 
 ## Attempt 3 Architect Review — 2026-09-06
 

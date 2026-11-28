@@ -131,7 +131,7 @@ Do not change production persistence code.
 Before constructing:
 
 ```ts
-new PrismaClient()
+new PrismaClient();
 ```
 
 validate all of:

@@ -69,18 +69,18 @@ Phase 1 does **not**:
 
 The inspected Phase-1 baseline is:
 
-| Repository | Current Prettier state | Phase-1 action |
-|---|---|---|
-| `moda-interact` | dependency present; no scripts | pin/reconcile, scripts, ignore, format |
-| `moda-interact-admin` | `3.9.6`; scripts present | ignore audit and format |
-| `moda-interact-background` | absent | install, scripts, ignore, format |
-| `moda-interact-commerce` | absent | install, scripts, ignore, format |
-| `moda-interact-database` | absent; `format` means Prisma | install beside Prisma, ignore, format supported files |
-| `moda-interact-gateway` | no `package.json` | create minimal private formatter manifest, format |
-| `moda-interact-messaging` | absent | install, scripts, ignore, format |
-| `moda-interact-shared` | absent | install, scripts, ignore, format |
-| `moda-interact-site` | no `package.json` | create minimal private formatter manifest, format |
-| `moda-interact-system-test` | absent | install, scripts, ignore, format |
+| Repository                  | Current Prettier state         | Phase-1 action                                        |
+| --------------------------- | ------------------------------ | ----------------------------------------------------- |
+| `moda-interact`             | dependency present; no scripts | pin/reconcile, scripts, ignore, format                |
+| `moda-interact-admin`       | `3.9.6`; scripts present       | ignore audit and format                               |
+| `moda-interact-background`  | absent                         | install, scripts, ignore, format                      |
+| `moda-interact-commerce`    | absent                         | install, scripts, ignore, format                      |
+| `moda-interact-database`    | absent; `format` means Prisma  | install beside Prisma, ignore, format supported files |
+| `moda-interact-gateway`     | no `package.json`              | create minimal private formatter manifest, format     |
+| `moda-interact-messaging`   | absent                         | install, scripts, ignore, format                      |
+| `moda-interact-shared`      | absent                         | install, scripts, ignore, format                      |
+| `moda-interact-site`        | no `package.json`              | create minimal private formatter manifest, format     |
+| `moda-interact-system-test` | absent                         | install, scripts, ignore, format                      |
 
 `moda-interact-documentation` also lacks Prettier, but the current agent/task ownership model
 contains no canonical owner or `docs/decisions/documentation/` route. That is recorded as an
@@ -219,18 +219,18 @@ independently after architect review. The user may integrate repositories in any
 
 ## Decisions / Tasks
 
-| Task | Owner | Repository | Status | Depends On |
-|---|---|---|---|---|
-| ARCH-022-SHOPIFY-001 | moda_app | moda-interact | Ready | - |
-| ARCH-022-ADMIN-001 | moda_admin | moda-interact-admin | Ready | - |
-| ARCH-022-BACKGROUND-001 | moda_background | moda-interact-background | Ready | - |
-| ARCH-022-COMMERCE-001 | moda_commerce | moda-interact-commerce | Ready | - |
-| ARCH-022-DATABASE-001 | moda_database | moda-interact-database | Ready | - |
-| ARCH-022-GATEWAY-001 | moda_gateway | moda-interact-gateway | Ready | - |
-| ARCH-022-MESSAGING-001 | moda_messaging | moda-interact-messaging | Ready | - |
-| ARCH-022-SHARED-001 | moda_shared | moda-interact-shared | Ready | - |
-| ARCH-022-SITE-001 | moda_site | moda-interact-site | Ready | - |
-| ARCH-022-SYSTEM-TEST-001 | moda_system_test | moda-interact-system-test | Ready | - |
+| Task                     | Owner            | Repository                | Status | Depends On |
+| ------------------------ | ---------------- | ------------------------- | ------ | ---------- |
+| ARCH-022-SHOPIFY-001     | moda_app         | moda-interact             | Ready  | -          |
+| ARCH-022-ADMIN-001       | moda_admin       | moda-interact-admin       | Ready  | -          |
+| ARCH-022-BACKGROUND-001  | moda_background  | moda-interact-background  | Ready  | -          |
+| ARCH-022-COMMERCE-001    | moda_commerce    | moda-interact-commerce    | Ready  | -          |
+| ARCH-022-DATABASE-001    | moda_database    | moda-interact-database    | Ready  | -          |
+| ARCH-022-GATEWAY-001     | moda_gateway     | moda-interact-gateway     | Ready  | -          |
+| ARCH-022-MESSAGING-001   | moda_messaging   | moda-interact-messaging   | Ready  | -          |
+| ARCH-022-SHARED-001      | moda_shared      | moda-interact-shared      | Ready  | -          |
+| ARCH-022-SITE-001        | moda_site        | moda-interact-site        | Ready  | -          |
+| ARCH-022-SYSTEM-TEST-001 | moda_system_test | moda-interact-system-test | Ready  | -          |
 
 No additional integrated system-test task is required for Phase 1 because there is no
 cross-service runtime behaviour to validate. `ARCH-022-SYSTEM-TEST-001` is repository

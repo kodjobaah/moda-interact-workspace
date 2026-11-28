@@ -104,6 +104,7 @@ Change only the first source-shape test loader in `external-tools-ui.test.tsx` s
 ### R6 — focused controller tests
 
 Add direct tests for authoring-session restoration, revision/Test staleness, Result Template metadata, cancel/reset, saved revision convergence, A→B→A Review fencing and duplicate validation admission.
+
 ### R7 — preserve exact authoring-session overlay semantics
 
 Preserve the current asymmetric session overlay rather than rationalising it during extraction: the definition base is replaced from `authoringSession.definition` only for `mode === "existing"` with matching tool/revision identity; raw editor buffers (`inputSchemaText`, `responseTemplateText`, Admin result-path/literal text) currently read from the supplied session whenever those values are present; the active persisted section consults an `existing` session section without an additional tool/revision identity check; and Result Template authoring metadata is applied whenever supplied. The surrounding `ToolAuthoringScreen` is expected to provide the relevant session, but COMMERCE-006 must preserve the present ToolEditor behaviour exactly.

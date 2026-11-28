@@ -3,7 +3,8 @@ const TEST = "test";
 const PRODUCTION = "production";
 
 export function resolveDeploymentEnvironmentName(): string {
-  const explicit = process.env.DEPLOYMENT_ENVIRONMENT_NAME?.trim().toLowerCase();
+  const explicit =
+    process.env.DEPLOYMENT_ENVIRONMENT_NAME?.trim().toLowerCase();
   if (explicit) return explicit;
 
   const nodeEnvironment = process.env.NODE_ENV?.trim().toLowerCase();

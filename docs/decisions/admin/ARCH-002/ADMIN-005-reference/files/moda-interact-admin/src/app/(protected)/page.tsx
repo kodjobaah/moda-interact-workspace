@@ -1,6 +1,9 @@
 import { AdminShell } from "@/components/admin/admin-shell";
 import { KpiCard } from "@/components/admin/kpi-card";
-import { RecoveryDrawer, type DrawerTab } from "@/components/admin/recovery-drawer";
+import {
+  RecoveryDrawer,
+  type DrawerTab,
+} from "@/components/admin/recovery-drawer";
 import { TenantTable } from "@/components/admin/tenant-table";
 import { requirePlatformAdminPage } from "@/lib/auth/platform-admin";
 import {
@@ -10,7 +13,11 @@ import {
   getTenantDetail,
   getTenantDirectory,
 } from "@/lib/admin/data";
-import type { CustomerListItem, PageResult, RecoveryListItem } from "@/lib/admin/types";
+import type {
+  CustomerListItem,
+  PageResult,
+  RecoveryListItem,
+} from "@/lib/admin/types";
 import {
   cleanSearch,
   firstParam,
@@ -46,7 +53,10 @@ export default async function Home({ searchParams }: PageProps) {
   const recoveryId = firstParam(rawParams.recoveryId) ?? null;
   const messagePage = positiveInt(rawParams.messagePage);
   const rawDrawerTab = firstParam(rawParams.drawerTab);
-  const drawerTab: DrawerTab = rawDrawerTab === "cart" || rawDrawerTab === "lifecycle" ? rawDrawerTab : "conversation";
+  const drawerTab: DrawerTab =
+    rawDrawerTab === "cart" || rawDrawerTab === "lifecycle"
+      ? rawDrawerTab
+      : "conversation";
   const saved = firstParam(rawParams.saved) === "1";
 
   const directory = await getTenantDirectory({
@@ -81,14 +91,15 @@ export default async function Home({ searchParams }: PageProps) {
     }
   }
 
-  const recovery = selectedTenant && recoveryId
-    ? await getRecoveryDetail({
-        shopId: selectedTenant.id,
-        recoveryId,
-        messagePage,
-        messagePageSize: MESSAGE_PAGE_SIZE,
-      })
-    : null;
+  const recovery =
+    selectedTenant && recoveryId
+      ? await getRecoveryDetail({
+          shopId: selectedTenant.id,
+          recoveryId,
+          messagePage,
+          messagePageSize: MESSAGE_PAGE_SIZE,
+        })
+      : null;
 
   const returnTo = withParamUpdates("/", params, { saved: null });
 
@@ -96,13 +107,27 @@ export default async function Home({ searchParams }: PageProps) {
     <AdminShell active="tenants" search={search}>
       <div className="flex-1 overflow-auto p-4 sm:p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[var(--brand-900)]">Tenant Directory</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage merchants and investigate abandoned-cart recovery activity.</p>
+          <h1 className="text-2xl font-bold text-[var(--brand-900)]">
+            Tenant Directory
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage merchants and investigate abandoned-cart recovery activity.
+          </p>
         </div>
 
-        <section className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4" aria-label="Platform summary">
-          <KpiCard label="Active Tenants" value={directory.kpis.activeTenants.toLocaleString("en-GB")} />
-          <KpiCard label="Active Recoveries (Now)" value={directory.kpis.activeRecoveries.toLocaleString("en-GB")} accent />
+        <section
+          className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4"
+          aria-label="Platform summary"
+        >
+          <KpiCard
+            label="Active Tenants"
+            value={directory.kpis.activeTenants.toLocaleString("en-GB")}
+          />
+          <KpiCard
+            label="Active Recoveries (Now)"
+            value={directory.kpis.activeRecoveries.toLocaleString("en-GB")}
+            accent
+          />
         </section>
 
         <TenantTable
@@ -119,7 +144,9 @@ export default async function Home({ searchParams }: PageProps) {
         />
       </div>
 
-      {recovery ? <RecoveryDrawer recovery={recovery} tab={drawerTab} params={params} /> : null}
+      {recovery ? (
+        <RecoveryDrawer recovery={recovery} tab={drawerTab} params={params} />
+      ) : null}
     </AdminShell>
   );
 }

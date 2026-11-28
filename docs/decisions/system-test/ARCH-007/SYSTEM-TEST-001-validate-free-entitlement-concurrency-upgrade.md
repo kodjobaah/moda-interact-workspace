@@ -12,7 +12,7 @@ priority: 210
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: 
+depends_on:
   - ARCH-007-SHOPIFY-002
   - ARCH-007-BACKGROUND-003
   - ARCH-007-ADMIN-002
@@ -104,7 +104,6 @@ Luna deterministic-execution guardrails:
 - Follow `docs/agent-vcs-ownership-policy.md` for all Git/VCS operations.
 - Before returning this task to `review`, commit and push the assigned implementation `task/ARCH-007-SYSTEM-TEST-001` branch and the mirrored parent-workspace `task/ARCH-007-SYSTEM-TEST-001` branch; the parent commit is limited to the current task file plus explicitly task-owned evidence.
 - Do not merge either task branch into `main`, push `main`, force-push, or stage the parent-workspace implementation submodule gitlink.
-
 
 ## Completion Report
 

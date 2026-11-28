@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-032-MCP-001
+  - ARCH-032-MCP-001
 enables:
-- ARCH-032-GATEWAY-002
-- ARCH-032-SYSTEM-TEST-002
+  - ARCH-032-GATEWAY-002
+  - ARCH-032-SYSTEM-TEST-002
 created: 2026-10-10
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # Provision private standalone MCP runtime

@@ -57,7 +57,7 @@ Expose and persist the default-off notification toggle in existing Shopify Recov
 - Expose `notifyOnInitialRecoveryOutreach` as a **top-level Boolean** in the Shopify settings loader snapshot or a separate merchant settings field; do not put it in `effective`/`merchant` objects passed to `parseEffectiveRecoveryPolicy` from Shared, which owns only delays/offer/follow-up.
 - Initialise unchecked/default OFF from the `ShopSettings` row. Save exactly `"true"` or `"false"` as a form field named `notifyOnInitialRecoveryOutreach` (include explicit false; native unchecked checkbox omission is not acceptable for this strict form contract).
 - Update the exact allowed field list in `settings-save/route.ts`; reject missing, ambiguous, duplicated or non-Boolean string values with `INVALID_INPUT`. Do not silently convert arbitrary truthy strings to true.
-- Extend `saveMerchantRecoveryPolicy(shopId, input, now, expectedRevision, client)` to update notification preference *in the same existing ShopSettings transaction*. The current early-return equality uses only `revisionOf(toPolicy(...))` and would silently discard a **preference-only** update: include this Boolean in the comparison before returning unchanged.
+- Extend `saveMerchantRecoveryPolicy(shopId, input, now, expectedRevision, client)` to update notification preference _in the same existing ShopSettings transaction_. The current early-return equality uses only `revisionOf(toPolicy(...))` and would silently discard a **preference-only** update: include this Boolean in the comparison before returning unchanged.
 - Keep `lockSettingsShop`, row revision check, discount validation and existing merchant-policy values intact. For a real preference change, enforce expected `updatedAt` revision even if delay/offer/follow-up fields match. Concurrent stale preference saves must fail with 409.
 - Admin override remains a read-only discount/delay/follow-up mechanism; it does not replace or force the opt-in. Saving the checkbox cannot change credit accounting or initiate a recovery.
 - Use existing Shopify merchant i18n for all 20 language files, accessible checkbox label/help, no English-only hardcoded UI.
@@ -171,25 +171,25 @@ None discovered.
 ### Task Branch / Worktree Evidence
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-SHOPIFY-001`
-  parent branch: `task/ARCH-050-SHOPIFY-001`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-SHOPIFY-001`
-  implementation branch: `task/ARCH-050-SHOPIFY-001`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-SHOPIFY-001`
+parent branch: `task/ARCH-050-SHOPIFY-001`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-SHOPIFY-001`
+implementation branch: `task/ARCH-050-SHOPIFY-001`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded database submodule commit: `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded database submodule commit: `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
 
 Claim evidence: Attempt 1, executor `codex`, claim commit `8fc3b0b5a3a95150dc01a1e7fad73d49e4f0db43` pushed by the deterministic launcher.
 Implementation evidence: commit `cab6f08` on `task/ARCH-050-SHOPIFY-001`, pushed to `origin`.

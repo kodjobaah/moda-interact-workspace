@@ -88,14 +88,12 @@ Move `ShopInspector` unchanged into `shop-inspector.tsx`: Plan, Active release, 
 
 These modules are presentation only. They must not call server actions, fetch new Shop data, own route state or duplicate Tool/eligibility resolution.
 
-
 ## Work Items
 
 - [x] Extract Shop list presentation.
 - [x] Extract Shop Inspector presentation.
 - [x] Add focused Shop-view tests for current labels/routes/content.
 - [x] Keep controller and both Release modules unchanged.
-
 
 ## Interfaces / Contracts
 
@@ -114,7 +112,6 @@ Presentation-only repository-internal props derived from existing `ShopSummary` 
 - [x] Shops list and detail render the same accepted information/routes with no new search or I/O.
 - [x] Tool revision and current synthetic-fixture link destinations remain exact.
 - [x] Frozen integration/state assets remain unchanged and pass. Hashes are unchanged; the six StudioWorkspace failures match the documented baseline identities.
-
 
 ## Validation
 

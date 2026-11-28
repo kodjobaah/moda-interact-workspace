@@ -19,6 +19,7 @@ enables:
 created: 2026-09-04
 updated: 2026-09-04
 ---
+
 # Add compact queue activity overview cards to Tenant Directory
 
 ## Architecture
@@ -61,7 +62,7 @@ need detailed queue diagnostics on this screen.
 - fetch queue overview data server-side using the existing protected Admin queue
   access pattern;
 - update the page layout so the six summary cards (`Active Tenants`, `Active
-  Recoveries (Now)`, plus four queue cards) fit cleanly without clutter;
+Recoveries (Now)`, plus four queue cards) fit cleanly without clutter;
 - keep the existing tenant table below the overview section.
 
 ## Out of Scope

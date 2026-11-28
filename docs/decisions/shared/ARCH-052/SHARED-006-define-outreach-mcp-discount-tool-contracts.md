@@ -16,11 +16,10 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-052-SHARED-003
-created: '2026-10-29'
+  - ARCH-052-SHARED-003
+created: "2026-10-29"
 updated: 2026-10-29
 ---
-
 
 # ARCH-052-SHARED-006: Define the minimal outreach MCP execution-context contract
 
@@ -79,8 +78,9 @@ export const CommerceOutreachToolContextSchema = z.strictObject({
   outreachAttemptId: IdSchema,
 });
 
-export type CommerceOutreachToolContext =
-  z.infer<typeof CommerceOutreachToolContextSchema>;
+export type CommerceOutreachToolContext = z.infer<
+  typeof CommerceOutreachToolContextSchema
+>;
 ```
 
 **Add this exact export to `moda-interact-shared/src/commerce/index.ts`:**
@@ -122,24 +122,33 @@ CommerceAssertionSchema; // existing conversation resolve / execute assertions
 import { strict as assert } from "node:assert";
 import { CommerceOutreachToolContextSchema } from "./outreach-context";
 
-assert.equal(CommerceOutreachToolContextSchema.safeParse({
-  purpose: "INITIAL_RECOVERY_OUTREACH",
-  checkoutRecoveryId: "recovery_456",
-  outreachAttemptId: "attempt_789",
-}).success, true);
+assert.equal(
+  CommerceOutreachToolContextSchema.safeParse({
+    purpose: "INITIAL_RECOVERY_OUTREACH",
+    checkoutRecoveryId: "recovery_456",
+    outreachAttemptId: "attempt_789",
+  }).success,
+  true,
+);
 
-assert.equal(CommerceOutreachToolContextSchema.safeParse({
-  purpose: "INITIAL_RECOVERY_OUTREACH",
-  checkoutRecoveryId: "recovery_456",
-  outreachAttemptId: "attempt_789",
-  shopId: "model_forged_shop", // unknown extra key
-}).success, false);
+assert.equal(
+  CommerceOutreachToolContextSchema.safeParse({
+    purpose: "INITIAL_RECOVERY_OUTREACH",
+    checkoutRecoveryId: "recovery_456",
+    outreachAttemptId: "attempt_789",
+    shopId: "model_forged_shop", // unknown extra key
+  }).success,
+  false,
+);
 
-assert.equal(CommerceOutreachToolContextSchema.safeParse({
-  purpose: "CONVERSATION",
-  checkoutRecoveryId: "recovery_456",
-  outreachAttemptId: "attempt_789",
-}).success, false);
+assert.equal(
+  CommerceOutreachToolContextSchema.safeParse({
+    purpose: "CONVERSATION",
+    checkoutRecoveryId: "recovery_456",
+    outreachAttemptId: "attempt_789",
+  }).success,
+  false,
+);
 ```
 
 **Domain checks outside Zod:** MCP validates the existing top-level shop identity; matches recovery and attempt to that shop in PostgreSQL; rejects model-controlled identities; restricts tool discovery/calls to the permitted context and current merchant settings. Successful structural parsing **never by itself grants a capability**.

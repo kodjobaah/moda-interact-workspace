@@ -15,7 +15,7 @@ updated: 2026-10-30
 
 ## Problem
 
-ARCH-035/048 already deliver Woo checkout and linked-order activity through authenticated `/v1/woocommerce/activity` and BullMQ into the composed Background recovery services. Woo checkout snapshots are current while only a pending delayed candidate exists. Once a `CheckoutRecovery` is inserted, `WooCheckoutActivityService` finds *any* row and records only `lastExternalActivityAt`, while `WooRecoveryAdmissionService` refuses any further row and always writes `generation: 1`. The orchestrator may even retry old initial outreach on a post-recovery checkout edit. Consequently a customer who resumes shopping cannot have a separate subsequent abandonment episode with their updated items and a new eligible initial outreach. The previous architecture explicitly prohibited further generations; that rule is **superseded** by this amendment.
+ARCH-035/048 already deliver Woo checkout and linked-order activity through authenticated `/v1/woocommerce/activity` and BullMQ into the composed Background recovery services. Woo checkout snapshots are current while only a pending delayed candidate exists. Once a `CheckoutRecovery` is inserted, `WooCheckoutActivityService` finds _any_ row and records only `lastExternalActivityAt`, while `WooRecoveryAdmissionService` refuses any further row and always writes `generation: 1`. The orchestrator may even retry old initial outreach on a post-recovery checkout edit. Consequently a customer who resumes shopping cannot have a separate subsequent abandonment episode with their updated items and a new eligible initial outreach. The previous architecture explicitly prohibited further generations; that rule is **superseded** by this amendment.
 
 ## Goals
 
@@ -23,7 +23,7 @@ ARCH-035/048 already deliver Woo checkout and linked-order activity through auth
 2. Close a previous active recovery when a strictly newer authenticated, meaningful `CHECKOUT_UPDATED` activity is accepted; preserve its frozen basket, conversation, status history, prior messages and confirmed billing. Never update old `lineItems` in place to depict a new episode.
 3. Schedule exactly one pending generation after resumption, replacing its complete item snapshot and restarting its timer for further newer updates. Mature **only** that generation and create it once in PostgreSQL after the existing delay/consent/order checks.
 4. Permit a newly created generation its **own initial outreach**, even when an earlier generation already sent one. **No arbitrary cross-generation cap, initial-message cooldown or reuse of old sequence-one attempts.** Retain per-recovery idempotency, merchant eligibility, current Woo consent/STOP, MARKETING template and billing rules.
-5. Block any *new* old-generation provider permit after closure; settle pre-permit unsent attempts/credits without cancelling an already admitted, confirmed or uncertain provider send.
+5. Block any _new_ old-generation provider permit after closure; settle pre-permit unsent attempts/credits without cancelling an already admitted, confirmed or uncertain provider send.
 6. Route inbound WhatsApp replies to current generation when unambiguous; keep replies explicitly referencing old messages in the historical conversation without awakening old recovery automation.
 7. Keep Woo/Shopify job source isolation, existing shared logger, queue capacity/observability, bounded retries and task-owned service structure. Roll out only after final integrated system testing and explicit live-send approval.
 
@@ -38,18 +38,18 @@ ARCH-035/048 already deliver Woo checkout and linked-order activity through auth
 
 ## Current Architecture (inspected 2026-10-29 source snapshot)
 
-| Boundary | Actual implementation / limitation |
-|---|---|
-| Woo plugin | `includes/Checkout/CheckoutCapture.php`, `CheckoutSnapshot.php`, `CheckoutActivityPublisher.php` capture material cart/checkout changes, publish complete snapshots via Action Scheduler; empty carts are distinguishable from omitted items. |
-| Hosted API | Existing authenticated `POST /v1/woocommerce/activity` normalises/queues `CHECKOUT_UPDATED`, `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED`. |
-| Woo checkout service | `src/services/woocommerce-recovery/woo-checkout-activity.service.ts`; existing-row branch calls `recordExternalActivity()` and cancels pending candidate rather than rescheduling. |
-| Existing-row adapter | `woo-checkout-activity.adapters.ts` currently looks up the **oldest** generation (`asc`) and updates only `lastExternalActivityAt`. |
-| Candidate storage | `woo-candidate-queue.service.ts` has one job ID per checkout; `woo-activity-watermark.store.ts` has no generation; checkout index removal can delete a newer mapping unless ownership-checked. |
-| Admission | `woo-recovery-admission.service.ts` rejects any prior recovery and INSERTs generation 1. |
-| Order reconciliation | `woo-order-reconciliation.service.ts` observes placed/paid/cancelled events and has a bounded Redis terminal-evidence TTL; `ORDER_PLACED` is not payment. |
-| Send safety | `woo-recovery-outreach.service.ts`, `woo-initial-send-fence.service.ts`, ARCH-046 final SQL consent/STOP/template permit; Woo outbound production default is disabled, test callback only. |
-| Inbound routing | `recovery-routing.service.ts` counts distinct sent conversations across statuses/shops, which becomes ambiguous when multiple generations exist. |
-| Durable data | `CheckoutRecovery` has `generation Int @default(1)`, `@@unique([shopId,checkoutToken,generation])`, `CheckoutRecoveryStatusHistory`, attempts, conversation, billing reservations and usage. |
+| Boundary             | Actual implementation / limitation                                                                                                                                                                                                            |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Woo plugin           | `includes/Checkout/CheckoutCapture.php`, `CheckoutSnapshot.php`, `CheckoutActivityPublisher.php` capture material cart/checkout changes, publish complete snapshots via Action Scheduler; empty carts are distinguishable from omitted items. |
+| Hosted API           | Existing authenticated `POST /v1/woocommerce/activity` normalises/queues `CHECKOUT_UPDATED`, `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED`.                                                                                                 |
+| Woo checkout service | `src/services/woocommerce-recovery/woo-checkout-activity.service.ts`; existing-row branch calls `recordExternalActivity()` and cancels pending candidate rather than rescheduling.                                                            |
+| Existing-row adapter | `woo-checkout-activity.adapters.ts` currently looks up the **oldest** generation (`asc`) and updates only `lastExternalActivityAt`.                                                                                                           |
+| Candidate storage    | `woo-candidate-queue.service.ts` has one job ID per checkout; `woo-activity-watermark.store.ts` has no generation; checkout index removal can delete a newer mapping unless ownership-checked.                                                |
+| Admission            | `woo-recovery-admission.service.ts` rejects any prior recovery and INSERTs generation 1.                                                                                                                                                      |
+| Order reconciliation | `woo-order-reconciliation.service.ts` observes placed/paid/cancelled events and has a bounded Redis terminal-evidence TTL; `ORDER_PLACED` is not payment.                                                                                     |
+| Send safety          | `woo-recovery-outreach.service.ts`, `woo-initial-send-fence.service.ts`, ARCH-046 final SQL consent/STOP/template permit; Woo outbound production default is disabled, test callback only.                                                    |
+| Inbound routing      | `recovery-routing.service.ts` counts distinct sent conversations across statuses/shops, which becomes ambiguous when multiple generations exist.                                                                                              |
+| Durable data         | `CheckoutRecovery` has `generation Int @default(1)`, `@@unique([shopId,checkoutToken,generation])`, `CheckoutRecoveryStatusHistory`, attempts, conversation, billing reservations and usage.                                                  |
 
 The current source proves code paths; the snapshot does not establish live deployments, actual merchant activity or tests passing in a real LocalWP/Meta/Redis/PostgreSQL stack.
 
@@ -84,20 +84,20 @@ sequenceDiagram
 
 ### Session lifecycle decisions (authoritative)
 
-| Situation | Required result |
-|---|---|
-| No persisted recovery | Existing generation-1 candidate scheduling, full snapshots, debounce/delay, consent at admission. |
-| Recovery G**N** active; strictly newer eligible checkout activity | Transactionally close only G**N** as `CANCELLED` with history `source="woocommerce.checkout"`, `reason="CHECKOUT_RESUMED"`, metadata `{eventId,nextGeneration}`; never rewrite its basket. |
-| Resumption event replay after closure | Repair candidate for the same **N+1**, retry old-attempt settlement; do not close/increment again. |
-| Later activity before N+1 maturity | Replace only N+1 full basket and restart delay, not N+2. |
-| Explicit empty/unknown/conflicting basket | Empty cancels pending; unknown/ambiguous fails closed; refill starts current next generation's candidate. |
-| Candidate N+1 matures | Verify current candidate, latest recovery's resumption history, order/tenant/recipient/consent/STOP/maturity; INSERT recovery N+1 and DETECTED history atomically with metadata `{generation,lastEventId}`. |
-| Same candidate/old event replay | Existing row is an enqueue-repair source **only** when exact admission generation/event provenance matches; otherwise no outreach. |
-| Observed placed/paid/cancelled order | Cancel pending and prevent send through existing order terminal guards; do not treat placement as payment. Redis-only order-first evidence has a bounded TTL; no false guarantee about events never delivered or retained indefinitely. |
-| G1 send already provider-admitted | Cannot unsend/refund it merely because customer resumed. Preserve outcome and settle actual charge; reject *new* old-generation permit. |
-| G2 initial eligible | New `recoveryId` and unique `(recoveryId,sequence=1)` attempt/source/credit; no cross-generation message cap/cooldown. Current Woo test-only default-off stays. |
-| WhatsApp reply with old outbound context | Persist on historical conversation, do not revive old recovery or enqueue old AI automation. |
-| Unreferenced WhatsApp reply | Select latest eligible current recovery **only if globally unambiguous across shops**; otherwise provide guidance. |
+| Situation                                                         | Required result                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No persisted recovery                                             | Existing generation-1 candidate scheduling, full snapshots, debounce/delay, consent at admission.                                                                                                                                       |
+| Recovery G**N** active; strictly newer eligible checkout activity | Transactionally close only G**N** as `CANCELLED` with history `source="woocommerce.checkout"`, `reason="CHECKOUT_RESUMED"`, metadata `{eventId,nextGeneration}`; never rewrite its basket.                                              |
+| Resumption event replay after closure                             | Repair candidate for the same **N+1**, retry old-attempt settlement; do not close/increment again.                                                                                                                                      |
+| Later activity before N+1 maturity                                | Replace only N+1 full basket and restart delay, not N+2.                                                                                                                                                                                |
+| Explicit empty/unknown/conflicting basket                         | Empty cancels pending; unknown/ambiguous fails closed; refill starts current next generation's candidate.                                                                                                                               |
+| Candidate N+1 matures                                             | Verify current candidate, latest recovery's resumption history, order/tenant/recipient/consent/STOP/maturity; INSERT recovery N+1 and DETECTED history atomically with metadata `{generation,lastEventId}`.                             |
+| Same candidate/old event replay                                   | Existing row is an enqueue-repair source **only** when exact admission generation/event provenance matches; otherwise no outreach.                                                                                                      |
+| Observed placed/paid/cancelled order                              | Cancel pending and prevent send through existing order terminal guards; do not treat placement as payment. Redis-only order-first evidence has a bounded TTL; no false guarantee about events never delivered or retained indefinitely. |
+| G1 send already provider-admitted                                 | Cannot unsend/refund it merely because customer resumed. Preserve outcome and settle actual charge; reject _new_ old-generation permit.                                                                                                 |
+| G2 initial eligible                                               | New `recoveryId` and unique `(recoveryId,sequence=1)` attempt/source/credit; no cross-generation message cap/cooldown. Current Woo test-only default-off stays.                                                                         |
+| WhatsApp reply with old outbound context                          | Persist on historical conversation, do not revive old recovery or enqueue old AI automation.                                                                                                                                            |
+| Unreferenced WhatsApp reply                                       | Select latest eligible current recovery **only if globally unambiguous across shops**; otherwise provide guidance.                                                                                                                      |
 
 ## Request / Event Flow
 
@@ -107,13 +107,13 @@ The plugin still captures Woo-supported cart/checkout events, constructs a full 
 
 Only `moda-interact-background/` owns the new runtime work. Use separate tasks, no cross-task file edits:
 
-| Task | Owns files / outcome | Do NOT implement there |
-|---|---|---|
-| `ARCH-048-BACKGROUND-007` | `contracts.ts`; checkout activity/adapters; candidate queue/watermark; narrow index ownership API; close/resume and candidate scheduling | Admission INSERT, Meta/billing, worker wiring, inbound routing |
-| `ARCH-048-BACKGROUND-008` | `woo-recovery-admission.service.ts`, `woo-recovery-admission-evidence.ts` | Contract rewrites, closure, outreach, workers |
-| `ARCH-048-BACKGROUND-009` | `woo-recovery-outreach.service.ts`/adapters; narrow final permit and reservation settlement | New recovery INSERT, candidate scheduling, shared billing rewrite, routing/worker wiring |
-| `ARCH-048-BACKGROUND-010` | `recovery-routing.service.ts`, narrow `whatsapp-inbound-processing.service.ts` consumer changes | Woo capture/admission/outreach/billing, general WhatsApp refactor |
-| `ARCH-048-BACKGROUND-011` | `woo-recovery-orchestrator.service.ts`, `woo-recovery-composition.ts`, existing worker routing/entrypoints | Reimplementation of BG007–BG010 business rules |
+| Task                      | Owns files / outcome                                                                                                                     | Do NOT implement there                                                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `ARCH-048-BACKGROUND-007` | `contracts.ts`; checkout activity/adapters; candidate queue/watermark; narrow index ownership API; close/resume and candidate scheduling | Admission INSERT, Meta/billing, worker wiring, inbound routing                           |
+| `ARCH-048-BACKGROUND-008` | `woo-recovery-admission.service.ts`, `woo-recovery-admission-evidence.ts`                                                                | Contract rewrites, closure, outreach, workers                                            |
+| `ARCH-048-BACKGROUND-009` | `woo-recovery-outreach.service.ts`/adapters; narrow final permit and reservation settlement                                              | New recovery INSERT, candidate scheduling, shared billing rewrite, routing/worker wiring |
+| `ARCH-048-BACKGROUND-010` | `recovery-routing.service.ts`, narrow `whatsapp-inbound-processing.service.ts` consumer changes                                          | Woo capture/admission/outreach/billing, general WhatsApp refactor                        |
+| `ARCH-048-BACKGROUND-011` | `woo-recovery-orchestrator.service.ts`, `woo-recovery-composition.ts`, existing worker routing/entrypoints                               | Reimplementation of BG007–BG010 business rules                                           |
 
 No new Woo plugin, API, Database, Shared, Gateway or infrastructure task is justified by this **event-delivered update** change. If those ownership boundaries turn out insufficient, stop and report the precise dependency rather than silently modifying another repo. Existing `ARCH-046-WOOCOMMERCE-003` returning-consent work remains a separate prerequisite of integrated system testing.
 
@@ -160,27 +160,27 @@ Use only published `@modainteract/moda-interact-shared/logging`: bounded `shopId
 
 ## Rollout / Migration
 
-**Pre-production breaking internal candidate format** is proposed because live Woo sending is disabled in the inspected code. Verify actual production state before executing. No DB rows, reservations, provider messages, or external Redis data may be destroyed merely because the application is in development. When moving from old `WooPendingCandidate` to generation-bearing v2, explicitly drain/replace *obsolete Woo test/staging candidates only* under operator control, preserving Shopify candidates. Stage BG007 additive/temporarily optional v2 interfaces, then BG008/BG009/BG010 consumers, and **BG011 final mandatory v2 type-check and worker composition as a single integration gate**; never deploy interim BG007–BG010 builds or turn on sends during their execution. System tests follow accepted implementation and existing Woo returning-consent prerequisite. If live old candidate traffic/production compatibility is discovered, block and author a separate compatible rollout. Never enable Woo provider sending solely to validate this patch.
+**Pre-production breaking internal candidate format** is proposed because live Woo sending is disabled in the inspected code. Verify actual production state before executing. No DB rows, reservations, provider messages, or external Redis data may be destroyed merely because the application is in development. When moving from old `WooPendingCandidate` to generation-bearing v2, explicitly drain/replace _obsolete Woo test/staging candidates only_ under operator control, preserving Shopify candidates. Stage BG007 additive/temporarily optional v2 interfaces, then BG008/BG009/BG010 consumers, and **BG011 final mandatory v2 type-check and worker composition as a single integration gate**; never deploy interim BG007–BG010 builds or turn on sends during their execution. System tests follow accepted implementation and existing Woo returning-consent prerequisite. If live old candidate traffic/production compatibility is discovered, block and author a separate compatible rollout. Never enable Woo provider sending solely to validate this patch.
 
 ## Decisions / Tasks
 
 **Authoritative state is each task's YAML in the supplied snapshot, not old ARCH-048 review prose.** New statuses are defined-but-not-materialised until the developer's task authoring/launcher workflow integrates them.
 
-| Task | Owner | Snapshot status | Depends on |
-|---|---|---|---|
-| `ARCH-048-WOOCOMMERCE-001` | Woo | Superseded | No remote checkout reader |
-| `ARCH-048-API-001/002` | API | Superseded | No new checkout-state API |
-| `ARCH-048-WOOCOMMERCE-002/003` | Woo | Complete | Existing ARCH-035 prerequisites |
-| `ARCH-048-BACKGROUND-006` | Background | Complete | Existing ARCH-035 prerequisites |
-| `ARCH-048-BACKGROUND-001/002/003/004` | Background | Complete | BG006 and original prerequisites |
-| `ARCH-048-BACKGROUND-005` | Background | Complete | BG001–004, ARCH-046 BG002/BG004 |
-| `ARCH-048-BACKGROUND-007` | Background | **Complete** | BG005 |
-| `ARCH-048-BACKGROUND-008` | Background | **Complete** | BG007 |
-| `ARCH-048-BACKGROUND-009` | Background | **Complete** | BG007 |
-| `ARCH-048-BACKGROUND-010` | Background | **Complete** | BG007 |
-| `ARCH-048-BACKGROUND-011` | Background | **Complete** | BG007, BG008, BG009, BG010 |
-| `ARCH-046-WOOCOMMERCE-003` | Woo | Ready | Separate returning-consent task, not reopened here |
-| `ARCH-048-SYSTEM-TEST-001` | System Test | Pending | All original prerequisites plus BG007–BG011 and ARCH-046-WOO003 |
+| Task                                  | Owner       | Snapshot status | Depends on                                                      |
+| ------------------------------------- | ----------- | --------------- | --------------------------------------------------------------- |
+| `ARCH-048-WOOCOMMERCE-001`            | Woo         | Superseded      | No remote checkout reader                                       |
+| `ARCH-048-API-001/002`                | API         | Superseded      | No new checkout-state API                                       |
+| `ARCH-048-WOOCOMMERCE-002/003`        | Woo         | Complete        | Existing ARCH-035 prerequisites                                 |
+| `ARCH-048-BACKGROUND-006`             | Background  | Complete        | Existing ARCH-035 prerequisites                                 |
+| `ARCH-048-BACKGROUND-001/002/003/004` | Background  | Complete        | BG006 and original prerequisites                                |
+| `ARCH-048-BACKGROUND-005`             | Background  | Complete        | BG001–004, ARCH-046 BG002/BG004                                 |
+| `ARCH-048-BACKGROUND-007`             | Background  | **Complete**    | BG005                                                           |
+| `ARCH-048-BACKGROUND-008`             | Background  | **Complete**    | BG007                                                           |
+| `ARCH-048-BACKGROUND-009`             | Background  | **Complete**    | BG007                                                           |
+| `ARCH-048-BACKGROUND-010`             | Background  | **Complete**    | BG007                                                           |
+| `ARCH-048-BACKGROUND-011`             | Background  | **Complete**    | BG007, BG008, BG009, BG010                                      |
+| `ARCH-046-WOOCOMMERCE-003`            | Woo         | Ready           | Separate returning-consent task, not reopened here              |
+| `ARCH-048-SYSTEM-TEST-001`            | System Test | Pending         | All original prerequisites plus BG007–BG011 and ARCH-046-WOO003 |
 
 ```mermaid
 flowchart TD
@@ -201,7 +201,7 @@ The system-test task is **terminal**. No implementation task depends on a system
 
 1. **Live-outbound event completeness:** user has not approved sends when payment/checkout activity is never delivered; retain default-off and make the residual risk explicit in terminal tests.
 2. **Same-second source ordering:** current Woo snapshots do not carry a strictly monotonic revision; keep fail-closed conflicts. Adding a producer revision requires an agreed Woo/API/Shared initiative, not a silent BG007 workaround.
-3. **Active return without changed cart:** no capture event is guaranteed merely by reopening checkout; this scope intentionally handles *received newer checkout updates*, not browser-page-view intent.
+3. **Active return without changed cart:** no capture event is guaranteed merely by reopening checkout; this scope intentionally handles _received newer checkout updates_, not browser-page-view intent.
 4. **Order-first suppression TTL:** accepted Redis evidence is bounded when no recovery row exists. Claims of permanent order-first exclusion require a separate durable source of truth, not an unreviewed timeout increase.
 5. **Provider uncertainty:** any initial admitted before closing the old recovery can still be delivered. Customer-outcome reconciliation, not pretending a provider permit can be withdrawn, is required.
 

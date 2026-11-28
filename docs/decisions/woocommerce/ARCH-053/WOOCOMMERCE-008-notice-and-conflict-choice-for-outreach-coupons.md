@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-053-WOOCOMMERCE-007
-- ARCH-053-WOOCOMMERCE-006
+  - ARCH-053-WOOCOMMERCE-007
+  - ARCH-053-WOOCOMMERCE-006
 enables:
-- ARCH-053-SYSTEM-TEST-003
+  - ARCH-053-SYSTEM-TEST-003
 created: 2026-10-30
 updated: 2026-11-01
 ---
@@ -61,7 +61,7 @@ No ARCH-052 offer discovery or new coupon creation, no Moda-generated error/expi
 - If a verified offered code/group conflicts with an otherwise valid original set, restore the successfully applied original set and, **only if both alternatives can be safely represented**, offer an optional non-error “Try the offered set instead” control. The default is **keep original coupons**; never automatically remove them or display a failure banner. This control is not a technical or coupon-error message.
 - Choice record is restricted to current WC session: `moda_interact_outreach_coupon_choice_v1`, with `{recoveryId, codes: string[1..3], originalCodes, cartHash, createdAt}` (plus checkoutKey only if necessary for stronger session binding). Ten-minute maximum lifetime; invalidate on cart change, checkout state change, order completion, new restore, successful/failed use or expired nonce. Never persist codes in a WordPress option, browser localStorage or client POST/query.
 - POST `moda_interact_outreach_coupon_choice=try_offered` must verify Woo session, server-created state, valid WordPress nonce, same origin, current cart fingerprint and original checkout/recovery generation. Double submits become no-ops. Stale/tampered requests leave the cart as-is and produce **private** diagnostics, no Moda checkout notice.
-- On explicit offer-switch POST, revalidate the **entire** confirmed set with native Woo rules. On any rejected or partially applied code, attempt restoration of the previously successful original set, recalculate, clear only Woo error notices created by *this automatic attempt* and render no Moda error. On unexpected failure, use the guarded rollback and safe storefront redirect from WOOCOMMERCE-002; log the original safe dependency error privately, never claim success.
+- On explicit offer-switch POST, revalidate the **entire** confirmed set with native Woo rules. On any rejected or partially applied code, attempt restoration of the previously successful original set, recalculate, clear only Woo error notices created by _this automatic attempt_ and render no Moda error. On unexpected failure, use the guarded rollback and safe storefront redirect from WOOCOMMERCE-002; log the original safe dependency error privately, never claim success.
 - Preserve unrelated WC notices (including shopper-entered coupon validation), correctly applied discounts, consent/STOP/order/generation fencing and ordinary merchant checkout totals. Never use global `wc_clear_notices()` or modify merchant WordPress debug settings to suppress Moda errors.
 - WordPress PHP must not import `@modainteract/moda-interact-shared/logging`; only hosted Moda Node services use that Shared npm module. Follow the plugin's current bounded private server-side `error_log()` convention and redact coupon values, full links, bearer tokens and customer details.
 - Observe the dedicated task worktree and repository ownership protocol, with no `_index.md`, ARCH-052 task edits or unrelated refactors; only the repository agent updates its task Completion Report and stops for architect review.
@@ -99,13 +99,13 @@ _wpnonce=<session-bound action nonce>
 
 **Customer-visible matrix:**
 
-| Result | Storefront behaviour | Server-side handling |
-|---|---|---|
-| APPLIED / ALREADY_APPLIED | Standard Woo applied codes and true total; no Moda notice | Record successful outcome |
-| REJECTED / GROUP_REJECTED / partial / expired | Current Woo coupons and total; no Moda notice | Record bounded rejection, restore any original set |
-| Verified stacking CONFLICT_REQUIRES_CHOICE | Keep original valid set by default; optional **non-error** offer-switch action | Session-bound state, single use |
-| AUTOMATIC_NOT_FORCED / NOT_APPLICABLE / NO_OFFER | Standard Woo cart and totals only | No fabricated applied coupon |
-| UNVERIFIABLE / dependency failure | Standard safe cart/checkout fallback; no Moda notice | Record original redacted dependency error and bounded reason |
+| Result                                           | Storefront behaviour                                                           | Server-side handling                                         |
+| ------------------------------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| APPLIED / ALREADY_APPLIED                        | Standard Woo applied codes and true total; no Moda notice                      | Record successful outcome                                    |
+| REJECTED / GROUP_REJECTED / partial / expired    | Current Woo coupons and total; no Moda notice                                  | Record bounded rejection, restore any original set           |
+| Verified stacking CONFLICT_REQUIRES_CHOICE       | Keep original valid set by default; optional **non-error** offer-switch action | Session-bound state, single use                              |
+| AUTOMATIC_NOT_FORCED / NOT_APPLICABLE / NO_OFFER | Standard Woo cart and totals only                                              | No fabricated applied coupon                                 |
+| UNVERIFIABLE / dependency failure                | Standard safe cart/checkout fallback; no Moda notice                           | Record original redacted dependency error and bounded reason |
 
 ## Dependencies
 
@@ -252,7 +252,6 @@ The shared checkout logger accepts an optional safe error-message override and s
 
 `ARCH-053-SYSTEM-TEST-003` remains Pending; acceptance and downstream promotion have not occurred.
 
-
 ## Correction Review 2
 
 ### Review Status
@@ -278,7 +277,6 @@ Preserve the source exception type in the private diagnostic and add the regress
 Implemented: `CheckoutOutreachCouponRestorer::canApplyChoiceSetAlone()` now sends the original caught throwable to `CheckoutDiagnosticLogger::record()` with a separate safe-message override. The logger records the original exception class while applying bounded redaction to the message. The regression throws `SyntheticCouponProviderFailure` and asserts the exact logged class, the retained safe provider diagnostic, and the absence of both coupon values.
 
 Validation after this final correction: the task-focused checkout suite passed (55 tests / 428 assertions), `composer lint` passed, and the prior isolated WordPress/WooCommerce integration passed its Classic restore and real Blocks `switch`, `rejected`, and `cart-change` scenarios. The live integration preceded this logger-only PHP change; the new type assertion and PHP lint were rerun afterward. SYSTEM-TEST-003 remains Pending because other required dependencies are not Complete.
-
 
 ## Architect Acceptance — Attempt 2
 

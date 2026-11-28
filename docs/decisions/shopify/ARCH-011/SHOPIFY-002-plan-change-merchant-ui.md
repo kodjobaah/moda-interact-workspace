@@ -15,16 +15,18 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-011-SHOPIFY-001
-- ARCH-011-BACKGROUND-002
+  - ARCH-011-SHOPIFY-001
+  - ARCH-011-BACKGROUND-002
 enables:
-- ARCH-011-SYSTEM-TEST-001
+  - ARCH-011-SYSTEM-TEST-001
 created: 2026-09-14
 updated: 2026-09-14
 ---
+
 # ARCH-011-SHOPIFY-002
 
 ## Authorized implementation surface
+
 ```text
 app/routes/app/billing/route.tsx
 app/routes/app/billing/options/route.tsx
@@ -34,12 +36,15 @@ app/components/dashboard/TopUpPurchasePanel.jsx
 app/i18n/locales/*.json
 tests/unit/billing-ui.test.ts
 ```
+
 Do not change server transition/application logic.
 
 ## Exact presentation rules
+
 Billing route/options loader must expose from durable rows: effective current plan, active provider cycle, unresolved transition status, requested target, provider-confirmed target, current BillingPlanSegments ordered effectiveFrom, pending lower plan/effectiveAt, purchased balance, top-up eligibility.
 
 UI labels:
+
 - REQUESTED: `Upgrade requested — waiting for Shopify confirmation`.
 - PROVIDER_CONFIRMED: `Shopify confirmed <plan> — applying upgrade`.
 - NEEDS_ATTENTION: `Plan change needs reconciliation`; no claim credits are active.
@@ -52,6 +57,7 @@ UI labels:
 Remove `rank` as billing-direction authority from `SubscriptionChangePanel`; consume server-provided `direction` literal only. Remove hard-coded mock plans from production `/app/billing/options` route.
 
 ## Validation
+
 ```text
 npx vitest run tests/unit/billing-ui.test.ts
 npm test

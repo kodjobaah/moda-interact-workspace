@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-014-DATABASE-001
+  - ARCH-014-DATABASE-001
 enables:
-- ARCH-015-SHOPIFY-002
-- ARCH-015-BACKGROUND-001
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-SHOPIFY-002
+  - ARCH-015-BACKGROUND-001
+  - ARCH-015-BACKGROUND-003
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -138,16 +138,16 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 ### Implementation
 
 - Changed only `RecoveryCreditPurchase.providerUsageQuantityBeforeSnapshot` and
-	`providerUsageQuantityAfterSnapshot` from `Int`/`Int?` to `Decimal`/`Decimal?`.
+  `providerUsageQuantityAfterSnapshot` from `Int`/`Int?` to `Decimal`/`Decimal?`.
 - Added migration `20260915140000_arch015_fractional_provider_usage_snapshots`
-	using lossless `DECIMAL(65,30)` casts for existing integer rows.
+  using lossless `DECIMAL(65,30)` casts for existing integer rows.
 - Added the current-schema ARCH-015 validator and preserved the historical
-	first-production `Int` assertion against the immutable baseline migration
-	rather than the mutable current schema.
+  first-production `Int` assertion against the immutable baseline migration
+  rather than the mutable current schema.
 - Regenerated PlantUML and PNG ERD artifacts; only the two provider quantity
-	types changed in the ERD.
+  types changed in the ERD.
 - Preserved entitlement counters, purchase credit amounts, refund quantities,
-	MerchantPricing models, enums, and existing valuation/state constraints.
+  MerchantPricing models, enums, and existing valuation/state constraints.
 
 ### Validation Evidence
 
@@ -156,13 +156,13 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 - Historical first-production baseline validator: passed.
 - ARCH-015 current-schema validator: passed.
 - `npm run migrate:deploy`: passed; the new migration applied successfully to
-	a fresh local PostgreSQL database built from the ARCH-010/014-compatible
-	migration chain.
+  a fresh local PostgreSQL database built from the ARCH-010/014-compatible
+  migration chain.
 - `npm run status`: passed; database schema is up to date.
 - Fresh local database metadata confirmed both columns as `numeric(65,30)`.
 - Fresh local Decimal probe preserved exact `0`, `1`, and `10`, accepted `3.75`,
-	and accepted a nullable after value; entitlement and refund quantity
-	columns remained PostgreSQL `integer`.
+  and accepted a nullable after value; entitlement and refund quantity
+  columns remained PostgreSQL `integer`.
 - ERD PlantUML and PNG regeneration: passed.
 - Historical migration diff check: no historical migration files changed.
 - `git diff --check`: passed.
@@ -171,14 +171,14 @@ Update Completion Report, set `status: review`, clear claim, return to `moda_arc
 ### Revalidation Findings
 
 - No implementation gap was found after comparing the canonical task against
-	the schema, migration, validators, ERD, and focused checks.
+  the schema, migration, validators, ERD, and focused checks.
 - The configured shared database reported `npm run status` as up to date, but
-	the mandated local database `moda_interact` contains a stale
-	`RecoveryCreditPurchase` table shape despite its migration ledger naming
-	ARCH-010/014 migrations. Applying ARCH-015 there fails because the two
-	target columns do not exist. This is an environment baseline mismatch,
-	not a migration defect; validation was therefore repeated successfully
-	against a fresh local database created from the checked-in migrations.
+  the mandated local database `moda_interact` contains a stale
+  `RecoveryCreditPurchase` table shape despite its migration ledger naming
+  ARCH-010/014 migrations. Applying ARCH-015 there fails because the two
+  target columns do not exist. This is an environment baseline mismatch,
+  not a migration defect; validation was therefore repeated successfully
+  against a fresh local database created from the checked-in migrations.
 
 ### Completion Report Status
 

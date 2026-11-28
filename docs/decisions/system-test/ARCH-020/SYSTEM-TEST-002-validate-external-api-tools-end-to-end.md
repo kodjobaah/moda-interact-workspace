@@ -84,8 +84,8 @@ contract contradictions with a source reproduction; do not weaken validation.
 - ARCH-020-BACKGROUND-002
 
 ## Enables
-- ARCH-020-SYSTEM-TEST-001
 
+- ARCH-020-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 

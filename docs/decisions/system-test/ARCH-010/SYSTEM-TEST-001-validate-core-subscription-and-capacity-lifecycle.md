@@ -15,20 +15,20 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-010-GATEWAY-001
-- ARCH-010-BACKGROUND-007
-- ARCH-010-BACKGROUND-009
-- ARCH-010-BACKGROUND-010
-- ARCH-010-BACKGROUND-019
-- ARCH-010-DATABASE-014
-- ARCH-010-BACKGROUND-021
-- ARCH-010-BACKGROUND-022
-- ARCH-010-SHOPIFY-012
-- ARCH-010-SHOPIFY-020
+  - ARCH-010-GATEWAY-001
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-BACKGROUND-010
+  - ARCH-010-BACKGROUND-019
+  - ARCH-010-DATABASE-014
+  - ARCH-010-BACKGROUND-021
+  - ARCH-010-BACKGROUND-022
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-020
 enables:
-- ARCH-010-SYSTEM-TEST-004
+  - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-SYSTEM-TEST-001: Validate core subscription, capacity, top-up and billing-period lifecycle
@@ -175,7 +175,7 @@ If Shopify reports an unexpected current-plan change within the same still-open 
 Return one table with at least:
 
 | Scenario | PASS/FAIL | Durable DB evidence | Queue/runtime evidence | Provider evidence | Merchant UI evidence |
-|---|---|---|---|---|---|
+| -------- | --------- | ------------------- | ---------------------- | ----------------- | -------------------- |
 
 Also record the exact integrated commits/versions exercised for every repository materially involved.
 
@@ -204,19 +204,25 @@ STOP and report instead of guessing if:
 ## Completion Report
 
 ### Status
+
 Not started.
 
 ### Scenarios Executed
+
 Populate during execution.
 
 ### Evidence
+
 Populate during execution.
 
 ### Validation Results
+
 Populate during execution.
 
 ### Git / VCS
+
 Populate canonical isolated worktree/branch/commit/push evidence if test harness code changes.
 
 ### Architect Review
+
 Manual terminal gate; pending developer/architect acceptance.

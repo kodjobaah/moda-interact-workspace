@@ -40,7 +40,7 @@ Enable merchant-controlled, eligible **post-window sequence-two** selection of a
 
 - Add a nonce-authenticated WordPress REST proxy route `GET /moda-interact/v1/merchant/recoveries/{recoveryId}/conversation/follow-up-templates`, using the existing installation-authenticated outgoing API client to call `GET /v1/merchant/conversations/{conversationId}/follow-up-templates`. Resolve `conversationId` from the current authorised recovery detail; do not accept arbitrary client-provided shop IDs or provider account IDs.
 - Extend the existing dedicated `src/recoveries/detail/human/` client, hook/controller and small React composer components to load/display server-authorised choices when HUMAN control is active, the window is closed, and the sequence-two follow-up is due and unused. Preserve native WordPress i18n and modular components.
-- Submit the existing `RECOVERY_FOLLOW_UP_TEMPLATE` command with selected `templateName`, `templateLanguage` and strictly `templateParameters: []`; never embed merchant-supplied brand, checkout or discount parameters. Preserve retry with the *same* idempotency key and no second click while command pending.
+- Submit the existing `RECOVERY_FOLLOW_UP_TEMPLATE` command with selected `templateName`, `templateLanguage` and strictly `templateParameters: []`; never embed merchant-supplied brand, checkout or discount parameters. Preserve retry with the _same_ idempotency key and no second click while command pending.
 
 ## Out of Scope
 
@@ -97,9 +97,11 @@ Use canonical Woo task parent/implementation worktrees and preserve existing nat
 ## Completion Report
 
 ### Status
+
 Accepted. The authenticated WooCommerce catalogue proxy, eligible template picker and idempotent submission are implemented and pushed on task/ARCH-047-WOOCOMMERCE-001.
 
 ### Files Changed
+
 - includes/Rest/RecoveryConversationCommandController.php
 - includes/Api/ModaApiClient.php
 - includes/Api/ConversationCommandContracts.php
@@ -114,6 +116,7 @@ Accepted. The authenticated WooCommerce catalogue proxy, eligible template picke
 - languages/moda-interact.pot and all 19 existing WordPress .po catalogues
 
 ### Work Completed
+
 - Added nonce- and manage_woocommerce-protected GET /moda-interact/v1/merchant/recoveries/{recoveryId}/conversation/follow-up-templates. The controller derives conversationId from the authenticated recovery detail, uses installation authentication, rejects query parameters and returns a strict schemaVersion 1 catalogue capped at 30 entries with private, no-store headers.
 - Added the hosted catalogue client and exact schema validation. The UI requests choices only for a HUMAN-controlled recovery with a known closed service window, active human messaging and unused sequence two. The picker has loading, empty and error/retry states and displays only returned name/language choices.
 - Wired template sends through the existing command and polling path. A selected choice must still exist in the current catalogue; command parameters are always empty, the server remains authoritative for stale or unknown eligibility, and the existing immutable idempotency key prevents duplicate pending sends and is reused on uncertain retry.
@@ -122,6 +125,7 @@ Accepted. The authenticated WooCommerce catalogue proxy, eligible template picke
 - Architect Review was Pending with no requested corrections; no Architect Review content was changed.
 
 ### Validation Results
+
 - WooCommerce bootstrap passed; PHP 8.5.11, Composer 2.10.3 and Docker daemon available.
 - Focused PHP: php vendor/bin/phpunit tests/RecoveryConversationCommandControllerTest.php — 5 tests, 39 assertions passed.
 - Focused JavaScript: npx vitest run tests/js/recovery-human-conversation.test.js tests/js/recovery-human-ui-parity.test.js — 10 tests passed.
@@ -133,18 +137,23 @@ Accepted. The authenticated WooCommerce catalogue proxy, eligible template picke
 - Repository-wide npm run lint:js reported lint errors in unrelated existing files, including integration test files. The changed JavaScript files pass targeted lint.
 
 ### Deviations
+
 - No scope deviations. Repository-wide JavaScript lint remains blocked by unrelated existing lint findings; focused changed-file lint and build pass.
 
 ### Assumptions
+
 - The completed API-001 dependency serves the task-defined authenticated follow-up catalogue contract. WooCommerce consumes and revalidates that hosted response without duplicating eligibility logic.
 
 ### Unresolved Issues
+
 - None for this task.
 
 ### Architectural Concerns
+
 - None.
 
 ### Physical Worktree Isolation
+
 - Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
 - Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-WOOCOMMERCE-001
 - Parent branch: task/ARCH-047-WOOCOMMERCE-001
@@ -155,28 +164,35 @@ Accepted. The authenticated WooCommerce catalogue proxy, eligible template picke
 - Another task worktree reused: no
 
 ### Start-of-Attempt Synchronization
+
 - Parent remote task branch fast-forwarded: not-needed
 - Parent origin/main incorporated: yes
 - Implementation remote task branch fast-forwarded: not-needed
 - Implementation origin/main incorporated: already-current
 
 ### Recursive Implementation Submodules
+
 - git submodule sync --recursive: passed
 - git submodule update --init --recursive: passed
 - Recorded submodule commits: none
 
 ### Commits
+
 - Implementation: 550d468 — pushed to origin/task/ARCH-047-WOOCOMMERCE-001
 - Parent claim: 2258afab6ef62e3feb31b7caad27a286f6954a37 — launcher committed and pushed
+
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1, 2026-10-27. The implementation satisfies the task scope and acceptance criteria. The authenticated proxy derives the conversation from the authorized recovery, validates the bounded catalogue response, and preserves installation/nonce checks. The UI only submits a choice present in the current hosted catalogue, sends empty parameters, and uses the established idempotent command/polling path. The implementation branch is clean and published at `550d468`.
 
 ### Review Notes
+
 Reviewed the implementation diff and task report. No architecture or security correction remains outstanding. The repository-wide JavaScript lint report contains unrelated existing findings; the report records targeted lint passing for changed JavaScript, and the PHP lint, focused PHP/JS suites, build, i18n verification and diff check as passing. These reported results were reviewed, not rerun during this review.
 
 ### Reviewed Files
+
 - `includes/Rest/RecoveryConversationCommandController.php`
 - `includes/Api/ModaApiClient.php`
 - `includes/Api/ConversationCommandContracts.php`
@@ -190,12 +206,15 @@ Reviewed the implementation diff and task report. No architecture or security co
 - task-owned localization catalogues listed in Completion Report
 
 ### Validation Reviewed
+
 - Completion Report evidence: 5 focused PHP tests / 39 assertions; 10 focused JavaScript tests; changed-file JavaScript lint; PHP syntax checks and `npm run lint:php`; build and strict i18n verification; `git diff --check`.
 - Repository-wide `npm run lint:js` reports unrelated existing lint findings; this exception is retained transparently in the Completion Report.
 - Implementation branch `task/ARCH-047-WOOCOMMERCE-001` is clean and pushed at `550d468`.
 
 ### Architecture Conformance
+
 Conforms. WooCommerce remains a nonce-protected proxy over the installation-authenticated hosted API. It neither accepts arbitrary conversation/shop/provider identifiers nor supplies customer-specific template parameters; API-001 remains the authoritative eligibility/admission boundary and BG007 remains authoritative for final provider resolution.
 
 ### Follow-up
+
 `ARCH-047-API-001` is complete. `ARCH-047-SYSTEM-TEST-001` remains pending and manually gated for integrated certification; this review does not claim system-test completion.

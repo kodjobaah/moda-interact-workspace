@@ -65,14 +65,14 @@ A passing service unit test does not mean a running worker invokes the new contr
 
 ### Required integration call-site matrix
 
-| Existing execution boundary | Invocation and safety requirement |
-|---|---|
-| `src/workers/whatsapp.worker.ts` / `src/services/conversation-turn-processor.service.ts` | Preserve inbound/customer recording; invoke the AI mode/revision gate before agent processing, after awaited model/tool work and on final outbound admission. HUMAN/stale results suppress only the unsent automated reply, not customer ingress. |
-| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts` | Invoke the authoritative final send-admission/fencing operation for recovery AI and HUMAN sends before irreversible Meta submission. Respect existing AGENT/AUTOMATION caps and recipient checks; do not cast HUMAN into the old automated sender contract. |
-| Durable `MerchantConversationSendCommand` relay/consumer | Claim/lease accepted commands by stable command ID, invoke HUMAN owner/window/restriction/screening policy, use existing WhatsApp text/template delivery, persist provider-accurate `ConversationMessage` / command statuses; provide bounded retry, restart recovery and duplicate suppression. Both Shopify and Woo insert into this same command source. |
-| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` and existing recovery follow-up worker | Invoke shared recovery follow-up claim and credit admission; scheduled no-response follow-up retains customer-replied suppression and checks HUMAN mode. Merchant-approved sequence-2 template uses the same attempt/credit, not another job/scheduler. |
-| `src/services/whatsapp-provider-status.service.ts` and existing recovery billing reconciliation | Reuse provider receipts / status transitions for HUMAN and follow-up, finalise or compensate existing recovery credits once, preserve unknown-provider outcomes and never fabricate SENT on accepted command alone. |
-| Runtime startup/shutdown + job queue configuration | Ensure command relay actually runs, has bounded concurrency/backpressure, restart-safe state and no dangling registration; if polling, document cadence and retry semantics. No new deployment unless demonstrated necessary. |
+| Existing execution boundary                                                                                              | Invocation and safety requirement                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/workers/whatsapp.worker.ts` / `src/services/conversation-turn-processor.service.ts`                                 | Preserve inbound/customer recording; invoke the AI mode/revision gate before agent processing, after awaited model/tool work and on final outbound admission. HUMAN/stale results suppress only the unsent automated reply, not customer ingress.                                                                                                           |
+| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`                                          | Invoke the authoritative final send-admission/fencing operation for recovery AI and HUMAN sends before irreversible Meta submission. Respect existing AGENT/AUTOMATION caps and recipient checks; do not cast HUMAN into the old automated sender contract.                                                                                                 |
+| Durable `MerchantConversationSendCommand` relay/consumer                                                                 | Claim/lease accepted commands by stable command ID, invoke HUMAN owner/window/restriction/screening policy, use existing WhatsApp text/template delivery, persist provider-accurate `ConversationMessage` / command statuses; provide bounded retry, restart recovery and duplicate suppression. Both Shopify and Woo insert into this same command source. |
+| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` and existing recovery follow-up worker | Invoke shared recovery follow-up claim and credit admission; scheduled no-response follow-up retains customer-replied suppression and checks HUMAN mode. Merchant-approved sequence-2 template uses the same attempt/credit, not another job/scheduler.                                                                                                     |
+| `src/services/whatsapp-provider-status.service.ts` and existing recovery billing reconciliation                          | Reuse provider receipts / status transitions for HUMAN and follow-up, finalise or compensate existing recovery credits once, preserve unknown-provider outcomes and never fabricate SENT on accepted command alone.                                                                                                                                         |
+| Runtime startup/shutdown + job queue configuration                                                                       | Ensure command relay actually runs, has bounded concurrency/backpressure, restart-safe state and no dangling registration; if polling, document cadence and retry semantics. No new deployment unless demonstrated necessary.                                                                                                                               |
 
 ### Race-safe admission is required
 
@@ -88,17 +88,17 @@ A passing service unit test does not mean a running worker invokes the new contr
 
 ### 1. Exact existing files to modify
 
-| Actual file | Where to connect BG001 methods | Required effect |
-|---|---|---|
-| `src/services/conversation-turn-processor.service.ts` | Extend injected `ConversationTurnProcessorDependencies` with ownership/fencing port. Capture control revision at start/claim, validate after loading recovery context, before an `AUTOMATION` clarification/terminal send, after `runCommerceAgentAfterAdmission` returns, and before `admission.sendPreparedText`. Preserve `hasChanged` inbound-version detection as a **separate** condition. | AI and automation do not send if HUMAN owns the conversation or if the original control revision is stale. A suppressed turn completes/releases safely; never drop the inbound customer message or accidentally schedule an AI response during HUMAN mode. |
-| `src/workers/whatsapp.worker.ts` | Inject the accepted BG001 ownership port when constructing `ConversationTurnProcessor`; preserve inbound `message-received` and `message-status` job handlers, audio handling and `process-conversation-turn` registration. | Real workers use the same revision policy; no duplicated inference logic. Audit its direct voice-fallback `outboundWhatsAppAdmissionService.sendText` path for recovery-only ownership fencing. |
-| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts` | Invoke BG001's **atomic final send fence** for all recovery-linked AGENT/AUTOMATION prepared text and template sends, and for HUMAN sends through an approved narrow adapter. Keep existing `revalidateBeforeProvider`, `sendWhatsAppText`/`sendWhatsAppTemplate`, `markSent`, and failure/unknown behaviour. | This is the final provider-boundary choke point. Do not merely add another early check in `ConversationTurnProcessor`. `OutboundAdmissionInput.senderType` remains AGENT/AUTOMATION; **do not cast HUMAN into it or record OUTBOUND_AUTOMATED_MESSAGE usage for human messages**. |
-| `src/services/outbound-whatsapp-admission.service.ts` | Expose any narrow forwarding method the existing delivery facade needs to pass the immutable control revision/send identity; retain automatic admission API semantics. | One transport and provider-receipt path, but separate human versus automated quota admission. |
-| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` | Immediately before its existing `markNoResponseIfWaiting`/`getOrCreateFollowUp`, consult BG001 AI ownership and sequence-2 claim policy. Recheck at final template send. Preserve checkout/recovery lock, recipient suppression, template selector, `RecoveryBillingService`, and `RecoveryOutreachFinalizationService`. | Scheduled follow-up remains no-response-only and cannot send during HUMAN control. A human template uses the same unique sequence-2 row and recovery credit source rather than a second scheduled job. |
-| `src/workers/recovery-outreach-follow-up.worker.ts`, `src/services/checkout-recovery.service.ts` | Keep existing `processRecoveryOutreachFollowUp` job delegate; pass the new policy dependencies into the existing processor if constructor injection requires it. | No new follow-up queue, job identity or scheduling cycle. |
-| `src/services/whatsapp-provider-status.service.ts` | On an existing HUMAN outbound message status event, reconcile its linked send command and outreach attempt/credit through BG001's reconciliation method without changing the canonical status ordering. Reuse `canApplyProviderStatus`. | DELIVERED/READ/FAILED receipts update the **same message**, never a shadow delivery row; duplicate and out-of-order provider events are harmless. |
-| `src/entrypoints/messaging.ts` | Start the new durable human command dispatcher alongside `createWhatsappWorker()`, and register its cancellation/drain in the existing worker shutdown/resource list. | A production messaging deployment consumes commands accepted by either Shopify or WooCommerce. |
-| `src/index.ts` | Register the same human dispatcher in the combined local development worker entrypoint and include its orderly cleanup. | Local development exercises the real path; no orphan service running only in tests. |
+| Actual file                                                                                      | Where to connect BG001 methods                                                                                                                                                                                                                                                                                                                                                                   | Required effect                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/services/conversation-turn-processor.service.ts`                                            | Extend injected `ConversationTurnProcessorDependencies` with ownership/fencing port. Capture control revision at start/claim, validate after loading recovery context, before an `AUTOMATION` clarification/terminal send, after `runCommerceAgentAfterAdmission` returns, and before `admission.sendPreparedText`. Preserve `hasChanged` inbound-version detection as a **separate** condition. | AI and automation do not send if HUMAN owns the conversation or if the original control revision is stale. A suppressed turn completes/releases safely; never drop the inbound customer message or accidentally schedule an AI response during HUMAN mode.                        |
+| `src/workers/whatsapp.worker.ts`                                                                 | Inject the accepted BG001 ownership port when constructing `ConversationTurnProcessor`; preserve inbound `message-received` and `message-status` job handlers, audio handling and `process-conversation-turn` registration.                                                                                                                                                                      | Real workers use the same revision policy; no duplicated inference logic. Audit its direct voice-fallback `outboundWhatsAppAdmissionService.sendText` path for recovery-only ownership fencing.                                                                                   |
+| `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`                  | Invoke BG001's **atomic final send fence** for all recovery-linked AGENT/AUTOMATION prepared text and template sends, and for HUMAN sends through an approved narrow adapter. Keep existing `revalidateBeforeProvider`, `sendWhatsAppText`/`sendWhatsAppTemplate`, `markSent`, and failure/unknown behaviour.                                                                                    | This is the final provider-boundary choke point. Do not merely add another early check in `ConversationTurnProcessor`. `OutboundAdmissionInput.senderType` remains AGENT/AUTOMATION; **do not cast HUMAN into it or record OUTBOUND_AUTOMATED_MESSAGE usage for human messages**. |
+| `src/services/outbound-whatsapp-admission.service.ts`                                            | Expose any narrow forwarding method the existing delivery facade needs to pass the immutable control revision/send identity; retain automatic admission API semantics.                                                                                                                                                                                                                           | One transport and provider-receipt path, but separate human versus automated quota admission.                                                                                                                                                                                     |
+| `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`                | Immediately before its existing `markNoResponseIfWaiting`/`getOrCreateFollowUp`, consult BG001 AI ownership and sequence-2 claim policy. Recheck at final template send. Preserve checkout/recovery lock, recipient suppression, template selector, `RecoveryBillingService`, and `RecoveryOutreachFinalizationService`.                                                                         | Scheduled follow-up remains no-response-only and cannot send during HUMAN control. A human template uses the same unique sequence-2 row and recovery credit source rather than a second scheduled job.                                                                            |
+| `src/workers/recovery-outreach-follow-up.worker.ts`, `src/services/checkout-recovery.service.ts` | Keep existing `processRecoveryOutreachFollowUp` job delegate; pass the new policy dependencies into the existing processor if constructor injection requires it.                                                                                                                                                                                                                                 | No new follow-up queue, job identity or scheduling cycle.                                                                                                                                                                                                                         |
+| `src/services/whatsapp-provider-status.service.ts`                                               | On an existing HUMAN outbound message status event, reconcile its linked send command and outreach attempt/credit through BG001's reconciliation method without changing the canonical status ordering. Reuse `canApplyProviderStatus`.                                                                                                                                                          | DELIVERED/READ/FAILED receipts update the **same message**, never a shadow delivery row; duplicate and out-of-order provider events are harmless.                                                                                                                                 |
+| `src/entrypoints/messaging.ts`                                                                   | Start the new durable human command dispatcher alongside `createWhatsappWorker()`, and register its cancellation/drain in the existing worker shutdown/resource list.                                                                                                                                                                                                                            | A production messaging deployment consumes commands accepted by either Shopify or WooCommerce.                                                                                                                                                                                    |
+| `src/index.ts`                                                                                   | Register the same human dispatcher in the combined local development worker entrypoint and include its orderly cleanup.                                                                                                                                                                                                                                                                          | Local development exercises the real path; no orphan service running only in tests.                                                                                                                                                                                               |
 
 `src/entrypoints/recovery.ts` remains the owner of the existing recovery worker and its queue; change it **only if** a demonstrated dependency-injection/startup requirement exists. Do not add a new Render service or route simply to host the command consumer. Review any direct calls to `whatsAppService.sendWhatsAppText` (e.g. routing guidance) and document whether they are recovery-linked; do not globally apply recovery ownership to unrelated provider traffic.
 
@@ -106,14 +106,13 @@ A passing service unit test does not mean a running worker invokes the new contr
 
 - `src/services/conversation.service.ts` currently implements `toAgentMessage` as `direction === INBOUND ? user : assistant`, which would incorrectly present HUMAN messages as if CommerceAgent said them. Update the history query/projection to carry `senderType`, and represent merchant-authored outbound content as separately labelled, **untrusted** context. Keep AI/automation and customer attribution correct; do not add merchant content to privileged model instructions. Ensure the real history used after a Take Over → Resume AI cycle includes recent HUMAN messages and surrounding customer messages in chronological order, within existing token bounds. If other history readers share this projection, preserve their non-recovery behaviour.
 - `ConversationService.receiveMessage()` currently updates `lastInboundAt: occurredAt`. Replace this overwrite with a database-safe monotonic max of valid verified customer inbound `occurredAt` and existing `lastInboundAt`; apply compatible behaviour to `lastMessageAt` and verified inbound audio events, including duplicate/out-of-order webhook delivery across processes. Do not infer the window from text/audio transcription completion or outbound provider receipts. Preserve inbound `inboundVersion` and idempotent message persistence.
-- `src/services/conversation-turn-processor.service.ts` must use the new sender-aware history and a *captured* original revision on the awaited AI turn. An obsolete model completion remains rejected after HUMAN→AI, even when mode has returned to AI. No messages are lost from the canonical transcript.
-
+- `src/services/conversation-turn-processor.service.ts` must use the new sender-aware history and a _captured_ original revision on the awaited AI turn. An obsolete model completion remains rejected after HUMAN→AI, even when mode has returned to AI. No messages are lost from the canonical transcript.
 
 ### 2. New dispatcher — single durable source, no new queue required
 
 Add a small module such as `src/services/recovery-conversation/merchant-send-dispatcher.ts` (or `src/workers/merchant-conversation-send.worker.ts` if a worker abstraction is preferred) that **polls the accepted PostgreSQL command table**. This is preferable to requiring Shopify and WooCommerce to publish to Redis after database commit. Do not introduce a second BullMQ queue/outbox publisher unless a measured need or an existing approved primitive justifies it.
 
-- A bounded poll discovers `ACCEPTED` and due retryable commands by indexed `nextAttemptAt`/lease expiry; defaults proposed for first version: **batch <= 25 per poll, at most 4 concurrent processing calls, 3-second poll interval**, all configurable/test-injectable. Values are provisional operating defaults, *not measured capacity*.
+- A bounded poll discovers `ACCEPTED` and due retryable commands by indexed `nextAttemptAt`/lease expiry; defaults proposed for first version: **batch <= 25 per poll, at most 4 concurrent processing calls, 3-second poll interval**, all configurable/test-injectable. Values are provisional operating defaults, _not measured capacity_.
 - Claim each row using BG001's PostgreSQL lease/CAS operations (e.g. `FOR UPDATE SKIP LOCKED` in a short transaction); no global per-shop lock or long transaction around network I/O. Stop/drain on shutdown; startup recovers expired leases and pending commands.
 - Re-load command by durable `commandId` and expected lease token. Use frozen payload/recipient, owner revision, current restriction, send window, recipient suppression, template eligibility and rate policy. Route allowed work to the existing WhatsApp delivery adapter with BG001's final fence, then reconcile message/command/attempt/credit state.
 - A failed or disconnected poll does not mark a command SENT; transient errors use bounded backoff with stable command identity. A provider-unknown result is reconciled, never blindly resent. The dispatcher itself does **not** rewrite policy rules or choose different template text.
@@ -121,17 +120,16 @@ Add a small module such as `src/services/recovery-conversation/merchant-send-dis
 
 ### Platform-neutral scheduling matrix — do not add platform-specific queues
 
-| Trigger | Existing/new mechanism | Owning component | Exact contract |
-|---|---|---|---|
-| Inbound verified WhatsApp event | Existing BullMQ messaging/turn consumer | Existing WhatsApp ingress and Background worker | Persist/dedupe inbound; check AI ownership before generation and final provider admission |
-| Automatic no-response recovery follow-up | Existing delayed `recovery-outreach-follow-up` BullMQ job | Existing recovery worker | Suppress if engaged, HUMAN-owned, terminal or sequence-2 already claimed; share BG001 claim/fence |
+| Trigger                                                                   | Existing/new mechanism                                                          | Owning component                                                                        | Exact contract                                                                                                     |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Inbound verified WhatsApp event                                           | Existing BullMQ messaging/turn consumer                                         | Existing WhatsApp ingress and Background worker                                         | Persist/dedupe inbound; check AI ownership before generation and final provider admission                          |
+| Automatic no-response recovery follow-up                                  | Existing delayed `recovery-outreach-follow-up` BullMQ job                       | Existing recovery worker                                                                | Suppress if engaged, HUMAN-owned, terminal or sequence-2 already claimed; share BG001 claim/fence                  |
 | Merchant reply or eligible post-window follow-up from **either** platform | **One** bounded PostgreSQL dispatcher polling `MerchantConversationSendCommand` | Existing messaging worker registered in `entrypoints/messaging.ts` and local `index.ts` | Read indexed due records; lease with row lock/CAS; BG001 policy; final durable permit; one existing Meta transport |
-| UI reads provider/command status | Existing platform-specific HTTP/browser refresh | Shopify screen / Woo screen through hosted API | Read-only bounded refresh, not BullMQ scheduling or delivery |
+| UI reads provider/command status                                          | Existing platform-specific HTTP/browser refresh                                 | Shopify screen / Woo screen through hosted API                                          | Read-only bounded refresh, not BullMQ scheduling or delivery                                                       |
 
 Do **not** implement `SHOPIFY` versus `WOOCOMMERCE` branches in the dispatcher, Background services, queue names, billing, provider reconciliation, or admission. Shared identifiers are `shopId`, `conversationId`, `recoveryId`, `commandId` and original attempt IDs; a shop's provider credentials may be loaded through existing canonical shop adapters, never through Woo WordPress or Shopify browser calls in the worker.
 
-Use the configurable v1 defaults already specified below (3-second polling, batches <=25, <=4 concurrent), not hardcoded capacity promises. Poll only indexed due `ACCEPTED` / safe retryable work; recover expired *pre-admission* leases, but a `DISPATCH_ADMITTED`/`UNKNOWN` operation is reconciliation-only. Multi-replica scheduling must use PostgreSQL locks/leases and stable command IDs. A timeout or poll exception must not create new command IDs or new follow-up jobs. Stop/drain the single relay with the existing messaging-worker lifecycle. No new Render service, queue or Redis publisher is needed for merchant sends.
-
+Use the configurable v1 defaults already specified below (3-second polling, batches <=25, <=4 concurrent), not hardcoded capacity promises. Poll only indexed due `ACCEPTED` / safe retryable work; recover expired _pre-admission_ leases, but a `DISPATCH_ADMITTED`/`UNKNOWN` operation is reconciliation-only. Multi-replica scheduling must use PostgreSQL locks/leases and stable command IDs. A timeout or poll exception must not create new command IDs or new follow-up jobs. Stop/drain the single relay with the existing messaging-worker lifecycle. No new Render service, queue or Redis publisher is needed for merchant sends.
 
 ### 3. Explicit execution order, with concrete call sequences
 
@@ -176,7 +174,7 @@ recovery-outreach-follow-up BullMQ job (unchanged)
   -> existing attempt finalization and provider receipts
 ```
 
-### 4. Tests must prove the *real* injection points, not mocks alone
+### 4. Tests must prove the _real_ injection points, not mocks alone
 
 Add focused tests alongside the repo's existing `tests/unit/services/conversation-turn-processor/`, `tests/unit/services/outbound-whatsapp-admission/`, `tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts`, `tests/unit/services/whatsapp-provider-status.service.test.ts`, and worker tests. For actual database/worker proof, use the existing disposable PostgreSQL/Redis test integration conventions (see `tests/integration/conversation-turn-scheduling.integration.test.ts`).
 
@@ -189,7 +187,7 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 5. Human command was accepted before suspension, but shop restriction commits before final send admission: blocked without Meta send or credit. Later restore does not release a terminal rejection.
 6. Human text queued while window open, processed after 24-hour window closed: denied (not silently changed to template). Human-approved template allowed only when sequence-2 claim remains available.
 7. Scheduled no-response follow-up and manual HUMAN follow-up race: one sequence-2 attempt and one credit identity; existing engaged/terminal recovery suppression remains intact.
-8. Rate-limit/spam denial and Redis outage: no provider calls and no duplicated quota-counter charge on retry. Other AI messages are unaffected by *human-only* suspension.
+8. Rate-limit/spam denial and Redis outage: no provider calls and no duplicated quota-counter charge on retry. Other AI messages are unaffected by _human-only_ suspension.
 9. Duplicate/out-of-order SENT/DELIVERED/READ/FAILED provider receipts update canonical message/command, without phantom SENT or double credit. A definitive provider failure is handled differently from provider uncertainty.
 10. Production `src/entrypoints/messaging.ts` and local `src/index.ts` actually start/stop the command dispatcher; test startup registration and clean shutdown, not only direct service calls.
 
@@ -200,10 +198,9 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 1. Both authenticated merchant producers commit the **same command shape**; the single DB dispatcher never accesses an origin-platform field. Test equivalent commands via seeded producer-neutral PostgreSQL fixtures (neither Shopify nor Woo implementation is a BG002 prerequisite).
 2. Inbound customer messages continue through existing BullMQ; verified out-of-order and audio inbound keep monotonic `lastInboundAt`, and an old message cannot prematurely close the active window.
 3. CommerceAgent resumed after HUMAN intervention receives properly attributed merchant-authored history, not forged `assistant` messages; an obsolete AI turn never sends after a mode revision cycle.
-4. Automated follow-up remains on its original delayed BullMQ queue and uses the same sequence-2 claim as a HUMAN template. A previously scheduled *unclaimed* row can be won exactly once by HUMAN; a claimed/UNKNOWN/sent row cannot be stolen.
+4. Automated follow-up remains on its original delayed BullMQ queue and uses the same sequence-2 claim as a HUMAN template. A previously scheduled _unclaimed_ row can be won exactly once by HUMAN; a claimed/UNKNOWN/sent row cannot be stolen.
 5. All recovery-linked AI/AUTOMATION and HUMAN provider sends reach one final durable admission boundary. `CLAIMED` does not send, a committed suspension/takeover before permit denies, a permit-first provider request may complete later, and a crash/unknown result cannot cause a blind duplicate Meta submission.
 6. Two messaging worker replicas poll concurrently: one command claim/permit, bounded concurrency and correct restart/shutdown. Redis polling is **not** used for merchant command discovery; Redis/BullMQ continues for existing inbound/follow-up jobs.
-
 
 ## Work Items
 
@@ -271,16 +268,21 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 ## Completion Report
 
 ### Status
+
 Complete — Attempt 2 was accepted in architect review, and the developer explicitly completed the task on 2026-10-18. Attempt remains 2; no merge to `main` was performed.
 
 ### Files Changed
+
 Baseline implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07` changes 26 files in the Background task worktree. Attempt 2 correction commit `ea526a6` adds HUMAN provider-status command convergence, sequence-two failure receipt reconciliation, normalized worker-job coverage, a shared dispatcher lifecycle helper used by both entrypoints, and the focused test scenarios. Both commits are published on `origin/task/ARCH-040-BACKGROUND-002`.
 
 ### Work Completed
+
 Attempt 1 implementation remains published as `837686b983acc93263afdbd8b1fe4bf82186ac07`: central AI revision gates, final outbound fencing, PostgreSQL-leased HUMAN command dispatcher, bounded polling/processing, restart-safe UNKNOWN handling, scheduled/merchant sequence-2 policy sharing, follow-up credit repair, and production/local dispatcher registration. Attempt 2 adds linked HUMAN receipt reconciliation, normalized worker job parsing/persistence coverage paired with the turn-processor HUMAN suppression test, producer-neutral parity, expired-window/no-fallback, sequence-two claim/send/credit competition and retry denial, and shared lifecycle start/close coverage.
 
 ### Validation Results
+
 Final rerun on 2026-10-18 against implementation commit `ea526a6`:
+
 - `npm run test:arch040-background-wiring`: passed, 6 files / 88 tests.
 - `node_modules/.bin/vitest run tests/unit/services/whatsapp-provider-status.service.test.ts`: passed, 1 file / 29 tests.
 - `npm run test:arch040-background-runtime:postgres`: passed, 1 file / 15 tests against disposable PostgreSQL/Redis and the Background-local WhatsApp emulator.
@@ -292,18 +294,23 @@ Final rerun on 2026-10-18 against implementation commit `ea526a6`:
 The architect accepted the documented evidence boundaries: producer parity is proven with equivalent origin-neutral database command fixtures rather than platform-owned producers; inbound persistence and HUMAN suppression are tested at their production worker/turn-processor boundaries rather than in one end-to-end BullMQ process; and both entrypoints use the lifecycle helper whose start/close contract is directly unit-tested. The separate ARCH-040 system-test tasks retain end-to-end platform certification responsibility.
 
 ### Deviations
+
 Architect Review Accepted the bounded evidence approach: Shopify and WooCommerce producer implementations are out of scope; runtime parity seeds two equivalent origin-neutral command rows and proves identical dispatcher behavior without importing either platform's code. Worker ingress and downstream HUMAN suppression are proven at their production function boundaries in focused unit suites rather than one end-to-end BullMQ integration process. The shared dispatcher lifecycle helper's start/close contract is tested directly and is registered by both entrypoints; platform end-to-end certification remains with the dependent system-test tasks.
 
 ### Assumptions
+
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
+
 None within BG002's accepted scope. Platform end-to-end certification remains assigned to the dependent ARCH-040 system-test tasks.
 
 ### Architectural Concerns
+
 Return cross-repository schema/contract or provider-send-ordering gaps to `moda_architect`.
 
 ### Physical Worktree Isolation and Synchronization
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-002`, `task/ARCH-040-BACKGROUND-002`
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-002`, `task/ARCH-040-BACKGROUND-002`
@@ -319,12 +326,15 @@ Return cross-repository schema/contract or provider-send-ordering gaps to `moda_
 ## Architect Review
 
 ### Review Status
+
 Accepted — acceptance was explicitly supplied by the developer for this completion action on 2026-10-18.
 
 ### Review Notes
+
 Attempt 2 is accepted with the bounded evidence deviations recorded in the Completion Report: producer-neutral fixtures stand in for platform producer execution; inbound worker persistence and HUMAN turn suppression are covered at their respective production boundaries; the two runtime entrypoints share a directly tested lifecycle helper. Platform end-to-end certification remains assigned to the dependent system-test tasks.
 
 ### Reviewed Files
+
 - `src/services/whatsapp-provider-status.service.ts`
 - `src/entrypoints/messaging.ts`
 - `src/index.ts`
@@ -333,23 +343,28 @@ Attempt 2 is accepted with the bounded evidence deviations recorded in the Compl
 - `tests/unit/workers/whatsapp.worker.test.ts`
 
 ### Validation Reviewed
+
 - `npm run test:arch040-background-wiring`: 6 files / 88 tests passed.
 - `node_modules/.bin/vitest run tests/unit/services/whatsapp-provider-status.service.test.ts`: 1 file / 29 tests passed.
 - `npm run test:arch040-background-runtime:postgres`: 1 file / 15 tests passed.
 - `npm run build`, `npm run lint`, and `git diff --check`: passed.
 
 ### Architecture Conformance
+
 Accepted for the task scope. No new deployable, platform-specific dispatcher logic, duplicate scheduler, schema, or UI route was added.
 
 ### Follow-up
+
 Platform-specific end-to-end producer and inbox certification remains with ARCH-040-SHOPIFY-001, ARCH-040-WOOCOMMERCE-001, and ARCH-040-SYSTEM-TEST-001/002/003 after their other dependencies are satisfied.
 
 ## Developer Self-Review - Changes Requested
 
 ### Review Result
+
 Attempt 1 does not pass the task's stated acceptance criteria. This is a developer self-review, not an architect acceptance or completion decision. Keep `attempt: 1`; transition to `status: ready`, `executor: null`, and `claimed_at: null` so the next developer claim creates Attempt 2.
 
 ### Required Corrections
+
 - Wire verified HUMAN outbound provider status events to the linked `MerchantConversationSendCommand` and recovery attempt/credit reconciliation, preserving `canApplyProviderStatus` ordering and idempotency. Add tests for duplicate and out-of-order SENT/DELIVERED/READ/FAILED receipts.
 - Add real call-site tests proving verified customer inbound persists during HUMAN ownership without an automated reply, while unrelated AI and inbound behavior remains intact.
 - Prove both producer paths create the same platform-neutral command behavior and each results in one canonical HUMAN transcript message and provider submission.
@@ -358,9 +373,11 @@ Attempt 1 does not pass the task's stated acceptance criteria. This is a develop
 - Test dispatcher startup and orderly shutdown from both `src/entrypoints/messaging.ts` and `src/index.ts`.
 
 ### Reviewed Evidence
+
 Implementation diff and source paths were reviewed in the canonical Background task worktree. Focused wiring tests, the 11-case PostgreSQL/Redis integration suite, build, lint and diff hygiene passed. The missing criteria above are concrete coverage and integration gaps, not validation-command failures.
 
 ### Physical Worktree Review
+
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-002`, branch `task/ARCH-040-BACKGROUND-002`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-002`, branch `task/ARCH-040-BACKGROUND-002`.
 - Implementation changes are committed and published; validation left the implementation worktree clean.
@@ -369,9 +386,11 @@ Implementation diff and source paths were reviewed in the canonical Background t
 ## Developer Self-Review - Passed
 
 ### Review Result
+
 Attempt 2 addresses the concrete corrections from the Attempt 1 self-review. Required focused integration, unit, build, lint, and diff-hygiene checks pass. The architect accepted the review and the developer explicitly completed the task; attempt remains 2.
 
 ### Reviewed Evidence
+
 - Implementation commit `ea526a6` is pushed to `origin/task/ARCH-040-BACKGROUND-002`.
 - The runtime suite verifies HUMAN text expiry without template fallback, origin-neutral command parity, scheduled/manual sequence-two competition through one winning provider submission and credit identity, and linked duplicate/out-of-order provider receipt behavior.
 - Unit suites verify normalized inbound job persistence/enqueue, HUMAN turn suppression, legal in-flight command receipt convergence, and dispatcher start/close lifecycle.
@@ -381,7 +400,9 @@ Attempt 2 addresses the concrete corrections from the Attempt 1 self-review. Req
 - `npm run build`, `npm run lint`, and `git diff --check` passed.
 
 ### Completion Decision
+
 The developer explicitly completed `ARCH-040-BACKGROUND-002` on 2026-10-18 after Architect Review Accepted. Set `status: complete`, `executor: null`, `claimed_at: null`, and preserve `attempt: 2`. No merge to `main` was performed or is required.
 
 ### Dependency Frontier
+
 Rechecked downstream tasks that explicitly depend on BG002. Shopify-001, WooCommerce-001, Background-006, and System-Test-001/002/003 remain `pending` because each has other incomplete prerequisites; the system-test tasks also retain their manual execution gate. No downstream status transition was warranted by this completion.

@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-015-SHARED-001
-- ARCH-015-DATABASE-001
-- ARCH-015-DATABASE-002
-- ARCH-015-BACKGROUND-001
-- ARCH-015-SHOPIFY-003
+  - ARCH-015-SHARED-001
+  - ARCH-015-DATABASE-001
+  - ARCH-015-DATABASE-002
+  - ARCH-015-BACKGROUND-001
+  - ARCH-015-SHOPIFY-003
 enables:
-- ARCH-015-ADMIN-001
+  - ARCH-015-ADMIN-001
 created: 2026-09-15
 updated: 2026-09-16
 ---
@@ -459,7 +459,6 @@ Validation:
 
 No `UsageEvent.metadata`, process-local settlement evidence, new queue, Prisma schema change, or Admin monetary fallback was introduced. Both implementation and parent branches are pushed; the database submodule remains at the exact recorded commit.
 
-
 ## Architect Review — Attempt 2
 
 ### Status
@@ -637,6 +636,7 @@ expectedProviderCurrency = purchaseProviderCurrencySnapshot
 ```
 
 using the same currency-rounding rule as the automatic path;
+
 - do not use current Shopify pricing to derive the manual fallback amount;
 - keep all four automatic correction baseline/expected-after fields null;
 - keep `automaticCorrectionUsageEventId = null`.
@@ -849,7 +849,6 @@ focused regression evidence passes, the task claim is cleared, and both worktree
 clean and pushed.
 
 `ARCH-015-ADMIN-001` remains Pending until BACKGROUND-003 is architect-accepted Complete.
-
 
 ## Architect Review — Attempt 3
 

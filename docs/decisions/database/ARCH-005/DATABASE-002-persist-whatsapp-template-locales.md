@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T20:45:00Z
 ---
+
 # Persist locale-aware WhatsApp template variants
 
 ## Objective
@@ -163,14 +164,14 @@ do not guess.
 - [x] no fixed language enum exists.
 - [x] legacy rows remain safe.
 - [x] provider-record uniqueness uses provider template identity plus
-  `providerLanguageCode`, not canonical `languageTag`.
+      `providerLanguageCode`, not canonical `languageTag`.
 - [x] the database rejects a second row that would be simultaneously
-  `APPROVED` and `enabled` for the same
-  `shopId/providerAccountId/purpose/languageTag`.
+      `APPROVED` and `enabled` for the same
+      `shopId/providerAccountId/purpose/languageTag`.
 - [x] the database still permits a non-selectable replacement/history row for
-  the same canonical language.
+      the same canonical language.
 - [x] migration/schema generation/diff checks pass; this repository does not
-  provide a database test or typecheck script.
+      provide a database test or typecheck script.
 
 ## Completion Report
 

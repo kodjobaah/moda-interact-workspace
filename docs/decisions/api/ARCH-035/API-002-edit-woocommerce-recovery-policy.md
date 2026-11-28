@@ -134,7 +134,7 @@ Report and return to `moda_architect`. Do not begin dependent tasks or change ot
 
 Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
 service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope. Shopify's existing merchant form sets a 60-minute *UI* minimum for follow-up, while the Shared
+widening scope. Shopify's existing merchant form sets a 60-minute _UI_ minimum for follow-up, while the Shared
 policy validator accepts integer values from 1 minute. Preserve the existing 1..10080 service contract here;
 Stage 3 WooCommerce UI should continue matching Shopify's 60-minute form minimum. Therefore, the developer's
 50-minute unsaved preview correctly shows an error without indicating a defect in this API.

@@ -74,8 +74,11 @@ Do not modify `src/app/actions/background-runtime-controls.ts` unless source ins
      "checkoutRecoveryLifetimeDays",
      "Checkout recovery lifetime",
      "Expire an active checkout recovery after this many days without checkout/customer activity. Zero expires eligible recoveries immediately; expired history remains. Choose a non-negative whole number of days.",
-     "days", 0, null, 21,
-   )
+     "days",
+     0,
+     null,
+     21,
+   );
    ```
 
 2. In `validateRuntimeConfig()`, use `Number.isSafeInteger(value)`, `value >= field.min`, and `(field.max === null || value <= field.max)` for the existing unified validation loop. **Do not add a second numeric ceiling**. Retain all other cross-field rules and bounds.
@@ -152,7 +155,7 @@ When the implementation, criteria and validation are complete, finish the Comple
 
 ## Implementation Notes
 
-The only permitted business validation is *non-negative whole days*; SQL/Prisma representational limits and JavaScript safe-integer parsing remain technical constraints, not an administrator-configured maximum. The zero-day setting is valid but intentionally expires active recovery episodes immediately; this is not the same as deleting recovery history.
+The only permitted business validation is _non-negative whole days_; SQL/Prisma representational limits and JavaScript safe-integer parsing remain technical constraints, not an administrator-configured maximum. The zero-day setting is valid but intentionally expires active recovery episodes immediately; this is not the same as deleting recovery history.
 
 ## Completion Report
 
@@ -243,7 +246,7 @@ the required values and rejects decimals, scientific notation, empty and
 unsafe input. One acceptance blocker remains:
 
 1. The new `validates before mutation and retains optimistic audited update
-   fields` test only reads `src/app/actions/background-runtime-controls.ts`
+fields` test only reads `src/app/actions/background-runtime-controls.ts`
    as text and checks source ordering and regex matches. It does not invoke
    `mutateBackgroundRuntimeControlsAction`, prove that an allowed lifetime is
    persisted, or assert that the successful audit event contains the expected

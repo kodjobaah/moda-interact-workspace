@@ -538,7 +538,6 @@ When the evidence validates and the architect confirms the concrete live
 observations, `ARCH-003-SYSTEM-TEST-002` may be marked Complete without another
 repository implementation attempt.
 
-
 ## Shopify resource blocker cleared
 
 `ARCH-003-SHOPIFY-003` has been architect-reviewed and accepted Complete.

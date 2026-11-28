@@ -565,4 +565,3 @@ unrelated to this task.
 `ARCH-005-SHOPIFY-001` is Complete. `ARCH-005-SHOPIFY-002` remains Ready and is
 the next Shopify implementation task. `ARCH-005-SYSTEM-TEST-001` remains
 Pending until its remaining implementation dependencies are complete.
-

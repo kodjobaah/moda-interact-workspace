@@ -286,7 +286,7 @@ In `src/commerce/integration/preview/adapters.ts`, create exactly one factory:
 export function createSelectedShopPreviewToolExecutor(
   backend: CommerceBackend,
   environment: string,
-): PreviewConversationToolExecutionPort
+): PreviewConversationToolExecutionPort;
 ```
 
 The implementation MUST execute through:
@@ -314,7 +314,7 @@ For every conversation Tool execution:
 1. find exactly one frozen definition in:
 
 ```ts
-snapshot.definitions
+snapshot.definitions;
 ```
 
 where:
@@ -429,7 +429,7 @@ const budget = {
       now() >= deadlineAt ||
       providerRequests >= 12
     ) {
-      throw new McpError('DEADLINE', 'tool budget exhausted', 409, true);
+      throw new McpError("DEADLINE", "tool budget exhausted", 409, true);
     }
     providerRequests += 1;
   },
@@ -569,7 +569,7 @@ conversationToolExecutor.execute({
   bundle: conversation.bundle,
   snapshot: conversation.snapshot,
   conversationId: conversation.id,
-})
+});
 ```
 
 The independent `runToolTest(...)` path MUST continue using the retained fixture Tool-test executor and fixture IDs.
@@ -757,11 +757,11 @@ selected Shop id carried into grant
 Existing Commerce runtime:
 
 ```ts
-CommerceBackend.execution
-DefinitionExecutor
-AuthorizedToolCall
-CommerceToolResult
-CommerceToolDefinitionSchema
+CommerceBackend.execution;
+DefinitionExecutor;
+AuthorizedToolCall;
+CommerceToolResult;
+CommerceToolDefinitionSchema;
 ```
 
 Production execution dependencies already installed in `getCommerceBackend()`:
@@ -998,13 +998,13 @@ The C006 selected-Shop executor currently does:
 ```ts
 const manifestMatches = bundle.manifest.capabilities.filter(
   (item) =>
-    item.toolDescriptor.toolId === tool.toolId
-    && item.toolDescriptor.toolRevisionId === tool.toolRevisionId,
+    item.toolDescriptor.toolId === tool.toolId &&
+    item.toolDescriptor.toolRevisionId === tool.toolRevisionId,
 );
 
 if (
-  manifestMatches.length !== 1
-  || canonicalJson(manifestMatches[0]!.toolDescriptor) !== canonicalJson(tool)
+  manifestMatches.length !== 1 ||
+  canonicalJson(manifestMatches[0]!.toolDescriptor) !== canonicalJson(tool)
 ) {
   return incompatibleToolResult();
 }

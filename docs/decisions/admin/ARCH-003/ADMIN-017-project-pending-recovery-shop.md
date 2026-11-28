@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
+
 # Project pending-recovery tenant metadata in queue diagnostics
 
 ## Architecture
@@ -78,9 +79,9 @@ Ready for Review.
 ### Work Items
 
 - [x] Extend the allowlisted generic shop projection for pending-recovery
-  payloads.
+      payloads.
 - [x] Preserve normalized projection and orphan behavior across all queue
-  states and detail reads.
+      states and detail reads.
 - [x] Add regression coverage for metadata, facets, and historical orphans.
 
 ### Files Changed

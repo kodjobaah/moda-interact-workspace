@@ -129,9 +129,11 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 Ready for Architect review (Attempt 1, 2026-10-12). Implementation commit: `3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4`.
 
 ### Files Changed
+
 Added `src/domain/whatsapp-recipient-failure.ts` and `tests/unit/domain/whatsapp-recipient-failure.test.ts`. Updated `src/services/whatsapp-provider-status.service.ts`, `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, and their focused tests.
 
 ### Work Completed
+
 Added a pure exact-match classifier: only `131026` maps to `RECIPIENT_UNDELIVERABLE`; all other, absent, or non-exact codes remain unclassified.
 
 The existing serializable provider-status transaction now loads the exact linked `recoveryOutreachAttempt` relation from the `ConversationMessage`. For accepted FAILED/131026 evidence, it compare-and-sets only a `WAITING_FOR_RESPONSE` attempt to `FAILED`, recording `WHATSAPP_RECIPIENT_UNDELIVERABLE` and the failure time. Other attempt lifecycle states are not rewritten; the durable failed message, provider code, and exact attempt/recovery link remain available independently of attempt status. Later DELIVERED/READ evidence remains authoritative at the message layer.
@@ -139,6 +141,7 @@ The existing serializable provider-status transaction now loads the exact linked
 Due follow-up processing now checks the initial attempt's exact `outboundMessageId` before no-response claiming. A durably FAILED message with exact provider code 131026 is suppressed before policy resolution, further attempt creation, billing, template selection, or provider send. Unrelated codes and positive delivery states retain the existing path. No compensation execution, schema/migration, reachability, hard-limit, or merchant-notification behavior was added; compensation remains outside this task's scope.
 
 ### Validation Results
+
 PASS: focused classifier/provider-status/follow-up suite, 52 tests across 3 files.
 
 PASS: `npm run build` (Prisma Client generation and TypeScript compilation), `npm run prisma:validate`, changed-file diagnostics (no errors), and `git diff --check`.
@@ -146,15 +149,19 @@ PASS: `npm run build` (Prisma Client generation and TypeScript compilation), `np
 NOT PASS: `npm run test:unit` and `npm test` each reported 2,084 passed and 6 failed across 204 files. The same six failures are confined to untouched `tests/unit/services/checkout-refresh.test.ts`; its fixture lacks `pendingRecoveryCandidateService.withCheckoutLock`, so execution fails before the checkout-refresh assertions. No test in the changed provider-status/follow-up paths failed. Both full repository gates were run and the failures are reported for Architect review.
 
 ### Deviations
+
 The fresh implementation worktree initially had no Prisma Client. A `pnpm exec` invocation attempted dependency setup and hit pnpm's ignored-build-script gate; Prisma Client was generated using the repository-declared Prisma CLI, after which focused tests and the build passed. The generated untracked pnpm YAML files were removed; no dependency manifest or lockfile change remains.
 
 ### Assumptions
+
 ARCH-028-BACKGROUND-004 owns compensation execution. BACKGROUND-002 preserves durable FAILED/131026 message evidence and exact attempt/recovery lineage without using the mutable attempt status as an eligibility condition.
 
 ### Unresolved Issues
+
 The full repository unit/test gates have six unrelated failures in `tests/unit/services/checkout-refresh.test.ts` because the fixture does not implement the current checkout-lock port. The task-owned focused suite, build, schema validation, diagnostics, and diff checks pass.
 
 ### Architectural Concerns
+
 No new architecture concerns identified. The classifier is 6 lines; touched existing production modules are 270 lines (`whatsapp-provider-status.service.ts`) and 194 lines (`recovery-outreach-follow-up-processor.service.ts`), both below the 300-line ceiling.
 
 ### Attempt 2 — Workflow Evidence Correction
@@ -241,7 +248,6 @@ No further corrections to ARCH-028-BACKGROUND-002. With `completion_mode: automa
 `ARCH-028-BACKGROUND-004` has the prerequisites `ARCH-028-BACKGROUND-002`, `ARCH-028-DATABASE-001`, and `ARCH-027-BACKGROUND-001`. The latter two are Complete in this snapshot; once this acceptance is applied, BACKGROUND-004 is eligible for a separate architect-owned readiness/materialisation step on its own canonical task branch. Do not treat this review as an execution claim for BACKGROUND-004. No `_index.md` updates are made in this bounded acceptance patch.
 
 ### Historical Attempt 1 Architect Review (preserved)
-
 
 #### Review Status
 

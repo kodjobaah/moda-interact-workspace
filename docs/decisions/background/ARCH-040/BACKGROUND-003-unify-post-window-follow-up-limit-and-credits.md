@@ -30,7 +30,6 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 **SUPERSEDED by `ARCH-040-BACKGROUND-001` (service/policy implementation) and `ARCH-040-BACKGROUND-002` (runtime integration). Do not execute this task.** Its detailed requirements are historical context; all required behaviour and tests were folded into the two active tasks.
 
-
 Route scheduled AI/automation and merchant-initiated post-window follow-ups through the same recovery attempt and credit lifecycle.
 
 ## Context
@@ -62,7 +61,6 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 - Shop-level suspension and message screening apply only to HUMAN follow-up sends. A blocked/rejected HUMAN command does not create a second follow-up or consume an extra recovery conversation credit.
 - Admin suspension does not change CommerceAgent/automation policy. Coordinate with BACKGROUND-004/005 at final provider admission; do not bypass those guards for `RECOVERY_FOLLOW_UP_TEMPLATE`.
-
 
 ## Work Items
 
@@ -107,45 +105,59 @@ Use `scripts/start-agent-task.py --prepare` in the actual developer workspace wh
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
+
 None recorded at definition time.
 
 ### Architectural Concerns
+
 Return newly discovered contract or ownership gaps to moda_architect.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.

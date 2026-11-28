@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-040-BACKGROUND-008
-- ARCH-046-BACKGROUND-004
-- ARCH-052-BACKGROUND-018
+  - ARCH-040-BACKGROUND-008
+  - ARCH-046-BACKGROUND-004
+  - ARCH-052-BACKGROUND-018
 enables:
-- ARCH-056-BACKGROUND-004
-- ARCH-056-SYSTEM-TEST-001
-created: '2026-11-03'
+  - ARCH-056-BACKGROUND-004
+  - ARCH-056-SYSTEM-TEST-001
+created: "2026-11-03"
 updated: 2026-11-04
 ---
 
@@ -159,17 +159,17 @@ Apply the parent architecture's mandatory revision-2 logging acceptance contract
 
 Stage and correlation state are local to each invocation, never mutable singleton fields. Carry only already available shop/recovery/attempt/conversation/message identity. Actual source request IDs remain available in their source event; do not invent tracing IDs or change provider inputs to create correlation. Source diagnostics may have downstream contextual outcomes, but raw provider responses are not recopied through the pipeline.
 
-| Selected boundary | Stable event and owner | Required emitted evidence |
-|---|---|---|
-| Meta source response/transport error | Existing WhatsAppService `whatsapp.meta.send.failed` | Preserve original safe response message/code/status/request ID/details, or existing sourceError/causeChain. No fabricated providerError on an internal error. Only the diagnostic corrections below change this owner. |
-| Moderation dependency retry | Existing assessment `conversation.moderation.dependency_unavailable` (read-only source contract) | Preserve bounded exceptionMessage in canonical test/development environment and stage/code/request-attempted/status/assessment identity in production. Downstream typed retry carries assessmentId/retryAt; it never reconstructs raw SDK text/cause from the protected wrapper. |
-| Initial preparation exception or known invalid input | Existing delivery `outbound.template.preparation.failed`, stage `preparation` | Original safe diagnostic plus known initial IDs. A real local validation error retains its safe source message even when converted to refusal; no fabricated upstream fields. |
-| Initial moderation call throws outside a typed retry | Existing delivery `outbound.template.moderation.failed`, stage `moderation` | Actual permitted diagnostic and known IDs. Honor existing moderation privacy projections instead of bypassing them with a raw SDK object. |
-| Shopify initial final-permit exception | Existing recovery fence, new `recovery.initial_outreach.sql_permit.failed` | Actual safe persistence error/code and known initial IDs; initial context only. Other actors' existing policy/log behavior stays unchanged. |
-| Woo initial final-permit exception | Existing `woocommerce.recovery.initial.sql_permit.failed` | Actual safe persistence diagnostic; never new Error(PERSISTENCE_FAILURE). Existing lifetime-policy unavailable warnings retain their real missing/invalid reason and, when parsing actually threw, the safe validation error before conversion. Missing data has no fabricated source exception. |
-| Initial HTTP request fails versus HTTP succeeds then receipt persistence fails | Delivery, new `outbound.initial.send.failed` | Distinct stage `provider_http` or `receipt_persistence`, actual safe exception/classification and known IDs. Preserve the source adapter event. A local DB error is not labeled provider_response or passed to the provider-rejection handler. |
-| Initial operation and cleanup/reconciliation both fail | Aggregating delivery/failure catch, new `outbound.initial.cleanup.failed` | Independently bounded fixed-role fields: preparationError or moderationError with cleanupError, or sendError with reconciliationError, as applicable. Both actual messages appear before throwing the preserved aggregate; aggregate-only logging is insufficient. |
-| Woo guarded sender contextual failure | Existing `woocommerce.recovery.initial.permit.failed` | Existing IDs and safe actual diagnostic/classification; preserve original throw identity and remove raw phone/token/URL spans rather than dropping all useful wording. |
+| Selected boundary                                                              | Stable event and owner                                                                           | Required emitted evidence                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Meta source response/transport error                                           | Existing WhatsAppService `whatsapp.meta.send.failed`                                             | Preserve original safe response message/code/status/request ID/details, or existing sourceError/causeChain. No fabricated providerError on an internal error. Only the diagnostic corrections below change this owner.                                                                           |
+| Moderation dependency retry                                                    | Existing assessment `conversation.moderation.dependency_unavailable` (read-only source contract) | Preserve bounded exceptionMessage in canonical test/development environment and stage/code/request-attempted/status/assessment identity in production. Downstream typed retry carries assessmentId/retryAt; it never reconstructs raw SDK text/cause from the protected wrapper.                 |
+| Initial preparation exception or known invalid input                           | Existing delivery `outbound.template.preparation.failed`, stage `preparation`                    | Original safe diagnostic plus known initial IDs. A real local validation error retains its safe source message even when converted to refusal; no fabricated upstream fields.                                                                                                                    |
+| Initial moderation call throws outside a typed retry                           | Existing delivery `outbound.template.moderation.failed`, stage `moderation`                      | Actual permitted diagnostic and known IDs. Honor existing moderation privacy projections instead of bypassing them with a raw SDK object.                                                                                                                                                        |
+| Shopify initial final-permit exception                                         | Existing recovery fence, new `recovery.initial_outreach.sql_permit.failed`                       | Actual safe persistence error/code and known initial IDs; initial context only. Other actors' existing policy/log behavior stays unchanged.                                                                                                                                                      |
+| Woo initial final-permit exception                                             | Existing `woocommerce.recovery.initial.sql_permit.failed`                                        | Actual safe persistence diagnostic; never new Error(PERSISTENCE_FAILURE). Existing lifetime-policy unavailable warnings retain their real missing/invalid reason and, when parsing actually threw, the safe validation error before conversion. Missing data has no fabricated source exception. |
+| Initial HTTP request fails versus HTTP succeeds then receipt persistence fails | Delivery, new `outbound.initial.send.failed`                                                     | Distinct stage `provider_http` or `receipt_persistence`, actual safe exception/classification and known IDs. Preserve the source adapter event. A local DB error is not labeled provider_response or passed to the provider-rejection handler.                                                   |
+| Initial operation and cleanup/reconciliation both fail                         | Aggregating delivery/failure catch, new `outbound.initial.cleanup.failed`                        | Independently bounded fixed-role fields: preparationError or moderationError with cleanupError, or sendError with reconciliationError, as applicable. Both actual messages appear before throwing the preserved aggregate; aggregate-only logging is insufficient.                               |
+| Woo guarded sender contextual failure                                          | Existing `woocommerce.recovery.initial.permit.failed`                                            | Existing IDs and safe actual diagnostic/classification; preserve original throw identity and remove raw phone/token/URL spans rather than dropping all useful wording.                                                                                                                           |
 
 Do not emit final sent/applied success inside a transaction that may still roll back. Keep provider_http, receipt_persistence, retry and final failure distinct. Logging failure must not affect the permit, receipt, cleanup, provider call count, suppression or thrown value. Expected suppression/held outcomes without an exception use their real reason and safe context; they do not acquire an invented error.
 
@@ -180,7 +180,6 @@ Replace the two contradictory existing assertions: Woo SQL-permit logging must n
 In `WhatsAppService`'s existing diagnostic projection/emission only, apply `safeProviderIdentifier` to nested `providerError.fbtrace_id` as well as top-level `providerRequestId`. Emit the nested value only if its actual source value passes the existing validator; invalid text is omitted, not forwarded or guessed. In `safeProviderDetails`' array branch, combine each child's returned redactionApplied/truncated flags with the parent flags, including strings, primitives and nested arrays. Preserve existing transformed values and item/depth/text limits.
 
 Use the existing helpers. Preserve HTTP requests, timeouts, provider input/output, exception classification, billing, dispatch and retry behavior. Do not create a new parser or generic logging module. Stack emission is not promised, and protected moderation SDK data must not be reattached downstream.
-
 
 The selected BG002 provider-status entry also acquires owned Shop FOR KEY SHARE before message CAS, attempt, or usage operations; it rechecks any routing pointer after locking. BG002 owns that locking-only status/compensation correction. This task does not edit those services or change their delivery/accounting policy.
 
@@ -231,9 +230,16 @@ type InitialOutreachMessageEvidence = Readonly<{
 type InitialOutreachAdmissionLookup =
   | { kind: "absent" }
   | { kind: "prepared"; message: InitialOutreachMessageEvidence }
-  | { kind: "confirmed"; message: InitialOutreachMessageEvidence & { sentAt: Date } }
-  | { kind: "failed"; message: InitialOutreachMessageEvidence;
-      disposition: "pre-permit-refused" | "provider-rejected" | "recipient-unreachable" }
+  | {
+      kind: "confirmed";
+      message: InitialOutreachMessageEvidence & { sentAt: Date };
+    }
+  | {
+      kind: "failed";
+      message: InitialOutreachMessageEvidence;
+      disposition:
+        "pre-permit-refused" | "provider-rejected" | "recipient-unreachable";
+    }
   | { kind: "held"; reason: "provider-outcome-unknown" | "lineage-conflict" };
 ```
 
@@ -309,14 +315,14 @@ Use the exact task-owned new modules and existing regression modules listed in S
 
 In the owned unit tests use the actual installed `@modainteract/moda-interact-shared/logging` createLogger with a capture sink, or test-only factory interception delegating to it. Record package version/resolution and serialize/parse captured records. Assert event, level, service/environment, stage, known IDs and an independently recognizable harmless source message. A mock logger call or thrown-error assertion alone does not prove emission. Inject sensitive spans separately and verify their removal and honest flags; assert original throw identity/approved typed result, no fabricated provider fields, commit timing and sink-failure isolation. Do not replace or upgrade Shared to make the test pass.
 
-| Owned test module | Required logging proof |
-|---|---|
-| `tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts` | Initial preparation exception, typed moderation retry, thrown moderation failure, provider error, HTTP-success/receipt-DB-error, and paired reconciliation error. Distinct source markers/stages; no wrong provider-error handler, retry HTTP or changed exception identity. |
-| `tests/unit/services/recovery-conversation/initial-outreach-permit.test.ts` | Real Shared output for an injected initial Prisma failure with actual code/clientVersion and safe IDs; domain suppression/zero-row CAS has no invented originating error. |
-| `tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts` | Replace synthetic PERSISTENCE_FAILURE expectation with actual safe message/code; verify original thrown object and invalid-policy parser diagnostic before typed suppression. |
-| `tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts` | Replace raw-phone retention assertion. A source message with harmless marker plus phone/token/URL preserves the marker but removes sensitive spans; correct flags and original thrown object remain. |
-| `tests/unit/services/outbound-whatsapp-admission/initial-outreach-admission.test.ts` | Preserve source-event ownership and typed moderation assessment correlation. Existing source diagnostics remain bounded; retry does not expose a protected SDK object/cause or claim a completed send. |
-| `tests/unit/services/whatsapp.service.test.ts` | Actual Shared Meta response message/code/status/request ID/safe details; valid/invalid nested fbtrace_id; arrays and nested arrays with transformed primitive children; sourceError/causeChain on transport failure; no invented providerError without a response; throwing sink preserves request/error behavior. |
+| Owned test module                                                                           | Required logging proof                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts` | Initial preparation exception, typed moderation retry, thrown moderation failure, provider error, HTTP-success/receipt-DB-error, and paired reconciliation error. Distinct source markers/stages; no wrong provider-error handler, retry HTTP or changed exception identity.                                       |
+| `tests/unit/services/recovery-conversation/initial-outreach-permit.test.ts`                 | Real Shared output for an injected initial Prisma failure with actual code/clientVersion and safe IDs; domain suppression/zero-row CAS has no invented originating error.                                                                                                                                          |
+| `tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts`           | Replace synthetic PERSISTENCE_FAILURE expectation with actual safe message/code; verify original thrown object and invalid-policy parser diagnostic before typed suppression.                                                                                                                                      |
+| `tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts`       | Replace raw-phone retention assertion. A source message with harmless marker plus phone/token/URL preserves the marker but removes sensitive spans; correct flags and original thrown object remain.                                                                                                               |
+| `tests/unit/services/outbound-whatsapp-admission/initial-outreach-admission.test.ts`        | Preserve source-event ownership and typed moderation assessment correlation. Existing source diagnostics remain bounded; retry does not expose a protected SDK object/cause or claim a completed send.                                                                                                             |
+| `tests/unit/services/whatsapp.service.test.ts`                                              | Actual Shared Meta response message/code/status/request ID/safe details; valid/invalid nested fbtrace_id; arrays and nested arrays with transformed primitive children; sourceError/causeChain on transport failure; no invented providerError without a response; throwing sink preserves request/error behavior. |
 
 The moderation source files are read-only dependencies. Verify its existing safe preview contract using controlled diagnostics/fixtures; no moderation privacy-policy edit or broad AI-consumer fix is authorized. The actual provider source test owns response detail proof, so downstream tests do not duplicate a provider parser or raw payload logs.
 

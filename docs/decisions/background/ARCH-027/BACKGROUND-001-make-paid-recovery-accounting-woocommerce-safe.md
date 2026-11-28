@@ -45,6 +45,7 @@ Make the existing Background recovery-accounting path safe for Woo before recurr
 This task owns three related prerequisites:
 
 1. **paid included allowance semantics**
+
    ```text
    effectiveAllowance =
        currentAllowanceQuantity ?? grantedQuantity
@@ -60,12 +61,14 @@ This task owns three related prerequisites:
    ```
 
 2. **provider-correct UsageEvent attribution for every recovery capacity source**
+
    ```text
    SHOPIFY Shop     -> UsageEvent.provider = SHOPIFY
    WOOCOMMERCE Shop -> UsageEvent.provider = WOOCOMMERCE
    ```
 
 3. **Woo payment-pause FROZEN fallback**
+
    ```text
    paid included allowance -> unavailable for new recovery
    active promotional credits -> existing eligibility

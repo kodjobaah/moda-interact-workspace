@@ -457,6 +457,7 @@ Review
 Task branch: `task/ARCH-021-COMMERCE-055`.
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-055` on `task/ARCH-021-COMMERCE-055`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-055` on `task/ARCH-021-COMMERCE-055`.
@@ -467,11 +468,13 @@ Physical worktree isolation:
 Start-of-attempt synchronization: parent and implementation task worktrees were prepared by the deterministic launcher; the recursive `database` submodule was initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`main`). During final publication, the three newer `origin/main` commits containing completed C053 changes were merged into the implementation task branch because they overlapped these same UI/test files. The integrated branch was revalidated.
 
 Implementation repository: `moda-interact-commerce`.
+
 - Commit: `c2cebb503bca31088fc0da961a7c0b75b949d9c2` (includes implementation commit `b96aace` and merge of C053 upstream ancestry through `c37a6d97a2454ed496519057efe1250a689fdf6d`).
 - Remote branch: `origin/task/ARCH-021-COMMERCE-055`.
 - Pushed: yes.
 
 Parent workspace task file: `docs/decisions/commerce/ARCH-021/COMMERCE-055-build-external-http-live-test-tab-ui.md`.
+
 - Parent report commit: `4b872169` (records the implementation commit and push evidence).
 - Remote branch: `origin/task/ARCH-021-COMMERCE-055`.
 - Pushed: yes.
@@ -484,6 +487,7 @@ Replaced the External HTTP Test placeholder with bounded argument, run, stage, r
 Lifted Request draft/validity into the editor and Response validity into Test gating. Candidate, arguments, and shop changes suppress stale results; older completions cannot overwrite newer runs, and a synchronous per-candidate guard prevents duplicate submissions. Added bounded result rendering, actionable stage failures, sensitive URL/header redaction, and no-write coverage through both DRAFT and New Tool composition.
 
 Files changed:
+
 - `src/studio/external-http/editor.tsx`
 - `src/studio/external-http/request-tab.tsx`
 - `src/studio/external-http/response-tab.tsx` (preserved from the integrated C053 change)
@@ -497,12 +501,14 @@ Files changed:
 ### Validation Results
 
 Passed on the published merge commit:
+
 - `vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`: 89 tests passed.
 - Targeted ESLint across all nine changed TypeScript files.
 - Changed-file editor diagnostics: no errors in all nine changed TypeScript files.
 - `git diff --check`.
 
 Partial/blocked:
+
 - `npm run typecheck` fails on existing errors in untouched preview imports, compiler/schema typing, studio-service composition, and unrelated tests; changed-file diagnostics report no task-owned errors.
 - `npm run test:arch021-tool-authoring-common` reports 85 passed and one failure in `commerce-lifecycle.test.ts` (`INVALID_DEFINITION` instead of the expected `LIVE_TEST_REQUIRED`), outside the presentation files changed here.
 

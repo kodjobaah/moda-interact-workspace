@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-032-COMMERCE-005
-- ARCH-032-MCP-019
-- ARCH-032-MCP-020
+  - ARCH-032-COMMERCE-005
+  - ARCH-032-MCP-019
+  - ARCH-032-MCP-020
 enables:
-- ARCH-032-GATEWAY-002
-- ARCH-032-SYSTEM-TEST-002
-created: '2026-10-15'
-updated: '2026-10-15'
+  - ARCH-032-GATEWAY-002
+  - ARCH-032-SYSTEM-TEST-002
+created: "2026-10-15"
+updated: "2026-10-15"
 ---
 
 # ARCH-032-COMMERCE-006 — Reconcile Commerce Live Test with the standalone MCP contract

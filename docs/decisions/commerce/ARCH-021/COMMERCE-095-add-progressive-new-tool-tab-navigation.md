@@ -142,8 +142,7 @@ export const NEW_TOOL_AUTHORING_STEPS = [
   "review",
 ] as const;
 
-export type NewToolAuthoringStepId =
-  (typeof NEW_TOOL_AUTHORING_STEPS)[number];
+export type NewToolAuthoringStepId = (typeof NEW_TOOL_AUTHORING_STEPS)[number];
 ```
 
 `ToolAuthoringTabs` and the Previous/Next logic must consume this same order. Do not maintain a second independently ordered six-step array for new Tool navigation.
@@ -164,7 +163,7 @@ Initial new Tool state is exactly:
 
 ```ts
 navigation: {
-  enabledThrough: "tool-definition"
+  enabledThrough: "tool-definition";
 }
 ```
 
@@ -359,7 +358,7 @@ onRequestCheckpointChange?(checkpoint: {
 `ExternalHttpEditor` must report the current pair whenever either value changes. `NewToolWorkspace` consumes that callback and the first-unlock predicate is exactly:
 
 ```ts
-checkpoint.structurallyValid && checkpoint.validated
+checkpoint.structurallyValid && checkpoint.validated;
 ```
 
 Do not invoke `validateExternalRequestAction` from navigation code and do not create another Request validator.
@@ -769,18 +768,21 @@ None.
 Launcher claim: Attempt 2, executor `copilot`, claimed at `2026-09-29T16:29:46Z`; claim commit `92607cab5c3e92426247c3dd72386456edb37cbe` was committed and pushed.
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-095`, `task/ARCH-021-COMMERCE-095`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-095`, `task/ARCH-021-COMMERCE-095`.
 - Shared workspace checkout switched or mutated for task work: no. Shared implementation checkout switched or mutated for task work: no. Another task worktree reused: no.
 
 Start-of-attempt synchronization:
+
 - Parent remote task branch fast-forwarded: not needed; parent branch started at launcher head `6f053ed4045801cb34886136de354f86c4bcfbcb`.
 - Parent `origin/main` incorporated: yes.
 - Implementation remote task branch fast-forwarded: not needed; implementation branch started at launcher head `8227555e071494c4bc5aedbfe7a218aeb0e34902`.
 - Implementation `origin/main` incorporated: yes.
 
 Recursive implementation submodules:
+
 - `git submodule sync --recursive`: passed.
 - `git submodule update --init --recursive`: passed.
 - Recorded initialized submodule: `database` at `e9fb60221f1532205650154dfff2aadb6270b14c`.

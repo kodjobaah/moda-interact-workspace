@@ -15,12 +15,12 @@ claimed_at: null
 priority: 85
 attempt: 4
 depends_on:
-- ARCH-010-ADMIN-004
+  - ARCH-010-ADMIN-004
 enables:
-- ARCH-010-ADMIN-006
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-ADMIN-006
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-ADMIN-005: Manage promotion catalogue, close campaigns and reopen by expiry only
@@ -112,9 +112,11 @@ Stop if ADMIN-004/DATABASE-010 state names differ materially; reconcile with `mo
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `src/app/(protected)/promotions/page.tsx`
 - `src/app/actions/promotions.ts`
 - `src/components/admin/promotion-campaign-form.tsx`
@@ -128,6 +130,7 @@ Ready for Review.
 - `tests/unit/promotion-campaign-lifecycle.test.ts`
 
 ### Work Completed
+
 - Added a durable SUPER_ADMIN promotion catalogue projection retaining DRAFT, ACTIVE, CLOSED, scheduled, running, and expired campaigns, with bounded state/scope/target filters, displayed plan-name/shop-domain matching, persisted status, derived state, scope/target summary, quantity, dates, creator, creation time, and deterministic latest lifecycle event selection.
 - Added a transaction-owned close/reopen lifecycle seam using `PromotionCampaign.version` compare-and-set predicates. Close supports DRAFT/ACTIVE, writes CLOSED audit evidence, and immediately removes the campaign from the running state. Reopen is limited to expired ACTIVE or CLOSED campaigns, preserves the same campaign ID and commercial terms, changes only expiry (and restores ACTIVE for CLOSED campaigns), and writes REOPENED plus EXPIRY_CHANGED evidence.
 - Enforced future expiry and `expiresAt > startsAt` on reopen; lifecycle forms expose no quantity, scope, target, or start-time editing.
@@ -137,6 +140,7 @@ Ready for Review.
 - Attempt 3 strengthened behavioral evidence without changing production behavior: visible campaign name/plan-name/shop-domain filtering and 255-character bounds are asserted directly, and lifecycle tests now assert exact CAS predicates/update payloads and stale-write audit behavior.
 
 ### Validation Results
+
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
 - `node --experimental-strip-types --test tests/unit/promotion-validation.test.ts tests/unit/promotion-catalogue.test.ts tests/unit/promotion-campaign-lifecycle.test.ts`: passed, 14 tests.
@@ -148,15 +152,16 @@ Ready for Review.
 - `git diff --check`: passed.
 
 ### Git / VCS
+
 Physical worktree isolation:
-	canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-	parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-005`
-	parent branch: `task/ARCH-010-ADMIN-005`
-	implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-005`
-	implementation branch: `task/ARCH-010-ADMIN-005`
-	shared workspace checkout switched/mutated for task work: no
-	shared implementation checkout switched/mutated for task work: no
-	another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-005`
+parent branch: `task/ARCH-010-ADMIN-005`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-005`
+implementation branch: `task/ARCH-010-ADMIN-005`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 database submodule initialized: yes
 database gitlink expected: `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`
@@ -180,29 +185,30 @@ counts campaign create/delete, grant, and selection mutations; and asserts
 commercially immutable update keys for both reopen states.
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Task history:
-  Attempt-1 claim `d1b58fcf3d0278d7f9c54293697c00e9cdd51045` ancestor of parent HEAD: yes
-  Attempt-1 report `57bcf2f91916e58f972d7ab851a5e2357d49cd64` ancestor of parent HEAD: yes
-  Attempt-2 claim `50cf6cad2868c0275ee63bdbb3d60a06c94f1a11` ancestor of parent HEAD: yes
-  Attempt-2 report `18c58be69088a378b91ee9a8b07a0c5002c4481f` ancestor of parent HEAD: yes
-  Attempt-3 claim `6f0827485b54c8d3c02525e623710cc3c9fdb7fb` ancestor of parent HEAD: yes
-  Attempt-3 report `49edf3f3439976243c651f36b4b0d47ae88f251d` ancestor of parent HEAD: yes
+Attempt-1 claim `d1b58fcf3d0278d7f9c54293697c00e9cdd51045` ancestor of parent HEAD: yes
+Attempt-1 report `57bcf2f91916e58f972d7ab851a5e2357d49cd64` ancestor of parent HEAD: yes
+Attempt-2 claim `50cf6cad2868c0275ee63bdbb3d60a06c94f1a11` ancestor of parent HEAD: yes
+Attempt-2 report `18c58be69088a378b91ee9a8b07a0c5002c4481f` ancestor of parent HEAD: yes
+Attempt-3 claim `6f0827485b54c8d3c02525e623710cc3c9fdb7fb` ancestor of parent HEAD: yes
+Attempt-3 report `49edf3f3439976243c651f36b4b0d47ae88f251d` ancestor of parent HEAD: yes
 
 Validation:
-  focused unit tests: passed, 17 tests
-  security tests: passed, 12 tests
-  full Admin test suite: passed, 170 tests
-  typecheck: passed
-  lint: passed with two existing queue-monitor hook warnings
-  build: passed with existing BullMQ warnings
-  diff check: passed
+focused unit tests: passed, 17 tests
+security tests: passed, 12 tests
+full Admin test suite: passed, 170 tests
+typecheck: passed
+lint: passed with two existing queue-monitor hook warnings
+build: passed with existing BullMQ warnings
+diff check: passed
 
 ### Architect Review
+
 Pending Attempt 3 review.
 
 ## Architect Review — Attempt 1
@@ -923,7 +929,7 @@ calls: Array<
   | { kind: "findUnique"; args: unknown }
   | { kind: "updateMany"; args: unknown }
   | { kind: "eventCreate"; args: unknown }
->
+>;
 ```
 
 Also expose counters/traps for:
@@ -1345,7 +1351,7 @@ calls: Array<
   | { kind: "findUnique"; args: unknown }
   | { kind: "updateMany"; args: unknown }
   | { kind: "eventCreate"; args: unknown }
->
+>;
 ```
 
 Record calls in actual execution order.
@@ -1389,7 +1395,7 @@ Assert the complete event payloads:
     newExpiresAt,
     platformAdminId: "admin-1",
   },
-]
+];
 ```
 
 Also retain the exact update payload assertion:
@@ -1816,4 +1822,3 @@ claimed_at: null
 ```
 
 No Attempt 5 is created.
-

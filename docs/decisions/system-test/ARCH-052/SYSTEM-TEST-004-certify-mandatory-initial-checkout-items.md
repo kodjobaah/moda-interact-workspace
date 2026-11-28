@@ -59,20 +59,20 @@ Construct two shops with a shared sender WABA/phone and independent recoveries f
 
 Use the actual accepted recovery fixture builders and their line-item JSON shape; the above labels are logical test facts, not a substitute for valid repository fixture fields. Include frozen approved 20-language template fixtures with explicit approved content hashes, real `parameterBindingsSnapshot` and Meta `BODY` placeholder sequence; mock only the external Meta API/approval and R2 edges. Do not fabricate approval states inside production code.
 
-| Test | Expected result |
-|---|---|
-| Both platforms, INITIAL NO_OFFER TEXT | Actual saved basket in BODY exactly once; merchant name and Reply guidance retained |
-| Both platforms, INITIAL checkout single CODE | Original items and approved singleton offer at distinct frozen BODY positions |
-| Both platforms, INITIAL checkout 2–3 CODE and AUTOMATIC | Original items and truthful approved plural/automatic offer copy; no duplicate basket variable |
-| Both platforms, INITIAL ALTERNATIVE_PRODUCT | Original basket distinct from recommended different product, approved checkout CTA remains |
-| Approved INITIAL IMAGE header | Standardised product image header plus unchanged original basket in BODY |
-| IMAGE unavailable with approved TEXT fallback | TEXT still contains the saved basket; cannot choose missing-summary fallback |
-| Missing/duplicate BODY semantic, HEADER-only imitation, wrong position, altered frozen fingerprint | Fail closed before Meta send; no recovery credit committed |
-| Missing/empty/malformed/wrong-shop items | Typed `BINDING_VALUE_UNAVAILABLE`/no-send; no other merchant's products substituted |
-| Locale and translation matrix (20 supported locales) | Frozen parameter position and meaning preserved, localized item formatting and `+N` marker for long basket |
-| Checkout generation change between preparation and dispatch | Existing BG008 stale admission prevents sending old basket content |
-| Retry, duplicate event, concurrent worker delivery | At most one provider-confirmed message/charge, original frozen basket binding preserved |
-| FOLLOW_UP historical template without basket | Existing behaviour unchanged; human replies unaffected |
+| Test                                                                                               | Expected result                                                                                            |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Both platforms, INITIAL NO_OFFER TEXT                                                              | Actual saved basket in BODY exactly once; merchant name and Reply guidance retained                        |
+| Both platforms, INITIAL checkout single CODE                                                       | Original items and approved singleton offer at distinct frozen BODY positions                              |
+| Both platforms, INITIAL checkout 2–3 CODE and AUTOMATIC                                            | Original items and truthful approved plural/automatic offer copy; no duplicate basket variable             |
+| Both platforms, INITIAL ALTERNATIVE_PRODUCT                                                        | Original basket distinct from recommended different product, approved checkout CTA remains                 |
+| Approved INITIAL IMAGE header                                                                      | Standardised product image header plus unchanged original basket in BODY                                   |
+| IMAGE unavailable with approved TEXT fallback                                                      | TEXT still contains the saved basket; cannot choose missing-summary fallback                               |
+| Missing/duplicate BODY semantic, HEADER-only imitation, wrong position, altered frozen fingerprint | Fail closed before Meta send; no recovery credit committed                                                 |
+| Missing/empty/malformed/wrong-shop items                                                           | Typed `BINDING_VALUE_UNAVAILABLE`/no-send; no other merchant's products substituted                        |
+| Locale and translation matrix (20 supported locales)                                               | Frozen parameter position and meaning preserved, localized item formatting and `+N` marker for long basket |
+| Checkout generation change between preparation and dispatch                                        | Existing BG008 stale admission prevents sending old basket content                                         |
+| Retry, duplicate event, concurrent worker delivery                                                 | At most one provider-confirmed message/charge, original frozen basket binding preserved                    |
+| FOLLOW_UP historical template without basket                                                       | Existing behaviour unchanged; human replies unaffected                                                     |
 
 ### Evidence and limits
 

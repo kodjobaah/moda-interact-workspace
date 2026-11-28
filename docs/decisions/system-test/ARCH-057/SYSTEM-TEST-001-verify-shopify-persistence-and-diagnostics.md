@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-057-SHOPIFY-012
+  - ARCH-057-SHOPIFY-012
 enables: []
 created: 2026-11-04
 updated: 2026-11-05
@@ -45,32 +45,32 @@ One repository: `moda-interact-system-test`. Paths below are relative to it. Acc
 
 ### Existing files to modify
 
-| Path | Exact responsibility |
-|---|---|
-| `catalogue/scenarios.json` | Add exactly the six rows below with complete metadata, evidence classes and task traceability |
-| `catalogue/historical-system-test-map.json` | Add this task's symmetric six-ID mapping, exact canonical task path and definition-baseline `historicalStatus: "pending"` |
-| `docs/SHOPIFY-COVERAGE-MATRIX.md` | Regenerate with `npm run validate:catalogue -- --write` |
-| `src/harness/selection.js` | Add `shopify-persistence`, selected by this task's `sourceRequirements`; never hide unimplemented rows |
-| `src/harness/cli.js` | Add the suite name to existing help |
-| `scripts/run-system-tests.js` | Merge `createShopifyPersistenceExecutors` using the duplicate guard; validate this suite's exact plan/results; preserve other suites and ordinary nonzero failure behaviour |
-| `package.json` | Add only the two suite scripts below; existing `test:harness` discovers the new tests |
+| Path                                        | Exact responsibility                                                                                                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalogue/scenarios.json`                  | Add exactly the six rows below with complete metadata, evidence classes and task traceability                                                                               |
+| `catalogue/historical-system-test-map.json` | Add this task's symmetric six-ID mapping, exact canonical task path and definition-baseline `historicalStatus: "pending"`                                                   |
+| `docs/SHOPIFY-COVERAGE-MATRIX.md`           | Regenerate with `npm run validate:catalogue -- --write`                                                                                                                     |
+| `src/harness/selection.js`                  | Add `shopify-persistence`, selected by this task's `sourceRequirements`; never hide unimplemented rows                                                                      |
+| `src/harness/cli.js`                        | Add the suite name to existing help                                                                                                                                         |
+| `scripts/run-system-tests.js`               | Merge `createShopifyPersistenceExecutors` using the duplicate guard; validate this suite's exact plan/results; preserve other suites and ordinary nonzero failure behaviour |
+| `package.json`                              | Add only the two suite scripts below; existing `test:harness` discovers the new tests                                                                                       |
 
 ### New files
 
-| Path | Responsibility |
-|---|---|
-| `src/harness/shopify-persistence/contracts.js` | Frozen six scenario IDs/classes/case IDs, source requirement and completeness validation |
-| `src/harness/shopify-persistence/executors.js` | Six registrations through the existing runner; require cases/evidence/cleanup |
-| `src/harness/shopify-persistence/runtime.js` | Compose existing data plane/process/command primitives, sealed OAuth fixture, actual app build and emitted logs |
-| `src/harness/shopify-persistence/accepted-suites.js` | Exact accepted application commands, executed-test report parsing and case/evidence association |
-| `src/harness/shopify-persistence/webhook-scenario.js` | Signed HTTP uninstall/ingress/Redis failure cases against the real built application |
-| `src/harness/shopify-persistence/fixtures.js` | Small run-scoped synthetic Shop/subscription/session/webhook fixtures and bounded fault controls |
-| `src/harness/shopify-persistence/observations.js` | Tenant-scoped durable/queue observations and safe log assertions before artifact redaction |
-| `src/harness/shopify-persistence/evidence.js` | Case, source/package and logging sidecars in the existing evidence directory |
-| `test/harness/shopify-persistence-contracts.test.js` | Exact scenario/case/class and result completeness rules |
-| `test/harness/shopify-persistence-registration.test.js` | Catalogue/map/selector/executor symmetry and preservation of unrelated registrations |
-| `test/harness/shopify-persistence-results.test.js` | Missing/skipped/duplicate/wrong-source evidence cannot pass; failure evidence and cleanup survive |
-| `docs/SHOPIFY-PERSISTENCE-VALIDATION.md` | Commands, classifications, fixture limits, evidence and replay instructions |
+| Path                                                    | Responsibility                                                                                                  |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `src/harness/shopify-persistence/contracts.js`          | Frozen six scenario IDs/classes/case IDs, source requirement and completeness validation                        |
+| `src/harness/shopify-persistence/executors.js`          | Six registrations through the existing runner; require cases/evidence/cleanup                                   |
+| `src/harness/shopify-persistence/runtime.js`            | Compose existing data plane/process/command primitives, sealed OAuth fixture, actual app build and emitted logs |
+| `src/harness/shopify-persistence/accepted-suites.js`    | Exact accepted application commands, executed-test report parsing and case/evidence association                 |
+| `src/harness/shopify-persistence/webhook-scenario.js`   | Signed HTTP uninstall/ingress/Redis failure cases against the real built application                            |
+| `src/harness/shopify-persistence/fixtures.js`           | Small run-scoped synthetic Shop/subscription/session/webhook fixtures and bounded fault controls                |
+| `src/harness/shopify-persistence/observations.js`       | Tenant-scoped durable/queue observations and safe log assertions before artifact redaction                      |
+| `src/harness/shopify-persistence/evidence.js`           | Case, source/package and logging sidecars in the existing evidence directory                                    |
+| `test/harness/shopify-persistence-contracts.test.js`    | Exact scenario/case/class and result completeness rules                                                         |
+| `test/harness/shopify-persistence-registration.test.js` | Catalogue/map/selector/executor symmetry and preservation of unrelated registrations                            |
+| `test/harness/shopify-persistence-results.test.js`      | Missing/skipped/duplicate/wrong-source evidence cannot pass; failure evidence and cleanup survive               |
+| `docs/SHOPIFY-PERSISTENCE-VALIDATION.md`                | Commands, classifications, fixture limits, evidence and replay instructions                                     |
 
 Keep each new JavaScript/test source below 300 lines. Reuse existing helpers read-only; no new generic runner, logging serializer, container framework or application test endpoint.
 
@@ -96,14 +96,14 @@ No application/Shared/Background/API/Database implementation, schema/migration, 
 
 Use `domain: "SHOPIFY"`, `providers: ["shopify", "shared"]`, `automation: "automated"`, `liveAuthorizationRequired: false`, `requiredFor: []`, and `sourceRequirements: ["ARCH-057-SYSTEM-TEST-001"]` for each. `evidenceClass` and `requiredEvidenceClass` are the stated class. Populate ordinary purpose/preconditions/services/fixtures/actions/assertions/evidence/cleanup/implementation fields. Mark implemented only with a registered executable; missing runtime prerequisites still block execution.
 
-| Scenario ID | Layer / class | Required case IDs |
-|---|---|---|
-| `SHOPIFY-PERSISTENCE-REQUESTS-001` | L2 / INTEGRATION | R1, R2, R3 |
-| `SHOPIFY-PERSISTENCE-BILLING-001` | L2 / INTEGRATION | B1, B2, B3 |
-| `SHOPIFY-PERSISTENCE-MERCHANT-001` | L2 / INTEGRATION | M1, M2, M3, M4 |
-| `SHOPIFY-PERSISTENCE-REFRESH-001` | L1 / CONTRACT | F1, F2 |
-| `SHOPIFY-PERSISTENCE-WEBHOOKS-001` | L3 / BLACK_BOX | W1, W2, W3, W4 |
-| `SHOPIFY-PERSISTENCE-DIAGNOSTICS-001` | L1 / CONTRACT | D1, D2, D3 |
+| Scenario ID                           | Layer / class    | Required case IDs |
+| ------------------------------------- | ---------------- | ----------------- |
+| `SHOPIFY-PERSISTENCE-REQUESTS-001`    | L2 / INTEGRATION | R1, R2, R3        |
+| `SHOPIFY-PERSISTENCE-BILLING-001`     | L2 / INTEGRATION | B1, B2, B3        |
+| `SHOPIFY-PERSISTENCE-MERCHANT-001`    | L2 / INTEGRATION | M1, M2, M3, M4    |
+| `SHOPIFY-PERSISTENCE-REFRESH-001`     | L1 / CONTRACT    | F1, F2            |
+| `SHOPIFY-PERSISTENCE-WEBHOOKS-001`    | L3 / BLACK_BOX   | W1, W2, W3, W4    |
+| `SHOPIFY-PERSISTENCE-DIAGNOSTICS-001` | L1 / CONTRACT    | D1, D2, D3        |
 
 #### R — Authenticated request composition
 

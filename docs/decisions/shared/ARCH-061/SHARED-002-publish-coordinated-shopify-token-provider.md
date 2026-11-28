@@ -15,45 +15,62 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on: ["ARCH-061-SHARED-001"]
-enables: ["ARCH-061-SHOPIFY-001", "ARCH-061-BACKGROUND-001", "ARCH-061-COMMERCE-001", "ARCH-061-MCP-001", "ARCH-061-SYSTEM-TEST-001"]
+enables:
+  [
+    "ARCH-061-SHOPIFY-001",
+    "ARCH-061-BACKGROUND-001",
+    "ARCH-061-COMMERCE-001",
+    "ARCH-061-MCP-001",
+    "ARCH-061-SYSTEM-TEST-001",
+  ]
 created: 2026-11-05
 updated: 2026-11-06
 ---
+
 # Publish coordinated shopify token provider
 
 ## Architecture
+
 ARCH-061; docs/architecture/ARCH-061-shopify-offline-token-refresh-coordination.md. Coordinator moda_architect.
 
 ## Objective
+
 Publish coordinated shopify token provider using the published injected-client Shared runtime.
 
 ## Context
+
 Background bespoke refresh currently reads/refreshes/writes unlocked; App SDK refreshes before storage write. Consumers use the same persisted rotating offline credential.
 
 ## Scope
+
 Task-owned moda-interact-shared changes and focused validation only. Cross-repository paths below are read-only baseline evidence unless owned by this task.
 
-| Existing file | Symbol/surface | Required change |
-|---|---|---|
+| Existing file                     | Symbol/surface  | Required change                                                             |
+| --------------------------------- | --------------- | --------------------------------------------------------------------------- |
 | moda-interact-shared/package.json | version/exports | Publish accepted code with next approved available version; record receipt. |
 
-
 ## Out of Scope
+
 Central token service, agent tools, sibling imports, credential UI, schema changes, node_modules patches, automatic execution, claims or main merges.
 
 ## Requirements
+
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
+
 - [x] Publish accepted provider export and verify exact registry version and exports; release metadata only.
 
 ## Interfaces / Contracts
+
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
 
 ## Dependencies
+
 - ARCH-061-SHARED-001
 
 ## Enables
+
 - ARCH-061-SHOPIFY-001
 - ARCH-061-BACKGROUND-001
 - ARCH-061-COMMERCE-001
@@ -61,28 +78,33 @@ Shared Node-only factory and structural transaction interface/error categories d
 - ARCH-061-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
 - [x] Publish accepted provider export and verify exact registry version and exports; release metadata only.
 - [x] Exact approved registry export/version visible with release receipt and no implementation source changes.
 
 ## Validation
+
 - [x] Verify prerequisite accepted Complete; release command succeeds; exact approved version/exports visible. Do not rerun unit/integration tests, lint/typecheck/build from accepted prerequisite.
 - [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
+
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
 
-
 ### Task-owned exact file changes and read-only inventory
+
 NEW paths below are to be created RELATIVE TO THIS TASK REPOSITORY. Existing fully qualified paths are verified. Cross-repository evidence is read-only.
 
-| Path | Exact existing/new surface | Required edit |
-|---|---|---|
-| moda-interact-shared/package.json | version/exports | Publish exact architect-accepted artifacts only; approve next available version in release report, verify registry tarball exports. |
+| Path                              | Exact existing/new surface | Required edit                                                                                                                       |
+| --------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| moda-interact-shared/package.json | version/exports            | Publish exact architect-accepted artifacts only; approve next available version in release report, verify registry tarball exports. |
 
 ### Task-specific deterministic assertions
+
 - [x] Registry exact version/tarball exports ./shopify/node; no implementation source changes; prereq accepted.
 
 ## Implementation Notes
+
 Release mechanics only. Package metadata is 5.2.0; published artifact contains the accepted SHARED-001 runtime. No implementation source changes or tests were made in this task.
 
 ## Completion Report
@@ -141,24 +163,36 @@ None within the publication acceptance criteria. ARCH-061-SHOPIFY-001 is depende
 This task publishes the accepted Shared Node-only provider contract only. It does not certify consumer SDK coordination or production rollout behavior.
 
 ## Architect Review
+
 ### Review Status
+
 Pending
+
 ### Review Notes
+
 Definition only.
+
 ### Reviewed Files
+
 None
+
 ### Validation Reviewed
+
 None
+
 ### Architecture Conformance
+
 Pending implementation.
+
 ### Follow-up
+
 None
 
 ### Architecture definition review — 2026-11-05 revision 2
+
 Definition reviewed against installed SDK control flow and current repository reads/writes. Public authenticate/unauthenticated wrapper + ALS storage and runtime setAbstractFetchFunc are the selected integration; no fictional SDK hook. Session row plus stable per-shop lifecycle advisory gate is selected for demonstrated deletion/recreation. Provider lost-response recovery is grounded in official Shopify August 28, 2026 policy. No implementation reviewed and no lifecycle status changed.
 
 Publication exports the selected-Shop-ID API defined by revised SHARED-001. Do not publish the superseded host-argument API.
-
 
 ## Developer Self-Review Passed / Accepted — Attempt 1 (2026-11-06)
 
@@ -175,7 +209,6 @@ Publication exports the selected-Shop-ID API defined by revised SHARED-001. Do n
 ### Ownership and follow-up
 
 Prepared worktree/synchronization/claim repair and metadata-only publication evidence remain in the Completion Report; no new claim or attempt was created. Only this parent task review is committed/pushed. No implementation change, package publication, gitlink/main merge, consumer execution, deployment or cutover occurs. The developer retains final completion and integration authority. Downstream ARCH-061 tasks remain gated until explicit completion and their own prerequisites/manual requirements are satisfied.
-
 
 ## Developer Completion Decision — 2026-11-06T02:57:51Z
 

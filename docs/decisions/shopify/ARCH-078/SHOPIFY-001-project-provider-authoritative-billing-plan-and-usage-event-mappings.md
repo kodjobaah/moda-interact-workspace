@@ -73,10 +73,12 @@ app/services/billing/shopify-usage-event-mapping.ts
 Do not add this logic to `moda-interact-shared`.
 
 The component must accept the exact provider plan handle and the provider-returned `usageEventHandles`, read the exact matching `MerchantPricingPlan.usageEvents.eventHandle` values through the existing Prisma boundary, and return:
+
 - provider-returned handles with exact catalogue matches;
 - provider-returned handles without catalogue matches.
 
 Rules:
+
 - no catalogue plan => all provider-returned handles are unmapped;
 - no catalogue usage events => all provider-returned handles are unmapped;
 - catalogue-only events absent from Shopify are ignored;

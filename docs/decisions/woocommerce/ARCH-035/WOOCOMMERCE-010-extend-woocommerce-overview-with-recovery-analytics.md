@@ -33,13 +33,14 @@ updated: 2026-10-21
 
 ## Objective
 
- Is to extend the existing Woo Overview layout with the Shopify recovery-performance, capacity, recent and pending presentation only where authoritative data is available.
+Is to extend the existing Woo Overview layout with the Shopify recovery-performance, capacity, recent and pending presentation only where authoritative data is available.
 
 ## Context
 
 Shopify RecoveryOverview.tsx displays date-filtered Started/Recovered/Rate/Value metrics, incomplete/ongoing counts, recent recoveries, capacity balances and pending recoveries. Woo Overview currently focuses on connection/state, store context and a basic summary.
 
 Source references:
+
 - Shopify: app/components/dashboard/RecoveryOverview.tsx; app/components/dashboard/PendingRecoveries.jsx.
 - Woo: src/overview-screen.js; src/page/connected-workspace.js.
 

@@ -12,21 +12,21 @@ completion_mode: automatic
 status: complete
 priority: 5
 executor: copilot
-claimed_at: '2026-09-13T11:26:59Z'
+claimed_at: "2026-09-13T11:26:59Z"
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-013
+  - ARCH-010-DATABASE-013
 enables:
-- ARCH-010-SHOPIFY-014
-- ARCH-010-BACKGROUND-021
-- ARCH-010-BACKGROUND-022
-- ARCH-010-SHOPIFY-025
-- ARCH-010-ADMIN-002
-- ARCH-010-ADMIN-003
-- ARCH-010-SYSTEM-TEST-001
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SHOPIFY-014
+  - ARCH-010-BACKGROUND-021
+  - ARCH-010-BACKGROUND-022
+  - ARCH-010-SHOPIFY-025
+  - ARCH-010-ADMIN-002
+  - ARCH-010-ADMIN-003
+  - ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-13
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-DATABASE-014: Materialise canonical recovery-credit purchase lifecycle and immutable purchase provenance
@@ -389,15 +389,18 @@ STOP and return evidence to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Complete.
 
 ### Files Changed
+
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql`
 - `moda-interact-database/scripts/validate-first-production-baseline.mjs`
 - `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
+
 - Replaced the development purchase status enum with the canonical `REQUESTED`, `ACTIVE`, `COMPLETED`, `WITHDRAWN`, and `REFUNDED` lifecycle.
 - Replaced per-purchase legacy quantity counters with `currentAmount` and `reservedAmount`, retaining aggregate `ShopEntitlementCounter.refundingQuantity`.
 - Added restrictive billing-period linkage and immutable provider subscription, usage, valuation, amount, currency, and price provenance fields.
@@ -406,6 +409,7 @@ Complete.
 - Attempt 2 added the exact cross-merchant refund queue index, the purchase-grant balance upper bound, confirmed valuation checks for every post-REQUESTED state, required refund provenance snapshots, and provider settlement precision without a fixed two-decimal annotation.
 
 ### Validation Results
+
 - `npm run prisma:validate` passed.
 - `npm run prisma:generate` passed.
 - `npm run test:first-production-baseline` passed.
@@ -415,36 +419,37 @@ Complete.
 - `npm ci` installed the lockfile-pinned dependencies in the isolated worktree; the install reported existing npm audit warnings that did not affect validation.
 
 ### Git / VCS
+
 Task branch: `task/ARCH-010-DATABASE-014`
 
 Attempt 2 implementation publication:
-  implementation repository: `moda-interact-database`
-  implementation commit: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
-  remote branch: `origin/task/ARCH-010-DATABASE-014`
-  pushed: yes
+implementation repository: `moda-interact-database`
+implementation commit: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+remote branch: `origin/task/ARCH-010-DATABASE-014`
+pushed: yes
 
 Attempt 2 originally executed from a DATABASE-014 worktree incorrectly rooted under the ADMIN-010 task-worktree lineage. Architect review therefore required canonical-worktree remediation without further source changes.
 
 Post-review canonical remediation performed by the developer:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-014`
-  parent branch: `task/ARCH-010-DATABASE-014`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-014`
-  implementation branch: `task/ARCH-010-DATABASE-014`
-  canonical implementation worktree fast-forwarded from `cd8dc21` to `abee18e`
-  implementation HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
-  remote task HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
-  implementation source changes made during remediation: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-014`
+parent branch: `task/ARCH-010-DATABASE-014`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-DATABASE-014`
+implementation branch: `task/ARCH-010-DATABASE-014`
+canonical implementation worktree fast-forwarded from `cd8dc21` to `abee18e`
+implementation HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+remote task HEAD: `abee18e8c55b7a79f8234490fa4df66d3d228f0c`
+implementation source changes made during remediation: no
 
 Canonical-worktree revalidation:
-  `npm run prisma:validate`: passed
-  `npm run prisma:generate`: passed
-  `npm run test:first-production-baseline`: passed
-  `npm run erd:puml`: passed
-  regenerated ERD differed from committed `abee18e` output only by whitespace (`git diff --ignore-all-space --exit-code` returned 0)
-  committed ERD restored from `HEAD` after the generator-only whitespace drift check
-  `git diff --check`: passed
-  final implementation HEAD/remote identity: passed
+`npm run prisma:validate`: passed
+`npm run prisma:generate`: passed
+`npm run test:first-production-baseline`: passed
+`npm run erd:puml`: passed
+regenerated ERD differed from committed `abee18e` output only by whitespace (`git diff --ignore-all-space --exit-code` returned 0)
+committed ERD restored from `HEAD` after the generator-only whitespace drift check
+`git diff --check`: passed
+final implementation HEAD/remote identity: passed
 
 The terminal recorder created an unrelated untracked `typescript` transcript during evidence capture. This is not task implementation state and must be removed from the worktree before final developer integration.
 

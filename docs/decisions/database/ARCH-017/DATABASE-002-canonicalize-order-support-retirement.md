@@ -97,6 +97,7 @@ Ready for Review — ARCH-017-DATABASE-002, attempt 1, executor codex.
 ### Files Changed
 
 Implementation commit `0e50734` on mirrored `task/ARCH-017-DATABASE-002`:
+
 - `prisma/migrations/20261106023000_remove_order_support/migration.sql`: exact already-applied historical SQL.
 - `prisma/seed.mjs`: remove four current seed references to the retired feature.
 - `scripts/validate-arch017-billing-materialisation-schema.mjs`: current-seed parity, historical checksum guard, whitespace-independent relation assertion.
@@ -114,6 +115,7 @@ Implementation commit `0e50734` on mirrored `task/ARCH-017-DATABASE-002`:
 ### Validation Results
 
 Passed with workspace bootstrap Node 24.19.0 / npm 11.17.0:
+
 - `npm ci`; `npm run prisma:validate`; `npm run prisma:generate` (Prisma client 6.19.3).
 - `npm run test:arch017-billing-materialisation`; `npm run test:arch017-ai-conversations-required`.
 - `npm run test:arch017-order-support-retirement:postgres:fresh`: **79 migrations, 18 assertions**; actual development seed executed twice, retired rows absent and unrelated fixtures preserved.

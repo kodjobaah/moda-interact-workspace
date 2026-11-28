@@ -39,7 +39,6 @@ The adopted ARCH-047 design is **Moda Admin-only authoring**. A saved English so
 
 The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**. They own separate route/action/service/component modules, use stable documented persistence payloads, and must prove their capability with fixtures or injected dependencies when a sibling Admin/Background implementation is not yet complete. The end-to-end system test, not an artificial task chain, verifies their integration.
 
-
 ## Scope
 
 - Own the protected catalogue and English authoring route under `src/app/(protected)/system-controls/whatsapp-templates/`, the System Controls sidebar entry/breadcrumbs, and the `authoring/` component/service module. Reuse existing Platform Admin authorisation and i18n patterns, not a new admin role.
@@ -49,7 +48,6 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Transactionally create one `WhatsAppTemplateDefinition` plus its English `WhatsAppTemplateLocale` (`localeAst` JSONB, `contentHash`, `sourceHash`, schema version and creator). Validate all authoring business rules **server-side** immediately before the save. The saved English `localeAst` must contain **both immutable authoring content and its deterministic prepared projection at creation** (e.g. `{schemaVersion,authoring,prepared}`). This includes Meta-ready English components/bindings or a wrapper-ready English projection, so a later review never needs to edit the saved English locale. Unsaved editor state may change; **saved English content may not**.
 - Implement **Clone as New** by creating a fresh identity, new Meta provider template name/version when relevant, and provenance `clonedFromDefinitionId`; never update/delete in-place source/locale content or invoke Meta's edit-template endpoint. Saving must be duplicate-submit safe; a second click must not create a duplicate definition.
 - Expose a stable module read interface for future subroutes: `getDefinitionDetail(id)` and an immutable, versioned authoring-record contract. Read existing definitions by ID and browse with bounded pagination; show family, purpose, source language and lifecycle honestly.
-
 
 ### Required React component decomposition
 
@@ -72,7 +70,6 @@ The work must not be delivered as one `page.tsx`, `template-editor.tsx`, `whatsa
 - Translation requests/jobs, result reconstruction, Meta create/list/update API calls, provider status reconciliation, bulk shop assignment, wrapper activation, recovery sends and customer checkout mutations.
 - No Shared AST package or new database business constraints. Do not author translation prompts or use Background to validate the English AST.
 
-
 ## Requirements
 
 - [x] Server-side and editor AST rules agree on allowed component kinds, maximum bounded text/JSON size, variable names, Meta-placeholder limits, at most supported dynamic URL buttons, and wrapper `response.body` presence; reject malformed/unknown variables with precise errors.
@@ -80,9 +77,7 @@ The work must not be delivered as one `page.tsx`, `template-editor.tsx`, `whatsa
 - [x] A saved template's `localeAst`, `sourceHash`, business purpose and provider name are read-only by application policy; cloning yields an independent, newly named definition. No edit control appears on saved definitions.
 - [x] No external Meta import/registration, no editor-built promises of discounts without approved typed offer bindings, no customer data exposed.
 
-
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
-
 
 ## Work Items
 
@@ -90,14 +85,11 @@ All server reads/mutations of template management require the existing authentic
 - [x] Implement guarded pages, shared catalogue navigation, English editor and preview (responsive, keyboard-usable, clear validation and duplicate-save disable).
 - [x] Implement transactional save/clone server actions and audit with focused auth, immutability and concurrency tests.
 
-
 ## Interfaces / Contracts
 
 **Writes:** `WhatsAppTemplateDefinition` and source `WhatsAppTemplateLocale`; optional `clonedFromDefinitionId` and `CommerceAuditEvent`. **Reads:** own definitions/locales and existing 20-language identity utility. The Admin-local AST JSON envelope is versioned (`schemaVersion`, template family/purpose, components or wrapper slots, semantic variables); its immutable `authoring` and `prepared` fields are stored in the English locale's `localeAst`. ADMIN-005 must reuse the same pure compiler for other languages, not duplicate it. `sourceHash` is computed over a canonical immutable source projection, never based on volatile JSON key ordering. Other Admin tasks consume this persisted definition/AST format, not a new Shared package. **No** `TranslationRun`, `MetaRegistration`, publication or active-slot writes in this task.
 
-
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/authoring/`, components under `src/components/admin/whatsapp-templates/authoring/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-authoring.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
-
 
 ## Dependencies
 
@@ -114,12 +106,10 @@ None at task-definition time. Completion of this task does not grant permission 
 - [x] Existing content cannot be edited after saving; Clone as New creates a distinct identity and does not mutate its source. No external-import action is present.
 - [x] Denied/unauthenticated caller cannot read or save across the platform; audited writes carry the actual SUPER_ADMIN actor.
 
-
 ## Validation
 
 - [x] Admin-local AST schema/variable/preview unit tests; server-auth/transaction/idempotency tests including forced rollback, and component accessibility/mobile rendering.
 - [x] Focused PostgreSQL test against the consolidated schema for definition + source locale + audit and clone; typecheck, scoped lint/tests and `git diff --check` using package scripts that actually exist.
-
 
 ## Stop Condition
 
@@ -128,7 +118,6 @@ After task-scoped work, acceptance criteria, validation and Completion Report ar
 ## Implementation Notes
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md`, `docs/developer-task-workflow.md`, the revised parent ARCH-047 architecture and current Admin repository instructions. Use launcher-prepared dedicated parent/implementation task worktrees and mirrored `task/<TASK_ID>` branches. In the Completion Report record prepared physical worktree isolation, start sync, recursive submodule materialisation, exact test commands/outcomes, changed paths and commits. The implementing agent must not modify `docs/decisions/**/_index.md`, another task, the parent architecture, another repository, or follow-on work. Reuse existing Admin Store Category AST authoring and Merchant Pricing translation UX patterns without copying their domain services or creating a competing generic runtime. Inspect the actual worktree state before implementation; the attached snapshot is not a live Git-branch guarantee.
-
 
 ## Completion Report
 

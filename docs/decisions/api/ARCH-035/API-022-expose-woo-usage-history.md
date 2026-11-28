@@ -20,6 +20,7 @@ enables:
 created: 2026-10-22
 updated: 2026-10-22
 ---
+
 # ARCH-035-API-022: Expose authoritative WooCommerce usage history and entitlement periods
 
 ## Architecture

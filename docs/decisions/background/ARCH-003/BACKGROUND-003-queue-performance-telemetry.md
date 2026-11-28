@@ -18,6 +18,7 @@ enables: []
 created: 2026-09-05
 updated: 2026-09-05T13:35:00Z
 ---
+
 # Emit complete BullMQ queue performance telemetry
 
 ## Architecture
@@ -715,8 +716,6 @@ Conforms.
 Live Grafana/dashboard verification, if desired, remains a separate
 system/integration verification concern and is not required for this task.
 
-
-
 ## Architect Review — Amendment 001
 
 ### Review Status
@@ -929,7 +928,6 @@ Return to `review` only after:
 - full-suite baseline failures, if any, are documented again.
 
 No deployed Grafana validation is required for Amendment 001.
-
 
 ## Architect Review — Amendment 002
 

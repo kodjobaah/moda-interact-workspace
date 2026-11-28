@@ -54,26 +54,26 @@ transcript is shown.
 
 ## Page register
 
-| ID | Route | Entry points | Main content | Back/exit |
-|---|---|---|---|---|
-| U01 | /sign-in | Unauthenticated route, Sign out | Google sign-in; pending/error feedback | Successful auth to validated return path or U03 |
-| U02 | /access-denied | Valid login without current staff permission | Access denied and Sign out | Sign out to U01; no business navigation |
-| U03 | /features | Root redirect, sidebar | Admin feature catalogue, availability and Commerce configuration status | Sidebar; Platform configurations to U08 |
-| U04 | /features/[id] | U03 feature row/Configure behaviour | Read-only feature metadata and all linked configurations | Back to Features U03 |
-| U05 | /tools | Sidebar, tool editor Back | Searchable reusable tool library | Sidebar |
-| U06 | /tools/[id] | U05 tool row, New tool, feature association link | Tool metadata, revision editor/history, usage by features | Back to Tools U05, or validated return context U09 |
-| U07 | /explore | Sidebar or Browse Shopify from U06 | Documentation search, schema browser, examples and query builder | Sidebar or Return to tool U06 |
-| U08 | /capabilities | U03 Platform configurations | BASE/RECOVERY_POLICY configurations | Back to Features U03 |
-| U09 | /capabilities/[id] | U04 configuration row/create, U08 row | Behaviour prompt, settings, exact tool revision associations, history | Feature U04 for FEATURE; U08 otherwise |
-| U10 | /releases | Sidebar, release-stage completion | Active release and immutable release history; Create release | Sidebar |
-| U11 | /releases/[id] | U10 row, completed Create release | Members, exact revisions, response contract, diff, activation/rollback | Back to Releases U10 |
-| U12 | /shops | Merchants sidebar | Read-only merchant search/list | Sidebar |
-| U13 | /shops/[id] | U12 row | Eligibility breakdown and tool list for a new conversation | Back to Merchants U12 |
-| U14 | /preview | Sidebar, Test from U06/U09/U11/U13 | Synthetic tool test and isolated conversation sandbox | Validated source page, or Features U03 |
+| ID  | Route              | Entry points                                     | Main content                                                            | Back/exit                                          |
+| --- | ------------------ | ------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------- |
+| U01 | /sign-in           | Unauthenticated route, Sign out                  | Google sign-in; pending/error feedback                                  | Successful auth to validated return path or U03    |
+| U02 | /access-denied     | Valid login without current staff permission     | Access denied and Sign out                                              | Sign out to U01; no business navigation            |
+| U03 | /features          | Root redirect, sidebar                           | Admin feature catalogue, availability and Commerce configuration status | Sidebar; Platform configurations to U08            |
+| U04 | /features/[id]     | U03 feature row/Configure behaviour              | Read-only feature metadata and all linked configurations                | Back to Features U03                               |
+| U05 | /tools             | Sidebar, tool editor Back                        | Searchable reusable tool library                                        | Sidebar                                            |
+| U06 | /tools/[id]        | U05 tool row, New tool, feature association link | Tool metadata, revision editor/history, usage by features               | Back to Tools U05, or validated return context U09 |
+| U07 | /explore           | Sidebar or Browse Shopify from U06               | Documentation search, schema browser, examples and query builder        | Sidebar or Return to tool U06                      |
+| U08 | /capabilities      | U03 Platform configurations                      | BASE/RECOVERY_POLICY configurations                                     | Back to Features U03                               |
+| U09 | /capabilities/[id] | U04 configuration row/create, U08 row            | Behaviour prompt, settings, exact tool revision associations, history   | Feature U04 for FEATURE; U08 otherwise             |
+| U10 | /releases          | Sidebar, release-stage completion                | Active release and immutable release history; Create release            | Sidebar                                            |
+| U11 | /releases/[id]     | U10 row, completed Create release                | Members, exact revisions, response contract, diff, activation/rollback  | Back to Releases U10                               |
+| U12 | /shops             | Merchants sidebar                                | Read-only merchant search/list                                          | Sidebar                                            |
+| U13 | /shops/[id]        | U12 row                                          | Eligibility breakdown and tool list for a new conversation              | Back to Merchants U12                              |
+| U14 | /preview           | Sidebar, Test from U06/U09/U11/U13               | Synthetic tool test and isolated conversation sandbox                   | Validated source page, or Features U03             |
 
 No unlisted product pages or workflow routes are required. Creation, association,
-publication and confirmations below are dialogs on these pages. /api/auth/*,
-/api/studio/*, static assets and private health/MCP routes are transport routes,
+publication and confirmations below are dialogs on these pages. /api/auth/_,
+/api/studio/_, static assets and private health/MCP routes are transport routes,
 not Studio pages. Query selection of revisionId must belong to its route entity;
 mismatches are404, never silently switch to another entity or latest revision.
 
@@ -246,7 +246,6 @@ choosing a previous compatible release from U10, opening U11 and confirming
 history. Existing conversations retain their original versions. A missing schema
 or executor prevents activation with its exact reason.
 
-
 ### Response contract authoring (C16; U10 composer and U11 detail)
 
 U11 adds a **Response contract** tab beside Overview, Changes and Versions. Show
@@ -325,7 +324,6 @@ conversations use today's release. Empty selection shows **No remote tools
 available** and the specific exclusion reasons. The global U05 library has a
 **Inspect a merchant's tool list** link to U12; it is not the merchant-filtered list.
 
-
 **Test this configuration** -> U14 with copied feature flags/release selection
 as synthetic input (no customer/shop credential). Label that tests use fixtures,
 not the merchant's live inventory. Back returns U13.
@@ -372,21 +370,21 @@ run mouse and keyboard paths, direct deep links, mobile navigation and denied ro
 COMMERCE-008 owns N01–N09, N12 and N13; COMMERCE-009 owns N10–N11 with U14; COMMERCE-011
 owns discovery service contract fixtures consumed by N04. Shared checks are reused.
 
-| Case | Traversal | Required result |
-|---|---|---|
-| N01 | Deep link U06 -> U01 -> Google success -> U06; revoked user -> U02 | Safe return path and current role checks, no data before authorization |
-| N02 | U03 arbitrary Admin feature -> U04 -> Add behaviour -> U09 -> Back U04 | One configuration references existing Feature.id; no Feature/plan/preference writes |
-| N03 | U05 New tool -> U06 Create draft -> six steps -> Save -> History -> exact revision | One tool/draft/save per deliberate action; no implicit publication |
-| N04 | U06 Browse Shopify -> U07 search -> document -> schema builder -> Validate -> Use -> U06 Save | Complete inside Studio; invalid mapping/field blocks validation, failure retains input |
-| N05 | U06 publish -> U09 attach exact version -> Save -> publish | Shared tool remains reusable; original feature revisions do not change |
-| N06 | U09 Create release -> U10 dialog -> U11 -> Activate | Distinct replay-safe stages; active pointer changes once after confirmation |
-| N07 | U10 previous release -> U11 Rollback | Only pointer changes; existing grants and published rows unchanged |
-| N08 | U12 -> U13 -> feature/tool link -> Back | Dynamic eligibility and exact versions; no live grant or provider execution |
-| N09 | Any dirty editor -> Back/Sidebar/Cancel -> Stay or Discard | Correct destination/focus, saved drafts retained, no accidental writes |
-| N10 | U06/U09/U13 Test -> U14 fixture run -> Return | Correct source context, no live credentials/shop writes; results visibly synthetic |
-| N11 | U14 start -> Send -> duplicate Send -> Cancel/timeout -> reconcile -> reset | One run, frozen preview grant, budgets enforced, no hidden retry |
-| N12 | Save/publish/activate/disable/attach/create double-click, tap or Enter | One intended persisted effect, immediate busy state; unknown outcomes reconcile |
-| N13 | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate | C16 definition validation, immutable release, role checks, original-conversation pinning |
+| Case | Traversal                                                                                     | Required result                                                                          |
+| ---- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| N01  | Deep link U06 -> U01 -> Google success -> U06; revoked user -> U02                            | Safe return path and current role checks, no data before authorization                   |
+| N02  | U03 arbitrary Admin feature -> U04 -> Add behaviour -> U09 -> Back U04                        | One configuration references existing Feature.id; no Feature/plan/preference writes      |
+| N03  | U05 New tool -> U06 Create draft -> six steps -> Save -> History -> exact revision            | One tool/draft/save per deliberate action; no implicit publication                       |
+| N04  | U06 Browse Shopify -> U07 search -> document -> schema builder -> Validate -> Use -> U06 Save | Complete inside Studio; invalid mapping/field blocks validation, failure retains input   |
+| N05  | U06 publish -> U09 attach exact version -> Save -> publish                                    | Shared tool remains reusable; original feature revisions do not change                   |
+| N06  | U09 Create release -> U10 dialog -> U11 -> Activate                                           | Distinct replay-safe stages; active pointer changes once after confirmation              |
+| N07  | U10 previous release -> U11 Rollback                                                          | Only pointer changes; existing grants and published rows unchanged                       |
+| N08  | U12 -> U13 -> feature/tool link -> Back                                                       | Dynamic eligibility and exact versions; no live grant or provider execution              |
+| N09  | Any dirty editor -> Back/Sidebar/Cancel -> Stay or Discard                                    | Correct destination/focus, saved drafts retained, no accidental writes                   |
+| N10  | U06/U09/U13 Test -> U14 fixture run -> Return                                                 | Correct source context, no live credentials/shop writes; results visibly synthetic       |
+| N11  | U14 start -> Send -> duplicate Send -> Cancel/timeout -> reconcile -> reset                   | One run, frozen preview grant, budgets enforced, no hidden retry                         |
+| N12  | Save/publish/activate/disable/attach/create double-click, tap or Enter                        | One intended persisted effect, immediate busy state; unknown outcomes reconcile          |
+| N13  | U11 Response contract -> clone U10 -> validate -> U14 -> return -> create U11 -> activate     | C16 definition validation, immutable release, role checks, original-conversation pinning |
 
 Each page is inspected at desktop and narrow viewport with keyboard focus,
 loading/empty/error states. Tool/template/feature editing does not require an IDE,
@@ -401,10 +399,8 @@ hosted sign-in choice. A server-resolved development SUPER_ADMIN bypass redirect
 U01 to U03 and shows Development — SUPER_ADMIN across U03–U14. No UI bypass
 selector or extra provider. Protected page/API/action guards remain server-owned.
 
-
 C19 ownership clarification:009 owns preview backend/routes;017 owns the exact
 U14 page and N10/N11 plus U14 part of N13.008 retains U01–U13 and the composer.
-
 
 ### Integration ownership — 2026-09-21
 

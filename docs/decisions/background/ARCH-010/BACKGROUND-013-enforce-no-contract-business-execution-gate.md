@@ -123,14 +123,14 @@ Do not move this gate into Shopify or Meta HTTP ingress merely to reject traffic
 
 ## Behaviour matrix
 
-| Durable state | New recovery/candidate | Inbound business mutation | CommerceAgent | New outbound WhatsApp | New credit reservation | New UsageEvent/top-up | Historical bookkeeping |
-|---|---|---|---|---|---|---|---|
-| ACTIVE/TRIALING executable | normal policy | allowed | allowed | allowed | normal policy | normal policy | allowed |
-| NO_CONTRACT — never subscribed / no verified ended contract | DENY terminal no-op | DENY | DENY | DENY | DENY | DENY | safe bookkeeping only |
-| NO_CONTRACT — onboarded + provider lifecycle CANCELED | recovery-only: purchased -> lifetime Free, then deny | continuing MESSAGE_SENT/ENGAGED recovery only | continuing recovery only; no generic plan entitlement | new recovery only with durable purchased/lifetime reservation; continuing recovery subject to policy | purchased/lifetime recovery reservation only | DENY new top-up / plan-period billing | bounded recovery/accounting finalisation |
-| FROZEN | DENY terminal no-op | DENY | DENY | DENY | DENY | DENY | bounded pre-freeze finalisation only |
-| UNMAPPED/SYNC_ERROR | preserve existing fail-closed policy | preserve | preserve | preserve | preserve | preserve | safe bookkeeping only |
-| Shop UNINSTALLED/inactive | preserve BACKGROUND-004/005 | preserve | preserve | preserve | preserve | preserve | existing rules |
+| Durable state                                               | New recovery/candidate                               | Inbound business mutation                     | CommerceAgent                                         | New outbound WhatsApp                                                                                | New credit reservation                       | New UsageEvent/top-up                 | Historical bookkeeping                   |
+| ----------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------- | ---------------------------------------- |
+| ACTIVE/TRIALING executable                                  | normal policy                                        | allowed                                       | allowed                                               | allowed                                                                                              | normal policy                                | normal policy                         | allowed                                  |
+| NO_CONTRACT — never subscribed / no verified ended contract | DENY terminal no-op                                  | DENY                                          | DENY                                                  | DENY                                                                                                 | DENY                                         | DENY                                  | safe bookkeeping only                    |
+| NO_CONTRACT — onboarded + provider lifecycle CANCELED       | recovery-only: purchased -> lifetime Free, then deny | continuing MESSAGE_SENT/ENGAGED recovery only | continuing recovery only; no generic plan entitlement | new recovery only with durable purchased/lifetime reservation; continuing recovery subject to policy | purchased/lifetime recovery reservation only | DENY new top-up / plan-period billing | bounded recovery/accounting finalisation |
+| FROZEN                                                      | DENY terminal no-op                                  | DENY                                          | DENY                                                  | DENY                                                                                                 | DENY                                         | DENY                                  | bounded pre-freeze finalisation only     |
+| UNMAPPED/SYNC_ERROR                                         | preserve existing fail-closed policy                 | preserve                                      | preserve                                              | preserve                                                                                             | preserve                                     | preserve                              | safe bookkeeping only                    |
+| Shop UNINSTALLED/inactive                                   | preserve BACKGROUND-004/005                          | preserve                                      | preserve                                              | preserve                                                                                             | preserve                                     | preserve                              | existing rules                           |
 
 A denied queued job caused only by NO_CONTRACT/FROZEN must complete as a successful terminal no-op where the queue contract permits. Do not create retry storms and do not purge entire Redis queues.
 
@@ -272,19 +272,23 @@ STOP if implementing one lifecycle reason would require bypassing the existing a
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - Implementation repository commit `40fedb029a2b3ae53ed7a8083cd5d0122e3b1695` changed exactly these 10 files in `moda-interact-background`: 8 production files (`checkout-recovery.service.ts`, `effective-billing-policy.service.ts`, `outbound-whatsapp-admission.service.ts`, `pending-recovery-candidate.service.ts`, `recovery-billing.service.ts`, `recovery-capacity-resume.service.ts`, `shop-execution-eligibility.service.ts`, `whatsapp.worker.ts`) and 2 focused test files (`effective-billing-policy.service.test.ts`, `shop-execution-eligibility.service.test.ts`).
 - Parent repository change: this task report only.
 
 ### Work Completed
+
 - Reused and extended the canonical shop execution-eligibility gate to distinguish executable ACTIVE/TRIALING from `NO_CONTRACT` (`CONTRACT_REQUIRED`) and `FROZEN` (`SUBSCRIPTION_FROZEN`) outcomes.
 - Applied the lifecycle gate before new recovery/candidate execution, billing reservation/finalisation, outbound WhatsApp admission, queued WhatsApp processing, and capacity-resume re-admission; denied lifecycle jobs remain terminal no-ops where the existing queue contract permits.
 - Preserved bounded accounting/bookkeeping paths and existing inactive/uninstalled, unmapped/sync-error, and capacity-exhaustion semantics. No Partner API or Shopify/Meta HTTP-ingress lifecycle lookup was added, and BACKGROUND-018 remains the raw checkout/cart/order early gate.
 - Focused tests cover active execution, distinct NO_CONTRACT/FROZEN policy results, lifecycle denial, and no regression of the accepted gate boundary. No production implementation changes were needed after the pushed commit.
 
 ### Validation Results
+
 - Focused validation after the pushed implementation commit: `npm exec vitest run tests/unit/services/effective-billing-policy.service.test.ts tests/unit/services/shop-execution-eligibility.service.test.ts` — 2 test files passed, 26 tests passed, 0 failed.
 - `npm run prisma:validate` — passed; schema valid.
 - `git diff --check` in the implementation worktree — passed; implementation worktree clean.
@@ -293,6 +297,7 @@ Ready for Review.
 - The implementation commit was already fully validated and pushed before report completion; the focused rerun and required whitespace check above reconfirm the task-owned slice.
 
 ### Git / VCS
+
 - Launcher-provided canonical worktrees were used without recreation or resynchronization: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-013`, parent/report `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-013`.
 - Implementation branch `task/ARCH-010-BACKGROUND-013` is clean, remote-matching, and points to pushed commit `40fedb029a2b3ae53ed7a8083cd5d0122e3b1695`.
 - Launcher synchronization evidence: parent branch started at launcher claim `68a61af9e36bc42c4d01ff87dc05f66432f4d831`, remote matched; implementation branch was synchronized with its task branch and initialized submodules were at recorded commits. No submodule gitlink was staged or changed.
@@ -300,23 +305,28 @@ Ready for Review.
 - Status metadata for return to review: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 
 ### Architect Review
+
 Pending.
 
 ## Completion Report — Attempt 2
 
 ### Status
+
 Ready for Review.
 
 ### Corrections Mapping
+
 - Finding 1 implemented in `src/workers/recovery-capacity-resume.worker.ts`: queued resume jobs now evaluate the canonical Shop + Subscription gate before blocked-recovery lookup and continuation scheduling; NO_CONTRACT/FROZEN jobs return successful ignored results. `src/services/checkout-recovery.service.ts` now rechecks before lock acquisition and again after lock acquisition, before abandoned-checkout provider lookup or mutation. Covered by the worker parameterized NO_CONTRACT/FROZEN test and capacity-resume service pre-lock/post-lock tests.
 - Finding 2 implemented in `src/services/checkout-recovery.service.ts`: matured-candidate materialization retains its outer early gate and performs the first in-lock authority check before order correlation, provider lookup, materialization, customer/conversation work, billing, or send. Covered by the matured-candidate lock-race test.
 - Finding 3 implemented in `src/services/outbound-whatsapp-admission.service.ts`: admitted results retain durable `shopId`; both prepared text and template sends re-evaluate the canonical gate immediately before provider invocation, clean up denied prepared messages through `failPrepared`, and preserve `contract-required` versus `subscription-frozen` suppression reasons. Covered by direct prepared-text FROZEN and template NO_CONTRACT tests; existing active-send tests remain green.
 
 ### Files Changed
+
 - Implementation commit `d3be8d8` changed exactly 7 files in `moda-interact-background`: 3 production files (`checkout-recovery.service.ts`, `outbound-whatsapp-admission.service.ts`, `recovery-capacity-resume.worker.ts`) and 4 focused test files (`checkout-recovery.capacity-resume.test.ts`, `matured-candidate.materialization.test.ts`, `outbound-whatsapp-admission.service.test.ts`, `recovery-capacity-resume.worker.test.ts`).
 - Parent repository change: this task report only.
 
 ### Validation Results
+
 - Focused Attempt 2 validation: `npm exec vitest run tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts` — 4 test files passed, 63 tests passed, 0 failed.
 - `npm run prisma:validate` — passed; schema valid.
 - `git diff --check` — passed in the implementation worktree.
@@ -324,6 +334,7 @@ Ready for Review.
 - `npm run build` — remains at the documented baseline: 15 TypeScript errors in the unrelated `src/services/purchased-recovery-reservation.service.ts` (10) and `src/services/recovery-credit-purchase.service.ts` (5). Prisma generation completed; no changed Attempt 2 file is implicated.
 
 ### Attempt 2 Git / Launcher Evidence
+
 - Launcher-provided canonical worktrees were used exactly as supplied, without rerunning preparation, synchronization discovery, claim, or submodule setup: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-013` on `task/ARCH-010-BACKGROUND-013`, parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-013` on the same branch.
 - Attempt 2 started from implementation head `6f6985144b4f095e70ac010884c311e93b6d9859`; launcher claim synchronization was already complete and the dependency gate passed for BACKGROUND-004, BACKGROUND-005, and BACKGROUND-012.
 - Launcher verified the database submodule at recorded commit `5443afdd8f0c816dc16e1f3e93f9906c5ca31d94`. No submodule gitlink was staged or changed.
@@ -433,7 +444,7 @@ src/services/checkout-recovery.service.ts
 In `recovery-capacity-resume.worker.ts` import the canonical:
 
 ```ts
-shopExecutionEligibilityService
+shopExecutionEligibilityService;
 ```
 
 Immediately after validating the job name and before:
@@ -446,8 +457,9 @@ checkoutRecoveryService.resumeCapacityBlockedRecovery(...)
 evaluate:
 
 ```ts
-const execution =
-  await shopExecutionEligibilityService.evaluate(job.data.shopId);
+const execution = await shopExecutionEligibilityService.evaluate(
+  job.data.shopId,
+);
 ```
 
 If denied, return successfully:
@@ -635,7 +647,7 @@ A deterministic implementation is:
 and return `shopId: input.shopId` from the reserve transaction.
 
 2. Inject/reuse the canonical `shopExecutionEligibilityService` in
-`OutboundWhatsAppAdmissionService`; do not duplicate lifecycle interpretation.
+   `OutboundWhatsAppAdmissionService`; do not duplicate lifecycle interpretation.
 
 3. Before the provider call in both:
 
@@ -647,7 +659,7 @@ sendTemplate(...)
 re-evaluate:
 
 ```ts
-executionEligibility.evaluate(admission.shopId)
+executionEligibility.evaluate(admission.shopId);
 ```
 
 `sendTemplate(...)` already has `input.shopId`; the returned admission should still
@@ -664,7 +676,7 @@ do not send template
 Clean up the pre-provider reservation using the existing:
 
 ```ts
-failPrepared(messageId)
+failPrepared(messageId);
 ```
 
 semantics so the prepared Message is terminally FAILED and its unreported UsageEvent
@@ -692,8 +704,8 @@ Existing `SHOP_UNAVAILABLE`, `UNMAPPED_PLAN`, and `SYNC_ERROR` may retain the ex
 generic fail-closed suppression semantics.
 
 6. The provider call itself remains the irreversible boundary. Once the provider call
-has been attempted successfully, existing `markSent`, provider-failure, delivery
-status, and accounting-finalisation semantics remain unchanged.
+   has been attempted successfully, existing `markSent`, provider-failure, delivery
+   status, and accounting-finalisation semantics remain unchanged.
 
 Do not attempt to cancel already-sent WhatsApp messages.
 
@@ -1216,8 +1228,9 @@ src/workers/recovery-capacity-resume.worker.ts
 after each:
 
 ```ts
-const result =
-  await checkoutRecoveryService.resumeCapacityBlockedRecovery(recovery.id);
+const result = await checkoutRecoveryService.resumeCapacityBlockedRecovery(
+  recovery.id,
+);
 ```
 
 if the result is an execution denial, immediately return a successful ignored result
@@ -1528,18 +1541,22 @@ then STOP and hand back to `moda_architect`.
 ## Completion Report — Attempt 3
 
 ### Status
+
 Ready for Review.
 
 ### Corrections Mapping
+
 - Latest Review Finding 1 implemented: `ShopExecutionEligibilityService.evaluateResolvedShop(...)` now provides the canonical no-I/O mapping for an already-loaded Shop + Subscription projection; `checkout.updated` and `cart.activity` use it before candidate refresh, recovery lookup, mutation, or provider work. `resolveShopById(...)` now honors the injected client. Covered by ACTIVE/TRIALING, NO_CONTRACT, FROZEN, UNMAPPED, SYNC_ERROR, and inactive-Shop decision tests plus both hot-path denial matrices.
 - Latest Review Finding 2 implemented: capacity-resume stops as a successful terminal ignored result when a lifecycle denial appears during page processing, and re-evaluates immediately before scheduling a continuation. Covered by the 25-item mid-page denial and final pre-continuation denial tests.
 - Accepted Attempt 2 behavior was preserved: pre-lock and in-lock recovery gates, matured-candidate in-lock gate, outbound provider-send recheck, prepared-message cleanup, and distinct lifecycle suppression remain unchanged.
 
 ### Files Changed
+
 - Implementation commit `aba4023a39ccaf9f0c61f3e7747e4737157879e0` changed exactly six task-owned files in `moda-interact-background`: `src/services/checkout-recovery.service.ts`, `src/services/shop-execution-eligibility.service.ts`, `src/workers/recovery-capacity-resume.worker.ts`, `tests/unit/services/checkout-refresh.test.ts`, `tests/unit/services/shop-execution-eligibility.service.test.ts`, and `tests/unit/workers/recovery-capacity-resume.worker.test.ts`.
 - Parent repository change: this task report only.
 
 ### Work Completed
+
 - Reused the canonical execution policy without adding database reads to the BACKGROUND-018 hot-path projection checks.
 - Prevented NO_CONTRACT, FROZEN, UNMAPPED, and SYNC_ERROR candidate/recovery advancement on `checkout.updated` and `cart.activity`, while preserving distinct contract-required and subscription-frozen results.
 - Prevented stale capacity-resume jobs from processing later recoveries or scheduling continuation work after lifecycle denial.
@@ -1547,6 +1564,7 @@ Ready for Review.
 - No Partner API call, Shopify/Meta HTTP-ingress lifecycle lookup, queue contract, schema, or submodule change was introduced.
 
 ### Validation Results
+
 - Focused Attempt 3 suite: `npm exec vitest run tests/unit/services/shop-execution-eligibility.service.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts` — 6 files passed, 101 tests passed, 0 failed.
 - `npm run prisma:validate` — passed; schema valid.
 - `git diff --check` — passed.
@@ -1554,6 +1572,7 @@ Ready for Review.
 - `npm run build` — same documented baseline: 15 TypeScript errors in unrelated `src/services/purchased-recovery-reservation.service.ts` (10) and `src/services/recovery-credit-purchase.service.ts` (5). Prisma client generation completed; no Attempt 3 file is implicated.
 
 ### Git / VCS
+
 - Launcher-provided worktrees were used exactly as supplied without repeating preparation, claim, dependency discovery, synchronization, or submodule initialization: implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-013`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-013`; mirrored branch `task/ARCH-010-BACKGROUND-013`.
 - Attempt 3 launcher claim: `a6c4984248041a965dc90a96f49202278fc6e1f4`.
 - Attempt 2 implementation: `d3be8d81b1b96ae2300202d9d41a6c176aed4cd2`.
@@ -1563,6 +1582,7 @@ Ready for Review.
 - Attempt 1 immutable evidence preserved: launcher claim `68a61af9e36bc42c4d01ff87dc05f66432f4d831`, implementation `40fedb029a2b3ae53ed7a8083cd5d0122e3b1695`, final parent/report `324b958bfc96ddd8e4ea4e79aae37e6cce88e278`.
 
 ### Architect Review
+
 Pending. Task returned to `review` with `executor: null`, `claimed_at: null`, and `attempt: 3`.
 
 ## Architect Review — Attempt 3
@@ -1776,4 +1796,3 @@ ARCH-010-BACKGROUND-021
 ```
 
 No Attempt 4 is required for `ARCH-010-BACKGROUND-013`.
-

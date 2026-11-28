@@ -10,7 +10,6 @@ This repository is the top-level workspace for the platform. It ties together
 independently versioned services using Git submodules, so a workspace commit
 records the exact compatible service commits that form a platform snapshot.
 
-
 ## Product status
 
 Moda Interact is an actively developed commercial product, not a demo or
@@ -31,6 +30,7 @@ capture path are being integrated without routing WooCommerce events through
 Shopify recovery handlers.
 
 Key engineering areas demonstrated:
+
 - Multi-service architecture
 - Async/event-driven processing
 - AI/LLM orchestration
@@ -259,16 +259,16 @@ Architectural work is organised around stable `ARCH-XXX` initiative IDs.
 An architecture ID identifies a **complete architectural outcome**, not one
 implementation task.
 
-| Architecture | Status | High-level architectural goal | Architecture decision | Copilot implementation plan |
-| --- | --- | --- | --- | --- |
-| **ARCH-001** | Agreed | Build a reliable, low-overhead Shopify checkout-recovery event pipeline: keep webhook ingress fast, use Redis/BullMQ for temporary recovery candidates, persist only actual `CheckoutRecovery` state, fetch current Shopify state only when recovery is required, use canonical cross-service contracts, and tolerate duplicate/concurrent asynchronous processing. | [Shopify Checkout Recovery Webhook Processing](docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md) | [Copilot model and task plan] |
-| **ARCH-002** | In progress | Establish a production-ready, version-controlled Render topology for test and production: thin public gateway, private application services, independently scalable background workers, environment-isolated PostgreSQL/Redis/telemetry, admin security, observability, deployment validation and capacity testing. | [Render Test and Production Gateway and Infrastructure](docs/architecture/ARCH-002-render-production-gateway-infrastructure.md) | [Copilot model and task plan](docs//models/ARCH-002/copilot-model-selection.md) |
-| **ARCH-003** | In progress | Provide tenant-aware operational visibility for the asynchronous recovery platform: Admin queue health and failed-job diagnostics, safe tenant attribution, shop-scoped pending-recovery visibility in the merchant Usage experience, bounded refresh/pagination, complete BullMQ queue-performance telemetry and integrated evidence of tenant isolation. | [Admin Operational Queue Observability UI](docs/architecture/ARCH-003-admin-operational-ui.md) · [Readable overview](docs/architecture/ARCH-003-operational-observability-overview.md) | Task plans live under `docs/decisions/*/ARCH-003/` |
-| **ARCH-004** | In progress | Make pending recovery an inactivity-based workflow: deterministically correlate checkout/cart activity to an existing candidate, advance a monotonic `lastActivityAt` clock, reschedule the same BullMQ candidate and shop index, ignore stale/out-of-order events, cancel confirmed empty carts and preserve existing order-cancellation semantics. | [Correlated Cart Activity Recovery Rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md) · [Readable overview](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling-overview.md) | Task plans live under `docs/decisions/*/ARCH-004/` |
-| **ARCH-005** | In progress | Make Moda Interact internationally correct by design across WhatsApp markets: keep country, language, currency, time zone and telephone country independent; use standards-based locale contracts; capture Shopify international commerce context; select approved WhatsApp template variants; support multilingual active conversations; and localise merchant-facing formatting. | [Global Internationalisation and WhatsApp Markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md) · [Readable overview](docs/architecture/ARCH-005-internationalisation-overview.md) | Task plans live under `docs/decisions/*/ARCH-005/` |
-| **ARCH-006** | In progress | Add a shop-scoped internal support inbox between Moda administrators and merchants: immutable originals, multilingual translations, read state, distinct administrative/system/merchant messages, versioned automated notifications, tenant-safe access and an observable `merchant-communications` queue. | [Merchant Communications, Support Inbox and System Notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md) · [Readable overview](docs/architecture/ARCH-006-merchant-communications-overview.md) | Task plans live under `docs/decisions/*/ARCH-006/` |
-| **ARCH-007** | Partially superseded | Historical billing/cost-control foundation and completed implementation evidence. Merchant subscription, entitlement, recovery-capacity, top-up, refund and lifecycle semantics are superseded by ARCH-010; retained ARCH-007 message/provider safety primitives remain valid unless explicitly replaced. | [Historical ARCH-007 architecture](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md) · [ARCH-010 supersession map](docs/architecture/ARCH-010-supersession-map.md) | Historical task records live under `docs/decisions/*/ARCH-007/` |
-| **ARCH-010** | Agreed / implementation-ready | Define the current merchant subscription and lifecycle state machine: one-time shop-lifetime Free grant, period-scoped paid allowance, optional promotional campaigns plus purchased/lifetime capacity ordering, App Pricing top-ups, plan changes, cancellation, freeze, uninstall/reinstall, partial top-up refunds and exact execution gates. | [Merchant lifecycle state transitions](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md) · [Current pricing/billing model](docs/product/pricing-and-billing-model.md) · [Supersession map](docs/architecture/ARCH-010-supersession-map.md) | [Implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md) |
+| Architecture | Status                        | High-level architectural goal                                                                                                                                                                                                                                                                                                                                                      | Architecture decision                                                                                                                                                                                                                                        | Copilot implementation plan                                                     |
+| ------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| **ARCH-001** | Agreed                        | Build a reliable, low-overhead Shopify checkout-recovery event pipeline: keep webhook ingress fast, use Redis/BullMQ for temporary recovery candidates, persist only actual `CheckoutRecovery` state, fetch current Shopify state only when recovery is required, use canonical cross-service contracts, and tolerate duplicate/concurrent asynchronous processing.                | [Shopify Checkout Recovery Webhook Processing](docs/architecture/ARCH-001-shopify-checkout-recovery-webhook-processing.md)                                                                                                                                   | [Copilot model and task plan]                                                   |
+| **ARCH-002** | In progress                   | Establish a production-ready, version-controlled Render topology for test and production: thin public gateway, private application services, independently scalable background workers, environment-isolated PostgreSQL/Redis/telemetry, admin security, observability, deployment validation and capacity testing.                                                                | [Render Test and Production Gateway and Infrastructure](docs/architecture/ARCH-002-render-production-gateway-infrastructure.md)                                                                                                                              | [Copilot model and task plan](docs//models/ARCH-002/copilot-model-selection.md) |
+| **ARCH-003** | In progress                   | Provide tenant-aware operational visibility for the asynchronous recovery platform: Admin queue health and failed-job diagnostics, safe tenant attribution, shop-scoped pending-recovery visibility in the merchant Usage experience, bounded refresh/pagination, complete BullMQ queue-performance telemetry and integrated evidence of tenant isolation.                         | [Admin Operational Queue Observability UI](docs/architecture/ARCH-003-admin-operational-ui.md) · [Readable overview](docs/architecture/ARCH-003-operational-observability-overview.md)                                                                       | Task plans live under `docs/decisions/*/ARCH-003/`                              |
+| **ARCH-004** | In progress                   | Make pending recovery an inactivity-based workflow: deterministically correlate checkout/cart activity to an existing candidate, advance a monotonic `lastActivityAt` clock, reschedule the same BullMQ candidate and shop index, ignore stale/out-of-order events, cancel confirmed empty carts and preserve existing order-cancellation semantics.                               | [Correlated Cart Activity Recovery Rescheduling](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling.md) · [Readable overview](docs/architecture/ARCH-004-cart-activity-recovery-rescheduling-overview.md)                                        | Task plans live under `docs/decisions/*/ARCH-004/`                              |
+| **ARCH-005** | In progress                   | Make Moda Interact internationally correct by design across WhatsApp markets: keep country, language, currency, time zone and telephone country independent; use standards-based locale contracts; capture Shopify international commerce context; select approved WhatsApp template variants; support multilingual active conversations; and localise merchant-facing formatting. | [Global Internationalisation and WhatsApp Markets](docs/architecture/ARCH-005-global-internationalisation-whatsapp-markets.md) · [Readable overview](docs/architecture/ARCH-005-internationalisation-overview.md)                                            | Task plans live under `docs/decisions/*/ARCH-005/`                              |
+| **ARCH-006** | In progress                   | Add a shop-scoped internal support inbox between Moda administrators and merchants: immutable originals, multilingual translations, read state, distinct administrative/system/merchant messages, versioned automated notifications, tenant-safe access and an observable `merchant-communications` queue.                                                                         | [Merchant Communications, Support Inbox and System Notifications](docs/architecture/ARCH-006-merchant-communications-support-inbox.md) · [Readable overview](docs/architecture/ARCH-006-merchant-communications-overview.md)                                 | Task plans live under `docs/decisions/*/ARCH-006/`                              |
+| **ARCH-007** | Partially superseded          | Historical billing/cost-control foundation and completed implementation evidence. Merchant subscription, entitlement, recovery-capacity, top-up, refund and lifecycle semantics are superseded by ARCH-010; retained ARCH-007 message/provider safety primitives remain valid unless explicitly replaced.                                                                          | [Historical ARCH-007 architecture](docs/architecture/ARCH-007-shopify-billing-usage-cost-control.md) · [ARCH-010 supersession map](docs/architecture/ARCH-010-supersession-map.md)                                                                           | Historical task records live under `docs/decisions/*/ARCH-007/`                 |
+| **ARCH-010** | Agreed / implementation-ready | Define the current merchant subscription and lifecycle state machine: one-time shop-lifetime Free grant, period-scoped paid allowance, optional promotional campaigns plus purchased/lifetime capacity ordering, App Pricing top-ups, plan changes, cancellation, freeze, uninstall/reinstall, partial top-up refunds and exact execution gates.                                   | [Merchant lifecycle state transitions](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md) · [Current pricing/billing model](docs/product/pricing-and-billing-model.md) · [Supersession map](docs/architecture/ARCH-010-supersession-map.md) | [Implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md)  |
 
 The architecture document is authoritative for **what is being built and how the
 complete system fits together**.
@@ -282,21 +282,21 @@ workflow.
 
 The [Moda Interact Investor Report: Pricing 2026](Moda_Interact_Investor_Report_Pricing_2026.pdf) (24 October 2026) proposes one USD catalogue for Shopify and WooCommerce. These are commercial assumptions for planning, **not verified production provider offers or live charges**. Provider billing configuration, taxes and purchase/refund reconciliation must be verified before presenting these prices as available to merchants.
 
-| Plan | Proposed price | Included recovery credits | Entitlement |
-| --- | ---: | ---: | --- |
-| **Free** | $0 | 2 | Lifetime grant, once per shop |
-| **Starter** | $35 | 20 | Per 30-day entitlement cycle |
-| **Growth** | $75 | 50 | Per 30-day entitlement cycle |
-| **Scale** | $149 | 100 | Per 30-day entitlement cycle |
+| Plan        | Proposed price | Included recovery credits | Entitlement                   |
+| ----------- | -------------: | ------------------------: | ----------------------------- |
+| **Free**    |             $0 |                         2 | Lifetime grant, once per shop |
+| **Starter** |            $35 |                        20 | Per 30-day entitlement cycle  |
+| **Growth**  |            $75 |                        50 | Per 30-day entitlement cycle  |
+| **Scale**   |           $149 |                       100 | Per 30-day entitlement cycle  |
 
 Paid-plan credits renew each 30-day entitlement cycle. Free credits are granted once and do not renew. All four plans may purchase one-off prepaid bundles; Free merchants can buy without subscribing.
 
-| Plan | Bronze · 5 credits | Silver · 10 credits | Gold · 20 credits |
-| --- | ---: | ---: | ---: |
-| **Free** | $15 | $26 | $46 |
-| **Starter** | $14 | $24 | $42 |
-| **Growth** | $13 | $22 | $38 |
-| **Scale** | $12 | $20 | $34 |
+| Plan        | Bronze · 5 credits | Silver · 10 credits | Gold · 20 credits |
+| ----------- | -----------------: | ------------------: | ----------------: |
+| **Free**    |                $15 |                 $26 |               $46 |
+| **Starter** |                $14 |                 $24 |               $42 |
+| **Growth**  |                $13 |                 $22 |               $38 |
+| **Scale**   |                $12 |                 $20 |               $34 |
 
 The proposed merchant unit is one recovery credit per admitted proactive outreach attempt, not per WhatsApp message. An eligible follow-up consumes another credit; customer replies and in-window AI or human responses do not. The report proposes that Moda absorb WhatsApp delivery and bounded AI costs within fixed recovery prices, without per-message Moda overage. This all-inclusive treatment is also **not yet a verified live billing policy**. Taxes may apply.
 
@@ -359,13 +359,13 @@ docs/
 
 The source-of-truth hierarchy is:
 
-| Source | Question answered |
-| --- | --- |
-| `docs/architecture/ARCH-XXX-*.md` | What are we building and how does the complete system fit together? |
-| `docs/decisions/<domain>/ARCH-XXX/_index.md` | What work does this logical agent/domain own for this architecture? |
+| Source                                       | Question answered                                                               |
+| -------------------------------------------- | ------------------------------------------------------------------------------- |
+| `docs/architecture/ARCH-XXX-*.md`            | What are we building and how does the complete system fit together?             |
+| `docs/decisions/<domain>/ARCH-XXX/_index.md` | What work does this logical agent/domain own for this architecture?             |
 | `docs/decisions/<domain>/ARCH-XXX/<TASK>.md` | What exactly must be implemented, what state is it in, and how was it reviewed? |
-| Repository source code | What has actually been implemented and how does it behave? |
-| Git history | What exact source versions existed and in what sequence? |
+| Repository source code                       | What has actually been implemented and how does it behave?                      |
+| Git history                                  | What exact source versions existed and in what sequence?                        |
 
 When a later architecture explicitly supersedes overlapping behaviour, the newer architecture governs that overlap. Older architecture/task files remain valid historical implementation and review evidence, but they must not override the newer current contract. For merchant billing/lifecycle, see [`ARCH-010-supersession-map.md`](docs/architecture/ARCH-010-supersession-map.md).
 
@@ -380,28 +380,27 @@ document is authoritative for overall architectural intent. Source code is
 authoritative for actual runtime behaviour. Git is version history rather than a
 substitute for Completion Reports or architectural review records.
 
-
 ---
 
 ## Projects and ownership
 
 Each service is independently versioned and has a bounded responsibility.
 
-| Project | Responsibility |
-| --- | --- |
-| [`moda-interact`](https://github.com/kodjobaah/moda-interact) | Shopify application, merchant UI, Shopify authentication/webhooks, onboarding, billing and subscriptions |
-| [`moda-interact-admin`](https://github.com/kodjobaah/moda-interact-admin) | Next.js platform administration console, platform-admin security, cross-merchant reporting and operational visibility |
-| [`moda-interact-api`](https://github.com/kodjobaah/moda-interact-api) | Hosted HTTP boundary for WooCommerce installation authentication, merchant bootstrap and isolated checkout/order activity capture |
-| [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, Shopify event inspection/filtering, checkout recovery, CommerceAgent orchestration, retries, entitlements, usage and separately gated WooCommerce activity-consumer integration |
-| [`moda-interact-commerce`](https://github.com/kodjobaah/moda-interact-commerce) | Internal Commerce Agent Studio for authoring and publishing versioned commerce capabilities |
-| [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Canonical Prisma schema, PostgreSQL migrations, constraints, indexes, seed/reference data and ERD |
-| [`moda-interact-gateway`](https://github.com/kodjobaah/moda-interact-gateway) | Thin public ingress, private-service routing, Render Blueprints/topology, scaling configuration and infrastructure wiring |
-| [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | Meta/WhatsApp webhook verification, normalisation and queue publication |
-| [`moda-interact-mcp`](https://github.com/kodjobaah/moda-interact-mcp) | Private MCP runtime with pinned published-tool authorization, tenant isolation and bounded read-only commerce tools |
-| [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Canonical `@modainteract/moda-interact-shared` package for cross-service runtime contracts and reusable primitives |
-| [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public website, product content, SEO and public-facing material |
-| [`moda-interact-system-test`](https://github.com/kodjobaah/moda-interact-system-test) | Architecture-level integrated tests, architecture-specific fixtures and environment orchestration |
-| [`moda-interact-woocommerce`](https://github.com/kodjobaah/moda-interact-woocommerce) | Installable WordPress plugin with WooCommerce Admin UI, server-side API connection, merchant Overview and WooCommerce-specific provider boundary |
+| Project                                                                               | Responsibility                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`moda-interact`](https://github.com/kodjobaah/moda-interact)                         | Shopify application, merchant UI, Shopify authentication/webhooks, onboarding, billing and subscriptions                                                                                        |
+| [`moda-interact-admin`](https://github.com/kodjobaah/moda-interact-admin)             | Next.js platform administration console, platform-admin security, cross-merchant reporting and operational visibility                                                                           |
+| [`moda-interact-api`](https://github.com/kodjobaah/moda-interact-api)                 | Hosted HTTP boundary for WooCommerce installation authentication, merchant bootstrap and isolated checkout/order activity capture                                                               |
+| [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background)   | BullMQ workers, Shopify event inspection/filtering, checkout recovery, CommerceAgent orchestration, retries, entitlements, usage and separately gated WooCommerce activity-consumer integration |
+| [`moda-interact-commerce`](https://github.com/kodjobaah/moda-interact-commerce)       | Internal Commerce Agent Studio for authoring and publishing versioned commerce capabilities                                                                                                     |
+| [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database)       | Canonical Prisma schema, PostgreSQL migrations, constraints, indexes, seed/reference data and ERD                                                                                               |
+| [`moda-interact-gateway`](https://github.com/kodjobaah/moda-interact-gateway)         | Thin public ingress, private-service routing, Render Blueprints/topology, scaling configuration and infrastructure wiring                                                                       |
+| [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging)     | Meta/WhatsApp webhook verification, normalisation and queue publication                                                                                                                         |
+| [`moda-interact-mcp`](https://github.com/kodjobaah/moda-interact-mcp)                 | Private MCP runtime with pinned published-tool authorization, tenant isolation and bounded read-only commerce tools                                                                             |
+| [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared)           | Canonical `@modainteract/moda-interact-shared` package for cross-service runtime contracts and reusable primitives                                                                              |
+| [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site)               | Public website, product content, SEO and public-facing material                                                                                                                                 |
+| [`moda-interact-system-test`](https://github.com/kodjobaah/moda-interact-system-test) | Architecture-level integrated tests, architecture-specific fixtures and environment orchestration                                                                                               |
+| [`moda-interact-woocommerce`](https://github.com/kodjobaah/moda-interact-woocommerce) | Installable WordPress plugin with WooCommerce Admin UI, server-side API connection, merchant Overview and WooCommerce-specific provider boundary                                                |
 
 For more detail, see
 [`docs/architecture/services.md`](docs/architecture/services.md).
@@ -510,7 +509,6 @@ Task execution uses dedicated worktrees **beside** this canonical workspace. The
 absolute locations are derived by `scripts/start-agent-task.py`; no workflow may
 assume a fixed `/Users/...`, `~/project`, `/home/...` or other checkout path.
 
-
 ---
 
 ## Getting started
@@ -544,6 +542,7 @@ code moda-interact.code-workspace
 ```
 
 <!-- MODA-DEVELOPMENT-BASELINE:START -->
+
 ### Development environment baseline
 
 The IDE should normally open the canonical `moda-interact-workspace`, but task
@@ -705,14 +704,14 @@ Start here:
 
 The primary commands are:
 
-| Command | Purpose |
-| --- | --- |
-| `/moda-task <TASK_ID>` | Materialise/prepare an agent task if needed, create or reuse canonical worktrees, claim it and hand execution to the assigned repository agent. |
-| `/moda_developer_create <TASK_ID>` | Define/materialise a missing developer task when needed, or prepare/resume an existing developer task, then claim it for the developer. |
-| `/moda_developer_update <TASK_ID>` | Reconcile the real implementation, validation and task record for the current developer attempt. |
-| `/moda_developer_update <TASK_ID> complete` | Explicitly complete a task whose `completion_mode` is `developer`. |
-| `/moda_developer_update <TASK_ID> reopen` | Reopen a completed task to `ready`; the next claim creates Attempt N+1. |
-| `/moda_provision_repository <REPOSITORY> --remote <URL> [--create --visibility public|private] [--task <TASK_ID>]` | Provision an implementation repository as a workspace submodule; optionally create the GitHub remote with explicit visibility and/or verify it against a materialized task route. |
+| Command                                                                               | Purpose                                                                                                                                         |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/moda-task <TASK_ID>`                                                                | Materialise/prepare an agent task if needed, create or reuse canonical worktrees, claim it and hand execution to the assigned repository agent. |
+| `/moda_developer_create <TASK_ID>`                                                    | Define/materialise a missing developer task when needed, or prepare/resume an existing developer task, then claim it for the developer.         |
+| `/moda_developer_update <TASK_ID>`                                                    | Reconcile the real implementation, validation and task record for the current developer attempt.                                                |
+| `/moda_developer_update <TASK_ID> complete`                                           | Explicitly complete a task whose `completion_mode` is `developer`.                                                                              |
+| `/moda_developer_update <TASK_ID> reopen`                                             | Reopen a completed task to `ready`; the next claim creates Attempt N+1.                                                                         |
+| `/moda_provision_repository <REPOSITORY> --remote <URL> [--create --visibility public | private] [--task <TASK_ID>]`                                                                                                                    | Provision an implementation repository as a workspace submodule; optionally create the GitHub remote with explicit visibility and/or verify it against a materialized task route. |
 
 Four supported entry paths are first-class:
 
@@ -1047,7 +1046,6 @@ python3 scripts/sync-skills.py --check
 Continue/Copilot/Claude/Codex are runtime adapters around the same durable task
 state and policies; they must not invent a parallel lifecycle.
 
-
 ---
 
 ## Logical agents and AI runtimes
@@ -1073,18 +1071,18 @@ without changing architectural ownership.
 
 ### Agent responsibilities
 
-| Logical agent | Responsibility |
-| --- | --- |
-| `moda_architect` | Cross-repository architecture, workload/scalability reasoning, service boundaries, task decomposition, dependency sequencing, implementation review and final integration |
-| `moda_admin` | Internal Next.js administration console, platform-admin authentication/authorization, reporting and operational visibility |
-| `moda_app` | Shopify application, merchant UI, authentication, webhooks, onboarding, billing and subscriptions |
-| `moda_background` | BullMQ workers, event filtering, checkout recovery, order processing, CommerceAgent orchestration, retries, entitlements and usage |
-| `moda_database` | Prisma schema, migrations, relationships, constraints, indexes, durable integrity and canonical/reference seed data |
-| `moda_gateway` | Public ingress, reverse proxy, Render topology/Blueprints, private routing, scaling configuration and infrastructure wiring |
-| `moda_messaging` | Meta/WhatsApp verification, validation, normalisation, ingress and queue publication |
-| `moda_shared` | Canonical cross-service runtime contracts, schemas, event versions, deterministic IDs, enums and reusable primitives |
-| `moda_site` | Public website, responsive UI, SEO, product positioning and marketing-facing content |
-| `moda_system_test` | Integrated architecture validation, architecture-specific fixtures and test-environment orchestration |
+| Logical agent      | Responsibility                                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `moda_architect`   | Cross-repository architecture, workload/scalability reasoning, service boundaries, task decomposition, dependency sequencing, implementation review and final integration |
+| `moda_admin`       | Internal Next.js administration console, platform-admin authentication/authorization, reporting and operational visibility                                                |
+| `moda_app`         | Shopify application, merchant UI, authentication, webhooks, onboarding, billing and subscriptions                                                                         |
+| `moda_background`  | BullMQ workers, event filtering, checkout recovery, order processing, CommerceAgent orchestration, retries, entitlements and usage                                        |
+| `moda_database`    | Prisma schema, migrations, relationships, constraints, indexes, durable integrity and canonical/reference seed data                                                       |
+| `moda_gateway`     | Public ingress, reverse proxy, Render topology/Blueprints, private routing, scaling configuration and infrastructure wiring                                               |
+| `moda_messaging`   | Meta/WhatsApp verification, validation, normalisation, ingress and queue publication                                                                                      |
+| `moda_shared`      | Canonical cross-service runtime contracts, schemas, event versions, deterministic IDs, enums and reusable primitives                                                      |
+| `moda_site`        | Public website, responsive UI, SEO, product positioning and marketing-facing content                                                                                      |
+| `moda_system_test` | Integrated architecture validation, architecture-specific fixtures and test-environment orchestration                                                                     |
 
 Use a specialist agent for bounded repository implementation. Use
 `moda_architect` when work changes repository boundaries, database/shared
@@ -1390,7 +1388,6 @@ nested Gitlink deliberately inside their own dedicated task worktree.
 Publication to `main` and top-level platform-snapshot Gitlink integration remain
 separate developer/repository-owner operations after task acceptance.
 
-
 ---
 
 ## Useful commands
@@ -1437,7 +1434,6 @@ cat docs/agent-worktree-isolation-policy.md
 cat docs/agent-vcs-ownership-policy.md
 ```
 
-
 ---
 
 ## Development principles
@@ -1478,7 +1474,6 @@ ownership.
 The workspace provides durable architecture/task state across Copilot, Claude Code,
 Codex, Continue and direct developer execution without creating separate workflow
 systems for each runtime.
-
 
 ---
 

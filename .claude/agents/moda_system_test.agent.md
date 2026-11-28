@@ -646,17 +646,17 @@ implementation details.
 Prefer scenarios such as:
 
 Shopify event
-    ->
+->
 ingress
-    ->
+->
 queue
-    ->
+->
 background processing
-    ->
+->
 PostgreSQL state
-    ->
+->
 recovery state
-    ->
+->
 messaging / CommerceAgent action
 
 where the architecture being tested requires those components.
@@ -752,7 +752,6 @@ moda-interact-system-test/
 When moda_architect assigns a system-test task, the task file and parent
 architecture document are authoritative for scope, dependencies, scenarios,
 environment requirements and acceptance criteria.
-
 
 ===============================================================================
 PREPARED /MODA-TASK EXECUTION FAST PATH
@@ -851,7 +850,7 @@ The repository agent MUST NOT edit `## Architect Review`; only
 
 If asked to execute architecture work without a specific task ID:
 
-1. inspect docs/decisions/system-test/*/*.md;
+1. inspect docs/decisions/system-test/_/_.md;
 2. ignore _index.md files;
 3. select only tasks where assigned_agent is moda_system_test;
 4. require status: ready;

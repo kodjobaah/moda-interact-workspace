@@ -15,18 +15,18 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-BACKGROUND-011
-- ARCH-010-DATABASE-013
-- ARCH-007-BACKGROUND-003
-- ARCH-007-BACKGROUND-009
+  - ARCH-010-BACKGROUND-011
+  - ARCH-010-DATABASE-013
+  - ARCH-007-BACKGROUND-003
+  - ARCH-007-BACKGROUND-009
 enables:
-- ARCH-010-BACKGROUND-007
-- ARCH-010-BACKGROUND-008
-- ARCH-010-BACKGROUND-009
-- ARCH-010-BACKGROUND-019
-- ARCH-010-SHOPIFY-003
+  - ARCH-010-BACKGROUND-007
+  - ARCH-010-BACKGROUND-008
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-BACKGROUND-019
+  - ARCH-010-SHOPIFY-003
 created: 2026-09-11
-updated: '2026-09-12'
+updated: "2026-09-12"
 ---
 
 # ARCH-010-BACKGROUND-002: Enforce concurrency-safe paid included-credit admission
@@ -92,13 +92,13 @@ ARCH-010-DATABASE-013.
 Paid included capacity MUST use:
 
 BillingPeriodEntitlementCounter
-  counter = INCLUDED_RECOVERY_CREDITS
+counter = INCLUDED_RECOVERY_CREDITS
 
 UsageReservation
-  billingPeriodEntitlementCounterId = exact funding counter id
-  counterId = null
-  promotionalCreditGrantId = null
-  purchasedCreditPurchaseId = null
+billingPeriodEntitlementCounterId = exact funding counter id
+counterId = null
+promotionalCreditGrantId = null
+purchasedCreditPurchaseId = null
 
 Do NOT use ShopEntitlementCounter for Paid included capacity.
 
@@ -125,13 +125,13 @@ or an equivalent canonical bounded encoding of exactly those values.
 Required identity behaviour:
 
 same BillingPeriod + same recovery
-    => same sourceKey
-    => replay the existing UsageReservation
+=> same sourceKey
+=> replay the existing UsageReservation
 
 different BillingPeriod + same recovery
-    => different sourceKey
-    => may create a new reservation if the old-period reservation no longer
-       owns capacity and the new current period has available capacity
+=> different sourceKey
+=> may create a new reservation if the old-period reservation no longer
+owns capacity and the new current period has available capacity
 
 Do NOT derive reservation identity from customer data, timestamps,
 BullMQ job ids, webhook ids, or other transient execution identities.
@@ -271,9 +271,11 @@ STOP if:
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-background/src/services/effective-billing-policy.service.ts`
 - `moda-interact-background/src/services/paid-included-recovery-reservation.service.ts`
 - `moda-interact-background/src/services/recovery-billing.service.ts`
@@ -283,6 +285,7 @@ Ready for Review.
 - `moda-interact-background/tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts`
 
 ### Work Completed
+
 - Correction 1 implemented in `recovery-billing.service.ts`: interim Paid routing is included -> purchased -> lifetime Free -> typed allowance-exhausted block, with no automatic overage and no paid meter event for purchased/lifetime-Free funding.
 - Correction 2 implemented in `effective-billing-policy.service.ts` and its focused tests: paid policy resolution removes the usage aggregate and fails closed for missing/inconsistent exact period, counter, identity, quantity, or paid meter state.
 - Correction 3 implemented in `paid-included-recovery-reservation.service.ts`: reserve and commit enforce exact shop/subscription/period/counter identity and preserve period-scoped source keys.
@@ -291,6 +294,7 @@ Ready for Review.
 - No production source changed in Attempt 3 because no new regression was demonstrated.
 
 ### Validation Results
+
 - `npx vitest run tests/unit/services/recovery-billing.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/effective-billing-policy.service.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts`: PASS, 3 files and 71 tests passed; the focused PostgreSQL file was skipped without `TEST_DATABASE_URL`.
 - `npm run test:integration -- tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts`: PASS, 1 file, 1 test; exactly one final-credit reservation admitted and committed, with one pending paid recovery UsageEvent.
 - `npm run prisma:validate`: PASS, schema valid.
@@ -300,6 +304,7 @@ Ready for Review.
 - `git diff --check`: PASS.
 
 ### Git / VCS
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-002`, branch `task/ARCH-010-BACKGROUND-002`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-002`, branch `task/ARCH-010-BACKGROUND-002`.
 - Attempt 3 synchronization: parent remote task fast-forward already-unnecessary; parent `origin/main` incorporated already-unnecessary; implementation remote task fast-forward already-unnecessary; implementation `origin/main` incorporated already-unnecessary. Both remotes were fetched before validation.
@@ -602,7 +607,6 @@ claimed_at: null
 
 The next authorized claim increments the task exactly once to **Attempt 2**. No dependant of `ARCH-010-BACKGROUND-002` becomes Ready/Complete from this review.
 
-
 #### Attempt 2 — Changes Requested
 
 ##### Review Status
@@ -902,7 +906,6 @@ claimed_at: null
 
 The next authorized claim increments the task exactly once to **Attempt 3**. No dependant of `ARCH-010-BACKGROUND-002` becomes Ready/Complete from this review.
 
-
 #### Attempt 3 — Accepted
 
 ##### Review Status
@@ -1037,7 +1040,6 @@ ARCH-010-BACKGROUND-014
 ARCH-010-BACKGROUND-015
 ARCH-010-SHOPIFY-023
 ```
-
 
 ## Final promotional-capacity integration contract
 

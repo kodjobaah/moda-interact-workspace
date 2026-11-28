@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-053-WOOCOMMERCE-001
+  - ARCH-053-WOOCOMMERCE-001
 enables:
-- ARCH-053-SYSTEM-TEST-001
-- ARCH-053-SYSTEM-TEST-002
+  - ARCH-053-SYSTEM-TEST-001
+  - ARCH-053-SYSTEM-TEST-002
 created: 2026-10-29
 updated: 2026-10-31
 ---

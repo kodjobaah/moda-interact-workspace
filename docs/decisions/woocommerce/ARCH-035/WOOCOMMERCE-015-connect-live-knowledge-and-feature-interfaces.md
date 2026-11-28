@@ -14,7 +14,13 @@ priority: 52
 executor: null
 claimed_at: null
 attempt: 2
-depends_on: [ARCH-035-WOOCOMMERCE-003, ARCH-035-WOOCOMMERCE-004, ARCH-035-WOOCOMMERCE-014, ARCH-035-GATEWAY-001]
+depends_on:
+  [
+    ARCH-035-WOOCOMMERCE-003,
+    ARCH-035-WOOCOMMERCE-004,
+    ARCH-035-WOOCOMMERCE-014,
+    ARCH-035-GATEWAY-001,
+  ]
 enables: [ARCH-035-SYSTEM-TEST-004]
 created: 2026-10-16
 updated: 2026-10-21
@@ -115,7 +121,6 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 Logging/runtime boundary: W015 connects React components to authenticated same-origin WordPress REST responses. It must not bundle or call the Node-only `@modainteract/moda-interact-shared/logging` package or add a separate browser logging transport. Preserve existing UI error-handling and display safe, actionable, localised messages. Never log installation credentials, authorisation headers, signed upload URLs, uploaded file contents or customer data. WordPress/PHP diagnostics are owned by WOO-014; hosted API structured logging belongs to the API owners.
 
-
 ### 17 October 2026 browser-direct upload handoff
 
 - W015 obtains metadata-only upload intent from W014; verify selected file bounds and calculate SHA-256 in the browser, then perform the R2 presigned `PUT` using exactly the returned headers and file bytes. Do not attach WordPress cookies, nonces, installation credentials, additional arbitrary headers or upload URL query strings to telemetry.
@@ -134,7 +139,6 @@ Logging/runtime boundary: W015 connects React components to authenticated same-o
 - **Observed PASS — Recovery Settings / coupon smoke:** The connected WordPress admin rendered Recovery Settings; the catalogue became `CURRENT` after the Render `test` recovery worker loaded `woo.couponSync` and ran the automatic dispatcher; five selectable coupons appeared; selecting coupons and saving produced `Recovery behaviour saved.` The browser request to `/wp-json/moda-interact/v1/merchant/discount-offers?_locale=user` used `POST` at the HTTP boundary and returned **200 OK**. A measured request took approximately **6.00 seconds**, of which **5.99 seconds** was waiting for the server response; successful saving is confirmed, but the latency merits separate investigation and is not asserted to be resolved.
 - **Reviewer instruction — no LocalWP replay:** Treat the above as the completed **developer-owned LocalWP coupon/recovery-settings regression checkpoint**. The architect/reviewer **must not launch LocalWP, repeat the same manual coupon interactions, or require the developer to repeat them solely for review**. Review the documented observations and supplied evidence, source changes, repository-test results and acceptance criteria. Request a specific missing artefact or explanation if the evidence is insufficient; do not substitute an unrequested LocalWP rerun.
 - **Scope limit:** The demonstrated coupon selection/save path belongs to the broader WooCommerce recovery-offer integration and is **not evidence that W015's live Conversation Feature controls, Merchant Knowledge read/add/edit/delete/refresh/reorder, CSV/XLSX browser-to-R2 upload/finalise, failed-upload behaviour, CORS gate or 20-locale tests passed**. Those W015-specific Work Items, Acceptance Criteria, automated Validation and implementation/branch Completion Report must be reviewed separately. Do not mark unchecked items complete or change `status` or `Architect Review` merely because this checkpoint passed.
-
 
 ### 20 October 2026 — completed developer LocalWP Merchant Knowledge checkpoint (do not repeat during review)
 

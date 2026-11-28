@@ -82,7 +82,6 @@ Currency formatting always receives an explicit currency code from commerce
 state. Date/time formatting receives the selected locale and explicit merchant
 or customer time zone according to the owning feature.
 
-
 ## Formatter authority rule
 
 Shared formatting helpers must preserve explicit business dimensions as

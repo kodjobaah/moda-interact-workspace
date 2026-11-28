@@ -70,7 +70,6 @@ contract harness with actual recommendation/evaluator code and controlled provid
 transport; host-only races are consumer expectations, not code to add to Commerce.
 No Background import or prerequisite. SYSTEM-TEST-001 owns real worker integration.
 
-
 - [ ] Deliver qualifying/similar recommendation helpers and example tool definitions without making them mandatory for every feature or conversation; reuse policy evidence and exact tool revisions.
 
 - [ ] Implement products.findQualifying and products.findSimilar operations and seed their tool definitions/templates. Reuse the deterministic evaluator; do not execute free-form database calculations or loops.
@@ -80,7 +79,7 @@ No Background import or prerequisite. SYSTEM-TEST-001 owns real worker integrati
 - [ ] Return no more than three customer-facing alternatives with extra spend, resulting total, currency, evidence and uncertainty.
 - [ ] Rank unchanged-basket offers by known savings; avoid advertising a higher-spend basket as cheaper solely because its discount is larger.
 - [ ] Support host-driven final revalidation through replay of the actual originally
-  granted evidence-producing call under C4, including recommendation evidence.
+      granted evidence-producing call under C4, including recommendation evidence.
 
 ## Interfaces / Contracts
 
@@ -158,6 +157,7 @@ Ready for Review.
 ### Files Changed
 
 Implementation repository files:
+
 - `src/commerce/products/recommendations.ts`
 - `tests/recommendations.test.ts`
 - `tests/recommendation-contract.test.ts`
@@ -198,23 +198,23 @@ Whitespace: `git diff --check` -> passed in Attempt 7.
 
 #### Requirement-to-fixture matrix
 
-| Requirement | Fixture/check | Expected side effect | Result |
-|---|---|---|---|
-| Same inputs produce ordered max-three results | `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts`; ranking/cap fixture | stable order, cheapest admission, duplicate collapse, max-three output, truncation | passed; focused command 11/11 |
-| No match or unsupported qualification | `tests/recommendations.test.ts`; nonqualifying-evidence fixture | empty alternatives, no invented savings | passed |
-| Missing attributes and unavailable variant | `tests/recommendations.test.ts`; similarity fixture | exclude unknown type/unavailable product | passed |
-| Higher-spend proposal disclosure | `tests/recommendations.test.ts`; exact pricing fixture | disclose exact extra spend and resulting total | passed |
-| Wrong currency and unknown quantity | `tests/recommendations.test.ts`; replacement fixtures | zero replacement proposals/evaluations for unsupported inputs | passed |
-| Provider/evaluator ceiling and typed failure | `tests/recommendations.test.ts`; 11-candidate, DENIED, deadline, and shared-counter fixtures | evaluate at most 10, reserve at most 12 provider requests, mark truncation, preserve typed error, stop after failure/exhaustion | passed; reservation 13 rejected, no later provider call |
-| Changed basket/turn/proposal evidence | `npx vitest run tests/recommendation-contract.test.ts`; real evaluator/dispatch fixture | reject stale or mismatched evidence and produce a new digest after basket/rule change | passed |
-| Arbitrary mapped definition and canonical evidence | `tests/recommendation-contract.test.ts`; fixed clock, mapped inputs, controlled provider, computed digest | preserve authored name, arguments, rendered response, canonical digest, and replay identity | passed; generated evidence and full replay proposal order asserted |
-| Similarity versus qualification separation | `tests/recommendations.test.ts`; similarity fixture | no qualifying label without separate evidence | passed |
-| EC01/02/12 original call and replay | `tests/recommendation-contract.test.ts`; mapped definition executor fixture | retain arbitrary tool name/revision/arguments, pass the tuple to refresh once, preserve mapped inputs, and avoid ungranted discovery | passed; callback observed once with `{name: 'mapped_replay_fixture', toolRevisionId: 'revision-1', arguments: {search: 'shirt', max: 3}}` |
-| EC03/05 exact alternative matching | `tests/recommendation-contract.test.ts`, `executes one provenance-backed C18 replay flow...` | three selected alternatives from one call, reversed refresh order, bad second ID and truncated reply | passed; one refresh, exact proposal matching, bad/truncated `deliveries=0`, `languageWrites=0` |
-| EC04 independent evidence fields | same contract test replay validation and tampered grant/currency rows | semantic/identity mismatches fail closed only after canonical digest validation | passed; tampered rows returned REFER with zero delivery/language writes |
-| EC06/07/08/10 expiry, digest, identity and authorization | same contract test original-window gate, valid changed timestamp, wrong turn, revoked grant and currency rows | valid fresh digest accepted only while original evidence remains valid; expiry/identity/provenance mismatches fail closed | passed; expired original `refreshCalls=0`; changed valid timestamp `refreshCalls=1`, `deliveries=1`; wrong turn `refreshCalls=0`; invalid rows `deliveries=0` |
-| EC09/11 typed failures and stale completion | same contract test deferred async refresh with cancellation | pending refresh completion cannot deliver or write language | passed locally; cancellation row returned `deliveries=0`, `languageWrites=0`; live host races remain developer-owned |
-| EC01-EC12 producer/consumer effects | focused command above; actual mapped producer and unified replay fixture | arbitrary mapped call, generated evidence, exact replay, proposal/evidence bounds, and local delivery guards are executable; live worker/MCP remains developer-owned | passed locally for executed rows; provider-budget fixture remains reservation 13 with no later transport request |
+| Requirement                                              | Fixture/check                                                                                                 | Expected side effect                                                                                                                                                 | Result                                                                                                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Same inputs produce ordered max-three results            | `npx vitest run tests/recommendations.test.ts tests/recommendation-contract.test.ts`; ranking/cap fixture     | stable order, cheapest admission, duplicate collapse, max-three output, truncation                                                                                   | passed; focused command 11/11                                                                                                                                 |
+| No match or unsupported qualification                    | `tests/recommendations.test.ts`; nonqualifying-evidence fixture                                               | empty alternatives, no invented savings                                                                                                                              | passed                                                                                                                                                        |
+| Missing attributes and unavailable variant               | `tests/recommendations.test.ts`; similarity fixture                                                           | exclude unknown type/unavailable product                                                                                                                             | passed                                                                                                                                                        |
+| Higher-spend proposal disclosure                         | `tests/recommendations.test.ts`; exact pricing fixture                                                        | disclose exact extra spend and resulting total                                                                                                                       | passed                                                                                                                                                        |
+| Wrong currency and unknown quantity                      | `tests/recommendations.test.ts`; replacement fixtures                                                         | zero replacement proposals/evaluations for unsupported inputs                                                                                                        | passed                                                                                                                                                        |
+| Provider/evaluator ceiling and typed failure             | `tests/recommendations.test.ts`; 11-candidate, DENIED, deadline, and shared-counter fixtures                  | evaluate at most 10, reserve at most 12 provider requests, mark truncation, preserve typed error, stop after failure/exhaustion                                      | passed; reservation 13 rejected, no later provider call                                                                                                       |
+| Changed basket/turn/proposal evidence                    | `npx vitest run tests/recommendation-contract.test.ts`; real evaluator/dispatch fixture                       | reject stale or mismatched evidence and produce a new digest after basket/rule change                                                                                | passed                                                                                                                                                        |
+| Arbitrary mapped definition and canonical evidence       | `tests/recommendation-contract.test.ts`; fixed clock, mapped inputs, controlled provider, computed digest     | preserve authored name, arguments, rendered response, canonical digest, and replay identity                                                                          | passed; generated evidence and full replay proposal order asserted                                                                                            |
+| Similarity versus qualification separation               | `tests/recommendations.test.ts`; similarity fixture                                                           | no qualifying label without separate evidence                                                                                                                        | passed                                                                                                                                                        |
+| EC01/02/12 original call and replay                      | `tests/recommendation-contract.test.ts`; mapped definition executor fixture                                   | retain arbitrary tool name/revision/arguments, pass the tuple to refresh once, preserve mapped inputs, and avoid ungranted discovery                                 | passed; callback observed once with `{name: 'mapped_replay_fixture', toolRevisionId: 'revision-1', arguments: {search: 'shirt', max: 3}}`                     |
+| EC03/05 exact alternative matching                       | `tests/recommendation-contract.test.ts`, `executes one provenance-backed C18 replay flow...`                  | three selected alternatives from one call, reversed refresh order, bad second ID and truncated reply                                                                 | passed; one refresh, exact proposal matching, bad/truncated `deliveries=0`, `languageWrites=0`                                                                |
+| EC04 independent evidence fields                         | same contract test replay validation and tampered grant/currency rows                                         | semantic/identity mismatches fail closed only after canonical digest validation                                                                                      | passed; tampered rows returned REFER with zero delivery/language writes                                                                                       |
+| EC06/07/08/10 expiry, digest, identity and authorization | same contract test original-window gate, valid changed timestamp, wrong turn, revoked grant and currency rows | valid fresh digest accepted only while original evidence remains valid; expiry/identity/provenance mismatches fail closed                                            | passed; expired original `refreshCalls=0`; changed valid timestamp `refreshCalls=1`, `deliveries=1`; wrong turn `refreshCalls=0`; invalid rows `deliveries=0` |
+| EC09/11 typed failures and stale completion              | same contract test deferred async refresh with cancellation                                                   | pending refresh completion cannot deliver or write language                                                                                                          | passed locally; cancellation row returned `deliveries=0`, `languageWrites=0`; live host races remain developer-owned                                          |
+| EC01-EC12 producer/consumer effects                      | focused command above; actual mapped producer and unified replay fixture                                      | arbitrary mapped call, generated evidence, exact replay, proposal/evidence bounds, and local delivery guards are executable; live worker/MCP remains developer-owned | passed locally for executed rows; provider-budget fixture remains reservation 13 with no later transport request                                              |
 
 ### Deviations
 
@@ -235,6 +235,7 @@ None newly reported.
 ### Git / VCS
 
 Task branch: `task/ARCH-020-COMMERCE-007`, attempt 7; claim cleared for review (`status: review`, `executor: null`, `claimed_at: null`).
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`; this report is the task-owned evidence artifact.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-007`, branch `task/ARCH-020-COMMERCE-007`, final commit `e08b896` (`test(commerce): verify replay provenance and expiry`), pushed to `origin/task/ARCH-020-COMMERCE-007`; preceding implementation commits remain included.
 - Recursive database submodule evidence: `5abfd87f57038bae515aaa09ec7c8db62adcfb98` (`database`, `heads/main`).
@@ -259,7 +260,6 @@ No additional blocking functional finding was identified in this scoped review. 
 
 Readiness reconciliation: **COMMERCE-010 and COMMERCE-013 are promoted Ready, Attempt 0 retained, executor/claimed_at null.** COMMERCE-010's 004/007/009 prerequisites are accepted Complete. COMMERCE-013's 003/004/005/006/007/011/014/015/016 prerequisites are accepted Complete. Normal preparation must consume actual accepted source and owns synchronization/claiming; this review does not launch either task. COMMERCE-018/019 still await COMMERCE-013; deployment, final implementation and terminal system-test gates remain. Architecture is not yet Implemented; COMMERCE-012 remains the final implementation checkpoint.
 
-
 ### Changes Requested — Attempt 6 — 2026-09-21
 
 **Current decision: Changes Requested; Ready for one scoped harness/report correction. Attempt 6 retained; executor/claimed_at null. Not accepted.** Reviewed implementation `21e150fed34788ae084a30e4466b9fcdb45b1642` and report `73981c7b78168517286bf113ef837137e4d33c46`, verified against remote task heads. Both worktrees clean. No new production recommendation defect is alleged; preserve the runtime implementation.
@@ -279,7 +279,6 @@ Define a test-only call tuple `{name, toolRevisionId, arguments}`; include all t
 **Acceptance:** the expired-original/valid-fresh fixture refers without refresh or delivery; an unexpired original with valid changed fresh timestamps still accepts. A callback spy receives exactly `{name:'mapped_replay_fixture',toolRevisionId:'revision-1',arguments:{search:'shirt',max:3}}` once for all selected IDs from that call. Keep the 11 focused tests/seven runtime regressions passing and the 12-request budget proof intact. Update the report with measured callback arguments/counts and both time-window outcomes. Run the existing required validation and publish mirrored branches with claims clear; no runtime code churn is requested.
 
 Real deployed MCP/worker/Shopify validation remains developer-owned. No dependent promotion, new claim, main integration or gitlink update. This decision supersedes earlier current-state wording while preserving history. Architecture remains not yet Implemented.
-
 
 ### Changes Requested — Attempt 5 — 2026-09-21
 
@@ -307,7 +306,6 @@ The repaired provider-budget case and seven runtime regressions should remain pa
 
 Readiness: no dependent promotion, new claim, main integration or gitlink update. Architecture is not yet Implemented. This decision supersedes earlier current-state wording while preserving review history.
 
-
 ### Changes Requested — Attempt 4 — 2026-09-21
 
 **Current decision: Changes Requested; Ready for the remaining harness/report correction. Attempt 4 retained; executor/claimed_at null. Not accepted.** Verified implementation `91faf18e8163b8b4bba231fbb6b2a30477d2aeb8` (including `89780156`) and report `cb8f7f3d010cae05bc0ccfa9c41f3939c8bad356` against remote task heads. Both dedicated worktrees were clean. No implementation edit, new claim, dependent promotion, main merge or gitlink update.
@@ -328,7 +326,6 @@ Scope remains `tests/recommendation-contract.test.ts`, task-owned fixtures and t
 
 Acceptance remains the bounded local C18 contract work already specified in A3-R1, with the existing runtime regressions preserved. Use test-only consumer code or an approved executed fixture; do not import or modify Background. Real deployed MCP/worker/Shopify validation stays developer-owned. Return to Review with mirrored branches pushed and claims clear; do not self-accept or start dependent tasks.
 
-
 ### Changes Requested — Attempt 3 — 2026-09-21
 
 **Current decision: Changes Requested; Ready for a tests/report correction. Attempt 3 retained; executor/claimed_at null. Not accepted.** Verified implementation `bad71ef55e5942e74343c35b611c5177f0852a20` and final claim-cleared report `f8f59289e81cea193d16011b5af695e99b2f6b3c` (preceding report `aa87bb82`) against remote task heads. Both dedicated worktrees clean; database pin `5abfd87f57038bae515aaa09ec7c8db62adcfb98` unchanged.
@@ -347,14 +344,14 @@ Remaining scope is **A2-R3**, in `tests/recommendation-contract.test.ts`, task-o
 2. Replace `exactMatch` with a test-only consumer double implementing the C18 admission/replay checks. It takes original call/provenance, selected evidence IDs, a refresh transport, current turn/clock/cancellation state and exposes `{decision, refreshCalls, deliveries, languageWrites}`. It replays the original name/arguments once per originating call, validates fresh evidence and matches exact proposal identity, never array position. Do not import Background or add consumer logic to Commerce production. Reuse an existing approved contract fixture instead if it implements these checks and is executed by the recorded command.
 3. Add named/table-driven rows for the following existing matrix. Every negative row must first demonstrate its unmodified positive control succeeds, then change only the named condition, so unrelated invalid fixture data cannot mask a failure:
 
-| Cases | Required assertions |
-| --- | --- |
-| EC01/02/12 | Actual arbitrary mapped call is captured/replayed once, exact original arguments preserved, identical proposal accepted, changed proposal refers, zero separately discovered/ungranted calls. |
-| EC03/05 | Two generated alternatives with selected IDs from one call cause exactly one refresh; reverse result order and still match; separate duplicate/missing/empty/truncated cases refer with deliveries0. |
-| EC04 | Separate basketFingerprint, ruleFingerprint, savings, resultingTotal, currency, outcome and proposal mutations, with recomputed valid digest, each refer; no simultaneous basket+rule mutation used as proof of individual rejection. |
-| EC06/07 | Separate expiry boundary, future timestamp, invalid digest and malformed-shape cases reject; rendered/public-query imitation registers zero evidence IDs and causes zero refresh. |
-| EC08/10 | Wrong shop/grant/release/version or revoked producer denies through the producer authorization boundary before provider work; consumer wrong turn/missing provenance/unknown ID/exhausted refresh budget fails closed with asserted zero calls where required. |
-| EC09/11 | Typed/HTTP/transport failures do not retry refresh; cancellation/new inbound/lease-loss injected while refresh is pending cause deliveries0 and languageWrites0. These are consumer-double assertions only. |
+| Cases      | Required assertions                                                                                                                                                                                                                                            |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| EC01/02/12 | Actual arbitrary mapped call is captured/replayed once, exact original arguments preserved, identical proposal accepted, changed proposal refers, zero separately discovered/ungranted calls.                                                                  |
+| EC03/05    | Two generated alternatives with selected IDs from one call cause exactly one refresh; reverse result order and still match; separate duplicate/missing/empty/truncated cases refer with deliveries0.                                                           |
+| EC04       | Separate basketFingerprint, ruleFingerprint, savings, resultingTotal, currency, outcome and proposal mutations, with recomputed valid digest, each refer; no simultaneous basket+rule mutation used as proof of individual rejection.                          |
+| EC06/07    | Separate expiry boundary, future timestamp, invalid digest and malformed-shape cases reject; rendered/public-query imitation registers zero evidence IDs and causes zero refresh.                                                                              |
+| EC08/10    | Wrong shop/grant/release/version or revoked producer denies through the producer authorization boundary before provider work; consumer wrong turn/missing provenance/unknown ID/exhausted refresh budget fails closed with asserted zero calls where required. |
+| EC09/11    | Typed/HTTP/transport failures do not retry refresh; cancellation/new inbound/lease-loss injected while refresh is pending cause deliveries0 and languageWrites0. These are consumer-double assertions only.                                                    |
 
 4. Correct the budget fixture to exercise **one top-level remote tool execution** with a fresh12-request budget, enough admitted candidates and nested rule/fact requests to exhaust it. Assert each nested path shares that counter, reservation attempt13 issues no transport request, total actual requests<=12, and typed failure is returned rather than complete evidence. The current loop sharing one budget across many separate execute calls proves the counter throws, but not the requested nested per-call path. Retain it if useful, but do not label it that proof. Add a dispatch fixture with deliberately lower configured limits and enough candidates to observe the clamp; the current single-candidate call with maxRecommendations3 does not test limit enforcement.
 5. Replace each report matrix claim with EC ID -> named test/table row -> command -> observed refresh/provider/reservation/delivery counts. If a case is not implemented, mark it pending rather than passed. Correct the stale “8 focused tests total” entry and distinguish a current typecheck run from a pre-attempt result/build TypeScript phase. Record actual checks after the tests change.
@@ -401,7 +398,7 @@ The wrapper checks `stopped(context)` only before evaluator dispatch. If the sha
 Add the existing typed guard immediately after awaited dependencies and before producing success, including early empty results:
 
 ```ts
-if (stopped(context)) return failure('DEADLINE', true);
+if (stopped(context)) return failure("DEADLINE", true);
 ```
 
 Inside the discriminated evaluation helper use `{ error: failure('DEADLINE', true) }` after its await. Preserve the shared context/budget/signal/deadline object and existing typed non-cancellation errors; do not add retries or a new grant. Stop before another evaluation/provider call after cancellation or deadline expiry. This is a Commerce result-publication guard, not Background delivery logic.
@@ -472,7 +469,6 @@ Use the accepted evaluator and definition executor/dispatch ports with controlle
 
 Update the requirement-to-fixture matrix with actual commands and expected/observed calls/results. Keep real Shopify, deployed MCP and Background/system integration pending developer-owned validation. These external checks are not prerequisites for completing the local functional corrections above. Return to Review after the scoped implementation/report changes are pushed; do not self-accept or start enabled tasks.
 
-
 ### Original definition review placeholder (historical)
 
 ### Review Status
@@ -498,7 +494,6 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
-
 
 ## Architect readiness reconciliation — 2026-09-21
 

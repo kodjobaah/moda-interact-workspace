@@ -1,10 +1,20 @@
 import { metrics } from "@opentelemetry/api";
 import { withObservedSpan } from "./index.js";
 
-const meter = metrics.getMeter("@modainteract/moda-interact-shared/observability/genai");
-const agentDuration = meter.createHistogram("moda.agent.invocation.duration_ms", { unit: "ms" });
-const toolDuration = meter.createHistogram("moda.agent.tool.duration_ms", { unit: "ms" });
-const turnDuration = meter.createHistogram("moda.conversation.turn.duration_ms", { unit: "ms" });
+const meter = metrics.getMeter(
+  "@modainteract/moda-interact-shared/observability/genai",
+);
+const agentDuration = meter.createHistogram(
+  "moda.agent.invocation.duration_ms",
+  { unit: "ms" },
+);
+const toolDuration = meter.createHistogram("moda.agent.tool.duration_ms", {
+  unit: "ms",
+});
+const turnDuration = meter.createHistogram(
+  "moda.conversation.turn.duration_ms",
+  { unit: "ms" },
+);
 
 export type AgentObservation = {
   agentName: string;
@@ -79,7 +89,9 @@ function boundedSpanValue(value: string | undefined): string | undefined {
   return bounded || undefined;
 }
 
-function compact(input: Record<string, string | undefined>): Record<string, string> {
+function compact(
+  input: Record<string, string | undefined>,
+): Record<string, string> {
   return Object.fromEntries(
     Object.entries(input).filter(([, value]) => value !== undefined),
   ) as Record<string, string>;

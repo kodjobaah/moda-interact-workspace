@@ -78,14 +78,14 @@ authorize the separate ShopBrand media pipeline.
 ## Work Items
 
 - [x] Inspect the existing Admin platform-configuration read, save and
-  authorization paths.
+      authorization paths.
 - [x] Add the typed `shopBrand.publicMedia` contract and defaults.
 - [x] Implement non-persisting default resolution on read.
 - [x] Implement validated explicit SUPER_ADMIN save using existing persistence.
 - [x] Add focused tests for defaults, no-write-on-read, save round-trip,
-  validation, authorization and unchanged private R2 configuration.
+      validation, authorization and unchanged private R2 configuration.
 - [x] Record worktree and synchronization evidence, changed files and validation
-  results in the Completion Report.
+      results in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -106,22 +106,22 @@ None.
 ## Acceptance Criteria
 
 - [x] An absent setting reads as the exact agreed defaults and does not write
-  persistent state.
+      persistent state.
 - [x] A valid explicit SUPER_ADMIN save persists both values and subsequent
-  reads return them.
+      reads return them.
 - [x] Unauthorized saves and invalid values fail without changing stored values.
 - [x] `merchant.knowledge.r2` behavior and values are unchanged.
 - [x] No database schema, migration, credential, media-processing, or delivery
-  changes are made.
+      changes are made.
 - [x] Existing persistence supports the additional key without schema changes;
-  no database workaround was needed.
+      no database workaround was needed.
 
 ## Validation
 
 - [x] Run the relevant checks declared by `moda-interact-admin` for the changed
-  surface; do not invent replacement validation commands.
+      surface; do not invent replacement validation commands.
 - [x] Focused tests cover read defaults without writes, explicit save and
-  read-back, invalid values, authorization, and private R2 non-regression.
+      read-back, invalid values, authorization, and private R2 non-regression.
 - [x] `git diff --check`.
 
 ## Stop Condition

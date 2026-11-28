@@ -5,8 +5,10 @@ import { LogoutForm } from "./logout-form";
 import { Icon } from "./icons";
 
 export function Sidebar({ active }: { active: "tenants" | "observability" }) {
-  const base = "flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors";
-  const selected = "bg-white text-[var(--brand-900)] shadow-sm border border-[var(--brand-200)]";
+  const base =
+    "flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors";
+  const selected =
+    "bg-white text-[var(--brand-900)] shadow-sm border border-[var(--brand-200)]";
   const idle = "text-[var(--brand-800)] hover:bg-white/60";
 
   return (
@@ -20,14 +22,25 @@ export function Sidebar({ active }: { active: "tenants" | "observability" }) {
           className="h-8 w-8 rounded-md object-cover shadow-sm"
           priority
         />
-        <span className="ml-3 text-lg font-bold tracking-tight text-[var(--brand-900)]">Moda Interact</span>
+        <span className="ml-3 text-lg font-bold tracking-tight text-[var(--brand-900)]">
+          Moda Interact
+        </span>
       </div>
-      <nav className="flex-1 space-y-2 px-4 py-6" aria-label="Administration navigation">
-        <Link href="/" className={`${base} ${active === "tenants" ? selected : idle}`}>
+      <nav
+        className="flex-1 space-y-2 px-4 py-6"
+        aria-label="Administration navigation"
+      >
+        <Link
+          href="/"
+          className={`${base} ${active === "tenants" ? selected : idle}`}
+        >
           <Icon name="users" className="mr-3 h-5 w-5 text-[var(--brand-700)]" />
           Tenant Directory
         </Link>
-        <Link href="/observability" className={`${base} ${active === "observability" ? selected : idle}`}>
+        <Link
+          href="/observability"
+          className={`${base} ${active === "observability" ? selected : idle}`}
+        >
           <Icon name="chart" className="mr-3 h-5 w-5 text-[var(--brand-600)]" />
           Observability
         </Link>

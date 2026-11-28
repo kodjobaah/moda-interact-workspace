@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-052-SHARED-003
-created: '2026-10-29'
+  - ARCH-052-SHARED-003
+created: "2026-10-29"
 updated: 2026-10-29
 ---
 
@@ -91,15 +91,17 @@ export const RecoveryTemplateSemanticKeySchema = z.enum([
   "shopBrand.squareLogoAltText",
   "shopBrand.coverImageUrl",
 ]);
-export type RecoveryTemplateSemanticKey =
-  z.infer<typeof RecoveryTemplateSemanticKeySchema>;
+export type RecoveryTemplateSemanticKey = z.infer<
+  typeof RecoveryTemplateSemanticKeySchema
+>;
 
 export const RecoveryPromotionTargetSchema = z.enum([
   "CHECKOUT",
   "ALTERNATIVE_PRODUCT",
 ]);
-export type RecoveryPromotionTarget =
-  z.infer<typeof RecoveryPromotionTargetSchema>;
+export type RecoveryPromotionTarget = z.infer<
+  typeof RecoveryPromotionTargetSchema
+>;
 
 export const RecoveryTemplateHeaderMediaRoleSchema = z.enum([
   "LOGO",
@@ -107,26 +109,26 @@ export const RecoveryTemplateHeaderMediaRoleSchema = z.enum([
   "COVER_IMAGE",
   "CHECKOUT_PRODUCT",
 ]);
-export type RecoveryTemplateHeaderMediaRole =
-  z.infer<typeof RecoveryTemplateHeaderMediaRoleSchema>;
+export type RecoveryTemplateHeaderMediaRole = z.infer<
+  typeof RecoveryTemplateHeaderMediaRoleSchema
+>;
 
 export const RecoveryTemplateTextBindingSchema = z.strictObject({
   position: z.number().int(),
   variable: RecoveryTemplateSemanticKeySchema,
 });
-export type RecoveryTemplateTextBinding =
-  z.infer<typeof RecoveryTemplateTextBindingSchema>;
+export type RecoveryTemplateTextBinding = z.infer<
+  typeof RecoveryTemplateTextBindingSchema
+>;
 
 export const RecoveryTemplateUrlButtonBindingSchema = z.strictObject({
   index: z.number().int(),
   subType: z.literal("url"),
-  variable: z.enum([
-    "checkout.url",
-    "promotion.productUrl",
-  ]),
+  variable: z.enum(["checkout.url", "promotion.productUrl"]),
 });
-export type RecoveryTemplateUrlButtonBinding =
-  z.infer<typeof RecoveryTemplateUrlButtonBindingSchema>;
+export type RecoveryTemplateUrlButtonBinding = z.infer<
+  typeof RecoveryTemplateUrlButtonBindingSchema
+>;
 
 export const RecoveryTemplateFrozenBindingsSchema = z.strictObject({
   schemaVersion: z.literal(1).optional(),
@@ -136,11 +138,12 @@ export const RecoveryTemplateFrozenBindingsSchema = z.strictObject({
   body: z.array(RecoveryTemplateTextBindingSchema),
   buttons: z.array(RecoveryTemplateUrlButtonBindingSchema),
 });
-export type RecoveryTemplateFrozenBindings =
-  z.infer<typeof RecoveryTemplateFrozenBindingsSchema>;
+export type RecoveryTemplateFrozenBindings = z.infer<
+  typeof RecoveryTemplateFrozenBindingsSchema
+>;
 ```
 
-`promotionTarget` is **optional at the transport level** so existing Meta recovery projections (with no such field) remain parseable; Admin must require and freeze it for **new ARCH-052 alternative-product template variants**. This is a template *policy*, enforced outside Zod. `headerMediaRole` is likewise optional because TEXT headers have no image. This task does not change stored authoring-data migration or the meaning of the existing ShopBrand roles.
+`promotionTarget` is **optional at the transport level** so existing Meta recovery projections (with no such field) remain parseable; Admin must require and freeze it for **new ARCH-052 alternative-product template variants**. This is a template _policy_, enforced outside Zod. `headerMediaRole` is likewise optional because TEXT headers have no image. This task does not change stored authoring-data migration or the meaning of the existing ShopBrand roles.
 
 **Package entrypoint additions:**
 
@@ -165,11 +168,11 @@ export type RecoveryTemplateFrozenBindings =
   "schemaVersion": 1,
   "promotionTarget": "CHECKOUT",
   "body": [
-    {"position": 1, "variable": "customer.firstName"},
-    {"position": 2, "variable": "checkout.itemsSummary"},
-    {"position": 3, "variable": "offer.description"}
+    { "position": 1, "variable": "customer.firstName" },
+    { "position": 2, "variable": "checkout.itemsSummary" },
+    { "position": 3, "variable": "offer.description" }
   ],
-  "buttons": [{"index": 0, "subType": "url", "variable": "checkout.url"}]
+  "buttons": [{ "index": 0, "subType": "url", "variable": "checkout.url" }]
 }
 ```
 
@@ -180,10 +183,12 @@ export type RecoveryTemplateFrozenBindings =
   "schemaVersion": 1,
   "promotionTarget": "ALTERNATIVE_PRODUCT",
   "body": [
-    {"position": 1, "variable": "promotion.productName"},
-    {"position": 2, "variable": "promotion.offerDescription"}
+    { "position": 1, "variable": "promotion.productName" },
+    { "position": 2, "variable": "promotion.offerDescription" }
   ],
-  "buttons": [{"index": 0, "subType": "url", "variable": "promotion.productUrl"}]
+  "buttons": [
+    { "index": 0, "subType": "url", "variable": "promotion.productUrl" }
+  ]
 }
 ```
 
@@ -191,14 +196,14 @@ This is a **structural example only**; image headers are optional, and Admin/Bac
 
 **Business checks explicitly delegated to service owners (not Zod):**
 
-| Rule | Owner |
-|---|---|
-| Allowed variables for `NO_OFFER`, `CODE_OFFER`, `AUTOMATIC_OFFER` and the configured promotion target | Admin compiler and Background resolver |
-| Header role allowed for the intended product/media, image readiness and Meta approval | Admin + Background |
-| No alternative-product claim unless the selected product/offer is backed by MCP results | Background |
-| Product promotion URL belongs to the merchant and is safe to advertise | MCP product provider / Background promotion preparation |
-| Checkout URL used unchanged; no new ARCH-052 format/host/prefix/reachability check | Background |
-| Button positions, Meta parameter counts, immutable template/hash matching | Admin compiler + Background template send |
+| Rule                                                                                                  | Owner                                                   |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Allowed variables for `NO_OFFER`, `CODE_OFFER`, `AUTOMATIC_OFFER` and the configured promotion target | Admin compiler and Background resolver                  |
+| Header role allowed for the intended product/media, image readiness and Meta approval                 | Admin + Background                                      |
+| No alternative-product claim unless the selected product/offer is backed by MCP results               | Background                                              |
+| Product promotion URL belongs to the merchant and is safe to advertise                                | MCP product provider / Background promotion preparation |
+| Checkout URL used unchanged; no new ARCH-052 format/host/prefix/reachability check                    | Background                                              |
+| Button positions, Meta parameter counts, immutable template/hash matching                             | Admin compiler + Background template send               |
 
 ## Dependencies
 
@@ -288,7 +293,6 @@ None.
 ### Architectural Concerns
 
 None.
-
 
 ## Architect Review
 

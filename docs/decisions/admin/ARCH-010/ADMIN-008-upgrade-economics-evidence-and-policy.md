@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-ADMIN-001
-- ARCH-010-ADMIN-010
+  - ARCH-010-DATABASE-013
+  - ARCH-010-ADMIN-001
+  - ARCH-010-ADMIN-010
 enables:
-- ARCH-010-ADMIN-009
+  - ARCH-010-ADMIN-009
 created: 2026-09-12
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-ADMIN-008: Manage verified Shopify economics evidence, upgrade edges and guardrail policy
@@ -165,9 +165,11 @@ Stop if DATABASE-013 is unavailable or if implementation would require putting m
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-admin/src/app/(protected)/billing/controls/page.tsx`
 - `moda-interact-admin/src/app/(protected)/billing/page.tsx`
 - `moda-interact-admin/src/app/actions/billing-controls.ts`
@@ -181,6 +183,7 @@ Ready for Review.
 - `moda-interact-admin/tests/unit/billing-economics-validation.test.ts`
 
 ### Work Completed
+
 - Added the bounded `minimumUpgradePremiumBps` platform policy field with a 2000 bps default and existing `PLATFORM_POLICY_CHANGED` audit path.
 - Added SUPER_ADMIN-only exact durable-plan upgrade-edge creation/deactivation with self-edge, active-plan, duplicate predecessor/successor, and increasing-allowance checks.
 - Added SUPER_ADMIN-only append-only verified Shopify economics snapshots with normalized FIXED, GRADUATED, and VOLUME pricing evidence.
@@ -191,6 +194,7 @@ Ready for Review.
 - Added focused behavior coverage for scenarios 43–47 and snapshot-management boundaries, alongside parser and source/security coverage for authorization, drift, append-only storage, tier validation, no-secret evidence, and no-Shopify-mutation boundaries.
 
 ### Validation Results
+
 - PASS: `npm run prisma:validate` and `npm run prisma:generate`.
 - PASS: focused unit/parser and behavior tests, 6/6; focused security tests, 13/13.
 - PASS: `npm test`, 161/161; `npm run test:unit`, 42/42.
@@ -202,33 +206,36 @@ Ready for Review.
 - PASS: exact removed-symbol search has only intentional negative assertions in existing tests; exact `billing.adjustments` search has only the intentional negative assertion in `tests/security/admin-billing-visibility.test.mjs`.
 
 ### Git / VCS
+
 Physical worktree isolation:
-  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-008
-  parent branch: task/ARCH-010-ADMIN-008
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-008
-  implementation branch: task/ARCH-010-ADMIN-008
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-008
+parent branch: task/ARCH-010-ADMIN-008
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-008
+implementation branch: task/ARCH-010-ADMIN-008
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: yes
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: yes
 
 Database submodule:
-  database submodule initialized: yes
-  database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
-  database submodule HEAD: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
-  database gitlink staged/changed: no
+database submodule initialized: yes
+database gitlink expected: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+database submodule HEAD: 5443afdd8f0c816dc16e1f3e93f9906c5ca31d94
+database gitlink staged/changed: no
 
 ### Attempt 2 Git / VCS
+
 - Parent claim commit: `bf0ae72`, pushed to `origin/task/ARCH-010-ADMIN-008`.
 - Implementation branch: `task/ARCH-010-ADMIN-008`; implementation changes are ready to commit and push.
 
 ### Architect Review
+
 Changes Requested
 
 #### Attempt 1 — Changes Requested
@@ -740,4 +747,3 @@ No Attempt 3 is required.
 `ARCH-010-ADMIN-009` was already promoted to `ready` by the earlier acceptance commit because both of its dependencies, ADMIN-007 and ADMIN-008, are Complete. No additional readiness transition is required by this reconciliation.
 
 For eventual merge/integration, treat `c970fb4fba1ca5b171a46f9113ec829d38a92cc7` as the final accepted ADMIN-008 implementation task-branch head. Follow normal submodule merge ordering: merge the implementation task branch into `moda-interact-admin/main`, then update the parent workspace task gitlink to the resulting implementation-main commit, then merge the parent task branch.
-

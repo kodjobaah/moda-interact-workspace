@@ -12,12 +12,13 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-BACKGROUND-001
+  - ARCH-002-BACKGROUND-001
 enables:
-- ARCH-002-BACKGROUND-005
+  - ARCH-002-BACKGROUND-005
 created: 2026-08-29
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Add Worker Dependency Readiness
 
 ## Architecture

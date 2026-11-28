@@ -20,6 +20,7 @@ enables:
 created: 2026-09-06
 updated: 2026-09-06T12:51:25Z
 ---
+
 # Remove superseded WhatsApp template-selector residue
 
 ## Architecture
@@ -300,12 +301,12 @@ runtime code was added.
 ### Validation Results
 
 - Pre-edit and post-edit selector-reference search: passed; no remaining
-   `whatsapp-template-selector`, `selectWhatsAppTemplate`, or
-   `MarketCapabilityResolver` references under `app` or `tests`.
+  `whatsapp-template-selector`, `selectWhatsAppTemplate`, or
+  `MarketCapabilityResolver` references under `app` or `tests`.
 - `npm test`: passed, 13 tests passed and 1 skipped.
 - `npm run typecheck`: passed.
 - `npm run build`: passed; Vite emitted existing Node-module browser
-   externalization warnings.
+  externalization warnings.
 - Deletion-boundary checks: passed.
 - `git diff --check`: passed.
 - No commit or push created.

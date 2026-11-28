@@ -18,6 +18,7 @@ enables:
 created: 2026-08-30
 updated: 2026-08-30
 ---
+
 # Add OpenTelemetry Log Emission to Shared Structured Logger
 
 ## Objective
@@ -470,4 +471,3 @@ Do not publish yet.
 
 `ARCH-002-SHARED-006` adds the newly agreed direct Loki transport before the
 single SHARED-005 public release.
-

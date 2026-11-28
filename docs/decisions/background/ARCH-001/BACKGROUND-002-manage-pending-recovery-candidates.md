@@ -16,6 +16,7 @@ enables: ["ARCH-001-BACKGROUND-004"]
 created: 2026-08-28
 updated: 2026-08-28
 ---
+
 # Manage Pending Recovery Candidates
 
 ## Architecture

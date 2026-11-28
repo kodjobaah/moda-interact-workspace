@@ -176,7 +176,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Do not use SHOPIFY-001 generic BillingPeriod projection to replace this branch. The finaliser is a transaction-participant, not a transaction owner. Preserve exact validation ordering and existing branch-specific permissiveness as well as strictness; “cleaning up” the predicates is a behaviour change.
 
-
 ## Completion Report
 
 ### Status

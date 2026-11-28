@@ -95,15 +95,18 @@ No Background code, Shared package, database, application UI, new Render service
 ### Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Files Changed
+
 - `moda-interact-gateway/render.production.yaml`
 - `moda-interact-gateway/render.test.yaml`
 - `moda-interact-gateway/tests/validate-render-blueprints.sh`
 - `docs/decisions/gateway/ARCH-010/GATEWAY-001-wire-redis-to-billing-workers.md`
 
 ### Work Completed
+
 - Added the existing production Redis config group to `moda-billing-worker-production`.
 - Added the existing test Redis config group to `moda-billing-worker-test`.
 - Updated the canonical environment-generic topology assertion to require `common + redis + shopify_app` for both billing workers, addressing Architect Review Correction 1.
@@ -111,24 +114,26 @@ Ready for Review.
 - Made no changes to services, plans, commands, routes, exposure, Redis resources/secrets, PostgreSQL resources, or other workers.
 
 ### Validation Results
+
 - `bash tests/validate-render-blueprints.sh` from the implementation worktree: passed; both `render.test.yaml` and `render.production.yaml` were validated, including the billing-worker Redis-group regression.
 - `bash tests/validate-render-blueprints-negative.sh` from the implementation worktree: passed; all negative topology/configuration cases were rejected.
 - `git diff --check` in the implementation worktree: passed.
 - An initial validator invocation from the workspace shell directory could not resolve the relative test path; it was rerun from the canonical implementation worktree and passed. No source change was involved in that invocation failure.
 
 ### Git / VCS
+
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-GATEWAY-001`, branch `task/ARCH-010-GATEWAY-001`.
 
 Negative isolation assertions:
-  parent is not the primary/shared workspace: yes
-  implementation is not the shared repository checkout: yes
+parent is not the primary/shared workspace: yes
+implementation is not the shared repository checkout: yes
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: already-current
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: already-current
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: already-current
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: already-current
+implementation origin/main incorporated: already-current
 
 Implementation commit: `29cefeb` (`test: require redis group for billing workers`), pushed to `origin/task/ARCH-010-GATEWAY-001`.
 Parent report commit: `a346cfe9618a30d363df5c776babd05f59319e53`, pushed to `origin/task/ARCH-010-GATEWAY-001`.
@@ -137,6 +142,7 @@ Worktrees clean: verified after implementation and parent report publication.
 The parent submodule gitlink was not staged.
 
 ### Architect Review
+
 Pending.
 
 ## Stop conditions
@@ -336,4 +342,3 @@ Because `completion_mode: automatic`, this task is complete. `executor` and
 `ARCH-010-SYSTEM-TEST-001` is **not automatically promoted by this overlay**.
 ARCH-010 system-test tasks are terminal/manual-gated validation and remain under
 developer/architect-controlled invocation after implementation work is ready.
-

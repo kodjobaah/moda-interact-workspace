@@ -15,18 +15,21 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-011-BACKGROUND-002
+  - ARCH-011-BACKGROUND-002
 enables:
-- ARCH-011-SYSTEM-TEST-001
+  - ARCH-011-SYSTEM-TEST-001
 created: 2026-09-14
 updated: 2026-09-14
 ---
+
 # ARCH-011-BACKGROUND-003
 
 ## Objective
+
 Prevent creation of a normal paid-recovery Shopify UsageEvent against a stale plan meter while a provider-confirmed/ambiguous plan mismatch exists. Do not change proration/reconciliation logic.
 
 ## Authorized implementation surface
+
 ```text
 src/services/paid-included-recovery-reservation.service.ts
 src/services/recovery-billing.service.ts
@@ -36,6 +39,7 @@ tests/integration/paid-included-recovery-reservation.concurrency.integration.tes
 ```
 
 ## Exact fence
+
 Inside the same Serializable transaction used by `PaidIncludedRecoveryReservationService.reserveInTransaction`, query whether this shop's subscription has an unresolved transition with status `PROVIDER_CONFIRMED` or `NEEDS_ATTENTION`. If yes, return new outcome `{kind:"plan-transition-in-flight"}` **before incrementing reservedQuantity or creating a reservation**.
 
 Repeat the check inside `commitInTransaction` immediately before counter mutation/UsageEvent creation. If the reservation is still RESERVED and the fence is active, change only that reservation status to `AMBIGUOUS`; do not decrement reservedQuantity, increment committedQuantity or create UsageEvent. Return existing `ambiguous` outcome.
@@ -47,9 +51,11 @@ Extend `RecoveryBillingService` blocked reason union with exact literal `plan-tr
 Do not retarget any existing UsageEvent handle.
 
 ## Tests
+
 Prove: REQUESTED does not fence; PROVIDER_CONFIRMED and NEEDS_ATTENTION do; reserve fence writes nothing; pre-provider revalidation blocks; commit-time race marks reservation ambiguous and creates no UsageEvent; APPLIED/FAILED/SUPERSEDED clear fence; concurrent transition/reservation cannot create stale-meter event.
 
 ## Validation
+
 ```text
 npm run prisma:validate
 npm run prisma:generate

@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-06T18:01:08Z
 ---
+
 # ARCH-006-ADMIN-003: Implement pending-support queries and exclusive ownership commands
 
 ## Architecture

@@ -11,7 +11,6 @@ updated: 2026-10-13
 
 > **Current scope amendment — 2 November 2026:** The developer has explicitly authorized implementation preparation for ADMIN-001 and COMMERCE-001. ADMIN-001 is accepted and explicitly completed at Attempt 1. SYSTEM-TEST-001 is dependency-ready and remains manually launched; Commerce follows its own authoritative task record. The Commerce deferral in the historical October session below is lifted only for the cached evaluator/local-preview scope in its corrected task definition. SYSTEM-TEST-002 remains superseded; ARCH-052 retains initial outreach and provider source validation.
 
-
 ## Status and session boundary
 
 **Proposed — task refinement Attempt 9 (13 October 2026).** This session authorises **five implementation tasks**: the narrowly scoped `ARCH-036-DATABASE-003` global-lease enum migration, `ARCH-036-BACKGROUND-001`, `ARCH-036-API-002`, `ARCH-036-WOOCOMMERCE-003`, and `ARCH-036-ADMIN-001`. Their purpose is to synchronise existing Woo coupons into the current database, display them and persist merchant settings, without modifying CommerceAgent or recovery execution. A separate terminal `ARCH-036-SYSTEM-TEST-001` validates these outcomes; it is not an implementation task.
@@ -47,16 +46,16 @@ WooCommerce needs a read-only synchronisation path and a merchant-facing interfa
 
 ## Existing data model and ownership
 
-| Existing storage | WooCommerce meaning | Writer |
-|---|---|---|
-| `ShopifyDiscountCatalogue.shopId`, `status`, generation | Shop-scoped provider catalogue and freshness | Background-001 |
-| `ShopifyDiscount.shopifyDiscountNodeId` | Stable `woo:coupon:<id>` external identity | Background-001 |
-| `providerType`, `method`, `title`, `singleRedeemCode` | Real bounded Woo type, code, title and method | Background-001 |
-| `providerStatus`, `startsAt`, `endsAt`, `fixedSelectable`, `providerSnapshot` | Provider-derived lifecycle, supported-rule projection and bounded facts | Background-001 |
-| `ShopifyDiscount.isAvailable` | **Woo only:** persisted merchant checkbox (`false` on new rows) | API-002 |
-| `ShopSettings.recoveryOfferMode` | Saved NONE/FIXED/AI configuration | API-002 |
-| `ShopSettings.fixedShopifyDiscountId` | Existing real same-Shop FK anchor required for FIXED by current SQL constraint | API-002 |
-| `ShopRecoveryPolicyOverride.fixedShopifyDiscountId` | Existing independent single-discount Admin override | Existing Admin workflow |
+| Existing storage                                                              | WooCommerce meaning                                                            | Writer                  |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------- |
+| `ShopifyDiscountCatalogue.shopId`, `status`, generation                       | Shop-scoped provider catalogue and freshness                                   | Background-001          |
+| `ShopifyDiscount.shopifyDiscountNodeId`                                       | Stable `woo:coupon:<id>` external identity                                     | Background-001          |
+| `providerType`, `method`, `title`, `singleRedeemCode`                         | Real bounded Woo type, code, title and method                                  | Background-001          |
+| `providerStatus`, `startsAt`, `endsAt`, `fixedSelectable`, `providerSnapshot` | Provider-derived lifecycle, supported-rule projection and bounded facts        | Background-001          |
+| `ShopifyDiscount.isAvailable`                                                 | **Woo only:** persisted merchant checkbox (`false` on new rows)                | API-002                 |
+| `ShopSettings.recoveryOfferMode`                                              | Saved NONE/FIXED/AI configuration                                              | API-002                 |
+| `ShopSettings.fixedShopifyDiscountId`                                         | Existing real same-Shop FK anchor required for FIXED by current SQL constraint | API-002                 |
+| `ShopRecoveryPolicyOverride.fixedShopifyDiscountId`                           | Existing independent single-discount Admin override                            | Existing Admin workflow |
 
 For **Shopify** rows, `isAvailable` continues to mean provider availability and the existing single-FK setting is the merchant selection. The shared table does not mean shared field semantics. No **discount-catalogue** schema/constraint/index/history changes are authorised; `DATABASE-003` only extends the global lease enum.
 
@@ -86,19 +85,19 @@ Terminal `SYSTEM-TEST-001` validates authorised full sync, complete/incomplete s
 
 Pre-production Woo coupon feature, but preserve existing Shopify state/history. Apply the **single additive `DATABASE-003` enum migration first**, before deploying or starting Background's new leased dispatcher. No coupon-schema migration, contract publication, Shopify rollout or send-time verification deployment. `DATABASE-003` has no dependencies and is Ready as a portable definition; `BACKGROUND-001` stays Pending until **both** `ARCH-026-API-007` and `ARCH-036-DATABASE-003` are Complete. Then `API-002` follows Background; `ADMIN-001` may run in parallel with `API-002` once Background is Complete; `WOOCOMMERCE-003` follows API-002. `SYSTEM-TEST-001` is terminal after all four implementations are accepted and developer manual validation is possible.
 
-| Task | Owner | Planned status after Attempt 9 | In-session dependencies |
-|---|---|---|---|
-| `ARCH-036-DATABASE-003` | moda_database | Ready (portable definition) | None |
-| `ARCH-036-BACKGROUND-001` | moda_background | Pending | `ARCH-026-API-007`, `ARCH-036-DATABASE-003` |
-| `ARCH-036-API-002` | moda_api | Pending | `ARCH-036-BACKGROUND-001` |
-| `ARCH-036-WOOCOMMERCE-003` | moda_woocommerce | Pending | `ARCH-036-API-002` |
-| `ARCH-036-ADMIN-001` | moda_admin | Pending | `ARCH-036-BACKGROUND-001` |
-| `ARCH-036-SYSTEM-TEST-001` | moda_system_test | Pending (terminal validation only) | All four above |
-| `ARCH-036-BACKGROUND-003` | moda_background | Superseded | Outbound proof out of scope |
-| `ARCH-036-BACKGROUND-004` | moda_background | Superseded | Shopify sync unchanged |
-| `ARCH-036-SHOPIFY-001` | moda_app | Superseded | Shopify UI unchanged |
-| `ARCH-036-COMMERCE-001` | moda_commerce | Pending (unchanged; **deferred**) | Out of session; NOT executable under this plan |
-| `ARCH-036-SYSTEM-TEST-002` | moda_system_test | Pending (unchanged; **deferred**) | Out of session; NOT part of terminal acceptance here |
+| Task                       | Owner            | Planned status after Attempt 9     | In-session dependencies                              |
+| -------------------------- | ---------------- | ---------------------------------- | ---------------------------------------------------- |
+| `ARCH-036-DATABASE-003`    | moda_database    | Ready (portable definition)        | None                                                 |
+| `ARCH-036-BACKGROUND-001`  | moda_background  | Pending                            | `ARCH-026-API-007`, `ARCH-036-DATABASE-003`          |
+| `ARCH-036-API-002`         | moda_api         | Pending                            | `ARCH-036-BACKGROUND-001`                            |
+| `ARCH-036-WOOCOMMERCE-003` | moda_woocommerce | Pending                            | `ARCH-036-API-002`                                   |
+| `ARCH-036-ADMIN-001`       | moda_admin       | Pending                            | `ARCH-036-BACKGROUND-001`                            |
+| `ARCH-036-SYSTEM-TEST-001` | moda_system_test | Pending (terminal validation only) | All four above                                       |
+| `ARCH-036-BACKGROUND-003`  | moda_background  | Superseded                         | Outbound proof out of scope                          |
+| `ARCH-036-BACKGROUND-004`  | moda_background  | Superseded                         | Shopify sync unchanged                               |
+| `ARCH-036-SHOPIFY-001`     | moda_app         | Superseded                         | Shopify UI unchanged                                 |
+| `ARCH-036-COMMERCE-001`    | moda_commerce    | Pending (unchanged; **deferred**)  | Out of session; NOT executable under this plan       |
+| `ARCH-036-SYSTEM-TEST-002` | moda_system_test | Pending (unchanged; **deferred**)  | Out of session; NOT part of terminal acceptance here |
 
 Already-superseded `DATABASE-001/002` remain unexecutable; the new `DATABASE-003` is a **separate enum-only global-scheduler prerequisite**. Other superseded tasks — `SHARED-001/002/003`, `API-001/003`, `WOOCOMMERCE-001/002` and `BACKGROUND-002` — remain unchanged and unexecutable. Deferred Commerce/outreach definitions are intentionally **not modified** as part of the developer's explicit exclusion. They must be reconciled in a separately authorised scope rather than silently executed or certified. Individual task YAML remains authoritative for status; this session's scope restriction is independent of pending metadata.
 
@@ -112,13 +111,11 @@ Already-superseded `DATABASE-001/002` remain unexecutable; the new `DATABASE-003
 
 ARCH-036 remains Proposed. No implementation is accepted, and the document does not claim that coupon offers can be safely applied or sent.
 
-
 ## Current reconciliation — 2 November 2026
 
 ARCH-036-COMMERCE-001 remains deferred. SYSTEM-TEST-002 is superseded by ARCH-052-SYSTEM-TEST-002 for the accepted current initial-outreach contract. Shopify and Woo isAvailable flags both represent merchant selection; provider validity remains separate.
 
 See [the task-by-task reconciliation](https://github.com/kodjobaah/moda-interact-workspace/blob/codex/reconcile-arch-036-054/docs/architecture/ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.
-
 
 ## Implementation preparation — 2 November 2026
 

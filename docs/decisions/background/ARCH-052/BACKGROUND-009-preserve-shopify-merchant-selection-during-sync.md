@@ -16,9 +16,9 @@ claimed_at: null
 attempt: 3
 depends_on: []
 enables:
-- ARCH-052-SHOPIFY-001
-- ARCH-052-SYSTEM-TEST-001
-created: '2026-10-29'
+  - ARCH-052-SHOPIFY-001
+  - ARCH-052-SYSTEM-TEST-001
+created: "2026-10-29"
 updated: 2026-10-29
 ---
 
@@ -172,7 +172,6 @@ None for this task. The Docker CLI at `/usr/local/bin/docker` was missing from t
 
 Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
 
-
 ## Architect Review
 
 ### Attempt 2 Architect Review
@@ -232,7 +231,7 @@ The PostgreSQL integration and worktree/materialisation corrections are accepted
 - Compared with the pre-task Background revision f80d916 in an isolated source snapshot, using Node v24.19.0, npm 11.17.0, the same installed node_modules, the same package-lock.json SHA-256 (e3880239dde01b5979419c9db42232d6c8568df5d1985beacd9d51683bf85ac7), the same database gitlink (f16d5fc955b1fa1215177cc89fb6fd326bfa65c8), and DATABASE_URL=postgresql://localhost/test, REDIS_URL=redis://localhost: the baseline also had 20 failing files, 282 passing files, 64 failing tests and 3,079 passing tests. A sorted comparison of all 64 failure identities produced no differences. The earlier Attempt 1 count of 22 failing files was from before Prisma Client generation; this equivalent post-build comparison supersedes it.
 - Exact failing test identities present on both pre-task and submitted revisions:
 
-~~~text
+```text
 tests/unit/commerce/model-bridge-diagnostics.test.ts > ARCH-029 model bridge diagnostics > identifies the exact production_model_invoke phase without logging the raw exception
 tests/unit/commerce/model-bridge-diagnostics.test.ts > ARCH-029 model bridge diagnostics > identifies the exact response_postprocess phase without logging the raw exception
 tests/unit/commerce/model-bridge-diagnostics.test.ts > ARCH-029 model bridge diagnostics > identifies the exact turn_state_check phase without logging the raw exception
@@ -297,7 +296,7 @@ tests/unit/services/translation-batch-assembly.service.test.ts > TranslationBatc
 tests/unit/services/translation-reconciliation.service.test.ts > ARCH-043 support translation credential revocation > fails before provider construction when Commerce credentials are revoked despite a valid legacy OPENAI_API_KEY
 tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts > ARCH-048-BACKGROUND-004 WooRecoveryOutreachService > keeps an unknown provider timeout visible and never blindly retries
 tests/unit/workers/shopify-discount-sync.worker.test.ts > Shopify discount sync worker logging > logs bounded worker-level errors
-~~~
+```
 
 - npm run lint on the submitted branch and at f80d916 each reported exactly one error: src/services/translation-reconciliation.service.ts:218, rule preserve-caught-error. The file is byte-identical to the pre-task revision and is outside the task diff.
 - Targeted ESLint on all four changed TypeScript source/test files passed. git diff --check f80d916..HEAD passed.
@@ -308,7 +307,6 @@ tests/unit/workers/shopify-discount-sync.worker.test.ts > Shopify discount sync 
 The repository-wide failures and lint diagnostic are identical on the pre-task and submitted revisions under equivalent conditions. No task-caused failure or worsening was found. The Validation checkbox is marked complete to record that required validation was executed and reconciled; the baseline failures remain visible above rather than being represented as passing.
 
 ### Attempt 1 Architect Review — Changes Requested
-
 
 ### Review Status
 

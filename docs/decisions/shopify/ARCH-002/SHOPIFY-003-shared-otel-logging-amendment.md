@@ -1,4 +1,5 @@
 <!-- ARCH-002-SHARED-OTEL-LOGGING:START -->
+
 ## Architect Coordination Amendment — Shared OpenTelemetry Logging
 
 The clarified logging architecture introduces a new required shared dependency:

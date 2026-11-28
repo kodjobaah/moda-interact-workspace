@@ -40,6 +40,7 @@ Bring the existing Woo Recovery Settings policy section to Shopify visual and in
 Shopify RecoverySettingsView.tsx displays an effective-policy summary, admin-override notice and offer/delay/follow-up sections; current Woo recovery-settings-screen.js provides store category and read-only effective summary.
 
 Source references:
+
 - Shopify: app/routes/app/recovery-settings/RecoverySettingsView.tsx.
 - Woo: src/recovery-settings/recovery-settings-screen.js; src/recovery-settings/recovery-effective-summary.js.
 

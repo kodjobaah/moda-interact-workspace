@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-017-SHOPIFY-002
+  - ARCH-017-SHOPIFY-002
 enables: []
 created: 2026-09-19
 updated: 2026-09-19
@@ -44,30 +44,33 @@ app/services/billing/billing.service.ts
 The generic `syncSubscription()` path currently uses this exact shape:
 
 ```ts
-const billingPeriod = !initialPaidProjection && providerSubscription.currentPeriodStart && providerSubscription.currentPeriodEnd
-  ? await transaction.billingPeriod.upsert({
-      where: {
-        shopId_periodStart_periodEnd: {
+const billingPeriod =
+  !initialPaidProjection &&
+  providerSubscription.currentPeriodStart &&
+  providerSubscription.currentPeriodEnd
+    ? await transaction.billingPeriod.upsert({
+        where: {
+          shopId_periodStart_periodEnd: {
+            shopId,
+            periodStart: providerSubscription.currentPeriodStart,
+            periodEnd: providerSubscription.currentPeriodEnd,
+          },
+        },
+        update: { status: BillingPeriodStatus.OPEN },
+        create: {
           shopId,
+          subscriptionId,
+          planId: planIsUsable ? (plan?.id ?? null) : null,
+          shopifyPlanHandleSnapshot: providerSubscription.planHandle,
+          planNameSnapshot: plan?.name ?? null,
+          planKindSnapshot: plan?.kind ?? null,
+          includedRecoveryCreditsGranted: null,
           periodStart: providerSubscription.currentPeriodStart,
           periodEnd: providerSubscription.currentPeriodEnd,
+          status: BillingPeriodStatus.OPEN,
         },
-      },
-      update: { status: BillingPeriodStatus.OPEN },
-      create: {
-        shopId,
-        subscriptionId,
-        planId: planIsUsable ? plan?.id ?? null : null,
-        shopifyPlanHandleSnapshot: providerSubscription.planHandle,
-        planNameSnapshot: plan?.name ?? null,
-        planKindSnapshot: plan?.kind ?? null,
-        includedRecoveryCreditsGranted: null,
-        periodStart: providerSubscription.currentPeriodStart,
-        periodEnd: providerSubscription.currentPeriodEnd,
-        status: BillingPeriodStatus.OPEN,
-      },
-    })
-  : null;
+      })
+    : null;
 ```
 
 The `create` branch can contain plan information, but the `update` branch only sets `status=OPEN`. Therefore an exact provider-cycle row first created while unmapped can remain permanently null-mapped after the BillingPlan later resolves, while the Subscription is updated to the resolved plan.
@@ -224,7 +227,7 @@ async function ensureMappedCurrentBillingPeriodProjection(
     providerPlanHandle: string;
     plan: CurrentBillingPeriodPlan;
   },
-): Promise<CurrentBillingPeriodProjectionResult>
+): Promise<CurrentBillingPeriodProjectionResult>;
 ```
 
 The helper is ONLY for a resolved plan that is about to be committed as executable `ACTIVE`/`TRIALING`. Do not call it for `UNMAPPED` or `SYNC_ERROR` projections.
@@ -234,17 +237,16 @@ Implement the algorithm below exactly.
 ### A2.1 Validate paid allowance before touching the period
 
 ```ts
-const expectedGrant = input.plan.kind === BillingPlanKind.PAID_METERED
-  ? input.plan.includedRecoveryConversationAllowance
-  : null;
+const expectedGrant =
+  input.plan.kind === BillingPlanKind.PAID_METERED
+    ? input.plan.includedRecoveryConversationAllowance
+    : null;
 
 if (
   input.plan.kind === BillingPlanKind.PAID_METERED &&
-  (
-    expectedGrant === null ||
+  (expectedGrant === null ||
     !Number.isSafeInteger(expectedGrant) ||
-    expectedGrant < 0
-  )
+    expectedGrant < 0)
 ) {
   return {
     kind: "CONFLICT",
@@ -357,14 +359,15 @@ This is the required self-heal for the currently observed null-mapped Free perio
 For `BillingPlanKind.FREE`, query:
 
 ```ts
-const includedCounter = await transaction.billingPeriodEntitlementCounter.findUnique({
-  where: {
-    billingPeriodId_counter: {
-      billingPeriodId: repairedPeriod.id,
-      counter: BillingPeriodEntitlementCounterKind.INCLUDED_RECOVERY_CREDITS,
+const includedCounter =
+  await transaction.billingPeriodEntitlementCounter.findUnique({
+    where: {
+      billingPeriodId_counter: {
+        billingPeriodId: repairedPeriod.id,
+        counter: BillingPeriodEntitlementCounterKind.INCLUDED_RECOVERY_CREDITS,
+      },
     },
-  },
-});
+  });
 ```
 
 If it exists, return `CONFLICT` with `FREE_INCLUDED_COUNTER_PRESENT`.
@@ -412,12 +415,11 @@ Otherwise return `repaired=false` for an already-consistent replay.
 Immediately after current `paidMeterIsPresent`, add:
 
 ```ts
-const paidAllowanceIsValid = plan?.kind !== BillingPlanKind.PAID_METERED
-  || (
-    plan.includedRecoveryConversationAllowance !== null &&
+const paidAllowanceIsValid =
+  plan?.kind !== BillingPlanKind.PAID_METERED ||
+  (plan.includedRecoveryConversationAllowance !== null &&
     Number.isSafeInteger(plan.includedRecoveryConversationAllowance) &&
-    plan.includedRecoveryConversationAllowance >= 0
-  );
+    plan.includedRecoveryConversationAllowance >= 0);
 ```
 
 Change status calculation to:
@@ -435,13 +437,14 @@ const status = !planIsUsable
 Change `syncErrorCode` to:
 
 ```ts
-const syncErrorCode = status === SubscriptionProjectionStatus.UNMAPPED
-  ? "UNMAPPED_PLAN_HANDLE"
-  : status === SubscriptionProjectionStatus.SYNC_ERROR
-    ? !paidMeterIsPresent
-      ? "MISSING_USAGE_METER"
-      : "INVALID_INCLUDED_ALLOWANCE"
-    : null;
+const syncErrorCode =
+  status === SubscriptionProjectionStatus.UNMAPPED
+    ? "UNMAPPED_PLAN_HANDLE"
+    : status === SubscriptionProjectionStatus.SYNC_ERROR
+      ? !paidMeterIsPresent
+        ? "MISSING_USAGE_METER"
+        : "INVALID_INCLUDED_ALLOWANCE"
+      : null;
 ```
 
 Do not change initial-paid activation semantics; its stricter branch remains authoritative when `initialPaidActivation=true`.
@@ -476,14 +479,17 @@ plan.active == true
 call:
 
 ```ts
-const projection = await ensureMappedCurrentBillingPeriodProjection(transaction, {
-  shopId,
-  subscriptionId,
-  periodStart: providerSubscription.currentPeriodStart,
-  periodEnd: providerSubscription.currentPeriodEnd,
-  providerPlanHandle: providerSubscription.planHandle,
-  plan,
-});
+const projection = await ensureMappedCurrentBillingPeriodProjection(
+  transaction,
+  {
+    shopId,
+    subscriptionId,
+    periodStart: providerSubscription.currentPeriodStart,
+    periodEnd: providerSubscription.currentPeriodEnd,
+    providerPlanHandle: providerSubscription.planHandle,
+    plan,
+  },
+);
 ```
 
 If `projection.kind === "READY"`, use `projection.billingPeriodId` when writing the Subscription.

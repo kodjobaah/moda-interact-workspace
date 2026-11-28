@@ -65,16 +65,16 @@ Publication currently happens during traversal: a valid inbound message or provi
 
 Preserve HTTP method checks, GET challenge verification, signature verification against the **exact raw POST body** and all currently supported successful payloads. Use the existing route response and bounded telemetry mechanisms:
 
-| Input | Required outcome | Queue publication |
-|---|---|---|
-| Non-POST action method | Existing `405` | None |
-| Missing/invalid HMAC | Existing `401` | None |
-| Invalid JSON syntax with valid HMAC | Existing `400` / `invalid_json` | None |
-| Authenticated JSON with invalid relevant envelope shape | `400` / `invalid_payload` (never incidental `500`) | None |
-| Signed batch with one or more invalid inbound messages, including one *after* valid events | `400` / `invalid_payload` | **None from the entire request** |
-| Valid signed batch, including empty arrays and non-`messages` changes | Existing `200 EVENT_RECEIVED` | Same validated events in original order |
-| Structurally valid individual invalid provider status | Continue to ignore it, without rejecting otherwise-valid events | None for that status |
-| Publisher/Redis failure after preflight succeeds | Preserve exception/`500` and retry semantics | May be partial; no atomicity claim |
+| Input                                                                                      | Required outcome                                                | Queue publication                       |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | --------------------------------------- |
+| Non-POST action method                                                                     | Existing `405`                                                  | None                                    |
+| Missing/invalid HMAC                                                                       | Existing `401`                                                  | None                                    |
+| Invalid JSON syntax with valid HMAC                                                        | Existing `400` / `invalid_json`                                 | None                                    |
+| Authenticated JSON with invalid relevant envelope shape                                    | `400` / `invalid_payload` (never incidental `500`)              | None                                    |
+| Signed batch with one or more invalid inbound messages, including one _after_ valid events | `400` / `invalid_payload`                                       | **None from the entire request**        |
+| Valid signed batch, including empty arrays and non-`messages` changes                      | Existing `200 EVENT_RECEIVED`                                   | Same validated events in original order |
+| Structurally valid individual invalid provider status                                      | Continue to ignore it, without rejecting otherwise-valid events | None for that status                    |
+| Publisher/Redis failure after preflight succeeds                                           | Preserve exception/`500` and retry semantics                    | May be partial; no atomicity claim      |
 
 ### R2 — Envelope shape without over-rejection
 
@@ -89,7 +89,7 @@ Treat parsed JSON as `unknown`, not trusted `any`. At minimum:
 
 ### R3 — Preflight before **any** side effect
 
-- Fully traverse/validate and normalize *all* events in the signed request before invoking the publisher even once; no Redis, queue, database or external request during preflight.
+- Fully traverse/validate and normalize _all_ events in the signed request before invoking the publisher even once; no Redis, queue, database or external request during preflight.
 - Preflight returns either a discriminated invalid-payload result or an ordered list of the existing canonical inbound v1 / provider-status v3 events.
 - Preserve the exact old event order within and across entries, `changes`, inbound messages and statuses, and preserve invalid individual status skip behaviour.
 - On preflight failure, discard staged normalized events and return controlled `400` with **zero** queue jobs, including when an earlier valid status preceded a later invalid inbound message.

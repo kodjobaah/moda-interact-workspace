@@ -73,11 +73,9 @@ Use fake OpenAI moderation responses (do not call live provider): allow, flagged
 - Seed ACTIVE/SUSPENDED restriction state and audit transitions through the same PostgreSQL schema. Verify command already queued, leased, or retried before Admin suspension is blocked when suspension wins the final provider-admission race; verify provider request already irreversibly submitted first is not claimed retractable.
 - Prove AI and automation still work, human-only blocked commands do not charge recovery credits, same Conversation is retained, repeated rate/spam does not multiply provider sends, restore does not revive old rejected commands, and tenant isolation is intact. Use no Shopify/Woo producer as prerequisite.
 
-
 ### Platform-neutral scheduling, provider races and content-memory certification
 
 Validate with neutral persisted producer fixtures, not Shopify/WooCommerce implementation dependencies: one accepted HUMAN command is picked up by one PostgreSQL poller across competing messaging worker replicas; no command-specific BullMQ queue exists. Existing inbound WhatsApp and delayed recovery no-response jobs still execute via their original BullMQ workers and converge on shared BG001 policy. Test `AI -> HUMAN -> AI` with a HUMAN-authored historical message: the resumed model receives it as labelled untrusted merchant context, not its own prior assistant utterance. Deliver verified out-of-order inbound WhatsApp timestamps (including audio), assert monotonic `lastInboundAt`/window eligibility. Exercise prior unclaimed scheduled sequence-2 claimed by HUMAN, claimed/UNKNOWN rejection, one attempt/credit. Force permit-first/takeover-first and suspension-first/permit-first races, crashed admitted/UNKNOWN commands and no blind provider re-submission. Assert default command/dedupe records are not purged. All final provider transport tests use mocked Meta and real database claim/admission transactions; no claim of provable exactly-once delivery under an unknown provider outcome.
-
 
 ### Service-window and configured follow-up certification (2026-10-20 policy)
 
@@ -137,47 +135,61 @@ Use `scripts/start-agent-task.py --prepare` in the actual developer workspace wh
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
+
 None.
 
 ### Assumptions
+
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
+
 None recorded at definition time.
 
 ### Architectural Concerns
+
 Return newly discovered contract or ownership gaps to moda_architect.
 
 ## Architect Review
 
 ### Review Status
+
 Pending
 
 ### Review Notes
+
 Not reviewed.
 
 ### Reviewed Files
+
 None.
 
 ### Validation Reviewed
+
 None.
 
 ### Architecture Conformance
+
 Pending.
 
 ### Follow-up
+
 None.
 
 ## Definition reconciliation — 2026-11-02

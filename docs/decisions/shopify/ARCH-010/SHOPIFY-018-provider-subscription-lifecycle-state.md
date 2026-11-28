@@ -1,7 +1,8 @@
 ---
 id: ARCH-010-SHOPIFY-018
 architecture_id: ARCH-010
-title: Expose Shopify-authoritative subscription lifecycle state including freeze
+title:
+  Expose Shopify-authoritative subscription lifecycle state including freeze
   and unfreeze
 task_kind: implementation
 domain: shopify
@@ -16,17 +17,17 @@ executor: null
 claimed_at: null
 attempt: 3
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-SHOPIFY-013
-- ARCH-010-SHOPIFY-023
+  - ARCH-010-DATABASE-013
+  - ARCH-010-SHOPIFY-013
+  - ARCH-010-SHOPIFY-023
 enables:
-- ARCH-010-SHOPIFY-012
-- ARCH-010-SHOPIFY-014
-- ARCH-010-SHOPIFY-015
-- ARCH-010-SHOPIFY-016
-- ARCH-010-SHOPIFY-021
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-014
+  - ARCH-010-SHOPIFY-015
+  - ARCH-010-SHOPIFY-016
+  - ARCH-010-SHOPIFY-021
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-SHOPIFY-018: Expose Shopify-authoritative subscription lifecycle state including freeze and unfreeze
@@ -134,6 +135,7 @@ STOP if root Historical Events subscription status is unavailable in the configu
 ## Completion Report
 
 ### Status
+
 Ready for Review.
 
 ### Implementation
@@ -974,4 +976,3 @@ ARCH-010-SHOPIFY-021
 None becomes Ready solely from this acceptance because each still has at least one other incomplete dependency.
 
 Therefore no downstream Shopify task is promoted in this acceptance overlay.
-

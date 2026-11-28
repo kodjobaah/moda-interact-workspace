@@ -197,9 +197,11 @@ This task must not solve the Background runtime cadence mapping. Enum ownership 
 ## Completion Report
 
 ### Status
+
 Ready for architect review. Attempt 2 completed as the requested evidence/workflow correction; the task is returned to `review` with the claim cleared.
 
 ### Attempt 2 Preparation Evidence
+
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-DATABASE-005`, branch `task/ARCH-023-DATABASE-005`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-DATABASE-005`, branch `task/ARCH-023-DATABASE-005`.
@@ -209,7 +211,9 @@ Ready for architect review. Attempt 2 completed as the requested evidence/workfl
 - The implementation worktree started at `b34a563436bbc89b6ca3e26b43a0bd03116a1a66` (`feat(database): add Merchant Knowledge lease names`). Its `HEAD` equaled `origin/task/ARCH-023-DATABASE-005`; the worktree was clean before and after validation. This is the existing Attempt 1 implementation commit, already pushed/upstream. No implementation commit was created for Attempt 2 because no implementation changes were needed or authorized.
 
 ### Files Changed
+
 Attempt 1 implementation files, unchanged in Attempt 2:
+
 - `prisma/schema.prisma`
 - `prisma/migrations/20261001010000_arch023_merchant_knowledge_runtime_leases/migration.sql`
 - `scripts/validate-arch023-merchant-knowledge-runtime-leases.mjs`
@@ -221,10 +225,13 @@ Attempt 1 implementation files, unchanged in Attempt 2:
 Attempt 2 changes only this task report on the parent task branch.
 
 ### Work Completed
+
 Attempt 1 added the two exact Merchant Knowledge lease labels to the existing `BackgroundRuntimeLeaseName` enum and the fixed additive migration. Attempt 2 made no schema, migration, validator, package, or generated-artifact changes. The rerun PostgreSQL proof applied the complete migration chain in an invocation-owned, network-isolated `pgvector/pgvector:pg17` container, inserted and verified both labels as `BackgroundRuntimeLease.name` values, cleaned up fixture rows, and removed its container. No cadence columns, lease table columns, business tables, indexes, or constraints were changed.
 
 ### Validation Results
+
 All required validations were rerun from the canonical implementation worktree and passed:
+
 - `npm run format` completed; no working-tree changes resulted.
 - `npm run validate` passed; Prisma reported the schema valid.
 - `npm run prisma:generate` passed with Prisma Client v6.19.3.
@@ -240,23 +247,29 @@ All required validations were rerun from the canonical implementation worktree a
 Prisma printed an informational notice that a newer major/RC release is available; it was not a validation failure.
 
 ### Deviations
+
 None. No implementation changes or additional implementation commit were required; the normal `npm run erd` workflow regenerated artifacts without leaving changes.
 
 ### Assumptions
+
 The fixed scheduler cadence mapping remains owned by `ARCH-023-BACKGROUND-007`; this task adds enum labels only.
 
 ### Unresolved Issues
+
 None. No new baseline issue or blocker appeared during Attempt 2 validation.
 
 ### Architectural Concerns
+
 None. No runtime cadence or business-state schema was introduced.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes
+
 Attempt 2 closes the only remaining workflow/evidence finding from Attempt 1. The database implementation remains unchanged at `b34a563436bbc89b6ca3e26b43a0bd03116a1a66` and continues to conform exactly to the bounded enum-only contract: the Prisma enum adds only `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`, `FeatureActivationMode` remains unchanged, and migration `20261001010000_arch023_merchant_knowledge_runtime_leases` contains only the two additive `ALTER TYPE ... ADD VALUE IF NOT EXISTS` statements.
 
 The Completion Report now records the launcher-resolved canonical parent and implementation worktrees/branches, dependency gate, start-of-attempt synchronization state, recursive submodule preparation, clean implementation HEAD/upstream identity, and the fact that no artificial implementation commit was created for this evidence-only retry. This satisfies the Attempt 1 rework contract.
@@ -266,6 +279,7 @@ The refreshed validation rerun passed formatting, Prisma validate/generate, the 
 The parent-report identity submitted for this review is `a767c5a5`; the implementation remains clean and unchanged at `b34a5634`.
 
 ### Reviewed Files
+
 - `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20261001010000_arch023_merchant_knowledge_runtime_leases/migration.sql`
 - `moda-interact-database/scripts/validate-arch023-merchant-knowledge-runtime-leases.mjs`
@@ -275,6 +289,7 @@ The parent-report identity submitted for this review is `a767c5a5`; the implemen
 - relevant ARCH-023 Database/Background indexes and parent execution frontier
 
 ### Validation Reviewed
+
 Accepted the recorded canonical-worktree rerun:
 
 - `npm run format` — passed with no residual implementation diff.
@@ -290,9 +305,11 @@ Accepted the recorded canonical-worktree rerun:
 Architect-side inspection additionally reran the focused static validator and Node syntax checks against the submitted snapshot; all passed. The review environment did not independently rerun Docker-backed PostgreSQL execution.
 
 ### Architecture Conformance
+
 Conforms. Database owns only representability of the two lease identities. The change does not add cadence fields, alter `BackgroundRuntimeLease`, introduce business schema, or absorb Background runtime scheduling ownership. `ARCH-023-BACKGROUND-007` remains the sole owner of the fixed 60-second / 3600-second global cadence mappings.
 
 ### Follow-up
+
 `ARCH-023-DATABASE-005` is Complete / Accepted at Attempt 2. Promote exactly `ARCH-023-BACKGROUND-007` from Pending to Ready. `ARCH-023-BACKGROUND-004` remains Blocked until BACKGROUND-007 is Complete/architect-accepted; `ARCH-023-BACKGROUND-005` remains Pending behind BACKGROUND-004. No Background implementation is started by this acceptance.
 
 #### Historical Attempt 1 — Changes Requested

@@ -191,7 +191,7 @@ is used.
 - `git diff --check`: passed.
 - Recursive database submodule initialized at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 - Attempt 3 focused model/config validation: `npm run test -- --run
-  tests/preview-model-provider.test.ts` passed (1 file, 9 tests).
+tests/preview-model-provider.test.ts` passed (1 file, 9 tests).
 - Attempt 3 `npm run typecheck` and `npm run build` failed on 20 existing
   shared-contract/type errors across code-response, external-http, execution, and
   two preview test call sites; no `runtime.ts` error was reported.
@@ -531,7 +531,6 @@ Report with the actual Attempt 2 preparation/commits, set `status: review`, clea
 claim and stop. No dependent task is promoted or launched until COMMERCE-019 is
 architect-accepted Complete.
 
-
 ### Attempt 2 — Blocked with deterministic prerequisites — 2026-09-21
 
 Reviewer: moda_architect. **Blocked; Attempt 2 retained; executor/claimed_at null.**
@@ -740,7 +739,6 @@ complete.
 Execute COMMERCE-033 and COMMERCE-034 independently. After both are architect-accepted
 Complete, reconcile019 to Ready for its narrow Attempt 3 composition. No automatic
 launch, main merge or downstream promotion.
-
 
 ### Readiness reconciliation after COMMERCE-013 Attempt 9 acceptance — 2026-09-21
 

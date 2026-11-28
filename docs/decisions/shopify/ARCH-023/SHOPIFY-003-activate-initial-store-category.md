@@ -247,12 +247,19 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
+
 Attempt 3 completed the Architect-Requested correction (A2-R1); returned for Architect Review.
+
 ### Files Changed
+
 `app/services/store-profile/store-category-activation.server.ts`, `app/routes/app/billing/callback/route.tsx`, `tests/unit/store-category-activation.test.ts`, `tests/unit/routes/billing-callback.test.ts`, and `tests/integration/store-category-activation.integration.test.ts`.
+
 ### Work Completed
+
 Added the exact deployment environment mapper and an atomic, idempotent initial activation transaction. It locks the Shop scope used by category selection, requires the current subscription to be ACTIVE/TRIALING with a plan, validates the complete pending profile/revision/template provenance, publishes the existing pinned DRAFT with lowercase SHA-256 of its exact UTF-8 text, updates or creates the one SHOP configuration while preserving model settings, and promotes/clears only the initial pending profile state. Existing active categories return `ALREADY_ACTIVE` without touching later pending selections. The billing callback invokes activation only after a successful durable Paid projection, successful Free completion, or a fresh `syncSubscription` result with a current active/trialing plan. Configure/welcome intent and onboarding completion alone do not invoke activation. No Merchant Knowledge preference/source/queue state or Background worker/reconciler was changed.
+
 ### Validation Results
+
 Attempt 1 focused activation, billing callback, Store Category selection and action regressions: 60 passed; the two disposable PostgreSQL activation tests were skipped in the default run. `npm run typecheck`: passed. Changed-file ESLint: passed (emitted the repository's TypeScript 5.9.3 versus typescript-estree supported-version warning). Changed-file diagnostics: clean. `npm run build`: passed. `git diff --check`: passed.
 
 Attempt 2 A1-R1 exact architect-requested command, run from the canonical implementation worktree:
@@ -266,69 +273,77 @@ Result: 1 test file passed; 2/2 PostgreSQL integration cases passed. The suite p
 Attempt 3 A2-R1 correction: activation now validates the pending category and exact pinned DRAFT without comparing selection-time template provenance to the category's mutable current `defaultTemplateId`. Unit coverage accepts a Template-A revision when Template B is current and still fails closed when `sourceTemplateId` or `sourceTemplateEditVersion` is null. The PostgreSQL success fixture creates distinct enabled Templates A and B, changes the category default from A to B after fixture selection, and proves activation publishes the original Template-A revision with its exact text, source ID/version, and SHA-256 hash.
 
 Attempt 3 focused activation and billing callback tests: 2 files passed; 50/50 tests passed. The exact disposable PostgreSQL command above was rerun with the Colima endpoint: 1 file passed; 2/2 integration tests passed, including Template-A provenance after reassignment and the existing rollback/idempotency proof. Post-run `docker ps -a --filter ancestor=pgvector/pgvector:pg17` returned no matching containers. `npm run typecheck`, changed-file ESLint and diagnostics, `npm run build`, and `git diff --check` passed. ESLint emitted the repository's TypeScript 5.9.3 versus typescript-estree supported-version warning; the build emitted dependency annotation, external Prisma browser entry, and chunk-size warnings but completed successfully.
+
 ### Deviations
+
 None. The Attempt 1 container limitation was resolved for the architect-requested rerun by using the known Colima Docker endpoint; the live transaction proof passed in Attempt 2.
+
 ### Assumptions
+
 The existing billing callback may invoke the activation service only after the current projection transaction returns; a later Background reconciliation activation hook is a separate repository-owned task and remains outside SHOPIFY-003 scope.
+
 ### Unresolved Issues
+
 The existing Background billing reconciler does not yet invoke this activation contract when subscription activation is established after the Shopify callback; a separate bounded Background task must add that hook. No authorized Commerce audit helper/actor exists in this repository, so this task does not fabricate a system actor or audit event; the audit-actor gap is recorded for architect follow-up. These are non-blocking/out-of-scope boundaries per the Architect Review.
+
 ### Architectural Concerns
+
 The callback path is covered here, but the missed-callback/background-reconciliation path remains a cross-repository follow-up. Activation errors are not swallowed: they can fail the Shopify callback response, although the prior billing projection commit remains durable. Per the Attempt 1 Architect Review, this is not a defect in the required transaction separation; any future callback UX/retry-policy change is separate. The existing Commerce audit schema accepts only PlatformAdmin or MerchantAccess actors and this activation has neither; an authorized actor/audit contract needs architect direction before audit records are added.
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-003`
-  parent branch: `task/ARCH-023-SHOPIFY-003`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-003`
-  implementation branch: `task/ARCH-023-SHOPIFY-003`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-003`
+parent branch: `task/ARCH-023-SHOPIFY-003`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-003`
+implementation branch: `task/ARCH-023-SHOPIFY-003`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  `git submodule sync --recursive`: passed
-  `git submodule update --init --recursive`: passed
-  recorded submodule commit: `database` at `2eb17ee910491e8f9df82736fc0a843844415947`
+`git submodule sync --recursive`: passed
+`git submodule update --init --recursive`: passed
+recorded submodule commit: `database` at `2eb17ee910491e8f9df82736fc0a843844415947`
 
 Launcher claim:
-  attempt: 1
-  dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
-  executor: `copilot`
-  claimed at: `2026-09-30T19:07:21Z`
-  claim commit: `9388d1a8fc532eb6aa6a0f3234c60c2b826d4ded` (pushed)
+attempt: 1
+dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
+executor: `copilot`
+claimed at: `2026-09-30T19:07:21Z`
+claim commit: `9388d1a8fc532eb6aa6a0f3234c60c2b826d4ded` (pushed)
 
 Attempt 2 launcher claim:
-  status before/after: `ready` -> `in_progress`
-  attempt: 2 (previous attempt: 1)
-  dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
-  executor: `copilot`
-  claimed at: `2026-09-30T19:40:30Z`
-  claim commit: `c6ade4e5c336cb28fc9c729615437a1c14514949` (pushed)
+status before/after: `ready` -> `in_progress`
+attempt: 2 (previous attempt: 1)
+dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
+executor: `copilot`
+claimed at: `2026-09-30T19:40:30Z`
+claim commit: `c6ade4e5c336cb28fc9c729615437a1c14514949` (pushed)
 
 Attempt 3 launcher claim:
-  status before/after: `ready` -> `in_progress`
-  attempt: 3 (previous attempt: 2)
-  dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
-  executor: `copilot`
-  claimed at: `2026-09-30T20:33:16Z`
-  claim commit: `9bd3d29c5396ed57ff63e248d2759c2dffb4f90e` (pushed)
-  parent origin/main incorporated: yes
-  implementation origin/main: already-current
-  recursive submodule sync/update: passed; database at `2eb17ee910491e8f9df82736fc0a843844415947`
+status before/after: `ready` -> `in_progress`
+attempt: 3 (previous attempt: 2)
+dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
+executor: `copilot`
+claimed at: `2026-09-30T20:33:16Z`
+claim commit: `9bd3d29c5396ed57ff63e248d2759c2dffb4f90e` (pushed)
+parent origin/main incorporated: yes
+implementation origin/main: already-current
+recursive submodule sync/update: passed; database at `2eb17ee910491e8f9df82736fc0a843844415947`
 
 Implementation commit:
-  `be279948ff7421e9f5edfa567b58fd1ffe55e680` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
+`be279948ff7421e9f5edfa567b58fd1ffe55e680` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
 
 Attempt 2 implementation change: none; the architect-requested correction was validation-only.
 
 Attempt 3 implementation commit:
-  `e9ea92efbf75cd59b3eeaa1cc314aadf5dc6cf29` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
+`e9ea92efbf75cd59b3eeaa1cc314aadf5dc6cf29` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
 
 ## Architect Review
 
@@ -385,6 +400,7 @@ Accepted. The durable current ACTIVE/TRIALING Subscription projection remains th
 `ARCH-023-SHOPIFY-003` is now Complete / Accepted Attempt 3. Its task declares no `enables` dependency, so this acceptance promotes no new task. `ARCH-023-SHOPIFY-004` remains Pending on `ARCH-023-ADMIN-004`, and `ARCH-023-SHOPIFY-005` remains Pending behind SHOPIFY-004. The separate Background subscription-reconciliation activation hook remains required before final ARCH-023 system acceptance and is not started implicitly by this review.
 
 ### Review Status
+
 Changes Requested — Attempt 2
 
 ### Review Notes

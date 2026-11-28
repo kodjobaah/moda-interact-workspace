@@ -87,7 +87,6 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 - [x] Remove the human-dispatcher's obsolete Meta category verifier/preflight and caller-provided parameter trust; pass BG001-prepared complete body/header/button components through the BG006 final admission adapter.
 - [x] Audit references to both legacy template-selector/category services in all Background production code and tests after BG006; delete unused modules and stale tests/mocks once no real caller remains, or record the exact unretired consumer as a blocking architectural gap.
 
-
 ## Interfaces / Contracts
 
 **Consumes** BG001 preparation, BG004 offer decision, BG006 template fence adapter and existing `HumanCommandDispatcherService`/`MerchantSendCommandService`. No new cross-repo template transport and no changes to the command payload unless specifically required by an independently accepted merchant API task.
@@ -97,7 +96,6 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 - `ARCH-047-BACKGROUND-001`
 - `ARCH-047-BACKGROUND-004`
 - `ARCH-047-BACKGROUND-006`
-
 
 **Dependency and resume gate (26 October 2026):** BG001, BG004 and BG006 are `complete` in the inspected snapshot, and BG007 is **already claimed by the developer in Attempt 1**; do not re-claim, increment `attempt`, reset `executor` or promote its task status as part of this amendment. Re-check the canonical task metadata and the applied ARCH-047/BG001 documentation reconciliation before resuming. DB001 is not an additional direct dependency of BG007, and the Shared Meta-status v2 package is not a BG007 authoring/AST prerequisite. Any newly discovered cross-repository blocker must be reported to the architect rather than implemented from Background.
 
@@ -136,8 +134,6 @@ After finishing Work Items, Acceptance Criteria and Validation, fill the Complet
 Keep changes local to the existing merchant command path and integration points. Any Shopify/Woo merchant UI filtering of available Follow-up templates belongs to its owning frontend task, not Background.
 
 Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and the deterministic `/moda-task` launcher packet. Use launcher-resolved dedicated parent and implementation worktrees, both on `task/ARCH-047-BACKGROUND-007`; synchronise from canonical roots, not a prior task worktree. Preserve exact source semantics and existing test expectations; use the published `@modainteract/moda-interact-shared/logging` for generic structured logs, not a second logger. Prefer small coordinator/repository/pure-helper files over 300+ line catch-all services.
-
-
 
 ## Completion Report
 
@@ -338,7 +334,6 @@ Architect acceptance is recorded. Because `completion_mode: developer`, leave ta
 - Review basis: BG007's implementation and recorded validations are unchanged from Attempt 2; this review does not claim newly rerun tests. The task report continues to record the 10/10 PostgreSQL/Redis integration tests, 31/31 focused unit tests, build, lint and diff-check from Attempt 2. The unresolved owner boundary prevents a passing review under the current record.
 - Parent task synchronization: canonical parent branch was clean and synchronized to current `origin/main` at `d09811cebcdc7498203a9156932be7a34eb4a84b`; the published BG007 task branch `f285878fe2e0487acd71920fc0d272f2a968dfd9` is an ancestor. The task record is committed/pushed on the same mirrored task branch; no merge to `main` is performed by this review.
 - Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 3`. Do not increment the attempt here. A later `/moda_developer_create ARCH-047-BACKGROUND-007` claim increments to Attempt 4.
-
 
 ## Architect Scope Amendment — 27 October 2026
 

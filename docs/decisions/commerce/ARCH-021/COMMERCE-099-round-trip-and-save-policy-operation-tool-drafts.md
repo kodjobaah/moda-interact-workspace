@@ -22,6 +22,7 @@ enables:
 created: 2026-09-29
 updated: 2026-09-29
 ---
+
 # Round-trip and save persisted Policy Operation Tool drafts
 
 ## Architecture
@@ -421,7 +422,7 @@ Attempt 2 preparation and publication evidence:
   neither remote task branch required a fast-forward. Recursive submodule sync
   and update passed; `database` is at `e9fb60221f1532205650154dfff2aadb6270b14c`.
 - Attempt 2 implementation commit `46f715a` (`fix(ARCH-021-COMMERCE-099): guard
-  policy test reversion races`) is pushed to the mirrored implementation task
+policy test reversion races`) is pushed to the mirrored implementation task
   branch. Only the two listed C099 implementation/test files changed.
 - No main merge, unrelated task, submodule pointer, or Architect Review section
   is changed.

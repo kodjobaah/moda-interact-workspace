@@ -15,7 +15,13 @@ executor: copilot
 claimed_at: 2026-11-17T19:22:48Z
 attempt: 3
 depends_on: [ARCH-077-SHOPIFY-001, ARCH-077-SHARED-001]
-enables: [ARCH-077-BACKGROUND-001, ARCH-077-SHOPIFY-003, ARCH-077-SHOPIFY-004, ARCH-077-SHOPIFY-005]
+enables:
+  [
+    ARCH-077-BACKGROUND-001,
+    ARCH-077-SHOPIFY-003,
+    ARCH-077-SHOPIFY-004,
+    ARCH-077-SHOPIFY-005,
+  ]
 created: 2026-11-17
 updated: 2026-11-17
 ---
@@ -35,7 +41,7 @@ Implement **one server-owned, stateless receipt issuer** and returning-customer 
 5. **Revert only S002-specific marker projection** in `app/services/webhooks/checkout-normalization.ts` and related S002 ingestion changes: authenticated `CHECKOUTS_CREATE`/`CHECKOUTS_UPDATE` remain unchanged, but no new `cartCorrelationMarker` producer data is needed. Do not remove the accepted optional SHARED-001 fields from the Shared package; they remain optional/unused. Preserve all existing queue names/IDs and original checkout metadata.
 6. **Key configuration (superseded HMAC contract):** use only the existing `MODA_ENCRYPTION_KEYS_JSON` and `MODA_ENCRYPTION_ACTIVE_KEY_ID` already consumed by Shopify platform configuration. Reuse the published `@modainteract/moda-interact-shared/security/credentials/node` operations `parseCredentialKeyring`, `resolveActiveCredentialKey`, `encryptCredential`, `decryptCredential` and `CredentialEnvelope`. Never create `SHOPIFY_CONSENT_RECEIPT_KEY_V1`, another HMAC signing key, a local AES implementation, alternative key rotation or extra Redis/SQL state. Decrypt by the envelope's existing `keyId`, not by assuming the current active key. The receipt has **no independent TTL**; it remains a Shopify checkout attribute until Shopify's normal checkout lifecycle.
 7. **Existing PostgreSQL status:** read only an unambiguous current shop+verified Shopify customer `CustomerPhone` decision/STOP/recipient association; checked only for verified current GRANTED. A guest starts unchecked unless the current cart already contains a **verified** receipt. An initial render or status read never mints a new selection. A returning customer's explicit REVOKE is only a receipt in Shopify until the checkout is recoverable.
-8. **Wire contract (updated v1 before release):** implement the *exact* versioned AES-256-GCM envelope encoding, canonical JSON payload and consent-specific AAD bytes in the linked architecture contract. Shared owns the AEAD/keyring mechanics; do not duplicate cryptography. Test round-trip across a Shopify-issued fixture and an independently constructed Background reader using the published Shared exports; incorrect AAD/shop/cart-or-checkout binding, malformed/duplicate attribute, wrong kind, future timestamp, missing/retired key and ciphertext/tag tampering fail closed. Test active-key change with a previous key retained, relying on Shared's existing `keyId` selection rather than a new rotation algorithm. Check 512-byte attribute bound and real Shopify readback in downstream S003/S004. Document same-checkout valid-receipt replay as an accepted **limitation**, not a passed replay-security property.
+8. **Wire contract (updated v1 before release):** implement the _exact_ versioned AES-256-GCM envelope encoding, canonical JSON payload and consent-specific AAD bytes in the linked architecture contract. Shared owns the AEAD/keyring mechanics; do not duplicate cryptography. Test round-trip across a Shopify-issued fixture and an independently constructed Background reader using the published Shared exports; incorrect AAD/shop/cart-or-checkout binding, malformed/duplicate attribute, wrong kind, future timestamp, missing/retired key and ciphertext/tag tampering fail closed. Test active-key change with a previous key retained, relying on Shared's existing `keyId` selection rather than a new rotation algorithm. Check 512-byte attribute bound and real Shopify readback in downstream S003/S004. Document same-checkout valid-receipt replay as an accepted **limitation**, not a passed replay-security property.
 9. **No shopper-facing errors:** on SDK, signing, status or network failure, return typed non-sensitive failure; the S003/S004 control hides/restores unacknowledged selection and checkout always remains functional. Server preserves original useful SDK/Shopify/Prisma error details with redaction; never print raw tokens/receipts/customer data.
 
 ## Precise acceptance and tests
@@ -47,7 +53,6 @@ Implement **one server-owned, stateless receipt issuer** and returning-customer 
 - Execute actual `npm run build`, targeted lint/typecheck and source-controlled tests; report the five known pre-existing webhook-root implicit-any type errors separately if still present. Provide exact changed files, SHA, package pins and meaningful redacted original provider errors.
 
 **STOP conditions:** the verified Shopify checkout token cannot be bound to Plus receipt issuance, signed App Proxy origin/shop cannot be verified, the receipt attribute cannot round-trip intact, a newly added route weakens authentication, or the agent would need a new DB/Redis consent state to complete the task. Return the specific blocker; do not silently reintroduce the abandoned Redis design. The architect has returned this task to `ready` for an unclaimed correction attempt. After implementation and validation, the implementing agent must set it to `review` and stop for architect acceptance.
-
 
 ## Architect Review
 
@@ -86,13 +91,13 @@ Implement **one server-owned, stateless receipt issuer** and returning-customer 
 
 ### Prior review — Attempt 1 (historical)
 
-**Changes Requested — 17 November 2026.** Architect-approved attribute-based reconciliation is complete as a *document decision*, not as a verified runtime implementation. The submitted Attempt 1 Shopify implementation is not accepted under the new contract. The task is returned from `review` to `ready` for the same `moda_app` agent to claim Attempt 2 through the normal launcher. Do not manually mark this task `in_progress` or increment `attempt` before the launcher claims it.
+**Changes Requested — 17 November 2026.** Architect-approved attribute-based reconciliation is complete as a _document decision_, not as a verified runtime implementation. The submitted Attempt 1 Shopify implementation is not accepted under the new contract. The task is returned from `review` to `ready` for the same `moda_app` agent to claim Attempt 2 through the normal launcher. Do not manually mark this task `in_progress` or increment `attempt` before the launcher claims it.
 
 ### Review Notes and precise correction contract
 
 The accepted `docs/architecture/ARCH-077/checkout-attribute-consent-v1.md` replaces the Redis cart/checkout choice, marker preparation and TTL architecture. The existing code still implements those obsolete mechanisms. Rework the **same** SHOPIFY-002 implementation rather than launching a separate feature or merging the obsolete code. The numbered instructions and tests above are mandatory, not suggestions. In particular:
 
-1. Replace Redis choice/marker issuer with the stateless signed `moda_wa_consent_v1` receipt issuer and verifier, using the *exact* approved versioned wire contract. No additional Redis consent retention or cleanup task.
+1. Replace Redis choice/marker issuer with the stateless signed `moda_wa_consent_v1` receipt issuer and verifier, using the _exact_ approved versioned wire contract. No additional Redis consent retention or cleanup task.
 2. Change the authenticated cart App Proxy endpoints to `GET cart/status` and `POST cart/receipt` with the approved shop, request-freshness, input and storefront-domain handling. No client-supplied merchant identity or guest identity is authoritative.
 3. Introduce the separate authenticated Plus checkout receipt-issuance boundary specified above. Do not implement S004's checkout checkbox/attribute writer inside S002.
 4. Remove obsolete `m1_` marker preparation, Redis GRANT/REVOKE keys, TTL/revision scripts and S002 webhook-marker projection. Do not alter the accepted optional Shared schema fields, existing checkout-event queues or unrelated BullMQ processing.

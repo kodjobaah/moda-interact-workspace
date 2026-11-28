@@ -13,15 +13,16 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-002-BACKGROUND-001
-- ARCH-002-BACKGROUND-002
-- ARCH-002-BACKGROUND-004
-- ARCH-002-SHARED-010
+  - ARCH-002-BACKGROUND-001
+  - ARCH-002-BACKGROUND-002
+  - ARCH-002-BACKGROUND-004
+  - ARCH-002-SHARED-010
 enables:
-- ARCH-002-BACKGROUND-006
+  - ARCH-002-BACKGROUND-006
 created: 2026-08-31
-updated: '2026-08-31'
+updated: "2026-08-31"
 ---
+
 # Adopt shared observability runtime in production workers
 
 ## Objective
@@ -33,11 +34,11 @@ imports in each of the three ARCH-002 production background processes.
 
 Use the entrypoints accepted in `ARCH-002-BACKGROUND-001`:
 
-| Service | Command | Worker set |
-| --- | --- | --- |
-| `moda-shopify-event-worker` | `npm run start:shopify-event-worker` | checkout + order |
-| `moda-recovery-worker` | `npm run start:recovery-worker` | pending recovery candidate |
-| `moda-messaging-worker` | `npm run start:messaging-worker` | WhatsApp + current CommerceAgent workflow |
+| Service                     | Command                              | Worker set                                |
+| --------------------------- | ------------------------------------ | ----------------------------------------- |
+| `moda-shopify-event-worker` | `npm run start:shopify-event-worker` | checkout + order                          |
+| `moda-recovery-worker`      | `npm run start:recovery-worker`      | pending recovery candidate                |
+| `moda-messaging-worker`     | `npm run start:messaging-worker`     | WhatsApp + current CommerceAgent workflow |
 
 ## Scope
 

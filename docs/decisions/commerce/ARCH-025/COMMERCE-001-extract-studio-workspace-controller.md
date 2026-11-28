@@ -102,7 +102,6 @@ Add focused tests proving hydration suppression, stale-load rejection, no reload
 
 Do not introduce route-change resets that do not exist today. In particular, route changes must not opportunistically clear `message`, global `dirty`, Agent Configuration dirty/unconfirmed state or an unresolved `unknown` operation. Preserve the current global navigation-blocker `onDiscard` behaviour, which clears only the workspace `dirty` flag; Agent Configuration owns its own dirty/unconfirmed convergence. Existing 13/3/90-test assets remain unchanged.
 
-
 ## Work Items
 
 - [x] Introduce `studio-workspace.types.ts` and `use-studio-workspace-controller.ts` with the complete downstream contract.
@@ -110,7 +109,6 @@ Do not introduce route-change resets that do not exist today. In particular, rou
 - [x] Add focused controller tests.
 - [x] Make the two source-inspection harnesses extraction-safe without changing their assertions.
 - [x] Prove all frozen integration/state assets remain byte-identical.
-
 
 ## Interfaces / Contracts
 
@@ -131,7 +129,6 @@ Internal Commerce UI controller/type contract only. `components/studio-workspace
 - [x] Controller contract is sufficient for COMMERCE-002..005 without later controller redesign.
 - [x] Source-inspection assertions cover the bounded extracted module set and retain every current assertion.
 - [x] Frozen 13/3/90-test assets are unchanged. The six Studio browser failures are identical on the synchronized pre-task tree; the other frozen suites pass on both trees in the required focused command.
-
 
 ## Validation
 

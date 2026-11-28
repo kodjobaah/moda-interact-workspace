@@ -172,7 +172,6 @@ Background-owned fallback through existing guarded delivery; no Shared business 
 
 Reconcile exact seams and dependency before Ready.
 
-
 ### Ready preparation contract after exact seam review
 
 Root authorizes independent isolated preparation now, not premature final readiness. Existing owner read-only review establishes exact seam ONLY around runAgent inside runCommerceAgentAfterAdmission before failPrepared. Use a typed generation outcome/callback; keep same admitted message and agent:conversation:version identity. Skip model detected-language/product-context/success writes, then enter existing composeAiOutbound with actual selectedCommonLayout locale and SAME commonRef, and existing sendPreparedConversation. Do not broadcatch processor, moderation/wrapper refusal, control/authorization/stale/cancel, or provider send/UNKNOWN paths.

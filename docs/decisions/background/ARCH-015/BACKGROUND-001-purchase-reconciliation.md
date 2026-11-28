@@ -15,13 +15,13 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-015-SHARED-001
-- ARCH-015-DATABASE-001
-- ARCH-015-SHOPIFY-002
+  - ARCH-015-SHARED-001
+  - ARCH-015-DATABASE-001
+  - ARCH-015-SHOPIFY-002
 enables:
-- ARCH-015-BACKGROUND-002
-- ARCH-015-SHOPIFY-003
-- ARCH-015-BACKGROUND-003
+  - ARCH-015-BACKGROUND-002
+  - ARCH-015-SHOPIFY-003
+  - ARCH-015-BACKGROUND-003
 created: 2026-09-15
 updated: 2026-09-16
 ---
@@ -219,7 +219,6 @@ One real implementation gap was found: `parseActiveSubscription` filtered inacti
 ### Limitations
 
 The full unit suite remains blocked only by the two pre-existing observability startup expectation mismatches listed above. Focused task validation, build, and all task-owned tests are green.
-
 
 ## Architect Review — Attempt 2
 

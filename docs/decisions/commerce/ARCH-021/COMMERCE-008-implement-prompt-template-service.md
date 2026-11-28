@@ -28,9 +28,10 @@ updated: 2026-09-23
 # Implement category-organised prompt-template authoring service
 
 ## Architecture
-  status: ready
-  executor: null
-  claimed_at: null
+
+status: ready
+executor: null
+claimed_at: null
 ARCH-021
 
 Architecture document:

@@ -148,8 +148,8 @@ Advance the current `WHATSAPP_PROVIDER_STATUS_SCHEMA_VERSION` to `3` and retain 
 The exact accepted exported names are:
 
 ```ts
-WHATSAPP_PROVIDER_STATUS_V2_SCHEMA_VERSION
-WHATSAPP_PROVIDER_STATUS_SCHEMA_VERSION
+WHATSAPP_PROVIDER_STATUS_V2_SCHEMA_VERSION;
+WHATSAPP_PROVIDER_STATUS_SCHEMA_VERSION;
 ```
 
 with values `2` and `3` respectively.
@@ -159,8 +159,8 @@ with values `2` and `3` respectively.
 Export:
 
 ```ts
-WhatsAppProviderFailureEvidenceSchema
-WhatsAppProviderFailureEvidence
+WhatsAppProviderFailureEvidenceSchema;
+WhatsAppProviderFailureEvidence;
 ```
 
 with exactly this logical payload:
@@ -193,9 +193,9 @@ Rules:
 The exact accepted exported schema names are:
 
 ```ts
-NormalizedWhatsAppStatusV2Schema
-NormalizedWhatsAppStatusV3Schema
-NormalizedWhatsAppStatusSchema
+NormalizedWhatsAppStatusV2Schema;
+NormalizedWhatsAppStatusV3Schema;
+NormalizedWhatsAppStatusSchema;
 ```
 
 ### R5 — Canonical parser accepts both versions

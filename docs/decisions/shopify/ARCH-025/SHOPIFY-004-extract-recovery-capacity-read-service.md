@@ -154,7 +154,6 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 Do not combine this with `MerchantBillingReadService`; recovery admission/capacity is a distinct business read model with different failure semantics.
 
-
 ## Completion Report
 
 ### Status
@@ -207,6 +206,7 @@ None identified.
 Task branch: `task/ARCH-025-SHOPIFY-004`
 
 Physical worktree isolation:
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-004`
 - Parent branch: `task/ARCH-025-SHOPIFY-004`
@@ -217,18 +217,21 @@ Physical worktree isolation:
 - Another task worktree reused: no
 
 Start-of-attempt synchronization:
+
 - Parent remote task branch fast-forwarded: not needed; launcher found it synchronized at claim.
 - Parent `origin/main` incorporated: already current at claim; later commit `99f8c59e` arrived during validation and was merged into the task branch before report submission.
 - Implementation remote task branch fast-forwarded: not needed; no remote task ref existed when the prepared implementation worktree was established.
 - Implementation `origin/main` incorporated: yes, already current at `1630c0e10b9c88e6bbb568d597b3b19c8a36d2ec`.
 
 Implementation repository:
+
 - Repository: `moda-interact`
 - Commit: `350dedbf61290a01bf3edba642de64cc8482c811`
 - Remote branch: `origin/task/ARCH-025-SHOPIFY-004`
 - Pushed: yes
 
 Parent workspace:
+
 - Task file: `docs/decisions/shopify/ARCH-025/SHOPIFY-004-extract-recovery-capacity-read-service.md`
 - Initial completion-report commit: `5091aa4bf646a86f721f0bdf798bf2a9047868be`
 - Final parent task branch tip reviewed: `dde129983d7a62d808c8cddfc14b87ab637abba7`

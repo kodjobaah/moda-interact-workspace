@@ -7,7 +7,11 @@ import {
 export async function processWhatsAppTurn() {
   return observeConversationTurn("whatsapp", async () => {
     return observeAgentInvocation(
-      { agentName: "commerce-agent", provider: "deepseek", model: process.env.LLM_MODEL },
+      {
+        agentName: "commerce-agent",
+        provider: "deepseek",
+        model: process.env.LLM_MODEL,
+      },
       async () => {
         // Wrap individual agent tool calls, not the whole customer conversation.
         return observeAgentTool("shopify.lookup", async () => {

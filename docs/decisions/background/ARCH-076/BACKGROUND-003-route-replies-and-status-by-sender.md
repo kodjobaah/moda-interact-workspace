@@ -184,13 +184,11 @@ Reconciled from the later local sender-pool revision formerly labelled ARCH-069.
 
 Historical renewal amendment is superseded for this sender task: allowance work belongs only to independent DATABASE-002/BACKGROUND-005 and does not gate sender routing. Never filter ownership by credit or cap.
 
-
 ### 15 November definition amendment
 
 Historical fixed SQL must be regenerated for the restored five-entity contract plus R15 evidence; hardcoded router policy remains superseded. Historical claim/review evidence above is retained as history, not approval of the replacement implementation. No runtime source or migration has been implemented. User has authorized implementation; runtime acceptance and rollout verification remain pending.
 
 Scope contract: verify exact thread generation and optional route generation before attribution. Unknown shop stays at thread scope; verified shop binds once to same-thread route. Historical quotes/statuses never acquire a newer generation after reuse.
-
 
 ## Existing singleton cutover proof boundary
 

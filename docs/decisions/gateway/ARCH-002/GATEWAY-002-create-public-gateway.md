@@ -11,13 +11,14 @@ priority: 20
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: 
+depends_on:
   - ARCH-002-GATEWAY-001
-enables: 
+enables:
   - ARCH-002-GATEWAY-003
 created: 2026-08-29
 updated: 2026-08-29
 ---
+
 # Create Public Moda Interact Gateway
 
 ## Architecture

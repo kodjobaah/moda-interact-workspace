@@ -3,9 +3,7 @@
   "source_workspace": "moda-interact-workspace(20260908-104421).zip",
   "changed_files_count": 192,
   "decision_indexes_synchronized": 41,
-  "malformed_frontmatter_repaired": [
-    "ARCH-002-SYSTEM-TEST-003"
-  ],
+  "malformed_frontmatter_repaired": ["ARCH-002-SYSTEM-TEST-003"],
   "complete_task_claims_cleared": 128,
   "key_state_corrections": [
     "ARCH-007-BACKGROUND-001 -> Complete Attempt 2",

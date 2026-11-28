@@ -15,16 +15,16 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-052-BACKGROUND-008
-- ARCH-052-ADMIN-002
-- ARCH-052-MCP-003
-- ARCH-052-COMMERCE-007
-- ARCH-049-BACKGROUND-001
-- ARCH-049-BACKGROUND-004
+  - ARCH-052-BACKGROUND-008
+  - ARCH-052-ADMIN-002
+  - ARCH-052-MCP-003
+  - ARCH-052-COMMERCE-007
+  - ARCH-049-BACKGROUND-001
+  - ARCH-049-BACKGROUND-004
 enables:
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-SYSTEM-TEST-002
-created: '2026-10-29'
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
+created: "2026-10-29"
 updated: 2026-11-01
 ---
 
@@ -155,18 +155,18 @@ these exact operations, in order:
 
 **Fixed examples, required verbatim in unit tests:**
 
-| Trusted site | Namespace |
-|---|---|
-| `https://myshop.com` | `myshop.com` |
-| `myshop.com` | `myshop.com` |
-| `https://myshop.com/myshop` | `myshop.com-myshop` |
-| `https://myshop.com/myshop/` | `myshop.com-myshop` |
+| Trusted site                      | Namespace                 |
+| --------------------------------- | ------------------------- |
+| `https://myshop.com`              | `myshop.com`              |
+| `myshop.com`                      | `myshop.com`              |
+| `https://myshop.com/myshop`       | `myshop.com-myshop`       |
+| `https://myshop.com/myshop/`      | `myshop.com-myshop`       |
 | `https://myshop.com/store/london` | `myshop.com-store-london` |
-| `https://MYSHOP.COM` | `myshop.com` |
-| `https://myshop.com/a-b` | `myshop.com-a~2Db` |
-| `https://myshop.com/a/b` | `myshop.com-a-b` |
-| `https://myshop.com/A` | `myshop.com-A` |
-| `https://myshop.com/a` | `myshop.com-a` |
+| `https://MYSHOP.COM`              | `myshop.com`              |
+| `https://myshop.com/a-b`          | `myshop.com-a~2Db`        |
+| `https://myshop.com/a/b`          | `myshop.com-a-b`          |
+| `https://myshop.com/A`            | `myshop.com-A`            |
+| `https://myshop.com/a`            | `myshop.com-a`            |
 
 ### R2. Immutable product-image object key and date semantics
 
@@ -462,18 +462,18 @@ push main, or update architecture indexes.
 **Required owning repository file plan** (relative to
 `moda-interact-background/`; existing paths are verified in this snapshot):
 
-| File | Work |
-|---|---|
-| `src/services/recovery-product-media/merchant-site-segment.ts` (new) | R1 pure codec |
-| `src/services/recovery-product-media/outreach-product-object-key.ts` (new) | R2 pure key builder/validator |
-| `src/services/recovery-product-media/product-image-transformer.ts` (new) | R3 deterministic JPEG preset |
-| `src/services/recovery-product-media/product-r2-writer.ts` (new) | Product-key validation + shared guarded writer transport |
-| `src/services/recovery-product-media/recovery-product-image-resolver.ts` (new) | MCP exact lookup, trusted shop/attempt read, current source & READY/UNAVAILABLE |
-| `src/services/shop-brand-media/{safe-fetch,image-transformer,r2-writer,metadata-verifier,public-probe}.ts` (existing) | Extract **only** reusable implementation mechanics as needed; preserve brand behaviour |
-| `src/services/platform-configuration/consumers.ts` (existing) | Reuse `readShopBrandPublicMediaConfiguration` + `readR2Configuration`; no new keys |
-| `src/services/recovery-template-preparation/{recovery-template-brand,recovery-template.types}.ts` (existing) | Optional approved product IMAGE binding, not ShopBrand role reuse |
-| `src/services/recovery-template-integration/{automated-recovery-template.service,prepared-template-send}.ts` (existing) | Optional IMAGE/receipt integration without second sender |
-| `tests/unit/services/recovery-product-media/*.test.ts` (new) | Exact site, date/key, JPEG, R2, MCP, retry, tenant cases |
+| File                                                                                                                    | Work                                                                                   |
+| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/services/recovery-product-media/merchant-site-segment.ts` (new)                                                    | R1 pure codec                                                                          |
+| `src/services/recovery-product-media/outreach-product-object-key.ts` (new)                                              | R2 pure key builder/validator                                                          |
+| `src/services/recovery-product-media/product-image-transformer.ts` (new)                                                | R3 deterministic JPEG preset                                                           |
+| `src/services/recovery-product-media/product-r2-writer.ts` (new)                                                        | Product-key validation + shared guarded writer transport                               |
+| `src/services/recovery-product-media/recovery-product-image-resolver.ts` (new)                                          | MCP exact lookup, trusted shop/attempt read, current source & READY/UNAVAILABLE        |
+| `src/services/shop-brand-media/{safe-fetch,image-transformer,r2-writer,metadata-verifier,public-probe}.ts` (existing)   | Extract **only** reusable implementation mechanics as needed; preserve brand behaviour |
+| `src/services/platform-configuration/consumers.ts` (existing)                                                           | Reuse `readShopBrandPublicMediaConfiguration` + `readR2Configuration`; no new keys     |
+| `src/services/recovery-template-preparation/{recovery-template-brand,recovery-template.types}.ts` (existing)            | Optional approved product IMAGE binding, not ShopBrand role reuse                      |
+| `src/services/recovery-template-integration/{automated-recovery-template.service,prepared-template-send}.ts` (existing) | Optional IMAGE/receipt integration without second sender                               |
+| `tests/unit/services/recovery-product-media/*.test.ts` (new)                                                            | Exact site, date/key, JPEG, R2, MCP, retry, tenant cases                               |
 
 Before editing read `docs/agent-vcs-ownership-policy.md`,
 `docs/agent-worktree-isolation-policy.md`, the actual task preparation packet
@@ -548,7 +548,6 @@ None known. Live R2 public-origin behavior remains to be verified in a configure
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
-
 
 ## Architect Review
 

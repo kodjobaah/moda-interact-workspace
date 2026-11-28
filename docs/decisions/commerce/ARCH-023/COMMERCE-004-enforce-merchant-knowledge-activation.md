@@ -128,12 +128,19 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
+
 Ready for Review — Attempt 2
+
 ### Files Changed
+
 `src/commerce/merchant-knowledge/entitlement.ts`, `src/commerce/merchant-knowledge/operation.ts`, `tests/merchant-knowledge-entitlement.test.ts`, `tests/merchant-knowledge-policy.test.ts`, and `tests/merchant-knowledge-bootstrap.test.ts`.
+
 ### Work Completed
+
 Merchant Knowledge entitlement now resolves the active plan's current `merchant_knowledge` Feature ID and requires `ShopFeaturePreference` for the authenticated turn's shop and that Feature ID. Missing or disabled preferences return non-retryable `DENIED`; preference database failures map to retryable `UNAVAILABLE`. The operation performs this check before testing embedding configuration, so an opted-out shop causes no embedding, source query, or vector lookup. Tests cover missing/false/true preferences, exact composite-key lookup, preference lookup failure, another-capability context, OFF-to-ON retrieval of retained ACTIVE knowledge, and the bootstrap's lack of preference mutations. The accepted bootstrap implementation was not changed.
+
 ### Validation Results
+
 Prepared launcher evidence (2026-10-01T08:27:30Z):
 
 ```text
@@ -159,16 +166,25 @@ implementation commit: ea88b43cbdf676ee9963b88a7bbae5a6676a66ec (pushed to task/
 Focused entitlement/policy/bootstrap tests: 3 files passed, 27 tests passed. Extended Merchant Knowledge tests (entitlement, policy, bootstrap, bootstrap startup, retrieval and contract): 6 files passed, 36 tests passed. Targeted ESLint on all five changed files passed with no output. `npm run typecheck` passed. `npm run build` passed, including manual/runtime package smoke checks, Prisma generation and Next.js production compilation; it emitted the existing Nunjucks dynamic-dependency warning. `git diff --check` passed.
 
 The adjacent `tests/merchant-knowledge-embedding.test.ts` was also tried; one existing config-contract test fails because its `readConfig(base)` fixture omits the required `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`. Architect confirmed this is unrelated and does not need correction.
+
 ### Deviations
+
 Attempt 1 did not run the live PostgreSQL/pgvector proof because no disposable database target was configured. Attempt 2 supplied a task-local disposable Docker environment and completed the required proof; no deployment database was used. The unrelated embedding-config fixture failure remains unchanged.
+
 ### Assumptions
+
 The current active plan Feature relation is the source of truth for the `merchant_knowledge` Feature ID; `ShopFeaturePreference` absence is equivalent to opted out, consistent with the model's `enabled` default and opt-in activation mode.
+
 ### Unresolved Issues
+
 Architect attribution is requested for the adjacent embedding-config test fixture failure and the unavailable disposable PostgreSQL/pgvector target.
+
 ### Architectural Concerns
+
 None. The check remains operation-level and independent of the eligible Capability set; bootstrap and pgvector retrieval design are unchanged.
 
 ### Attempt 2 Validation Correction
+
 No production-source changes were made. Added `tests/merchant-knowledge-activation-postgres.test.ts`, which invokes `createMerchantKnowledgeLookupAdapter()` against the real migrated schema and exercises missing preference, explicit disabled preference, and enabling that same preference. The test asserts the missing row remains absent after denial, neither OFF call invokes embedding, retained source/revision/chunk snapshots remain unchanged, and the enabled call returns the existing matching-provenance ACTIVE chunk without replacing retained knowledge. Trusted turn context contains only `another-capability`.
 
 Added `scripts/run-merchant-knowledge-activation-postgres.mjs` and the `test:arch023-merchant-knowledge-activation:postgres` package script. The runner rejects checkouts containing dotenv files and non-local Docker contexts, uses image `pgvector/pgvector:pg17`, an ephemeral IPv4 loopback port, a uniquely named `commerce_arch023_activation_test_*` database, and a tmpfs PostgreSQL data directory. It passed all 22 repository Prisma migrations before launching the test with `DATABASE_URL` and `COMMERCE_TEST_DATABASE_URL` set to the same disposable target. Teardown removed the owned container and verified that no container with this invocation's label remained.
@@ -268,9 +284,11 @@ yet Complete.
 #### Historical Attempt 1 — Changes Requested
 
 ### Review Status
+
 Changes Requested
 
 ### Review Notes
+
 Attempt 1 production behavior is architecture-conformant on the reviewed Merchant Knowledge activation paths. The operation resolves current ACTIVE/TRIALING plan entitlement, obtains the exact current `merchant_knowledge` Feature id, requires an explicit enabled `ShopFeaturePreference` for the authenticated shop, denies missing/false preference before embedding/source/vector work, maps preference-read failures to bounded retryable `UNAVAILABLE`, and leaves the accepted COMMERCE-002 bootstrap preference-neutral. No production-source correction is requested at this review stage.
 
 Acceptance is withheld because the task's required live PostgreSQL/pgvector validation remains unchecked. The accepted COMMERCE-001 live proof calls `retrieveMerchantKnowledge()` directly and therefore does not exercise the new COMMERCE-004 operation-level preference gate. The focused mocked test proves call ordering but does not prove the changed authority path against the real migrated billing/commerce schema.
@@ -278,6 +296,7 @@ Acceptance is withheld because the task's required live PostgreSQL/pgvector vali
 The adjacent embedding-config fixture failure is unrelated to COMMERCE-004 and does not need correction in this task.
 
 ### Reviewed Files
+
 - `src/commerce/merchant-knowledge/entitlement.ts`
 - `src/commerce/merchant-knowledge/operation.ts`
 - `src/commerce/merchant-knowledge/retrieval.ts`
@@ -288,6 +307,7 @@ The adjacent embedding-config fixture failure is unrelated to COMMERCE-004 and d
 - `docs/decisions/commerce/ARCH-023/COMMERCE-004-enforce-merchant-knowledge-activation.md`
 
 ### Validation Reviewed
+
 - submitted focused entitlement/policy/bootstrap suite: 27 tests passed
 - submitted extended Merchant Knowledge suite: 36 tests passed
 - submitted targeted ESLint: passed
@@ -297,9 +317,11 @@ The adjacent embedding-config fixture failure is unrelated to COMMERCE-004 and d
 - live PostgreSQL/pgvector operation-level activation proof: **required and outstanding**
 
 ### Architecture Conformance
+
 Conformant except for the outstanding required live validation. The implementation preserves `retrievable = planEntitled && merchantEnabled`, derives `shopId` only from trusted turn context, performs no preference mutation, preserves OFF as non-destructive, and does not modify the accepted bootstrap or retrieval SQL.
 
 ### Follow-up
+
 Return the **same task** through its normal `/moda-task ARCH-023-COMMERCE-004` path for Attempt 2. Attempt 2 is a validation correction, not a production redesign.
 
 Required Attempt 2 contract:

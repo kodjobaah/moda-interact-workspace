@@ -281,36 +281,36 @@ None identified. Existing renderer behavior and the bounded Commerce result-sche
 ### Git / VCS
 
 Task branch:
-  `task/ARCH-021-COMMERCE-063`
+`task/ARCH-021-COMMERCE-063`
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-063`
-  parent branch: `task/ARCH-021-COMMERCE-063`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-063`
-  implementation branch: `task/ARCH-021-COMMERCE-063`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-063`
+parent branch: `task/ARCH-021-COMMERCE-063`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-063`
+implementation branch: `task/ARCH-021-COMMERCE-063`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-commerce`
-  commit: `cdf78eb8241d7171e955fe2392db94e337a94129`
-  remote branch: `origin/task/ARCH-021-COMMERCE-063`
-  pushed: yes
+repository: `moda-interact-commerce`
+commit: `cdf78eb8241d7171e955fe2392db94e337a94129`
+remote branch: `origin/task/ARCH-021-COMMERCE-063`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/commerce/ARCH-021/COMMERCE-063-compile-tool-result-contract.md`
-  commit: review-submission commit on `task/ARCH-021-COMMERCE-063`
-  remote branch: `origin/task/ARCH-021-COMMERCE-063`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/commerce/ARCH-021/COMMERCE-063-compile-tool-result-contract.md`
+commit: review-submission commit on `task/ARCH-021-COMMERCE-063`
+remote branch: `origin/task/ARCH-021-COMMERCE-063`
+pushed: yes
+submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no

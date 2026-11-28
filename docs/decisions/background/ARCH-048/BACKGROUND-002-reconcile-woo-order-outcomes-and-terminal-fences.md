@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on:
-- ARCH-048-BACKGROUND-006
-- ARCH-035-BACKGROUND-002
-- ARCH-035-API-019
+  - ARCH-048-BACKGROUND-006
+  - ARCH-035-BACKGROUND-002
+  - ARCH-035-API-019
 enables:
-- ARCH-048-BACKGROUND-005
-created: '2026-10-23'
+  - ARCH-048-BACKGROUND-005
+created: "2026-10-23"
 updated: 2026-10-24
 ---
 
@@ -71,7 +71,7 @@ ARCH-035 order worker currently only validates/logs `ORDER_PLACED`, `ORDER_PAID`
 
 ## Requirements
 
-- **Business boundary:** authoritative for *successfully received* order events only. BG001 owns candidate scheduling; BG002 owns terminal policy and existing-row transition. The two tasks depend on BG006 contract types rather than on each other; contract changes must return to the architect.
+- **Business boundary:** authoritative for _successfully received_ order events only. BG001 owns candidate scheduling; BG002 owns terminal policy and existing-row transition. The two tasks depend on BG006 contract types rather than on each other; contract changes must return to the architect.
 - Cancellation must be effective against both pending jobs and already-created recoveries; a missing candidate never short-circuits DB lookup.
 - Known terminal events are monotonic for abandoned-outreach suppression; replay cannot reopen. For an event that never arrived, no positive paid-state assertion is possible.
 - Reconciliation is idempotent: duplicate callbacks produce no duplicate status history, billing compensation or contact changes.
@@ -99,7 +99,9 @@ ARCH-035 order worker currently only validates/logs `ORDER_PLACED`, `ORDER_PAID`
 
 ```ts
 interface WooOrderReconciler {
-  reconcileOrder(event: WooOrderCapture): Promise<WooOrderReconciliationOutcome>;
+  reconcileOrder(
+    event: WooOrderCapture,
+  ): Promise<WooOrderReconciliationOutcome>;
 }
 ```
 
@@ -182,14 +184,14 @@ This review submission additionally updates **only this parent-workspace task fi
 
 Evidence: developer terminal captures from **2026-10-24**, including `typescript(20261024-013645)` (final passing suite) and `typescript(20261024-013903)` (commit/push). Results are reported from the developer's worktree, **not rerun inside this portable review environment**.
 
-| Check | Developer command / evidence | Result |
-| --- | --- | --- |
-| Focused unit and existing guard regression tests | `npx vitest run tests/unit/services/woocommerce-recovery/ tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts` | **3 test files; 40/40 passed** |
-| Real PostgreSQL/Redis integration | `npm run test:integration -- tests/integration/woo-order-reconciliation.integration.test.ts` | **2/2 passed** (order-first evidence TTL; already-delivered, no-candidate, concurrent reconciliation) |
-| Repository build | `npm run build` | **Passed**; Prisma Client v6.19.3 generated, TypeScript compiled without reported error |
-| Working-tree whitespace | `git diff --check` | **Passed** (no output) |
-| Staged whitespace | `git diff --cached --check` | **Passed** (no output before commit) |
-| Implementation publication | `git commit` then `git push -u origin task/ARCH-048-BACKGROUND-002` | **Passed**; commit `9f4e088`, new remote branch and upstream confirmed |
+| Check                                            | Developer command / evidence                                                                                                                   | Result                                                                                                |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Focused unit and existing guard regression tests | `npx vitest run tests/unit/services/woocommerce-recovery/ tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts` | **3 test files; 40/40 passed**                                                                        |
+| Real PostgreSQL/Redis integration                | `npm run test:integration -- tests/integration/woo-order-reconciliation.integration.test.ts`                                                   | **2/2 passed** (order-first evidence TTL; already-delivered, no-candidate, concurrent reconciliation) |
+| Repository build                                 | `npm run build`                                                                                                                                | **Passed**; Prisma Client v6.19.3 generated, TypeScript compiled without reported error               |
+| Working-tree whitespace                          | `git diff --check`                                                                                                                             | **Passed** (no output)                                                                                |
+| Staged whitespace                                | `git diff --cached --check`                                                                                                                    | **Passed** (no output before commit)                                                                  |
+| Implementation publication                       | `git commit` then `git push -u origin task/ARCH-048-BACKGROUND-002`                                                                            | **Passed**; commit `9f4e088`, new remote branch and upstream confirmed                                |
 
 Prior validation attempts identified test-harness issues (mutable test fake and invalid sent-attempt fixture); the developer's **final** run passed. No additional runtime defects are established by the supplied final logs.
 

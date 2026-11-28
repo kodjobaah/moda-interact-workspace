@@ -144,6 +144,7 @@ Ready for Review
 ### Files Changed
 
 Implementation repository:
+
 - `src/domain/whatsapp-provider-status-transition.ts`
 - `src/services/whatsapp-provider-status.service.ts`
 - `tests/unit/domain/whatsapp-provider-status-transition.test.ts`

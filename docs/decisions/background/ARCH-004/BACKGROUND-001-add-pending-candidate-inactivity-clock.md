@@ -19,6 +19,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05T18:55:00Z
 ---
+
 # Add pending candidate inactivity clock
 
 ## Objective
@@ -694,4 +695,3 @@ ARCH-004-BACKGROUND-002
 ```
 
 is promoted to **Ready**.
-

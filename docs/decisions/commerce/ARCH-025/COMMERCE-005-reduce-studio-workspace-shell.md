@@ -91,14 +91,12 @@ Do not route `ToolAuthoringScreen` or `AgentConfigurationScreen` through `studio
 
 After extraction, the public shell and page router must consume the accepted controller/release/shop modules; they must not reimplement load/command/validation/shop logic.
 
-
 ## Work Items
 
 - [x] Extract generic PageContent/Detail/Discovery routing.
 - [x] Reduce the public StudioWorkspace source to the final thin shell.
 - [x] Add focused page-router/shell tests where existing frozen integration tests do not directly cover the boundary.
 - [x] Prove prior Commerce extracted modules and accepted source-inspection tests remain unchanged.
-
 
 ## Interfaces / Contracts
 
@@ -119,7 +117,6 @@ Final repository-internal page/detail composition contract. Public compatibility
 - [x] Explore/Releases/Shops list/detail routing, loading/unknown/error presentation and dirty back-navigation remain unchanged.
 - [x] Public shell contains orchestration composition rather than duplicate domain workflows.
 - [x] Frozen 13/3/90-test assets and accepted source-inspection tests remain unchanged; all frozen hashes match and focused failures are the six documented baseline identities.
-
 
 ## Validation
 

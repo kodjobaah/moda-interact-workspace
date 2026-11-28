@@ -385,7 +385,7 @@ The external HTTP port now does this correctly, but the surrounding
 `DefinitionExecutor` still uses its generic:
 
 ```ts
-failure('DEADLINE', true)
+failure("DEADLINE", true);
 ```
 
 for the pre-dispatch deadline/abort check and the late post-execution deadline check.
@@ -658,7 +658,7 @@ response body + decompression
 calculate at stage start:
 
 ```ts
-stageMs = Math.min(5_000, context.deadlineAt - now())
+stageMs = Math.min(5_000, context.deadlineAt - now());
 ```
 
 If `stageMs <= 0`, return nonretryable `DEADLINE` without entering the stage.
@@ -675,7 +675,7 @@ Each stage MUST use a derived abort scope which:
 
 The Node transport must destroy the request/socket when its supplied signal aborts.
 The body/decompression reader must also be actively interruptible while waiting for
-the *next* chunk; checking `signal.aborted` only after a chunk arrives is insufficient.
+the _next_ chunk; checking `signal.aborted` only after a chunk arrives is insufficient.
 On abort/limit/error, stop/destroy the response/decompression stream so a late provider
 body cannot continue consuming process resources.
 

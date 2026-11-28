@@ -16,6 +16,7 @@ enables: ["ARCH-001-SHOPIFY-002"]
 created: 2026-08-28
 updated: 2026-09-08
 ---
+
 # Produce Recovery-Focused Shopify Webhook Events
 
 ## Architecture
@@ -69,6 +70,7 @@ The producer must not fetch Shopify GraphQL data.
 The producer must not query `CheckoutRecovery` to decide whether an update matters.
 
 The event emitted for `checkouts/create` must include only:
+
 - checkout token;
 - cart token if available;
 - abandoned checkout URL if available;
@@ -160,8 +162,8 @@ Ready for Review
 ### Work Completed
 
 - Replaced legacy checkout-observed normalization with v2 recovery-focused normalizers:
-	- checkout create now emits only `checkoutToken`, `cartToken`, `abandonedCheckoutUrl`, and `checkoutCreatedAt`.
-	- checkout update now emits only `checkoutToken`.
+  - checkout create now emits only `checkoutToken`, `cartToken`, `abandonedCheckoutUrl`, and `checkoutCreatedAt`.
+  - checkout update now emits only `checkoutToken`.
 - Updated order normalization to v2 shape with `orderId`, `checkoutToken`, `cartToken`, and `completedAt`.
 - Updated ingress topic classification so `checkouts/create` and `checkouts/update` map to distinct event types and publication paths.
 - Updated envelope construction to v2 schema and parsing via shared v2 runtime parser.
@@ -181,6 +183,7 @@ Ready for Review
 - `npm test -- --run`: pass (5 files, 31 tests).
 - `npm run typecheck`: fail with pre-existing repository errors in files outside this task's changes (e.g. `app/shopify.server.js` cannot find `process`, `shopify-webhook-queue.server.ts` strict-null queue guards). The files changed by this task produce zero typecheck errors.
 - `npm run lint`: fail with pre-existing repository lint issues outside this task's changes (missing `prop-types`, `process`/unused-import errors across onboarding/billing/privacy/routes). The files changed by this task produce zero lint errors.
+
 ### Deviations
 
 None.

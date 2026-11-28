@@ -88,6 +88,7 @@ After scope and required checks complete, set review, submit mirrored Completion
 ## Implementation Notes
 
 You are not alone; preserve all other work. Canonical packet owns startup/isolation/claim. Root owns source merges and live locale approval. Return any newly discovered translated opt-out commands before expanding this exact allowlist.
+
 ## Completion Report
 
 ### Status

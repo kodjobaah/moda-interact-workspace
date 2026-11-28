@@ -39,7 +39,6 @@ The adopted ARCH-047 design is **Moda Admin-only authoring**. A saved English so
 
 The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**. They own separate route/action/service/component modules, use stable documented persistence payloads, and must prove their capability with fixtures or injected dependencies when a sibling Admin/Background implementation is not yet complete. The end-to-end system test, not an artificial task chain, verifies their integration.
 
-
 ## Scope
 
 - Own `meta/` module and `/system-controls/whatsapp-templates/[definitionId]/meta/` route with per-language provider status dashboard.
@@ -49,7 +48,6 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Display `READY_TO_SUBMIT`, `SUBMITTING`, `PENDING`, `APPROVED`, `REJECTED`, `PAUSED`, `DISABLED`, unknown/failure/retry states based on persisted registrations/events, distinguishing transport submission from approval. UI periodically reads while active, may be revisited, and never invents approval based on submission success.
 - Provide a bounded **Reconcile status** request that flags a registration for Background reconciliation using existing durable state/approved work handoff; Admin must not fetch external templates or call Meta directly. Allow retry of **technical uncertain submissions only** after Background reconciliation, never in-place content correction of a rejected template. Clone as New is the only content-correction action.
 - Show Meta status events/rejection reason and provider drift warning separately; a provider-status webhook never changes source content, snapshots or merchant assignments. No external template import/registration, no automatic publication. Prevent double-confirmation and stale confirmed content.
-
 
 ### Required React component decomposition
 
@@ -67,7 +65,6 @@ Use a `useMetaTemplateStatus` controller hook for bounded status refresh and sta
 
 - Background Meta Graph API client, webhook signature validation, BullMQ consumption, app/provider polling, translation or reconstruction, shop publication, template content mutation, new Shared event contracts.
 
-
 ## Requirements
 
 - [x] Submission records freeze exactly what Admin has reviewed: component content, binding map, source/locale fingerprints and trusted sender account. They are not overwritten by subsequent status reads.
@@ -76,9 +73,7 @@ Use a `useMetaTemplateStatus` controller hook for bounded status refresh and sta
 - [x] A `REJECTED` locale/version cannot be edited or resubmitted with changed content; only Clone as New can correct it. All other approved locale registrations remain intact.
 - [x] Admin status queries remain DB-only and bounded; provider secrets are never returned to client or logs.
 
-
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
-
 
 ## Work Items
 
@@ -86,14 +81,11 @@ All server reads/mutations of template management require the existing authentic
 - [x] Build a 20-language submission preview and progress/rejection/drift dashboard with explicit confirmation and no misleading auto-approval.
 - [x] Add idempotency/concurrent submit, auth and provider-identity collision tests with fixture approved locale records.
 
-
 ## Interfaces / Contracts
 
 **Reads:** reviewed `WhatsAppTemplateDefinition`/`Locale.localeAst` prepared Meta projection; its Admin-compiled positional bindings include header/body/button keys and optional `shopBrand.*` references. Never load or freeze `ShopBrand` row values for registration. **Writes:** `WhatsAppTemplateMetaRegistration` with frozen `componentsSnapshot` + `parameterBindingsSnapshot` + `submittedContentHash`, trusted `wabaId`, `providerTemplateName`, `providerLanguageCode` and `submissionState`; bounded `CommerceAuditEvent`. **Reads only:** `WhatsAppTemplateMetaEvent`/registration status and drift for dashboard. Background owns Graph calls and `MetaEvent` status writes. Do not assume the Meta event comes via a Shared-specific ARCH-047 package; the agreed transport is Messaging → existing BullMQ → Background → PostgreSQL.
 
-
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/meta/`, components under `src/components/admin/whatsapp-templates/meta/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-meta-control.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
-
 
 ## Dependencies
 
@@ -113,12 +105,10 @@ None at task-definition time. Completion of this task does not grant permission 
 - [x] External Meta templates cannot be imported, and no Admin Graph template create/edit/delete request occurs.
 - [x] Server authorization and transaction concurrency prohibit forged WABA, stale hash, duplicate submit and accidental resubmission of modified content.
 
-
 ## Validation
 
 - [x] Component/variable digest and trusted WABA identity tests (including header `shopBrand.brandName`, body `shopBrand.logoAltText` and per-language position changes); 20-language registration fixtures; forced partial transaction and concurrent-click tests.
 - [x] Database-only Admin dashboard/action, auth/audit tests with simulated MetaEvent/registration updates from Background; no provider network; typecheck/lint/`git diff --check`.
-
 
 ## Stop Condition
 
@@ -127,7 +117,6 @@ After task-scoped work, acceptance criteria, validation and Completion Report ar
 ## Implementation Notes
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md`, `docs/developer-task-workflow.md`, the revised parent ARCH-047 architecture and current Admin repository instructions. Use launcher-prepared dedicated parent/implementation task worktrees and mirrored `task/<TASK_ID>` branches. In the Completion Report record prepared physical worktree isolation, start sync, recursive submodule materialisation, exact test commands/outcomes, changed paths and commits. The implementing agent must not modify `docs/decisions/**/_index.md`, another task, the parent architecture, another repository, or follow-on work. Reuse existing Admin Store Category AST authoring and Merchant Pricing translation UX patterns without copying their domain services or creating a competing generic runtime. Inspect the actual worktree state before implementation; the attached snapshot is not a live Git-branch guarantee.
-
 
 ## Completion Report
 
@@ -187,7 +176,7 @@ No scope expansion into Prisma migrations, Meta Graph API, external template imp
 ### Unresolved Issues
 
 - The canonical worktrees and current synchronization state were verified live during self-review. The launcher execution packet itself is not retained as a separate artifact.
-The canonical worktrees, synchronization state, clean status and recursive submodule were verified live during self-review. The launcher execution packet itself is not retained as a separate artifact; this evidence limitation does not block task-scoped acceptance.
+  The canonical worktrees, synchronization state, clean status and recursive submodule were verified live during self-review. The launcher execution packet itself is not retained as a separate artifact; this evidence limitation does not block task-scoped acceptance.
 
 ### Architectural Concerns
 

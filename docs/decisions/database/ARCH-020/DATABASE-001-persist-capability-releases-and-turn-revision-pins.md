@@ -88,12 +88,12 @@ and SQL NULL allowed. All other fields are required. IDs use `String @id
 
 Add these enums in `commerce`, with exactly these values:
 
-| Enum | Values |
-|---|---|
-| `CommerceCapabilitySelectionBinding` | `BASE`, `FEATURE`, `RECOVERY_POLICY` |
-| `CommerceCapabilityRevisionStatus` | `DRAFT`, `PUBLISHED` |
-| `CommerceEnvironment` | `LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION` |
-| `CommerceAuditAction` | `CREATE_CAPABILITY`, `UPDATE_CAPABILITY`, `CREATE_DRAFT`, `UPDATE_DRAFT`, `PUBLISH_REVISION`, `CREATE_RELEASE`, `ACTIVATE_RELEASE`, `ROLLBACK_RELEASE`, `ENABLE_CAPABILITY`, `DISABLE_CAPABILITY`, `CREATE_TOOL`, `UPDATE_TOOL`, `CREATE_TOOL_DRAFT`, `UPDATE_TOOL_DRAFT`, `PUBLISH_TOOL_REVISION`, `ENABLE_TOOL`, `DISABLE_TOOL` |
+| Enum                                 | Values                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CommerceCapabilitySelectionBinding` | `BASE`, `FEATURE`, `RECOVERY_POLICY`                                                                                                                                                                                                                                                                                              |
+| `CommerceCapabilityRevisionStatus`   | `DRAFT`, `PUBLISHED`                                                                                                                                                                                                                                                                                                              |
+| `CommerceEnvironment`                | `LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`                                                                                                                                                                                                                                                                           |
+| `CommerceAuditAction`                | `CREATE_CAPABILITY`, `UPDATE_CAPABILITY`, `CREATE_DRAFT`, `UPDATE_DRAFT`, `PUBLISH_REVISION`, `CREATE_RELEASE`, `ACTIVATE_RELEASE`, `ROLLBACK_RELEASE`, `ENABLE_CAPABILITY`, `DISABLE_CAPABILITY`, `CREATE_TOOL`, `UPDATE_TOOL`, `CREATE_TOOL_DRAFT`, `UPDATE_TOOL_DRAFT`, `PUBLISH_TOOL_REVISION`, `ENABLE_TOOL`, `DISABLE_TOOL` |
 
 Environment values are database enums; API/telemetry adapters map them to lower
 case. Do not use `PREVIEW` as an environment: preview is a separate request
@@ -101,17 +101,17 @@ purpose and must not acquire a live release pointer or production conversation g
 
 ### 1. CommerceCapability
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| `id` | String / text | cuid | Primary key |
-| `key` | String / varchar(128) | Required | Unique; regex `^[a-z][a-z0-9_]{0,127}$` |
-| `displayName` | String / varchar(255) | Required | Non-blank |
-| `description` | String / text | Optional | At most 4,000 characters |
-| `selectionBinding` | CommerceCapabilitySelectionBinding | Required | Selection mechanism |
-| `featureId` | String / text | Optional | FK to existing `billing.Feature.id` |
-| `enabled` | Boolean / boolean | true | Emergency disable; not a merchant preference |
-| `createdAt` | DateTime / timestamptz(3) | now | Created time |
-| `updatedAt` | DateTime / timestamptz(3) | now / updatedAt | Last metadata/state edit |
+| Column             | Prisma / SQL type                  | Null/default    | Constraint / meaning                         |
+| ------------------ | ---------------------------------- | --------------- | -------------------------------------------- |
+| `id`               | String / text                      | cuid            | Primary key                                  |
+| `key`              | String / varchar(128)              | Required        | Unique; regex `^[a-z][a-z0-9_]{0,127}$`      |
+| `displayName`      | String / varchar(255)              | Required        | Non-blank                                    |
+| `description`      | String / text                      | Optional        | At most 4,000 characters                     |
+| `selectionBinding` | CommerceCapabilitySelectionBinding | Required        | Selection mechanism                          |
+| `featureId`        | String / text                      | Optional        | FK to existing `billing.Feature.id`          |
+| `enabled`          | Boolean / boolean                  | true            | Emergency disable; not a merchant preference |
+| `createdAt`        | DateTime / timestamptz(3)          | now             | Created time                                 |
+| `updatedAt`        | DateTime / timestamptz(3)          | now / updatedAt | Last metadata/state edit                     |
 
 Require `featureId IS NOT NULL` if and only if binding is `FEATURE`. Permit only
 one `BASE` row (partial unique index on selectionBinding where BASE). In v1 the
@@ -128,23 +128,23 @@ is the explicit COMMERCE-003 operation.
 
 ### 2. CommerceCapabilityRevision
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| `id` | String / text | cuid | Primary key |
-| `capabilityId` | String / text | Required | FK to CommerceCapability |
-| `revisionNumber` | Int / integer | Required | Greater than zero; scoped to capability |
-| `status` | CommerceCapabilityRevisionStatus | DRAFT | Publication state |
-| `promptTemplate` | String / text | Required | 1–32,000 characters; non-blank |
-| `configuration` | Json / jsonb | `{}` | JSON object; at most 16,384 bytes of PostgreSQL text representation |
-| `toolBindings` | Json / jsonb | `[]` | Array of at most 32 exact {toolId,toolRevisionId} bindings; at most 16,384 bytes |
-| `contractVersion` | String / varchar(64) | Required | Non-blank; service validates supported version |
-| `editVersion` | Int / integer | 0 | Non-negative optimistic concurrency token |
-| `contentHash` | String / varchar(64) | Optional | Lower-case SHA-256 hex; required only on publication |
-| `createdByAdminId` | String / text | Required | FK to existing public.PlatformAdmin |
-| `publishedByAdminId` | String / text | Optional | FK to existing public.PlatformAdmin |
-| `createdAt` | DateTime / timestamptz(3) | now | Created time |
-| `updatedAt` | DateTime / timestamptz(3) | now / updatedAt | Last draft edit/publication |
-| `publishedAt` | DateTime / timestamptz(3) | Optional | Publication time |
+| Column               | Prisma / SQL type                | Null/default    | Constraint / meaning                                                             |
+| -------------------- | -------------------------------- | --------------- | -------------------------------------------------------------------------------- |
+| `id`                 | String / text                    | cuid            | Primary key                                                                      |
+| `capabilityId`       | String / text                    | Required        | FK to CommerceCapability                                                         |
+| `revisionNumber`     | Int / integer                    | Required        | Greater than zero; scoped to capability                                          |
+| `status`             | CommerceCapabilityRevisionStatus | DRAFT           | Publication state                                                                |
+| `promptTemplate`     | String / text                    | Required        | 1–32,000 characters; non-blank                                                   |
+| `configuration`      | Json / jsonb                     | `{}`            | JSON object; at most 16,384 bytes of PostgreSQL text representation              |
+| `toolBindings`       | Json / jsonb                     | `[]`            | Array of at most 32 exact {toolId,toolRevisionId} bindings; at most 16,384 bytes |
+| `contractVersion`    | String / varchar(64)             | Required        | Non-blank; service validates supported version                                   |
+| `editVersion`        | Int / integer                    | 0               | Non-negative optimistic concurrency token                                        |
+| `contentHash`        | String / varchar(64)             | Optional        | Lower-case SHA-256 hex; required only on publication                             |
+| `createdByAdminId`   | String / text                    | Required        | FK to existing public.PlatformAdmin                                              |
+| `publishedByAdminId` | String / text                    | Optional        | FK to existing public.PlatformAdmin                                              |
+| `createdAt`          | DateTime / timestamptz(3)        | now             | Created time                                                                     |
+| `updatedAt`          | DateTime / timestamptz(3)        | now / updatedAt | Last draft edit/publication                                                      |
+| `publishedAt`        | DateTime / timestamptz(3)        | Optional        | Publication time                                                                 |
 
 Unique `(capabilityId, revisionNumber)` and unique `(id, capabilityId)` for the
 composite membership FK. Index `(capabilityId, status, revisionNumber)`.
@@ -170,17 +170,17 @@ once with the enclosing draft edit.
 
 ### 3. CommerceRelease
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| `id` | String / text | cuid | Primary key |
-| `releaseNumber` | Int / integer | autoincrement() | Unique positive number; sequence gaps are allowed |
-| `responseContract` | Json / jsonb | Required, no default | C16 strict response.v1 definition; immutable with release |
-| `responseContractHash` | String / varchar(64) | Required, no default | C16 canonical SHA-256; SQL CHECK lowercase 64 hexadecimal characters |
-| `description` | String / text | Optional | At most 4,000 characters |
-| `runnerCompatibility` | String / varchar(128) | Required | Non-blank SemVer range, validated by publishing service |
-| `contractVersion` | String / varchar(64) | Required | Non-blank supported contract version |
-| `createdByAdminId` | String / text | Required | FK to existing public.PlatformAdmin |
-| `createdAt` | DateTime / timestamptz(3) | now | Created time |
+| Column                 | Prisma / SQL type         | Null/default         | Constraint / meaning                                                 |
+| ---------------------- | ------------------------- | -------------------- | -------------------------------------------------------------------- |
+| `id`                   | String / text             | cuid                 | Primary key                                                          |
+| `releaseNumber`        | Int / integer             | autoincrement()      | Unique positive number; sequence gaps are allowed                    |
+| `responseContract`     | Json / jsonb              | Required, no default | C16 strict response.v1 definition; immutable with release            |
+| `responseContractHash` | String / varchar(64)      | Required, no default | C16 canonical SHA-256; SQL CHECK lowercase 64 hexadecimal characters |
+| `description`          | String / text             | Optional             | At most 4,000 characters                                             |
+| `runnerCompatibility`  | String / varchar(128)     | Required             | Non-blank SemVer range, validated by publishing service              |
+| `contractVersion`      | String / varchar(64)      | Required             | Non-blank supported contract version                                 |
+| `createdByAdminId`     | String / text             | Required             | FK to existing public.PlatformAdmin                                  |
+| `createdAt`            | DateTime / timestamptz(3) | now                  | Created time                                                         |
 
 Unique releaseNumber; index `(createdAt, id)`. Admin FK uses RESTRICT on delete
 and update. A release is a completed immutable bundle, not a draft editor: its
@@ -191,12 +191,12 @@ for membership assembly, validation and immutability responsibilities.
 
 ### 4. CommerceReleaseCapability
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| `releaseId` | String / text | Required | FK to CommerceRelease |
-| `capabilityId` | String / text | Required | Capability identity |
-| `capabilityRevisionId` | String / text | Required | Exact published revision |
-| `position` | Int / integer | Required | Non-negative; deterministic prompt order |
+| Column                 | Prisma / SQL type | Null/default | Constraint / meaning                     |
+| ---------------------- | ----------------- | ------------ | ---------------------------------------- |
+| `releaseId`            | String / text     | Required     | FK to CommerceRelease                    |
+| `capabilityId`         | String / text     | Required     | Capability identity                      |
+| `capabilityRevisionId` | String / text     | Required     | Exact published revision                 |
+| `position`             | Int / integer     | Required     | Non-negative; deterministic prompt order |
 
 Composite primary key `(releaseId, capabilityId)`; unique `(releaseId, position)`;
 index `(capabilityRevisionId, capabilityId)`. Use a composite FK
@@ -221,13 +221,13 @@ initial membership assembly and rejects additions to an existing release.
 
 ### 5. CommerceReleasePointer
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| `environment` | CommerceEnvironment | Required | Primary key; one pointer per environment |
-| `releaseId` | String / text | Required | FK to immutable CommerceRelease |
-| `editVersion` | Int / integer | 0 | Non-negative; exactly +1 on each update |
-| `updatedByAdminId` | String / text | Required | FK to existing public.PlatformAdmin |
-| `updatedAt` | DateTime / timestamptz(3) | now / updatedAt | Activation or rollback time |
+| Column             | Prisma / SQL type         | Null/default    | Constraint / meaning                     |
+| ------------------ | ------------------------- | --------------- | ---------------------------------------- |
+| `environment`      | CommerceEnvironment       | Required        | Primary key; one pointer per environment |
+| `releaseId`        | String / text             | Required        | FK to immutable CommerceRelease          |
+| `editVersion`      | Int / integer             | 0               | Non-negative; exactly +1 on each update  |
+| `updatedByAdminId` | String / text             | Required        | FK to existing public.PlatformAdmin      |
+| `updatedAt`        | DateTime / timestamptz(3) | now / updatedAt | Activation or rollback time              |
 
 Index `(releaseId)`. Both FKs use RESTRICT on delete/update. A database trigger
 requires a nonempty release and validates editVersion increments; Commerce
@@ -237,20 +237,20 @@ rewrites a release/revision. No empty/default pointer row is seeded by migration
 
 ### 6. CommerceAuditEvent
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| `id` | String / text | cuid | Primary key |
-| `actorAdminId` | String / text | Required | FK to existing public.PlatformAdmin |
-| `action` | CommerceAuditAction | Required | Exact action enum above |
-| `capabilityId` | String / text | Optional | FK to CommerceCapability |
-| `revisionId` | String / text | Optional | FK to CommerceCapabilityRevision |
-| `releaseId` | String / text | Optional | FK to CommerceRelease |
-| `toolId` | String / text | Optional | FK to CommerceTool |
-| `toolRevisionId` | String / text | Optional | FK to CommerceToolRevision |
-| `environment` | CommerceEnvironment | Optional | Required for activate/rollback |
-| `reason` | String / varchar(1000) | Required | Non-blank; may be a bounded generated reason for draft saves |
-| `metadata` | Json / jsonb | `{}` | Object, at most 8,192 bytes; IDs/hashes/change codes only |
-| `createdAt` | DateTime / timestamptz(3) | now | Event time |
+| Column           | Prisma / SQL type         | Null/default | Constraint / meaning                                         |
+| ---------------- | ------------------------- | ------------ | ------------------------------------------------------------ |
+| `id`             | String / text             | cuid         | Primary key                                                  |
+| `actorAdminId`   | String / text             | Required     | FK to existing public.PlatformAdmin                          |
+| `action`         | CommerceAuditAction       | Required     | Exact action enum above                                      |
+| `capabilityId`   | String / text             | Optional     | FK to CommerceCapability                                     |
+| `revisionId`     | String / text             | Optional     | FK to CommerceCapabilityRevision                             |
+| `releaseId`      | String / text             | Optional     | FK to CommerceRelease                                        |
+| `toolId`         | String / text             | Optional     | FK to CommerceTool                                           |
+| `toolRevisionId` | String / text             | Optional     | FK to CommerceToolRevision                                   |
+| `environment`    | CommerceEnvironment       | Optional     | Required for activate/rollback                               |
+| `reason`         | String / varchar(1000)    | Required     | Non-blank; may be a bounded generated reason for draft saves |
+| `metadata`       | Json / jsonb              | `{}`         | Object, at most 8,192 bytes; IDs/hashes/change codes only    |
+| `createdAt`      | DateTime / timestamptz(3) | now          | Event time                                                   |
 
 All FKs use RESTRICT on delete/update. Database trigger rejects audit UPDATE and
 DELETE. Indexes: `(createdAt, id)`, `(capabilityId, createdAt, id)`,
@@ -271,18 +271,18 @@ customer messages, email/phone or complete provider payloads in audit metadata.
 
 ### 7. CommerceConversationGrant
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| `id` | String / text | cuid | Primary key |
-| `shopId` | String / text | Required | FK to existing commerce.Shop |
-| `conversationId` | String / text | Required | Unique FK to existing whatsapp.Conversation; one grant for its entire lifetime |
-| `initialInboundVersion` | Int / integer | Required | Greater than zero; turn at first CommerceAgent admission, not grant identity |
-| `releaseId` | String / text | Required | FK to CommerceRelease |
-| `selectedCapabilityKeys` | Json / jsonb | Required | Array of 1–32 distinct capability keys from the release |
-| `grantedTools` | Json / jsonb | Required | Immutable array of 0–32 exact {toolId, toolRevisionId, toolName, definitionVersion, capabilityKeys} entries, at most 65,536 bytes |
-| `runnerVersion` | String / varchar(64) | Required | Non-blank exact runner version |
-| `createdAt` | DateTime / timestamptz(3) | now | First admitted resolution |
-| `expiresAt` | DateTime / timestamptz(3) | Optional, NULL | Future retention eligibility; not a turn execution deadline |
+| Column                   | Prisma / SQL type         | Null/default   | Constraint / meaning                                                                                                              |
+| ------------------------ | ------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                     | String / text             | cuid           | Primary key                                                                                                                       |
+| `shopId`                 | String / text             | Required       | FK to existing commerce.Shop                                                                                                      |
+| `conversationId`         | String / text             | Required       | Unique FK to existing whatsapp.Conversation; one grant for its entire lifetime                                                    |
+| `initialInboundVersion`  | Int / integer             | Required       | Greater than zero; turn at first CommerceAgent admission, not grant identity                                                      |
+| `releaseId`              | String / text             | Required       | FK to CommerceRelease                                                                                                             |
+| `selectedCapabilityKeys` | Json / jsonb              | Required       | Array of 1–32 distinct capability keys from the release                                                                           |
+| `grantedTools`           | Json / jsonb              | Required       | Immutable array of 0–32 exact {toolId, toolRevisionId, toolName, definitionVersion, capabilityKeys} entries, at most 65,536 bytes |
+| `runnerVersion`          | String / varchar(64)      | Required       | Non-blank exact runner version                                                                                                    |
+| `createdAt`              | DateTime / timestamptz(3) | now            | First admitted resolution                                                                                                         |
+| `expiresAt`              | DateTime / timestamptz(3) | Optional, NULL | Future retention eligibility; not a turn execution deadline                                                                       |
 
 Unique `(conversationId)`; indexes `(shopId, createdAt, id)`,
 `(releaseId)`, `(expiresAt)`. Shop and Conversation FKs use ON DELETE CASCADE /
@@ -337,15 +337,15 @@ redesign. Do not change or backfill existing conversation ownership columns.
 
 ### 8. CommerceTool
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| id | String / text | cuid | Primary key |
-| name | String / varchar(128) | Required | Globally unique; ^[a-z][a-z0-9_]{0,127}$ |
-| displayName | String / varchar(255) | Required | Nonblank staff label |
-| description | String / text | Optional | Staff description <=4000 chars |
-| enabled | Boolean / boolean | true | Emergency availability, not feature entitlement |
-| createdAt | DateTime / timestamptz(3) | now | Creation time |
-| updatedAt | DateTime / timestamptz(3) | now / updatedAt | Metadata CAS token |
+| Column      | Prisma / SQL type         | Null/default    | Constraint / meaning                            |
+| ----------- | ------------------------- | --------------- | ----------------------------------------------- |
+| id          | String / text             | cuid            | Primary key                                     |
+| name        | String / varchar(128)     | Required        | Globally unique; ^[a-z][a-z0-9_]{0,127}$        |
+| displayName | String / varchar(255)     | Required        | Nonblank staff label                            |
+| description | String / text             | Optional        | Staff description <=4000 chars                  |
+| enabled     | Boolean / boolean         | true            | Emergency availability, not feature entitlement |
+| createdAt   | DateTime / timestamptz(3) | now             | Creation time                                   |
+| updatedAt   | DateTime / timestamptz(3) | now / updatedAt | Metadata CAS token                              |
 
 Name is immutable after creation; a trigger rejects renaming. Index name unique,
 (createdAt,id). No delete API; revision/audit references use RESTRICT. Display
@@ -353,22 +353,22 @@ metadata is not the agent-facing description, which belongs to the revision.
 
 ### 9. CommerceToolRevision
 
-| Column | Prisma / SQL type | Null/default | Constraint / meaning |
-|---|---|---|---|
-| id | String / text | cuid | Primary key |
-| toolId | String / text | Required | FK CommerceTool RESTRICT update/delete |
-| revisionNumber | Int / integer | Required | Positive; unique per tool |
-| definitionVersion | String / varchar(64) | Required | Unique per tool; exact v1 SemVer |
-| status | CommerceCapabilityRevisionStatus | DRAFT | Reuse two-state enum |
-| definition | Json / jsonb | Required | Complete C14 object, <=65536 bytes |
-| contractVersion | String / varchar(64) | Required | Nonblank |
-| editVersion | Int / integer | 0 | Exactly +1 on update |
-| contentHash | String / varchar(64) | Optional | Lowercase SHA-256 when published |
-| createdByAdminId | String / text | Required | FK PlatformAdmin RESTRICT |
-| publishedByAdminId | String / text | Optional | FK PlatformAdmin RESTRICT |
-| createdAt | DateTime / timestamptz(3) | now | Creation time |
-| updatedAt | DateTime / timestamptz(3) | now / updatedAt | Last draft change |
-| publishedAt | DateTime / timestamptz(3) | Optional | Publication time |
+| Column             | Prisma / SQL type                | Null/default    | Constraint / meaning                   |
+| ------------------ | -------------------------------- | --------------- | -------------------------------------- |
+| id                 | String / text                    | cuid            | Primary key                            |
+| toolId             | String / text                    | Required        | FK CommerceTool RESTRICT update/delete |
+| revisionNumber     | Int / integer                    | Required        | Positive; unique per tool              |
+| definitionVersion  | String / varchar(64)             | Required        | Unique per tool; exact v1 SemVer       |
+| status             | CommerceCapabilityRevisionStatus | DRAFT           | Reuse two-state enum                   |
+| definition         | Json / jsonb                     | Required        | Complete C14 object, <=65536 bytes     |
+| contractVersion    | String / varchar(64)             | Required        | Nonblank                               |
+| editVersion        | Int / integer                    | 0               | Exactly +1 on update                   |
+| contentHash        | String / varchar(64)             | Optional        | Lowercase SHA-256 when published       |
+| createdByAdminId   | String / text                    | Required        | FK PlatformAdmin RESTRICT              |
+| publishedByAdminId | String / text                    | Optional        | FK PlatformAdmin RESTRICT              |
+| createdAt          | DateTime / timestamptz(3)        | now             | Creation time                          |
+| updatedAt          | DateTime / timestamptz(3)        | now / updatedAt | Last draft change                      |
+| publishedAt        | DateTime / timestamptz(3)        | Optional        | Publication time                       |
 
 Unique (toolId,revisionNumber), (toolId,definitionVersion), (id,toolId); index
 (toolId,status,revisionNumber). SQL checks object with exactly the six C14 keys,
@@ -388,16 +388,16 @@ remain unique per tool. Definition hashes use {contractVersion,definition}.
 
 ### Enforcement and publishing contract
 
-| Rule | DATABASE-001 responsibility | Consumer responsibility |
-|---|---|---|
-| Types, nullability, uniqueness, FKs, scalar bounds, JSON outer type/size | Prisma definitions and SQL CHECKs/triggers where Prisma cannot express them | Parse canonical shared schemas before writing |
-| Published revision, pin and audit immutability | Migration triggers, tested by direct SQL attempts | Do not expose forbidden mutations |
-| Release membership references published matching revision | Composite FK + publication-state trigger | Assemble exactly 1–32 members, including base, in one transaction |
-| Release membership cannot change after creation | UPDATE/DELETE triggers | No insertion into an existing release; no v1 deletion API; all initial members inserted with new release |
-| Concurrent draft/pointer writes | Non-negative/check-increment guards and uniqueness | CAS predicates; zero updated rows means conflict, never last-write-wins |
-| Prompt/config/tool/runner validity and content hash | Structural bounds only | SHARED-001 validators; COMMERCE-003 validates bound published tool revisions, executor/schema versions and SemVer compatibility |
-| Actor permission and audit of each operation | Existing-admin FKs and audit structure | NextAuth/current role checks; publish/pointer/audit write in one transaction |
-| Correct tenant, selected release keys and durable conversation grant | Insert and owner-change guards plus unique conversation key | Background admission, current lifecycle/feature permission and revocation checks |
+| Rule                                                                     | DATABASE-001 responsibility                                                 | Consumer responsibility                                                                                                         |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Types, nullability, uniqueness, FKs, scalar bounds, JSON outer type/size | Prisma definitions and SQL CHECKs/triggers where Prisma cannot express them | Parse canonical shared schemas before writing                                                                                   |
+| Published revision, pin and audit immutability                           | Migration triggers, tested by direct SQL attempts                           | Do not expose forbidden mutations                                                                                               |
+| Release membership references published matching revision                | Composite FK + publication-state trigger                                    | Assemble exactly 1–32 members, including base, in one transaction                                                               |
+| Release membership cannot change after creation                          | UPDATE/DELETE triggers                                                      | No insertion into an existing release; no v1 deletion API; all initial members inserted with new release                        |
+| Concurrent draft/pointer writes                                          | Non-negative/check-increment guards and uniqueness                          | CAS predicates; zero updated rows means conflict, never last-write-wins                                                         |
+| Prompt/config/tool/runner validity and content hash                      | Structural bounds only                                                      | SHARED-001 validators; COMMERCE-003 validates bound published tool revisions, executor/schema versions and SemVer compatibility |
+| Actor permission and audit of each operation                             | Existing-admin FKs and audit structure                                      | NextAuth/current role checks; publish/pointer/audit write in one transaction                                                    |
+| Correct tenant, selected release keys and durable conversation grant     | Insert and owner-change guards plus unique conversation key                 | Background admission, current lifecycle/feature permission and revocation checks                                                |
 
 Hash contract for publication: lower-case SHA-256 of UTF-8 canonical JSON of
 `{contractVersion, promptTemplate, configuration, toolBindings}`. Canonical JSON sorts object keys recursively, preserves array
@@ -578,6 +578,7 @@ Historical Attempt 1 submission, codex. Reopened for the C16 response-contract a
 ### Files Changed
 
 Implementation repository:
+
 - `prisma/schema.prisma`: nine exact models/four enums and only the required inverse relations on Feature, PlatformAdmin, Shop and Conversation.
 - `prisma/migrations/20260920182429_arch020_commerce_capability_releases/migration.sql`: one additive migration, SQL CHECKs/functions/triggers and indexes/FKs.
 - `scripts/validate-arch020-commerce-capability-schema.mjs` and `scripts/validate-arch020-commerce-capability-migration.mjs`; matching package commands.
@@ -598,25 +599,26 @@ Indexes match the required access paths: unique conversationId supplies the one-
 
 The following cases run with direct SQL bypassing service validation, with selected generated-Prisma reads and two independent Prisma connections. Both `--mode fresh` and `--mode upgrade` passed **157 named cases**, exit **0**. Full per-case names/output are in the committed evidence JSON.
 
-| Requirement | Fixture/effect expected and observed |
-|---|---|
-| Nine tables, four enums, exact types/nullability/timestamps/FK actions | Independent contract compares all physical columns, enum values, 21 FKs and required Prisma indexes; no migration seed rows; passed |
-| Scalar/JSON bounds and feature/base policy | Invalid feature linkage, base/recovery keys, blank/oversize prompts/metadata, independent binding/grant byte bounds, invalid versions rejected; passed |
-| Definitions and bindings | Prisma preserves input schema/execution/template; wrong keys/types/name/version, dangling/wrong-tool/draft references rejected; passed |
-| Uniqueness and draft lifecycle | Duplicate keys/revision/release/member/grant identities rejected; exact increment and valid draft/publish changes succeed; published edits/deletes reject; passed |
-| Release assembly/pointer | Draft/wrong-capability membership, conflicting tool revisions, duplicate positions and empty activation reject; pointer CAS succeeds; concurrent conflicting tool membership has one winner; passed |
-| Audit | Required targets, matching revision ownership, metadata/reason limits and append-only guards; passed |
-| Grant authority | Shared tool stored once with both original provenance keys; missing/extra/unsorted provenance, omitted tools and wrong name/version rejected; prompt-only base accepts zero tools; passed |
-| Recovery ownership | Missing/standalone/sentinel recovery, wrong shop/legacy owner and future initial version reject; retained recovery detach/reassignment/owner changes reject; passed |
-| Lifetime/retries | Later inbound versions retain the original grant; duplicate initializations produce one unique-key winner, and loser rereads the same row; passed |
-| Concurrency/isolation | Independent-connection grant/CAS tests and blocked owner updates reject invalid mutations after winner commit; repeatable-read relational writes fail closed; serializable grant succeeds; passed |
-| Retention/deletion | Conversation/shop cascades remove only grants/owned records; release/audit history survives; referenced admin/feature/release/tool/capability deletion and key edits restricted; passed |
-| Additive preservation | Upgrade hashes/counts for all **57 existing tables**, including **39 seeded rows**, remain identical; all **217 existing indexes** unchanged; passed |
-| Validator isolation | Missing URL, remote host, shared DB name, query overrides and populated test target each exit 1 before any migration; passed |
+| Requirement                                                            | Fixture/effect expected and observed                                                                                                                                                                |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nine tables, four enums, exact types/nullability/timestamps/FK actions | Independent contract compares all physical columns, enum values, 21 FKs and required Prisma indexes; no migration seed rows; passed                                                                 |
+| Scalar/JSON bounds and feature/base policy                             | Invalid feature linkage, base/recovery keys, blank/oversize prompts/metadata, independent binding/grant byte bounds, invalid versions rejected; passed                                              |
+| Definitions and bindings                                               | Prisma preserves input schema/execution/template; wrong keys/types/name/version, dangling/wrong-tool/draft references rejected; passed                                                              |
+| Uniqueness and draft lifecycle                                         | Duplicate keys/revision/release/member/grant identities rejected; exact increment and valid draft/publish changes succeed; published edits/deletes reject; passed                                   |
+| Release assembly/pointer                                               | Draft/wrong-capability membership, conflicting tool revisions, duplicate positions and empty activation reject; pointer CAS succeeds; concurrent conflicting tool membership has one winner; passed |
+| Audit                                                                  | Required targets, matching revision ownership, metadata/reason limits and append-only guards; passed                                                                                                |
+| Grant authority                                                        | Shared tool stored once with both original provenance keys; missing/extra/unsorted provenance, omitted tools and wrong name/version rejected; prompt-only base accepts zero tools; passed           |
+| Recovery ownership                                                     | Missing/standalone/sentinel recovery, wrong shop/legacy owner and future initial version reject; retained recovery detach/reassignment/owner changes reject; passed                                 |
+| Lifetime/retries                                                       | Later inbound versions retain the original grant; duplicate initializations produce one unique-key winner, and loser rereads the same row; passed                                                   |
+| Concurrency/isolation                                                  | Independent-connection grant/CAS tests and blocked owner updates reject invalid mutations after winner commit; repeatable-read relational writes fail closed; serializable grant succeeds; passed   |
+| Retention/deletion                                                     | Conversation/shop cascades remove only grants/owned records; release/audit history survives; referenced admin/feature/release/tool/capability deletion and key edits restricted; passed             |
+| Additive preservation                                                  | Upgrade hashes/counts for all **57 existing tables**, including **39 seeded rows**, remain identical; all **217 existing indexes** unchanged; passed                                                |
+| Validator isolation                                                    | Missing URL, remote host, shared DB name, query overrides and populated test target each exit 1 before any migration; passed                                                                        |
 
 ### Validation Results
 
 Executed in the task implementation worktree with lockfile-pinned dependencies:
+
 - `npm run migrate:dev -- --create-only --name arch020_commerce_capability_releases`: generated against this task's disposable local `arch020_test_author` database; exit 0. Manually removed unrelated baseline index-drop/renames and an unrelated FK rename proposed by Prisma, then added required SQL guards. No previously deployed migration was edited.
 - `npm run prisma:validate`: passed, exit 0.
 - `npm run prisma:generate`: passed, exit 0.
@@ -753,7 +755,7 @@ The isolation restriction is acceptable as an explicit consumer contract: use RE
 Reclaim the same task through `/moda-task ARCH-020-DATABASE-001` after the developer commits/pushes this parent review overlay. Before that claim, incorporate current parent origin/main while preserving this Attempt 1 report/review and ready/attempt:1 metadata; do not replace them with main's unclaimed definition. Keep both stable task branches. No new correction task, downstream promotion or system-test invocation is authorized by this review. BACKGROUND-001, COMMERCE-003 and SYSTEM-TEST-001 remain gated on accepted completion. No implementation edits, commits, pushes or main merges were performed by the architect.
 
 ### Initial definition review (historical)
->
+
 > ### Review Status
 >
 > Pending.

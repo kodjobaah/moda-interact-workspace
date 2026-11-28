@@ -19,7 +19,10 @@ export type AdminSecurityAudit = {
   developmentBypass?: boolean;
 };
 
-export function logAdminSecurityEvent(event: string, data: AdminSecurityAudit): void {
+export function logAdminSecurityEvent(
+  event: string,
+  data: AdminSecurityAudit,
+): void {
   // The shared logger owns redaction, output bounds, OTel Logs and optional Loki.
   // Do not pass cookies, auth headers, OAuth profiles/codes/tokens or raw payloads.
   logger.info(event, data);

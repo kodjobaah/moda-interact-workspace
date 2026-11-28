@@ -169,6 +169,7 @@ The expired checkout lease case is covered by `fences simultaneous admission aft
 Task branch: `task/ARCH-048-BACKGROUND-008`.
 
 Physical worktree isolation:
+
 - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-008`
 - parent branch: `task/ARCH-048-BACKGROUND-008`
@@ -181,12 +182,14 @@ Physical worktree isolation:
 Start-of-attempt synchronization evidence from the prepared launcher: parent remote task branch fast-forwarded: not needed; parent `origin/main` incorporated before submission: yes (merged into the dedicated task branch); implementation remote task branch fast-forwarded: not needed (no remote task branch existed); implementation `origin/main` incorporated: already current.
 
 Implementation repository:
+
 - repository: `moda-interact-background`
 - commit: `e4b11a74d017276c8a8e321f9d5734f957647fee`
 - remote branch: `origin/task/ARCH-048-BACKGROUND-008`
 - pushed: yes
 
 Parent workspace:
+
 - task file: `docs/decisions/background/ARCH-048/BACKGROUND-008-admit-subsequent-woo-recovery-generations.md`
 - task/report submission commit: `b8c83f81c41116e2428954d8a139999870edb5ff`
 - remote branch: `origin/task/ARCH-048-BACKGROUND-008`

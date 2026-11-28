@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-DATABASE-013
+  - ARCH-010-DATABASE-013
 enables:
-- ARCH-014-ADMIN-002
-- ARCH-014-SHOPIFY-001
+  - ARCH-014-ADMIN-002
+  - ARCH-014-SHOPIFY-001
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -40,8 +40,9 @@ BillingUpgradeEconomicsEdge, PlatformAdmin or another pre-existing model
 ```
 
 Do not use `BillingPlanKind` for ARCH-014. Create an ARCH-014-owned plan-kind enum so the merchant catalogue has no operational-plan schema dependency.
- Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
+Update Completion Report, set `status: review`, clear claim, return to `moda_architect`, STOP.
 The migration validator required below must fail if the new migration contains an `ALTER TABLE` statement targeting a pre-existing table or references an operational billing table as a foreign key.
+
 ## Completion Report
 
 Status: Ready for Review
@@ -66,13 +67,13 @@ scope. No schema or migration SQL correction was required.
 
 Requirement-to-evidence audit:
 
-| Requirement | Evidence and result |
-| --- | --- |
-| Four exact enums, four exact models, fields, indexes, isolated billing schema | `prisma/schema.prisma`; static validator passed; Prisma validation passed |
-| Exact locale set and named CHECK semantics | Migration SQL; validator now checks every exact expression and all 20 locales |
-| Deferred catalogue uniqueness and per-plan/global integrity | Migration SQL functions/triggers; SQL cases below passed or failed as required |
-| Additive-only and no operational billing relation | Baseline comparison against `origin/main`, migration target allowlist, protected-model check, and committed `git diff --name-only`; passed |
-| Generated ERD | `npm run erd:puml` passed; generator whitespace normalized; `git diff --check` passed |
+| Requirement                                                                   | Evidence and result                                                                                                                        |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Four exact enums, four exact models, fields, indexes, isolated billing schema | `prisma/schema.prisma`; static validator passed; Prisma validation passed                                                                  |
+| Exact locale set and named CHECK semantics                                    | Migration SQL; validator now checks every exact expression and all 20 locales                                                              |
+| Deferred catalogue uniqueness and per-plan/global integrity                   | Migration SQL functions/triggers; SQL cases below passed or failed as required                                                             |
+| Additive-only and no operational billing relation                             | Baseline comparison against `origin/main`, migration target allowlist, protected-model check, and committed `git diff --name-only`; passed |
+| Generated ERD                                                                 | `npm run erd:puml` passed; generator whitespace normalized; `git diff --check` passed                                                      |
 
 Focused SQL evidence on local PostgreSQL (`localhost:5432/moda_interact`):
 
@@ -492,13 +493,13 @@ Audit finding and fix: the original validator compared protected models with `HE
 
 Requirement-to-evidence audit:
 
-| Requirement | Evidence and result |
-| --- | --- |
-| Four exact enums, four exact models, fields, indexes, isolated billing schema | `prisma/schema.prisma`; static validator passed; Prisma validation passed |
-| Exact locale set and named CHECK semantics | Migration SQL; validator now checks every exact expression and all 20 locales |
-| Deferred catalogue uniqueness and per-plan/global integrity | Migration SQL functions/triggers; focused SQL cases passed or failed as required |
-| Additive-only and no operational billing relation | Baseline comparison against `origin/main`, migration target allowlist, protected-model check, and committed `git diff --name-only`; passed |
-| Generated ERD | `npm run erd:puml` passed; generator whitespace normalized; `git diff --check` passed |
+| Requirement                                                                   | Evidence and result                                                                                                                        |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Four exact enums, four exact models, fields, indexes, isolated billing schema | `prisma/schema.prisma`; static validator passed; Prisma validation passed                                                                  |
+| Exact locale set and named CHECK semantics                                    | Migration SQL; validator now checks every exact expression and all 20 locales                                                              |
+| Deferred catalogue uniqueness and per-plan/global integrity                   | Migration SQL functions/triggers; focused SQL cases passed or failed as required                                                           |
+| Additive-only and no operational billing relation                             | Baseline comparison against `origin/main`, migration target allowlist, protected-model check, and committed `git diff --name-only`; passed |
+| Generated ERD                                                                 | `npm run erd:puml` passed; generator whitespace normalized; `git diff --check` passed                                                      |
 
 Focused SQL evidence on local PostgreSQL (`localhost:5432/moda_interact`):
 
@@ -526,7 +527,6 @@ Implementation commits: `a2ff25c196d372add65658705c496254878ee89e` and `d8998f7`
 
 Remaining limitation: repository quality scripts are unavailable; no separate repository test suite exists. No cross-repository dependency or additive-boundary stop condition was encountered.
 
-
 ## Attempt 2 Audit and Completion Report
 
 Status: Ready for Review
@@ -545,14 +545,14 @@ Changed implementation file in Attempt 2:
 
 Requirement-to-evidence gap audit:
 
-| Requirement or review correction | Evidence and result |
-| --- | --- |
-| Translation INSERT/DELETE validate the affected parent; UPDATE validates OLD and changed NEW parents | `validate_arch014_merchant_pricing_translation_trigger()` branches on `TG_OP` and uses `IS DISTINCT FROM`; static validator passed; source-plan reparent with 19 translations failed at commit with `ARCH014_MERCHANT_PRICING_INVALID:translations`. |
-| Usage-event INSERT/DELETE validate the affected parent; UPDATE validates OLD and changed NEW parents | `validate_arch014_merchant_pricing_usage_trigger()` implements both-owner coverage; a changed-parent transaction reached deferred validation and failed with `ARCH014_MERCHANT_PRICING_INVALID:usage_currency` for the invalid destination state. |
-| Tier INSERT/DELETE resolve the affected event owner; UPDATE resolves and validates both OLD and NEW event owners | `validate_arch014_merchant_pricing_tier_trigger()` resolves both event IDs and validates the old owner before the new owner; cross-event tier reparent failed with `ARCH014_MERCHANT_PRICING_INVALID:tier_shape` for the invalid source state. |
-| Deleted old event/plan does not cause a false failure | Owner lookups may yield NULL and `validate_arch014_merchant_pricing_plan()` returns when the plan no longer exists; no relation key was made immutable. |
-| Additive-only boundary and exact approved schema | Static validator passed against `origin/main`; committed scope is the four approved implementation files from the initial work plus the one migration correction; no operational billing relation or pre-existing migration changed. |
-| Existing catalogue, locale, tier-shape, zero-cost, and global-position requirements | Prior focused SQL evidence remains valid; the rework reran the source-parent and changed-parent cases above. Prisma validation and generation passed. |
+| Requirement or review correction                                                                                 | Evidence and result                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Translation INSERT/DELETE validate the affected parent; UPDATE validates OLD and changed NEW parents             | `validate_arch014_merchant_pricing_translation_trigger()` branches on `TG_OP` and uses `IS DISTINCT FROM`; static validator passed; source-plan reparent with 19 translations failed at commit with `ARCH014_MERCHANT_PRICING_INVALID:translations`. |
+| Usage-event INSERT/DELETE validate the affected parent; UPDATE validates OLD and changed NEW parents             | `validate_arch014_merchant_pricing_usage_trigger()` implements both-owner coverage; a changed-parent transaction reached deferred validation and failed with `ARCH014_MERCHANT_PRICING_INVALID:usage_currency` for the invalid destination state.    |
+| Tier INSERT/DELETE resolve the affected event owner; UPDATE resolves and validates both OLD and NEW event owners | `validate_arch014_merchant_pricing_tier_trigger()` resolves both event IDs and validates the old owner before the new owner; cross-event tier reparent failed with `ARCH014_MERCHANT_PRICING_INVALID:tier_shape` for the invalid source state.       |
+| Deleted old event/plan does not cause a false failure                                                            | Owner lookups may yield NULL and `validate_arch014_merchant_pricing_plan()` returns when the plan no longer exists; no relation key was made immutable.                                                                                              |
+| Additive-only boundary and exact approved schema                                                                 | Static validator passed against `origin/main`; committed scope is the four approved implementation files from the initial work plus the one migration correction; no operational billing relation or pre-existing migration changed.                 |
+| Existing catalogue, locale, tier-shape, zero-cost, and global-position requirements                              | Prior focused SQL evidence remains valid; the rework reran the source-parent and changed-parent cases above. Prisma validation and generation passed.                                                                                                |
 
 Validation completed in the implementation worktree:
 
@@ -615,7 +615,6 @@ The same old-parent omission exists when `MerchantPricingUsageEvent.merchantPric
 6. Rerun the task's existing static validator, Prisma validate/generate, migration deployment/focused SQL checks that remain applicable, and `git diff --check`.
 
 No changes are requested to the four Prisma models/enums, existing CHECK expressions, catalogue-position implementation, zero-cost rules, or the protected-model baseline comparison unless the correction itself reveals a directly related defect.
-
 
 ## Architect Review
 

@@ -15,13 +15,13 @@ executor: copilot
 claimed_at: 2026-09-15T00:31:18Z
 attempt: 4
 depends_on:
-- ARCH-010-ADMIN-002
-- ARCH-010-BACKGROUND-022
-- ARCH-010-SHARED-008
-- ARCH-010-DATABASE-014
-- ARCH-010-BACKGROUND-021
+  - ARCH-010-ADMIN-002
+  - ARCH-010-BACKGROUND-022
+  - ARCH-010-SHARED-008
+  - ARCH-010-DATABASE-014
+  - ARCH-010-BACKGROUND-021
 enables:
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
 updated: 2026-09-15
 ---
@@ -307,18 +307,21 @@ STOP if a provider refund cannot be tied to exact immutable purchase value, if a
 ## Completion Report
 
 ### Status
+
 Ready for Review. Attempt 4 completed all three mandatory Architect Review corrections on the existing implementation branch. The stale Attempt 2 shared-package blocker remains superseded by the observed `@modainteract/moda-interact-shared` refund message exports.
 
 ### Files Changed
+
 - Implementation repository:
-	- `src/app/actions/recovery-credit-refunds.ts`
-	- `src/lib/admin/recovery-credit-refund-settlement.ts`
-	- `src/components/admin/recovery-credit-refunds.tsx`
-	- `tests/security/admin-recovery-credit-refund-settlement.test.mjs`
-	- `tests/security/admin-recovery-credit-refunds.test.mjs`
+  - `src/app/actions/recovery-credit-refunds.ts`
+  - `src/lib/admin/recovery-credit-refund-settlement.ts`
+  - `src/components/admin/recovery-credit-refunds.tsx`
+  - `tests/security/admin-recovery-credit-refund-settlement.test.mjs`
+  - `tests/security/admin-recovery-credit-refunds.test.mjs`
 - Parent repository: this task report only.
 
 ### Work Completed
+
 - Re-read the complete current task definition and the current review state. No newer Architect Review section is present after the stale Attempt 2 report; this report does not edit or create one.
 - Confirmed the resolved shared package exports `BILLING_SYSTEM_MESSAGE_CODES.REFUND_COMPLETED = BILLING_REFUND_COMPLETED` and `REFUND_REJECTED = BILLING_REFUND_REJECTED`; no local fallback was added.
 - Added SUPER_ADMIN-only server actions for provider lock, pre-provider rejection, and provider evidence recording. Each mutation uses the existing active platform-admin resolver, exact shop/purchase/refund scope, Serializable transactions, and versioned CAS predicates.
@@ -331,14 +334,16 @@ Ready for Review. Attempt 4 completed all three mandatory Architect Review corre
 - Independent audit found one gap in the published commit: the server actions were not reachable from the admin refund drawer, and the drawer did not display frozen expected settlement evidence. Added SUPER_ADMIN-gated lock/reject/provider-evidence forms and the final quantity, expected amount/currency, and recorded provider evidence fields. Updated the stale read-only UI test to assert this workflow.
 
 ### Independent Audit Gap Table
-| Requirement | Exact evidence inspected | Result | Risk |
-| --- | --- | --- | --- |
-| Admin can lock/reject/record provider settlement through the admin surface | `src/components/admin/recovery-credit-refunds.tsx:56-104` invokes all three server actions; server authorization remains in `src/lib/admin/recovery-credit-refund-settlement.ts:54-113` | PASS after fix | Previously unreachable controls could leave provider settlement operationally incomplete. |
-| Durable provider evidence is displayed before/manual settlement | `src/components/admin/recovery-credit-refunds.tsx` frozen evidence block and provider form; `src/lib/admin/recovery-credit-refunds.ts:12-59` selects persisted fields | PASS after fix | Previously operators could not see or record the frozen provider boundary from the drawer. |
-| Transactional authorization, provenance, hold parity, CAS/idempotency, and no provider API | `src/lib/admin/recovery-credit-refund-settlement.ts:45-142`; Prisma fields in `database/prisma/schema.prisma:714-805` and `1250-1290`; focused security tests | PASS | Remaining risk is limited to the repository's static-test coverage of runtime transaction behavior. |
-| Full-suite validation | `npm test` result: 176 total, 174 passed, 2 baseline failures in internationalization/merchant-support shared-version assertions | PASS with documented baseline | Baseline failures are unrelated to settlement; they remain a release validation caveat. |
+
+| Requirement                                                                                | Exact evidence inspected                                                                                                                                                                | Result                        | Risk                                                                                                |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| Admin can lock/reject/record provider settlement through the admin surface                 | `src/components/admin/recovery-credit-refunds.tsx:56-104` invokes all three server actions; server authorization remains in `src/lib/admin/recovery-credit-refund-settlement.ts:54-113` | PASS after fix                | Previously unreachable controls could leave provider settlement operationally incomplete.           |
+| Durable provider evidence is displayed before/manual settlement                            | `src/components/admin/recovery-credit-refunds.tsx` frozen evidence block and provider form; `src/lib/admin/recovery-credit-refunds.ts:12-59` selects persisted fields                   | PASS after fix                | Previously operators could not see or record the frozen provider boundary from the drawer.          |
+| Transactional authorization, provenance, hold parity, CAS/idempotency, and no provider API | `src/lib/admin/recovery-credit-refund-settlement.ts:45-142`; Prisma fields in `database/prisma/schema.prisma:714-805` and `1250-1290`; focused security tests                           | PASS                          | Remaining risk is limited to the repository's static-test coverage of runtime transaction behavior. |
+| Full-suite validation                                                                      | `npm test` result: 176 total, 174 passed, 2 baseline failures in internationalization/merchant-support shared-version assertions                                                        | PASS with documented baseline | Baseline failures are unrelated to settlement; they remain a release validation caveat.             |
 
 ### Validation Results
+
 - `node --test tests/security/admin-recovery-credit-refund-settlement.test.mjs tests/security/admin-recovery-credit-refunds.test.mjs tests/security/admin-security-boundary.test.mjs tests/security/admin-billing-controls.test.mjs`: 23 passed, 0 failed.
 - `npm run prisma:validate`: passed.
 - `npx tsc --noEmit`: passed.
@@ -348,6 +353,7 @@ Ready for Review. Attempt 4 completed all three mandatory Architect Review corre
 - `git diff --check`: passed after implementation and report changes.
 
 ### 19-Item Acceptance Checklist
+
 1. SUPER_ADMIN-only mutation: satisfied by active resolver plus role gates.
 2. `reservedAmount > 0` blocks provider lock: satisfied with `WAITING_FOR_RESERVATIONS`.
 3. `currentAmount = 0` cannot create £0 provider action: satisfied by terminal completion path.
@@ -369,6 +375,7 @@ Ready for Review. Attempt 4 completed all three mandatory Architect Review corre
 19. Focused tests, concurrency transaction coverage, build, static checks, full suite, and diff check: satisfied except the two documented unrelated baseline failures; focused validation now includes the repaired admin UI surface.
 
 ### Git / VCS
+
 Launcher claim commit: `1d0d2246b6703c56b14ee802b2d1a5569d0f2bf5`.
 Authoritative implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`.
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-ADMIN-003`, branch `task/ARCH-010-ADMIN-003`.
@@ -405,7 +412,9 @@ Accepted behavior audit: exact live `currentAmount` remains the final quantity; 
 No unresolved implementation limitation remains within the bounded Admin scope. The two shared-package version assertions, lint warnings, build warnings, and Node module-type warnings are unrelated baseline conditions.
 
 ### Architect Review
+
 Ready for Architect Review. The independently identified reachability/evidence gap is fixed and validated. No unresolved implementation limitation remains within the bounded Admin scope. The two full-suite baseline failures and existing lint/build warnings are recorded above and are unrelated to this task.
+
 ## Architect Review — Attempt 3
 
 ### Decision
@@ -449,10 +458,7 @@ authorization/presentation correction.
 Current `completeZeroCurrent(...)` contains:
 
 ```ts
-if (
-  purchase.reservedAmount !== 0
-  || aggregate.refundingQuantity !== 0
-) {
+if (purchase.reservedAmount !== 0 || aggregate.refundingQuantity !== 0) {
   throw new Error("Aggregate hold parity is inconsistent.");
 }
 ```
@@ -525,35 +531,33 @@ async function completeZeroCurrent(
     throw new Error("Purchase reservation parity is inconsistent.");
   }
 
-  const purchaseUpdate =
-    await transaction.recoveryCreditPurchase.updateMany({
-      where: {
-        id: purchase.id,
-        status: RecoveryCreditPurchaseStatus.WITHDRAWN,
-        version: purchase.version,
-        currentAmount: 0,
-        reservedAmount: 0,
-      },
-      data: {
-        status: RecoveryCreditPurchaseStatus.COMPLETED,
-        version: { increment: 1 },
-      },
-    });
+  const purchaseUpdate = await transaction.recoveryCreditPurchase.updateMany({
+    where: {
+      id: purchase.id,
+      status: RecoveryCreditPurchaseStatus.WITHDRAWN,
+      version: purchase.version,
+      currentAmount: 0,
+      reservedAmount: 0,
+    },
+    data: {
+      status: RecoveryCreditPurchaseStatus.COMPLETED,
+      version: { increment: 1 },
+    },
+  });
 
-  const refundUpdate =
-    await transaction.recoveryCreditRefund.updateMany({
-      where: {
-        id: refund.id,
-        status: RecoveryCreditRefundStatus.REQUESTED,
-        version: refund.version,
-      },
-      data: {
-        status: RecoveryCreditRefundStatus.COMPLETED,
-        completedAt: new Date(),
-        reason,
-        version: { increment: 1 },
-      },
-    });
+  const refundUpdate = await transaction.recoveryCreditRefund.updateMany({
+    where: {
+      id: refund.id,
+      status: RecoveryCreditRefundStatus.REQUESTED,
+      version: refund.version,
+    },
+    data: {
+      status: RecoveryCreditRefundStatus.COMPLETED,
+      completedAt: new Date(),
+      reason,
+      version: { increment: 1 },
+    },
+  });
 
   if (purchaseUpdate.count !== 1 || refundUpdate.count !== 1) {
     throw new Error("Refund changed while closing zero-current purchase.");
@@ -580,19 +584,13 @@ completeZeroCurrent(
   purchase,
   aggregate,
   boundedReason,
-)
+);
 ```
 
 to:
 
 ```ts
-completeZeroCurrent(
-  transaction,
-  principal.id,
-  refund,
-  purchase,
-  boundedReason,
-)
+completeZeroCurrent(transaction, principal.id, refund, purchase, boundedReason);
 ```
 
 Do **not** decrement:
@@ -643,7 +641,7 @@ Current code calculates:
 amount
   .mul(quantity)
   .div(granted)
-  .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP)
+  .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
 ```
 
 The accepted DATABASE-014 contract explicitly forbids assuming every provider
@@ -662,27 +660,22 @@ Add one deterministic ISO-currency precision helper.
 Use this exact implementation contract:
 
 ```ts
-const SUPPORTED_CURRENCIES =
-  new Set(Intl.supportedValuesOf("currency"));
+const SUPPORTED_CURRENCIES = new Set(Intl.supportedValuesOf("currency"));
 
 function currencyFractionDigits(currency: string): number {
-  if (
-    !CURRENCY.test(currency)
-    || !SUPPORTED_CURRENCIES.has(currency)
-  ) {
+  if (!CURRENCY.test(currency) || !SUPPORTED_CURRENCIES.has(currency)) {
     throw new Error("Provider currency is unsupported.");
   }
 
-  const fractionDigits =
-    new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-    }).resolvedOptions().maximumFractionDigits;
+  const fractionDigits = new Intl.NumberFormat("en", {
+    style: "currency",
+    currency,
+  }).resolvedOptions().maximumFractionDigits;
 
   if (
-    !Number.isInteger(fractionDigits)
-    || fractionDigits < 0
-    || fractionDigits > 4
+    !Number.isInteger(fractionDigits) ||
+    fractionDigits < 0 ||
+    fractionDigits > 4
   ) {
     throw new Error("Provider currency precision is unsupported.");
   }
@@ -698,7 +691,7 @@ function expectedAmount(
   amount: Prisma.Decimal,
   quantity: number,
   granted: number,
-): Prisma.Decimal
+): Prisma.Decimal;
 ```
 
 to:
@@ -715,10 +708,7 @@ function expectedAmount(
   return amount
     .mul(quantity)
     .div(granted)
-    .toDecimalPlaces(
-      fractionDigits,
-      Prisma.Decimal.ROUND_HALF_UP,
-    );
+    .toDecimalPlaces(fractionDigits, Prisma.Decimal.ROUND_HALF_UP);
 }
 ```
 
@@ -729,7 +719,7 @@ expectedAmount(
   purchase.providerPurchaseAmount!,
   finalCreditQuantity,
   purchase.creditsGranted,
-)
+);
 ```
 
 to:
@@ -740,7 +730,7 @@ expectedAmount(
   finalCreditQuantity,
   purchase.creditsGranted,
   purchase.providerPurchaseCurrency,
-)
+);
 ```
 
 Do not:
@@ -864,7 +854,9 @@ Change the drawer props to:
 and render:
 
 ```tsx
-{canSettle ? <SettlementActions refund={refund} /> : null}
+{
+  canSettle ? <SettlementActions refund={refund} /> : null;
+}
 ```
 
 instead of unconditionally rendering `SettlementActions`.

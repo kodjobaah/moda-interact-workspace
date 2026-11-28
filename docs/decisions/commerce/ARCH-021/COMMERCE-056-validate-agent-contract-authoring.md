@@ -365,9 +365,11 @@ Do not treat successful Agent-contract validation as a live-Test receipt or publ
 ## Completion Report
 
 ### Status
+
 Ready for Architect Review
 
 ### Files Changed
+
 - `src/commerce/tool-authoring/agent-contract-validation.ts`
 - `src/commerce/tool-definition/contracts.ts`
 - `src/commerce/tool-definition/publication.ts`
@@ -381,6 +383,7 @@ Ready for Architect Review
 - `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
+
 - Added a pure, named Agent-contract validator reusing canonical SemVer, description, bounded input-schema, forbidden-authority-input and response-template schemas. Publication and Agent validation now share output-path compatibility rules and the External HTTP `values` wrapper.
 - Added an ADMIN-authorized Server Action that validates only Agent fields plus the current output contract. It does not access the Commerce backend, provider, credentials, Request builders, or persistence services.
 - Kept `AgentContractTab` as the single form component, added Agent-facing labels/help and field-local diagnostics, and retained raw JSON text. Validation state is keyed to the complete current Agent/output candidate and stays mounted across tab navigation.
@@ -388,6 +391,7 @@ Ready for Architect Review
 - Added domain, action, New Tool and persisted-DRAFT tests for malformed JSON, forbidden inputs, template paths/list compatibility, local-state retention, stale success, output-context parity and no-write/no-provider behavior.
 
 ### Validation Results
+
 - Launcher preparation passed for Attempt 1: all three declared dependencies passed; dedicated mirrored task worktrees and the pinned Commerce submodule were established. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-056`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-056`.
 - Passed: `./node_modules/.bin/vitest run tests/agent-contract-validation.test.ts tests/agent-contract-validation-server-actions.test.ts tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx` (4 files, 92 tests).
 - Passed: targeted ESLint for all 11 changed source/test files; `git diff --check`; Pylance diagnostics on changed files (none).
@@ -404,17 +408,21 @@ Ready for Architect Review
 - Parent workspace task file `docs/decisions/commerce/ARCH-021/COMMERCE-056-validate-agent-contract-authoring.md`: initial completion-report commit `bbfa8ef7`, Attempt 2 claim commit `cbf17e6a`, and A1-R1 report-correction commit `4ca2355f` are pushed on `origin/task/ARCH-021-COMMERCE-056`. The parent task branch was not merged to workspace `main`.
 
 ### Deviations
+
 None. Final Create/Save/Publish validation and lifecycle boundaries remain unchanged.
 
 ### Assumptions
+
 - External HTTP response-template paths are evaluated against the processed Commerce output, including its `values` wrapper. Shopify Admin paths use the current authored result schema directly.
 - The existing persisted-DRAFT surface using the shared Agent tab is External HTTP; the standalone persisted Shopify Admin editor remains outside that component boundary.
 
 ### Unresolved Issues
+
 - The common packet and full repository typecheck retain the unrelated baseline failures listed above. The persisted Admin UI packet also retains two assertions for a status that this non-Agent surface does not render.
 - None related to A1-R1; the Attempt 2 report correction records the launcher-provided isolation/synchronization values and the rerun validation evidence.
 
 ### Architectural Concerns
+
 None
 
 ## Architect Review

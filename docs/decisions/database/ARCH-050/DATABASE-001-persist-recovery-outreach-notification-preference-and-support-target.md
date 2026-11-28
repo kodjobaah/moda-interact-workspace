@@ -191,25 +191,25 @@ No cross-repository or contract issue discovered. Service writers/read APIs rema
 ### Task Branch / Worktree Evidence
 
 Physical worktree isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-DATABASE-001`
-  parent branch: `task/ARCH-050-DATABASE-001`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-DATABASE-001`
-  implementation branch: `task/ARCH-050-DATABASE-001`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-DATABASE-001`
+parent branch: `task/ARCH-050-DATABASE-001`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-DATABASE-001`
+implementation branch: `task/ARCH-050-DATABASE-001`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
-  git submodule sync --recursive: passed
-  git submodule update --init --recursive: passed
-  recorded submodule commits: none (no submodules)
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded submodule commits: none (no submodules)
 
 Implementation branch commit: `2f702f52372d648abc5f080f02f722046d0e9271`.
 Implementation branch push: passed to `origin/task/ARCH-050-DATABASE-001` (`kodjobaah/moda-interact-database`).

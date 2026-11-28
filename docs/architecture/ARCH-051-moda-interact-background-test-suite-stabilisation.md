@@ -116,8 +116,8 @@ customer payloads in test diagnostics.
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
-|------|-------|--------|------------|
+| Task                    | Owner           | Status   | Depends On                         |
+| ----------------------- | --------------- | -------- | ---------------------------------- |
 | ARCH-051-BACKGROUND-001 | moda_background | Complete | ARCH-007-BACKGROUND-012 (Complete) |
 
 Integrated `moda_system_test` validation is not applicable: this initiative

@@ -12,21 +12,21 @@ and validation are in the final reconciliation section below.
 
 ## Findings resolved
 
-| Gap | Resolution / owner |
-|---|---|
-| Generic task instructions allowed incompatible wire implementations | C4 exact tool/manifest/final/evidence contracts; task-specific guidance in all 20 existing tasks |
-| Inbound metadata potentially duplicated/redefined | Inspected Shared whatsapp.ts/tests and billing.ts status schema; C0 preserves inbound v1/status v2 unchanged |
-| Candidate routing and unowned clarification delivery were still open | C2 exact distinct-recovery query; C3 lightweight Redis guard, existing abuse limits and no merchant attribution; no new DB prerequisite |
-| No persisted sender/recipient evidence; timestamp-only current fragments | Deferred: single-number routing reuses existing message/customer links and batching; prior-history repair needs no migration |
-| Initial/follow-up outreach could be mistaken for separate conversations | C13 reuses ARCH-016 attempts1/2, one Conversation, distinct provider IDs, credit boundaries and engagement suppression |
-| Compatibility evidence was required without a prerequisite | BACKGROUND-001 now depends on COMMERCE-001's real SDK/profile fixture |
-| Compound publishing conflicted with one audit id per operation | C7 explicit operations and resumable create/publish/activate flow; exact replay/CAS rules |
-| Unspecified registry binding allowed discount tools outside policy | C1 fixed reserved-tool ownership and conditional permission on similarity evidence |
-| UI/preview tests copied into unrelated backend/foundation tasks | Scoped tests to each deliverable; retained double-activation requirements on actual UI actions |
-| Preview conversation identity conflated with a run; budgets unspecified | C9 separate IDs, fixed fixture grant, cross-replica claim/budgets/cancel/uncertainty |
-| Database grant JSON bounds ambiguous | DATABASE-001 explicitly separates selected keys8192 bytes and tools32768 bytes |
-| Free-form infrastructure/telemetry expectations | C10 exact routes/env/health/build contract; C11 actual-signal inventory and alert thresholds |
-| Claim that schemas prove tenancy/LLM grounding | Separate pure shape tests, service ownership enforcement and adversarial model evaluation; no universal hallucination guarantee |
+| Gap                                                                      | Resolution / owner                                                                                                                      |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Generic task instructions allowed incompatible wire implementations      | C4 exact tool/manifest/final/evidence contracts; task-specific guidance in all 20 existing tasks                                        |
+| Inbound metadata potentially duplicated/redefined                        | Inspected Shared whatsapp.ts/tests and billing.ts status schema; C0 preserves inbound v1/status v2 unchanged                            |
+| Candidate routing and unowned clarification delivery were still open     | C2 exact distinct-recovery query; C3 lightweight Redis guard, existing abuse limits and no merchant attribution; no new DB prerequisite |
+| No persisted sender/recipient evidence; timestamp-only current fragments | Deferred: single-number routing reuses existing message/customer links and batching; prior-history repair needs no migration            |
+| Initial/follow-up outreach could be mistaken for separate conversations  | C13 reuses ARCH-016 attempts1/2, one Conversation, distinct provider IDs, credit boundaries and engagement suppression                  |
+| Compatibility evidence was required without a prerequisite               | BACKGROUND-001 now depends on COMMERCE-001's real SDK/profile fixture                                                                   |
+| Compound publishing conflicted with one audit id per operation           | C7 explicit operations and resumable create/publish/activate flow; exact replay/CAS rules                                               |
+| Unspecified registry binding allowed discount tools outside policy       | C1 fixed reserved-tool ownership and conditional permission on similarity evidence                                                      |
+| UI/preview tests copied into unrelated backend/foundation tasks          | Scoped tests to each deliverable; retained double-activation requirements on actual UI actions                                          |
+| Preview conversation identity conflated with a run; budgets unspecified  | C9 separate IDs, fixed fixture grant, cross-replica claim/budgets/cancel/uncertainty                                                    |
+| Database grant JSON bounds ambiguous                                     | DATABASE-001 explicitly separates selected keys8192 bytes and tools32768 bytes                                                          |
+| Free-form infrastructure/telemetry expectations                          | C10 exact routes/env/health/build contract; C11 actual-signal inventory and alert thresholds                                            |
+| Claim that schemas prove tenancy/LLM grounding                           | Separate pure shape tests, service ownership enforcement and adversarial model evaluation; no universal hallucination guarantee         |
 
 ## Review status
 
@@ -112,7 +112,6 @@ review counts above describe earlier drafts; current counts are 3 Ready and
 
 Shared consolidation: one SHARED-001 now includes all contracts, runner and publication requirements. The current 19-task graph passes schema, reciprocal dependency, cycle, terminal-gate, route and link validation.
 
-
 ## Remaining-task determinism review — 2026-09-20
 
 Reviewed the remaining ARCH-020 definitions with separate read-only runtime and
@@ -120,18 +119,18 @@ Studio reviews. This is a definition amendment, not implementation acceptance or
 a task claim. Completed tasks and the active COMMERCE-011 implementation are not
 reopened. Concurrent BACKGROUND-001 acceptance/integration edits are excluded.
 
-| Finding | Binding correction / owner |
-|---|---|
-| Arbitrary tool names made a hard-coded final evaluator impossible | C4 exact-call evidence provenance/replay; COMMERCE-004/006/007 and BACKGROUND-002, without a new Shared/DB contract |
-| Preview dependency cycle hidden inside acceptance | COMMERCE-008 owns composer plus stubbed handoff;009 owns real U14; SYSTEM-TEST owns production pinning |
-| Unsaved composer lost on route navigation | UI design and008 specify tab-local authenticated layout state and exact loss/return behaviour |
-| Preview APIs and concurrent different-run semantics missing | C9.1 exact routes, bodies, owner checks, replay, busy, cancellation and history rules;009/Gateway consume them |
-| Superseded language/preference tests and fixed-prompt ownership | C6.1 aligned to C6.2 and C16;009 and SYSTEM-TEST use final expectations |
-| Ranking, multiple capability limits and provider retries ambiguous | C8 deterministic normalization/order/effective minima/shared request counter |
-| Grant persistence and credential boundaries ambiguous |004 read/verifies Background-owned grant;005 public query never loads privileged credentials |
-| Publication acceptance implied later executors |003 fixture registry acceptance, production executor availability remains mandatory |
-| Deployment/alert handoffs not exact | AUTH_URL, readiness semantics, messaging transcription names, metric denominators and threshold boundaries |
-| Stale provisioning blockers | Removed from pending Commerce tasks; foundation already supplies repository provisioning |
+| Finding                                                            | Binding correction / owner                                                                                          |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Arbitrary tool names made a hard-coded final evaluator impossible  | C4 exact-call evidence provenance/replay; COMMERCE-004/006/007 and BACKGROUND-002, without a new Shared/DB contract |
+| Preview dependency cycle hidden inside acceptance                  | COMMERCE-008 owns composer plus stubbed handoff;009 owns real U14; SYSTEM-TEST owns production pinning              |
+| Unsaved composer lost on route navigation                          | UI design and008 specify tab-local authenticated layout state and exact loss/return behaviour                       |
+| Preview APIs and concurrent different-run semantics missing        | C9.1 exact routes, bodies, owner checks, replay, busy, cancellation and history rules;009/Gateway consume them      |
+| Superseded language/preference tests and fixed-prompt ownership    | C6.1 aligned to C6.2 and C16;009 and SYSTEM-TEST use final expectations                                             |
+| Ranking, multiple capability limits and provider retries ambiguous | C8 deterministic normalization/order/effective minima/shared request counter                                        |
+| Grant persistence and credential boundaries ambiguous              | 004 read/verifies Background-owned grant;005 public query never loads privileged credentials                        |
+| Publication acceptance implied later executors                     | 003 fixture registry acceptance, production executor availability remains mandatory                                 |
+| Deployment/alert handoffs not exact                                | AUTH_URL, readiness semantics, messaging transcription names, metric denominators and threshold boundaries          |
+| Stale provisioning blockers                                        | Removed from pending Commerce tasks; foundation already supplies repository provisioning                            |
 
 COMMERCE-011 is already being implemented: its historical unresolved-issues boilerplate
 still mentions provisioning, but the accepted COMMERCE-001 setup supersedes that
@@ -149,7 +148,6 @@ cycle checks, owned UI embedding, local Markdown links, unchanged lifecycle fiel
 and scoped whitespace. Application and live-provider evidence belongs to the
 implementation tasks; none is claimed by this review.
 
-
 ## Parallel start amendment — 2026-09-21
 
 At the user's request, publication003 and Studio008 can start and complete their
@@ -158,7 +156,6 @@ A separate013 owns real service adapters and I01–I08 integrated acceptance.013
 waits for003/004/005/006/007/008/011;009/GATEWAY-001/012/SYSTEM-TEST-001 wait for013.
 Start/enable metadata and indexes are reciprocal. No launcher changes, task claims
 or application implementation.011 active implementation remains untouched.
-
 
 ## Independent evidence-contract amendment — 2026-09-21
 
@@ -173,7 +170,6 @@ and whitespace passed. BACKGROUND-002 prerequisite001 is Complete. Original and
 refreshed JSON seed replies passed the current Shared source Zod schemas under
 workspace Node24.19.0; both SHA-256 digests and frozen-clock freshness bounds passed.
 This validates contract examples, not the future producer/consumer implementation.
-
 
 ## Smaller-scope task amendment — 2026-09-21
 
@@ -192,7 +188,6 @@ matches the binding UI design.012 and terminal system testing include014–017.
 Local Markdown links and scoped whitespace checks passed. These are definition
 checks only, not application/provider test results. Frontend017 owns no backend
 implementation;013 owns saved-bundle loading and actual preview/frontend pairing.
-
 
 ## Integration-task decomposition — 2026-09-21
 

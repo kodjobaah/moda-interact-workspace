@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 4
 depends_on:
-- ARCH-016-DATABASE-001
-- ARCH-016-SHARED-001
+  - ARCH-016-DATABASE-001
+  - ARCH-016-SHARED-001
 enables:
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16T18:45:00Z
 ---
@@ -308,7 +308,6 @@ Ready for Review
 
 The implementation and report are complete. The task is returned to `moda_architect` at `status: review`; stop here pending architect review.
 
-
 ## Architect Review — Attempt 1
 
 ### Status
@@ -346,7 +345,7 @@ The current `getDiscountSyncEligibility()` implementation uses:
 db.session.findFirst({
   where: { shop: shop.domain },
   orderBy: { expires: "desc" },
-})
+});
 ```
 
 This does not constrain `isOnline = false`. An online session is therefore allowed to
@@ -444,7 +443,7 @@ online session has read_discounts but offline session does not
 `session` when one exists, but then evaluates eligibility directly from:
 
 ```ts
-payload.current.toString()
+payload.current.toString();
 ```
 
 If no durable session is present, or if the authenticated session is not the durable
@@ -466,7 +465,7 @@ keep the existing authenticated webhook and Session-scope persistence, then in t
 transaction** read the durable offline Session for the shop using:
 
 ```ts
-isOnline: false
+isOnline: false;
 ```
 
 Use the persisted offline Session's `scope` for the eligibility predicate. Do not use
@@ -510,7 +509,7 @@ The current helper instead performs:
 transaction.shopifyDiscount.updateMany({
   where: { shopId },
   data: { isAvailable: false, unavailableAt },
-})
+});
 ```
 
 That overwrites an existing `unavailableAt` timestamp for discounts that were already
@@ -1210,7 +1209,6 @@ Ready for Review
 - no merge to `main` performed.
 
 Task status is `review`; return control to `moda_architect` for re-review. No architect acceptance decision has been made by this agent.
-
 
 ## Architect Review — Attempt 4
 

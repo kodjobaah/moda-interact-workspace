@@ -35,7 +35,6 @@ Extend the retained Commerce deterministic discount reader/evaluator and local p
 
 ## Context
 
-
 Commerce already contains deterministic discount reader/evaluator machinery for Shopify. Background sync writes normalized Woo coupon facts to the existing `providerSnapshot` JSONB. Adapt only the existing CommerceAgent discount reader/evaluator for its actual tool/runtime use to read supported Woo facts without conflating merchant selection with provider eligibility. No Shared publication or new evaluator framework is required.
 
 ## Scope
@@ -72,7 +71,6 @@ Implement a Commerce-owned, tenant-scoped Woo cached-rule adapter and wire it in
 Existing ARCH-020 Commerce reader/evaluator, `DiscountRuleSnapshot`, local operation and published evidence contracts; existing Shop policy and Woo `providerSnapshot` rows from accepted ARCH-036-BACKGROUND-001. Internal Commerce adapters may change within this task. Published cross-service contracts and ARCH-052 initial-outreach code remain unchanged.
 
 ## Dependencies
-
 
 - `ARCH-036-BACKGROUND-001` — normalized Woo coupon snapshot fields established and accepted.
 
@@ -161,7 +159,6 @@ The explicit `/moda_developer_update ARCH-036-COMMERCE-001 complete Architect Re
 
 The earlier four-task-session deferral is lifted by the developer’s explicit request on 2 November 2026 to correct this definition so implementation can begin. This bounded Commerce evaluator/preview work is now Ready; ARCH-036-BACKGROUND-001 is Complete. The old Background-003 proof ownership, retired SYSTEM-TEST-002 dependency and initial-outreach one-offer assumption are removed. Implementation remains unclaimed at Attempt 0, with developer-controlled completion: architect acceptance followed by an explicit developer completion decision.
 
-
 ## Architect local implementation review — Attempt 1, 2 November 2026
 
 ### Decision and lifecycle
@@ -191,7 +188,6 @@ Preserve bounded reads; do not solve this with an unbounded selected-set load. S
 Correct the bounded-selection/authorization behavior and supply the focused regressions above. Reconcile the Completion Report and publish implementation evidence through the developer workflow before final architect acceptance. Completion still requires the explicit developer completion decision after acceptance; no claim or lifecycle transition was made by this review.
 
 Reviewed working-tree fingerprint (SHA-256 of the ordered six relative paths and file bytes, NUL-separated): `fc4caffd64a3892180a29f6f0f85be3b3f7163679a843392638b7516cf779a38`.
-
 
 ## Architect local correction review — Attempt 1, 2 November 2026
 

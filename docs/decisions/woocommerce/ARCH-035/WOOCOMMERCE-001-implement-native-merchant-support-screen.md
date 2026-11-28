@@ -45,6 +45,7 @@ Replace the Woo Support placeholder with a Shopify-parity merchant support threa
 Shopify app/routes/app/merchant-support/route.jsx renders paginated Administrative/System/Merchant messages, read states, translated/original toggle and a 500-grapheme composer; Woo NativeNavigation currently shows a placeholder.
 
 Source references:
+
 - Shopify: app/routes/app/merchant-support/route.jsx.
 - Woo: includes/Admin/NativeNavigation.php; src/page/connected-workspace.js.
 
@@ -207,7 +208,6 @@ Developer self-review accepted Attempt 1. The developer then explicitly complete
 ### Review Notes
 
 Reviewed the implementation diff, Shopify reference route, Woo navigation/surface wiring, support UI/controller/client/validation, focused tests, locale assets, PHP navigation tests and task/worktree state. The UI-only boundary, unsupported-operation behavior, state lifecycle and validation evidence conform to the task. Developer reports the requested LocalWP manual checks complete. The runtime limitation is the documented external API gap.
-
 
 **Architect reconciliation (2026-10-16):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Support remains a placeholder. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
 

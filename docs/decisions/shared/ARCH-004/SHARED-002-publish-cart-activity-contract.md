@@ -20,6 +20,7 @@ enables:
 created: 2026-09-05
 updated: 2026-09-05
 ---
+
 # Publish cart activity shared contract release
 
 ## Objective
@@ -44,12 +45,12 @@ Consumer dependency bumps belong to their repository tasks.
 
 ## Acceptance criteria
 
- [x] accepted contract is packaged.
- [x] package exports remain valid.
- [x] package tests/build/typecheck pass.
- [x] published version is recorded.
- [x] registry package can be installed/resolved.
- [x] no consumer source is modified by this task.
+[x] accepted contract is packaged.
+[x] package exports remain valid.
+[x] package tests/build/typecheck pass.
+[x] published version is recorded.
+[x] registry package can be installed/resolved.
+[x] no consumer source is modified by this task.
 
 ## Completion Report
 
@@ -168,4 +169,3 @@ The following tasks may advance in parallel:
 ARCH-004-SHOPIFY-001
 ARCH-004-BACKGROUND-001
 ```
-

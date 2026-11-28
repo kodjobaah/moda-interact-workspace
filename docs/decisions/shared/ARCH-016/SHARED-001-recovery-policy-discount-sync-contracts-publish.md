@@ -16,12 +16,12 @@ claimed_at: null
 attempt: 1
 depends_on: []
 enables:
-- ARCH-016-SHOPIFY-001
-- ARCH-016-BACKGROUND-001
-- ARCH-016-SHOPIFY-002
-- ARCH-016-ADMIN-002
-- ARCH-016-BACKGROUND-003
-- ARCH-016-SYSTEM-TEST-001
+  - ARCH-016-SHOPIFY-001
+  - ARCH-016-BACKGROUND-001
+  - ARCH-016-SHOPIFY-002
+  - ARCH-016-ADMIN-002
+  - ARCH-016-BACKGROUND-003
+  - ARCH-016-SYSTEM-TEST-001
 created: 2026-09-16
 updated: 2026-09-16T15:49:39Z
 ---
@@ -247,13 +247,16 @@ If publication cannot occur, return `blocked` rather than falsely completing the
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - Shared implementation in the task worktree: `src/recovery-policy.ts`, `src/shopify/*.ts`, `src/shopify/*.test.ts`, `src/index.ts` (only if required), `package.json`, `package-lock.json`, `scripts/validate-recovery-policy-entrypoint.mjs`
 - Task documentation updated to record publication evidence and final handoff state
 
 ### Work Completed
+
 Published the exact architect-required patch release:
 
 `@modainteract/moda-interact-shared@0.12.1`
@@ -261,6 +264,7 @@ Published the exact architect-required patch release:
 The package was bumped from the actual task-branch baseline `0.12.0` to exactly one patch-level increment, `0.12.1`, and the lockfile was refreshed consistently. The source implementation passed the required validation suite before publication, and the tarball for the published release included the new `recovery-policy` JS and declaration entrypoints alongside the updated Shopify entrypoints.
 
 ### Validation Results
+
 - `npm test`: passed (`129 passed`, `0 failed`, `1 skipped`)
 - `npm run typecheck`: passed
 - `npm run build`: passed
@@ -271,16 +275,19 @@ The package was bumped from the actual task-branch baseline `0.12.0` to exactly 
 - Exact version verification: `npm view @modainteract/moda-interact-shared@0.12.1 version --json` returned `"0.12.1"`
 
 ### Publication Evidence
+
 - package shasum from published tarball: `1e3ce8fb1922838f7b01b4f6c8d230c7a9e52745`
 - npm registry dist tarball: `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-0.12.1.tgz`
 - published metadata timestamp: `2026-09-16T15:48:39.761Z`
 
 ### VCS / Handoff
+
 - task branch implementation worktree validated and publication executed against the exact requested package version
 - task status set to `review`
 - executor and claimed timestamp cleared to return control to `moda_architect`
 
 ### Architect Review
+
 Awaiting `moda_architect` acceptance review for the published `0.12.1` package release.
 
 ## Completion protocol

@@ -45,7 +45,7 @@ Ensure the single sequence-two recovery follow-up is not permanently consumed wh
 - `src/services/recovery-conversation/recovery-follow-up-policy.service.ts`: `RecoveryFollowUpPolicyService.claimSequenceTwo` already locks Shop/Conversation and the sequence-two attempt, implements existing HUMAN/AUTOMATION eligibility and uses the existing `recovery-outreach:<attemptId>` billing source.
 - `src/services/recovery-conversation/outbound-send-fence.service.ts`: `OutboundSendFenceService.admitFinalSend` serializes the irreversible provider permit under Shop/Conversation/command/attempt row locks. A commit of this permit forbids release even if Meta later fails.
 - `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`: `RecoveryFollowUpBillingService.releaseBeforePermit` bridges the existing reservation lifecycle; it is **not** a second credit ledger.
-- The merchant-side Shopify and Woo/API producers may already reserve sequence two when accepting a HUMAN template command. Background moderation happens later; checking moderation before the Background *second claim* is insufficient.
+- The merchant-side Shopify and Woo/API producers may already reserve sequence two when accepting a HUMAN template command. Background moderation happens later; checking moderation before the Background _second claim_ is insufficient.
 
 ## Scope and exact change surface
 
@@ -140,17 +140,17 @@ For each candidate, perform the same canonical lock/re-read and billing prerequi
 
 ### F. Outcome matrix (authoritative)
 
-| Condition | Command outcome | Sequence-two attempt | Provider/billing |
-|---|---|---|---|
-| Moderation BLOCK or REVIEW_REQUIRED, pre-permit | CANCELLED by atomic operation | Reset same row to unclaimed after credit-safe check | No provider send or recovery credit |
-| Terminal suspended shop, stale revision, terminal recovery, invalid recipient, policy denial, pre-permit | CANCELLED by same operation | Reset same row only if current HUMAN owner, safe | No provider send/new credit |
-| Retryable moderation/transport dependency, transient policy error, capacity retry | FAILED with bounded retry | Claim remains owned | No provider permit; do not free slot |
-| Credit release uncertain | Repair-priority FAILED (no provider permit) | Claim remains owned | Never send while repair pending |
-| Stale or expired lease/current-owner mismatch | Refused/no-op | Unchanged | No provider send or credit |
-| Already CANCELLED with matching old claim | Historical reconciliation, idempotent | Reset only if all safe predicates still hold | No extra credit |
-| Already released or claimed by another | No-op/conflict | Keep new claimant unchanged | No extra credit |
-| DISPATCH_ADMITTED / UNKNOWN / SENT, provider ID/message linked | Do not cancel/release | Permanent reservation for that attempt | Existing provider/credit reconciliation only |
-| Subsequent eligible HUMAN or scheduled AUTOMATION | New independent claim via existing `claimSequenceTwo` | Same original attempt, one winner | Existing admission and source key only |
+| Condition                                                                                                | Command outcome                                       | Sequence-two attempt                                | Provider/billing                             |
+| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------- | -------------------------------------------- |
+| Moderation BLOCK or REVIEW_REQUIRED, pre-permit                                                          | CANCELLED by atomic operation                         | Reset same row to unclaimed after credit-safe check | No provider send or recovery credit          |
+| Terminal suspended shop, stale revision, terminal recovery, invalid recipient, policy denial, pre-permit | CANCELLED by same operation                           | Reset same row only if current HUMAN owner, safe    | No provider send/new credit                  |
+| Retryable moderation/transport dependency, transient policy error, capacity retry                        | FAILED with bounded retry                             | Claim remains owned                                 | No provider permit; do not free slot         |
+| Credit release uncertain                                                                                 | Repair-priority FAILED (no provider permit)           | Claim remains owned                                 | Never send while repair pending              |
+| Stale or expired lease/current-owner mismatch                                                            | Refused/no-op                                         | Unchanged                                           | No provider send or credit                   |
+| Already CANCELLED with matching old claim                                                                | Historical reconciliation, idempotent                 | Reset only if all safe predicates still hold        | No extra credit                              |
+| Already released or claimed by another                                                                   | No-op/conflict                                        | Keep new claimant unchanged                         | No extra credit                              |
+| DISPATCH_ADMITTED / UNKNOWN / SENT, provider ID/message linked                                           | Do not cancel/release                                 | Permanent reservation for that attempt              | Existing provider/credit reconciliation only |
+| Subsequent eligible HUMAN or scheduled AUTOMATION                                                        | New independent claim via existing `claimSequenceTwo` | Same original attempt, one winner                   | Existing admission and source key only       |
 
 A terminal denial of a **non-follow-up** HUMAN_TEXT command continues using the existing `rejectCommand` and does not touch outreach.
 

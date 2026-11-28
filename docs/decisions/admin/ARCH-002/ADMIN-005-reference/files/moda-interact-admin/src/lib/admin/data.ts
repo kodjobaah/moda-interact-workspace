@@ -38,7 +38,9 @@ function decimalToString(value: Prisma.Decimal | null): string | null {
   return value?.toString() ?? null;
 }
 
-function asJsonObject(value: Prisma.JsonValue | undefined): Record<string, Prisma.JsonValue> | null {
+function asJsonObject(
+  value: Prisma.JsonValue | undefined,
+): Record<string, Prisma.JsonValue> | null {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, Prisma.JsonValue>)
     : null;
@@ -54,13 +56,18 @@ function safeHttpUrl(value: string | null): string | null {
   if (!value) return null;
   try {
     const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null;
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : null;
   } catch {
     return null;
   }
 }
 
-function normalizeLineItems(value: Prisma.JsonValue | null, currency: string | null): RecoveryLineItem[] {
+function normalizeLineItems(
+  value: Prisma.JsonValue | null,
+  currency: string | null,
+): RecoveryLineItem[] {
   let rawItems: Prisma.JsonValue[] = [];
 
   if (Array.isArray(value)) {
@@ -84,20 +91,31 @@ function normalizeLineItems(value: Prisma.JsonValue | null, currency: string | n
     const variantObject = asJsonObject(row.variant);
     const imageObject = asJsonObject(row.image);
     const priceObject = asJsonObject(row.price);
-    const moneyObject = asJsonObject(row.originalUnitPriceSet) ?? asJsonObject(row.discountedUnitPriceSet);
+    const moneyObject =
+      asJsonObject(row.originalUnitPriceSet) ??
+      asJsonObject(row.discountedUnitPriceSet);
     const shopMoney = moneyObject ? asJsonObject(moneyObject.shopMoney) : null;
 
-    const title = jsonString(row.title ?? row.name ?? row.product_title ?? row.productTitle) ?? `Cart item ${index + 1}`;
-    const variant = jsonString(row.variant_title ?? row.variantTitle) ?? jsonString(variantObject?.title);
+    const title =
+      jsonString(
+        row.title ?? row.name ?? row.product_title ?? row.productTitle,
+      ) ?? `Cart item ${index + 1}`;
+    const variant =
+      jsonString(row.variant_title ?? row.variantTitle) ??
+      jsonString(variantObject?.title);
     const quantityRaw = row.quantity;
-    const quantity = typeof quantityRaw === "number" ? quantityRaw : Number(jsonString(quantityRaw) ?? 1) || 1;
-    const price = jsonString(row.price ?? row.line_price ?? row.linePrice)
-      ?? jsonString(priceObject?.amount)
-      ?? jsonString(shopMoney?.amount);
+    const quantity =
+      typeof quantityRaw === "number"
+        ? quantityRaw
+        : Number(jsonString(quantityRaw) ?? 1) || 1;
+    const price =
+      jsonString(row.price ?? row.line_price ?? row.linePrice) ??
+      jsonString(priceObject?.amount) ??
+      jsonString(shopMoney?.amount);
     const imageUrl = safeHttpUrl(
-      jsonString(row.imageUrl ?? row.image_url)
-      ?? jsonString(imageObject?.url)
-      ?? jsonString(variantObject?.image),
+      jsonString(row.imageUrl ?? row.image_url) ??
+        jsonString(imageObject?.url) ??
+        jsonString(variantObject?.image),
     );
 
     return [{ title, variant, quantity, price, currency, imageUrl }];
@@ -129,7 +147,11 @@ export async function getTenantDirectory(input: {
     ? {
         OR: [
           { domain: { contains: search, mode: "insensitive" } },
-          { brand: { is: { brandName: { contains: search, mode: "insensitive" } } } },
+          {
+            brand: {
+              is: { brandName: { contains: search, mode: "insensitive" } },
+            },
+          },
         ],
       }
     : {};
@@ -156,7 +178,9 @@ export async function getTenantDirectory(input: {
       domain: true,
       status: true,
       installedAt: true,
-      brand: { select: { brandName: true, squareLogoUrl: true, logoUrl: true } },
+      brand: {
+        select: { brandName: true, squareLogoUrl: true, logoUrl: true },
+      },
       subscriptions: {
         orderBy: { updatedAt: "desc" },
         take: 1,
@@ -185,7 +209,9 @@ export async function getTenantDirectory(input: {
   };
 }
 
-export async function getTenantDetail(shopId: string): Promise<TenantDetail | null> {
+export async function getTenantDetail(
+  shopId: string,
+): Promise<TenantDetail | null> {
   await requirePlatformAdminRead();
   const row = await prisma.shop.findUnique({
     where: { id: shopId },
@@ -195,7 +221,9 @@ export async function getTenantDetail(shopId: string): Promise<TenantDetail | nu
       status: true,
       installedAt: true,
       uninstalledAt: true,
-      brand: { select: { brandName: true, squareLogoUrl: true, logoUrl: true } },
+      brand: {
+        select: { brandName: true, squareLogoUrl: true, logoUrl: true },
+      },
       settings: {
         select: { onboardingCompleted: true, recoveryDelayMinutes: true },
       },
@@ -253,7 +281,11 @@ export async function getTenantCustomers(input: {
               { lastName: { contains: term, mode: "insensitive" } },
               { email: { contains: term, mode: "insensitive" } },
               { phone: { contains: term, mode: "insensitive" } },
-              { phones: { some: { phone: { contains: term, mode: "insensitive" } } } },
+              {
+                phones: {
+                  some: { phone: { contains: term, mode: "insensitive" } },
+                },
+              },
             ],
           })),
         }
@@ -301,7 +333,10 @@ export async function getCustomerRecoveries(input: {
   customerId: string;
   page: number;
   pageSize: number;
-}): Promise<{ customer: CustomerListItem | null; recoveries: PageResult<RecoveryListItem> }> {
+}): Promise<{
+  customer: CustomerListItem | null;
+  recoveries: PageResult<RecoveryListItem>;
+}> {
   await requirePlatformAdminRead();
   const { shopId, customerId, page, pageSize } = input;
 
@@ -426,11 +461,21 @@ export async function getRecoveryDetail(input: {
   if (!recovery) return null;
 
   const conversationId = recovery.conversation?.id ?? null;
-  let messages = pageResult<RecoveryMessage>([], messagePage, messagePageSize, 0);
+  let messages = pageResult<RecoveryMessage>(
+    [],
+    messagePage,
+    messagePageSize,
+    0,
+  );
 
   if (conversationId) {
-    const messageCount = await prisma.conversationMessage.count({ where: { conversationId } });
-    const messageTotalPages = Math.max(1, Math.ceil(messageCount / messagePageSize));
+    const messageCount = await prisma.conversationMessage.count({
+      where: { conversationId },
+    });
+    const messageTotalPages = Math.max(
+      1,
+      Math.ceil(messageCount / messagePageSize),
+    );
     const safeMessagePage = Math.min(messagePage, messageTotalPages);
     const messageRows = await prisma.conversationMessage.findMany({
       where: { conversationId },
@@ -438,10 +483,16 @@ export async function getRecoveryDetail(input: {
       skip: (safeMessagePage - 1) * messagePageSize,
       take: messagePageSize,
     });
-    messages = pageResult(messageRows.map(mapMessage), safeMessagePage, messagePageSize, messageCount);
+    messages = pageResult(
+      messageRows.map(mapMessage),
+      safeMessagePage,
+      messagePageSize,
+      messageCount,
+    );
   }
 
-  const currentPhone = recovery.customer?.phone ?? recovery.customer?.phones[0]?.phone ?? null;
+  const currentPhone =
+    recovery.customer?.phone ?? recovery.customer?.phones[0]?.phone ?? null;
 
   return {
     id: recovery.id,

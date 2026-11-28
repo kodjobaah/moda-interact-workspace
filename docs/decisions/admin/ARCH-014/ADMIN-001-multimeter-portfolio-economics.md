@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-ADMIN-009
+  - ARCH-010-ADMIN-009
 enables:
-- ARCH-014-ADMIN-002
+  - ARCH-014-ADMIN-002
 created: 2026-09-15
 updated: 2026-09-15
 ---
@@ -68,7 +68,7 @@ type MerchantPricingUsageOffer = {
 };
 
 type MerchantPricingEconomicsPlan = {
-  id: string;                 // stable MerchantPricingPlan/candidate identity supplied by caller
+  id: string; // stable MerchantPricingPlan/candidate identity supplied by caller
   shopifyPlanHandle: string;
   name: string;
   includedRecoveryCredits: number;
@@ -459,7 +459,6 @@ Ready for Architect Review
 
 - Parent task status is `review`; claim is cleared (`executor: null`, `claimed_at: null`).
 - Architect Review remains untouched. `ARCH-014-ADMIN-002` remains gated until Architect acceptance.
-
 
 ## Architect Review
 

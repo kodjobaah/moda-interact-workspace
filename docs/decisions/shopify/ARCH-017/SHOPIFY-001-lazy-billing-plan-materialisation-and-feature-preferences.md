@@ -15,7 +15,7 @@ executor:
 claimed_at:
 attempt: 4
 depends_on:
-- ARCH-017-DATABASE-001
+  - ARCH-017-DATABASE-001
 enables: []
 created: 2026-09-18
 updated: 2026-09-30
@@ -159,7 +159,7 @@ If using `upsert`, do not update an existing inactive BillingPlan back to active
 Never execute:
 
 ```ts
-BillingPlan.active = MerchantPricingPlan.isActive
+BillingPlan.active = MerchantPricingPlan.isActive;
 ```
 
 An already-existing active BillingPlan remains usable for an existing subscription even if its catalogue MerchantPricingPlan has later been deactivated for new selection.
@@ -719,8 +719,9 @@ Do not move onboarding into a later BillingService transaction. Do not make it c
 After the onboarding write, call:
 
 ```ts
-const activation = await billingService.prepareFreeActivation(shop.id, requestedPlanHandle) ??
-  await billingService.preparePaidActivation(shop.id, requestedPlanHandle);
+const activation =
+  (await billingService.prepareFreeActivation(shop.id, requestedPlanHandle)) ??
+  (await billingService.preparePaidActivation(shop.id, requestedPlanHandle));
 ```
 
 If `activation` is non-null, preserve the current Attempt 2 token/sync/retry behaviour. Do not reintroduce any `onboardingCompleted` gate into BillingService.
@@ -751,7 +752,7 @@ state.subscription.planHandle === requestedPlanHandle
 call:
 
 ```ts
-await billingService.syncSubscription(shop.id)
+await billingService.syncSubscription(shop.id);
 ```
 
 with no fabricated initial token.

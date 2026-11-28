@@ -185,7 +185,6 @@ Attempt 2 was claimed by `copilot` at `2026-10-03T16:44:12Z`; durable parent cla
 
 ### Deviations
 
-
 No implementation deviation. The full repository suite remains variable and non-green on documented baseline conditions; the one observed non-baseline readiness abort-timeout identity passed when isolated.
 
 ### Assumptions

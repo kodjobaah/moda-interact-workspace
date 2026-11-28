@@ -63,14 +63,18 @@ export interface CredentialKeyring {
   readonly keyIds: readonly string[];
   hasKey(keyId: string): boolean;
 }
-export function parseCredentialKeyring(raw: string | undefined): CredentialKeyring;
+export function parseCredentialKeyring(
+  raw: string | undefined,
+): CredentialKeyring;
 export function resolveActiveCredentialKey(
   keyring: CredentialKeyring,
   activeKeyId: string | undefined,
 ): string;
 export type CredentialSecurityErrorCode =
-  | 'INVALID_KEYRING' | 'KEY_UNAVAILABLE'
-  | 'INVALID_CREDENTIAL' | 'INVALID_COMMAND_HMAC_KEY';
+  | "INVALID_KEYRING"
+  | "KEY_UNAVAILABLE"
+  | "INVALID_CREDENTIAL"
+  | "INVALID_COMMAND_HMAC_KEY";
 export class CredentialSecurityError extends Error {
   constructor(code: CredentialSecurityErrorCode);
   readonly code: CredentialSecurityErrorCode;
@@ -78,7 +82,8 @@ export class CredentialSecurityError extends Error {
 ```
 
 **Input contract:**
-- `raw` is a JSON object, **not an array**, with 1–16 own string properties; reject undefined, empty and whitespace-only strings, `null`, other JSON types, empty objects, unknown value types and JSON with repeated *decoded* property names (including escaped equivalents). Do not rely on `JSON.parse` alone for duplicate detection.
+
+- `raw` is a JSON object, **not an array**, with 1–16 own string properties; reject undefined, empty and whitespace-only strings, `null`, other JSON types, empty objects, unknown value types and JSON with repeated _decoded_ property names (including escaped equivalents). Do not rely on `JSON.parse` alone for duplicate detection.
 - Key IDs must match `^[A-Za-z0-9_-]{1,64}$`, be unique, and must not equal `__proto__`, `prototype` or `constructor`.
 - Values must match `^[A-Za-z0-9+/]{43}=$`, decode into exactly 32 bytes and round-trip byte-for-byte to the identical **standard, padded Base64** string; reject whitespace, unpadded, base64url and malformed encodings. Reject more than 16 keys and excessive raw input (>4096 UTF-8 bytes).
 - Reader parsing never consults `COMMERCE_CONNECTION_ACTIVE_KEY_ID`. `resolveActiveCredentialKey()` validates the supplied ID exactly (no implicit trimming or fallback), checks presence, then returns that ID; an absent selector is invalid **only when writer selection is requested**.
@@ -101,9 +106,11 @@ Canonical import (later tasks MUST reuse; no duplicate local parser):
 
 ```ts
 import {
-  parseCredentialKeyring, resolveActiveCredentialKey,
-  CredentialSecurityError, type CredentialKeyring,
-} from '@modainteract/moda-interact-shared/security/credentials/node';
+  parseCredentialKeyring,
+  resolveActiveCredentialKey,
+  CredentialSecurityError,
+  type CredentialKeyring,
+} from "@modainteract/moda-interact-shared/security/credentials/node";
 const keys = parseCredentialKeyring(rawKeysFromHost);
 const writerId = resolveActiveCredentialKey(keys, activeIdFromHost);
 ```

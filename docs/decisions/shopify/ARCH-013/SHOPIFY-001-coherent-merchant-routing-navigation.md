@@ -15,10 +15,10 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-010-SHOPIFY-012
-- ARCH-010-SHOPIFY-016
-- ARCH-010-SHOPIFY-021
-- ARCH-010-SHOPIFY-026
+  - ARCH-010-SHOPIFY-012
+  - ARCH-010-SHOPIFY-016
+  - ARCH-010-SHOPIFY-021
+  - ARCH-010-SHOPIFY-026
 enables: []
 created: 2026-09-15
 updated: 2026-09-15
@@ -808,6 +808,7 @@ After all Work Items, Acceptance Criteria and Validation pass:
 ## Completion Report
 
 ### Status
+
 Review-ready after Attempt 2 correction. Initial implementation was published
 in `moda-interact` commit `b3442f7d4a648055036e818d0ccf7e8cad88905d`; audit
 fixes were published in `f2398641328291fc0915df867f67bf257da11943`; the
@@ -816,16 +817,16 @@ Architect Review correction was published in `5e444e061d38a4302a32c9b01382fc6fe1
 ### Audit Findings and Corrections
 
 1. The home route relied on the settings boolean and did not return the shared
-  lifecycle state or explicitly guard detail rendering through that state. It
-  now returns `merchantExperienceState`, keeps onboarding detail requests on
-  the onboarding surface before dashboard reads, and applies the explicit
-  `ONBOARDING` guard.
+   lifecycle state or explicitly guard detail rendering through that state. It
+   now returns `merchantExperienceState`, keeps onboarding detail requests on
+   the onboarding surface before dashboard reads, and applies the explicit
+   `ONBOARDING` guard.
 2. Policy tests checked only selected navigation states and did not prove the
-  exact ordered href list and surface capability for every state. Coverage now
-  asserts all eight states and their navigation invariants.
+   exact ordered href list and surface capability for every state. Coverage now
+   asserts all eight states and their navigation invariants.
 3. Retired billing-route coverage left unused source and loader declarations in
-  `tests/unit/billing-ui.test.ts`, causing task-local lint errors. The stale
-  declarations were removed; no retired-route coverage was restored.
+   `tests/unit/billing-ui.test.ts`, causing task-local lint errors. The stale
+   declarations were removed; no retired-route coverage was restored.
 
 No additional route, CTA, breadcrumb, lifecycle matrix, or deletion gaps were
 found in the audit.
@@ -921,7 +922,6 @@ Implementation commits: `b3442f7d4a648055036e818d0ccf7e8cad88905d`,
 `5e444e061d38a4302a32c9b01382fc6fe1d7669e`.
 Task claim cleared; status returned to `review` for `moda_architect`.
 
-
 ## Architect Review — Attempt 1
 
 ### Status
@@ -1012,15 +1012,12 @@ canAccessMerchantSurface(merchantExperienceState, "PENDING_RECOVERIES") === true
 }
 ```
 
-and keep `pendingRecoveriesUpdatedAt` as `null`.
-5. Preserve the existing historical/read path for NO_CONTRACT/FROZEN/
-   BILLING_ATTENTION: checkout-recovery history, billing periods, usage events,
-   dashboard statistics and lifecycle banners remain readable.
-6. Preserve `/app?view=detail` access for those onboarded historical states, but the
-   loader must still not execute `readPendingRecoveries` merely because detail is
-   requested.
-7. ACTIVE behaviour remains unchanged: ACTIVE may call `readPendingRecoveries` and
-   return its real bounded data.
+and keep `pendingRecoveriesUpdatedAt` as `null`. 5. Preserve the existing historical/read path for NO_CONTRACT/FROZEN/
+BILLING_ATTENTION: checkout-recovery history, billing periods, usage events,
+dashboard statistics and lifecycle banners remain readable. 6. Preserve `/app?view=detail` access for those onboarded historical states, but the
+loader must still not execute `readPendingRecoveries` merely because detail is
+requested. 7. ACTIVE behaviour remains unchanged: ACTIVE may call `readPendingRecoveries` and
+return its real bounded data.
 
 Do not modify:
 

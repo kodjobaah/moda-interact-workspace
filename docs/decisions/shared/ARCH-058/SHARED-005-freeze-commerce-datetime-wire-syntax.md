@@ -80,6 +80,7 @@ Modify only the discount built-in schemas/version declarations and focused tests
    ```
 
    where the fractional part, when present, contains one or more decimal digits; month/day/hour/minute/second ranges are valid and the calendar date actually exists.
+
 3. Reject at minimum:
    - minute-only values such as `2026-11-04T10:00Z`;
    - numeric offsets such as `2026-11-04T10:00:00+00:00`;
@@ -193,32 +194,32 @@ Existing offer start-before-end refinement remains unchanged. Nullability is pre
 
 ### Validation Results
 
-| Command/check | Result |
-|---|---|
-| `npm ci --no-audit --no-fund` | Passed with the existing lock |
-| `npm run test:product-discovery-contracts` | 114 total: 113 passed, 0 failed, 1 existing opt-in Commerce projector test skipped because COMMERCE_CONTRACT_SOURCE_ROOT was unset |
-| `npm run typecheck` | Passed |
-| `npm run build` | Passed, including declarations |
-| `npm run validate:commerce-entrypoints` | Passed; clean-process Commerce/runner imports, canonical 2.0.0 versions, legacy rejection and existing runner regressions |
-| `npm exec -- tsx --test src/commerce/tool-contracts.test.ts src/commerce/contracts.test.ts src/commerce/external-contracts.test.ts` | 19 passed, 0 failed/skipped |
-| `git diff --check` and staged equivalent | Passed |
-| Read-only source preservation checks | Passed; details below |
+| Command/check                                                                                                                       | Result                                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `npm ci --no-audit --no-fund`                                                                                                       | Passed with the existing lock                                                                                                      |
+| `npm run test:product-discovery-contracts`                                                                                          | 114 total: 113 passed, 0 failed, 1 existing opt-in Commerce projector test skipped because COMMERCE_CONTRACT_SOURCE_ROOT was unset |
+| `npm run typecheck`                                                                                                                 | Passed                                                                                                                             |
+| `npm run build`                                                                                                                     | Passed, including declarations                                                                                                     |
+| `npm run validate:commerce-entrypoints`                                                                                             | Passed; clean-process Commerce/runner imports, canonical 2.0.0 versions, legacy rejection and existing runner regressions          |
+| `npm exec -- tsx --test src/commerce/tool-contracts.test.ts src/commerce/contracts.test.ts src/commerce/external-contracts.test.ts` | 19 passed, 0 failed/skipped                                                                                                        |
+| `git diff --check` and staged equivalent                                                                                            | Passed                                                                                                                             |
+| Read-only source preservation checks                                                                                                | Passed; details below                                                                                                              |
 
 #### Required direct parse matrix
 
 Each value was checked through otherwise-valid full CommerceOfferSchema fixtures independently at startsAt and endsAt, and full CommerceDiscountConditionFactsSchema fixtures independently at observedAt and unavailableAt. Composed options/details outputs were also checked. All four direct-field results match this table:
 
-| Timestamp | Expected and observed result |
-|---|---|
-| 2026-11-04T10:00:00Z | PASS |
-| 2026-11-04T10:00:00.1Z | PASS |
-| 2026-11-04T10:00:00.12Z | PASS |
-| 2026-11-04T10:00:00.123Z | PASS |
-| 2026-11-04T10:00:00.1234567890Z | PASS |
-| 2026-11-04T10:00Z | FAIL |
-| 2026-11-04T10:00:00+00:00 | FAIL |
-| 2026-02-30T10:00:00Z | FAIL |
-| 2026-11-04T10:00:60Z | FAIL |
+| Timestamp                       | Expected and observed result |
+| ------------------------------- | ---------------------------- |
+| 2026-11-04T10:00:00Z            | PASS                         |
+| 2026-11-04T10:00:00.1Z          | PASS                         |
+| 2026-11-04T10:00:00.12Z         | PASS                         |
+| 2026-11-04T10:00:00.123Z        | PASS                         |
+| 2026-11-04T10:00:00.1234567890Z | PASS                         |
+| 2026-11-04T10:00Z               | FAIL                         |
+| 2026-11-04T10:00:00+00:00       | FAIL                         |
+| 2026-02-30T10:00:00Z            | FAIL                         |
+| 2026-11-04T10:00:60Z            | FAIL                         |
 
 Expanded fixtures contain 10 accepted and 26 rejected values. They include valid 2000/2024/2400 leap days, invalid 1900/2100 leap days, April 31, zero/out-of-range month/day, hour24/minute60, years0099/9999, lowercase T/Z, empty fractions, numeric exponent fractions, local/offset times, and trailing newline/text/whitespace. Original ten-digit fractional bytes survive parse. Equal and reversed non-null start/end pairs fail; increasing pairs pass.
 

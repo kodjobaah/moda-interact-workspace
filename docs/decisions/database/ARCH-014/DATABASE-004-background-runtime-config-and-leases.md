@@ -15,10 +15,10 @@ executor:
 claimed_at:
 attempt: 3
 depends_on:
-- ARCH-014-DATABASE-003
+  - ARCH-014-DATABASE-003
 enables:
-- ARCH-014-BACKGROUND-001
-- ARCH-014-ADMIN-009
+  - ARCH-014-BACKGROUND-001
+  - ARCH-014-ADMIN-009
 created: 2026-09-16
 updated: 2026-09-16
 ---
@@ -189,31 +189,31 @@ No seed lease rows.
 
 The migration MUST add named PostgreSQL CHECK constraints. Prisma-side validation alone is insufficient.
 
-| Field | Min | Max |
-|---|---:|---:|
-| billingReconciliationIntervalSeconds | 10 | 3600 |
-| billingReconciliationShopBatchSize | 1 | 200 |
-| shopifyUsagePublishBatchSize | 1 | 200 |
-| recoveryRepairIntervalSeconds | 30 | 3600 |
-| recoveryRepairShopBatchSize | 1 | 500 |
-| recoveryResumeBatchSize | 1 | 100 |
-| translationReconciliationIntervalSeconds | 30 | 3600 |
-| translationBatchMaxRequests | 1 | 500 |
-| conversationQuietWindowMs | 250 | 10000 |
-| conversationMaxSettleWindowMs | 1000 | 30000 |
-| billingFrozenRecheckSeconds | 300 | 86400 |
-| billingProviderRetrySeconds | 30 | 3600 |
-| shopifyUsageRetryBaseSeconds | 10 | 3600 |
-| shopifyUsageRetryMaxSeconds | 60 | 86400 |
-| translationReconciliationPageSize | 1 | 500 |
-| translationClaimTimeoutSeconds | 60 | 86400 |
-| translationSubmitRetrySeconds | 30 | 86400 |
-| translationInitialPollSeconds | 30 | 86400 |
-| translationPollIntervalSeconds | 30 | 86400 |
-| translationResultRetrySeconds | 30 | 86400 |
-| translationSubmitMaxAttempts | 1 | 10 |
-| translationMaxAutoRetries | 0 | 10 |
-| every `*QueueGlobalConcurrency` field | 1 | 100 |
+| Field                                    |  Min |   Max |
+| ---------------------------------------- | ---: | ----: |
+| billingReconciliationIntervalSeconds     |   10 |  3600 |
+| billingReconciliationShopBatchSize       |    1 |   200 |
+| shopifyUsagePublishBatchSize             |    1 |   200 |
+| recoveryRepairIntervalSeconds            |   30 |  3600 |
+| recoveryRepairShopBatchSize              |    1 |   500 |
+| recoveryResumeBatchSize                  |    1 |   100 |
+| translationReconciliationIntervalSeconds |   30 |  3600 |
+| translationBatchMaxRequests              |    1 |   500 |
+| conversationQuietWindowMs                |  250 | 10000 |
+| conversationMaxSettleWindowMs            | 1000 | 30000 |
+| billingFrozenRecheckSeconds              |  300 | 86400 |
+| billingProviderRetrySeconds              |   30 |  3600 |
+| shopifyUsageRetryBaseSeconds             |   10 |  3600 |
+| shopifyUsageRetryMaxSeconds              |   60 | 86400 |
+| translationReconciliationPageSize        |    1 |   500 |
+| translationClaimTimeoutSeconds           |   60 | 86400 |
+| translationSubmitRetrySeconds            |   30 | 86400 |
+| translationInitialPollSeconds            |   30 | 86400 |
+| translationPollIntervalSeconds           |   30 | 86400 |
+| translationResultRetrySeconds            |   30 | 86400 |
+| translationSubmitMaxAttempts             |    1 |    10 |
+| translationMaxAutoRetries                |    0 |    10 |
+| every `*QueueGlobalConcurrency` field    |    1 |   100 |
 
 Abuse limits:
 

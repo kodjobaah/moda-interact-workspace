@@ -213,14 +213,17 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 - `prisma/schema.prisma`
 - `prisma/migrations/20260911150000_add_promotional_credit_grants/migration.sql`
 - `scripts/validate-billing-policy-schema.mjs`
 
 ### Work Completed
+
 - Added the non-refundable `PROMOTIONAL_RECOVERY_CREDITS` entitlement counter without creating counters for existing shops.
 - Added `PromotionalCreditGrant` provenance with bounded reason, optional campaign reference, globally unique request key, restrictive Shop and PlatformAdmin relations, positive quantity CHECK, and required indexes.
 - Added the `PROMOTIONAL_CREDITS_GRANTED` billing audit action.
@@ -228,6 +231,7 @@ Ready for Review
 - Added deterministic validator coverage for the enum/model/index/constraint contract and migration no-rewrite/no-grant safeguards.
 
 ### Validation Results
+
 - `npm run format` passed.
 - `npm run prisma:generate` passed with Prisma 6.19.3.
 - `npm run prisma:validate` passed.
@@ -236,15 +240,18 @@ Ready for Review
 - No migration was applied to the configured database.
 
 ### Attempt 2 Review Correction
+
 - Added the additive `EntitlementCounter` PostgreSQL enum extension to the promotional-credit migration.
 - Strengthened the billing-policy validator to assert all existing and promotional entitlement values and both required enum migrations.
 - Attempt-2 validation passed: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:billing-policy`, and `git diff --check`.
 
 ### Attempt 3 Review Correction
+
 - Strengthened `scripts/validate-billing-policy-schema.mjs` to prove restrictive Shop and PlatformAdmin provenance relations in both Prisma schema and PostgreSQL migration evidence.
 - Attempt-3 validation passed: `npm run format`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run test:billing-policy`, and `git diff --check`.
 
 ### Git / VCS
+
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-DATABASE-009`.
 - Parent branch: `task/ARCH-010-DATABASE-009`.
@@ -259,6 +266,7 @@ Ready for Review
 - No main branch was pushed and no submodule gitlink was staged.
 
 ### Start-of-attempt Synchronization
+
 - Parent remote task branch fast-forwarded: not-needed; existing task branch was current.
 - Parent `origin/main` incorporated: already-current.
 - Implementation remote task branch fast-forwarded: not-needed; existing task branch was current.
@@ -490,6 +498,7 @@ embedded into this same task file because a commit cannot durably contain its ow
 final hash.
 
 This acceptance satisfies DATABASE-009 for its direct dependants:
+
 - `ARCH-010-ADMIN-004`
 - `ARCH-010-BACKGROUND-019`
 - `ARCH-010-SHOPIFY-009`
@@ -497,4 +506,3 @@ This acceptance satisfies DATABASE-009 for its direct dependants:
 
 Their actual Ready status must still be recalculated against any other dependencies
 in the current canonical parent workspace.
-

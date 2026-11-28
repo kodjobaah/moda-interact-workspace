@@ -104,7 +104,7 @@ src/commerce/external-preview/index.ts
 The returned value must satisfy the accepted:
 
 ```ts
-PreviewExternalFixtureRunner
+PreviewExternalFixtureRunner;
 ```
 
 contract.

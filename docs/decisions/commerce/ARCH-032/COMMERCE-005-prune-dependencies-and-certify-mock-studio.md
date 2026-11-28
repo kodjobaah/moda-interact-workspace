@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 6
 depends_on:
-- ARCH-032-COMMERCE-004
+  - ARCH-032-COMMERCE-004
 enables:
-- ARCH-032-COMMERCE-006
+  - ARCH-032-COMMERCE-006
 created: 2026-10-12
-updated: '2026-10-15'
+updated: "2026-10-15"
 ---
 
 # ARCH-032-COMMERCE-005 — Complete Commerce MCP-server extraction and restore selectable real tool clients

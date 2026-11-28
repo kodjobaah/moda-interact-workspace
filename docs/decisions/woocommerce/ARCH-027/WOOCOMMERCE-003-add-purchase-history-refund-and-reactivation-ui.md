@@ -281,7 +281,7 @@ Developer-applied WooCommerce implementation and focused tests include:
   class map;
 - UI/controller: `src/billing/connected-billing-screen.js`,
   `src/billing/purchase-history-{client,contract,controller,screen,filters,
-  card,pagination,guidance}.js`, `src/billing/use-purchase-history.js`,
+card,pagination,guidance}.js`, `src/billing/use-purchase-history.js`,
   `src/billing/purchased-credit-history-card.js`, and thin Billing shell wiring;
 - scoped billing-history styles, POT/PO and compiled translations, JS/PHP and
   i18n tests.
@@ -380,7 +380,7 @@ External provider billing/refund certification is expressly **not accepted**.
 Accepted the developer-applied implementation scope after source-level review,
 manual LocalWP history-view evidence, reported green local validation and
 repeated bounded lint-correction patches. The implementation intentionally
-mirrors Shopify's history *presentation* but uses provider-owned external
+mirrors Shopify's history _presentation_ but uses provider-owned external
 WooCommerce.com Orders refund initiation. No local Woo merchant refund POST or
 merchant reactivation flow is authorized by this acceptance.
 

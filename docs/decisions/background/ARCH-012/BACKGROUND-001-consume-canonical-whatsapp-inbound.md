@@ -15,17 +15,17 @@ executor: null
 claimed_at: null
 attempt: 2
 depends_on:
-- ARCH-012-SHARED-001
-- ARCH-012-DATABASE-001
-- ARCH-012-BACKGROUND-003
-- ARCH-007-BACKGROUND-010
-- ARCH-007-BACKGROUND-011
-- ARCH-010-BACKGROUND-013
-- ARCH-014-BACKGROUND-004
-- ARCH-014-BACKGROUND-005
+  - ARCH-012-SHARED-001
+  - ARCH-012-DATABASE-001
+  - ARCH-012-BACKGROUND-003
+  - ARCH-007-BACKGROUND-010
+  - ARCH-007-BACKGROUND-011
+  - ARCH-010-BACKGROUND-013
+  - ARCH-014-BACKGROUND-004
+  - ARCH-014-BACKGROUND-005
 enables:
-- ARCH-012-SYSTEM-TEST-001
-- ARCH-012-SYSTEM-TEST-002
+  - ARCH-012-SYSTEM-TEST-001
+  - ARCH-012-SYSTEM-TEST-002
 created: 2026-09-14
 updated: 2026-09-16
 ---
@@ -33,6 +33,7 @@ updated: 2026-09-16
 # ARCH-012-BACKGROUND-001
 
 ## Objective
+
 Implement the complete Background-owned inbound WhatsApp pipeline in **one task**:
 
 ```text
@@ -49,6 +50,7 @@ canonical Shared event
 This task replaces the former split between BACKGROUND-001 routing and BACKGROUND-002 voice processing. Voice is an inbound content branch of the same worker/persistence/routing pipeline, not a separate architecture.
 
 ## Binding boundaries
+
 Preserve both customer reply modes:
 
 ```text
@@ -70,6 +72,7 @@ Do not make `customerPhone` a tenant identity. Do not move routing, DB, media do
 If DATABASE-001 is still in progress, this task remains Pending. Do not copy provisional database changes into Background to bypass the dependency.
 
 ## Authorized implementation surface
+
 Expected Background-owned files include:
 
 ```text
@@ -90,6 +93,7 @@ Database submodule pointer may move only to the accepted/live DATABASE-001 commi
 `src/entrypoints/messaging.ts`, runtime-config services and queue-concurrency controller are not authorized redesign surfaces; preserve their accepted behaviour.
 
 ## 2026-09-16 runtime controls that must survive
+
 The current Background baseline includes accepted controls that post-date the original ARCH-012 overlay:
 
 - `backgroundRuntimeConfigService` starts before the WhatsApp worker;
@@ -103,6 +107,7 @@ Do not restore static abuse/concurrency constants, bypass `shopExecutionEligibil
 ## Exact routing behaviour
 
 ### Explicit reply
+
 When `contextMessageId` is non-null:
 
 1. find the local/outbound `ConversationMessage.providerMessageId == contextMessageId`;
@@ -113,6 +118,7 @@ When `contextMessageId` is non-null:
 If referenced provider message is unknown, fall through to normal contextless resolution; do not fabricate ownership.
 
 ### Contextless message
+
 When `contextMessageId == null`:
 
 - one actionable recovery conversation for the phone -> resolve it;
@@ -126,6 +132,7 @@ Cross-tenant ambiguity must be resolved **before audio download/transcription** 
 ## Content branches
 
 ### Text
+
 For `content.type == "text"`:
 
 - persist `contentType=TEXT`, `transcriptionStatus=NOT_REQUIRED`;
@@ -134,6 +141,7 @@ For `content.type == "text"`:
 - duplicate `providerMessageId` must not create a second logical turn.
 
 ### Unsupported
+
 For `content.type == "unsupported"`:
 
 - persist idempotently with `contentType=UNSUPPORTED` and bounded descriptor content;
@@ -144,6 +152,7 @@ For `content.type == "unsupported"`:
 - do not implement image/document/video understanding.
 
 ### Audio / voice
+
 A WhatsApp voice note is routed exactly like text first, but its media/transcription lifecycle is two-phase so retries cannot create duplicate turns.
 
 Binding product rules:
@@ -158,14 +167,12 @@ raw audio durable retention:            prohibited
 ```
 
 ## Provider-neutral speech transcription
+
 Create a provider-neutral service equivalent to:
 
 ```ts
 interface SpeechTranscriptionService {
-  transcribe(input: {
-    bytes: Uint8Array;
-    mimeType: string;
-  }): Promise<{
+  transcribe(input: { bytes: Uint8Array; mimeType: string }): Promise<{
     text: string;
     provider: string;
     model: string;
@@ -184,6 +191,7 @@ optional env: GROQ_TRANSCRIPTION_MODEL
 If the optional env is absent, use exactly `whisper-large-v3-turbo`. Do not use a translation endpoint. Do not couple conversation/business code directly to Groq outside the adapter.
 
 ## Meta media retrieval
+
 Implement a bounded Background media client:
 
 ```text
@@ -203,6 +211,7 @@ Requirements:
 - if a temporary file is unavoidable, delete it in `finally`.
 
 ## Duration enforcement
+
 Inspect audio duration **before paid transcription**. Support WhatsApp OGG/Opus and accepted audio MIME variants. Prefer an already-installed metadata parser; otherwise `music-metadata` is the approved bounded dependency.
 
 ```text
@@ -218,6 +227,7 @@ route conversation
 ```
 
 ## Two-phase audio idempotency
+
 Implement explicit service methods/transactions equivalent to:
 
 ### `reserveInboundAudio(...)`
@@ -242,6 +252,7 @@ Implement explicit service methods/transactions equivalent to:
 Retryable download/STT failures may leave PENDING for BullMQ retry. Terminal malformed/overlong/blank-speech outcomes must not retry forever.
 
 ## Deterministic customer fallbacks
+
 After terminal rejection/failure use the normal admitted outbound text path from BACKGROUND-003. Do not invoke CommerceAgent.
 
 ```text
@@ -255,6 +266,7 @@ VOICE_UNREADABLE:
 No human escalation is added.
 
 ## Structured observability
+
 Use existing Shared logger/OpenTelemetry runtime. Record bounded semantic outcomes:
 
 ```text
@@ -269,9 +281,11 @@ transcription-terminal-failure
 Never log raw audio, transcript text, signed media URL, access token or full webhook payload.
 
 ## Required tests
+
 At minimum prove:
 
 ### Routing/text/unsupported
+
 1. contextual text resolves exact original conversation and persists reply ID;
 2. contextless text with one active conversation resolves normally;
 3. same-owner multiple recoveries use clarification flow;
@@ -282,9 +296,10 @@ At minimum prove:
 8. existing raw/settled abuse admission and ordering/coalescing remain intact.
 
 ### Audio
+
 9. 30s OGG/Opus -> transcript -> one logical turn;
 10. exactly 120s -> accepted;
-11. >120s -> no transcription call and deterministic fallback;
+11. > 120s -> no transcription call and deterministic fallback;
 12. duplicate webhook/job -> one reservation and at most one completed turn;
 13. retry after COMPLETED -> no second STT or turn;
 14. retryable media/STT failure -> no premature turn;
@@ -297,6 +312,7 @@ At minimum prove:
 21. raw bytes/URL are not persisted/logged.
 
 ### Compatibility
+
 22. `createWhatsappWorker()` remains intact;
 23. dynamic `whatsappQueueGlobalConcurrency` binding remains intact;
 24. ARCH-014 runtime-configured abuse limits remain intact;
@@ -325,6 +341,7 @@ At minimum prove:
 - [ ] accepted ARCH-007/010/014 runtime controls remain intact.
 
 ## Validation
+
 Inspect actual `package.json` scripts first. Run focused inbound/routing/audio tests plus repository-declared full validation. Minimum where declared:
 
 ```text
@@ -338,6 +355,7 @@ git diff --check
 No live Groq test is required in the normal suite. Any opt-in live test must require explicit credentials/flag and must never export retained customer audio.
 
 ## Stop conditions
+
 STOP if:
 
 - DATABASE-001 requires additional schema fields beyond its live accepted scope;
@@ -347,14 +365,17 @@ STOP if:
 - implementing this task would require changing Shopify recovery timing/business logic.
 
 ## Completion protocol
+
 Return `ARCH-012-BACKGROUND-001` to `review` and STOP. Do not create or execute BACKGROUND-002; it is superseded by this task.
 
 ## Completion Report
 
 ### Status
+
 Ready for architect review.
 
 ### Files Changed
+
 - Implementation branch commits: `aca37f9` (attempt 1) and `5851670` (attempt 2) on `task/ARCH-012-BACKGROUND-001`.
 - Accepted database submodule pointer: `655ff35` (`ARCH-012-DATABASE-001`).
 - Consumes `@modainteract/moda-interact-shared@0.12.0` and its strict canonical WhatsApp union.
@@ -364,6 +385,7 @@ Ready for architect review.
 - Focused worker, routing, audio lifecycle, and media classification regression tests.
 
 ### Validation Results
+
 - Attempt-2 focused tests (`tests/unit/workers/whatsapp.worker.test.ts`, `tests/unit/services/recovery-routing.service.test.ts`, `tests/unit/services/inbound-whatsapp-audio.service.test.ts`, `tests/unit/services/whatsapp-media.service.test.ts`): 41 passed.
 - `npx tsc --noEmit`: passed.
 - `npm run build`: passed, including Prisma generation.
@@ -374,6 +396,7 @@ Ready for architect review.
 - No live Groq call was made. Raw media bytes and signed Meta URLs are transient and are not logged or persisted.
 
 ### Scope and Limitations
+
 - Existing routing, abuse admission, execution eligibility, worker factory, dynamic concurrency binding, and ordered turn processor were preserved.
 - Attempt-2 review corrections implemented: canonical Shared safe parsing before admission, outbound-only context match, and explicit typed terminal/retryable media and transcription outcomes.
 - Audio retryable provider failures remain `PENDING` for BullMQ retry; terminal duration/media/blank outcomes use bounded failure state and the admitted fallback path.
@@ -382,9 +405,11 @@ Ready for architect review.
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2.
 
 ### Review Notes
+
 Functionally accepted. Implementation `5851670` resolves the three Attempt-1 production blockers without redesigning the accepted ARCH-012 pipeline:
 
 - `message-received` jobs are validated with the published `@modainteract/moda-interact-shared/whatsapp` parser before abuse admission, routing, persistence or agent execution; the legacy/fake-empty-text compatibility path and local message-type union are removed;

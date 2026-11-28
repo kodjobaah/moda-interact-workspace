@@ -16,6 +16,7 @@ enables: ["ARCH-001-SHOPIFY-001", "ARCH-001-BACKGROUND-001"]
 created: 2026-08-28
 updated: 2026-08-28
 ---
+
 # Define Recovery-Focused Shopify Webhook Contracts
 
 ## Architecture
@@ -70,15 +71,18 @@ This task is the contract owner for all producer and consumer work in ARCH-001.
 The v2 logical payloads must represent:
 
 `checkout.created`
+
 - `checkoutToken`
 - `cartToken` nullable
 - `abandonedCheckoutUrl` nullable
 - `checkoutCreatedAt` nullable
 
 `checkout.updated`
+
 - `checkoutToken`
 
 `order.completed`
+
 - `orderId`
 - `checkoutToken` nullable
 - `cartToken` nullable

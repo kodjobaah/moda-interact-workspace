@@ -15,17 +15,17 @@ executor: null
 claimed_at: null
 attempt: 6
 depends_on:
-- ARCH-010-DATABASE-013
-- ARCH-010-BACKGROUND-002
-- ARCH-010-BACKGROUND-011
-- ARCH-010-BACKGROUND-014
+  - ARCH-010-DATABASE-013
+  - ARCH-010-BACKGROUND-002
+  - ARCH-010-BACKGROUND-011
+  - ARCH-010-BACKGROUND-014
 enables:
-- ARCH-010-BACKGROUND-008
-- ARCH-010-BACKGROUND-009
-- ARCH-010-SYSTEM-TEST-001
-- ARCH-010-SYSTEM-TEST-003
+  - ARCH-010-BACKGROUND-008
+  - ARCH-010-BACKGROUND-009
+  - ARCH-010-SYSTEM-TEST-001
+  - ARCH-010-SYSTEM-TEST-003
 created: 2026-09-11
-updated: '2026-09-13'
+updated: "2026-09-13"
 ---
 
 # ARCH-010-BACKGROUND-019: Reserve selected promotional campaign credits before every other capacity source
@@ -193,9 +193,11 @@ Stop if DATABASE-013 exact grant ownership is unavailable, or if implementing pr
 ## Completion Report
 
 ### Status
+
 In Progress.
 
 ### Files Changed
+
 - `src/services/promotional-recovery-reservation.service.ts`
 - `src/services/recovery-billing.service.ts`
 - `tests/unit/services/recovery-billing.service.test.ts`
@@ -203,6 +205,7 @@ In Progress.
 - `tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`
 
 ### Work Completed
+
 - Added an exact campaign-grant promotional reservation primitive using Serializable transactions, versioned CAS updates, deterministic source keys, replay protection, and bounded conflict retries.
 - Resolved the current merchant selection and grant transactionally, enforcing active time window, shop/plan/global scope, grant ownership, remaining quantity, and the effective shop/subscription execution gate.
 - Routed selected promotional capacity before paid included, purchased FIFO, and lifetime Free capacity; promotional usage creates only internal usage evidence and no paid Shopify meter event.
@@ -221,6 +224,7 @@ In Progress.
 - Attempt 6 fixed the PostgreSQL concurrency clock inside the campaign window and asserted exact grant ownership/conservation for both final-credit and same-source independent-client races.
 
 ### Validation Results
+
 - Attempt 6 claimed durably with `executor: copilot`, `attempt: 6`, and claim timestamp `2026-09-13T10:42:00Z`.
 - `npm run prisma:validate`: passed.
 - `npm run prisma:generate`: passed.
@@ -232,56 +236,60 @@ In Progress.
 - Full `npm run test:unit`: 599 tests passed and 1 unrelated existing test failed because `tests/unit/runtime/observability-startup.test.ts` expects shared runtime `0.9.0` while `package.json` declares `0.11.0`.
 
 ### Deviations
+
 - Full unit validation retains one pre-existing shared-runtime version assertion failure; no unrelated test or package metadata was changed.
 - The unrelated shared-runtime version assertion remains unresolved; no unrelated test or package metadata was changed.
 - Attempt 6 intentionally changed tests only; accepted production source and database gitlink remain unchanged.
 
 ### Assumptions
+
 - The initialized `database` submodule at accepted DATABASE-013 revision `014408e0402221f08a3961880b34e828a8bdc736` is the intended dependency state; its parent gitlink was user-authorized but intentionally not staged by this task-owned implementation commit.
 
 ### Unresolved Issues
+
 - The architect should decide whether to reconcile the existing shared-runtime `0.9.0` test expectation separately; it is outside BACKGROUND-019.
 
 ### Git / VCS
+
 Task branch: `task/ARCH-010-BACKGROUND-019`
 
 Physical task isolation:
-  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-019`
-  parent branch: `task/ARCH-010-BACKGROUND-019`
-  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-019`
-  implementation branch: `task/ARCH-010-BACKGROUND-019`
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
+canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-010-BACKGROUND-019`
+parent branch: `task/ARCH-010-BACKGROUND-019`
+implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-010-BACKGROUND-019`
+implementation branch: `task/ARCH-010-BACKGROUND-019`
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes
-  implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: already-current
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
 
 Implementation repository:
-  repository: `moda-interact-background`
-  implementation commit: `08c288f`
-  remote branch: `origin/task/ARCH-010-BACKGROUND-019`
-  pushed: yes
+repository: `moda-interact-background`
+implementation commit: `08c288f`
+remote branch: `origin/task/ARCH-010-BACKGROUND-019`
+pushed: yes
 
 Parent workspace:
-  task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
-  claim commit: `41e5bca`
-  review report commit: `d1bca06`
-  remote branch: `origin/task/ARCH-010-BACKGROUND-019`
-  pushed: yes
-  submodule gitlink staged: no
+task file: `docs/decisions/background/ARCH-010/BACKGROUND-019-promotional-credit-reservations.md`
+claim commit: `41e5bca`
+review report commit: `d1bca06`
+remote branch: `origin/task/ARCH-010-BACKGROUND-019`
+pushed: yes
+submodule gitlink staged: no
 
 Attempt 6 publication:
-  implementation tests commit: `08c288f`
-  implementation tests pushed: yes
-  parent report commit: `d1bca06`
-  parent report pushed: yes
-  database gitlink staged: no
-  main branches modified: no
+implementation tests commit: `08c288f`
+implementation tests pushed: yes
+parent report commit: `d1bca06`
+parent report pushed: yes
+database gitlink staged: no
+main branches modified: no
 
 Merged to implementation main: no
 Merged to workspace main: no
@@ -396,8 +404,7 @@ Attempt 2 currently calculates:
 const remainingAfterCommit =
   grant.quantity - grant.committedQuantity - grant.reservedQuantity;
 
-exhaustedAt:
-  remainingAfterCommit <= quantity ? now : grant.exhaustedAt
+exhaustedAt: remainingAfterCommit <= quantity ? now : grant.exhaustedAt;
 ```
 
 This can mark a grant exhausted while spendable capacity still remains.
@@ -1507,7 +1514,7 @@ new PromotionalRecoveryReservationService(
   maxRetries,
   clock,
   policyResolverFactory,
-)
+);
 ```
 
 Do not change production retry semantics unless one of these tests exposes a genuine defect.
@@ -1623,8 +1630,8 @@ Keep BACKGROUND-008 DRAINING logic out of this task.
 The integration test still constructs:
 
 ```ts
-new PromotionalRecoveryReservationService(firstClient)
-new PromotionalRecoveryReservationService(secondClient)
+new PromotionalRecoveryReservationService(firstClient);
+new PromotionalRecoveryReservationService(secondClient);
 ```
 
 using the real process clock while the campaign expires on:
@@ -2293,4 +2300,3 @@ ARCH-010-BACKGROUND-009: Pending -> Ready
 `ARCH-010-BACKGROUND-007` remains Pending because it depends on both BG8 and BG9 becoming Complete.
 
 `ARCH-010-SYSTEM-TEST-001` and `ARCH-010-SYSTEM-TEST-003` remain Pending/manual-gated because they still have other incomplete dependencies. System tests are not auto-started.
-

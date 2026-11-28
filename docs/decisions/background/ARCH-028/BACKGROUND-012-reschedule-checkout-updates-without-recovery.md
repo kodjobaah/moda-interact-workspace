@@ -22,28 +22,36 @@ enables:
 created: 2026-10-08
 updated: 2026-10-12
 ---
+
 # Reschedule token-identified checkout updates after missing recipient
+
 Architect-accepted — Attempt 3.
+
 ## Architecture
 
 Architecture ID: `ARCH-028`
 Architecture document: `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+
 ## Objective
 
 Consume the published compatible checkout.updated event and schedule an idempotent pending candidate when no Shop/checkout candidate or recovery survives the earlier missing-recipient outcome.
+
 ## Context
 
 BACKGROUND-007 allows a no-recipient candidate to finish without materialising a recovery. Current checkout.updated handling discards no-pending/no-recovery events as `recovery-not-found`. Candidate identity is Shop + checkoutToken; the current provider lookup needs separate bounded URL/time context to fetch a fresh abandoned checkout. A v2 event may legitimately lack that context; it must remain safe.
 The refactored candidate activity service returns `not-reschedulable` for active (non-delayed) jobs; the matured-candidate worker removes Redis indexes in `finally`, and its BullMQ queue uses `removeOnComplete: true`. A qualifying checkout update racing an active no-recipient candidate can therefore be observed while the old job/index still exists, then disappear when the active job completes. This is a **race to validate and prevent**, not a proven production incident.
 
 ## Scope
+
 The Shared 1.5.0 package is the accepted SHARED-004 publication.
+
 - Install the exact accepted Shared revision published by SHARED-004 and parse both strict v2 recovery events and v3 checkout.updated through the canonical runtime parser.
 - For `(shopId, checkoutToken)` with no pending candidate and no CheckoutRecovery, schedule exactly one fresh pending candidate using the existing queue/index/lock semantics, not abandonedCheckoutUrl as its identity.
 - Carry only validated optional URL/creation-time/cart context when available; never infer a URL from the token or substitute receivedAt for creation time to defeat the bounded lookup.
 - Preserve pending refresh, existing/terminal recovery handling, duplicate/out-of-order checkout updates, tenant scope and existing Shopify ingress responsiveness. Coordinate re-entry with the existing `PendingRecoveryCandidateService` facade, candidate index/lifecycle/activity helpers, checkout-order guard and matured-worker cleanup so a newer qualifying update is not lost behind an active candidate that finishes without a recovery.
 
 ## Out of Scope
+
 None identified. Candidate identity remains Shop plus checkout token; no new queue, durable context store, provider filter assumption, or cross-repository change was introduced.
 
 ## Requirements
@@ -172,7 +180,7 @@ A1-R1 **resolved**. The implementation task branch includes the accepted mainlin
 
 A1-R3 **resolved**. The Completion Report is in the canonical section; actual source changes and validation are recorded, and relevant Requirement, Work Item, and Acceptance Criteria checkboxes are updated. The producer-acceptance gate remains unchecked until this task receives an Accepted review.
 
-A1-R2 **partially resolved**. Stale/equal-timestamp events now enrich null candidate lookup hints without altering `lastActivityAt`, `changeDelay`, or candidate job ID. However, `PendingRecoveryCandidateActivityService.enrichMissingLookupContext()` at `src/services/pending-recovery-candidate/candidate-activity.service.ts` lines 211–213 uses `input.checkoutCreatedAt ?? existing.checkoutCreatedAt` and `input.abandonedCheckoutUrl ?? existing.abandonedCheckoutUrl`. A stale/equal event containing *non-null* conflicting fields replaces already populated valid current hints. This violates the explicit Attempt 1 requirement to fill **only missing** context. The new tests exercise initially-null context but not conflicting non-null values. Stale checkout events may therefore regress bounded lookup to an older URL or different creation-time window. This is a bounded task-owned correctness defect, not a redesign request.
+A1-R2 **partially resolved**. Stale/equal-timestamp events now enrich null candidate lookup hints without altering `lastActivityAt`, `changeDelay`, or candidate job ID. However, `PendingRecoveryCandidateActivityService.enrichMissingLookupContext()` at `src/services/pending-recovery-candidate/candidate-activity.service.ts` lines 211–213 uses `input.checkoutCreatedAt ?? existing.checkoutCreatedAt` and `input.abandonedCheckoutUrl ?? existing.abandonedCheckoutUrl`. A stale/equal event containing _non-null_ conflicting fields replaces already populated valid current hints. This violates the explicit Attempt 1 requirement to fill **only missing** context. The new tests exercise initially-null context but not conflicting non-null values. Stale checkout events may therefore regress bounded lookup to an older URL or different creation-time window. This is a bounded task-owned correctness defect, not a redesign request.
 
 **Historical Attempt 1 review notes (retained below):**
 
@@ -187,11 +195,13 @@ A1-R3 — Canonical Completion Report integrity: Implementation file lists, summ
 ### Reviewed Files
 
 Attempt 3 additionally inspected:
+
 - `src/services/pending-recovery-candidate/candidate-activity.service.ts` — stale/equal-context fallbacks and no-op handling
 - `tests/unit/services/pending-recovery-candidate/candidate-activity.service.test.ts` — older/equal conflicting populated hints and mixed-context enrichment
 - Attempt 3 Completion Report, ARCH-028 task dependencies, checkout-scoped coordination and review history
 
 Attempt 2 additionally inspected:
+
 - `src/services/pending-recovery-candidate/candidate-activity.service.ts` (lines 109–149 and 207–228, blocking A2-R1)
 - `tests/unit/services/pending-recovery-candidate/candidate-activity.service.test.ts` (stale/equal context test coverage)
 - `src/services/pending-recovery-candidate/candidate-lifecycle.service.ts` (active/waiting successors)

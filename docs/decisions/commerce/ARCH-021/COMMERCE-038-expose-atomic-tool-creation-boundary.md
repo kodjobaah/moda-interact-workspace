@@ -171,7 +171,7 @@ Do not introduce another authorization implementation or development-bypass path
 Return the existing:
 
 ```ts
-ToolMutationResult<InitialToolCreationResult>
+ToolMutationResult<InitialToolCreationResult>;
 ```
 
 (or repository-equivalent named DTO) and preserve the COMMERCE-020 bounded codes:
@@ -205,9 +205,9 @@ For an exact matching committed `CREATE_TOOL` audit whose metadata/result contai
 
 ```ts
 {
-  kind: 'committed';
+  kind: "committed";
   operationId: string;
-  action: 'CREATE_TOOL';
+  action: "CREATE_TOOL";
   toolId: string;
   toolRevisionId: string;
 }
@@ -329,9 +329,11 @@ The destination Tool editor may perform its normal read after navigation. Avoid 
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 `moda-interact-commerce/src/studio/contracts.ts`
 `moda-interact-commerce/src/commerce/integration/studio/services.ts`
 `moda-interact-commerce/src/studio/server-actions.ts`
@@ -342,6 +344,7 @@ Ready for Review
 `moda-interact-commerce/tests/tool-operation-reconciliation.test.ts`
 
 ### Work Completed
+
 - Preserved the serializable atomic initial-create input/result contracts while keeping the mutation out of broad `StudioServices`.
 - Added a callable `createToolWithInitialDraftMutation` and wired the named `createToolWithInitialDraft` Server Action to it.
 - Calls the COMMERCE-037 lifecycle operation exactly once and returns its composite result without a publication snapshot.
@@ -350,6 +353,7 @@ Ready for Review
 - Added direct named Server Action success and deterministic `CONFLICT` regression coverage.
 
 ### Validation Results
+
 - Implementation commit: `1b2f853` pushed to `task/ARCH-021-COMMERCE-038`.
 - `npm run test:arch021-tool-authoring-common`: 84 passed, 7 files passed.
 - Focused action/reconciliation/Studio packet: 31 passed, 3 files passed.
@@ -358,12 +362,15 @@ Ready for Review
 - Source audit: atomic creation path contains no `publication.snapshot()` result reconstruction.
 
 ### Deviations
+
 The repository typecheck exits nonzero on 16 unrelated baseline diagnostics outside this task (preview imports, agent configuration tests, fixtures, MCP context, and selected-shop-context tests). No task-owned diagnostics for `createToolWithInitialDraft` remain. Focused Vitest, common acceptance tests, changed-file lint, and diff checks pass.
 
 ### Assumptions
+
 The COMMERCE-037 lifecycle result is the canonical serializable `{ toolId, toolRevisionId, editVersion, updatedAt }` DTO.
 
 ### Unresolved Issues
+
 Full repository typecheck remains subject to the 16 documented unrelated baseline diagnostics; changed-file diagnostics are clean.
 
 ### Architectural Concerns
@@ -371,6 +378,7 @@ Full repository typecheck remains subject to the 16 documented unrelated baselin
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 2
 
 ### Review Notes
@@ -499,7 +507,7 @@ or another clearly named focused Server Action test file.
 The regression MUST invoke the actual exported:
 
 ```ts
-createToolWithInitialDraft
+createToolWithInitialDraft;
 ```
 
 from `src/studio/server-actions.ts` and prove at minimum:

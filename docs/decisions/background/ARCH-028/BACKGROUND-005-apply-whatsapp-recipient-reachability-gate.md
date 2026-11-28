@@ -126,59 +126,59 @@ Attempt 2 corrections and required PostgreSQL integration validation are complet
 
 ### Files Changed
 
- - `moda-interact-background/src/services/checkout-recovery/recovery-recipient-canonicalization.ts` (new bounded digits-only canonicalizer).
- - `moda-interact-background/src/services/checkout-recovery/recovery-recipient-resolver.service.ts` and `moda-interact-background/src/services/customer.phone.service.ts` (canonical initial handoff and current phone lookup constrained by customer and Shop).
- - `moda-interact-background/src/services/recovery-outreach-attempt.service.ts`, `moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts`, and `moda-interact-background/src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` (persist the immutable recipient snapshot before outbound admission and use it as the provider destination).
- - Focused unit tests for initial/follow-up parity, missing/current phone behavior, canonicalization bounds, Shop scoping, and immutable upsert replay; new `moda-interact-background/tests/integration/recovery-outreach-recipient.integration.test.ts` for actual PostgreSQL persistence.
- - Background database gitlink updated from `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13` to accepted DATABASE-003 commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
+- `moda-interact-background/src/services/checkout-recovery/recovery-recipient-canonicalization.ts` (new bounded digits-only canonicalizer).
+- `moda-interact-background/src/services/checkout-recovery/recovery-recipient-resolver.service.ts` and `moda-interact-background/src/services/customer.phone.service.ts` (canonical initial handoff and current phone lookup constrained by customer and Shop).
+- `moda-interact-background/src/services/recovery-outreach-attempt.service.ts`, `moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts`, and `moda-interact-background/src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` (persist the immutable recipient snapshot before outbound admission and use it as the provider destination).
+- Focused unit tests for initial/follow-up parity, missing/current phone behavior, canonicalization bounds, Shop scoping, and immutable upsert replay; new `moda-interact-background/tests/integration/recovery-outreach-recipient.integration.test.ts` for actual PostgreSQL persistence.
+- Background database gitlink updated from `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13` to accepted DATABASE-003 commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
 
 ### Work Completed
 
- - Initial attempts consume BACKGROUND-007's resolved recipient, canonicalize it to 1–64 ASCII digits, persist it before billing/provider admission, and send to the stored attempt recipient.
- - Follow-ups resolve the current `CustomerPhone` by recovery customer ID and Shop ID, independent of legacy `Customer.phone`; a missing current recipient returns `suppressed/no-recipient` before state claim, attempt creation, billing, or send.
- - Follow-up attempt creation persists that current canonical recipient; provider sends use `attempt.recipient`. Upsert replay uses an empty update so the original attempt snapshot cannot be overwritten.
- - Added direct coverage for null/stale legacy phone with a valid current phone, no-recipient side effects, exact snapshot/provider parity, canonicalization bounds, Shop query isolation, and required PostgreSQL attempt persistence.
- - Audited attempt creation call sites; both production writers use the updated required-recipient service inputs. All touched production modules are below 300 physical lines.
- - A1-R2: removed the synthetic initial/follow-up attempt fallbacks. `RecoveryOutreachAttemptService` now throws `Recovery outreach attempt persistence is unavailable` when the Prisma attempt delegate is absent, before billing/admission/provider work. Added focused rejection coverage for both creation methods and updated successful-flow Prisma mocks to model durable upsert and status writes.
- - A1-R1: expanded the PostgreSQL integration test to call the production `RecoveryOutreachAttemptService` with a real Prisma client; it writes initial and follow-up rows, replays both with a different recipient, and asserts persisted distinct recipients and Shop/recovery lineage. The developer ran the regression successfully: 1/1 passed, exit status 0.
- - Attempt 2 files: `src/services/recovery-outreach-attempt.service.ts`, `tests/unit/recovery-outreach-follow-up.test.ts`, `tests/unit/services/matured-candidate.materialization.test.ts`, `tests/unit/services/checkout-refresh.test.ts`, and `tests/integration/recovery-outreach-recipient.integration.test.ts`.
+- Initial attempts consume BACKGROUND-007's resolved recipient, canonicalize it to 1–64 ASCII digits, persist it before billing/provider admission, and send to the stored attempt recipient.
+- Follow-ups resolve the current `CustomerPhone` by recovery customer ID and Shop ID, independent of legacy `Customer.phone`; a missing current recipient returns `suppressed/no-recipient` before state claim, attempt creation, billing, or send.
+- Follow-up attempt creation persists that current canonical recipient; provider sends use `attempt.recipient`. Upsert replay uses an empty update so the original attempt snapshot cannot be overwritten.
+- Added direct coverage for null/stale legacy phone with a valid current phone, no-recipient side effects, exact snapshot/provider parity, canonicalization bounds, Shop query isolation, and required PostgreSQL attempt persistence.
+- Audited attempt creation call sites; both production writers use the updated required-recipient service inputs. All touched production modules are below 300 physical lines.
+- A1-R2: removed the synthetic initial/follow-up attempt fallbacks. `RecoveryOutreachAttemptService` now throws `Recovery outreach attempt persistence is unavailable` when the Prisma attempt delegate is absent, before billing/admission/provider work. Added focused rejection coverage for both creation methods and updated successful-flow Prisma mocks to model durable upsert and status writes.
+- A1-R1: expanded the PostgreSQL integration test to call the production `RecoveryOutreachAttemptService` with a real Prisma client; it writes initial and follow-up rows, replays both with a different recipient, and asserts persisted distinct recipients and Shop/recovery lineage. The developer ran the regression successfully: 1/1 passed, exit status 0.
+- Attempt 2 files: `src/services/recovery-outreach-attempt.service.ts`, `tests/unit/recovery-outreach-follow-up.test.ts`, `tests/unit/services/matured-candidate.materialization.test.ts`, `tests/unit/services/checkout-refresh.test.ts`, and `tests/integration/recovery-outreach-recipient.integration.test.ts`.
 
 ### Validation Results
 
- Agent-executed validation passed:
+Agent-executed validation passed:
 
- - `npx vitest run tests/unit/services/customer.phone.service.test.ts tests/unit/services/checkout-recovery/recovery-recipient-resolver.service.test.ts tests/unit/recovery-outreach-follow-up.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts` — 5 files, 42 tests passed.
- - `npm run test:unit` — 176 files, 1,888 tests passed.
- - `npm run prisma:validate` — valid against DATABASE-003.
- - `npm run build` — Prisma Client generated from DATABASE-003 and TypeScript build passed.
- - `npx tsc --noEmit` — passed after adding the PostgreSQL integration test.
- - `git diff --check` — passed.
+- `npx vitest run tests/unit/services/customer.phone.service.test.ts tests/unit/services/checkout-recovery/recovery-recipient-resolver.service.test.ts tests/unit/recovery-outreach-follow-up.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts` — 5 files, 42 tests passed.
+- `npm run test:unit` — 176 files, 1,888 tests passed.
+- `npm run prisma:validate` — valid against DATABASE-003.
+- `npm run build` — Prisma Client generated from DATABASE-003 and TypeScript build passed.
+- `npx tsc --noEmit` — passed after adding the PostgreSQL integration test.
+- `git diff --check` — passed.
 
 Attempt 2 validation:
 
- - Focused recipient suite: `npx vitest run tests/unit/services/customer.phone.service.test.ts tests/unit/services/checkout-recovery/recovery-recipient-resolver.service.test.ts tests/unit/recovery-outreach-follow-up.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts` — 5 files, 43 tests passed.
- - `npm run test:unit` — 176 files, 1,889 tests passed.
- - `npm run prisma:validate` — passed against DATABASE-003.
- - `npm run build` — passed; Prisma Client generated from DATABASE-003 and TypeScript compilation passed.
- - `git diff --check` — passed. Modified attempt service: 191 physical lines.
+- Focused recipient suite: `npx vitest run tests/unit/services/customer.phone.service.test.ts tests/unit/services/checkout-recovery/recovery-recipient-resolver.service.test.ts tests/unit/recovery-outreach-follow-up.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts` — 5 files, 43 tests passed.
+- `npm run test:unit` — 176 files, 1,889 tests passed.
+- `npm run prisma:validate` — passed against DATABASE-003.
+- `npm run build` — passed; Prisma Client generated from DATABASE-003 and TypeScript compilation passed.
+- `git diff --check` — passed. Modified attempt service: 191 physical lines.
 
 - Developer-executed validation: `npm run test:integration -- tests/integration/recovery-outreach-recipient.integration.test.ts` — 1/1 test passed; exit status `0`; environment: macOS, dedicated implementation worktree; container cleanup: no new containers or volumes remain.
 
 ### Deviations
 
- The disposable PostgreSQL integration test was executed by the developer and passed; it was not launched by the agent under the workspace validation policy. The initial build also exposed that the prepared Background gitlink pointed to DATABASE-001; the task branch now adopts the accepted DATABASE-003 implementation commit exactly.
+The disposable PostgreSQL integration test was executed by the developer and passed; it was not launched by the agent under the workspace validation policy. The initial build also exposed that the prepared Background gitlink pointed to DATABASE-001; the task branch now adopts the accepted DATABASE-003 implementation commit exactly.
 
 ### Assumptions
 
- The accepted DATABASE-003 commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce` is the database revision intended for this task's compatible runtime adoption.
+The accepted DATABASE-003 commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce` is the database revision intended for this task's compatible runtime adoption.
 
 ### Unresolved Issues
 
- No unresolved validation issue remains. Developer execution passed the production-writer PostgreSQL replay regression, verifying persisted recipient lineage and changed-phone immutability.
+No unresolved validation issue remains. Developer execution passed the production-writer PostgreSQL replay regression, verifying persisted recipient lineage and changed-phone immutability.
 
 ### Architectural Concerns
 
- No architectural concern identified. The breaking recipient schema and compatible attempt writers are represented together on this task branch.
+No architectural concern identified. The breaking recipient schema and compatible attempt writers are represented together on this task branch.
 
 ### Attempt 2 Execution Evidence
 
@@ -191,17 +191,18 @@ Attempt 2 validation:
 
 ### Attempt 1 Execution Evidence (historical)
 
- - Launcher prepared Attempt 1 for executor `copilot`; dependencies DATABASE-003 and BACKGROUND-007 passed.
- - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-005`, branch `task/ARCH-028-BACKGROUND-005`.
- - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-005`, branch `task/ARCH-028-BACKGROUND-005`.
+- Launcher prepared Attempt 1 for executor `copilot`; dependencies DATABASE-003 and BACKGROUND-007 passed.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-005`, branch `task/ARCH-028-BACKGROUND-005`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-005`, branch `task/ARCH-028-BACKGROUND-005`.
 - Implementation commits `c36434f5812b605aba7b930f9603db141d3cf143` and `f42d2867d30639cfc9d8b7cb4b87c1843017eb5f` adopt database commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
- - Parent claim commit: `c5c9eccb4de487fa9457defca88b37ae9e3efa8f`; prepared parent head `845e108175d6b3dad14c21d815b4d83c274cf53d`; prepared implementation head `5e40e7aa4e5ce4bb4802b52c7d6b149eb4217130`.
- - The database submodule working tree is clean at the exact accepted DATABASE-003 commit; no database submodule content was modified.
+- Parent claim commit: `c5c9eccb4de487fa9457defca88b37ae9e3efa8f`; prepared parent head `845e108175d6b3dad14c21d815b4d83c274cf53d`; prepared implementation head `5e40e7aa4e5ce4bb4802b52c7d6b149eb4217130`.
+- The database submodule working tree is clean at the exact accepted DATABASE-003 commit; no database submodule content was modified.
 
 ### Attempt 2 Publication
 
 - Implementation source/test changes are committed as `eab08a74bbb37d20783f2a68f5275fef70a1d046` (`task(ARCH-028-BACKGROUND-005): address attempt review findings`) and pushed on `origin/task/ARCH-028-BACKGROUND-005`.
 - Parent task/report changes are limited to this task file and are committed and pushed on the mirrored `origin/task/ARCH-028-BACKGROUND-005` branch.
+
 ## Architect Review
 
 ### Review Status

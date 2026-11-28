@@ -25,6 +25,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-22
 ---
+
 # Synchronise and evaluate current Shopify phone consent
 
 ## Architecture
@@ -70,7 +71,6 @@ Shopify is the source of truth for its native WhatsApp marketing opt-in. `ARCH-0
 
 **Implementation boundary:** the provider/service implement and test one native read per invocation of `evaluateRecipient()` and `syncCustomer()`, and no native read in `evaluateStoredRecipient()`. Deduplication **per distinct checkout**, checkout call-site invocation, webhook routing, and proactive-send integration are explicitly owned by `ARCH-045-BACKGROUND-002/003/004`; they are **not** claimed to be wired or end-to-end verified by BACKGROUND-001.
 
-
 ## Work Items
 
 - [x] Add `src/providers/shopify-whatsapp-consent.provider.ts` with only the 2026-07 GraphQL **read**, typed outcomes, bounded timeouts, GraphQL errors handling and existing offline-token reuse.
@@ -92,11 +92,20 @@ export type ShopifyWhatsAppConsentObservation =
       kind: "OBSERVED";
       customerGid: string;
       phoneNumber: string;
-      state: "SUBSCRIBED" | "UNSUBSCRIBED" | "PENDING" | "NEVER_SUBSCRIBED" | "REDACTED";
+      state:
+        | "SUBSCRIBED"
+        | "UNSUBSCRIBED"
+        | "PENDING"
+        | "NEVER_SUBSCRIBED"
+        | "REDACTED";
       updatedAt: string | null;
     }
   | { kind: "NOT_FOUND" }
-  | { kind: "UNAVAILABLE"; reason: "TIMEOUT" | "HTTP" | "GRAPHQL" | "ACCESS_DENIED" | "INVALID_RESPONSE" };
+  | {
+      kind: "UNAVAILABLE";
+      reason:
+        "TIMEOUT" | "HTTP" | "GRAPHQL" | "ACCESS_DENIED" | "INVALID_RESPONSE";
+    };
 
 export interface ShopifyWhatsAppConsentReader {
   readCurrent(input: {
@@ -123,7 +132,10 @@ export type ShopifyWhatsAppConsentSyncResult =
   | { status: "NOT_AUTHORISED" | "UNAVAILABLE" | "AMBIGUOUS"; reason: string };
 
 export interface ShopifyWhatsAppConsentServicePort {
-  syncCustomer(input: { shopId: string; shopifyCustomerId: string }): Promise<ShopifyWhatsAppConsentSyncResult>;
+  syncCustomer(input: {
+    shopId: string;
+    shopifyCustomerId: string;
+  }): Promise<ShopifyWhatsAppConsentSyncResult>;
   evaluateRecipient(input: {
     shopId: string;
     customerId: string;
@@ -146,7 +158,10 @@ query CustomerWhatsAppConsent($id: ID!) {
     id
     defaultPhoneNumber {
       phoneNumber
-      whatsAppMarketingConsent { state updatedAt }
+      whatsAppMarketingConsent {
+        state
+        updatedAt
+      }
     }
   }
 }
@@ -252,27 +267,26 @@ This task/report update modifies **only this task document** in the parent works
 
 **Attempt 1 historical evidence** (previously reviewed; retained for traceability):
 
-
-| Command / check | Final result | Evidence |
-| --- | --- | --- |
-| `npm run build` (`npm run prisma:generate && tsc`) | **PASS** | Prisma Client 6.19.3 generated against accepted DATABASE-002 schema; no final `tsc` diagnostics |
-| `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` | **PASS — 34/34** | 22 provider cases, 12 service cases; `typescript(20261022-144656)` |
-| `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts` | **PASS — 2/2** | Real PostgreSQL projection, ordering, STOP independence, changed-recipient and customer isolation; `typescript(20261022-144656)` |
-| Targeted `npx eslint` over the two new source files and three new test files | **PASS** | Exit without diagnostics; `typescript(20261022-145923)` |
-| `git diff --check` | **PASS** | No whitespace diagnostics; `typescript(20261022-145923)` |
-| Task branch and nested Database revision | **CONFIRMED FOR IMPLEMENTATION WORKTREE** | `task/ARCH-045-BACKGROUND-001`; `+e0ab833... database` (local nested gitlink differs from its original recorded pointer); `typescript(20261022-145923)` |
+| Command / check                                                                                                                              | Final result                              | Evidence                                                                                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run build` (`npm run prisma:generate && tsc`)                                                                                           | **PASS**                                  | Prisma Client 6.19.3 generated against accepted DATABASE-002 schema; no final `tsc` diagnostics                                                         |
+| `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` | **PASS — 34/34**                          | 22 provider cases, 12 service cases; `typescript(20261022-144656)`                                                                                      |
+| `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts`                                                 | **PASS — 2/2**                            | Real PostgreSQL projection, ordering, STOP independence, changed-recipient and customer isolation; `typescript(20261022-144656)`                        |
+| Targeted `npx eslint` over the two new source files and three new test files                                                                 | **PASS**                                  | Exit without diagnostics; `typescript(20261022-145923)`                                                                                                 |
+| `git diff --check`                                                                                                                           | **PASS**                                  | No whitespace diagnostics; `typescript(20261022-145923)`                                                                                                |
+| Task branch and nested Database revision                                                                                                     | **CONFIRMED FOR IMPLEMENTATION WORKTREE** | `task/ARCH-045-BACKGROUND-001`; `+e0ab833... database` (local nested gitlink differs from its original recorded pointer); `typescript(20261022-145923)` |
 
 Earlier failed checks (`typescript(20261022-140614)`, `typescript(20261022-142108)`, `typescript(20261022-144127)`) were superseded by the successful **Attempt 1** rerun after Database alignment and test/service corrections: **34 unit + 2 PostgreSQL tests passed**. That baseline did not cover the architect's stale changed-default-phone defect.
 
 **Attempt 2 focused validation — 2026-10-22 (terminal capture `typescript(20261022-162629)`):**
 
-| Command / check | Result | Evidence |
-| --- | --- | --- |
-| `npm run build` (Prisma generate, then TypeScript `tsc`) | **PASS** | Prisma Client 6.19.3 generated; no TypeScript build diagnostics |
-| `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` | **PASS — 38/38** | 22 Shopify provider tests + 16 service tests |
-| `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts` | **PASS — 3/3** | Real PostgreSQL projection, changed-default-phone with older `updatedAt`, retry/ordering fence, local STOP and cross-customer isolation |
-| Targeted `npx eslint` for service and modified unit/integration test files | **PASS** | No diagnostics after the test runs |
-| `git diff --check` | **PASS** | No whitespace diagnostics |
+| Command / check                                                                                                                              | Result           | Evidence                                                                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run build` (Prisma generate, then TypeScript `tsc`)                                                                                     | **PASS**         | Prisma Client 6.19.3 generated; no TypeScript build diagnostics                                                                         |
+| `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` | **PASS — 38/38** | 22 Shopify provider tests + 16 service tests                                                                                            |
+| `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts`                                                 | **PASS — 3/3**   | Real PostgreSQL projection, changed-default-phone with older `updatedAt`, retry/ordering fence, local STOP and cross-customer isolation |
+| Targeted `npx eslint` for service and modified unit/integration test files                                                                   | **PASS**         | No diagnostics after the test runs                                                                                                      |
+| `git diff --check`                                                                                                                           | **PASS**         | No whitespace diagnostics                                                                                                               |
 
 **Total in the latest run: 41 tests passed, zero failed.** The unit suite uses an injected provider; the PostgreSQL suite exercises the real Database trigger and consent projection. These checks do not substitute for a live Shopify protected-customer-data permission test or the downstream BACKGROUND-002/003/004 integration work.
 
@@ -352,6 +366,7 @@ Implementation branch: `task/ARCH-045-BACKGROUND-001`, local HEAD `16be6c9`, rem
 Implementation commit containing the correction: present in the local task branch history; publication of the current branch tip remains required.
 Parent task/report submission commit and remote parity: this changes-requested review is the next parent publication.
 ```
+
 **Submission stop point:** Attempt 2 review requests changes. Split the 501-line `src/services/shopify-whatsapp-consent.service.ts` so every new production file is at most 300 lines, publish the resulting implementation task branch so its remote ref matches the reviewed tip, rerun focused validation, then request review again without creating Attempt 3 here. Preserve all prior review history and leave `docs/decisions/**/_index.md` untouched.
 **Submission stop point:** Verify/reconcile the canonical Attempt 2 claim through the developer launcher, record its actual metadata and preparation evidence, commit/push the corrected Background files on `task/ARCH-045-BACKGROUND-001`, then transition the parent task to `review` with the actual SHA/remote evidence and push its task report. Preserve all Attempt 1 review history and leave `docs/decisions/**/_index.md` untouched. Stop for `moda_architect`; developer final completion remains a later explicit decision after passing review.
 

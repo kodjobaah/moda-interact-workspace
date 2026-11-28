@@ -30,7 +30,6 @@ created: 2026-10-14
 updated: 2026-10-15
 ---
 
-
 # Enforce canonical hosted credential-secret wiring in Render Blueprints
 
 ## Architecture

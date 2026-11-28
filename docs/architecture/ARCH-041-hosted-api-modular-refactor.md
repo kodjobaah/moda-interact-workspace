@@ -190,19 +190,19 @@ server.ts (health + dispatch) --> src/http/route-handler.ts interface
 
 ### Method-specific route ownership
 
-| Request | Target route owner | Security |
-|---|---|---|
-| `GET /health/live`, `GET /health/ready` | `server.ts` | Deliberately public health checks |
-| `POST /v1/woocommerce/installations/connect`, `GET /v1/woocommerce/installation` | `woocommerce/installation/routes.ts` | Site-ownership challenge for connect; current installation bearer for probe |
-| Woo REST-read authorization callback/grant routes | existing `woocommerce/rest-read/` | Existing one-time capability and callback validation; **not** generic installation middleware |
-| Woo billing webhook | existing `woocommerce/billing/webhooks/` | Existing HMAC-signed webhook verification |
-| `GET /v1/merchant/bootstrap` | `merchant/bootstrap/routes.ts` | Existing Woo installation bearer principal |
-| `PUT /v1/merchant/store-context` | `merchant/store-context/routes.ts` | Existing Woo installation bearer principal and current service guard |
-| Recoveries, policies, categories and discounts | existing `merchant/<feature>/` | Existing Woo installation principal, per-route authorization |
-| `GET /v1/billing`, `GET /v1/billing/plans` | `billing/presentation/` routes | Existing Woo installation bearer principal |
-| `GET /v1/billing/recovery-credit-purchases` | existing `billing/purchase-history/routes.ts` | Existing Woo installation bearer principal |
-| `POST /v1/billing/recovery-credit-purchases` | `billing/commands/recovery-credit.routes.ts` | Existing Woo installation bearer principal + idempotency/command validation |
-| Subscription POST/switch/DELETE endpoints | `billing/commands/subscription.routes.ts` | Existing Woo installation bearer principal + command validation |
+| Request                                                                          | Target route owner                            | Security                                                                                      |
+| -------------------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `GET /health/live`, `GET /health/ready`                                          | `server.ts`                                   | Deliberately public health checks                                                             |
+| `POST /v1/woocommerce/installations/connect`, `GET /v1/woocommerce/installation` | `woocommerce/installation/routes.ts`          | Site-ownership challenge for connect; current installation bearer for probe                   |
+| Woo REST-read authorization callback/grant routes                                | existing `woocommerce/rest-read/`             | Existing one-time capability and callback validation; **not** generic installation middleware |
+| Woo billing webhook                                                              | existing `woocommerce/billing/webhooks/`      | Existing HMAC-signed webhook verification                                                     |
+| `GET /v1/merchant/bootstrap`                                                     | `merchant/bootstrap/routes.ts`                | Existing Woo installation bearer principal                                                    |
+| `PUT /v1/merchant/store-context`                                                 | `merchant/store-context/routes.ts`            | Existing Woo installation bearer principal and current service guard                          |
+| Recoveries, policies, categories and discounts                                   | existing `merchant/<feature>/`                | Existing Woo installation principal, per-route authorization                                  |
+| `GET /v1/billing`, `GET /v1/billing/plans`                                       | `billing/presentation/` routes                | Existing Woo installation bearer principal                                                    |
+| `GET /v1/billing/recovery-credit-purchases`                                      | existing `billing/purchase-history/routes.ts` | Existing Woo installation bearer principal                                                    |
+| `POST /v1/billing/recovery-credit-purchases`                                     | `billing/commands/recovery-credit.routes.ts`  | Existing Woo installation bearer principal + idempotency/command validation                   |
+| Subscription POST/switch/DELETE endpoints                                        | `billing/commands/subscription.routes.ts`     | Existing Woo installation bearer principal + command validation                               |
 
 The **GET/POST path overlap** for purchases is intentional; handlers must dispatch by both method and path, returning `false` if they do not own the request. Preserve Woo REST-read callback precedence ahead of generic installation routing and existing safe 404/failure handling. API-008 must compare the API-001 route inventory with **all subsequently accepted ARCH-026/035/036/040 routes** and add missing characterization before relocating handlers; API-012 must verify the same accepted inventory against final composition (including auth and wrong-method behaviour).
 
@@ -224,14 +224,14 @@ The **GET/POST path overlap** for purchases is intentional; handlers must dispat
 
 ## Repository Responsibilities
 
-| Repository | Responsibility | Change required? |
-|---|---|---|
-| `moda-interact-api` / `moda_api` | HTTP route extraction, billing internals, service wiring, local tests | **Yes** |
-| `moda-interact-system-test` / `moda_system_test` | Final black-box API behavioural parity, negative security and provider/database proof | **Yes, terminal validation only** |
-| `moda-interact-database` | Canonical Prisma schema and migrations | No |
-| `moda-interact-shared` | Existing published logging/contracts/crypto | No |
-| `moda-interact-gateway` | Render/gateway topology | No |
-| `moda-interact-woocommerce`, Shopify, Background, Messaging, Commerce | Existing producers/consumers and async workflows | No |
+| Repository                                                            | Responsibility                                                                        | Change required?                  |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------- |
+| `moda-interact-api` / `moda_api`                                      | HTTP route extraction, billing internals, service wiring, local tests                 | **Yes**                           |
+| `moda-interact-system-test` / `moda_system_test`                      | Final black-box API behavioural parity, negative security and provider/database proof | **Yes, terminal validation only** |
+| `moda-interact-database`                                              | Canonical Prisma schema and migrations                                                | No                                |
+| `moda-interact-shared`                                                | Existing published logging/contracts/crypto                                           | No                                |
+| `moda-interact-gateway`                                               | Render/gateway topology                                                               | No                                |
+| `moda-interact-woocommerce`, Shopify, Background, Messaging, Commerce | Existing producers/consumers and async workflows                                      | No                                |
 
 If inspection in an implementation task establishes a genuine new cross-repository contract or Shared primitive gap, stop that affected task and return to `moda_architect` rather than duplicating a generic implementation.
 
@@ -294,23 +294,23 @@ Preserve every endpoint actually served by the execution baseline, including alr
 
 The snapshot records task definitions and statuses but does not prove live task worktrees or branch materialisation. `Ready` is YAML dependency eligibility, not an execution claim. Re-gate the canonical workspace before execution.
 
-| Task | Owner | Status | Depends on |
-|---|---|---|---|
-| ARCH-041-API-001 HTTP/contract characterisation | moda_api | Complete | — |
-| ARCH-041-API-002 Extract billing snapshot reads | moda_api | Complete | API-001 |
-| ARCH-041-API-003 Extract billing response projection | moda_api | Complete | API-002 |
-| ARCH-041-API-004 Extract recurring intent transaction | moda_api | Complete | API-001 |
-| ARCH-041-API-005 Extract recurring provider outcome | moda_api | Complete | API-004 |
-| ARCH-041-API-006 Extract credit-purchase intent transaction | moda_api | Complete | API-001 |
-| ARCH-041-API-007 Extract credit-purchase provider outcome | moda_api | Complete | API-006 |
-| ARCH-041-API-008 Extract billing read HTTP handlers | moda_api | Complete | API-001 |
-| ARCH-041-API-009 Extract billing command HTTP handlers | moda_api | Complete | API-008 |
-| ARCH-041-API-010 Extract merchant bootstrap HTTP handler | moda_api | Complete | API-009 |
-| ARCH-041-API-011 Extract merchant store-context HTTP handler | moda_api | Complete | API-010 |
-| ARCH-041-API-014 Relocate Woo installation authentication boundary | moda_api | Complete | API-003, API-005, API-007, API-011 |
-| ARCH-041-API-012 Unnest registration and composition | moda_api | Complete | API-014 |
-| ARCH-041-API-013 Deduplicate API-local HTTP mechanics | moda_api | In Progress | API-012 |
-| ARCH-041-SYSTEM-TEST-001 Black-box API parity | moda_system_test | Pending | API-003, API-005, API-007, API-013, API-014 |
+| Task                                                               | Owner            | Status      | Depends on                                  |
+| ------------------------------------------------------------------ | ---------------- | ----------- | ------------------------------------------- |
+| ARCH-041-API-001 HTTP/contract characterisation                    | moda_api         | Complete    | —                                           |
+| ARCH-041-API-002 Extract billing snapshot reads                    | moda_api         | Complete    | API-001                                     |
+| ARCH-041-API-003 Extract billing response projection               | moda_api         | Complete    | API-002                                     |
+| ARCH-041-API-004 Extract recurring intent transaction              | moda_api         | Complete    | API-001                                     |
+| ARCH-041-API-005 Extract recurring provider outcome                | moda_api         | Complete    | API-004                                     |
+| ARCH-041-API-006 Extract credit-purchase intent transaction        | moda_api         | Complete    | API-001                                     |
+| ARCH-041-API-007 Extract credit-purchase provider outcome          | moda_api         | Complete    | API-006                                     |
+| ARCH-041-API-008 Extract billing read HTTP handlers                | moda_api         | Complete    | API-001                                     |
+| ARCH-041-API-009 Extract billing command HTTP handlers             | moda_api         | Complete    | API-008                                     |
+| ARCH-041-API-010 Extract merchant bootstrap HTTP handler           | moda_api         | Complete    | API-009                                     |
+| ARCH-041-API-011 Extract merchant store-context HTTP handler       | moda_api         | Complete    | API-010                                     |
+| ARCH-041-API-014 Relocate Woo installation authentication boundary | moda_api         | Complete    | API-003, API-005, API-007, API-011          |
+| ARCH-041-API-012 Unnest registration and composition               | moda_api         | Complete    | API-014                                     |
+| ARCH-041-API-013 Deduplicate API-local HTTP mechanics              | moda_api         | In Progress | API-012                                     |
+| ARCH-041-SYSTEM-TEST-001 Black-box API parity                      | moda_system_test | Pending     | API-003, API-005, API-007, API-013, API-014 |
 
 ### Dependency graph
 

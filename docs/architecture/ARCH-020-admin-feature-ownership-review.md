@@ -5,16 +5,16 @@ migration, provider call or runtime verification was performed.
 
 ## Verified current behaviour
 
-| Concern | Current implementation |
-|---|---|
-| Catalogue | Admin reads all database Feature rows, ordered by systemRequired, displayName and key. No named-feature whitelist. |
-| Creation | SUPER_ADMIN creates a unique key, display name, optional description and activation mode. New records are active and not system-required. Creation and billing audit are transactional. |
-| Editing | Display name and description can change. Key and activation mode are not accepted as editable fields. Non-system-required features can be deactivated/reactivated. |
-| Plan inclusion | Plan save resolves selected feature keys from the database, rejects unknown or newly selected inactive features, includes active system-required features and retains existing inactive mappings. |
-| Operational mapping | Saving an already materialized pricing plan synchronizes its BillingPlanFeature rows. Merely creating a Feature does not add it to a plan. |
-| Effective runtime access | Background requires an enabled operational plan mapping and active Feature. ALWAYS_ENABLED then applies automatically; MERCHANT_OPT_IN additionally requires enabled ShopFeaturePreference. |
-| Merchant preference storage | ShopFeaturePreference already stores one enabled preference per shop/feature, default false. |
-| Merchant preference UI | Search of the current merchant app found no ShopFeaturePreference/activationMode editor. SHOPIFY-001 remains necessary; this is not already implemented. |
+| Concern                     | Current implementation                                                                                                                                                                            |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Catalogue                   | Admin reads all database Feature rows, ordered by systemRequired, displayName and key. No named-feature whitelist.                                                                                |
+| Creation                    | SUPER_ADMIN creates a unique key, display name, optional description and activation mode. New records are active and not system-required. Creation and billing audit are transactional.           |
+| Editing                     | Display name and description can change. Key and activation mode are not accepted as editable fields. Non-system-required features can be deactivated/reactivated.                                |
+| Plan inclusion              | Plan save resolves selected feature keys from the database, rejects unknown or newly selected inactive features, includes active system-required features and retains existing inactive mappings. |
+| Operational mapping         | Saving an already materialized pricing plan synchronizes its BillingPlanFeature rows. Merely creating a Feature does not add it to a plan.                                                        |
+| Effective runtime access    | Background requires an enabled operational plan mapping and active Feature. ALWAYS_ENABLED then applies automatically; MERCHANT_OPT_IN additionally requires enabled ShopFeaturePreference.       |
+| Merchant preference storage | ShopFeaturePreference already stores one enabled preference per shop/feature, default false.                                                                                                      |
+| Merchant preference UI      | Search of the current merchant app found no ShopFeaturePreference/activationMode editor. SHOPIFY-001 remains necessary; this is not already implemented.                                          |
 
 Source files inspected:
 

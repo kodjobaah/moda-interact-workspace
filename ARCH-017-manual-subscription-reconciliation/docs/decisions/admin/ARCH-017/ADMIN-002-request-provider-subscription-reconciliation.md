@@ -160,13 +160,15 @@ Use the repository's existing formatting/import conventions.
 Define this exact state allow-list locally in this action file:
 
 ```ts
-const REQUESTABLE_SUBSCRIPTION_STATUSES = new Set<SubscriptionProjectionStatus>([
-  SubscriptionProjectionStatus.ACTIVE,
-  SubscriptionProjectionStatus.TRIALING,
-  SubscriptionProjectionStatus.SYNC_ERROR,
-  SubscriptionProjectionStatus.FROZEN,
-  SubscriptionProjectionStatus.NO_CONTRACT,
-]);
+const REQUESTABLE_SUBSCRIPTION_STATUSES = new Set<SubscriptionProjectionStatus>(
+  [
+    SubscriptionProjectionStatus.ACTIVE,
+    SubscriptionProjectionStatus.TRIALING,
+    SubscriptionProjectionStatus.SYNC_ERROR,
+    SubscriptionProjectionStatus.FROZEN,
+    SubscriptionProjectionStatus.NO_CONTRACT,
+  ],
+);
 ```
 
 This is an action-policy allow-list, not a global feature/status registry.
@@ -178,7 +180,7 @@ Export:
 ```ts
 export async function requestSubscriptionReconciliationAction(
   formData: FormData,
-): Promise<void>
+): Promise<void>;
 ```
 
 Require these fields:
@@ -208,7 +210,9 @@ At action start:
 ```ts
 const principal = await requirePlatformAdminMutation();
 if (principal.role !== "SUPER_ADMIN") {
-  throw new Error("SUPER_ADMIN access is required to request subscription reconciliation.");
+  throw new Error(
+    "SUPER_ADMIN access is required to request subscription reconciliation.",
+  );
 }
 ```
 
@@ -329,7 +333,7 @@ The live provider reconciliation owns those values.
 Use the existing enum value:
 
 ```ts
-BillingAuditAction.BILLING_EVENT_RETRY
+BillingAuditAction.BILLING_EVENT_RETRY;
 ```
 
 Do NOT add a database enum value in this task.

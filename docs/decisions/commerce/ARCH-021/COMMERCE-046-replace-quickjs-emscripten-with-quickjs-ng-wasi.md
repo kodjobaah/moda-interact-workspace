@@ -201,7 +201,7 @@ engine behind its packaged `quickjs.wasm` artifact.
 Keep:
 
 ```ts
-RUNTIME_VERSION = 'quickjs-sync.v1'
+RUNTIME_VERSION = "quickjs-sync.v1";
 ```
 
 and preserve the existing `SandboxKernel` API and `KernelResult` codes:
@@ -293,13 +293,13 @@ worker architecture.
 The worker must statically import the host API from:
 
 ```ts
-import { QuickJS } from 'quickjs-wasi';
+import { QuickJS } from "quickjs-wasi";
 ```
 
 and load the adjacent WASM bytes as ordinary filesystem data, equivalent to:
 
 ```ts
-const wasm = await readFile(new URL('./quickjs.wasm', import.meta.url));
+const wasm = await readFile(new URL("./quickjs.wasm", import.meta.url));
 ```
 
 Then create the guest VM through the caller-supplied WASM boundary:
@@ -750,9 +750,11 @@ actually enforced property of the new runtime.
 ## Completion Report
 
 ### Status
+
 Ready for Review
 
 ### Files Changed
+
 Implementation commit `b114716` changed:
 
 - `package.json`, `package-lock.json`
@@ -762,6 +764,7 @@ Implementation commit `b114716` changed:
 - `docs/code-runtime-proof.md`
 
 ### Work Completed
+
 - Replaced the Emscripten adapter with pinned `quickjs-wasi@3.6.2` / QuickJS-NG/WASI using explicit packaged WASM bytes. Preserved `quickjs-sync.v1` and existing request/response processor contracts.
 - Packager emits exactly `manifest.json`, `quickjs.wasm`, and `worker.mjs`. Manifest engine is `quickjs-ng-wasi`, package is `quickjs-wasi@3.6.2`, and SHA-256 is `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`, verified against packaged bytes.
 - Retained enforced 16 MiB guest heap, 512 KiB QuickJS stack, 500 ms guest interrupt, 2,000 ms supervisor deadline, four-worker capacity, cancellation termination, and capacity-release behavior. Removed the unsupported 64 MiB WASM-memory claim.
@@ -771,6 +774,7 @@ Implementation commit `b114716` changed:
 - Implementation commit `b114716` was pushed to `origin/task/ARCH-021-COMMERCE-046`.
 
 ### Validation Results
+
 - PASS `npm run code-runtime:package`; engine/package/hash recorded above.
 - PASS `npm run code-runtime:smoke`; exact request/response outputs, compile-only behavior in both modes, and exact packaged artifact set.
 - PASS `npm run test:arch020-code-runtime-proof`; 11 tests.
@@ -784,26 +788,32 @@ Implementation commit `b114716` changed:
 - BLOCKED by the same unrelated route imports: `npm run build` passed runtime packaging, packaged smoke, and Prisma generation, then Next webpack failed to resolve `lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types` from unchanged `app/api/studio/code-response/validate/route.ts`. No QuickJS/WASI, Emscripten, or dynamic-import resolution error occurred.
 
 ### Execution Evidence
+
 - Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-046`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-046`; both task branches are `task/ARCH-021-COMMERCE-046`. Shared workspace/source checkouts were not switched or edited; no other task worktree was reused.
 - The prepared launcher synchronized both task worktrees and incorporated their `origin/main` bases before claim. Parent claim was already committed/pushed as `ea68f8fa66b7bc311a50a557cc7c4fc1bad4bc9f`; no duplicate claim was made.
 - Recursive implementation submodule preparation passed: `git submodule sync --recursive` and `git submodule update --init --recursive`; recorded `database` commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Implementation commit `b114716` was pushed to `origin/task/ARCH-021-COMMERCE-046`.
 
 ### Deviations
+
 Repository-wide typecheck and production build remain blocked by unrelated unresolved preview-route imports and other unchanged-file type errors described above. No unrelated files were changed to address those blockers.
 
 ### Assumptions
+
 QuickJS-WASI `memoryLimit`, `maxStackSize`, and `interruptHandler` enforce the declared heap, stack, and guest execution bounds; no separate WASM linear-memory maximum is claimed.
 
 ### Unresolved Issues
+
 Unrelated typecheck/build blockers remain in the unchanged preview route, Commerce Studio service, and tests; see Validation Results.
 
 ### Architectural Concerns
+
 None identified within this bounded runtime migration. No database, Shared contract, Tool definition, authoring UI, or production provider-execution gate was changed.
 
 ## Architect Review
 
 ### Review Status
+
 Accepted — Attempt 1
 
 ### Review Notes
@@ -852,7 +862,9 @@ The packaged runtime is exactly `worker.mjs`, `quickjs.wasm`, and `manifest.json
 Manual browser evidence additionally confirms the real Next.js Request-validation path reaches the guest compiler and returns a bounded authoring syntax failure rather than `RUNTIME_UNAVAILABLE`.
 
 ### Architecture Conformance
+
 Conforms. COMMERCE-046 changes only the sandbox engine adapter/package/logging implementation, preserves `quickjs-sync.v1`, Request/Response processor contracts, Tool-definition shapes, worker supervision and the production JavaScript executor gate, and introduces no database or cross-repository contract change.
 
 ### Follow-up
+
 `ARCH-021-COMMERCE-047` is promoted to `ready` for bounded compiler-diagnostic propagation. It must preserve the COMMERCE-046 operational-logging boundary: guest syntax errors are UI validation results, not error-level runtime logs.
